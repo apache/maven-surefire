@@ -19,7 +19,6 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -54,7 +53,7 @@ public class TwoTestCasesIT
     {
         final OutputValidator outputValidator = unpack( "junit-twoTestCaseSuite" ).executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 2, 0, 0, 0 );
-        List<ReportTestSuite> reports = HelperAssertions.extractReports( new File[]{ outputValidator.getBaseDir() } );
+        List<ReportTestSuite> reports = HelperAssertions.extractReports( outputValidator.getBaseDir() );
         Set<String> classNames = extractClassNames( reports );
         assertContains( classNames, "junit.twoTestCaseSuite.BasicTest" );
         assertContains( classNames, "junit.twoTestCaseSuite.TestTwo" );
@@ -90,7 +89,7 @@ public class TwoTestCasesIT
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 2, 0, 0, 0 );
 
         List<ReportTestSuite> reports =
-            HelperAssertions.extractReports( ( new File[]{ outputValidator.getBaseDir() } ) );
+            HelperAssertions.extractReports( outputValidator.getBaseDir() );
         Set<String> classNames = extractClassNames( reports );
         assertContains( classNames, "twoTestCaseSuite.BasicTest" );
         assertContains( classNames, "twoTestCaseSuite.Junit4TestTwo" );
@@ -105,7 +104,7 @@ public class TwoTestCasesIT
     {
         final OutputValidator outputValidator = unpack( "testng-twoTestCaseSuite" ).executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 2, 0, 0, 0 );
-        List<ReportTestSuite> reports = HelperAssertions.extractReports( new File[]{ outputValidator.getBaseDir() } );
+        List<ReportTestSuite> reports = HelperAssertions.extractReports( outputValidator.getBaseDir() );
         Set<String> classNames = extractClassNames( reports );
         assertContains( classNames, "testng.two.TestNGTestTwo" );
         assertContains( classNames, "testng.two.TestNGSuiteTest" );

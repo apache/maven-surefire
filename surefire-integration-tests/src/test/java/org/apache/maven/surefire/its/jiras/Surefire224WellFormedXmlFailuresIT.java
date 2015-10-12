@@ -26,7 +26,6 @@ import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
-import java.io.File;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -47,8 +46,7 @@ public class Surefire224WellFormedXmlFailuresIT
 
         outputValidator.assertTestSuiteResults( 4, 0, 4, 0 );
 
-        ReportTestSuite suite =
-            HelperAssertions.extractReports( ( new File[]{ outputValidator.getBaseDir() } ) ).get( 0 );
+        ReportTestSuite suite = HelperAssertions.extractReports( outputValidator.getBaseDir() ).get( 0 );
         List<org.apache.maven.plugins.surefire.report.ReportTestCase> testCases = suite.getTestCases();
         assertEquals( "Wrong number of test case objects", 4, testCases.size() );
         ReportTestCase testQuote = null, testLower = null, testGreater = null, testU0000 = null;

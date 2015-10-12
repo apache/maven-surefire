@@ -19,7 +19,6 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.File;
 import java.util.List;
 
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
@@ -186,8 +185,7 @@ public class CheckTestNgVersionsIT
         if ( validateRunOrder )
         {
             // assert correct run order of tests
-            List<ReportTestSuite> report =
-                HelperAssertions.extractReports( new File[] { outputValidator.getBaseDir() } );
+            List<ReportTestSuite> report = HelperAssertions.extractReports( outputValidator.getBaseDir() );
 
             assertEquals( 3, report.size() );
 
