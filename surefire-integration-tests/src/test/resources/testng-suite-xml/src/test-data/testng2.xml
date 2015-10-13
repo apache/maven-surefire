@@ -21,7 +21,7 @@
 
 <suite name="Suite 2 Test" verbose="4">
 
-  <test name="Sample Test">
+  <test name="Sample Test 2">
     <classes>
       <class name="testng.suiteXml.TestNGSuiteTest"/>
     </classes>
