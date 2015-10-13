@@ -10,7 +10,7 @@ public class FileHelper
     {
         try
         {
-            File target = new File( "./target" ).getCanonicalFile();
+            File target = new File( System.getProperty("user.dir"), "target" ).getCanonicalFile();
             File listenerOutput = new File( target, fileName );
             FileWriter out = new FileWriter( listenerOutput, true );
             out.write( content );
