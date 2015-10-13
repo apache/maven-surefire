@@ -83,6 +83,10 @@ public class TestNGMapConfigurator
             {
                 val = AbstractDirectConfigurator.loadClass( entry.getValue() );
             }
+            else if ( "testrunfactory".equals( key ) )
+            {
+                val = AbstractDirectConfigurator.loadClass( entry.getValue() );
+            }
             else if ( "reporter".equals( key ) )
             {
                 // TODO support multiple reporters?

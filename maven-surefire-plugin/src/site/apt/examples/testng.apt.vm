@@ -307,6 +307,62 @@ Using TestNG
 </plugins>
 +---+
 
+* Customizing TestNG Object Factory
+
+  Since the plugin version 2.19 and TestNG 5.7 or higher you can customize
+  TestNG object factory by implementing <<<org.testng.IObjectFactory>>> and
+  binding the class name to the key <<<objectfactory>>> in provider properties:
+  
++---+
+</plugins>
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          [...]
+          <properties>
+            <property>
+              <name>objectfactory</name>
+              <value>testng.objectfactory.TestNGCustomObjectFactory</value>
+            </property>
+          </properties>
+          [...]
+        </configuration>
+      </plugin>
+    [...]
+</plugins>
++---+
+
+* Customizing TestNG Test Runner Factory
+
+  Since the plugin version 2.19 and TestNG 5.9 or higher you can customize
+  TestNG runner factory by implementing <<<org.testng.ITestRunnerFactory>>> and
+  binding the class name to the key <<<testrunfactory>>> in provider properties:
+  
++---+
+</plugins>
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          [...]
+          <properties>
+            <property>
+              <name>testrunfactory</name>
+              <value>testng.testrunnerfactory.TestNGCustomTestRunnerFactory</value>
+            </property>
+          </properties>
+          [...]
+        </configuration>
+      </plugin>
+    [...]
+</plugins>
++---+
+
 * Running TestNG and JUnit Tests
 
   TestNG 6.5.1 and higher provides support to run TestNG and JUnit 4.x in current Maven project. All you need
