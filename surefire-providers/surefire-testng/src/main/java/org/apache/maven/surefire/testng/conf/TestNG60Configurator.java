@@ -24,12 +24,13 @@ import java.util.Map.Entry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
- * TestNG 6.5.2 configurator. Changed objectFactory type to String
+ * TestNG 6.0 configurator. Changed objectFactory type to String.
+ * Configuring -objectfactory and -testrunfactory.
  *
  * @author <a href='mailto:marvin[at]marvinformatics[dot]com'>Marvin Froeder</a>
  * @since 2.13
  */
-public class TestNG652Configurator
+public class TestNG60Configurator
     extends TestNG510Configurator
 {
 
@@ -40,7 +41,7 @@ public class TestNG652Configurator
         for ( Entry<String, Object> entry : convertedOptions.entrySet() )
         {
             String key = entry.getKey();
-            if ( "-objectfactory".equals( key ) )
+            if ( "-objectfactory".equals( key ) || "-testrunfactory".equals( key ) )
             {
                 Class value = (Class) entry.getValue();
                 convertedOptions.put( key, value.getName() );

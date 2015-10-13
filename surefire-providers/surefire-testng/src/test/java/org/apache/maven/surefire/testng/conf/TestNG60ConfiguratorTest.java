@@ -27,14 +27,14 @@ import junit.framework.TestCase;
 /**
  * @author <a href='mailto:marvin[at]marvinformatics[dot]com'>Marvin Froeder</a>
  */
-public class TestNG652ConfiguratorTest
+public class TestNG60ConfiguratorTest
     extends TestCase
 {
 
     public void testGetConvertedOptions()
         throws Exception
     {
-        TestNGMapConfigurator testNGMapConfigurator = new TestNG652Configurator();
+        TestNGMapConfigurator testNGMapConfigurator = new TestNG60Configurator();
         Map raw = new HashMap();
         raw.put( "objectfactory", "java.lang.String" );
         Map convertedOptions = testNGMapConfigurator.getConvertedOptions( raw );

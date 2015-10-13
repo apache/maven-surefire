@@ -1133,10 +1133,10 @@ public abstract class AbstractSurefireMojo
             {
                 return "org.apache.maven.surefire.testng.conf.TestNG510Configurator";
             }
-            range = VersionRange.createFromVersionSpec( "[6.5,)" );
+            range = VersionRange.createFromVersionSpec( "[6.0,)" );
             if ( range.containsVersion( version ) )
             {
-                return "org.apache.maven.surefire.testng.conf.TestNG652Configurator";
+                return "org.apache.maven.surefire.testng.conf.TestNG60Configurator";
             }
 
             throw new MojoExecutionException( "Unknown TestNG version " + version );
