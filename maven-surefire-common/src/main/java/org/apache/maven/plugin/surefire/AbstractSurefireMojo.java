@@ -1113,22 +1113,22 @@ public abstract class AbstractSurefireMojo
     {
         try
         {
-            VersionRange range = VersionRange.createFromVersionSpec( "[4.7,5.1]" );
+            VersionRange range = VersionRange.createFromVersionSpec( "[4.7,5.2)" );
             if ( range.containsVersion( version ) )
             {
                 return "org.apache.maven.surefire.testng.conf.TestNG4751Configurator";
             }
-            range = VersionRange.createFromVersionSpec( "[5.2]" );
+            range = VersionRange.createFromVersionSpec( "[5.2,5.3)" );
             if ( range.containsVersion( version ) )
             {
                 return "org.apache.maven.surefire.testng.conf.TestNG52Configurator";
             }
-            range = VersionRange.createFromVersionSpec( "[5.3,5.9]" );
+            range = VersionRange.createFromVersionSpec( "[5.3,5.10)" );
             if ( range.containsVersion( version ) )
             {
                 return "org.apache.maven.surefire.testng.conf.TestNGMapConfigurator";
             }
-            range = VersionRange.createFromVersionSpec( "[5.10,6.4]" );
+            range = VersionRange.createFromVersionSpec( "[5.10,6.5)" );
             if ( range.containsVersion( version ) )
             {
                 return "org.apache.maven.surefire.testng.conf.TestNG510Configurator";
