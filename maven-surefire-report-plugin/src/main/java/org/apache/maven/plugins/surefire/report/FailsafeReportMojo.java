@@ -26,6 +26,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+import static org.apache.maven.shared.utils.StringUtils.isEmpty;
 
 /**
  * Creates a nicely formatted Failsafe Test Report in html format.
@@ -37,6 +38,7 @@ import org.apache.maven.project.MavenProject;
  * @since 2.10
  */
 @Mojo( name = "failsafe-report-only" )
+@SuppressWarnings( "unused" )
 public class FailsafeReportMojo
     extends AbstractSurefireReportMojo
 {
@@ -61,6 +63,20 @@ public class FailsafeReportMojo
      */
     @Parameter( defaultValue = "false", property = "skipFailsafeReport" )
     private boolean skipFailsafeReport;
+
+    /**
+     * A custom title of the report for the menu and the project reports page.
+     * @since 2.21.0
+     */
+    @Parameter( defaultValue = "", property = "failsafe.report.title" )
+    private String title;
+
+    /**
+     * A custom description for the project reports page.
+     * @since 2.21.0
+     */
+    @Parameter( defaultValue = "", property = "failsafe.report.description" )
+    private String description;
 
     @Override
     protected File getSurefireReportsDirectory( MavenProject subProject )
@@ -87,13 +103,39 @@ public class FailsafeReportMojo
         return alwaysGenerateFailsafeReport;
     }
 
+    @Override
+    public void setTitle( String title )
+    {
+        this.title = title;
+    }
+
+    @Override
+    public String getTitle()
+    {
+        return title;
+    }
+
+    @Override
+    public void setDescription( String description )
+    {
+        this.description = description;
+    }
+
+    @Override
+    public String getDescription()
+    {
+        return description;
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public String getName( Locale locale )
     {
-        return getBundle( locale ).getString( "report.failsafe.name" );
+        return isEmpty( getTitle() )
+                ? getBundle( locale ).getString( "report.failsafe.name" )
+                : getTitle();
     }
 
     /**
@@ -102,9 +144,10 @@ public class FailsafeReportMojo
     @Override
     public String getDescription( Locale locale )
     {
-        return getBundle( locale ).getString( "report.failsafe.description" );
+        return isEmpty( getDescription() )
+                ? getDescription()
+                : getBundle( locale ).getString( "report.failsafe.description" );
     }
-
 
     /*
     * This is currently a copy of the getBundle() method of the AbstractSurefireReportMojo class,

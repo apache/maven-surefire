@@ -36,6 +36,7 @@ import org.apache.maven.shared.utils.PathTool;
 import static java.util.Collections.addAll;
 import static org.apache.maven.plugins.surefire.report.SurefireReportParser.hasReportFiles;
 import static org.apache.maven.shared.utils.StringUtils.isEmpty;
+import static org.apache.maven.shared.utils.StringUtils.isNotEmpty;
 
 /**
  * Abstract base class for reporting test results using Surefire.
@@ -114,6 +115,14 @@ public abstract class AbstractSurefireReportMojo
         return false;
     }
 
+    public abstract void setTitle( String title );
+
+    public abstract String getTitle();
+
+    public abstract void setDescription( String description );
+
+    public abstract String getDescription();
+
     /**
      * {@inheritDoc}
      */
@@ -127,7 +136,7 @@ public abstract class AbstractSurefireReportMojo
         }
 
         new SurefireReportGenerator( getReportsDirectories(), locale, showSuccess, determineXrefLocation(),
-                                           getConsoleLogger() )
+                                           getConsoleLogger(), isNotEmpty( getTitle() ) ? getTitle() : null )
                 .doGenerateReport( getBundle( locale ), getSink() );
     }
 
@@ -302,7 +311,9 @@ public abstract class AbstractSurefireReportMojo
     @Override
     public String getName( Locale locale )
     {
-        return getBundle( locale ).getString( "report.surefire.name" );
+        return isEmpty( getTitle() )
+                ? getBundle( locale ).getString( "report.surefire.name" )
+                : getTitle();
     }
 
     /**
@@ -311,7 +322,9 @@ public abstract class AbstractSurefireReportMojo
     @Override
     public String getDescription( Locale locale )
     {
-        return getBundle( locale ).getString( "report.surefire.description" );
+        return isEmpty( getDescription() )
+                ? getBundle( locale ).getString( "report.surefire.description" )
+                : getDescription();
     }
 
     /**

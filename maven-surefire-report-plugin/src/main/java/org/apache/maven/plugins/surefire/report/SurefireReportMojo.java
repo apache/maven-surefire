@@ -26,7 +26,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
-
 /**
  * Creates a nicely formatted Surefire Test Report in html format.
  *
@@ -34,6 +33,7 @@ import org.apache.maven.project.MavenProject;
  */
 @Mojo( name = "report", inheritByDefault = false )
 @Execute( lifecycle = "surefire", phase = LifecyclePhase.TEST )
+@SuppressWarnings( "unused" )
 public class SurefireReportMojo
     extends AbstractSurefireReportMojo
 {
@@ -59,6 +59,20 @@ public class SurefireReportMojo
     @Parameter( defaultValue = "false", property = "skipSurefireReport" )
     private boolean skipSurefireReport;
 
+    /**
+     * A custom title of the report for the menu and the project reports page.
+     * @since 2.21.0
+     */
+    @Parameter( defaultValue = "", property = "surefire.report.title" )
+    private String title;
+
+    /**
+     * A custom description for the project reports page.
+     * @since 2.21.0
+     */
+    @Parameter( defaultValue = "", property = "surefire.report.description" )
+    private String description;
+
     @Override
     protected File getSurefireReportsDirectory( MavenProject subProject )
     {
@@ -82,5 +96,29 @@ public class SurefireReportMojo
     protected boolean isGeneratedWhenNoResults()
     {
         return alwaysGenerateSurefireReport;
+    }
+
+    @Override
+    public void setTitle( String title )
+    {
+        this.title = title;
+    }
+
+    @Override
+    public String getTitle()
+    {
+        return title;
+    }
+
+    @Override
+    public void setDescription( String description )
+    {
+        this.description = description;
+    }
+
+    @Override
+    public String getDescription()
+    {
+        return description;
     }
 }

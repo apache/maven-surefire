@@ -40,9 +40,10 @@ import static org.apache.maven.doxia.sink.SinkEventAttributes.ID;
 import static org.apache.maven.doxia.sink.SinkEventAttributes.NAME;
 import static org.apache.maven.doxia.sink.SinkEventAttributes.STYLE;
 import static org.apache.maven.doxia.sink.SinkEventAttributes.TYPE;
+import static org.apache.maven.shared.utils.StringUtils.isEmpty;
 
 /**
- *
+ * This generator creates HTML Report from Surefire and Failsafe XML Report.
  */
 public final class SurefireReportGenerator
 {
@@ -57,15 +58,22 @@ public final class SurefireReportGenerator
     private final boolean showSuccess;
 
     private final String xrefLocation;
-
+    private final String title;
     private List<ReportTestSuite> testSuites;
 
     public SurefireReportGenerator( List<File> reportsDirectories, Locale locale, boolean showSuccess,
-                                    String xrefLocation, ConsoleLogger consoleLogger )
+                                    String xrefLocation, ConsoleLogger consoleLogger, String title )
     {
         report = new SurefireReportParser( reportsDirectories, locale, consoleLogger );
         this.showSuccess = showSuccess;
         this.xrefLocation = xrefLocation;
+        this.title = title;
+    }
+
+    public SurefireReportGenerator( List<File> reportsDirectories, Locale locale, boolean showSuccess,
+                                    String xrefLocation, ConsoleLogger consoleLogger )
+    {
+        this( reportsDirectories, locale, showSuccess, xrefLocation, consoleLogger, null );
     }
 
     public void doGenerateReport( ResourceBundle bundle, Sink sink )
@@ -76,7 +84,7 @@ public final class SurefireReportGenerator
         sink.head();
 
         sink.title();
-        sink.text( bundle.getString( "report.surefire.header" ) );
+        sink.text( isEmpty( title ) ? bundle.getString( "report.surefire.header" ) : title );
         sink.title_();
 
         sink.head_();
@@ -91,7 +99,7 @@ public final class SurefireReportGenerator
 
         sink.section1();
         sink.sectionTitle1();
-        sink.text( bundle.getString( "report.surefire.header" ) );
+        sink.text( isEmpty( title ) ? bundle.getString( "report.surefire.header" ) : title );
         sink.sectionTitle1_();
         sink.section1_();
 

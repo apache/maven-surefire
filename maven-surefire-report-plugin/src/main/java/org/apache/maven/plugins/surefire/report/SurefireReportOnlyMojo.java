@@ -34,7 +34,9 @@ import org.apache.maven.plugins.annotations.Mojo;
  */
 @Mojo( name = "report-only" )
 @Execute( phase = LifecyclePhase.NONE )
+@SuppressWarnings( "unused" )
 public class SurefireReportOnlyMojo
     extends SurefireReportMojo
 {
+
 }
