@@ -363,6 +363,62 @@ Using TestNG
 </plugins>
 +---+
 
+* Running 'testnames' in test tag
+
+  Only tests defined in a <<<test>>> tag matching one of these names will be run.
+  In this example two tests run out of 7; namely <InstallTest> and <ATest>.
+  The test <a-t3> does not match any test in <suite.xml>.
+  
++---+
+</plugins>
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          [...]
+          <suiteXmlFiles>
+            <file>src/test/resources/suite.xml</file>
+          </suiteXmlFiles>
+          <properties>
+            <property>
+              <name>testnames</name>
+              <value>a-t1,a-t3</value>
+            </property>
+          </properties>
+          [...]
+        </configuration>
+      </plugin>
+    [...]
+</plugins>
++---+
+
+
+  The test suite 'suite.xml' :
+
++---+
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="Component Tests" verbose="2" annotations="JDK">
+  <test name="a-t1" preserve-order="true" >
+    <classes>
+      <class name="server.InstallTest" />
+      <class name="server.ATest" />
+    </classes>
+  </test>
+  <test name="a-t2" preserve-order="true" >
+    <classes>
+      <class name="server.SCHTest" />
+      <class name="server.PRGTest" />
+      <class name="server.SIBBTest" />
+      <class name="server.EDNTest" />
+      <class name="server.PPVTest" />
+    </classes>
+  </test>
+</suite>
++---+
+
+
 * Running TestNG and JUnit Tests
 
   TestNG 6.5.1 and higher provides support to run TestNG and JUnit 4.x in current Maven project. All you need
