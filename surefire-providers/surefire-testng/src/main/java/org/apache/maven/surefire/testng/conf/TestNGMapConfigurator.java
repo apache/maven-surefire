@@ -127,7 +127,7 @@ public class TestNGMapConfigurator
                 // for TestNG 5.10 or higher
                 val = convert( val, Integer.class );
             }
-            // TODO objectfactory... not even documented, does it work?
+
             if ( key.startsWith( "-" ) )
             {
                 convertedOptions.put( key, val );
