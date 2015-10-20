@@ -522,13 +522,24 @@ public class ParallelComputerBuilderTest
     public void beforeAfterThreadChanges()
         throws InterruptedException
     {
+        // try to GC dead Thread objects from previous tests
+        for ( int i = 0; i < 5; i++ )
+        {
+            System.gc();
+            TimeUnit.MILLISECONDS.sleep( 500 );
+        }
         Collection<Thread> expectedThreads = jvmThreads();
         ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( new Logger() );
         parallelComputerBuilder.parallelMethods( 3 );
         ParallelComputer computer = parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run( computer, TestWithBeforeAfter.class );
         assertTrue( result.wasSuccessful() );
-        TimeUnit.MILLISECONDS.sleep( 1250 );
+        // try to GC dead Thread objects
+        for ( int i = 0; i < 5 && expectedThreads.size() != jvmThreads().size(); i++ )
+        {
+            System.gc();
+            TimeUnit.MILLISECONDS.sleep( 500 );
+        }
         assertThat( jvmThreads(), is( expectedThreads ) );
     }
 
