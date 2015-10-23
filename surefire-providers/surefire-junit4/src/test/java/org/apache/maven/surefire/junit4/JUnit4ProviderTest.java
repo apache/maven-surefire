@@ -22,8 +22,14 @@ package org.apache.maven.surefire.junit4;
 import junit.framework.TestCase;
 import org.apache.maven.surefire.booter.BaseProviderFactory;
 import org.apache.maven.surefire.testset.TestRequest;
+import org.junit.runner.Description;
 
+import java.util.Arrays;
 import java.util.HashMap;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.runner.Description.createSuiteDescription;
 
 /**
  * @author Kristian Rosenvold
@@ -44,4 +50,23 @@ public class JUnit4ProviderTest
         providerParameters.setTestRequest( new TestRequest( null, null, null ) );
         return new JUnit4Provider( providerParameters );
     }
+
+    public void testShouldCreateDescription()
+    {
+        class A {
+        }
+
+        class B {
+        }
+
+        Description d = JUnit4Provider.createTestsDescription( Arrays.<Class<?>>asList( A.class, B.class ) );
+        assertThat( d, is( notNullValue() ) );
+        assertThat( d.getDisplayName(), not( isEmptyOrNullString() ) );
+        assertThat( d.getDisplayName(), is( "null" ) );
+        assertThat( d.getChildren(), hasSize( 2 ) );
+        Description a = createSuiteDescription( A.class );
+        Description b = createSuiteDescription( B.class );
+        assertThat( d.getChildren(), contains( a, b ) );
+    }
+
 }

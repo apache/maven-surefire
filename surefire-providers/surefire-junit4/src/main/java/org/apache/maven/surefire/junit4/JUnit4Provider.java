@@ -19,7 +19,6 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
@@ -52,7 +51,6 @@ import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.StoppedByUserException;
 
-import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.createSuiteDescription;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.cutTestClassAndMethod;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTests;
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createDescription;
@@ -164,7 +162,7 @@ public class JUnit4Provider
         try
         {
             notifier.fireTestRunStarted( testsToRun.allowEagerReading()
-                                                ? createTestsDescription()
+                                                ? createTestsDescription( testsToRun )
                                                 : createDescription( UNDETERMINED_TESTS_DESCRIPTION ) );
 
             if ( commandsReader != null )
@@ -318,14 +316,15 @@ public class JUnit4Provider
         }
     }
 
-    private Description createTestsDescription()
+    static Description createTestsDescription( Iterable<Class<?>> classes )
     {
-        Collection<Class<?>> classes = new ArrayList<Class<?>>();
-        for ( Class<?> clazz : testsToRun )
+        // "null" string rather than null; otherwise NPE in junit:4.0
+        Description description = createDescription( "null" );
+        for ( Class<?> clazz : classes )
         {
-            classes.add( clazz );
+            description.addChild( createDescription( clazz.getName() ) );
         }
-        return createSuiteDescription( classes );
+        return description;
     }
 
     private static boolean isJUnit4UpgradeCheck()
