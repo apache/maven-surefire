@@ -19,6 +19,13 @@ package org.apache.maven.surefire.suite;
  * under the License.
  */
 
+import org.apache.maven.shared.utils.StringUtils;
+import org.apache.maven.shared.utils.io.IOUtil;
+import org.apache.maven.shared.utils.xml.PrettyPrintXMLWriter;
+import org.apache.maven.shared.utils.xml.Xpp3Dom;
+import org.apache.maven.shared.utils.xml.Xpp3DomBuilder;
+import org.apache.maven.shared.utils.xml.Xpp3DomWriter;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -28,12 +35,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import org.apache.maven.shared.utils.StringUtils;
-import org.apache.maven.shared.utils.io.IOUtil;
-import org.apache.maven.shared.utils.xml.PrettyPrintXMLWriter;
-import org.apache.maven.shared.utils.xml.Xpp3Dom;
-import org.apache.maven.shared.utils.xml.Xpp3DomBuilder;
-import org.apache.maven.shared.utils.xml.Xpp3DomWriter;
 
 /**
  * Represents a test-run-result; this may be from a single test run or an aggregated result.
@@ -117,8 +118,14 @@ public class RunResult
         }
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PrintWriter pw = new PrintWriter( out );
-        e.printStackTrace( pw );
-        pw.close();
+        try
+        {
+            e.printStackTrace( pw );
+        }
+        finally
+        {
+            pw.close();
+        }
         return new String( out.toByteArray() );
     }
 

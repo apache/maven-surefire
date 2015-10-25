@@ -19,9 +19,6 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import java.util.Collection;
-import java.util.Set;
-
 import org.apache.maven.surefire.booter.Command;
 import org.apache.maven.surefire.booter.MasterProcessListener;
 import org.apache.maven.surefire.booter.MasterProcessReader;
@@ -51,6 +48,12 @@ import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.StoppedByUserException;
 
+import java.util.Collection;
+import java.util.Set;
+
+import static java.lang.reflect.Modifier.isAbstract;
+import static java.lang.reflect.Modifier.isInterface;
+import static java.util.Collections.unmodifiableCollection;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.cutTestClassAndMethod;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTests;
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createDescription;
@@ -63,9 +66,6 @@ import static org.apache.maven.surefire.testset.TestListResolver.toClassFileName
 import static org.apache.maven.surefire.util.TestsToRun.fromClass;
 import static org.junit.runner.Request.aClass;
 import static org.junit.runner.Request.method;
-import static java.lang.reflect.Modifier.isAbstract;
-import static java.lang.reflect.Modifier.isInterface;
-import static java.util.Collections.unmodifiableCollection;
 
 /**
  * @author Kristian Rosenvold
@@ -98,9 +98,8 @@ public class JUnit4Provider
     public JUnit4Provider( ProviderParameters booterParameters )
     {
         // don't start a thread in MasterProcessReader while we are in in-plugin process
-        commandsReader = booterParameters.isInsideFork()
-            ? MasterProcessReader.getReader().setShutdown( booterParameters.getShutdown() )
-            : null;
+        commandsReader = booterParameters.isInsideFork() ? MasterProcessReader.getReader().setShutdown(
+            booterParameters.getShutdown() ) : null;
         providerParameters = booterParameters;
         testClassLoader = booterParameters.getTestClassLoader();
         scanResult = booterParameters.getScanResult();
@@ -141,56 +140,64 @@ public class JUnit4Provider
 
         ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
-        RunListener reporter = reporterFactory.createReporter();
-
-        startCapture( (ConsoleOutputReceiver) reporter );
-
-        Notifier notifier = new Notifier( new JUnit4RunListener( reporter ), getSkipAfterFailureCount() );
-        if ( isFailFast() )
-        {
-            notifier.addListener( new JUnit4FailFastListener( notifier ) );
-        }
-        Result result = new Result();
-        notifier.addListeners( customRunListeners )
-            .addListener( result.createListener() );
-
-        if ( isFailFast() && commandsReader != null )
-        {
-            registerPleaseStopJunitListener( notifier );
-        }
-
+        RunResult runResult;
         try
         {
-            notifier.fireTestRunStarted( testsToRun.allowEagerReading()
-                                                ? createTestsDescription( testsToRun )
-                                                : createDescription( UNDETERMINED_TESTS_DESCRIPTION ) );
 
-            if ( commandsReader != null )
+            RunListener reporter = reporterFactory.createReporter();
+
+            startCapture( (ConsoleOutputReceiver) reporter );
+
+            Notifier notifier = new Notifier( new JUnit4RunListener( reporter ), getSkipAfterFailureCount() );
+            if ( isFailFast() )
             {
-                commandsReader.addShutdownListener( new MasterProcessListener()
+                notifier.addListener( new JUnit4FailFastListener( notifier ) );
+            }
+            Result result = new Result();
+            notifier.addListeners( customRunListeners ).addListener( result.createListener() );
+
+            if ( isFailFast() && commandsReader != null )
+            {
+                registerPleaseStopJunitListener( notifier );
+            }
+
+            try
+            {
+                notifier.fireTestRunStarted( testsToRun.allowEagerReading()
+                                                 ? createTestsDescription( testsToRun )
+                                                 : createDescription( UNDETERMINED_TESTS_DESCRIPTION ) );
+
+                if ( commandsReader != null )
                 {
-                    public void update( Command command )
+                    commandsReader.addShutdownListener( new MasterProcessListener()
                     {
-                        testsToRun.markTestSetFinished();
-                    }
-                } );
-                commandsReader.awaitStarted();
+                        public void update( Command command )
+                        {
+                            testsToRun.markTestSetFinished();
+                        }
+                    } );
+                    commandsReader.awaitStarted();
+                }
+
+                for ( Class<?> aTestsToRun : testsToRun )
+                {
+                    executeTestSet( aTestsToRun, reporter, notifier );
+                }
+            }
+            finally
+            {
+                notifier.fireTestRunFinished( result );
+                notifier.removeListeners();
+                closeCommandsReader();
             }
 
-            for ( Class<?> aTestsToRun : testsToRun )
-            {
-                executeTestSet( aTestsToRun, reporter, notifier );
-            }
+            rethrowAnyTestMechanismFailures( result );
         }
         finally
         {
-            notifier.fireTestRunFinished( result );
-            notifier.removeListeners();
-            closeCommandsReader();
+            runResult = reporterFactory.close();
         }
-
-        rethrowAnyTestMechanismFailures( result );
-        return reporterFactory.close();
+        return runResult;
     }
 
     private boolean isRerunFailingTests()
@@ -259,7 +266,8 @@ public class JUnit4Provider
         }
     }
 
-    private void executeWithRerun( Class<?> clazz, Notifier notifier ) throws TestSetFailedException
+    private void executeWithRerun( Class<?> clazz, Notifier notifier )
+        throws TestSetFailedException
     {
         JUnitTestFailureListener failureListener = new JUnitTestFailureListener();
         notifier.addListener( failureListener );
@@ -405,8 +413,8 @@ public class JUnit4Provider
         else
         {
             name = name.trim();
-            return name.startsWith( "initializationError0(org.junit.runner.manipulation.Filter)" )
-                || name.startsWith( "initializationError(org.junit.runner.manipulation.Filter)" );
+            return name.startsWith( "initializationError0(org.junit.runner.manipulation.Filter)" ) || name.startsWith(
+                "initializationError(org.junit.runner.manipulation.Filter)" );
         }
     }
 

@@ -19,11 +19,6 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.maven.surefire.booter.Command;
 import org.apache.maven.surefire.booter.MasterProcessListener;
 import org.apache.maven.surefire.booter.MasterProcessReader;
@@ -40,6 +35,11 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
+
+import java.io.File;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Kristian Rosenvold
@@ -87,6 +87,7 @@ public class TestNGProvider
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException
     {
+        RunResult runResult;
         try
         {
             if ( isFailFast() && commandsReader != null )
@@ -101,57 +102,65 @@ public class TestNGProvider
 
             final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
-            if ( isTestNGXmlTestSuite( testRequest ) )
+            try
             {
-                TestNGXmlTestSuite testNGXmlTestSuite = newXmlSuite();
-                testNGXmlTestSuite.locateTestSets( testClassLoader );
-                if ( forkTestSet != null && testRequest == null )
+
+                if ( isTestNGXmlTestSuite( testRequest ) )
                 {
-                    testNGXmlTestSuite.execute( (String) forkTestSet, reporterFactory );
-                }
-                else
-                {
-                    testNGXmlTestSuite.execute( reporterFactory );
-                }
-            }
-            else
-            {
-                if ( testsToRun == null )
-                {
-                    if ( forkTestSet instanceof TestsToRun )
+                    TestNGXmlTestSuite testNGXmlTestSuite = newXmlSuite();
+                    testNGXmlTestSuite.locateTestSets( testClassLoader );
+                    if ( forkTestSet != null && testRequest == null )
                     {
-                        testsToRun = (TestsToRun) forkTestSet;
-                    }
-                    else if ( forkTestSet instanceof Class )
-                    {
-                        testsToRun = TestsToRun.fromClass( (Class<?>) forkTestSet );
+                        testNGXmlTestSuite.execute( (String) forkTestSet, reporterFactory );
                     }
                     else
                     {
-                        testsToRun = scanClassPath();
+                        testNGXmlTestSuite.execute( reporterFactory );
                     }
                 }
-
-                if ( commandsReader != null )
+                else
                 {
-                    commandsReader.addShutdownListener( new MasterProcessListener()
+                    if ( testsToRun == null )
                     {
-                        public void update( Command command )
+                        if ( forkTestSet instanceof TestsToRun )
                         {
-                            testsToRun.markTestSetFinished();
+                            testsToRun = (TestsToRun) forkTestSet;
                         }
-                    } );
-                }
-                TestNGDirectoryTestSuite suite = newDirectorySuite();
-                suite.execute( testsToRun, reporterFactory );
-            }
+                        else if ( forkTestSet instanceof Class )
+                        {
+                            testsToRun = TestsToRun.fromClass( (Class<?>) forkTestSet );
+                        }
+                        else
+                        {
+                            testsToRun = scanClassPath();
+                        }
+                    }
 
-            return reporterFactory.close();
+                    if ( commandsReader != null )
+                    {
+                        commandsReader.addShutdownListener( new MasterProcessListener()
+                        {
+                            public void update( Command command )
+                            {
+                                testsToRun.markTestSetFinished();
+                            }
+                        } );
+                    }
+                    TestNGDirectoryTestSuite suite = newDirectorySuite();
+                    suite.execute( testsToRun, reporterFactory );
+                }
+
+            }
+            finally
+            {
+                runResult = reporterFactory.close();
+            }
         }
         finally
         {
             closeCommandsReader();
         }
+        return runResult;
     }
 
     boolean isTestNGXmlTestSuite( TestRequest testSuiteDefinition )

@@ -19,12 +19,6 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.maven.surefire.booter.Command;
 import org.apache.maven.surefire.booter.MasterProcessListener;
 import org.apache.maven.surefire.booter.MasterProcessReader;
@@ -50,10 +44,16 @@ import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 
-import static org.apache.maven.surefire.junitcore.ConcurrentRunListener.createInstance;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static java.util.Collections.unmodifiableCollection;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTests;
 import static org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory.createCustomListeners;
-import static java.util.Collections.unmodifiableCollection;
+import static org.apache.maven.surefire.junitcore.ConcurrentRunListener.createInstance;
 
 /**
  * @author Kristian Rosenvold
@@ -125,6 +125,8 @@ public class JUnitCoreProvider
 
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
+        RunResult runResult;
+
         final ConsoleLogger consoleLogger = providerParameters.getConsoleLogger();
 
         Filter filter = jUnit48Reflector.isJUnit48Available() ? createJUnit48Filter() : null;
@@ -189,13 +191,14 @@ public class JUnitCoreProvider
                     core.execute( testsToRun, failingMethodsFilter );
                 }
             }
-            return reporterFactory.close();
         }
         finally
         {
+            runResult = reporterFactory.close();
             notifier.removeListeners();
             closeCommandsReader();
         }
+        return runResult;
     }
 
     private boolean isRerunFailingTests()

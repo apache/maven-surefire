@@ -89,24 +89,32 @@ public class JUnit3Provider
         }
 
         ReporterFactory reporterFactory = providerParameters.getReporterFactory();
-        final RunListener reporter = reporterFactory.createReporter();
-        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
-
-        final String smClassName = System.getProperty( "surefire.security.manager" );
-        if ( smClassName != null )
+        RunResult runResult;
+        try
         {
-            SecurityManager securityManager =
-                ReflectionUtils.instantiate( getClass().getClassLoader(), smClassName, SecurityManager.class );
-            System.setSecurityManager( securityManager );
-        }
+            final RunListener reporter = reporterFactory.createReporter();
+            ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
 
-        for ( Class<?> clazz : testsToRun )
+            final String smClassName = System.getProperty( "surefire.security.manager" );
+            if ( smClassName != null )
+            {
+                SecurityManager securityManager =
+                    ReflectionUtils.instantiate( getClass().getClassLoader(), smClassName, SecurityManager.class );
+                System.setSecurityManager( securityManager );
+            }
+
+            for ( Class<?> clazz : testsToRun )
+            {
+                SurefireTestSet surefireTestSet = createTestSet( clazz );
+                executeTestSet( surefireTestSet, reporter, testClassLoader );
+            }
+
+        }
+        finally
         {
-            SurefireTestSet surefireTestSet = createTestSet( clazz );
-            executeTestSet( surefireTestSet, reporter, testClassLoader );
+            runResult = reporterFactory.close();
         }
-
-        return reporterFactory.close();
+        return runResult;
     }
 
     private SurefireTestSet createTestSet( Class<?> clazz )

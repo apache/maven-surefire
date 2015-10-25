@@ -20,9 +20,10 @@ package org.apache.maven.surefire.report;
  */
 
 
+import org.apache.maven.surefire.util.internal.StringUtils;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import org.apache.maven.surefire.util.internal.StringUtils;
 
 /**
  * Write the trace out for a POJO test. Java 1.5 compatible.
@@ -54,8 +55,14 @@ public class LegacyPojoStackTraceWriter
         {
             StringWriter w = new StringWriter();
             PrintWriter stackTrace = new PrintWriter( w );
-            t.printStackTrace( stackTrace );
-            stackTrace.close();
+            try
+            {
+                t.printStackTrace( stackTrace );
+            }
+            finally
+            {
+                stackTrace.close();
+            }
             w.flush();
             StringBuffer builder = w.getBuffer();
             if ( isMultiLineExceptionMessage( t ) )

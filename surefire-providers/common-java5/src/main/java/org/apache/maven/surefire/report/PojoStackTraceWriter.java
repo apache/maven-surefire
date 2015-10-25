@@ -50,8 +50,14 @@ public class PojoStackTraceWriter
         {
             StringWriter w = new StringWriter();
             PrintWriter stackTrace = new PrintWriter( w );
-            t.printStackTrace( stackTrace );
-            stackTrace.close();
+            try
+            {
+                t.printStackTrace( stackTrace );
+            }
+            finally
+            {
+                stackTrace.close();
+            }
             w.flush();
             StringBuffer builder = w.getBuffer();
             if ( isMultiLineExceptionMessage( t ) )

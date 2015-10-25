@@ -103,13 +103,19 @@ public class RunEntryStatisticsMap
     {
         FileOutputStream fos = new FileOutputStream( file );
         PrintWriter printWriter = new PrintWriter( fos );
-        List<RunEntryStatistics> items = new ArrayList<RunEntryStatistics>( runEntryStatistics.values() );
-        Collections.sort( items, new RunCountComparator() );
-        for ( RunEntryStatistics item : items )
+        try
         {
-            printWriter.println( item.toString() );
+            List<RunEntryStatistics> items = new ArrayList<RunEntryStatistics>( runEntryStatistics.values() );
+            Collections.sort( items, new RunCountComparator() );
+            for ( RunEntryStatistics item : items )
+            {
+                printWriter.println( item.toString() );
+            }
         }
-        printWriter.close();
+        finally
+        {
+            printWriter.close();
+        }
     }
 
     public RunEntryStatistics findOrCreate( ReportEntry reportEntry )
