@@ -99,13 +99,13 @@ public class TestNGXmlTestSuite
             throw new IllegalStateException( "You can't call locateTestSets twice" );
         }
 
-        if ( this.suiteFiles == null )
+        if ( suiteFiles.isEmpty() )
         {
             throw new IllegalStateException( "No suite files were specified" );
         }
 
-        this.testSets = new HashMap<File, String>();
-        this.suiteFilePaths = new ArrayList<String>();
+        testSets = new HashMap<File, String>();
+        suiteFilePaths = new ArrayList<String>();
 
         for ( Object suiteFile : suiteFiles )
         {
@@ -114,11 +114,11 @@ public class TestNGXmlTestSuite
             {
                 throw new TestSetFailedException( "Suite file " + file + " is not a valid file" );
             }
-            this.testSets.put( file, file.getAbsolutePath() );
-            this.suiteFilePaths.add( file.getAbsolutePath() );
+            testSets.put( file, file.getAbsolutePath() );
+            suiteFilePaths.add( file.getAbsolutePath() );
         }
 
-        return this.testSets;
+        return testSets;
     }
 
     public String getSuiteName()

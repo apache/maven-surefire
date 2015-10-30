@@ -252,8 +252,7 @@ public class ForkStarter
     private boolean hasSuiteXmlFiles()
     {
         TestRequest testSuiteDefinition = providerConfiguration.getTestSuiteDefinition();
-        return testSuiteDefinition != null && testSuiteDefinition.getSuiteXmlFiles() != null
-            && !testSuiteDefinition.getSuiteXmlFiles().isEmpty();
+        return testSuiteDefinition != null && !testSuiteDefinition.getSuiteXmlFiles().isEmpty();
     }
 
     @SuppressWarnings( "checkstyle:magicnumber" )

@@ -20,6 +20,8 @@ package org.apache.maven.plugin.surefire;
  */
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -217,7 +219,7 @@ public class SurefirePlugin
      * However, all the failing attempts will be recorded.
      */
     @Parameter( property = "surefire.rerunFailingTestsCount", defaultValue = "0" )
-    protected int rerunFailingTestsCount;
+    private int rerunFailingTestsCount;
 
     /**
      * (TestNG) List of &lt;suiteXmlFile> elements specifying TestNG suite xml file locations. Note that
@@ -256,7 +258,7 @@ public class SurefirePlugin
      * @since 2.7
      */
     @Parameter( property = "surefire.runOrder", defaultValue = "filesystem" )
-    protected String runOrder;
+    private String runOrder;
 
     /**
      * A file containing include patterns. Blank lines, or lines starting with # are ignored. If {@code includes} are
@@ -324,15 +326,6 @@ public class SurefirePlugin
         if ( firstForkException != null )
         {
             throw new MojoFailureException( firstForkException.getMessage(), firstForkException );
-        }
-    }
-
-    private void assertNoFailureOrTimeout( Exception summary )
-        throws MojoFailureException
-    {
-        if ( summary != null )
-        {
-            throw new MojoFailureException( "Failure or timeout" );
         }
     }
 
@@ -573,13 +566,13 @@ public class SurefirePlugin
 
     public File[] getSuiteXmlFiles()
     {
-        return suiteXmlFiles;
+        return suiteXmlFiles.clone();
     }
 
     @SuppressWarnings( "UnusedDeclaration" )
     public void setSuiteXmlFiles( File[] suiteXmlFiles )
     {
-        this.suiteXmlFiles = suiteXmlFiles;
+        this.suiteXmlFiles = suiteXmlFiles.clone();
     }
 
     public String getRunOrder()
@@ -603,5 +596,17 @@ public class SurefirePlugin
     public File getExcludesFile()
     {
         return excludesFile;
+    }
+
+    @Override
+    protected final List<File> suiteXmlFiles()
+    {
+        return hasSuiteXmlFiles() ? Arrays.asList( suiteXmlFiles ) : Collections.<File>emptyList();
+    }
+
+    @Override
+    protected final boolean hasSuiteXmlFiles()
+    {
+        return suiteXmlFiles != null && suiteXmlFiles.length != 0;
     }
 }

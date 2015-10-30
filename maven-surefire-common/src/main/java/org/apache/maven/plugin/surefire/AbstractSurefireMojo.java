@@ -692,6 +692,17 @@ public abstract class AbstractSurefireMojo
 
     public abstract File getExcludesFile();
 
+    /**
+     * Calls {@link #getSuiteXmlFiles()} as {@link List list}.
+     * Never returns <tt>null</tt>.
+     */
+    protected abstract List<File> suiteXmlFiles();
+
+    /**
+     * @return <tt>true</tt> if {@link #getSuiteXmlFiles() suite-xml files array} is not empty.
+     */
+    protected abstract boolean hasSuiteXmlFiles();
+
     public abstract File[] getSuiteXmlFiles();
 
     public abstract void setSuiteXmlFiles( File[] suiteXmlFiles );
@@ -725,7 +736,7 @@ public abstract class AbstractSurefireMojo
         if ( verifyParameters() && !hasExecutedBefore() )
         {
             DefaultScanResult scan = scanForTestClasses();
-            if ( !isValidSuiteXmlFileConfig() && scan.isEmpty() )
+            if ( !hasSuiteXmlFiles() && scan.isEmpty() )
             {
                 if ( getEffectiveFailIfNoTests() )
                 {
@@ -1429,13 +1440,12 @@ public abstract class AbstractSurefireMojo
         final boolean isTestNg = testNgArtifact != null;
         TestArtifactInfo testNg =
             isTestNg ? new TestArtifactInfo( testNgArtifact.getVersion(), testNgArtifact.getClassifier() ) : null;
-        List<File> testXml = getSuiteXmlFiles() != null ? Arrays.asList( getSuiteXmlFiles() ) : null;
-        TestRequest testSuiteDefinition = new TestRequest( testXml, getTestSourceDirectory(), getSpecificTests(),
-                                                           getRerunFailingTestsCount() );
+        TestRequest testSuiteDefinition = new TestRequest( suiteXmlFiles(), getTestSourceDirectory(),
+                                                           getSpecificTests(), getRerunFailingTestsCount() );
 
         final boolean actualFailIfNoTests;
 
-        if ( isValidSuiteXmlFileConfig() && !isSpecificTestSpecified() )
+        if ( hasSuiteXmlFiles() && !isSpecificTestSpecified() )
         {
             actualFailIfNoTests = getFailIfNoTests() != null && getFailIfNoTests();
             if ( !isTestNg )
@@ -1569,11 +1579,6 @@ public abstract class AbstractSurefireMojo
     private boolean isSpecificTestSpecified()
     {
         return StringUtils.isNotBlank( getTest() );
-    }
-
-    private boolean isValidSuiteXmlFileConfig()
-    {
-        return getSuiteXmlFiles() != null && getSuiteXmlFiles().length != 0;
     }
 
     @SuppressWarnings( "checkstyle:modifierorder" )

@@ -21,6 +21,8 @@ package org.apache.maven.plugin.failsafe;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
@@ -240,7 +242,7 @@ public class IntegrationTestMojo
      * However, all the failing attempts will be recorded.
      */
     @Parameter( property = "failsafe.rerunFailingTestsCount", defaultValue = "0" )
-    protected int rerunFailingTestsCount;
+    private int rerunFailingTestsCount;
 
     /**
      * (TestNG) List of &lt;suiteXmlFile> elements specifying TestNG suite xml file locations. Note that
@@ -279,7 +281,7 @@ public class IntegrationTestMojo
      * @since 2.7
      */
     @Parameter( property = "failsafe.runOrder", defaultValue = "filesystem" )
-    protected String runOrder;
+    private String runOrder;
 
     /**
      * A file containing include patterns. Blank lines, or lines starting with # are ignored. If {@code includes} are
@@ -645,13 +647,13 @@ public class IntegrationTestMojo
 
     public File[] getSuiteXmlFiles()
     {
-        return suiteXmlFiles;
+        return suiteXmlFiles.clone();
     }
 
     @SuppressWarnings( "UnusedDeclaration" )
     public void setSuiteXmlFiles( File[] suiteXmlFiles )
     {
-        this.suiteXmlFiles = suiteXmlFiles;
+        this.suiteXmlFiles = suiteXmlFiles.clone();
     }
 
     public String getRunOrder()
@@ -675,5 +677,17 @@ public class IntegrationTestMojo
     public File getExcludesFile()
     {
         return excludesFile;
+    }
+
+    @Override
+    protected final List<File> suiteXmlFiles()
+    {
+        return hasSuiteXmlFiles() ? Arrays.asList( suiteXmlFiles ) : Collections.<File>emptyList();
+    }
+
+    @Override
+    protected final boolean hasSuiteXmlFiles()
+    {
+        return suiteXmlFiles != null && suiteXmlFiles.length != 0;
     }
 }

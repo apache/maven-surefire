@@ -166,7 +166,7 @@ public class TestNGProvider
     boolean isTestNGXmlTestSuite( TestRequest testSuiteDefinition )
     {
         Collection<File> suiteXmlFiles = testSuiteDefinition.getSuiteXmlFiles();
-        return suiteXmlFiles != null && !suiteXmlFiles.isEmpty() && !hasSpecificTests();
+        return !suiteXmlFiles.isEmpty() && !hasSpecificTests();
     }
 
     private boolean isFailFast()
