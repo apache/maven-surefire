@@ -107,7 +107,8 @@ public final class ResolvedTest
     }
 
     /**
-     * Test class file pattern, e.g. org&#47;**&#47;Cat*.class<br/>
+     * Test class file pattern, e.g. org&#47;**&#47;Cat*.class<br/>, or null if not any
+     * and {@link #hasTestClassPattern()} returns false.
      * Other examples: org&#47;animals&#47;Cat*, org&#47;animals&#47;Ca?.class, %regex[Cat.class|Dog.*]<br/>
      * <br/>
      * '*' means zero or more characters<br>
@@ -124,7 +125,7 @@ public final class ResolvedTest
     }
 
     /**
-     * Test method, e.g. "realTestMethod".<br/>
+     * Test method, e.g. "realTestMethod".<br/>, or null if not any and {@link #hasTestMethodPattern()} returns false.
      * Other examples: test* or testSomethin? or %regex[testOne|testTwo] or %ant[testOne|testTwo]<br/>
      * <br/>
      * '*' means zero or more characters<br>
@@ -155,35 +156,20 @@ public final class ResolvedTest
         return classPattern == null && methodPattern == null;
     }
 
-    public boolean shouldRun( String testClassFile, String methodName )
+    public boolean matchAsInclusive( String testClassFile, String methodName )
     {
-        if ( isEmpty() )
-        {
-            return true;
-        }
+        testClassFile = tryBlank( testClassFile );
+        methodName = tryBlank( methodName );
 
-        boolean matchedMethodPattern = false;
+        return isEmpty() || alwaysInclusiveQuietly( testClassFile ) || match( testClassFile, methodName );
+    }
 
-        if ( methodPattern != null && methodName != null )
-        {
-            if ( SelectorUtils.matchPath( methodPattern, methodName ) )
-            {
-                matchedMethodPattern = true;
-            }
-            else
-            {
-                return false;
-            }
-        }
+    public boolean matchAsExclusive( String testClassFile, String methodName )
+    {
+        testClassFile = tryBlank( testClassFile );
+        methodName = tryBlank( methodName );
 
-        if ( classPattern != null )
-        {
-            return isRegexTestClassPattern ? matchClassRegexPatter( testClassFile ) : matchClassPatter( testClassFile );
-        }
-        else
-        {
-            return matchedMethodPattern;
-        }
+        return !isEmpty() && canMatchExclusive( testClassFile, methodName ) && match( testClassFile, methodName );
     }
 
     @Override
@@ -238,6 +224,37 @@ public final class ResolvedTest
             description = clazz + "#" + method;
         }
         return isRegex && description != null ? wrapRegex( description ) : description;
+    }
+
+    private boolean canMatchExclusive( String testClassFile, String methodName )
+    {
+        return testClassFile == null && methodName != null && classPattern == null && methodPattern != null
+            || testClassFile != null && methodName == null && classPattern != null && methodPattern == null
+            || testClassFile != null && methodName != null && ( classPattern != null || methodPattern != null );
+    }
+
+    /**
+     * Prevents {@link #match(String, String)} from throwing NPE in situations when inclusive returns true.
+     */
+    private boolean alwaysInclusiveQuietly( String testClassFile )
+    {
+        return testClassFile == null && classPattern != null;
+    }
+
+    private boolean match( String testClassFile, String methodName )
+    {
+        return ( classPattern == null || matchTestClassFile( testClassFile ) )
+            && ( methodPattern == null || methodName == null || matchMethodName( methodName ) );
+    }
+
+    private boolean matchTestClassFile( String testClassFile )
+    {
+        return isRegexTestClassPattern ? matchClassRegexPatter( testClassFile ) : matchClassPatter( testClassFile );
+    }
+
+    private boolean matchMethodName( String methodName )
+    {
+        return SelectorUtils.matchPath( methodPattern, methodName );
     }
 
     private boolean matchClassPatter( String testClassFile )

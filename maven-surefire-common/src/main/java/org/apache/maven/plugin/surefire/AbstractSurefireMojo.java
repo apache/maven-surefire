@@ -714,9 +714,14 @@ public abstract class AbstractSurefireMojo
     protected abstract void handleSummary( RunResult summary, Exception firstForkException )
         throws MojoExecutionException, MojoFailureException;
 
+    protected abstract boolean isSkipExecution();
+
     protected abstract String[] getDefaultIncludes();
 
-    protected abstract boolean isSkipExecution();
+    private String getDefaultExcludes()
+    {
+        return "**/*$*";
+    }
 
     private SurefireDependencyResolver dependencyResolver;
 
@@ -769,9 +774,7 @@ public abstract class AbstractSurefireMojo
     private DefaultScanResult scanDirectories()
         throws MojoFailureException
     {
-        DirectoryScanner scanner = new DirectoryScanner( getTestClassesDirectory(),
-                                                         getIncludedAndExcludedTests(),
-                                                         getSpecificTests() );
+        DirectoryScanner scanner = new DirectoryScanner( getTestClassesDirectory(), getIncludedAndExcludedTests() );
         return scanner.scan();
     }
 
@@ -789,9 +792,7 @@ public abstract class AbstractSurefireMojo
                 @SuppressWarnings( "unchecked" )
                 List<File> dependenciesToScan =
                     DependencyScanner.filter( project.getTestArtifacts(), Arrays.asList( getDependenciesToScan() ) );
-                DependencyScanner scanner = new DependencyScanner( dependenciesToScan,
-                                                                   getIncludedAndExcludedTests(),
-                                                                   getSpecificTests() );
+                DependencyScanner scanner = new DependencyScanner( dependenciesToScan, getIncludedAndExcludedTests() );
                 return scanner.scan();
             }
             catch ( Exception e )
@@ -1432,19 +1433,20 @@ public abstract class AbstractSurefireMojo
     private ProviderConfiguration createProviderConfiguration( RunOrderParameters runOrderParameters )
         throws MojoExecutionException, MojoFailureException
     {
-        ReporterConfiguration reporterConfiguration =
+        final ReporterConfiguration reporterConfiguration =
             new ReporterConfiguration( getReportsDirectory(), isTrimStackTrace() );
 
-        Artifact testNgArtifact = getTestNgArtifact();
-        DirectoryScannerParameters directoryScannerParameters = null;
+        final Artifact testNgArtifact = getTestNgArtifact();
         final boolean isTestNg = testNgArtifact != null;
-        TestArtifactInfo testNg =
+        final TestArtifactInfo testNg =
             isTestNg ? new TestArtifactInfo( testNgArtifact.getVersion(), testNgArtifact.getClassifier() ) : null;
-        TestRequest testSuiteDefinition = new TestRequest( suiteXmlFiles(), getTestSourceDirectory(),
-                                                           getSpecificTests(), getRerunFailingTestsCount() );
+        final TestRequest testSuiteDefinition = new TestRequest( suiteXmlFiles(),
+                                                                 getTestSourceDirectory(),
+                                                                 getSpecificTests(),
+                                                                 getRerunFailingTestsCount() );
 
         final boolean actualFailIfNoTests;
-
+        DirectoryScannerParameters directoryScannerParameters = null;
         if ( hasSuiteXmlFiles() && !isSpecificTestSpecified() )
         {
             actualFailIfNoTests = getFailIfNoTests() != null && getFailIfNoTests();
@@ -1472,7 +1474,7 @@ public abstract class AbstractSurefireMojo
             List<String> actualIncludes = getIncludeList(); // Collections.emptyList(); behaves same
             List<String> actualExcludes = getExcludeList(); // Collections.emptyList(); behaves same
             // Collections.emptyList(); behaves same
-            List<String> specificTests = new ArrayList<String>( getSpecificTests().getTestSpecificClasses() );
+            List<String> specificTests = Collections.emptyList();
 
             directoryScannerParameters =
                 new DirectoryScannerParameters( getTestClassesDirectory(), actualIncludes, actualExcludes,
@@ -1626,11 +1628,7 @@ public abstract class AbstractSurefireMojo
         List<String> actualExcludes = null;
         if ( isSpecificTestSpecified() )
         {
-            // Check to see if we are running a single test. The raw parameter will
-            // come through if it has not been set.
-            // FooTest -> **/FooTest.java
-
-            actualExcludes = new ArrayList<String>();
+            actualExcludes = Collections.emptyList();
         }
         else
         {
@@ -1639,7 +1637,6 @@ public abstract class AbstractSurefireMojo
                 actualExcludes = readListFromFile( getExcludesFile() );
             }
 
-            // If we have excludesFile, and we have excludes, then append excludes to excludesFile content
             if ( actualExcludes == null )
             {
                 actualExcludes = getExcludes();
@@ -1651,11 +1648,9 @@ public abstract class AbstractSurefireMojo
 
             checkMethodFilterInIncludesExcludes( actualExcludes );
 
-            // defaults here, qdox doesn't like the end javadoc value
-            // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
             if ( actualExcludes == null || actualExcludes.isEmpty() )
             {
-                actualExcludes = Collections.singletonList( "**/*$*" );
+                actualExcludes = Collections.singletonList( getDefaultExcludes() );
             }
         }
         return filterNulls( actualExcludes );
@@ -1667,7 +1662,8 @@ public abstract class AbstractSurefireMojo
         List<String> includes = null;
         if ( isSpecificTestSpecified() )
         {
-            includes = Collections.singletonList( getTest() );
+            includes = new ArrayList<String>();
+            Collections.addAll( includes, StringUtils.split( getTest(), "," ) );
         }
         else
         {
@@ -1676,7 +1672,6 @@ public abstract class AbstractSurefireMojo
                 includes = readListFromFile( getIncludesFile() );
             }
 
-            // If we have includesFile, and we have includes, then append includes to includesFile content
             if ( includes == null )
             {
                 includes = getIncludes();
@@ -1688,8 +1683,6 @@ public abstract class AbstractSurefireMojo
 
             checkMethodFilterInIncludesExcludes( includes );
 
-            // defaults here, qdox doesn't like the end javadoc value
-            // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
             if ( includes == null || includes.isEmpty() )
             {
                 includes = Arrays.asList( getDefaultIncludes() );
@@ -1743,7 +1736,11 @@ public abstract class AbstractSurefireMojo
         {
             if ( item != null )
             {
-                result.add( item );
+                item = item.trim();
+                if ( item.length() != 0 )
+                {
+                    result.add( item );
+                }
             }
         }
 
@@ -1807,7 +1804,7 @@ public abstract class AbstractSurefireMojo
         return getProjectArtifactMap().get( "junit:junit-dep" );
     }
 
-    protected ForkStarter createForkStarter( ProviderInfo provider, ForkConfiguration forkConfiguration,
+    private ForkStarter createForkStarter( ProviderInfo provider, ForkConfiguration forkConfiguration,
                                              ClassLoaderConfiguration classLoaderConfiguration,
                                              RunOrderParameters runOrderParameters, Log log )
         throws MojoExecutionException, MojoFailureException
@@ -1820,7 +1817,7 @@ public abstract class AbstractSurefireMojo
                                 getForkedProcessTimeoutInSeconds(), startupReportConfiguration, log );
     }
 
-    protected InPluginVMSurefireStarter createInprocessStarter( ProviderInfo provider,
+    private InPluginVMSurefireStarter createInprocessStarter( ProviderInfo provider,
                                                                 ClassLoaderConfiguration classLoaderConfiguration,
                                                                 RunOrderParameters runOrderParameters )
         throws MojoExecutionException, MojoFailureException

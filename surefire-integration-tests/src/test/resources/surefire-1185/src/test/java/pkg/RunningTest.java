@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.testset;
+package pkg;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,29 +19,11 @@ package org.apache.maven.surefire.testset;
  * under the License.
  */
 
-import java.util.Set;
+import org.junit.Test;
 
-/**
- * Resolves string test patterns in object oriented patterns {@code P}.
- *
- * @param <P>    resolved atomic test, object oriented - not necessary to be a string
- * @param <C>    test class, or null if not mandatory
- * @param <M>    test method, or null if not mandatory
- */
-public interface GenericTestPattern<P, C, M>
-    extends TestFilter<C, M>
-{
-    boolean hasIncludedMethodPatterns();
-
-    boolean hasExcludedMethodPatterns();
-
-    boolean hasMethodPatterns();
-
-    boolean isEmpty();
-
-    String getPluginParameterTest();
-
-    Set<P> getIncludedPatterns();
-
-    Set<P> getExcludedPatterns();
+public class RunningTest {
+    @Test
+    public void test()
+    {
+    }
 }

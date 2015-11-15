@@ -28,6 +28,7 @@ import org.apache.maven.surefire.booter.MasterProcessCommandTest;
 import org.apache.maven.surefire.booter.SurefireReflectorTest;
 import org.apache.maven.surefire.report.LegacyPojoStackTraceWriterTest;
 import org.apache.maven.surefire.suite.RunResultTest;
+import org.apache.maven.surefire.testset.FundamentalFilterTest;
 import org.apache.maven.surefire.testset.ResolvedTestTest;
 import org.apache.maven.surefire.testset.TestListResolverTest;
 import org.apache.maven.surefire.util.DefaultDirectoryScannerTest;
@@ -66,7 +67,8 @@ import org.junit.runners.Suite;
     ScanResultTest.class,
     TestsToRunTest.class,
     UrlUtilsTest.class,
-    SpecificTestClassFilterTest.class
+    SpecificTestClassFilterTest.class,
+    FundamentalFilterTest.class
 } )
 @RunWith( Suite.class )
 public class JUnit4SuiteTest

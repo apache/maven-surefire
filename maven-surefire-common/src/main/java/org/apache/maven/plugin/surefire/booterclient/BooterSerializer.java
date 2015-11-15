@@ -97,10 +97,8 @@ class BooterSerializer
         {
             properties.setProperty( SOURCE_DIRECTORY, testSuiteDefinition.getTestSourceDirectory() );
             properties.addList( testSuiteDefinition.getSuiteXmlFiles(), TEST_SUITE_XML_FILES );
-            TestListResolver methodFilter = testSuiteDefinition.getTestListResolver();
-            String requestedTest =
-                methodFilter == null || methodFilter.isEmpty() ? null : methodFilter.getPluginParameterTest();
-            properties.setNullableProperty( REQUESTEDTEST, requestedTest );
+            TestListResolver testFilter = testSuiteDefinition.getTestListResolver();
+            properties.setProperty( REQUESTEDTEST, testFilter == null ? "" : testFilter.getPluginParameterTest() );
             properties.setNullableProperty( RERUN_FAILING_TESTS_COUNT,
                                             String.valueOf( testSuiteDefinition.getRerunFailingTestsCount() ) );
         }

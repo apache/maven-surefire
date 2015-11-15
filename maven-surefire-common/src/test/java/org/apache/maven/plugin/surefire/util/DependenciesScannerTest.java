@@ -44,44 +44,49 @@ public class DependenciesScannerTest
         File testFile = writeTestFile();
 
         // use target as people can configure ide to compile in an other place than maven
-        Artifact artifact = new DefaultArtifact(
-                "org.surefire.dependency", "test-jar",
-                VersionRange.createFromVersion("1.0"), "test", "jar", "tests", null);
-        artifact.setFile(testFile);
+        Artifact artifact =
+            new DefaultArtifact( "org.surefire.dependency", "test-jar", VersionRange.createFromVersion( "1.0" ), "test",
+                                 "jar", "tests", null );
+        artifact.setFile( testFile );
 
         List<String> scanDependencies = new ArrayList<String>();
-        scanDependencies.add("org.surefire.dependency:test-jar");
+        scanDependencies.add( "org.surefire.dependency:test-jar" );
 
         List<String> include = new ArrayList<String>();
         include.add( "**/*A.java" );
         List<String> exclude = new ArrayList<String>();
 
-        DependencyScanner scanner = new DependencyScanner(
-                DependencyScanner.filter(Collections.singletonList(artifact), scanDependencies),
-                new TestListResolver( include, exclude ), new TestListResolver( "" ) );
+        DependencyScanner scanner =
+            new DependencyScanner( DependencyScanner.filter( Collections.singletonList( artifact ), scanDependencies ),
+                                   new TestListResolver( include, exclude ) );
 
         ScanResult classNames = scanner.scan();
         assertNotNull( classNames );
-        System.out.println( "classNames " + classNames.toString() );
         assertEquals( 1, classNames.size() );
-        System.out.println(classNames.getClassName(0));
 
         Map<String, String> props = new HashMap<String, String>();
         classNames.writeTo( props );
         assertEquals( 1, props.size() );
     }
 
-    private File writeTestFile() throws Exception {
-        File output = new File("target/DependenciesScannerTest-tests.jar");
+    private File writeTestFile()
+        throws Exception
+    {
+        File output = new File( "target/DependenciesScannerTest-tests.jar" );
         output.delete();
 
-        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(output));
-
-        out.putNextEntry(new ZipEntry("org/test/TestA.class"));
-        out.closeEntry();
-        out.putNextEntry(new ZipEntry("org/test/TestB.class"));
-        out.closeEntry();
-        out.close();
-        return output;
+        ZipOutputStream out = new ZipOutputStream( new FileOutputStream( output ) );
+        try
+        {
+            out.putNextEntry( new ZipEntry( "org/test/TestA.class" ) );
+            out.closeEntry();
+            out.putNextEntry( new ZipEntry( "org/test/TestB.class" ) );
+            out.closeEntry();
+            return output;
+        }
+        finally
+        {
+            out.close();
+        }
     }
 }

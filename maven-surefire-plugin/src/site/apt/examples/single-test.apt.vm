@@ -37,6 +37,12 @@ Running a Single Test
 mvn -Dtest=TestCircle test
 +---+
 
+If you have multiple executions configured in surefire plugin within your POM, you may want to execute the only default test phase:
+
++---+
+mvn surefire:test -Dtest=TestCircle
++---+
+
   The value for the <<<test>>> parameter is the name of the test class (without the extension; we'll strip off the extension if you accidentally provide one).
 #{else}
   During development, you may run a single test class repeatedly. To run this

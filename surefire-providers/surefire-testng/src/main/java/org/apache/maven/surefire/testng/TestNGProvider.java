@@ -41,6 +41,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.maven.surefire.testset.TestListResolver.optionallyWildcardFilter;
+
 /**
  * @author Kristian Rosenvold
  * @noinspection UnusedDeclaration
@@ -203,7 +205,7 @@ public class TestNGProvider
     private TestNGDirectoryTestSuite newDirectorySuite()
     {
         return new TestNGDirectoryTestSuite( testRequest.getTestSourceDirectory().toString(), providerProperties,
-                                             reporterConfiguration.getReportsDirectory(), createMethodFilter(),
+                                             reporterConfiguration.getReportsDirectory(), getTestFilter(),
                                              runOrderCalculator, scanResult, mainCliOptions,
                                              getSkipAfterFailureCount() );
     }
@@ -245,13 +247,13 @@ public class TestNGProvider
 
     private boolean hasSpecificTests()
     {
-        TestListResolver tests = testRequest.getTestListResolver();
-        return tests != null && !tests.isEmpty();
+        TestListResolver specificTestPatterns = testRequest.getTestListResolver();
+        return !specificTestPatterns.isEmpty() && !specificTestPatterns.isWildcard();
     }
 
-    private TestListResolver createMethodFilter()
+    private TestListResolver getTestFilter()
     {
-        TestListResolver tests = testRequest.getTestListResolver();
-        return tests == null ? null : tests.createMethodFilters();
+        TestListResolver filter = optionallyWildcardFilter( testRequest.getTestListResolver() );
+        return filter.isWildcard() ? TestListResolver.getEmpty() : filter;
     }
 }

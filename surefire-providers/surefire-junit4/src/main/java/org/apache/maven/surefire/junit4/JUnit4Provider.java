@@ -62,6 +62,7 @@ import static org.apache.maven.surefire.common.junit4.JUnit4RunListener.rethrowA
 import static org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory.createCustomListeners;
 import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
+import static org.apache.maven.surefire.testset.TestListResolver.optionallyWildcardFilter;
 import static org.apache.maven.surefire.testset.TestListResolver.toClassFileName;
 import static org.apache.maven.surefire.util.TestsToRun.fromClass;
 import static org.junit.runner.Request.aClass;
@@ -421,7 +422,7 @@ public class JUnit4Provider
     private class TestResolverFilter
         extends Filter
     {
-        private final TestListResolver methodFilter = JUnit4Provider.this.testResolver.createMethodFilters();
+        private final TestListResolver methodFilter = optionallyWildcardFilter( JUnit4Provider.this.testResolver );
 
         @Override
         public boolean shouldRun( Description description )

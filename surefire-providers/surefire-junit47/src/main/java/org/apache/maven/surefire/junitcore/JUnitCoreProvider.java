@@ -54,6 +54,7 @@ import static java.util.Collections.unmodifiableCollection;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTests;
 import static org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory.createCustomListeners;
 import static org.apache.maven.surefire.junitcore.ConcurrentRunListener.createInstance;
+import static org.apache.maven.surefire.testset.TestListResolver.optionallyWildcardFilter;
 
 /**
  * @author Kristian Rosenvold
@@ -272,8 +273,8 @@ public class JUnitCoreProvider
     {
         final FilterFactory factory = new FilterFactory( testClassLoader );
         Filter groupFilter = factory.createGroupFilter( providerParameters.getProviderProperties() );
-        TestListResolver methodFilter = createMethodFilter();
-        boolean onlyGroups = methodFilter == null || methodFilter.isEmpty();
+        TestListResolver methodFilter = optionallyWildcardFilter( testResolver );
+        boolean onlyGroups = methodFilter.isEmpty() || methodFilter.isWildcard();
         return onlyGroups ? groupFilter : factory.and( groupFilter, factory.createMethodFilter( methodFilter ) );
     }
 
@@ -281,10 +282,5 @@ public class JUnitCoreProvider
     {
         TestsToRun scanned = scanResult.applyFilter( scannerFilter, testClassLoader );
         return runOrderCalculator.orderTestClasses( scanned );
-    }
-
-    private TestListResolver createMethodFilter()
-    {
-        return testResolver == null ? null : testResolver.createMethodFilters();
     }
 }

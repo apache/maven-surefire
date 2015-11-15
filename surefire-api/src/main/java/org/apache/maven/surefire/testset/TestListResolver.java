@@ -19,17 +19,18 @@ package org.apache.maven.surefire.testset;
  * under the License.
  */
 
-import org.apache.maven.shared.utils.StringUtils;
-import org.apache.maven.shared.utils.io.SelectorUtils;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import static org.apache.maven.shared.utils.StringUtils.isBlank;
+import static org.apache.maven.shared.utils.StringUtils.isNotBlank;
+import static org.apache.maven.shared.utils.StringUtils.split;
+import static org.apache.maven.shared.utils.io.SelectorUtils.PATTERN_HANDLER_SUFFIX;
+import static org.apache.maven.shared.utils.io.SelectorUtils.REGEX_HANDLER_PREFIX;
 import static java.util.Collections.singleton;
-import static java.util.Collections.emptySet;
 
 /**
  * Resolved multi pattern filter e.g. -Dtest=MyTest#test,!AnotherTest#otherTest into an object model
@@ -40,19 +41,17 @@ import static java.util.Collections.emptySet;
  * using specific ClassLoader.
  */
 public class TestListResolver
-    implements GenericTestPattern<TestListResolver, ResolvedTest, String, String>
+    implements GenericTestPattern<ResolvedTest, String, String>
 {
     private static final String JAVA_CLASS_FILE_EXTENSION = ".class";
 
-    private static final Set<ResolvedTest> EMPTY_TEST_PATTERNS = emptySet();
+    private static final TestListResolver WILDCARD = new TestListResolver( "*" + JAVA_CLASS_FILE_EXTENSION );
 
-    private static final Set<String> EMPTY_SPECIFIC_TESTS = emptySet();
+    private static final TestListResolver EMPTY = new TestListResolver( "" );
 
     private final Set<ResolvedTest> includedPatterns;
 
     private final Set<ResolvedTest> excludedPatterns;
-
-    private final Set<String> specificClasses;
 
     private final boolean hasIncludedMethodPatterns;
 
@@ -63,13 +62,12 @@ public class TestListResolver
         final IncludedExcludedPatterns patterns = new IncludedExcludedPatterns();
         final Set<ResolvedTest> includedFilters = new LinkedHashSet<ResolvedTest>( 0 );
         final Set<ResolvedTest> excludedFilters = new LinkedHashSet<ResolvedTest>( 0 );
-        final Set<String> specificClasses = new LinkedHashSet<String>( 0 );
 
         for ( final String csvTests : tests )
         {
-            if ( StringUtils.isNotBlank( csvTests ) )
+            if ( isNotBlank( csvTests ) )
             {
-                for ( String request : StringUtils.split( csvTests, "," ) )
+                for ( String request : split( csvTests, "," ) )
                 {
                     request = request.trim();
                     if ( request.length() != 0 && !request.equals( "!" ) )
@@ -80,17 +78,6 @@ public class TestListResolver
             }
         }
 
-        for ( ResolvedTest test : includedFilters )
-        {
-            populateSpecificClasses( specificClasses, test );
-        }
-
-        for ( ResolvedTest test : excludedFilters )
-        {
-            populateSpecificClasses( specificClasses, test );
-        }
-
-        this.specificClasses = Collections.unmodifiableSet( specificClasses );
         this.includedPatterns = Collections.unmodifiableSet( includedFilters );
         this.excludedPatterns = Collections.unmodifiableSet( excludedFilters );
         this.hasIncludedMethodPatterns = patterns.hasIncludedMethodPatterns;
@@ -111,14 +98,19 @@ public class TestListResolver
      * Used only in method filter.
      */
     private TestListResolver( boolean hasIncludedMethodPatterns, boolean hasExcludedMethodPatterns,
-                              Set<String> specificClasses, Set<ResolvedTest> includedPatterns,
-                              Set<ResolvedTest> excludedPatterns )
+                              Set<ResolvedTest> includedPatterns, Set<ResolvedTest> excludedPatterns )
     {
         this.includedPatterns = includedPatterns;
         this.excludedPatterns = excludedPatterns;
-        this.specificClasses = specificClasses;
         this.hasIncludedMethodPatterns = hasIncludedMethodPatterns;
         this.hasExcludedMethodPatterns = hasExcludedMethodPatterns;
+    }
+
+    public static TestListResolver newTestListResolver( Set<ResolvedTest> includedPatterns,
+                                                        Set<ResolvedTest> excludedPatterns )
+    {
+        return new TestListResolver( haveMethodPatterns( includedPatterns ), haveMethodPatterns( excludedPatterns ),
+                                     includedPatterns, excludedPatterns );
     }
 
     public boolean hasIncludedMethodPatterns()
@@ -137,21 +129,29 @@ public class TestListResolver
     }
 
     /**
-     * Method filter.
+     *
+     * @param resolver    filter possibly having method patterns
+     * @return {@code resolver} if {@link TestListResolver#hasMethodPatterns() resolver.hasMethodPatterns()}
+     * returns <tt>true</tt>; Otherwise wildcard filter <em>*.class</em> is returned.
      */
-    public TestListResolver createMethodFilters()
+    public static TestListResolver optionallyWildcardFilter( TestListResolver resolver )
     {
-        boolean hasMethodPatterns = hasMethodPatterns();
-        Set<ResolvedTest> inc = hasMethodPatterns ? getIncludedPatterns() : EMPTY_TEST_PATTERNS;
-        Set<ResolvedTest> exc = hasMethodPatterns ? getExcludedPatterns() : EMPTY_TEST_PATTERNS;
-        Set<String> specificClasses = hasMethodPatterns ? getTestSpecificClasses() : EMPTY_SPECIFIC_TESTS;
-        return new TestListResolver( hasIncludedMethodPatterns(), hasExcludedMethodPatterns(), specificClasses,
-                                     inc, exc );
+        return resolver.hasMethodPatterns() ? resolver : WILDCARD;
     }
 
-    public TestListResolver createClassFilters()
+    public static TestListResolver getWildcard()
     {
-        return hasMethodPatterns() ? new TestListResolver( "" ) : this;
+        return WILDCARD;
+    }
+
+    public static TestListResolver getEmpty()
+    {
+        return EMPTY;
+    }
+
+    public final boolean isWildcard()
+    {
+        return equals( WILDCARD );
     }
 
     public TestFilter<String, String> and( final TestListResolver another )
@@ -185,7 +185,7 @@ public class TestListResolver
 
     public boolean shouldRun( String testClassFile, String methodName )
     {
-        if ( isEmpty() || StringUtils.isBlank( testClassFile ) && StringUtils.isBlank( methodName ) )
+        if ( isEmpty() || isBlank( testClassFile ) && isBlank( methodName ) )
         {
             return true;
         }
@@ -201,7 +201,7 @@ public class TestListResolver
             {
                 for ( ResolvedTest filter : getIncludedPatterns() )
                 {
-                    if ( filter.shouldRun( testClassFile, methodName ) )
+                    if ( filter.matchAsInclusive( testClassFile, methodName ) )
                     {
                         shouldRun = true;
                         break;
@@ -213,7 +213,7 @@ public class TestListResolver
             {
                 for ( ResolvedTest filter : getExcludedPatterns() )
                 {
-                    if ( filter.shouldRun( testClassFile, methodName ) )
+                    if ( filter.matchAsExclusive( testClassFile, methodName ) )
                     {
                         shouldRun = false;
                         break;
@@ -226,14 +226,20 @@ public class TestListResolver
 
     public boolean isEmpty()
     {
-        return getIncludedPatterns().isEmpty() && getExcludedPatterns().isEmpty();
+        return equals( EMPTY );
     }
 
     public String getPluginParameterTest()
     {
         String aggregatedTest = aggregatedTest( "", getIncludedPatterns() );
+
+        if ( isNotBlank( aggregatedTest ) && !getExcludedPatterns().isEmpty() )
+        {
+            aggregatedTest += ", ";
+        }
+
         aggregatedTest += aggregatedTest( "!", getExcludedPatterns() );
-        return aggregatedTest.length() == 0 ? null : aggregatedTest;
+        return aggregatedTest.length() == 0 ? "" : aggregatedTest;
     }
 
     public Set<ResolvedTest> getIncludedPatterns()
@@ -244,11 +250,6 @@ public class TestListResolver
     public Set<ResolvedTest> getExcludedPatterns()
     {
         return excludedPatterns;
-    }
-
-    public Set<String> getTestSpecificClasses()
-    {
-        return specificClasses;
     }
 
     @Override
@@ -317,19 +318,6 @@ public class TestListResolver
         }
     }
 
-    private static void populateSpecificClasses( Set<String> specificClasses, ResolvedTest test )
-    {
-        String pattern = test.getTestClassPattern();
-        if ( pattern != null )
-        {
-            if ( !test.isRegexTestClassPattern() && pattern.endsWith( JAVA_CLASS_FILE_EXTENSION ) )
-            {
-                pattern = pattern.substring( 0, pattern.length() - JAVA_CLASS_FILE_EXTENSION.length() );
-            }
-            specificClasses.add( pattern );
-        }
-    }
-
     private static String aggregatedTest( String testPrefix, Set<ResolvedTest> tests )
     {
         String aggregatedTest = "";
@@ -338,7 +326,7 @@ public class TestListResolver
             String readableTest = test.toString();
             if ( aggregatedTest.length() != 0 && readableTest != null )
             {
-                aggregatedTest += ",";
+                aggregatedTest += ", ";
             }
             aggregatedTest += testPrefix + readableTest;
         }
@@ -375,13 +363,13 @@ public class TestListResolver
 
     static boolean isRegexPrefixedPattern( String pattern )
     {
-        int indexOfRegex = pattern.indexOf( SelectorUtils.REGEX_HANDLER_PREFIX );
-        int prefixLength = SelectorUtils.REGEX_HANDLER_PREFIX.length();
+        int indexOfRegex = pattern.indexOf( REGEX_HANDLER_PREFIX );
+        int prefixLength = REGEX_HANDLER_PREFIX.length();
         if ( indexOfRegex != -1 )
         {
             if ( indexOfRegex != 0
-                || !pattern.endsWith( SelectorUtils.PATTERN_HANDLER_SUFFIX )
-                || pattern.indexOf( SelectorUtils.REGEX_HANDLER_PREFIX, prefixLength ) != -1 )
+                || !pattern.endsWith( PATTERN_HANDLER_SUFFIX )
+                || pattern.indexOf( REGEX_HANDLER_PREFIX, prefixLength ) != -1 )
             {
                 String msg = "Illegal test|includes|excludes regex '%s'. Expected %%regex[class#method] "
                     + "or !%%regex[class#method] " + "with optional class or #method.";
@@ -398,8 +386,8 @@ public class TestListResolver
     static String[] unwrapRegex( String regex )
     {
         regex = regex.trim();
-        int from = SelectorUtils.REGEX_HANDLER_PREFIX.length();
-        int to = regex.length() - SelectorUtils.PATTERN_HANDLER_SUFFIX.length();
+        int from = REGEX_HANDLER_PREFIX.length();
+        int to = regex.length() - PATTERN_HANDLER_SUFFIX.length();
         return unwrap( regex.substring( from, to ) );
     }
 
@@ -423,7 +411,7 @@ public class TestListResolver
                          IncludedExcludedPatterns patterns,
                          Collection<ResolvedTest> includedFilters, Collection<ResolvedTest> excludedFilters )
     {
-        for ( String method : StringUtils.split( methods, "+" ) )
+        for ( String method : split( methods, "+" ) )
         {
             method = method.trim();
             ResolvedTest test = new ResolvedTest( clazz, method, false );
@@ -480,5 +468,17 @@ public class TestListResolver
         {
             updatedFilters( isExcluded, test, patterns, includedFilters, excludedFilters );
         }
+    }
+
+    private static boolean haveMethodPatterns( Set<ResolvedTest> patterns )
+    {
+        for ( ResolvedTest pattern : patterns )
+        {
+            if ( pattern.hasTestMethodPattern() )
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

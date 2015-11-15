@@ -43,11 +43,11 @@ final class MethodFilter
         Collection<Filter> excludedFilters = new LinkedHashSet<Filter>();
         for ( ResolvedTest test : testResolver.getIncludedPatterns() )
         {
-            includedFilters.add( new RequestedTest( test ) );
+            includedFilters.add( new RequestedTest( test, true ) );
         }
         for ( ResolvedTest test : testResolver.getExcludedPatterns() )
         {
-            excludedFilters.add( new RequestedTest( test ) );
+            excludedFilters.add( new RequestedTest( test, false ) );
         }
         combinedFilter = new CombinedCategoryFilter( includedFilters, excludedFilters );
     }

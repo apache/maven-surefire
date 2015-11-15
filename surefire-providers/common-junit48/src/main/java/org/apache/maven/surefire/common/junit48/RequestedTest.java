@@ -29,10 +29,12 @@ final class RequestedTest
     private static final String CLASS_FILE_EXTENSION = ".class";
 
     private final ResolvedTest test;
+    private final boolean isPositiveFilter;
 
-    RequestedTest( ResolvedTest test )
+    RequestedTest( ResolvedTest test, boolean isPositiveFilter )
     {
         this.test = test;
+        this.isPositiveFilter = isPositiveFilter;
     }
 
     @Override
@@ -40,26 +42,35 @@ final class RequestedTest
     {
         Class<?> realTestClass = description.getTestClass();
         String methodName = description.getMethodName();
-        return realTestClass == null && methodName == null || test.shouldRun( classFile( realTestClass ), methodName );
+        if ( realTestClass == null && methodName == null )
+        {
+            return true;
+        }
+        else
+        {
+            String testClass = classFile( realTestClass );
+            return isPositiveFilter
+                ? test.matchAsInclusive( testClass, methodName )
+                : !test.matchAsExclusive( testClass, methodName );
+        }
     }
 
     @Override
     public String describe()
     {
-        final String classPattern = test.getTestClassPattern();
-        final String methodPattern = test.getTestMethodPattern();
-        String description = classPattern == null ? "" : classPattern;
-        if ( methodPattern != null )
-        {
-            description += "#" + methodPattern;
-        }
-        return description.length() == 0 ? "*" : description;
+        String description = test.toString();
+        return description == null || description.length() == 0 ? "*" : description;
     }
 
     @Override
     public boolean equals( Object o )
     {
-        return this == o || o != null && getClass() == o.getClass() && test.equals( ( (RequestedTest) o ).test );
+        return this == o || o != null && getClass() == o.getClass() && equals( (RequestedTest) o );
+    }
+
+    private boolean equals( RequestedTest o )
+    {
+        return isPositiveFilter == o.isPositiveFilter && test.equals( o.test );
     }
 
     @Override
@@ -70,6 +81,6 @@ final class RequestedTest
 
     private String classFile( Class<?> realTestClass )
     {
-        return realTestClass.getName().replace( '.', '/' ) + CLASS_FILE_EXTENSION;
+        return realTestClass == null ? null : realTestClass.getName().replace( '.', '/' ) + CLASS_FILE_EXTENSION;
     }
 }

@@ -50,8 +50,6 @@ import static org.apache.maven.surefire.cli.CommandLineOption.*;
  */
 public class BooterDeserializer
 {
-
-
     private final PropertiesWrapper properties;
 
     public BooterDeserializer( InputStream inputStream )
