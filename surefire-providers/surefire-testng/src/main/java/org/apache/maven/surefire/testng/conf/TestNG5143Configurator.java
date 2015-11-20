@@ -20,34 +20,39 @@ package org.apache.maven.surefire.testng.conf;
  */
 
 import java.util.Map;
-import java.util.Map.Entry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
- * TestNG 6.0 configurator. Changed objectFactory type to String.
- * Configuring -objectfactory and -testrunfactory.
- *
- * @author <a href='mailto:marvin[at]marvinformatics[dot]com'>Marvin Froeder</a>
- * @since 2.13
+ * TestNG 5.14.3 configurator. Changed: "reporterslist" replaced by "reporter",
+ *                                       and "listener" can use String instead of List<Class>.
  */
-public class TestNG60Configurator
-    extends TestNG5143Configurator
+public class TestNG5143Configurator
+    extends TestNG5141Configurator
 {
 
+    @Override
     Map<String, Object> getConvertedOptions( Map<String, String> options )
-        throws TestSetFailedException
+            throws TestSetFailedException
     {
         Map<String, Object> convertedOptions = super.getConvertedOptions( options );
-        for ( Entry<String, Object> entry : convertedOptions.entrySet() )
+        for ( Map.Entry<String, Object> entry : convertedOptions.entrySet() )
         {
             String key = entry.getKey();
-            if ( "-objectfactory".equals( key ) || "-testrunfactory".equals( key ) )
+            if ( "-reporterslist".equals( key ) )
             {
-                Class value = (Class) entry.getValue();
-                convertedOptions.put( key, value.getName() );
+                convertedOptions.remove( "-reporterslist" );
+                Object value = entry.getValue();
+                convertedOptions.put( "-reporter", value );
                 break;
             }
         }
         return convertedOptions;
+    }
+
+
+    @Override
+    protected Object convertListeners( String listenerClasses ) throws TestSetFailedException
+    {
+        return convertListenersString( listenerClasses );
     }
 }
