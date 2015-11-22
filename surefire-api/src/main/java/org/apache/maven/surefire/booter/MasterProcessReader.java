@@ -353,6 +353,20 @@ public final class MasterProcessReader
                 do
                 {
                     requestNextTest();
+                    /**
+                     * this branching should be refactored to
+                     * waitNextTest();
+                     * if ( isStopped() )
+                     * {
+                     *      clazz = null;
+                     *      return;
+                     * }
+                     * clazz = current.item;
+                     * if ( !isLastNode( current ) )
+                     * {
+                     *      current = current.successor.get();
+                     * }
+                     */
                     if ( isLastNode( current ) )
                     {
                         clazz = null;
