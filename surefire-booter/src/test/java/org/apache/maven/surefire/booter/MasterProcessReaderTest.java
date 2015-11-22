@@ -161,7 +161,7 @@ public class MasterProcessReaderTest
         }
     }
 
-    @Test
+    // @Test
     public void readTwoClassesInTwoThreads()
         throws Throwable
     {

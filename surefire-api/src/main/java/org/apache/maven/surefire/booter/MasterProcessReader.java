@@ -30,13 +30,12 @@ import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.lang.Thread.State.NEW;
 import static java.lang.Thread.State.RUNNABLE;
 import static java.lang.Thread.State.TERMINATED;
-import static java.util.concurrent.locks.LockSupport.park;
-import static java.util.concurrent.locks.LockSupport.unpark;
 import static org.apache.maven.surefire.booter.Command.toShutdown;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_NEXT_TEST;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.NOOP;
@@ -67,11 +66,11 @@ public final class MasterProcessReader
 
     private final AtomicReference<Thread.State> state = new AtomicReference<Thread.State>( NEW );
 
-    private final Queue<Thread> waiters = new ConcurrentLinkedQueue<Thread>();
-
     private final CountDownLatch startMonitor = new CountDownLatch( 1 );
 
     private final Node headTestClassQueue = new Node();
+
+    private final Semaphore newCommandNotifier = new Semaphore( 0 );
 
     private volatile Node tailTestClassQueue = headTestClassQueue;
 
@@ -362,12 +361,7 @@ public final class MasterProcessReader
                     {
                         do
                         {
-                            await();
-                            /**
-                             * {@link java.util.concurrent.locks.LockSupport#park()}
-                             * may spuriously (that is, for no reason) return, therefore the loop here.
-                             * Could be waken up by System.exit or closing the stream.
-                             */
+                            awaitNextTest();
                             if ( isStopped() )
                             {
                                 clazz = null;
@@ -426,26 +420,14 @@ public final class MasterProcessReader
         return command;
     }
 
-    private void await()
+    private void awaitNextTest()
     {
-        final Thread currentThread = Thread.currentThread();
-        try
-        {
-            waiters.add( currentThread );
-            park();
-        }
-        finally
-        {
-            waiters.remove( currentThread );
-        }
+        newCommandNotifier.acquireUninterruptibly();
     }
 
-    private void wakeupWaiters()
+    private void wakeupIterator()
     {
-        for ( Thread waiter : waiters )
-        {
-            unpark( waiter );
-        }
+        newCommandNotifier.release();
     }
 
     private final class CommandRunnable
@@ -472,14 +454,14 @@ public final class MasterProcessReader
                         {
                             case TEST_SET_FINISHED:
                                 isTestSetFinished = true;
-                                wakeupWaiters();
+                                wakeupIterator();
                                 break;
                             case RUN_CLASS:
-                                wakeupWaiters();
+                                wakeupIterator();
                                 break;
                             case SHUTDOWN:
                                 insertToQueue( Command.TEST_SET_FINISHED );
-                                wakeupWaiters();
+                                wakeupIterator();
                                 break;
                             default:
                                 // checkstyle do nothing
@@ -516,7 +498,7 @@ public final class MasterProcessReader
                 {
                     insert( Command.TEST_SET_FINISHED );
                 }
-                wakeupWaiters();
+                wakeupIterator();
             }
         }
 
@@ -529,7 +511,7 @@ public final class MasterProcessReader
             if ( shutdown != null )
             {
                 insert( Command.TEST_SET_FINISHED ); // lazily
-                wakeupWaiters();
+                wakeupIterator();
                 insertToListeners( toShutdown( shutdown ) );
                 switch ( shutdown )
                 {
