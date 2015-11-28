@@ -20,8 +20,8 @@ package org.apache.maven.surefire.junit4;
  */
 
 import org.apache.maven.surefire.booter.Command;
-import org.apache.maven.surefire.booter.MasterProcessListener;
-import org.apache.maven.surefire.booter.MasterProcessReader;
+import org.apache.maven.surefire.booter.CommandListener;
+import org.apache.maven.surefire.booter.CommandReader;
 import org.apache.maven.surefire.common.junit4.ClassMethod;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
@@ -92,14 +92,14 @@ public class JUnit4Provider
 
     private final int rerunFailingTestsCount;
 
-    private final MasterProcessReader commandsReader;
+    private final CommandReader commandsReader;
 
     private TestsToRun testsToRun;
 
     public JUnit4Provider( ProviderParameters booterParameters )
     {
         // don't start a thread in MasterProcessReader while we are in in-plugin process
-        commandsReader = booterParameters.isInsideFork() ? MasterProcessReader.getReader().setShutdown(
+        commandsReader = booterParameters.isInsideFork() ? CommandReader.getReader().setShutdown(
             booterParameters.getShutdown() ) : null;
         providerParameters = booterParameters;
         testClassLoader = booterParameters.getTestClassLoader();
@@ -170,7 +170,7 @@ public class JUnit4Provider
 
                 if ( commandsReader != null )
                 {
-                    commandsReader.addShutdownListener( new MasterProcessListener()
+                    commandsReader.addShutdownListener( new CommandListener()
                     {
                         public void update( Command command )
                         {
@@ -224,9 +224,9 @@ public class JUnit4Provider
         }
     }
 
-    private MasterProcessListener registerPleaseStopJunitListener( final Notifier notifier )
+    private CommandListener registerPleaseStopJunitListener( final Notifier notifier )
     {
-        MasterProcessListener listener = new MasterProcessListener()
+        CommandListener listener = new CommandListener()
         {
             public void update( Command command )
             {

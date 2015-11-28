@@ -31,26 +31,20 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 
 /**
  * Testing singleton {@code MasterProcessReader} in multiple class loaders.
@@ -59,11 +53,11 @@ import static org.hamcrest.Matchers.*;
  * @since 2.19
  */
 @RunWith( NewClassLoaderRunner.class )
-public class MasterProcessReaderTest
+public class CommandReaderTest
 {
     private final BlockingQueue<Byte> blockingStream = new LinkedBlockingQueue<Byte>();
     private InputStream realInputStream;
-    private MasterProcessReader reader;
+    private CommandReader reader;
 
     @Before
     public void init()
@@ -71,9 +65,9 @@ public class MasterProcessReaderTest
     {
         Thread.interrupted();
         realInputStream = System.in;
-        addThisTestToPipeline( getClass().getName() );
+        addTestToPipeline( getClass().getName() );
         System.setIn( new SystemInputStream() );
-        reader = MasterProcessReader.getReader();
+        reader = CommandReader.getReader();
     }
 
     @After
@@ -113,7 +107,7 @@ public class MasterProcessReaderTest
             {
                 Iterator<String> it = reader.getIterableClasses( new PrintStream( new ByteArrayOutputStream() ) )
                     .iterator();
-                assertThat( it.next(), is( MasterProcessReaderTest.class.getName() ) );
+                assertThat( it.next(), is( CommandReaderTest.class.getName() ) );
             }
         };
         FutureTask<Object> futureTask = new FutureTask<Object>( runnable, null );
@@ -141,7 +135,7 @@ public class MasterProcessReaderTest
             {
                 Iterator<String> it = reader.getIterableClasses( new PrintStream( new ByteArrayOutputStream() ) )
                     .iterator();
-                assertThat( it.next(), is( MasterProcessReaderTest.class.getName() ) );
+                assertThat( it.next(), is( CommandReaderTest.class.getName() ) );
                 counter.countDown();
                 assertThat( it.next(), is( PropertiesWrapperTest.class.getName() ) );
             }
@@ -150,7 +144,7 @@ public class MasterProcessReaderTest
         Thread t = new Thread( futureTask );
         t.start();
         counter.await();
-        addThisTestToPipeline( PropertiesWrapperTest.class.getName() );
+        addTestToPipeline( PropertiesWrapperTest.class.getName() );
         try
         {
             futureTask.get();
@@ -158,46 +152,6 @@ public class MasterProcessReaderTest
         catch ( ExecutionException e )
         {
             throw e.getCause();
-        }
-    }
-
-    // @Test
-    public void readTwoClassesInTwoThreads()
-        throws Throwable
-    {
-        final Iterable<String> lazyTestSet =
-            reader.getIterableClasses( new PrintStream( new ByteArrayOutputStream() ) );
-
-        class Provider implements Runnable
-        {
-            public void run()
-            {
-                Iterator<String> it = lazyTestSet.iterator();
-                assertThat( it.next(), is( MasterProcessReaderTest.class.getName() ) );
-                assertThat( it.next(), is( PropertiesWrapperTest.class.getName() ) );
-                assertFalse( it.hasNext() );
-            }
-        }
-
-        ExecutorService es = Executors.newFixedThreadPool( 2 );
-        Future<?> result1 = es.submit( new Provider() );
-        Random rnd = new Random();
-        TimeUnit.MILLISECONDS.sleep( rnd.nextInt( 50 ) );
-        Future<?> result2 = es.submit( new Provider() );
-        TimeUnit.MILLISECONDS.sleep( rnd.nextInt( 50 ) );
-        addThisTestToPipeline( PropertiesWrapperTest.class.getName() );
-        TimeUnit.MILLISECONDS.sleep( rnd.nextInt( 50 ) );
-        addTestSetFinishedToPipeline();
-        for ( Future<?> result : Arrays.asList( result1, result2 ) )
-        {
-            try
-            {
-                result.get();
-            }
-            catch ( ExecutionException e )
-            {
-                throw e.getCause();
-            }
         }
     }
 
@@ -219,7 +173,7 @@ public class MasterProcessReaderTest
         {
             try
             {
-                return MasterProcessReaderTest.this.blockingStream.take();
+                return CommandReaderTest.this.blockingStream.take();
             }
             catch ( InterruptedException e )
             {
@@ -228,7 +182,7 @@ public class MasterProcessReaderTest
         }
     }
 
-    private void addThisTestToPipeline( String cls )
+    private void addTestToPipeline( String cls )
         throws UnsupportedEncodingException
     {
         byte[] clazz = cls.getBytes( FORK_STREAM_CHARSET_NAME );
@@ -240,15 +194,6 @@ public class MasterProcessReaderTest
         for ( ; buffer.hasRemaining(); )
         {
             blockingStream.add( buffer.get() );
-        }
-    }
-
-    private void addTestSetFinishedToPipeline()
-        throws UnsupportedEncodingException
-    {
-        for ( byte b : MasterProcessCommand.TEST_SET_FINISHED.encode() )
-        {
-            blockingStream.add( b );
         }
     }
 }

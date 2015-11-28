@@ -20,8 +20,8 @@ package org.apache.maven.surefire.testng;
  */
 
 import org.apache.maven.surefire.booter.Command;
-import org.apache.maven.surefire.booter.MasterProcessListener;
-import org.apache.maven.surefire.booter.MasterProcessReader;
+import org.apache.maven.surefire.booter.CommandListener;
+import org.apache.maven.surefire.booter.CommandReader;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
@@ -66,7 +66,7 @@ public class TestNGProvider
 
     private final List<CommandLineOption> mainCliOptions;
 
-    private final MasterProcessReader commandsReader;
+    private final CommandReader commandsReader;
 
     private TestsToRun testsToRun;
 
@@ -74,7 +74,7 @@ public class TestNGProvider
     {
         // don't start a thread in MasterProcessReader while we are in in-plugin process
         commandsReader = booterParameters.isInsideFork()
-            ? MasterProcessReader.getReader().setShutdown( booterParameters.getShutdown() )
+            ? CommandReader.getReader().setShutdown( booterParameters.getShutdown() )
             : null;
         providerParameters = booterParameters;
         testClassLoader = booterParameters.getTestClassLoader();
@@ -140,7 +140,7 @@ public class TestNGProvider
 
                     if ( commandsReader != null )
                     {
-                        commandsReader.addShutdownListener( new MasterProcessListener()
+                        commandsReader.addShutdownListener( new CommandListener()
                         {
                             public void update( Command command )
                             {
@@ -189,9 +189,9 @@ public class TestNGProvider
         }
     }
 
-    private MasterProcessListener registerPleaseStopListener()
+    private CommandListener registerPleaseStopListener()
     {
-        MasterProcessListener listener = new MasterProcessListener()
+        CommandListener listener = new CommandListener()
         {
             public void update( Command command )
             {

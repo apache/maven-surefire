@@ -20,31 +20,9 @@ package org.apache.maven.surefire.booter;
  */
 
 /**
- * Internal generic wrapper.
- *
- * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19
- * @param <P1> first property
- * @param <P2> second property
+ * Command listener interface.
  */
-final class TwoPropertiesWrapper<P1, P2>
+public interface CommandListener
 {
-    private final P1 p1;
-    private final P2 p2;
-
-    TwoPropertiesWrapper( P1 p1, P2 p2 )
-    {
-        this.p1 = p1;
-        this.p2 = p2;
-    }
-
-    P1 getP1()
-    {
-        return p1;
-    }
-
-    P2 getP2()
-    {
-        return p2;
-    }
+    void update( Command command );
 }

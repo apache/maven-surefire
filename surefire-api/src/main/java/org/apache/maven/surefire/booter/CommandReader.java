@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
@@ -55,12 +56,14 @@ import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDae
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  */
-public final class MasterProcessReader
+public final class CommandReader
 {
-    private static final MasterProcessReader READER = new MasterProcessReader();
+    private static final String LAST_TEST_SYMBOL = "";
 
-    private final Queue<TwoPropertiesWrapper<MasterProcessCommand, MasterProcessListener>> listeners
-        = new ConcurrentLinkedQueue<TwoPropertiesWrapper<MasterProcessCommand, MasterProcessListener>>();
+    private static final CommandReader READER = new CommandReader();
+
+    private final Queue<BiProperty<MasterProcessCommand, CommandListener>> listeners
+        = new ConcurrentLinkedQueue<BiProperty<MasterProcessCommand, CommandListener>>();
 
     private final Thread commandThread = newDaemonThread( new CommandRunnable(), "surefire-forkedjvm-command-thread" );
 
@@ -68,23 +71,15 @@ public final class MasterProcessReader
 
     private final CountDownLatch startMonitor = new CountDownLatch( 1 );
 
-    private final Node headTestClassQueue = new Node();
+    private final Semaphore nextCommandNotifier = new Semaphore( 0 );
 
-    private final Semaphore newCommandNotifier = new Semaphore( 0 );
-
-    private volatile Node tailTestClassQueue = headTestClassQueue;
+    private final CopyOnWriteArrayList<String> testClasses = new CopyOnWriteArrayList<String>();
 
     private volatile Shutdown shutdown;
 
-    private static class Node
+    public static CommandReader getReader()
     {
-        final AtomicReference<Node> successor = new AtomicReference<Node>();
-        volatile String item;
-    }
-
-    public static MasterProcessReader getReader()
-    {
-        final MasterProcessReader reader = READER;
+        final CommandReader reader = READER;
         if ( reader.state.compareAndSet( NEW, RUNNABLE ) )
         {
             reader.commandThread.start();
@@ -92,7 +87,7 @@ public final class MasterProcessReader
         return reader;
     }
 
-    public MasterProcessReader setShutdown( Shutdown shutdown )
+    public CommandReader setShutdown( Shutdown shutdown )
     {
         this.shutdown = shutdown;
         return this;
@@ -122,47 +117,46 @@ public final class MasterProcessReader
     /**
      * @param listener listener called with <em>Any</em> {@link MasterProcessCommand command type}
      */
-    public void addListener( MasterProcessListener listener )
+    public void addListener( CommandListener listener )
     {
-        listeners.add( new TwoPropertiesWrapper<MasterProcessCommand, MasterProcessListener>( null, listener ) );
+        listeners.add( new BiProperty<MasterProcessCommand, CommandListener>( null, listener ) );
     }
 
-    public void addTestListener( MasterProcessListener listener )
+    public void addTestListener( CommandListener listener )
     {
         addListener( RUN_CLASS, listener );
     }
 
-    public void addTestsFinishedListener( MasterProcessListener listener )
+    public void addTestsFinishedListener( CommandListener listener )
     {
         addListener( TEST_SET_FINISHED, listener );
     }
 
-    public void addSkipNextListener( MasterProcessListener listener )
+    public void addSkipNextListener( CommandListener listener )
     {
         addListener( SKIP_SINCE_NEXT_TEST, listener );
     }
 
-    public void addShutdownListener( MasterProcessListener listener )
+    public void addShutdownListener( CommandListener listener )
     {
         addListener( SHUTDOWN, listener );
     }
 
-    public void addNoopListener( MasterProcessListener listener )
+    public void addNoopListener( CommandListener listener )
     {
         addListener( NOOP, listener );
     }
 
-    private void addListener( MasterProcessCommand cmd, MasterProcessListener listener )
+    private void addListener( MasterProcessCommand cmd, CommandListener listener )
     {
-        listeners.add( new TwoPropertiesWrapper<MasterProcessCommand, MasterProcessListener>( cmd, listener ) );
+        listeners.add( new BiProperty<MasterProcessCommand, CommandListener>( cmd, listener ) );
     }
 
-    public void removeListener( MasterProcessListener listener )
+    public void removeListener( CommandListener listener )
     {
-        for ( Iterator<TwoPropertiesWrapper<MasterProcessCommand, MasterProcessListener>> it = listeners.iterator();
-            it.hasNext(); )
+        for ( Iterator<BiProperty<MasterProcessCommand, CommandListener>> it = listeners.iterator(); it.hasNext(); )
         {
-            TwoPropertiesWrapper<MasterProcessCommand, MasterProcessListener> listenerWrapper = it.next();
+            BiProperty<MasterProcessCommand, CommandListener> listenerWrapper = it.next();
             if ( listener == listenerWrapper.getP2() )
             {
                 it.remove();
@@ -170,9 +164,15 @@ public final class MasterProcessReader
         }
     }
 
+    /**
+     * The iterator can be used only in one Thread.
+     *
+     * @param originalOutStream original stream in current JVM process
+     * @return Iterator with test classes lazily loaded as commands from the main process
+     */
     Iterable<String> getIterableClasses( PrintStream originalOutStream )
     {
-        return new ClassesIterable( headTestClassQueue, originalOutStream );
+        return new ClassesIterable( originalOutStream );
     }
 
     public void stop()
@@ -190,107 +190,39 @@ public final class MasterProcessReader
         return state.get() == TERMINATED;
     }
 
-    private static boolean isLastNode( Node current )
-    {
-        return current.successor.get() == current;
-    }
-
     private boolean isQueueFull()
     {
-        return isLastNode( tailTestClassQueue );
+        return testClasses.contains( LAST_TEST_SYMBOL );
     }
 
-    /**
-     * thread-safety: Must be called from single thread like here the reader thread only.
-     */
-    private boolean addTestClassToQueue( String item )
-    {
-        if ( tailTestClassQueue.item == null )
-        {
-            tailTestClassQueue.item = item;
-            Node newNode = new Node();
-            tailTestClassQueue.successor.set( newNode );
-            tailTestClassQueue = newNode;
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    /**
-     * After this method returns the queue is closed, new item cannot be added and method
-     * {@link #isQueueFull()} returns true.
-     */
-    @SuppressWarnings( { "all", "checkstyle:needbraces", "checkstyle:emptystatement" } )
     public void makeQueueFull()
     {
-        // order between (#compareAndSet, and #get) matters in multithreading
-        for ( Node tail = this.tailTestClassQueue;
-              !tail.successor.compareAndSet( null, tail ) && tail.successor.get() != tail;
-              tail = tail.successor.get() );
+        testClasses.addIfAbsent( LAST_TEST_SYMBOL );
     }
 
-    /**
-     * thread-safety: Must be called from single thread like here the reader thread only.
-     */
-    private void insertToQueue( Command cmd )
+    public boolean insertToQueue( String test )
     {
-        MasterProcessCommand expectedCommandType = cmd.getCommandType();
-        switch ( expectedCommandType )
+        if ( isNotBlank( test ) && !isQueueFull() )
         {
-            case RUN_CLASS:
-                addTestClassToQueue( cmd.getData() );
-                break;
-            case TEST_SET_FINISHED:
-                makeQueueFull();
-                break;
-            default:
-                // checkstyle noop
-                break;
+            testClasses.add( test );
+            return true;
         }
-    }
-
-    private void insertToListeners( Command cmd )
-    {
-        MasterProcessCommand expectedCommandType = cmd.getCommandType();
-        for ( TwoPropertiesWrapper<MasterProcessCommand, MasterProcessListener> listenerWrapper
-            : MasterProcessReader.this.listeners )
-        {
-            MasterProcessCommand commandType = listenerWrapper.getP1();
-            MasterProcessListener listener = listenerWrapper.getP2();
-            if ( commandType == null || commandType == expectedCommandType )
-            {
-                listener.update( cmd );
-            }
-        }
-    }
-
-    /**
-     * thread-safety: Must be called from single thread like here the reader thread only.
-     */
-    private void insert( Command cmd )
-    {
-        insertToQueue( cmd );
-        insertToListeners( cmd );
+        return false;
     }
 
     private final class ClassesIterable
         implements Iterable<String>
     {
-        private final Node head;
         private final PrintStream originalOutStream;
 
-        ClassesIterable( Node head, PrintStream originalOutStream )
+        ClassesIterable( PrintStream originalOutStream )
         {
-            this.head = head;
             this.originalOutStream = originalOutStream;
         }
 
         public Iterator<String> iterator()
         {
-            return new ClassesIterator( head, originalOutStream );
+            return new ClassesIterator( originalOutStream );
         }
     }
 
@@ -299,13 +231,12 @@ public final class MasterProcessReader
     {
         private final PrintStream originalOutStream;
 
-        private Node current;
-
         private String clazz;
 
-        private ClassesIterator( Node current, PrintStream originalOutStream )
+        private int nextQueueIndex = 0;
+
+        private ClassesIterator( PrintStream originalOutStream )
         {
-            this.current = current;
             this.originalOutStream = originalOutStream;
         }
 
@@ -322,7 +253,7 @@ public final class MasterProcessReader
             {
                 if ( isBlank( clazz ) )
                 {
-                    throw new NoSuchElementException();
+                    throw new NoSuchElementException( CommandReader.this.isStopped() ? "stream was stopped" : "" );
                 }
                 else
                 {
@@ -342,7 +273,7 @@ public final class MasterProcessReader
 
         private void popUnread()
         {
-            if ( isStopped() )
+            if ( CommandReader.this.isStopped() || CommandReader.this.isQueueFull() )
             {
                 clazz = null;
                 return;
@@ -350,66 +281,19 @@ public final class MasterProcessReader
 
             if ( isBlank( clazz ) )
             {
-                do
+                requestNextTest();
+                CommandReader.this.awaitNextTest();
+                if ( CommandReader.this.isStopped() || CommandReader.this.isQueueFull() )
                 {
-                    requestNextTest();
-                    /**
-                     * this branching should be refactored to
-                     * waitNextTest();
-                     * if ( isStopped() )
-                     * {
-                     *      clazz = null;
-                     *      return;
-                     * }
-                     * clazz = current.item;
-                     * if ( !isLastNode( current ) )
-                     * {
-                     *      current = current.successor.get();
-                     * }
-                     */
-                    if ( isLastNode( current ) )
-                    {
-                        clazz = null;
-                    }
-                    else if ( current.item == null )
-                    {
-                        do
-                        {
-                            awaitNextTest();
-                            if ( isStopped() )
-                            {
-                                clazz = null;
-                                return;
-                            }
-                        } while ( current.item == null && !isLastNode( current ) );
-                        clazz = current.item;
-                        current = current.successor.get();
-                    }
-                    else
-                    {
-                        clazz = current.item;
-                        current = current.successor.get();
-                    }
+                    clazz = null;
+                    return;
                 }
-                while ( tryNullWhiteClass() );
+                clazz = CommandReader.this.testClasses.get( nextQueueIndex++ );
             }
 
-            if ( isStopped() )
+            if ( CommandReader.this.isStopped() )
             {
                 clazz = null;
-            }
-        }
-
-        private boolean tryNullWhiteClass()
-        {
-            if ( clazz != null && isBlank( clazz ) )
-            {
-                clazz = null;
-                return true;
-            }
-            else
-            {
-                return false;
             }
         }
 
@@ -420,28 +304,14 @@ public final class MasterProcessReader
         }
     }
 
-    /**
-     * thread-safety: Must be called from single thread like here the reader thread only.
-     */
-    private Command read( DataInputStream stdIn )
-        throws IOException
-    {
-        Command command = decode( stdIn );
-        if ( command != null )
-        {
-            insertToQueue( command );
-        }
-        return command;
-    }
-
     private void awaitNextTest()
     {
-        newCommandNotifier.acquireUninterruptibly();
+        nextCommandNotifier.acquireUninterruptibly();
     }
 
     private void wakeupIterator()
     {
-        newCommandNotifier.release();
+        nextCommandNotifier.release();
     }
 
     private final class CommandRunnable
@@ -449,14 +319,14 @@ public final class MasterProcessReader
     {
         public void run()
         {
-            MasterProcessReader.this.startMonitor.countDown();
+            CommandReader.this.startMonitor.countDown();
             DataInputStream stdIn = new DataInputStream( System.in );
             boolean isTestSetFinished = false;
             try
             {
-                while ( MasterProcessReader.this.state.get() == RUNNABLE )
+                while ( CommandReader.this.state.get() == RUNNABLE )
                 {
-                    Command command = read( stdIn );
+                    Command command = decode( stdIn );
                     if ( command == null )
                     {
                         System.err.println( "[SUREFIRE] std/in stream corrupted: first sequence not recognized" );
@@ -466,29 +336,36 @@ public final class MasterProcessReader
                     {
                         switch ( command.getCommandType() )
                         {
-                            case TEST_SET_FINISHED:
-                                isTestSetFinished = true;
-                                wakeupIterator();
-                                break;
                             case RUN_CLASS:
-                                wakeupIterator();
+                                String test = command.getData();
+                                boolean inserted = CommandReader.this.insertToQueue( test );
+                                CommandReader.this.wakeupIterator();
+                                if ( inserted )
+                                {
+                                    insertToListeners( command );
+                                }
+                                break;
+                            case TEST_SET_FINISHED:
+                                CommandReader.this.makeQueueFull();
+                                isTestSetFinished = true;
+                                CommandReader.this.wakeupIterator();
+                                insertToListeners( command );
                                 break;
                             case SHUTDOWN:
-                                insertToQueue( Command.TEST_SET_FINISHED );
-                                wakeupIterator();
+                                CommandReader.this.makeQueueFull();
+                                CommandReader.this.wakeupIterator();
+                                insertToListeners( command );
                                 break;
                             default:
-                                // checkstyle do nothing
+                                insertToListeners( command );
                                 break;
                         }
-
-                        insertToListeners( command );
                     }
                 }
             }
             catch ( EOFException e )
             {
-                MasterProcessReader.this.state.set( TERMINATED );
+                CommandReader.this.state.set( TERMINATED );
                 if ( !isTestSetFinished )
                 {
                     exitByConfiguration();
@@ -497,7 +374,7 @@ public final class MasterProcessReader
             }
             catch ( IOException e )
             {
-                MasterProcessReader.this.state.set( TERMINATED );
+                CommandReader.this.state.set( TERMINATED );
                 // If #stop() method is called, reader thread is interrupted and cause is InterruptedException.
                 if ( !( e.getCause() instanceof InterruptedException ) )
                 {
@@ -510,22 +387,33 @@ public final class MasterProcessReader
                 // ensure fail-safe iterator as well as safe to finish in for-each loop using ClassesIterator
                 if ( !isTestSetFinished )
                 {
-                    insert( Command.TEST_SET_FINISHED );
+                    CommandReader.this.makeQueueFull();
                 }
-                wakeupIterator();
+                CommandReader.this.wakeupIterator();
             }
         }
 
-        /**
-         * thread-safety: Must be called from single thread like here the reader thread only.
-         */
+        private void insertToListeners( Command cmd )
+        {
+            MasterProcessCommand expectedCommandType = cmd.getCommandType();
+            for ( BiProperty<MasterProcessCommand, CommandListener> listenerWrapper : CommandReader.this.listeners )
+            {
+                MasterProcessCommand commandType = listenerWrapper.getP1();
+                CommandListener listener = listenerWrapper.getP2();
+                if ( commandType == null || commandType == expectedCommandType )
+                {
+                    listener.update( cmd );
+                }
+            }
+        }
+
         private void exitByConfiguration()
         {
-            Shutdown shutdown = MasterProcessReader.this.shutdown; // won't read inconsistent changes through the stack
+            Shutdown shutdown = CommandReader.this.shutdown; // won't read inconsistent changes through the stack
             if ( shutdown != null )
             {
-                insert( Command.TEST_SET_FINISHED ); // lazily
-                wakeupIterator();
+                CommandReader.this.makeQueueFull();
+                CommandReader.this.wakeupIterator();
                 insertToListeners( toShutdown( shutdown ) );
                 switch ( shutdown )
                 {
@@ -541,4 +429,5 @@ public final class MasterProcessReader
             }
         }
     }
+
 }

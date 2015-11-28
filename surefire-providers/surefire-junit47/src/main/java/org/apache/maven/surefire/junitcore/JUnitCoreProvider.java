@@ -20,8 +20,8 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import org.apache.maven.surefire.booter.Command;
-import org.apache.maven.surefire.booter.MasterProcessListener;
-import org.apache.maven.surefire.booter.MasterProcessReader;
+import org.apache.maven.surefire.booter.CommandListener;
+import org.apache.maven.surefire.booter.CommandReader;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnitTestFailureListener;
 import org.apache.maven.surefire.common.junit4.Notifier;
@@ -83,14 +83,14 @@ public class JUnitCoreProvider
 
     private final TestListResolver testResolver;
 
-    private final MasterProcessReader commandsReader;
+    private final CommandReader commandsReader;
 
     private TestsToRun testsToRun;
 
     public JUnitCoreProvider( ProviderParameters providerParameters )
     {
         commandsReader = providerParameters.isInsideFork()
-            ? MasterProcessReader.getReader().setShutdown( providerParameters.getShutdown() )
+            ? CommandReader.getReader().setShutdown( providerParameters.getShutdown() )
             : null;
         this.providerParameters = providerParameters;
         testClassLoader = providerParameters.getTestClassLoader();
@@ -167,7 +167,7 @@ public class JUnitCoreProvider
 
             if ( commandsReader != null )
             {
-                commandsReader.addShutdownListener( new MasterProcessListener()
+                commandsReader.addShutdownListener( new CommandListener()
                 {
                     public void update( Command command )
                     {
@@ -225,9 +225,9 @@ public class JUnitCoreProvider
         }
     }
 
-    private MasterProcessListener registerPleaseStopJunitListener( final Notifier stoppable )
+    private CommandListener registerPleaseStopJunitListener( final Notifier stoppable )
     {
-        MasterProcessListener listener = new MasterProcessListener()
+        CommandListener listener = new CommandListener()
         {
             public void update( Command command )
             {

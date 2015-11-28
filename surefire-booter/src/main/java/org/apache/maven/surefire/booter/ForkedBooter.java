@@ -73,7 +73,7 @@ public final class ForkedBooter
      */
     public static void main( String... args )
     {
-        final MasterProcessReader reader = startupMasterProcessReader();
+        final CommandReader reader = startupMasterProcessReader();
         final ScheduledFuture<?> pingScheduler = listenToShutdownCommands( reader );
         final PrintStream originalOut = System.out;
         try
@@ -155,12 +155,12 @@ public final class ForkedBooter
         }
     }
 
-    private static MasterProcessReader startupMasterProcessReader()
+    private static CommandReader startupMasterProcessReader()
     {
-        return MasterProcessReader.getReader();
+        return CommandReader.getReader();
     }
 
-    private static ScheduledFuture<?> listenToShutdownCommands( MasterProcessReader reader )
+    private static ScheduledFuture<?> listenToShutdownCommands( CommandReader reader )
     {
         reader.addShutdownListener( createExitHandler( reader ) );
         AtomicBoolean pingDone = new AtomicBoolean( true );
@@ -169,9 +169,9 @@ public final class ForkedBooter
                                                    0, PING_TIMEOUT_IN_SECONDS, SECONDS );
     }
 
-    private static MasterProcessListener createPingHandler( final AtomicBoolean pingDone )
+    private static CommandListener createPingHandler( final AtomicBoolean pingDone )
     {
-        return new MasterProcessListener()
+        return new CommandListener()
         {
             public void update( Command command )
             {
@@ -180,9 +180,9 @@ public final class ForkedBooter
         };
     }
 
-    private static MasterProcessListener createExitHandler( final MasterProcessReader reader )
+    private static CommandListener createExitHandler( final CommandReader reader )
     {
-        return new MasterProcessListener()
+        return new CommandListener()
         {
             public void update( Command command )
             {
@@ -191,7 +191,7 @@ public final class ForkedBooter
         };
     }
 
-    private static Runnable createPingJob( final AtomicBoolean pingDone, final MasterProcessReader reader  )
+    private static Runnable createPingJob( final AtomicBoolean pingDone, final CommandReader reader  )
     {
         return new Runnable()
         {
@@ -212,7 +212,7 @@ public final class ForkedBooter
         out.write( encodeBytes, 0, encodeBytes.length );
     }
 
-    private static void exit( int returnCode, Shutdown shutdownType, MasterProcessReader reader )
+    private static void exit( int returnCode, Shutdown shutdownType, CommandReader reader )
     {
         switch ( shutdownType )
         {

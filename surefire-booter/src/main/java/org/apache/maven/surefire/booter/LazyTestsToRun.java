@@ -32,6 +32,8 @@ import org.apache.maven.surefire.util.TestsToRun;
  * The method {@link #iterator()} returns an Iterator that blocks on calls to
  * {@link Iterator#hasNext()} or {@link Iterator#next()} until new classes are available, or no more
  * classes will be available or the internal stream is closed.
+ * The iterator can be used only in one Thread and it is the thread which executes
+ * {@link org.apache.maven.surefire.providerapi.SurefireProvider provider implementation}.
  *
  * @author Andreas Gudian
  * @author Tibor Digana
@@ -57,7 +59,7 @@ final class LazyTestsToRun
         implements Iterator<Class<?>>
     {
         private final Iterator<String> it =
-            MasterProcessReader.getReader().getIterableClasses( originalOutStream ).iterator();
+            CommandReader.getReader().getIterableClasses( originalOutStream ).iterator();
 
         public boolean hasNext()
         {
@@ -77,15 +79,18 @@ final class LazyTestsToRun
 
     }
 
-    /* (non-Javadoc)
-      * @see org.apache.maven.surefire.util.TestsToRun#iterator()
-      */
+    /**
+     * The iterator can be used only in one Thread.
+     * {@inheritDoc}
+     * @see org.apache.maven.surefire.util.TestsToRun#iterator()
+     * */
     public Iterator<Class<?>> iterator()
     {
         return new BlockingIterator();
     }
 
     /* (non-Javadoc)
+     * {@inheritDoc}
       * @see org.apache.maven.surefire.util.TestsToRun#toString()
       */
     public String toString()
@@ -94,6 +99,7 @@ final class LazyTestsToRun
     }
 
     /* (non-Javadoc)
+     * {@inheritDoc}
      * @see org.apache.maven.surefire.util.TestsToRun#allowEagerReading()
      */
     public boolean allowEagerReading()

@@ -20,9 +20,31 @@ package org.apache.maven.surefire.booter;
  */
 
 /**
- * listener interface
+ * Internal generic wrapper.
+ *
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 2.19
+ * @param <P1> first property
+ * @param <P2> second property
  */
-public interface MasterProcessListener
+final class BiProperty<P1, P2>
 {
-    void update( Command command );
+    private final P1 p1;
+    private final P2 p2;
+
+    BiProperty( P1 p1, P2 p2 )
+    {
+        this.p1 = p1;
+        this.p2 = p2;
+    }
+
+    P1 getP1()
+    {
+        return p1;
+    }
+
+    P2 getP2()
+    {
+        return p2;
+    }
 }
