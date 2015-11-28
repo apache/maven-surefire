@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static java.lang.Thread.State.NEW;
 import static java.lang.Thread.State.RUNNABLE;
 import static java.lang.Thread.State.TERMINATED;
+import static java.lang.StrictMath.max;
 import static org.apache.maven.surefire.booter.Command.toShutdown;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_NEXT_TEST;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.NOOP;
@@ -190,24 +191,31 @@ public final class CommandReader
         return state.get() == TERMINATED;
     }
 
+    /**
+     * @return <tt>true</tt> if {@link #LAST_TEST_SYMBOL} found at the last index in {@link #testClasses}.
+     */
     private boolean isQueueFull()
     {
-        return testClasses.contains( LAST_TEST_SYMBOL );
+        // The problem with COWAL is that such collection doe not have operation getLast, however it has get(int)
+        // and we need both atomic.
+        //
+        // Both lines can be Java Concurrent, but the last operation is atomic with optimized search.
+        // Searching index of LAST_TEST_SYMBOL in the only last few (concurrently) inserted strings.
+        // The insert operation is concurrent with this method.
+        // Prerequisite: The strings are added but never removed and the method insertToQueue() does not
+        // allow adding a string after LAST_TEST_SYMBOL.
+        int searchFrom = max( 0, testClasses.size() - 1 );
+        return testClasses.indexOf( LAST_TEST_SYMBOL, searchFrom ) != -1;
     }
 
-    public void makeQueueFull()
+    private void makeQueueFull()
     {
         testClasses.addIfAbsent( LAST_TEST_SYMBOL );
     }
 
-    public boolean insertToQueue( String test )
+    private boolean insertToQueue( String test )
     {
-        if ( isNotBlank( test ) && !isQueueFull() )
-        {
-            testClasses.add( test );
-            return true;
-        }
-        return false;
+        return isNotBlank( test ) && !isQueueFull() && testClasses.add( test );
     }
 
     private final class ClassesIterable
@@ -273,7 +281,7 @@ public final class CommandReader
 
         private void popUnread()
         {
-            if ( CommandReader.this.isStopped() || CommandReader.this.isQueueFull() )
+            if ( shouldFinish() )
             {
                 clazz = null;
                 return;
@@ -283,7 +291,7 @@ public final class CommandReader
             {
                 requestNextTest();
                 CommandReader.this.awaitNextTest();
-                if ( CommandReader.this.isStopped() || CommandReader.this.isQueueFull() )
+                if ( shouldFinish() )
                 {
                     clazz = null;
                     return;
@@ -301,6 +309,17 @@ public final class CommandReader
         {
             byte[] encoded = encodeStringForForkCommunication( ( (char) BOOTERCODE_NEXT_TEST ) + ",0,want more!\n" );
             originalOutStream.write( encoded, 0, encoded.length );
+        }
+
+        private boolean shouldFinish()
+        {
+            boolean wasLastTestRead = isEndSymbolAt( nextQueueIndex );
+            return CommandReader.this.isStopped() || wasLastTestRead;
+        }
+
+        private boolean isEndSymbolAt( int index )
+        {
+            return CommandReader.this.isQueueFull() && index == CommandReader.this.testClasses.size();
         }
     }
 
@@ -339,9 +358,9 @@ public final class CommandReader
                             case RUN_CLASS:
                                 String test = command.getData();
                                 boolean inserted = CommandReader.this.insertToQueue( test );
-                                CommandReader.this.wakeupIterator();
                                 if ( inserted )
                                 {
+                                    CommandReader.this.wakeupIterator();
                                     insertToListeners( command );
                                 }
                                 break;
