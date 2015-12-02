@@ -119,11 +119,6 @@ public class JUnitCoreProvider
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException
     {
-        if ( isRerunFailingTests() && isFailFast() )
-        {
-            throw new TestSetFailedException( "don't enable parameters rerunFailingTestsCount, skipAfterFailureCount" );
-        }
-
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
         RunResult runResult;
