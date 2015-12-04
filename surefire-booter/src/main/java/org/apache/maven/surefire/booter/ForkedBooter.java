@@ -139,7 +139,7 @@ public final class ForkedBooter
             encodeAndWriteToOutput( ( (char) BOOTERCODE_BYE ) + ",0,BYE!\n", originalOut );
             originalOut.flush();
             // noinspection CallToSystemExit
-            exit( 0, EXIT, reader );
+            exit( 0, EXIT, reader, false );
         }
         catch ( Throwable t )
         {
@@ -147,7 +147,7 @@ public final class ForkedBooter
             // noinspection UseOfSystemOutOrSystemErr
             t.printStackTrace( System.err );
             // noinspection ProhibitedExceptionThrown,CallToSystemExit
-            exit( 1, EXIT, reader );
+            exit( 1, EXIT, reader, false );
         }
         finally
         {
@@ -186,7 +186,7 @@ public final class ForkedBooter
         {
             public void update( Command command )
             {
-                exit( 1, command.toShutdownData(), reader );
+                exit( 1, command.toShutdownData(), reader, true );
             }
         };
     }
@@ -200,7 +200,7 @@ public final class ForkedBooter
                 boolean hasPing = pingDone.getAndSet( false );
                 if ( !hasPing )
                 {
-                    exit( 1, KILL, reader );
+                    exit( 1, KILL, reader, true );
                 }
             }
         };
@@ -212,15 +212,17 @@ public final class ForkedBooter
         out.write( encodeBytes, 0, encodeBytes.length );
     }
 
-    private static void exit( int returnCode, Shutdown shutdownType, CommandReader reader )
+    private static void exit( int returnCode, Shutdown shutdownType, CommandReader reader, boolean stopReaderOnExit )
     {
         switch ( shutdownType )
         {
             case KILL:
-                reader.stop();
                 Runtime.getRuntime().halt( returnCode );
             case EXIT:
-                reader.stop();
+                if ( stopReaderOnExit )
+                {
+                    reader.stop();
+                }
                 launchLastDitchDaemonShutdownThread( returnCode );
                 System.exit( returnCode );
             case DEFAULT:

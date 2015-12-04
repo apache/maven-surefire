@@ -189,7 +189,6 @@ public class JUnit4Provider
             {
                 notifier.fireTestRunFinished( result );
                 notifier.removeListeners();
-                closeCommandsReader();
             }
 
             rethrowAnyTestMechanismFailures( result );
@@ -214,14 +213,6 @@ public class JUnit4Provider
     private int getSkipAfterFailureCount()
     {
         return isFailFast() && !isRerunFailingTests() ? providerParameters.getSkipAfterFailureCount() : 0;
-    }
-
-    private void closeCommandsReader()
-    {
-        if ( commandsReader != null )
-        {
-            commandsReader.stop();
-        }
     }
 
     private CommandListener registerPleaseStopJunitListener( final Notifier notifier )

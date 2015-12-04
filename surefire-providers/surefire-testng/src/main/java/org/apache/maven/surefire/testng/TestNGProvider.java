@@ -89,78 +89,70 @@ public class TestNGProvider
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException
     {
+        if ( isFailFast() && commandsReader != null )
+        {
+            registerPleaseStopListener();
+        }
+
+        if ( commandsReader != null )
+        {
+            commandsReader.awaitStarted();
+        }
+
+        final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
         RunResult runResult;
+
         try
         {
-            if ( isFailFast() && commandsReader != null )
+
+            if ( isTestNGXmlTestSuite( testRequest ) )
             {
-                registerPleaseStopListener();
-            }
-
-            if ( commandsReader != null )
-            {
-                commandsReader.awaitStarted();
-            }
-
-            final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
-
-            try
-            {
-
-                if ( isTestNGXmlTestSuite( testRequest ) )
+                TestNGXmlTestSuite testNGXmlTestSuite = newXmlSuite();
+                testNGXmlTestSuite.locateTestSets( testClassLoader );
+                if ( forkTestSet != null && testRequest == null )
                 {
-                    TestNGXmlTestSuite testNGXmlTestSuite = newXmlSuite();
-                    testNGXmlTestSuite.locateTestSets( testClassLoader );
-                    if ( forkTestSet != null && testRequest == null )
-                    {
-                        testNGXmlTestSuite.execute( (String) forkTestSet, reporterFactory );
-                    }
-                    else
-                    {
-                        testNGXmlTestSuite.execute( reporterFactory );
-                    }
+                    testNGXmlTestSuite.execute( (String) forkTestSet, reporterFactory );
                 }
                 else
                 {
-                    if ( testsToRun == null )
+                    testNGXmlTestSuite.execute( reporterFactory );
+                }
+            }
+            else
+            {
+                if ( testsToRun == null )
+                {
+                    if ( forkTestSet instanceof TestsToRun )
                     {
-                        if ( forkTestSet instanceof TestsToRun )
-                        {
-                            testsToRun = (TestsToRun) forkTestSet;
-                        }
-                        else if ( forkTestSet instanceof Class )
-                        {
-                            testsToRun = TestsToRun.fromClass( (Class<?>) forkTestSet );
-                        }
-                        else
-                        {
-                            testsToRun = scanClassPath();
-                        }
+                        testsToRun = (TestsToRun) forkTestSet;
                     }
-
-                    if ( commandsReader != null )
+                    else if ( forkTestSet instanceof Class )
                     {
-                        commandsReader.addShutdownListener( new CommandListener()
-                        {
-                            public void update( Command command )
-                            {
-                                testsToRun.markTestSetFinished();
-                            }
-                        } );
+                        testsToRun = TestsToRun.fromClass( (Class<?>) forkTestSet );
                     }
-                    TestNGDirectoryTestSuite suite = newDirectorySuite();
-                    suite.execute( testsToRun, reporterFactory );
+                    else
+                    {
+                        testsToRun = scanClassPath();
+                    }
                 }
 
-            }
-            finally
-            {
-                runResult = reporterFactory.close();
+                if ( commandsReader != null )
+                {
+                    commandsReader.addShutdownListener( new CommandListener()
+                    {
+                        public void update( Command command )
+                        {
+                            testsToRun.markTestSetFinished();
+                        }
+                    } );
+                }
+                TestNGDirectoryTestSuite suite = newDirectorySuite();
+                suite.execute( testsToRun, reporterFactory );
             }
         }
         finally
         {
-            closeCommandsReader();
+            runResult = reporterFactory.close();
         }
         return runResult;
     }
@@ -179,14 +171,6 @@ public class TestNGProvider
     private int getSkipAfterFailureCount()
     {
         return isFailFast() ? providerParameters.getSkipAfterFailureCount() : 0;
-    }
-
-    private void closeCommandsReader()
-    {
-        if ( commandsReader != null )
-        {
-            commandsReader.stop();
-        }
     }
 
     private CommandListener registerPleaseStopListener()

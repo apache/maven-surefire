@@ -197,7 +197,6 @@ public class JUnitCoreProvider
         {
             runResult = reporterFactory.close();
             notifier.removeListeners();
-            closeCommandsReader();
         }
         return runResult;
     }
@@ -215,14 +214,6 @@ public class JUnitCoreProvider
     private int getSkipAfterFailureCount()
     {
         return isFailFast() && !isRerunFailingTests() ? providerParameters.getSkipAfterFailureCount() : 0;
-    }
-
-    private void closeCommandsReader()
-    {
-        if ( commandsReader != null )
-        {
-            commandsReader.stop();
-        }
     }
 
     private CommandListener registerPleaseStopJunitListener( final Notifier stoppable )
