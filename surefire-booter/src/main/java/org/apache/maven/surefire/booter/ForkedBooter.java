@@ -24,9 +24,9 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -255,8 +255,9 @@ public final class ForkedBooter
         ThreadFactory threadFactory = newDaemonThreadFactory( "last-ditch-daemon-shutdown-thread-"
                                                             + SYSTEM_EXIT_TIMEOUT_IN_SECONDS
                                                             + "sec" );
-
-        return Executors.newScheduledThreadPool( 1, threadFactory );
+        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor( 0, threadFactory );
+        executor.setMaximumPoolSize( 1 );
+        return executor;
     }
 
     @SuppressWarnings( "checkstyle:emptyblock" )
