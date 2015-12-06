@@ -999,7 +999,7 @@ public class FilterFactoryTest
     public void testIncludesExcludes()
     {
         Collection<String> inc = Arrays.asList( "**/NotIncludedByDefault.java", "**/*Test.java" );
-        Collection<String> exc = Collections.singletonList( "**/DontRunTest.class" );
+        Collection<String> exc = Collections.singletonList( "**/DontRunTest.*" );
         TestListResolver resolver = new TestListResolver( inc, exc );
         assertFalse( resolver.shouldRun( "org/test/DontRunTest.class", null ) );
         assertTrue( resolver.shouldRun( "org/test/DefaultTest.class", null ) );

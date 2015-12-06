@@ -40,6 +40,8 @@ public final class ResolvedTest
 
     private static final String CLASS_FILE_EXTENSION = ".class";
 
+    private static final String WILDCARD_CLASS_FILE_EXTENSION = ".class";
+
     private static final String JAVA_FILE_EXTENSION = ".java";
 
     private static final String WILDCARD_PATH_PREFIX = "**/";
@@ -343,9 +345,22 @@ public final class ResolvedTest
             cls = cls.substring( 0, cls.length() - CLASS_FILE_EXTENSION.length() );
             return cls.replace( '.', '/' ) + CLASS_FILE_EXTENSION;
         }
+        else if ( !cls.contains( "/" ) )
+        {
+            if ( cls.endsWith( WILDCARD_CLASS_FILE_EXTENSION ) )
+            {
+                String origin = cls;
+                cls = cls.substring( 0, cls.length() - WILDCARD_CLASS_FILE_EXTENSION.length() );
+                return cls.contains( "." ) ? cls.replace( '.', '/' ) + WILDCARD_CLASS_FILE_EXTENSION : origin;
+            }
+            else
+            {
+                return cls.replace( '.', '/' );
+            }
+        }
         else
         {
-            return cls.replace( '.', '/' );
+            return cls;
         }
     }
 }
