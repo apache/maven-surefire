@@ -164,30 +164,26 @@ public class TestNGDirectoryTestSuite
     @SuppressWarnings( "unchecked" )
     private static Class<Annotation> lookupAnnotation( String className )
     {
-        Class<Annotation> junitClass;
         try
         {
-            junitClass = (Class<Annotation>) Class.forName( className );
+            return (Class<Annotation>) Class.forName( className );
         }
         catch ( ClassNotFoundException e )
         {
-            junitClass = null;
+            return null;
         }
-        return junitClass;
     }
 
     private static Class<?> lookupClass( String className )
     {
-        Class<?> junitClass;
         try
         {
-            junitClass = Class.forName( className );
+            return Class.forName( className );
         }
         catch ( ClassNotFoundException e )
         {
-            junitClass = null;
+            return null;
         }
-        return junitClass;
     }
 
     public void executeMulti( TestsToRun testsToRun, ReporterFactory reporterFactory )
