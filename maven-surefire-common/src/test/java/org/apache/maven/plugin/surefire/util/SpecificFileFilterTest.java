@@ -25,6 +25,7 @@ import junit.framework.TestCase;
 /**
  * @author Kristian Rosenvold
  */
+@Deprecated
 public class SpecificFileFilterTest
     extends TestCase
 {
