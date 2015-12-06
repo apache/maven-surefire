@@ -305,6 +305,7 @@ public final class ResolvedTest
         if ( s != null && !isRegex )
         {
             s = convertToPath( s );
+            s = fromFullyQualifiedClass( s );
             if ( s != null && !s.startsWith( WILDCARD_PATH_PREFIX ) )
             {
                 s = WILDCARD_PATH_PREFIX + s;
@@ -333,5 +334,18 @@ public final class ResolvedTest
     static String wrapRegex( String unwrapped )
     {
         return SelectorUtils.REGEX_HANDLER_PREFIX + unwrapped + SelectorUtils.PATTERN_HANDLER_SUFFIX;
+    }
+
+    static String fromFullyQualifiedClass( String cls )
+    {
+        if ( cls.endsWith( CLASS_FILE_EXTENSION ) )
+        {
+            cls = cls.substring( 0, cls.length() - CLASS_FILE_EXTENSION.length() );
+            return cls.replace( '.', '/' ) + CLASS_FILE_EXTENSION;
+        }
+        else
+        {
+            return cls.replace( '.', '/' );
+        }
     }
 }

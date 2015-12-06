@@ -34,7 +34,7 @@ public class TestSingleMethodIT
 {
     private static final String RUNNING_WITH_PROVIDER47 = "parallel='none', perCoreThreadCount=true, threadCount=0";
 
-    public OutputValidator singleMethod( String projectName, String... goals )
+    public OutputValidator singleMethod( String projectName, String testToRun, String... goals )
         throws Exception
     {
         SurefireLauncher launcher = unpack( projectName );
@@ -42,31 +42,35 @@ public class TestSingleMethodIT
         {
             launcher.addGoal( goal );
         }
-        return launcher.showErrorStackTraces().debugLogging()
-            .executeTest()
-            .verifyErrorFreeLog()
-            .assertTestSuiteResults( 1, 0, 0, 0 );
+        launcher.showErrorStackTraces().debugLogging();
+        if ( testToRun != null )
+        {
+            launcher.setTestToRun( testToRun );
+        }
+        return launcher.executeTest()
+                .verifyErrorFreeLog()
+                .assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
     @Test
     public void testJunit44()
         throws Exception
     {
-        singleMethod( "junit44-single-method" );
+        singleMethod( "junit44-single-method", null );
     }
 
     @Test
     public void testJunit48Provider4()
         throws Exception
     {
-        singleMethod( "junit48-single-method", "-P surefire-junit4" );
+        singleMethod( "junit48-single-method", null, "-P surefire-junit4" );
     }
 
     @Test
     public void testJunit48Provider47()
         throws Exception
     {
-        singleMethod( "junit48-single-method", "-P surefire-junit47" )
+        singleMethod( "junit48-single-method", null, "-P surefire-junit47" )
             .verifyTextInLog( RUNNING_WITH_PROVIDER47 );
     }
 
@@ -86,14 +90,35 @@ public class TestSingleMethodIT
     public void testTestNg()
         throws Exception
     {
-        singleMethod( "testng-single-method" );
+        singleMethod( "testng-single-method", null );
     }
 
     @Test
     public void testTestNg5149()
         throws Exception
     {
-        singleMethod( "/testng-single-method-5-14-9" );
+        singleMethod( "/testng-single-method-5-14-9", null );
+    }
+
+    @Test
+    public void fullyQualifiedJunit48Provider4()
+            throws Exception
+    {
+        singleMethod( "junit48-single-method", "junit4.BasicTest#testSuccessOne", "-P surefire-junit4" );
+    }
+
+    @Test
+    public void fullyQualifiedJunit48Provider47()
+            throws Exception
+    {
+        singleMethod("junit48-single-method", "junit4.BasicTest#testSuccessOne", "-P surefire-junit47");
+    }
+
+    @Test
+    public void fullyQualifiedTestNg()
+            throws Exception
+    {
+        singleMethod( "testng-single-method", "testng.BasicTest#testSuccessOne" );
     }
 
 }

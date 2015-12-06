@@ -999,7 +999,7 @@ public class FilterFactoryTest
     public void testIncludesExcludes()
     {
         Collection<String> inc = Arrays.asList( "**/NotIncludedByDefault.java", "**/*Test.java" );
-        Collection<String> exc = Collections.singletonList( "**/DontRunTest.*" );
+        Collection<String> exc = Collections.singletonList( "**/DontRunTest.class" );
         TestListResolver resolver = new TestListResolver( inc, exc );
         assertFalse( resolver.shouldRun( "org/test/DontRunTest.class", null ) );
         assertTrue( resolver.shouldRun( "org/test/DefaultTest.class", null ) );
@@ -1011,5 +1011,13 @@ public class FilterFactoryTest
     {
         TestListResolver resolver = new TestListResolver( "NotIncludedByDefault" );
         assertTrue( resolver.shouldRun( "org/test/NotIncludedByDefault.class", null ) );
+    }
+
+    @Test
+    public void testFullyQualifiedClass()
+    {
+        TestListResolver resolver = new TestListResolver( "my.package.MyTest" );
+        assertFalse( resolver.shouldRun( "my/package/AnotherTest.class", null ) );
+        assertTrue( resolver.shouldRun( "my/package/MyTest.class", null ) );
     }
 }

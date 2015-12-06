@@ -46,4 +46,16 @@ public class ResolvedTestTest
         assertTrue( test.isRegexTestMethodPattern() );
         assertTrue( test.isEmpty() );
     }
+
+    public void testFromFullyQualifiedClass()
+    {
+        String classFileName = ResolvedTest.fromFullyQualifiedClass( "my.package.MyTest" );
+        assertEquals( "my/package/MyTest", classFileName );
+
+        classFileName = ResolvedTest.fromFullyQualifiedClass( "my.package.MyTest.class" );
+        assertEquals( "my/package/MyTest.class", classFileName );
+
+        classFileName = ResolvedTest.fromFullyQualifiedClass( "my/package/MyTest.class" );
+        assertEquals( "my/package/MyTest.class", classFileName );
+    }
 }

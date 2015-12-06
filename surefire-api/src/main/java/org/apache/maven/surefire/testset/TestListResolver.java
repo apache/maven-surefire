@@ -183,6 +183,12 @@ public class TestListResolver
         return shouldRun( toClassFileName( testClass ), methodName );
     }
 
+    /**
+     * Returns {@code true} if satisfies {@code testClassFile} and {@code methodName} filter.
+     *
+     * @param testClassFile format must be e.g. "my/package/MyTest.class" including class extension; or null
+     * @param methodName real test-method name; or null
+     */
     public boolean shouldRun( String testClassFile, String methodName )
     {
         if ( isEmpty() || isBlank( testClassFile ) && isBlank( methodName ) )
