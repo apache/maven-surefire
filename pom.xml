@@ -365,18 +365,19 @@
               </goals>
               <configuration>
                 <excludes combine.children="append">
+                  <exclude>.gitignore</exclude>
                   <exclude>.git/**/*</exclude>
                   <exclude>**/.idea</exclude>
                   <exclude>**/.svn/**/*</exclude>
-                  <exclude>src/test/resources/**/*</exclude>
-                  <exclude>**/*.jj</exclude>
-                  <exclude>src/test/resources/**/*.css</exclude>
                   <exclude>**/*.iml</exclude>
                   <exclude>**/*.ipr</exclude>
                   <exclude>**/*.iws</exclude>
                   <exclude>**/*.versionsBackup</exclude>
                   <exclude>**/dependency-reduced-pom.xml</exclude>
-                  <exclude>.gitignore</exclude>
+                  <exclude>.repository/**</exclude> <!-- jenkins with local maven repository -->
+                  <exclude>src/test/resources/**/*</exclude>
+                  <exclude>src/test/resources/**/*.css</exclude>
+                  <exclude>**/*.jj</exclude>
                   <exclude>src/main/resources/META-INF/services/org.apache.maven.surefire.providerapi.SurefireProvider
                   </exclude>
                 </excludes>
