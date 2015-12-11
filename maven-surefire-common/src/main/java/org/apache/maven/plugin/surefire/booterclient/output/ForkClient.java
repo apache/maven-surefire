@@ -289,14 +289,12 @@ public class ForkClient
 
     private StackTraceWriter deserializeStackTraceWriter( StringTokenizer tokens )
     {
-        StackTraceWriter stackTraceWriter;
         String stackTraceMessage = nullableCsv( tokens.nextToken() );
         String smartStackTrace = nullableCsv( tokens.nextToken() );
         String stackTrace = tokens.hasMoreTokens() ? nullableCsv( tokens.nextToken() ) : null;
-        stackTraceWriter = stackTrace != null
+        return stackTrace != null
             ? new DeserializedStacktraceWriter( stackTraceMessage, smartStackTrace, stackTrace )
             : null;
-        return stackTraceWriter;
     }
 
     private String nullableCsv( String source )

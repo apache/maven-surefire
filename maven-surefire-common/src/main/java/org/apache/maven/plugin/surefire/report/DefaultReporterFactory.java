@@ -72,7 +72,16 @@ public class DefaultReporterFactory
 
     public RunListener createReporter()
     {
-        return createTestSetRunListener();
+        TestSetRunListener testSetRunListener =
+            new TestSetRunListener( reportConfiguration.instantiateConsoleReporter(),
+                                    reportConfiguration.instantiateFileReporter(),
+                                    reportConfiguration.instantiateStatelessXmlReporter(),
+                                    reportConfiguration.instantiateConsoleOutputFileReporter(), statisticsReporter,
+                                    reportConfiguration.isTrimStackTrace(),
+                                    ConsoleReporter.PLAIN.equals( reportConfiguration.getReportFormat() ),
+                                    reportConfiguration.isBriefOrPlainFormat() );
+        addListener( testSetRunListener );
+        return testSetRunListener;
     }
 
     public void mergeFromOtherFactories( Collection<DefaultReporterFactory> factories )
@@ -84,20 +93,6 @@ public class DefaultReporterFactory
                 listeners.add( listener );
             }
         }
-    }
-
-    public RunListener createTestSetRunListener()
-    {
-        TestSetRunListener testSetRunListener =
-            new TestSetRunListener( reportConfiguration.instantiateConsoleReporter(),
-                                    reportConfiguration.instantiateFileReporter(),
-                                    reportConfiguration.instantiateStatelessXmlReporter(),
-                                    reportConfiguration.instantiateConsoleOutputFileReporter(), statisticsReporter,
-                                    reportConfiguration.isTrimStackTrace(),
-                                    ConsoleReporter.PLAIN.equals( reportConfiguration.getReportFormat() ),
-                                    reportConfiguration.isBriefOrPlainFormat() );
-        addListener( testSetRunListener );
-        return testSetRunListener;
     }
 
     final void addListener( TestSetRunListener listener )

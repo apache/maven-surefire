@@ -89,14 +89,14 @@ public class TestSetStats
         {
             testStartAt = testEndAt;
         }
-        return reportEntry.getElapsed() != null ? reportEntry.getElapsed() : testEndAt - testStartAt;
+        Integer elapsedTime = reportEntry.getElapsed();
+        return elapsedTime != null ? elapsedTime : testEndAt - testStartAt;
     }
 
     public void testSucceeded( WrappedReportEntry reportEntry )
     {
         finishTest( reportEntry );
     }
-
 
     public void testError( WrappedReportEntry reportEntry )
     {

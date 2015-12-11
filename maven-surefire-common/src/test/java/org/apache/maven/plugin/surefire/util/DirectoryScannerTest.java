@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,16 +41,15 @@ import static org.junit.runners.Parameterized.*;
 @RunWith( Parameterized.class )
 public class DirectoryScannerTest
 {
-
     @Parameters( name = "\"{0}\" should count {1} classes" )
-    public static Object[][] data() {
-        return new Object[][] {
+    public static Iterable<Object[]> data() {
+        return Arrays.asList( new Object[][] {
             { "**/*ZT*A.java", is( 3 ) },
             { "**/*ZT*A.java#testMethod", is( 3 ) },
             { "**/*ZT?A.java#testMethod, !*ZT2A", is( 2 ) },
             { "**/*ZT?A.java#testMethod, !*ZT2A#testMethod", is( 3 ) },
             { "#testMethod", is( greaterThanOrEqualTo( 3 ) ) },
-        };
+        } );
     }
 
     @Parameter( 0 )

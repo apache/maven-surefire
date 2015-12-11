@@ -165,7 +165,6 @@ public class TestSetRunListener
     public void testStarting( ReportEntry report )
     {
         detailsForThis.testStart();
-
     }
 
     public void testSucceeded( ReportEntry reportEntry )

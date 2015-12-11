@@ -20,6 +20,7 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import org.apache.maven.shared.utils.io.IOUtil;
+import org.apache.maven.shared.utils.xml.PrettyPrintXMLWriter;
 import org.apache.maven.shared.utils.xml.XMLWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
@@ -124,8 +125,7 @@ public class StatelessXmlReporter
         OutputStreamWriter fw = getWriter( outputStream );
         try
         {
-            org.apache.maven.shared.utils.xml.XMLWriter ppw =
-                new org.apache.maven.shared.utils.xml.PrettyPrintXMLWriter( fw );
+            XMLWriter ppw = new PrettyPrintXMLWriter( fw );
             ppw.setEncoding( ENCODING );
 
             createTestSuiteElement( ppw, testSetReportEntry, testSetStats, reportNameSuffix,

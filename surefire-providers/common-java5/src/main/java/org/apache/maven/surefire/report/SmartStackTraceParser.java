@@ -20,11 +20,12 @@ package org.apache.maven.surefire.report;
  */
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.maven.shared.utils.StringUtils;
+import static java.util.Arrays.asList;
+import static org.apache.maven.shared.utils.StringUtils.chompLast;
+import static org.apache.maven.shared.utils.StringUtils.isNotEmpty;
 
 /**
  * @author Kristian Rosenvold
@@ -40,11 +41,11 @@ public class SmartStackTraceParser
 
     private final String simpleName;
 
-    private String testClassName;
+    private final String testClassName;
 
     private final Class testClass;
 
-    private String testMethodName;
+    private final String testMethodName;
 
     public SmartStackTraceParser( Class testClass, Throwable throwable )
     {
@@ -94,7 +95,7 @@ public class SmartStackTraceParser
         if ( stackTraceElements.isEmpty() )
         {
             result.append( simpleName );
-            if ( StringUtils.isNotEmpty( testMethodName ) )
+            if ( isNotEmpty( testMethodName ) )
             {
                 result.append( "." )
                     .append( testMethodName );
@@ -136,16 +137,17 @@ public class SmartStackTraceParser
         }
 
         Throwable target = throwable.getTarget();
-        if ( target instanceof AssertionError )
+        String exception = target.getClass().getName();
+        if ( target instanceof AssertionError
+            || "junit.framework.AssertionFailedError".equals( exception )
+            || "junit.framework.ComparisonFailure".equals( exception ) )
         {
-            result.append( " " )
-                .append( throwable.getMessage() );
-        }
-        else if ( "junit.framework.AssertionFailedError".equals( target.getClass().getName() )
-            || "junit.framework.ComparisonFailure".equals( target.getClass().getName() ) )
-        {
-            result.append( " " );
-            result.append( throwable.getMessage() );
+            String msg = throwable.getMessage();
+            if ( isNotEmpty( msg ) )
+            {
+                result.append( " " )
+                    .append( msg );
+            }
         }
         else
         {
@@ -156,16 +158,16 @@ public class SmartStackTraceParser
         return result.toString();
     }
 
-    private String getMinimalThrowableMiniMessage( Throwable throwable )
+    private static String getMinimalThrowableMiniMessage( Throwable throwable )
     {
         String name = throwable.getClass().getSimpleName();
         if ( name.endsWith( "Exception" ) )
         {
-            return StringUtils.chompLast( name, "Exception" );
+            return chompLast( name, "Exception" );
         }
         if ( name.endsWith( "Error" ) )
         {
-            return StringUtils.chompLast( name, "Error" );
+            return chompLast( name, "Error" );
         }
         return name;
     }
@@ -234,7 +236,6 @@ public class SmartStackTraceParser
             }
 
             n = n.getCause();
-
         }
         while ( n != null );
         return t;
@@ -280,7 +281,7 @@ public class SmartStackTraceParser
         while ( cause != null )
         {
             resp += "Caused by: ";
-            resp += toString( cause, Arrays.asList( cause.getStackTrace() ), filter );
+            resp += toString( cause, asList( cause.getStackTrace() ), filter );
             cause = cause.getCause();
         }
         return resp;
