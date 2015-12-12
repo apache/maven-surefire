@@ -41,7 +41,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.maven.surefire.booter.CommandReader.getReader;
+import static org.apache.maven.surefire.testset.TestListResolver.getEmptyTestListResolver;
 import static org.apache.maven.surefire.testset.TestListResolver.optionallyWildcardFilter;
+import static org.apache.maven.surefire.util.TestsToRun.fromClass;
 
 /**
  * @author Kristian Rosenvold
@@ -70,20 +73,18 @@ public class TestNGProvider
 
     private TestsToRun testsToRun;
 
-    public TestNGProvider( ProviderParameters booterParameters )
+    public TestNGProvider( ProviderParameters bootParams )
     {
-        // don't start a thread in MasterProcessReader while we are in in-plugin process
-        commandsReader = booterParameters.isInsideFork()
-            ? CommandReader.getReader().setShutdown( booterParameters.getShutdown() )
-            : null;
-        providerParameters = booterParameters;
-        testClassLoader = booterParameters.getTestClassLoader();
-        runOrderCalculator = booterParameters.getRunOrderCalculator();
-        providerProperties = booterParameters.getProviderProperties();
-        testRequest = booterParameters.getTestRequest();
-        reporterConfiguration = booterParameters.getReporterConfiguration();
-        scanResult = booterParameters.getScanResult();
-        mainCliOptions = booterParameters.getMainCliOptions();
+        // don't start a thread in CommandReader while we are in in-plugin process
+        commandsReader = bootParams.isInsideFork() ? getReader().setShutdown( bootParams.getShutdown() ) : null;
+        providerParameters = bootParams;
+        testClassLoader = bootParams.getTestClassLoader();
+        runOrderCalculator = bootParams.getRunOrderCalculator();
+        providerProperties = bootParams.getProviderProperties();
+        testRequest = bootParams.getTestRequest();
+        reporterConfiguration = bootParams.getReporterConfiguration();
+        scanResult = bootParams.getScanResult();
+        mainCliOptions = bootParams.getMainCliOptions();
     }
 
     public RunResult invoke( Object forkTestSet )
@@ -104,7 +105,6 @@ public class TestNGProvider
 
         try
         {
-
             if ( isTestNGXmlTestSuite( testRequest ) )
             {
                 TestNGXmlTestSuite testNGXmlTestSuite = newXmlSuite();
@@ -128,7 +128,7 @@ public class TestNGProvider
                     }
                     else if ( forkTestSet instanceof Class )
                     {
-                        testsToRun = TestsToRun.fromClass( (Class<?>) forkTestSet );
+                        testsToRun = fromClass( (Class<?>) forkTestSet );
                     }
                     else
                     {
@@ -238,6 +238,6 @@ public class TestNGProvider
     private TestListResolver getTestFilter()
     {
         TestListResolver filter = optionallyWildcardFilter( testRequest.getTestListResolver() );
-        return filter.isWildcard() ? TestListResolver.getEmpty() : filter;
+        return filter.isWildcard() ? getEmptyTestListResolver() : filter;
     }
 }

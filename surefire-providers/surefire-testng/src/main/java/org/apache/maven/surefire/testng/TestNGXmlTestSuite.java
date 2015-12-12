@@ -24,11 +24,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.maven.surefire.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+
+import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture;
+import static org.apache.maven.surefire.testng.TestNGDirectoryTestSuite.finishTestSuite;
+import static org.apache.maven.surefire.testng.TestNGDirectoryTestSuite.startTestSuite;
+import static org.apache.maven.surefire.testng.TestNGExecutor.run;
 
 /**
  * Handles suite xml file definitions for TestNG.
@@ -75,14 +79,11 @@ public class TestNGXmlTestSuite
         {
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
-//        RunListener reporter = new SynchronizedReporterManager( reporterManagerFactory.createReporter() );
         RunListener reporter = reporterManagerFactory.createReporter();
-        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
-
-        TestNGDirectoryTestSuite.startTestSuite( reporter, this );
-        TestNGExecutor.run( suiteFilePaths, testSourceDirectory, options, reporter, this, reportsDirectory,
-                            skipAfterFailureCount );
-        TestNGDirectoryTestSuite.finishTestSuite( reporter, this );
+        startCapture( (ConsoleOutputReceiver) reporter );
+        startTestSuite( reporter, this );
+        run( suiteFilePaths, testSourceDirectory, options, reporter, this, reportsDirectory, skipAfterFailureCount );
+        finishTestSuite( reporter, this );
     }
 
     public void execute( String testSetName, ReporterFactory reporterManagerFactory )

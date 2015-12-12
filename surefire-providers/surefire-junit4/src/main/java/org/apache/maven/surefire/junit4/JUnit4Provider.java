@@ -54,6 +54,7 @@ import java.util.Set;
 import static java.lang.reflect.Modifier.isAbstract;
 import static java.lang.reflect.Modifier.isInterface;
 import static java.util.Collections.unmodifiableCollection;
+import static org.apache.maven.surefire.booter.CommandReader.getReader;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.cutTestClassAndMethod;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTests;
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createDescription;
@@ -96,19 +97,18 @@ public class JUnit4Provider
 
     private TestsToRun testsToRun;
 
-    public JUnit4Provider( ProviderParameters booterParameters )
+    public JUnit4Provider( ProviderParameters bootParams )
     {
-        // don't start a thread in MasterProcessReader while we are in in-plugin process
-        commandsReader = booterParameters.isInsideFork() ? CommandReader.getReader().setShutdown(
-            booterParameters.getShutdown() ) : null;
-        providerParameters = booterParameters;
-        testClassLoader = booterParameters.getTestClassLoader();
-        scanResult = booterParameters.getScanResult();
-        runOrderCalculator = booterParameters.getRunOrderCalculator();
-        String listeners = booterParameters.getProviderProperties().get( "listener" );
+        // don't start a thread in CommandReader while we are in in-plugin process
+        commandsReader = bootParams.isInsideFork() ? getReader().setShutdown( bootParams.getShutdown() ) : null;
+        providerParameters = bootParams;
+        testClassLoader = bootParams.getTestClassLoader();
+        scanResult = bootParams.getScanResult();
+        runOrderCalculator = bootParams.getRunOrderCalculator();
+        String listeners = bootParams.getProviderProperties().get( "listener" );
         customRunListeners = unmodifiableCollection( createCustomListeners( listeners ) );
         jUnit4TestChecker = new JUnit4TestChecker( testClassLoader );
-        TestRequest testRequest = booterParameters.getTestRequest();
+        TestRequest testRequest = bootParams.getTestRequest();
         testResolver = testRequest.getTestListResolver();
         rerunFailingTestsCount = testRequest.getRerunFailingTestsCount();
     }
@@ -155,11 +155,12 @@ public class JUnit4Provider
                 notifier.addListener( new JUnit4FailFastListener( notifier ) );
             }
             Result result = new Result();
-            notifier.addListeners( customRunListeners ).addListener( result.createListener() );
+            notifier.addListeners( customRunListeners )
+                .addListener( result.createListener() );
 
             if ( isFailFast() && commandsReader != null )
             {
-                registerPleaseStopJunitListener( notifier );
+                registerPleaseStopJUnitListener( notifier );
             }
 
             try
@@ -190,7 +191,6 @@ public class JUnit4Provider
                 notifier.fireTestRunFinished( result );
                 notifier.removeListeners();
             }
-
             rethrowAnyTestMechanismFailures( result );
         }
         finally
@@ -215,7 +215,7 @@ public class JUnit4Provider
         return isFailFast() && !isRerunFailingTests() ? providerParameters.getSkipAfterFailureCount() : 0;
     }
 
-    private CommandListener registerPleaseStopJunitListener( final Notifier notifier )
+    private CommandListener registerPleaseStopJUnitListener( final Notifier notifier )
     {
         CommandListener listener = new CommandListener()
         {

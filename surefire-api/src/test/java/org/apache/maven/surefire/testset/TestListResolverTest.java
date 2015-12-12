@@ -245,7 +245,7 @@ public class TestListResolverTest
 
     public void testShouldRunAny()
     {
-        TestListResolver resolver = TestListResolver.getEmpty();
+        TestListResolver resolver = TestListResolver.getEmptyTestListResolver();
         assertTrue( resolver.shouldRun( "pkg/MyTest.class", null ) );
 
         resolver = new TestListResolver( Collections.<String>emptySet() );

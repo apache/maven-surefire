@@ -31,7 +31,6 @@ import org.apache.maven.surefire.common.junit48.JUnit48TestChecker;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ConsoleLogger;
-import org.apache.maven.surefire.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestListResolver;
@@ -51,10 +50,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Collections.unmodifiableCollection;
+import static org.apache.maven.surefire.booter.CommandReader.getReader;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTests;
 import static org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory.createCustomListeners;
 import static org.apache.maven.surefire.junitcore.ConcurrentRunListener.createInstance;
+import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.testset.TestListResolver.optionallyWildcardFilter;
+import static org.apache.maven.surefire.util.TestsToRun.fromClass;
 
 /**
  * @author Kristian Rosenvold
@@ -87,20 +89,19 @@ public class JUnitCoreProvider
 
     private TestsToRun testsToRun;
 
-    public JUnitCoreProvider( ProviderParameters providerParameters )
+    public JUnitCoreProvider( ProviderParameters bootParams )
     {
-        commandsReader = providerParameters.isInsideFork()
-            ? CommandReader.getReader().setShutdown( providerParameters.getShutdown() )
-            : null;
-        this.providerParameters = providerParameters;
-        testClassLoader = providerParameters.getTestClassLoader();
-        scanResult = providerParameters.getScanResult();
-        runOrderCalculator = providerParameters.getRunOrderCalculator();
-        jUnitCoreParameters = new JUnitCoreParameters( providerParameters.getProviderProperties() );
+        // don't start a thread in CommandReader while we are in in-plugin process
+        commandsReader = bootParams.isInsideFork() ? getReader().setShutdown( bootParams.getShutdown() ) : null;
+        providerParameters = bootParams;
+        testClassLoader = bootParams.getTestClassLoader();
+        scanResult = bootParams.getScanResult();
+        runOrderCalculator = bootParams.getRunOrderCalculator();
+        jUnitCoreParameters = new JUnitCoreParameters( bootParams.getProviderProperties() );
         scannerFilter = new JUnit48TestChecker( testClassLoader );
-        testResolver = providerParameters.getTestRequest().getTestListResolver();
-        rerunFailingTestsCount = providerParameters.getTestRequest().getRerunFailingTestsCount();
-        String listeners = providerParameters.getProviderProperties().get( "listener" );
+        testResolver = bootParams.getTestRequest().getTestListResolver();
+        rerunFailingTestsCount = bootParams.getTestRequest().getRerunFailingTestsCount();
+        String listeners = bootParams.getProviderProperties().get( "listener" );
         customRunListeners = unmodifiableCollection( createCustomListeners( listeners ) );
         jUnit48Reflector = new JUnit48Reflector( testClassLoader );
     }
@@ -126,7 +127,7 @@ public class JUnitCoreProvider
 
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
-        RunResult runResult;
+        final RunResult runResult;
 
         final ConsoleLogger consoleLogger = providerParameters.getConsoleLogger();
 
@@ -141,7 +142,7 @@ public class JUnitCoreProvider
             else if ( forkTestSet instanceof Class )
             {
                 Class<?> theClass = (Class<?>) forkTestSet;
-                testsToRun = TestsToRun.fromClass( theClass );
+                testsToRun = fromClass( theClass );
             }
             else
             {
@@ -158,7 +159,7 @@ public class JUnitCoreProvider
 
         if ( isFailFast() && commandsReader != null )
         {
-            registerPleaseStopJunitListener( notifier );
+            registerPleaseStopJUnitListener( notifier );
         }
 
         try
@@ -216,7 +217,7 @@ public class JUnitCoreProvider
         return isFailFast() && !isRerunFailingTests() ? providerParameters.getSkipAfterFailureCount() : 0;
     }
 
-    private CommandListener registerPleaseStopJunitListener( final Notifier stoppable )
+    private CommandListener registerPleaseStopJUnitListener( final Notifier stoppable )
     {
         CommandListener listener = new CommandListener()
         {
@@ -235,7 +236,7 @@ public class JUnitCoreProvider
         if ( isSingleThreaded() )
         {
             NonConcurrentRunListener rm = new NonConcurrentRunListener( reporterFactory.createReporter() );
-            ConsoleOutputCapture.startCapture( rm );
+            startCapture( rm );
             return rm;
         }
         else
@@ -244,7 +245,7 @@ public class JUnitCoreProvider
 
             ConcurrentRunListener listener = createInstance( testSetMap, reporterFactory, isParallelTypes(),
                                                              isParallelMethodsAndTypes(), consoleLogger );
-            ConsoleOutputCapture.startCapture( listener );
+            startCapture( listener );
 
             return new JUnitCoreRunListener( listener, testSetMap );
         }

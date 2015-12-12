@@ -144,7 +144,7 @@ public class TestListResolver
         return WILDCARD;
     }
 
-    public static TestListResolver getEmpty()
+    public static TestListResolver getEmptyTestListResolver()
     {
         return EMPTY;
     }
