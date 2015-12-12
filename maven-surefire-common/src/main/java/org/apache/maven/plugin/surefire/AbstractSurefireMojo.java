@@ -839,7 +839,7 @@ public abstract class AbstractSurefireMojo
             ensureThreadCountWithPerThread();
             warnIfUselessUseSystemClassLoaderParameter();
             warnIfDefunctGroupsCombinations();
-            warnIfRerunClashes();
+            warnIfRerunNegative();
             warnIfWrongShutdownValue();
             warnIfNotApplicableSkipAfterFailureCount();
         }
@@ -2362,7 +2362,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    private void warnIfRerunClashes()
+    private void warnIfRerunNegative()
         throws MojoFailureException
     {
         if ( getRerunFailingTestsCount() < 0 )
@@ -2373,14 +2373,6 @@ public abstract class AbstractSurefireMojo
         if ( getSkipAfterFailureCount() < 0 )
         {
             throw new MojoFailureException( "Parameter \"skipAfterFailureCount\" should not be negative." );
-        }
-
-        boolean isRerun = getRerunFailingTestsCount() > 0;
-        boolean isFailFast = getSkipAfterFailureCount() > 0;
-        if ( isRerun && isFailFast )
-        {
-            throw new MojoFailureException( "Parameters [\"rerunFailingTestsCount\", \"skipAfterFailureCount\"] "
-                                                + "should not be enabled together." );
         }
     }
 

@@ -116,11 +116,6 @@ public class JUnit4Provider
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException
     {
-        if ( isRerunFailingTests() && isFailFast() )
-        {
-            throw new TestSetFailedException( "don't enable parameters rerunFailingTestsCount, skipAfterFailureCount" );
-        }
-
         if ( testsToRun == null )
         {
             if ( forkTestSet instanceof TestsToRun )
