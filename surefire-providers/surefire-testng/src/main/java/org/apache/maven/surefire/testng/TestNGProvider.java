@@ -25,8 +25,11 @@ import org.apache.maven.surefire.booter.CommandReader;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
+import org.apache.maven.surefire.report.ConsoleOutputCapture;
+import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
+import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testng.utils.FailFastEventsSingleton;
 import org.apache.maven.surefire.testset.TestListResolver;
@@ -38,6 +41,7 @@ import org.apache.maven.surefire.util.TestsToRun;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -101,6 +105,8 @@ public class TestNGProvider
         }
 
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
+        final RunListener reporter = reporterFactory.createReporter();
+        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
         RunResult runResult;
 
         try
@@ -108,15 +114,8 @@ public class TestNGProvider
             if ( isTestNGXmlTestSuite( testRequest ) )
             {
                 TestNGXmlTestSuite testNGXmlTestSuite = newXmlSuite();
-                testNGXmlTestSuite.locateTestSets( testClassLoader );
-                if ( forkTestSet != null && testRequest == null )
-                {
-                    testNGXmlTestSuite.execute( (String) forkTestSet, reporterFactory );
-                }
-                else
-                {
-                    testNGXmlTestSuite.execute( reporterFactory );
-                }
+                testNGXmlTestSuite.locateTestSets();
+                testNGXmlTestSuite.execute( reporter );
             }
             else
             {
@@ -147,7 +146,7 @@ public class TestNGProvider
                     } );
                 }
                 TestNGDirectoryTestSuite suite = newDirectorySuite();
-                suite.execute( testsToRun, reporterFactory );
+                suite.execute( testsToRun, reporter );
             }
         }
         finally
@@ -190,8 +189,7 @@ public class TestNGProvider
     {
         return new TestNGDirectoryTestSuite( testRequest.getTestSourceDirectory().toString(), providerProperties,
                                              reporterConfiguration.getReportsDirectory(), getTestFilter(),
-                                             runOrderCalculator, scanResult, mainCliOptions,
-                                             getSkipAfterFailureCount() );
+                                             mainCliOptions, getSkipAfterFailureCount() );
     }
 
     private TestNGXmlTestSuite newXmlSuite()
@@ -202,19 +200,11 @@ public class TestNGProvider
                                        reporterConfiguration.getReportsDirectory(), getSkipAfterFailureCount() );
     }
 
-    @SuppressWarnings( "unchecked" )
     public Iterable<Class<?>> getSuites()
     {
         if ( isTestNGXmlTestSuite( testRequest ) )
         {
-            try
-            {
-                return newXmlSuite().locateTestSets( testClassLoader ).keySet();
-            }
-            catch ( TestSetFailedException e )
-            {
-                throw new RuntimeException( e );
-            }
+            return Collections.emptySet();
         }
         else
         {

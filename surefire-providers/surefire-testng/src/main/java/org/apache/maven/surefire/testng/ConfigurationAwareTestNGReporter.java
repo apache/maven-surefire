@@ -35,7 +35,7 @@ public class ConfigurationAwareTestNGReporter
     implements IResultListener
 {
 
-    public ConfigurationAwareTestNGReporter( RunListener reportManager, TestNgTestSuite source )
+    public ConfigurationAwareTestNGReporter( RunListener reportManager )
     {
         super( reportManager );
     }

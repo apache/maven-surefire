@@ -57,7 +57,7 @@ import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDown
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
  */
-public class TestNGExecutor
+final class TestNGExecutor
 {
     /** The default name for a suite launched from the maven surefire plugin */
     public static final String DEFAULT_SUREFIRE_SUITE_NAME = "Surefire suite";
@@ -70,12 +70,12 @@ public class TestNGExecutor
 
     private TestNGExecutor()
     {
-        // noop
+        throw new IllegalStateException( "not instantiable constructor" );
     }
 
-    public static void run( Class<?>[] testClasses, String testSourceDirectory,
+    static void run( Class<?>[] testClasses, String testSourceDirectory,
                             Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
-                            RunListener reportManager, TestNgTestSuite suite, File reportsDirectory,
+                            RunListener reportManager, File reportsDirectory,
                             TestListResolver methodFilter, List<CommandLineOption> mainCliOptions,
                             int skipAfterFailureCount )
         throws TestSetFailedException
@@ -127,7 +127,7 @@ public class TestNGExecutor
 
         testng.setXmlSuites( xmlSuites );
         configurator.configure( testng, options );
-        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory, skipAfterFailureCount,
+        postConfigure( testng, testSourceDirectory, reportManager, reportsDirectory, skipAfterFailureCount,
                        extractVerboseLevel( options ) );
         testng.run();
     }
@@ -269,14 +269,13 @@ public class TestNGExecutor
 
     public static void run( List<String> suiteFiles, String testSourceDirectory,
                             Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
-                            RunListener reportManager, TestNgTestSuite suite, File reportsDirectory,
-                            int skipAfterFailureCount )
+                            RunListener reportManager, File reportsDirectory, int skipAfterFailureCount )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
         Configurator configurator = getConfigurator( options.get( "testng.configurator" ) );
         configurator.configure( testng, options );
-        postConfigure( testng, testSourceDirectory, reportManager, suite, reportsDirectory, skipAfterFailureCount,
+        postConfigure( testng, testSourceDirectory, reportManager, reportsDirectory, skipAfterFailureCount,
                        extractVerboseLevel( options ) );
         testng.setTestSuites( suiteFiles );
         testng.run();
@@ -303,13 +302,12 @@ public class TestNGExecutor
     }
 
     private static void postConfigure( TestNG testNG, String sourcePath, final RunListener reportManager,
-                                       TestNgTestSuite suite, File reportsDirectory, int skipAfterFailureCount,
-                                       int verboseLevel )
+                                       File reportsDirectory, int skipAfterFailureCount, int verboseLevel )
     {
         // 0 (default): turn off all TestNG output
         testNG.setVerbose( verboseLevel );
 
-        TestNGReporter reporter = createTestNGReporter( reportManager, suite );
+        TestNGReporter reporter = createTestNGReporter( reportManager );
         testNG.addListener( (Object) reporter );
 
         if ( skipAfterFailureCount > 0 )
@@ -349,15 +347,14 @@ public class TestNGExecutor
 
     // If we have access to IResultListener, return a ConfigurationAwareTestNGReporter
     // But don't cause NoClassDefFoundErrors if it isn't available; just return a regular TestNGReporter instead
-    private static TestNGReporter createTestNGReporter( RunListener reportManager, TestNgTestSuite suite )
+    private static TestNGReporter createTestNGReporter( RunListener reportManager )
     {
         try
         {
             Class.forName( "org.testng.internal.IResultListener" );
             Class c = Class.forName( "org.apache.maven.surefire.testng.ConfigurationAwareTestNGReporter" );
-            @SuppressWarnings( "unchecked" ) Constructor<?> ctor =
-                    c.getConstructor( RunListener.class, TestNgTestSuite.class );
-            return (TestNGReporter) ctor.newInstance( reportManager, suite );
+            @SuppressWarnings( "unchecked" ) Constructor<?> ctor = c.getConstructor( RunListener.class );
+            return (TestNGReporter) ctor.newInstance( reportManager );
         }
         catch ( InvocationTargetException e )
         {
@@ -387,5 +384,4 @@ public class TestNGExecutor
                                                   + "number -1 (debug mode), 0, 1 .. 10 (most detailed).", e );
         }
     }
-
 }

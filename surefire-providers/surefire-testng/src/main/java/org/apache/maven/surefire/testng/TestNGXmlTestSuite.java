@@ -21,15 +21,11 @@ package org.apache.maven.surefire.testng;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
-import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.testng.TestNGDirectoryTestSuite.finishTestSuite;
 import static org.apache.maven.surefire.testng.TestNGDirectoryTestSuite.startTestSuite;
 import static org.apache.maven.surefire.testng.TestNGExecutor.run;
@@ -40,10 +36,9 @@ import static org.apache.maven.surefire.testng.TestNGExecutor.run;
  * @author jkuhnert
  * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
  */
-public class TestNGXmlTestSuite
-    implements TestNgTestSuite
+final class TestNGXmlTestSuite
 {
-    private final List suiteFiles;
+    private final List<File> suiteFiles;
 
     private List<String> suiteFilePaths;
 
@@ -55,15 +50,12 @@ public class TestNGXmlTestSuite
 
     private final int skipAfterFailureCount;
 
-    // Not really used
-    private Map<File, String> testSets;
-
     /**
      * Creates a testng testset to be configured by the specified
      * xml file(s). The XML files are suite definitions files according to TestNG DTD.
      */
-    public TestNGXmlTestSuite( List<File> suiteFiles, String testSourceDirectory, Map<String, String> confOptions,
-                               File reportsDirectory, int skipAfterFailureCount )
+    TestNGXmlTestSuite( List<File> suiteFiles, String testSourceDirectory, Map<String, String> confOptions,
+                        File reportsDirectory, int skipAfterFailureCount )
     {
         this.suiteFiles = suiteFiles;
         this.options = confOptions;
@@ -72,30 +64,22 @@ public class TestNGXmlTestSuite
         this.skipAfterFailureCount = skipAfterFailureCount;
     }
 
-    public void execute( ReporterFactory reporterManagerFactory )
+    void execute( RunListener reporter )
         throws TestSetFailedException
     {
-        if ( testSets == null )
+        if ( suiteFilePaths == null )
         {
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
-        RunListener reporter = reporterManagerFactory.createReporter();
-        startCapture( (ConsoleOutputReceiver) reporter );
         startTestSuite( reporter, this );
-        run( suiteFilePaths, testSourceDirectory, options, reporter, this, reportsDirectory, skipAfterFailureCount );
+        run( suiteFilePaths, testSourceDirectory, options, reporter, reportsDirectory, skipAfterFailureCount );
         finishTestSuite( reporter, this );
     }
 
-    public void execute( String testSetName, ReporterFactory reporterManagerFactory )
+    void locateTestSets()
         throws TestSetFailedException
     {
-        throw new TestSetFailedException( "Cannot run individual test when suite files are specified" );
-    }
-
-    public Map locateTestSets( ClassLoader classLoader )
-        throws TestSetFailedException
-    {
-        if ( testSets != null )
+        if ( suiteFilePaths != null )
         {
             throw new IllegalStateException( "You can't call locateTestSets twice" );
         }
@@ -105,24 +89,19 @@ public class TestNGXmlTestSuite
             throw new IllegalStateException( "No suite files were specified" );
         }
 
-        testSets = new HashMap<File, String>();
         suiteFilePaths = new ArrayList<String>();
 
-        for ( Object suiteFile : suiteFiles )
+        for ( File suiteFile : suiteFiles )
         {
-            File file = (File) suiteFile;
-            if ( !file.exists() || !file.isFile() )
+            if ( !suiteFile.isFile() )
             {
-                throw new TestSetFailedException( "Suite file " + file + " is not a valid file" );
+                throw new TestSetFailedException( "Suite file " + suiteFile + " is not a valid file" );
             }
-            testSets.put( file, file.getAbsolutePath() );
-            suiteFilePaths.add( file.getAbsolutePath() );
+            suiteFilePaths.add( suiteFile.getAbsolutePath() );
         }
-
-        return testSets;
     }
 
-    public String getSuiteName()
+    String getSuiteName()
     {
         String result = options.get( "suitename" );
         return result == null ? "TestSuite" : result;

@@ -133,25 +133,14 @@ public class JUnitCoreProvider
 
         Filter filter = jUnit48Reflector.isJUnit48Available() ? createJUnit48Filter() : null;
 
-        if ( testsToRun == null )
-        {
-            if ( forkTestSet instanceof TestsToRun )
-            {
-                testsToRun = (TestsToRun) forkTestSet;
-            }
-            else if ( forkTestSet instanceof Class )
-            {
-                Class<?> theClass = (Class<?>) forkTestSet;
-                testsToRun = fromClass( theClass );
-            }
-            else
-            {
-                testsToRun = scanClassPath();
-            }
-        }
-
         Notifier notifier =
             new Notifier( createRunListener( reporterFactory, consoleLogger ), getSkipAfterFailureCount() );
+        // startCapture() called in createRunListener() in prior to setTestsToRun()
+
+        if ( testsToRun == null )
+        {
+            setTestsToRun( forkTestSet );
+        }
 
         // Add test failure listener
         JUnitTestFailureListener testFailureListener = new JUnitTestFailureListener();
@@ -200,6 +189,24 @@ public class JUnitCoreProvider
             notifier.removeListeners();
         }
         return runResult;
+    }
+
+    private void setTestsToRun( Object forkTestSet )
+        throws TestSetFailedException
+    {
+        if ( forkTestSet instanceof TestsToRun )
+        {
+            testsToRun = (TestsToRun) forkTestSet;
+        }
+        else if ( forkTestSet instanceof Class )
+        {
+            Class<?> theClass = (Class<?>) forkTestSet;
+            testsToRun = fromClass( theClass );
+        }
+        else
+        {
+            testsToRun = scanClassPath();
+        }
     }
 
     private boolean isRerunFailingTests()

@@ -121,22 +121,6 @@ public class JUnit4Provider
             throw new TestSetFailedException( "don't enable parameters rerunFailingTestsCount, skipAfterFailureCount" );
         }
 
-        if ( testsToRun == null )
-        {
-            if ( forkTestSet instanceof TestsToRun )
-            {
-                testsToRun = (TestsToRun) forkTestSet;
-            }
-            else if ( forkTestSet instanceof Class )
-            {
-                testsToRun = fromClass( (Class<?>) forkTestSet );
-            }
-            else
-            {
-                testsToRun = scanClassPath();
-            }
-        }
-
         upgradeCheck();
 
         ReporterFactory reporterFactory = providerParameters.getReporterFactory();
@@ -144,10 +128,15 @@ public class JUnit4Provider
         RunResult runResult;
         try
         {
-
             RunListener reporter = reporterFactory.createReporter();
 
             startCapture( (ConsoleOutputReceiver) reporter );
+            // startCapture() called in prior to setTestsToRun()
+
+            if ( testsToRun == null )
+            {
+                setTestsToRun( forkTestSet );
+            }
 
             Notifier notifier = new Notifier( new JUnit4RunListener( reporter ), getSkipAfterFailureCount() );
             if ( isFailFast() )
@@ -198,6 +187,23 @@ public class JUnit4Provider
             runResult = reporterFactory.close();
         }
         return runResult;
+    }
+
+    private void setTestsToRun( Object forkTestSet )
+        throws TestSetFailedException
+    {
+        if ( forkTestSet instanceof TestsToRun )
+        {
+            testsToRun = (TestsToRun) forkTestSet;
+        }
+        else if ( forkTestSet instanceof Class )
+        {
+            testsToRun = fromClass( (Class<?>) forkTestSet );
+        }
+        else
+        {
+            testsToRun = scanClassPath();
+        }
     }
 
     private boolean isRerunFailingTests()
