@@ -154,6 +154,22 @@ public class JUnit4Provider
 
             try
             {
+                if ( testsToRun == null )
+                {
+                    if ( forkTestSet instanceof TestsToRun )
+                    {
+                        testsToRun = (TestsToRun) forkTestSet;
+                    }
+                    else if ( forkTestSet instanceof Class )
+                    {
+                        testsToRun = fromClass( (Class<?>) forkTestSet );
+                    }
+                    else
+                    {
+                        testsToRun = scanClassPath();
+                    }
+                }
+
                 notifier.fireTestRunStarted( testsToRun.allowEagerReading()
                                                  ? createTestsDescription( testsToRun )
                                                  : createDescription( UNDETERMINED_TESTS_DESCRIPTION ) );
