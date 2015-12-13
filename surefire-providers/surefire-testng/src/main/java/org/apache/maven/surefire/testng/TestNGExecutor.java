@@ -28,7 +28,6 @@ import org.apache.maven.surefire.testng.utils.FailFastListener;
 import org.apache.maven.surefire.testng.utils.Stoppable;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.internal.StringUtils;
 import org.testng.TestNG;
 import org.testng.annotations.Test;
@@ -49,6 +48,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.maven.surefire.util.ReflectionUtils.instantiate;
+import static org.apache.maven.surefire.util.ReflectionUtils.tryLoadClass;
 import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDownToZero;
 
 /**
@@ -60,20 +60,20 @@ import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDown
 final class TestNGExecutor
 {
     /** The default name for a suite launched from the maven surefire plugin */
-    public static final String DEFAULT_SUREFIRE_SUITE_NAME = "Surefire suite";
+    private static final String DEFAULT_SUREFIRE_SUITE_NAME = "Surefire suite";
 
     /** The default name for a test launched from the maven surefire plugin */
-    public static final String DEFAULT_SUREFIRE_TEST_NAME = "Surefire test";
+    private static final String DEFAULT_SUREFIRE_TEST_NAME = "Surefire test";
 
     private static final boolean HAS_TEST_ANNOTATION_ON_CLASSPATH =
-        null != ReflectionUtils.tryLoadClass( TestNGExecutor.class.getClassLoader(), "org.testng.annotations.Test" );
+            tryLoadClass( TestNGExecutor.class.getClassLoader(), "org.testng.annotations.Test" ) != null;
 
     private TestNGExecutor()
     {
         throw new IllegalStateException( "not instantiable constructor" );
     }
 
-    static void run( Class<?>[] testClasses, String testSourceDirectory,
+    static void run( Iterable<Class<?>> testClasses, String testSourceDirectory,
                             Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
                             RunListener reportManager, File reportsDirectory,
                             TestListResolver methodFilter, List<CommandLineOption> mainCliOptions,
@@ -267,7 +267,7 @@ final class TestNGExecutor
         return xms;
     }
 
-    public static void run( List<String> suiteFiles, String testSourceDirectory,
+    static void run( List<String> suiteFiles, String testSourceDirectory,
                             Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
                             RunListener reportManager, File reportsDirectory, int skipAfterFailureCount )
         throws TestSetFailedException

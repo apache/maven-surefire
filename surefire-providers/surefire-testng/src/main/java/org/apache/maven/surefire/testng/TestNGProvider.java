@@ -25,7 +25,6 @@ import org.apache.maven.surefire.booter.CommandReader;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -46,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.maven.surefire.booter.CommandReader.getReader;
+import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.testset.TestListResolver.getEmptyTestListResolver;
 import static org.apache.maven.surefire.testset.TestListResolver.optionallyWildcardFilter;
 import static org.apache.maven.surefire.util.TestsToRun.fromClass;
@@ -106,9 +106,13 @@ public class TestNGProvider
 
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
         final RunListener reporter = reporterFactory.createReporter();
-        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
-        RunResult runResult;
+        /**
+         * {@link org.apache.maven.surefire.report.ConsoleOutputCapture#startCapture(ConsoleOutputReceiver)}
+         * called in prior to initializing variable {@link #testsToRun}
+         */
+        startCapture( (ConsoleOutputReceiver) reporter );
 
+        RunResult runResult;
         try
         {
             if ( isTestNGXmlTestSuite( testRequest ) )

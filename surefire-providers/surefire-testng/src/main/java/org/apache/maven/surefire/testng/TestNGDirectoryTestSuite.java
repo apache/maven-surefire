@@ -23,18 +23,18 @@ import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.maven.surefire.cli.CommandLineOption;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
+
+import static org.apache.maven.surefire.testng.TestNGExecutor.run;
 
 /**
  * Test suite for TestNG based on a directory of Java test classes. Can also execute JUnit tests.
@@ -43,8 +43,8 @@ import org.apache.maven.surefire.util.TestsToRun;
  * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
  */
 final class TestNGDirectoryTestSuite
+    extends TestSuite
 {
-
     private final Map<String, String> options;
 
     private final Map<String, String> junitOptions;
@@ -104,22 +104,22 @@ final class TestNGDirectoryTestSuite
     {
         options.put( "suitename", testClass.getName() );
 
-        startTestSuite( reporter, this );
+        startTestSuite( reporter );
 
-        final Map<String, String> optionsToUse = isJUnitTest( testClass ) ? junitOptions : options;
+        Map<String, String> optionsToUse = isJUnitTest( testClass ) ? junitOptions : options;
 
-        TestNGExecutor.run( new Class<?>[]{ testClass }, testSourceDirectory, optionsToUse, reporter,
-                            reportsDirectory, methodFilter, mainCliOptions, skipAfterFailureCount );
+        run( Collections.<Class<?>>singleton( testClass ), testSourceDirectory, optionsToUse, reporter,
+                reportsDirectory, methodFilter, mainCliOptions, skipAfterFailureCount );
 
-        finishTestSuite( reporter, this );
+        finishTestSuite( reporter );
     }
 
     private void executeLazy( TestsToRun testsToRun, RunListener reporterManager )
         throws TestSetFailedException
     {
-        for ( Class<?> c : testsToRun )
+        for ( Class<?> testToRun : testsToRun )
         {
-            executeSingleClass( reporterManager, c );
+            executeSingleClass( reporterManager, testToRun );
         }
     }
 
@@ -168,15 +168,15 @@ final class TestNGDirectoryTestSuite
     {
         List<Class<?>> testNgTestClasses = new ArrayList<Class<?>>();
         List<Class<?>> junitTestClasses = new ArrayList<Class<?>>();
-        for ( Class<?> c : testsToRun )
+        for ( Class<?> testToRun : testsToRun )
         {
-            if ( isJUnitTest( c ) )
+            if ( isJUnitTest( testToRun ) )
             {
-                junitTestClasses.add( c );
+                junitTestClasses.add( testToRun );
             }
             else
             {
-                testNgTestClasses.add( c );
+                testNgTestClasses.add( testToRun );
             }
         }
 
@@ -187,22 +187,18 @@ final class TestNGDirectoryTestSuite
             testNgReportsDirectory = new File( reportsDirectory, "testng-native-results" );
             junitReportsDirectory = new File( reportsDirectory, "testng-junit-results" );
         }
-        startTestSuite( reporterManager, this );
+        startTestSuite( reporterManager );
 
-        Class<?>[] testClasses = testNgTestClasses.toArray( new Class<?>[testNgTestClasses.size()] );
-
-        TestNGExecutor.run( testClasses, testSourceDirectory, options, reporterManager,
-                            testNgReportsDirectory, methodFilter, mainCliOptions, skipAfterFailureCount );
+        run( testNgTestClasses, testSourceDirectory, options, reporterManager,
+                testNgReportsDirectory, methodFilter, mainCliOptions, skipAfterFailureCount );
 
         if ( !junitTestClasses.isEmpty() )
         {
-            testClasses = junitTestClasses.toArray( new Class[junitTestClasses.size()] );
-
-            TestNGExecutor.run( testClasses, testSourceDirectory, junitOptions, reporterManager,
-                                junitReportsDirectory, methodFilter, mainCliOptions, skipAfterFailureCount );
+            run( junitTestClasses, testSourceDirectory, junitOptions, reporterManager,
+                    junitReportsDirectory, methodFilter, mainCliOptions, skipAfterFailureCount );
         }
 
-        finishTestSuite( reporterManager, this );
+        finishTestSuite( reporterManager );
     }
 
     private boolean isJUnitTest( Class<?> c )
@@ -248,45 +244,9 @@ final class TestNGDirectoryTestSuite
         return junitOptions;
     }
 
-    public static void startTestSuite( RunListener reporterManager, Object suite )
+    @Override
+    Map<String, String> getOptions()
     {
-        ReportEntry report = new SimpleReportEntry( suite.getClass().getName(), getSuiteName( suite ) );
-
-        try
-        {
-            reporterManager.testSetStarting( report );
-        }
-        catch ( ReporterException e )
-        {
-            // TODO: remove this exception from the report manager
-        }
-    }
-
-    public static void finishTestSuite( RunListener reporterManager, Object suite )
-    {
-        ReportEntry report = new SimpleReportEntry( suite.getClass().getName(), getSuiteName( suite ) );
-
-        reporterManager.testSetCompleted( report );
-    }
-
-    String getSuiteName()
-    {
-        String result = options.get( "suitename" );
-        return result == null ? "TestSuite" : result;
-    }
-
-    private static String getSuiteName( Object suite )
-    {
-        String result = "TestSuite";
-        if ( suite instanceof TestNGDirectoryTestSuite )
-        {
-            result = ( (TestNGDirectoryTestSuite) suite ).getSuiteName();
-        }
-        else if ( suite instanceof TestNGXmlTestSuite )
-        {
-            result = ( (TestNGXmlTestSuite) suite ).getSuiteName();
-        }
-
-        return result;
+        return options;
     }
 }

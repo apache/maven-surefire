@@ -23,11 +23,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
-import static org.apache.maven.surefire.testng.TestNGDirectoryTestSuite.finishTestSuite;
-import static org.apache.maven.surefire.testng.TestNGDirectoryTestSuite.startTestSuite;
 import static org.apache.maven.surefire.testng.TestNGExecutor.run;
 
 /**
@@ -37,6 +36,7 @@ import static org.apache.maven.surefire.testng.TestNGExecutor.run;
  * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
  */
 final class TestNGXmlTestSuite
+        extends TestSuite
 {
     private final List<File> suiteFiles;
 
@@ -71,9 +71,9 @@ final class TestNGXmlTestSuite
         {
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
-        startTestSuite( reporter, this );
+        startTestSuite( reporter );
         run( suiteFilePaths, testSourceDirectory, options, reporter, reportsDirectory, skipAfterFailureCount );
-        finishTestSuite( reporter, this );
+        finishTestSuite( reporter );
     }
 
     void locateTestSets()
@@ -101,9 +101,9 @@ final class TestNGXmlTestSuite
         }
     }
 
-    String getSuiteName()
+    @Override
+    Map<String, String> getOptions()
     {
-        String result = options.get( "suitename" );
-        return result == null ? "TestSuite" : result;
+        return options;
     }
 }
