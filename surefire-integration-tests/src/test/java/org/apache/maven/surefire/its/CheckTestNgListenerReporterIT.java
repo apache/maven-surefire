@@ -21,7 +21,13 @@ package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.After;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * Test simple TestNG listener and reporter
@@ -29,16 +35,48 @@ import org.junit.Test;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
+@RunWith(Parameterized.class)
 public class CheckTestNgListenerReporterIT
     extends SurefireJUnit4IntegrationTestCase
 {
-    @Test
-    public void TestNgListenerReporter()
+
+    @Parameterized.Parameters(name = "{index}: TestNG {0}")
+    public static Collection<Object[]> data()
     {
-        final SurefireLauncher verifierStarter = unpack( "testng-listener-reporter" );
-        verifierStarter.executeTest().verifyErrorFree( 1 ).getTargetFile(
-            "resultlistener-output.txt" ).assertFileExists().getTargetFile(
-            "suitelistener-output.txt" ).assertFileExists().getTargetFile( "reporter-output.txt" ).assertFileExists();
+        return Arrays.asList(new Object[][] {
+            { "5.6" }, // First TestNG version with reporter support
+            { "5.7" }, // default version from pom of the test case
+            { "5.10" },
+            { "5.13" }, // "reporterslist" param becomes String instead of List<ReporterConfig>
+                        // "listener" param becomes String instead of List<Class>
+            //{ "5.14.1" }, // "listener" param becomes List instead of String
+                            // Fails: Issue with 5.14.1 and 5.14.2 => join with <space>, split with ","
+                            // TODO will work with "configure(CommandLineArgs)"
+            //{ "5.14.2" }, // ReporterConfig is not available
+            //{ "5.14.3" }, // TestNG uses "reporter" instead of "reporterslist"
+                          // Both String or List are possible for "listener"
+                          // Fails: Bad formatted pom => transitive dependencies are missing
+            { "5.14.4" }, // Usage of org.testng:guice
+                          // Caution: Some TestNG features may fail with 5.14.4 and 5.14.5 due to missing dependency
+            { "5.14.6" }, // Usage of org.testng:guice removed
+            { "5.14.9" }, // Latest 5.14.x TestNG version
+            { "6.0" },
+            { "6.9.9" } // Current latest TestNG version
+        });
     }
 
+    @Parameterized.Parameter
+    public String version;
+    private SurefireLauncher verifierStarter;
+
+    @Test
+    public void testNgListenerReporter()
+    {
+        verifierStarter = unpack( "testng-listener-reporter", "_" + version );
+        verifierStarter.resetInitialGoals( version );
+        verifierStarter.executeTest().verifyErrorFree( 1 )
+            .getTargetFile( "resultlistener-output.txt" ).assertFileExists()
+            .getTargetFile( "suitelistener-output.txt" ).assertFileExists()
+            .getTargetFile( "reporter-output.txt" ).assertFileExists();
+    }
 }

@@ -64,16 +64,5 @@
         <targetPath>META-INF</targetPath>
       </resource>
     </resources>
-
-    <plugins>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <!-- DGF There are no tests in this project currently, and this
-            resolves SUREFIRE-414 -->
-          <skipExec>true</skipExec>
-        </configuration>
-      </plugin>
-    </plugins>
   </build>
 </project>

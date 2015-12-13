@@ -77,7 +77,7 @@ public class TestNGMapConfigurator
             Object val = entry.getValue();
             if ( "listener".equals( key ) )
             {
-                val = AbstractDirectConfigurator.loadListenerClasses( entry.getValue() );
+                val = convertListeners( entry.getValue() );
             }
             else if ( "objectfactory".equals( key ) )
             {
@@ -89,8 +89,9 @@ public class TestNGMapConfigurator
             }
             else if ( "reporter".equals( key ) )
             {
+                // for TestNG 5.6 or higher
                 // TODO support multiple reporters?
-                val = convertReporterConfig( val );
+                val = convertReporterConfig( entry.getValue() );
                 key = "reporterslist";
             }
             else if ( "junit".equals( key ) )
@@ -141,7 +142,7 @@ public class TestNGMapConfigurator
     }
 
     // ReporterConfig only became available in later versions of TestNG
-    private Object convertReporterConfig( Object val )
+    protected Object convertReporterConfig( String val )
     {
         final String reporterConfigClassName = "org.testng.ReporterConfig";
         try
@@ -157,6 +158,11 @@ public class TestNGMapConfigurator
         {
             return val;
         }
+    }
+
+    protected Object convertListeners( String listenerClasses ) throws TestSetFailedException
+    {
+        return AbstractDirectConfigurator.loadListenerClasses( listenerClasses );
     }
 
     protected Object convert( Object val, Class<?> type )

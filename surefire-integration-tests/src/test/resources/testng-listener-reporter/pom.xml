@@ -53,6 +53,13 @@
           <groupId>org.testng</groupId>
           <artifactId>testng</artifactId>
           <version>${testNgVersion}</version>
+          <exclusions>
+            <exclusion>
+              <!-- Excluded for 5.14.3, 5.14.4 and 5.14.5 which depend on this artifact -->
+              <groupId>org.testng</groupId>
+              <artifactId>guice</artifactId>
+            </exclusion>
+          </exclusions>
         </dependency>
       </dependencies>
     </profile>

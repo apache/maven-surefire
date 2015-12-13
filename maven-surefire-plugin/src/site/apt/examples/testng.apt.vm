@@ -28,6 +28,11 @@
 
 Using TestNG
 
+* Unsupported TestNG versions
+
+  - TestNG 5.14.3: Bad formatted pom.xml.
+  - TestNG 5.14.4 and 5.14.5: TestNG is using a missing dependency (org.testng:guice:2.0). Excluding it, may break some features.
+
 * Configuring TestNG
 
   To get started with TestNG, include the following dependency in your project (replacing the version with the one you wish to use):
@@ -229,6 +234,11 @@ Using TestNG
 
   TestNG provides support for attaching custom listeners, reporters, annotation transformers and method interceptors to your tests.
   By default, TestNG attaches a few basic listeners to generate HTML and XML reports.
+
+  Unsupported versions:
+    - TestNG 5.14.1 and 5.14.2: Due to an internal TestNG issue, listeners and reporters are not working with TestNG.
+           Please upgrade TestNG to version 5.14.9 or higher.
+           Note: It may be fixed in a future surefire version.
 
   You can configure multiple custom listeners like this:
 

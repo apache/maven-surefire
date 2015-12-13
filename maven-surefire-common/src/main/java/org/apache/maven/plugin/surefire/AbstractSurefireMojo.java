@@ -1116,11 +1116,12 @@ public abstract class AbstractSurefireMojo
         if ( testNgArtifact != null )
         {
             DefaultArtifactVersion defaultArtifactVersion = new DefaultArtifactVersion( testNgArtifact.getVersion() );
-            getProperties().setProperty( "testng.configurator", getConfiguratorName( defaultArtifactVersion ) );
+            getProperties().setProperty( "testng.configurator", getConfiguratorName( defaultArtifactVersion,
+                                                                                     getLog() ) );
         }
     }
 
-    private static String getConfiguratorName( ArtifactVersion version )
+    private static String getConfiguratorName( ArtifactVersion version, Log log )
         throws MojoExecutionException
     {
         try
@@ -1140,10 +1141,34 @@ public abstract class AbstractSurefireMojo
             {
                 return "org.apache.maven.surefire.testng.conf.TestNGMapConfigurator";
             }
-            range = VersionRange.createFromVersionSpec( "[5.10,6.5)" );
+            range = VersionRange.createFromVersionSpec( "[5.10,5.13)" );
             if ( range.containsVersion( version ) )
             {
                 return "org.apache.maven.surefire.testng.conf.TestNG510Configurator";
+            }
+            range = VersionRange.createFromVersionSpec( "[5.13,5.14.1)" );
+            if ( range.containsVersion( version ) )
+            {
+                return "org.apache.maven.surefire.testng.conf.TestNG513Configurator";
+            }
+            range = VersionRange.createFromVersionSpec( "[5.14.1,5.14.3)" );
+            if ( range.containsVersion( version ) )
+            {
+                return "org.apache.maven.surefire.testng.conf.TestNG5141Configurator";
+            }
+            range = VersionRange.createFromVersionSpec( "[5.14.3,6.0)" );
+            if ( range.containsVersion( version ) )
+            {
+                if ( version.equals( new DefaultArtifactVersion( "5.14.3" ) ) )
+                {
+                    throw new MojoExecutionException( "Due to a bad formatted pom.xml, "
+                                                      + "TestNG 5.14.3 is not supported" );
+                }
+                if ( VersionRange.createFromVersionSpec( "[5.14.4,5.14.5]" ).containsVersion( version ) )
+                {
+                    log.warn( "Due to a bad formatted pom.xml, TestNG 5.14.4 and 5.14.5 may not work" );
+                }
+                return "org.apache.maven.surefire.testng.conf.TestNG5143Configurator";
             }
             range = VersionRange.createFromVersionSpec( "[6.0,)" );
             if ( range.containsVersion( version ) )
