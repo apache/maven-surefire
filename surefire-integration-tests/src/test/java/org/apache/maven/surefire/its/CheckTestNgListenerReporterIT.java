@@ -72,7 +72,7 @@ public class CheckTestNgListenerReporterIT
             { "5.14.6", "1.5" }, // Usage of org.testng:guice removed
             { "5.14.9", "1.5" }, // Latest 5.14.x TestNG version
             { "6.0", "1.5" },
-            { "6.9.9", "1.8" } // Currently latest TestNG version
+            { "6.9.9", "1.7" } // Currently latest TestNG version
         });
     }
 
