@@ -286,7 +286,7 @@ Using TestNG
   You can implement TestNG listener interface <<<org.testng.ITestListener>>> in
   a separate test artifact <<<your-testng-listener-artifact>>> with scope=test, or in project test source code
   <<<src/test/java>>>. You can filter test artifacts by the parameter <<<dependenciesToScan>>> to load its classes
-  in current ClassLoader of surefire-testng provider.
+  in current ClassLoader of surefire-testng provider. The TestNG reporter class should implement <<<org.testng.IReporter>>>.
 
 * The level of verbosity
 

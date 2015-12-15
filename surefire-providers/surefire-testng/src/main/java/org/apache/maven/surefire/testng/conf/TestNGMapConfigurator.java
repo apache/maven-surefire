@@ -91,7 +91,7 @@ public class TestNGMapConfigurator
             {
                 // for TestNG 5.6 or higher
                 // TODO support multiple reporters?
-                val = convertReporterConfig( entry.getValue() );
+                val = convertReporterConfig( val );
                 key = "reporterslist";
             }
             else if ( "junit".equals( key ) )
@@ -142,7 +142,7 @@ public class TestNGMapConfigurator
     }
 
     // ReporterConfig only became available in later versions of TestNG
-    protected Object convertReporterConfig( String val )
+    protected Object convertReporterConfig( Object val )
     {
         final String reporterConfigClassName = "org.testng.ReporterConfig";
         try

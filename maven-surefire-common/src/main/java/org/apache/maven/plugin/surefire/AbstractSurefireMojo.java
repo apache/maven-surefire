@@ -1154,19 +1154,16 @@ public abstract class AbstractSurefireMojo
             range = VersionRange.createFromVersionSpec( "[5.14.1,5.14.3)" );
             if ( range.containsVersion( version ) )
             {
+                log.warn( "The 'reporter' or 'listener' may not work properly in TestNG 5.14.1 and 5.14.2." );
                 return "org.apache.maven.surefire.testng.conf.TestNG5141Configurator";
             }
             range = VersionRange.createFromVersionSpec( "[5.14.3,6.0)" );
             if ( range.containsVersion( version ) )
             {
-                if ( version.equals( new DefaultArtifactVersion( "5.14.3" ) ) )
+                if ( version.equals( new DefaultArtifactVersion( "[5.14.3,5.14.5]" ) ) )
                 {
-                    throw new MojoExecutionException( "Due to a bad formatted pom.xml, "
-                                                      + "TestNG 5.14.3 is not supported" );
-                }
-                if ( VersionRange.createFromVersionSpec( "[5.14.4,5.14.5]" ).containsVersion( version ) )
-                {
-                    log.warn( "Due to a bad formatted pom.xml, TestNG 5.14.4 and 5.14.5 may not work" );
+                    throw new MojoExecutionException( "TestNG 5.14.3-5.14.5 is not supported. "
+                            + "System dependency org.testng:guice missed path." );
                 }
                 return "org.apache.maven.surefire.testng.conf.TestNG5143Configurator";
             }

@@ -29,7 +29,7 @@ public class TestNG513Configurator
 {
 
     @Override
-    protected Object convertReporterConfig( String val )
+    protected Object convertReporterConfig( Object val )
     {
         return val;
     }
