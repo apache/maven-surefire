@@ -139,10 +139,6 @@ public class JUnit4Provider
             }
 
             Notifier notifier = new Notifier( new JUnit4RunListener( reporter ), getSkipAfterFailureCount() );
-            if ( isFailFast() )
-            {
-                notifier.addListener( new JUnit4FailFastListener( notifier ) );
-            }
             Result result = new Result();
             notifier.addListeners( customRunListeners )
                 .addListener( result.createListener() );
@@ -273,20 +269,45 @@ public class JUnit4Provider
         JUnitTestFailureListener failureListener = new JUnitTestFailureListener();
         notifier.addListener( failureListener );
         boolean hasMethodFilter = testResolver != null && testResolver.hasMethodPatterns();
-        execute( clazz, notifier, hasMethodFilter ? new TestResolverFilter() : new NullFilter() );
 
-        // Rerun failing tests if rerunFailingTestsCount is larger than 0
-        if ( isRerunFailingTests() )
+        try
         {
-            for ( int i = 0; i < rerunFailingTestsCount && !failureListener.getAllFailures().isEmpty(); i++ )
+            JUnit4FailFastListener failFastListener = null;
+            if ( isFailFast() )
             {
-                Set<ClassMethod> failedTests = generateFailingTests( failureListener.getAllFailures() );
-                failureListener.reset();
-                if ( !failedTests.isEmpty() )
+                failFastListener = new JUnit4FailFastListener( notifier );
+                notifier.addListener( failFastListener );
+            }
+
+            try
+            {
+                execute( clazz, notifier, hasMethodFilter ? new TestResolverFilter() : new NullFilter() );
+            }
+            finally
+            {
+                if ( failFastListener != null )
                 {
-                    executeFailedMethod( notifier, failedTests );
+                    notifier.removeListener( failFastListener );
                 }
             }
+
+            // Rerun failing tests if rerunFailingTestsCount is larger than 0
+            if ( isRerunFailingTests() )
+            {
+                for ( int i = 0; i < rerunFailingTestsCount && !failureListener.getAllFailures().isEmpty(); i++ )
+                {
+                    Set<ClassMethod> failedTests = generateFailingTests( failureListener.getAllFailures() );
+                    failureListener.reset();
+                    if ( !failedTests.isEmpty() )
+                    {
+                        executeFailedMethod( notifier, failedTests );
+                    }
+                }
+            }
+        }
+        finally
+        {
+            notifier.removeListener( failureListener );
         }
     }
 
