@@ -160,19 +160,13 @@ public class JUnit4Provider
 
                 if ( commandsReader != null )
                 {
-                    commandsReader.addShutdownListener( new CommandListener()
-                    {
-                        public void update( Command command )
-                        {
-                            testsToRun.markTestSetFinished();
-                        }
-                    } );
+                    registerShutdownListener( testsToRun );
                     commandsReader.awaitStarted();
                 }
 
-                for ( Class<?> aTestsToRun : testsToRun )
+                for ( Class<?> testToRun : testsToRun )
                 {
-                    executeTestSet( aTestsToRun, reporter, notifier );
+                    executeTestSet( testToRun, reporter, notifier );
                 }
             }
             finally
@@ -221,17 +215,26 @@ public class JUnit4Provider
         return isFailFast() && !isRerunFailingTests() ? providerParameters.getSkipAfterFailureCount() : 0;
     }
 
-    private CommandListener registerPleaseStopJUnitListener( final Notifier notifier )
+    private void registerShutdownListener( final TestsToRun testsToRun )
     {
-        CommandListener listener = new CommandListener()
+        commandsReader.addShutdownListener( new CommandListener()
+        {
+            public void update( Command command )
+            {
+                testsToRun.markTestSetFinished();
+            }
+        } );
+    }
+
+    private void registerPleaseStopJUnitListener( final Notifier notifier )
+    {
+        commandsReader.addSkipNextTestsListener( new CommandListener()
         {
             public void update( Command command )
             {
                 notifier.pleaseStop();
             }
-        };
-        commandsReader.addSkipNextListener( listener );
-        return listener;
+        } );
     }
 
     private void executeTestSet( Class<?> clazz, RunListener reporter, Notifier notifier )

@@ -99,11 +99,6 @@ public class TestNGProvider
             registerPleaseStopListener();
         }
 
-        if ( commandsReader != null )
-        {
-            commandsReader.awaitStarted();
-        }
-
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
         final RunListener reporter = reporterFactory.createReporter();
         /**
@@ -117,6 +112,10 @@ public class TestNGProvider
         {
             if ( isTestNGXmlTestSuite( testRequest ) )
             {
+                if ( commandsReader != null )
+                {
+                    commandsReader.awaitStarted();
+                }
                 TestNGXmlTestSuite testNGXmlTestSuite = newXmlSuite();
                 testNGXmlTestSuite.locateTestSets();
                 testNGXmlTestSuite.execute( reporter );
@@ -141,13 +140,8 @@ public class TestNGProvider
 
                 if ( commandsReader != null )
                 {
-                    commandsReader.addShutdownListener( new CommandListener()
-                    {
-                        public void update( Command command )
-                        {
-                            testsToRun.markTestSetFinished();
-                        }
-                    } );
+                    registerShutdownListener( testsToRun );
+                    commandsReader.awaitStarted();
                 }
                 TestNGDirectoryTestSuite suite = newDirectorySuite();
                 suite.execute( testsToRun, reporter );
@@ -176,17 +170,26 @@ public class TestNGProvider
         return isFailFast() ? providerParameters.getSkipAfterFailureCount() : 0;
     }
 
-    private CommandListener registerPleaseStopListener()
+    private void registerShutdownListener( final TestsToRun testsToRun )
     {
-        CommandListener listener = new CommandListener()
+        commandsReader.addShutdownListener( new CommandListener()
+        {
+            public void update( Command command )
+            {
+                testsToRun.markTestSetFinished();
+            }
+        } );
+    }
+
+    private void registerPleaseStopListener()
+    {
+        commandsReader.addSkipNextTestsListener( new CommandListener()
         {
             public void update( Command command )
             {
                 FailFastEventsSingleton.getInstance().setSkipOnNextTest();
             }
-        };
-        commandsReader.addSkipNextListener( listener );
-        return listener;
+        } );
     }
 
     private TestNGDirectoryTestSuite newDirectorySuite()

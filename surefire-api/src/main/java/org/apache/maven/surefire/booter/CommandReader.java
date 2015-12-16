@@ -133,7 +133,7 @@ public final class CommandReader
         addListener( TEST_SET_FINISHED, listener );
     }
 
-    public void addSkipNextListener( CommandListener listener )
+    public void addSkipNextTestsListener( CommandListener listener )
     {
         addListener( SKIP_SINCE_NEXT_TEST, listener );
     }

@@ -157,13 +157,7 @@ public class JUnitCoreProvider
 
             if ( commandsReader != null )
             {
-                commandsReader.addShutdownListener( new CommandListener()
-                {
-                    public void update( Command command )
-                    {
-                        testsToRun.markTestSetFinished();
-                    }
-                } );
+                registerShutdownListener( testsToRun );
                 commandsReader.awaitStarted();
             }
 
@@ -177,7 +171,7 @@ public class JUnitCoreProvider
                     List<Failure> failures = testFailureListener.getAllFailures();
                     Map<Class<?>, Set<String>> failingTests = generateFailingTests( failures, testClassLoader );
                     testFailureListener.reset();
-                    final FilterFactory filterFactory = new FilterFactory( testClassLoader );
+                    FilterFactory filterFactory = new FilterFactory( testClassLoader );
                     Filter failingMethodsFilter = filterFactory.createFailingMethodFilter( failingTests );
                     core.execute( testsToRun, failingMethodsFilter );
                 }
@@ -224,17 +218,26 @@ public class JUnitCoreProvider
         return isFailFast() && !isRerunFailingTests() ? providerParameters.getSkipAfterFailureCount() : 0;
     }
 
-    private CommandListener registerPleaseStopJUnitListener( final Notifier stoppable )
+    private void registerShutdownListener( final TestsToRun testsToRun )
     {
-        CommandListener listener = new CommandListener()
+        commandsReader.addShutdownListener( new CommandListener()
+        {
+            public void update( Command command )
+            {
+                testsToRun.markTestSetFinished();
+            }
+        } );
+    }
+
+    private void registerPleaseStopJUnitListener( final Notifier stoppable )
+    {
+        commandsReader.addSkipNextTestsListener( new CommandListener()
         {
             public void update( Command command )
             {
                 stoppable.pleaseStop();
             }
-        };
-        commandsReader.addSkipNextListener( listener );
-        return listener;
+        } );
     }
 
     private JUnit4RunListener createRunListener( ReporterFactory reporterFactory, ConsoleLogger consoleLogger )

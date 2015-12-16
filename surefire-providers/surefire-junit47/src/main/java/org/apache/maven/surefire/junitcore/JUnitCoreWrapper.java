@@ -82,7 +82,7 @@ final class JUnitCoreWrapper
         }
     }
 
-    private JUnitCore createJUnitCore( final Notifier notifier, Collection<RunListener> listeners )
+    private JUnitCore createJUnitCore( Notifier notifier, Collection<RunListener> listeners )
     {
         JUnitCore junitCore = new JUnitCore();
 

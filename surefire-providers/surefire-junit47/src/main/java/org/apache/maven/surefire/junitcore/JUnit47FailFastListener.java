@@ -38,7 +38,7 @@ final class JUnit47FailFastListener
 {
     private final Stoppable stoppable;
 
-    private final ConcurrentLinkedQueue<String> testClassNames = new ConcurrentLinkedQueue<String>();
+    private final Queue<String> testClassNames = new ConcurrentLinkedQueue<String>();
 
     JUnit47FailFastListener( Stoppable stoppable )
     {
