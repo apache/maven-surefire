@@ -23,8 +23,10 @@ import java.io.PrintStream;
 import java.util.Collections;
 import java.util.Iterator;
 
-import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.TestsToRun;
+
+import static org.apache.maven.surefire.booter.CommandReader.getReader;
+import static org.apache.maven.surefire.util.ReflectionUtils.loadClass;
 
 /**
  * A variant of TestsToRun that is provided with test class names
@@ -58,8 +60,7 @@ final class LazyTestsToRun
     private final class BlockingIterator
         implements Iterator<Class<?>>
     {
-        private final Iterator<String> it =
-            CommandReader.getReader().getIterableClasses( originalOutStream ).iterator();
+        private final Iterator<String> it = getReader().getIterableClasses( originalOutStream ).iterator();
 
         public boolean hasNext()
         {
@@ -69,14 +70,13 @@ final class LazyTestsToRun
         public Class<?> next()
         {
             String clazz = it.next();
-            return ReflectionUtils.loadClass( Thread.currentThread().getContextClassLoader(), clazz );
+            return loadClass( Thread.currentThread().getContextClassLoader(), clazz );
         }
 
         public void remove()
         {
             throw new UnsupportedOperationException();
         }
-
     }
 
     /**
