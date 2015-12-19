@@ -138,6 +138,11 @@ final class LazyTestsToRun
             {
                 return findClass( it.next() );
             }
+
+            public void remove()
+            {
+                throw new UnsupportedOperationException( "remove" );
+            }
         };
     }
 }
