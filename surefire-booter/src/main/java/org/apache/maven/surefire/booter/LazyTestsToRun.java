@@ -69,14 +69,22 @@ final class LazyTestsToRun
 
         public Class<?> next()
         {
-            String clazz = it.next();
-            return loadClass( Thread.currentThread().getContextClassLoader(), clazz );
+            return findClass( it.next() );
         }
 
         public void remove()
         {
             throw new UnsupportedOperationException();
         }
+    }
+
+    /**
+     * @return test classes which have been retrieved by {@link TestsToRun#iterator()}.
+     */
+    @Override
+    public Iterator<Class<?>> iterated()
+    {
+        return newWeakIterator();
     }
 
     /**
@@ -105,5 +113,31 @@ final class LazyTestsToRun
     public boolean allowEagerReading()
     {
         return false;
+    }
+
+    private static Class<?> findClass( String clazz )
+    {
+        return loadClass( Thread.currentThread().getContextClassLoader(), clazz );
+    }
+
+    /**
+     * @return snapshot of tests upon constructs of {@link CommandReader#iterated() iterator}.
+     * Therefore weakly consistent while {@link LazyTestsToRun#iterator()} is being iterated.
+     */
+    private static Iterator<Class<?>> newWeakIterator()
+    {
+        final Iterator<String> it = getReader().iterated();
+        return new Iterator<Class<?>>()
+        {
+            public boolean hasNext()
+            {
+                return it.hasNext();
+            }
+
+            public Class<?> next()
+            {
+                return findClass( it.next() );
+            }
+        };
     }
 }

@@ -78,6 +78,8 @@ public final class CommandReader
 
     private volatile Shutdown shutdown;
 
+    private int iteratedCount;
+
     public static CommandReader getReader()
     {
         final CommandReader reader = READER;
@@ -166,7 +168,16 @@ public final class CommandReader
     }
 
     /**
+     * @return test classes which have been retrieved by {@link CommandReader#getIterableClasses(PrintStream)}.
+     */
+    Iterator<String> iterated()
+    {
+        return testClasses.subList( 0, iteratedCount ).iterator();
+    }
+
+    /**
      * The iterator can be used only in one Thread.
+     * Two simultaneous instances are not allowed for sake of only one {@link #nextCommandNotifier}.
      *
      * @param originalOutStream original stream in current JVM process
      * @return Iterator with test classes lazily loaded as commands from the main process
@@ -241,7 +252,7 @@ public final class CommandReader
 
         private String clazz;
 
-        private int nextQueueIndex = 0;
+        private int nextQueueIndex;
 
         private ClassesIterator( PrintStream originalOutStream )
         {
@@ -297,6 +308,7 @@ public final class CommandReader
                     return;
                 }
                 clazz = CommandReader.this.testClasses.get( nextQueueIndex++ );
+                CommandReader.this.iteratedCount = nextQueueIndex;
             }
 
             if ( CommandReader.this.isStopped() )
@@ -319,7 +331,7 @@ public final class CommandReader
 
         private boolean isEndSymbolAt( int index )
         {
-            return CommandReader.this.isQueueFull() && index == CommandReader.this.testClasses.size();
+            return CommandReader.this.isQueueFull() && 1 + index == CommandReader.this.testClasses.size();
         }
     }
 

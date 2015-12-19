@@ -89,6 +89,27 @@ public class TestsToRunTest
         assertEquals( null, testsToRun.getClassByName( "org.apache.maven.surefire.util.TestsToRunTest$T3" ) );
     }
 
+    public void testTwoIterators()
+    {
+        Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
+        classes.add( T1.class );
+        classes.add( T2.class );
+        TestsToRun testsToRun = new TestsToRun( classes );
+
+        Iterator<Class<?>> it1 = testsToRun.iterator();
+
+        assertEquals( it1.next(), T1.class );
+        assertTrue( it1.hasNext() );
+
+        Iterator<Class<?>> it2 = testsToRun.iterated();
+
+        assertEquals( it1.next(), T2.class );
+        assertFalse( it1.hasNext() );
+
+        assertEquals( it2.next(), T1.class );
+        assertFalse( it1.hasNext() );
+    }
+
     class T1
     {
 

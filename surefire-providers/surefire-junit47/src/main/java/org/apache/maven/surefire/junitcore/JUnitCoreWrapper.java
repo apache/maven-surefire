@@ -36,6 +36,7 @@ import org.junit.runner.notification.StoppedByUserException;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Queue;
 
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createDescription;
@@ -66,10 +67,16 @@ final class JUnitCoreWrapper
     void execute( TestsToRun testsToRun, Filter filter )
         throws TestSetFailedException
     {
-        execute( testsToRun, Collections.<RunListener>emptyList(), filter );
+        execute( testsToRun, true, Collections.<RunListener>emptyList(), filter );
     }
 
     void execute( TestsToRun testsToRun, Collection<RunListener> listeners, Filter filter )
+            throws TestSetFailedException
+    {
+        execute( testsToRun, false, listeners, filter );
+    }
+
+    private void execute( TestsToRun testsToRun, boolean useIterated, Collection<RunListener> listeners, Filter filter )
         throws TestSetFailedException
     {
         if ( testsToRun.allowEagerReading() )
@@ -78,7 +85,7 @@ final class JUnitCoreWrapper
         }
         else
         {
-            executeLazy( testsToRun, filter, listeners );
+            executeLazy( testsToRun, useIterated, filter, listeners );
         }
     }
 
@@ -101,13 +108,14 @@ final class JUnitCoreWrapper
         createRequestAndRun( filter, computer, junitCore.withReportedTests( tests ), tests );
     }
 
-    private void executeLazy( TestsToRun testsToRun, Filter filter, Collection<RunListener> listeners )
+    private void executeLazy( TestsToRun testsToRun, boolean useIterated, Filter filter,
+                              Collection<RunListener> listeners )
         throws TestSetFailedException
     {
         JUnitCore junitCore = createJUnitCore( notifier, listeners );
-        // in order to support LazyTestsToRun, the iterator must be used
-        for ( Class<?> clazz : testsToRun )
+        for ( Iterator<Class<?>> it = useIterated ? testsToRun.iterated() : testsToRun.iterator(); it.hasNext(); )
         {
+            Class<?> clazz = it.next();
             Computer computer = createComputer();
             createRequestAndRun( filter, computer, junitCore.withReportedTests( clazz ), clazz );
         }

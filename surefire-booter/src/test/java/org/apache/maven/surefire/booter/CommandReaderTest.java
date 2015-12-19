@@ -38,6 +38,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
 import static org.junit.Assert.assertFalse;
@@ -45,6 +46,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * Testing singleton {@code MasterProcessReader} in multiple class loaders.
@@ -58,6 +60,18 @@ public class CommandReaderTest
     private final BlockingQueue<Byte> blockingStream = new LinkedBlockingQueue<Byte>();
     private InputStream realInputStream;
     private CommandReader reader;
+
+    static class A {
+    }
+
+    static class B {
+    }
+
+    static class C {
+    }
+
+    static class D {
+    }
 
     @Before
     public void init()
@@ -80,8 +94,7 @@ public class CommandReaderTest
     @Test
     public void readJustOneClass() throws Exception
     {
-        Iterator<String> it = reader.getIterableClasses( new PrintStream( new ByteArrayOutputStream() ) )
-            .iterator();
+        Iterator<String> it = reader.getIterableClasses( nul() ).iterator();
         assertTrue( it.hasNext() );
         assertThat( it.next(), is( getClass().getName() ) );
         reader.stop();
@@ -97,6 +110,50 @@ public class CommandReaderTest
         }
     }
 
+    @Test
+    public void manyClasses() throws Exception
+    {
+        Iterator<String> it1 = reader.getIterableClasses( nul() ).iterator();
+        assertThat( it1.next(), is( getClass().getName() ) );
+        addTestToPipeline( A.class.getName() );
+        assertThat( it1.next(), is( A.class.getName() ) );
+        addTestToPipeline( B.class.getName() );
+        assertThat( it1.next(), is( B.class.getName() ) );
+        addTestToPipeline( C.class.getName() );
+        assertThat( it1.next(), is( C.class.getName() ) );
+        addEndOfPipeline();
+        addTestToPipeline( D.class.getName() );
+        assertFalse( it1.hasNext() );
+    }
+
+    @Test
+    public void twoIterators() throws Exception
+    {
+        Iterator<String> it1 = reader.getIterableClasses( nul() ).iterator();
+
+        assertThat( it1.next(), is( getClass().getName() ) );
+        addTestToPipeline( A.class.getName() );
+        assertThat( it1.next(), is( A.class.getName() ) );
+        addTestToPipeline( B.class.getName() );
+
+        TimeUnit.MILLISECONDS.sleep( 200 ); // give the test chance to fail
+
+        Iterator<String> it2 = reader.iterated();
+
+        assertThat( it1.next(), is( B.class.getName() ) );
+        addTestToPipeline( C.class.getName() );
+
+        assertThat( it2.hasNext(), is( true ) );
+        assertThat( it2.next(), is( getClass().getName() ) );
+        assertThat( it2.hasNext(), is( true ) );
+        assertThat( it2.next(), is( A.class.getName() ) );
+        assertThat( it2 ).isEmpty();
+
+        assertThat( it1.next(), is( C.class.getName() ) );
+        addEndOfPipeline();
+        assertThat( it1 ).isEmpty();
+    }
+
     @Test( expected = NoSuchElementException.class )
     public void stopBeforeReadInThread()
         throws Throwable
@@ -105,8 +162,7 @@ public class CommandReaderTest
         {
             public void run()
             {
-                Iterator<String> it = reader.getIterableClasses( new PrintStream( new ByteArrayOutputStream() ) )
-                    .iterator();
+                Iterator<String> it = reader.getIterableClasses( nul() ).iterator();
                 assertThat( it.next(), is( CommandReaderTest.class.getName() ) );
             }
         };
@@ -133,8 +189,7 @@ public class CommandReaderTest
         {
             public void run()
             {
-                Iterator<String> it = reader.getIterableClasses( new PrintStream( new ByteArrayOutputStream() ) )
-                    .iterator();
+                Iterator<String> it = reader.getIterableClasses( nul() ).iterator();
                 assertThat( it.next(), is( CommandReaderTest.class.getName() ) );
                 counter.countDown();
                 assertThat( it.next(), is( PropertiesWrapperTest.class.getName() ) );
@@ -195,5 +250,23 @@ public class CommandReaderTest
         {
             blockingStream.add( buffer.get() );
         }
+    }
+
+    private void addEndOfPipeline()
+            throws UnsupportedEncodingException
+    {
+        ByteBuffer buffer = ByteBuffer.allocate( 8 )
+                .putInt( MasterProcessCommand.TEST_SET_FINISHED.getId() )
+                .putInt( 0 );
+        buffer.rewind();
+        for ( ; buffer.hasRemaining(); )
+        {
+            blockingStream.add( buffer.get() );
+        }
+    }
+
+    private static PrintStream nul()
+    {
+        return new PrintStream( new ByteArrayOutputStream() );
     }
 }

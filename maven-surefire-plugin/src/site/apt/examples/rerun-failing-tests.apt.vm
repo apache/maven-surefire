@@ -134,3 +134,8 @@ mvn -D${thisPlugin.toLowerCase()}.rerunFailingTestsCount=2 test
 
   In the xml report, the running time of a failing test with re-runs will be the running time of the
   <<first failing run>>.
+
+* Re-run execution in JUnit Providers
+
+  The provider <<<surefire-junit4>>> executes individual test class and consequently re-runs failed tests.
+  The provider <<<surefire-junit47>>> executes all test classes and re-runs failed tests afterwards.

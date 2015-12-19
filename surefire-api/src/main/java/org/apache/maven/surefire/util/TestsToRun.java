@@ -23,9 +23,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+
+import static java.lang.Math.max;
 
 /**
  * Contains all the tests that have been found according to specified include/exclude
@@ -35,9 +38,11 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
  */
 public class TestsToRun implements Iterable<Class<?>>
 {
-    private final Set<Class<?>> locatedClasses;
+    private final List<Class<?>> locatedClasses;
 
     private volatile boolean finished;
+
+    private int iteratedCount;
 
     /**
      * Constructor
@@ -46,13 +51,21 @@ public class TestsToRun implements Iterable<Class<?>>
      */
     public TestsToRun( Set<Class<?>> locatedClasses )
     {
-        this.locatedClasses = Collections.unmodifiableSet( locatedClasses );
+        this.locatedClasses = new ArrayList<Class<?>>( locatedClasses );
     }
 
     public static TestsToRun fromClass( Class<?> clazz )
         throws TestSetFailedException
     {
         return new TestsToRun( Collections.<Class<?>>singleton( clazz ) );
+    }
+
+    /**
+     * @return test classes which have been retrieved by {@link TestsToRun#iterator()}.
+     */
+    public Iterator<Class<?>> iterated()
+    {
+        return locatedClasses.subList( 0, iteratedCount ).iterator();
     }
 
     /**
@@ -72,6 +85,8 @@ public class TestsToRun implements Iterable<Class<?>>
 
         private Boolean finishCurrentIteration;
 
+        private int iteratedCount;
+
         public boolean hasNext()
         {
             popMarker();
@@ -86,7 +101,9 @@ public class TestsToRun implements Iterable<Class<?>>
                 {
                     throw new NoSuchElementException();
                 }
-                return it.next();
+                Class<?> nextTest = it.next();
+                TestsToRun.this.iteratedCount = max( ++iteratedCount, TestsToRun.this.iteratedCount );
+                return nextTest;
             }
             finally
             {
