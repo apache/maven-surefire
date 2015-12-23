@@ -471,7 +471,7 @@ Using TestNG
               <value>false</value>
             </property>
           </properties>
-		  <threadCount>1</threadCount>
+          <threadCount>1</threadCount>
           [...]
         </configuration>
         <dependencies>
