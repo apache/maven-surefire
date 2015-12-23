@@ -49,8 +49,10 @@ Shutdown of Forked JVM
   After the master process of the build is shutdown by sending SIGTERM signal
   or pressing CTRL+C, the master process immediately sends SHUTDOWN command to
   every forked JVM. By default (configuration parameter <<<shutdown=testset>>>)
-  forked JVM would not continue with new test which means that the current
-  test may still continue to run.
+  forked JVM would not pick up a new test which means that the current
+  test may still continue to run. The SIGTERM signal triggers Java shutdownhook
+  which executes <<<java.lang.Process.destroy()>>> in the forked JVM (not always
+  reliable depending on VM and OS).
   The parameter <<<shutdown>>> can be configured with other two values
   <<<exit>>> and <<<kill>>>. Using <<<exit>>> forked JVM executes
   <<<java.lang.System.exit(1)>>> after the master process has received SIGTERM.

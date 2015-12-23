@@ -23,6 +23,7 @@ import java.io.PrintStream;
 import java.util.Collections;
 import java.util.Iterator;
 
+import org.apache.maven.surefire.util.CloseableIterator;
 import org.apache.maven.surefire.util.TestsToRun;
 
 import static org.apache.maven.surefire.booter.CommandReader.getReader;
@@ -79,7 +80,7 @@ final class LazyTestsToRun
     }
 
     /**
-     * @return test classes which have been retrieved by {@link TestsToRun#iterator()}.
+     * @return test classes which have been retrieved by {@link LazyTestsToRun#iterator()}.
      */
     @Override
     public Iterator<Class<?>> iterated()
@@ -124,24 +125,37 @@ final class LazyTestsToRun
      * @return snapshot of tests upon constructs of {@link CommandReader#iterated() iterator}.
      * Therefore weakly consistent while {@link LazyTestsToRun#iterator()} is being iterated.
      */
-    private static Iterator<Class<?>> newWeakIterator()
+    private Iterator<Class<?>> newWeakIterator()
     {
         final Iterator<String> it = getReader().iterated();
-        return new Iterator<Class<?>>()
+        return new CloseableIterator<Class<?>>()
         {
-            public boolean hasNext()
+            @Override
+            protected boolean isClosed()
+            {
+                return LazyTestsToRun.this.isFinished();
+            }
+
+            @Override
+            protected boolean doHasNext()
             {
                 return it.hasNext();
             }
 
-            public Class<?> next()
+            @Override
+            protected Class<?> doNext()
             {
                 return findClass( it.next() );
             }
 
+            @Override
+            protected void doRemove()
+            {
+            }
+
             public void remove()
             {
-                throw new UnsupportedOperationException( "remove" );
+                throw new UnsupportedOperationException( "unsupported remove" );
             }
         };
     }

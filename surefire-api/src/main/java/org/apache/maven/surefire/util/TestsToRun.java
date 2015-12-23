@@ -24,8 +24,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
+
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import static java.lang.Math.max;
@@ -65,7 +65,7 @@ public class TestsToRun implements Iterable<Class<?>>
      */
     public Iterator<Class<?>> iterated()
     {
-        return locatedClasses.subList( 0, iteratedCount ).iterator();
+        return newWeakIterator();
     }
 
     /**
@@ -79,60 +79,52 @@ public class TestsToRun implements Iterable<Class<?>>
     }
 
     private final class ClassesIterator
-        implements Iterator<Class<?>>
+        extends CloseableIterator<Class<?>>
     {
         private final Iterator<Class<?>> it = TestsToRun.this.locatedClasses.iterator();
 
-        private Boolean finishCurrentIteration;
-
         private int iteratedCount;
 
-        public boolean hasNext()
+        @Override
+        protected boolean isClosed()
         {
-            popMarker();
-            return !finishCurrentIteration && it.hasNext();
+            return TestsToRun.this.isFinished();
         }
 
-        public Class<?> next()
+        @Override
+        protected boolean doHasNext()
         {
-            try
-            {
-                if ( popMarker() && finishCurrentIteration )
-                {
-                    throw new NoSuchElementException();
-                }
-                Class<?> nextTest = it.next();
-                TestsToRun.this.iteratedCount = max( ++iteratedCount, TestsToRun.this.iteratedCount );
-                return nextTest;
-            }
-            finally
-            {
-                finishCurrentIteration = null;
-            }
+            return it.hasNext();
         }
 
+        @Override
+        protected Class<?> doNext()
+        {
+            Class<?> nextTest = it.next();
+            TestsToRun.this.iteratedCount = max( ++iteratedCount, TestsToRun.this.iteratedCount );
+            return nextTest;
+        }
+
+        @Override
+        protected void doRemove()
+        {
+        }
+
+        @Override
         public void remove()
         {
-            throw new UnsupportedOperationException();
-        }
-
-        /**
-         * @return {@code true} if marker changed from NULL to anything
-         */
-        private boolean popMarker()
-        {
-            if ( finishCurrentIteration == null )
-            {
-                finishCurrentIteration = TestsToRun.this.finished;
-                return true;
-            }
-            return false;
+            throw new UnsupportedOperationException( "unsupported remove" );
         }
     }
 
     public final void markTestSetFinished()
     {
         finished = true;
+    }
+
+    public final boolean isFinished()
+    {
+        return finished;
     }
 
     public String toString()
@@ -213,5 +205,45 @@ public class TestsToRun implements Iterable<Class<?>>
             }
         }
         return null;
+    }
+
+    /**
+     * @return snapshot of tests upon constructs of internal iterator.
+     * Therefore weakly consistent while {@link TestsToRun#iterator()} is being iterated.
+     */
+    private Iterator<Class<?>> newWeakIterator()
+    {
+        final Iterator<Class<?>> it = locatedClasses.subList( 0, iteratedCount ).iterator();
+        return new CloseableIterator<Class<?>>()
+        {
+            @Override
+            protected boolean isClosed()
+            {
+                return TestsToRun.this.isFinished();
+            }
+
+            @Override
+            protected boolean doHasNext()
+            {
+                return it.hasNext();
+            }
+
+            @Override
+            protected Class<?> doNext()
+            {
+                return it.next();
+            }
+
+            @Override
+            protected void doRemove()
+            {
+            }
+
+            @Override
+            public void remove()
+            {
+                throw new UnsupportedOperationException( "unsupported remove" );
+            }
+        };
     }
 }
