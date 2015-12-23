@@ -35,6 +35,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
 
 import static org.apache.maven.surefire.testng.TestNGExecutor.run;
+import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 
 /**
  * Test suite for TestNG based on a directory of Java test classes. Can also execute JUnit tests.
@@ -240,7 +241,12 @@ final class TestNGDirectoryTestSuite
     private Map<String, String> createJUnitOptions()
     {
         Map<String, String> junitOptions = new HashMap<String, String>( options );
-        junitOptions.put( "junit", "true" );
+        String onlyJUnit = options.get( "junit" );
+        if ( isBlank( onlyJUnit ) )
+        {
+            onlyJUnit = "true";
+        }
+        junitOptions.put( "junit", onlyJUnit );
         return junitOptions;
     }
 

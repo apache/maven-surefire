@@ -452,3 +452,43 @@ Using TestNG
   [...]
 </dependencies>
 +---+
+
+  You may want to run two providers, e.g. <<<surefire-junit47>>> and <<<surefire-testng>>>, and avoid running JUnit
+  tests within <<<surefire-testng>>> provider by setting property <<<junit=false>>>.
+
++---+
+<plugins>
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          [...]
+          <properties>
+            <property>
+              <name>junit</name>
+              <value>false</value>
+            </property>
+          </properties>
+		  <threadCount>1</threadCount>
+          [...]
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.surefire</groupId>
+            <artifactId>surefire-junit47</artifactId>
+            <version>${project.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.maven.surefire</groupId>
+            <artifactId>surefire-testng</artifactId>
+            <version>${project.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    [...]
+</plugins>
++---+
+
+
