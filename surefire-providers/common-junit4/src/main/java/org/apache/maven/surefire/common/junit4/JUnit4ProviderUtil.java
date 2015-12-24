@@ -27,10 +27,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.internal.StringUtils;
 
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
+
+import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createRequest;
+import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
+import static org.junit.runner.Description.TEST_MECHANISM;
 
 /**
  *
@@ -108,14 +111,12 @@ public final class JUnit4ProviderUtil
 
     public static Description createSuiteDescription( Collection<Class<?>> classes )
     {
-        return JUnit4Reflector.createRequest( classes.toArray( new Class[classes.size()] ) )
-                .getRunner()
-                .getDescription();
+        return createRequest( classes.toArray( new Class[classes.size()] ) ).getRunner().getDescription();
     }
 
     public static boolean isFailureInsideJUnitItself( Description failure )
     {
-        return Description.TEST_MECHANISM.equals( failure );
+        return TEST_MECHANISM.equals( failure );
     }
 
     /**
@@ -149,7 +150,7 @@ public final class JUnit4ProviderUtil
     private static String tryBlank( String s )
     {
         s = s.trim();
-        return StringUtils.isBlank( s ) ? null : s;
+        return isBlank( s ) ? null : s;
     }
 
 }

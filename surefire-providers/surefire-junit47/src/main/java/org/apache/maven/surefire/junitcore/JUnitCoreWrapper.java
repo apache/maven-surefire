@@ -42,6 +42,8 @@ import java.util.Queue;
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createDescription;
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createIgnored;
 import static org.apache.maven.surefire.common.junit4.JUnit4RunListener.rethrowAnyTestMechanismFailures;
+import static org.junit.runner.Computer.serial;
+import static org.junit.runner.Request.classes;
 
 /**
  * Encapsulates access to JUnitCore
@@ -124,7 +126,7 @@ final class JUnitCoreWrapper
     private void createRequestAndRun( Filter filter, Computer computer, JUnitCore junitCore, Class<?>... classesToRun )
         throws TestSetFailedException
     {
-        Request req = Request.classes( computer, classesToRun );
+        Request req = classes( computer, classesToRun );
         if ( filter != null )
         {
             req = new FilteringRequest( req, filter );
@@ -151,23 +153,16 @@ final class JUnitCoreWrapper
     private Computer createComputer()
     {
         return jUnitCoreParameters.isNoThreading()
-            ? Computer.serial()
+            ? serial()
             : new ParallelComputerBuilder( logger, jUnitCoreParameters ).buildComputer();
     }
 
     private final class JUnitCore
         extends org.apache.maven.surefire.junitcore.JUnitCore
     {
-        private final JUnit47FailFastListener failFastListener;
-
         JUnitCore()
         {
-            super( notifier );
-            failFastListener = failFast ? new JUnit47FailFastListener( notifier ) : null;
-            if ( failFastListener != null )
-            {
-                notifier.addListener( failFastListener );
-            }
+            super( JUnitCoreWrapper.this.notifier.asFailFast( JUnitCoreWrapper.this.failFast ) );
         }
 
         JUnitCore withReportedTests( Class<?>... tests )
@@ -188,7 +183,7 @@ final class JUnitCoreWrapper
         protected void afterException( Throwable e )
             throws TestSetFailedException
         {
-            if ( failFast && e instanceof StoppedByUserException )
+            if ( JUnitCoreWrapper.this.failFast && e instanceof StoppedByUserException )
             {
                 Queue<String> stoppedTests = getRemainingTestClasses();
                 if ( stoppedTests != null )
@@ -198,7 +193,7 @@ final class JUnitCoreWrapper
                     for ( String clazz; ( clazz = stoppedTests.poll() ) != null; )
                     {
                         Description skippedTest = createDescription( clazz, reasonForSkippedTest );
-                        notifier.fireTestIgnored( skippedTest );
+                        JUnitCoreWrapper.this.notifier.fireTestIgnored( skippedTest );
                     }
                 }
             }
@@ -220,7 +215,7 @@ final class JUnitCoreWrapper
 
         private Queue<String> getRemainingTestClasses()
         {
-            return failFastListener == null ? null : failFastListener.getRemainingTestClasses();
+            return JUnitCoreWrapper.this.failFast ? JUnitCoreWrapper.this.notifier.getRemainingTestClasses() : null;
         }
     }
 }

@@ -272,23 +272,14 @@ public class JUnit4Provider
 
         try
         {
-            JUnit4FailFastListener failFastListener = null;
-            if ( isFailFast() )
-            {
-                failFastListener = new JUnit4FailFastListener( notifier );
-                notifier.addListener( failFastListener );
-            }
-
             try
             {
+                notifier.asFailFast( isFailFast() );
                 execute( clazz, notifier, hasMethodFilter ? new TestResolverFilter() : new NullFilter() );
             }
             finally
             {
-                if ( failFastListener != null )
-                {
-                    notifier.removeListener( failFastListener );
-                }
+                notifier.asFailFast( false );
             }
 
             // Rerun failing tests if rerunFailingTestsCount is larger than 0

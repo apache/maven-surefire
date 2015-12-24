@@ -19,14 +19,20 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
+import org.junit.runner.Description;
+import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
+import org.junit.runner.notification.StoppedByUserException;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.cutTestClassAndMethod;
 import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDownToZero;
 
 /**
@@ -37,14 +43,18 @@ import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDown
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  */
-public class Notifier
-    extends RunNotifier implements Stoppable
+public final class Notifier
+    extends RunNotifier
 {
     private final Collection<RunListener> listeners = new ArrayList<RunListener>();
+
+    private final Queue<String> testClassNames = new ConcurrentLinkedQueue<String>();
 
     private final AtomicInteger skipAfterFailureCount;
 
     private final JUnit4RunListener reporter;
+
+    private volatile boolean failFast;
 
     public Notifier( JUnit4RunListener reporter, int skipAfterFailureCount )
     {
@@ -53,7 +63,35 @@ public class Notifier
         this.skipAfterFailureCount = new AtomicInteger( skipAfterFailureCount );
     }
 
-    public void fireStopEvent()
+    public Notifier asFailFast( boolean failFast )
+    {
+        this.failFast = failFast;
+        return this;
+    }
+
+    @Override
+    public void fireTestStarted( Description description ) throws StoppedByUserException
+    {
+        // If fireTestStarted() throws exception (== skipped test), the class must not be removed from testClassNames.
+        // Therefore this class will be removed only if test class started with some test method.
+        super.fireTestStarted( description );
+        testClassNames.remove( cutTestClassAndMethod( description ).getClazz() );
+    }
+
+    @Override
+    public void fireTestFailure( Failure failure )
+    {
+        if ( failFast )
+        {
+            fireStopEvent();
+        }
+        super.fireTestFailure( failure );
+    }
+
+    /**
+     * Fire stop even to plugin process and/or call {@link org.junit.runner.notification.RunNotifier#pleaseStop()}.
+     */
+    private void fireStopEvent()
     {
         if ( countDownToZero( skipAfterFailureCount ) )
         {
@@ -103,5 +141,10 @@ public class Notifier
             it.remove();
             super.removeListener( listener );
         }
+    }
+
+    public Queue<String> getRemainingTestClasses()
+    {
+        return testClassNames;
     }
 }
