@@ -2396,14 +2396,6 @@ public abstract class AbstractSurefireMojo
         {
             throw new MojoFailureException( "Parameter \"skipAfterFailureCount\" should not be negative." );
         }
-
-        boolean isRerun = getRerunFailingTestsCount() > 0;
-        boolean isFailFast = getSkipAfterFailureCount() > 0;
-        if ( isRerun && isFailFast )
-        {
-            throw new MojoFailureException( "Parameters [\"rerunFailingTestsCount\", \"skipAfterFailureCount\"] "
-                                                + "should not be enabled together." );
-        }
     }
 
     private void warnIfWrongShutdownValue()

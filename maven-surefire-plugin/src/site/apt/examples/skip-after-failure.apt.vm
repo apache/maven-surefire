@@ -74,4 +74,12 @@ Limitations
  due to race conditions.
  The parameter <<<reuseForks>>> should be always set to <<<true>>> (which is
  default value), otherwise this feature won't work properly in most cases.
- 
+
+Other features
+
+* Re-run and skip execution
+
+  Since of 2.19.1 you can use parameters <<<skipAfterFailureCount>>> and <<<rerunFailingTestsCount>>> together.
+  This is enabled by providers <<<surefire-junit4>>> and <<<surefire-junit47>>>. You can run again failed tests
+  and skip the rest of the test-set if errors or failures reached <<<skipAfterFailureCount>>>.
+  Notice that failed tests within re-run phase are not included in <<<skipAfterFailureCount>>>.

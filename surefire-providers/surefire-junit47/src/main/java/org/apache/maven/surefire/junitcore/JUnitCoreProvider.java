@@ -53,6 +53,7 @@ import static java.util.Collections.unmodifiableCollection;
 import static org.apache.maven.surefire.booter.CommandReader.getReader;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTests;
 import static org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory.createCustomListeners;
+import static org.apache.maven.surefire.common.junit4.Notifier.pureNotifier;
 import static org.apache.maven.surefire.junitcore.ConcurrentRunListener.createInstance;
 import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.testset.TestListResolver.optionallyWildcardFilter;
@@ -120,11 +121,6 @@ public class JUnitCoreProvider
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException
     {
-        if ( isRerunFailingTests() && isFailFast() )
-        {
-            throw new TestSetFailedException( "don't enable parameters rerunFailingTestsCount, skipAfterFailureCount" );
-        }
-
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
         final RunResult runResult;
@@ -153,7 +149,7 @@ public class JUnitCoreProvider
 
         try
         {
-            JUnitCoreWrapper core = new JUnitCoreWrapper( notifier, jUnitCoreParameters, consoleLogger, isFailFast() );
+            JUnitCoreWrapper core = new JUnitCoreWrapper( notifier, jUnitCoreParameters, consoleLogger );
 
             if ( commandsReader != null )
             {
@@ -161,11 +157,16 @@ public class JUnitCoreProvider
                 commandsReader.awaitStarted();
             }
 
+            notifier.asFailFast( isFailFast() );
             core.execute( testsToRun, customRunListeners, filter );
+            notifier.asFailFast( false );
 
             // Rerun failing tests if rerunFailingTestsCount is larger than 0
             if ( isRerunFailingTests() )
             {
+                Notifier rerunNotifier = pureNotifier();
+                notifier.copyListenersTo( rerunNotifier );
+                JUnitCoreWrapper rerunCore = new JUnitCoreWrapper( rerunNotifier, jUnitCoreParameters, consoleLogger );
                 for ( int i = 0; i < rerunFailingTestsCount && !testFailureListener.getAllFailures().isEmpty(); i++ )
                 {
                     List<Failure> failures = testFailureListener.getAllFailures();
@@ -173,7 +174,7 @@ public class JUnitCoreProvider
                     testFailureListener.reset();
                     FilterFactory filterFactory = new FilterFactory( testClassLoader );
                     Filter failingMethodsFilter = filterFactory.createFailingMethodFilter( failingTests );
-                    core.execute( testsToRun, failingMethodsFilter );
+                    rerunCore.execute( testsToRun, failingMethodsFilter );
                 }
             }
         }
@@ -215,7 +216,7 @@ public class JUnitCoreProvider
 
     private int getSkipAfterFailureCount()
     {
-        return isFailFast() && !isRerunFailingTests() ? providerParameters.getSkipAfterFailureCount() : 0;
+        return isFailFast() ? providerParameters.getSkipAfterFailureCount() : 0;
     }
 
     private void registerShutdownListener( final TestsToRun testsToRun )

@@ -46,6 +46,7 @@ import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
+import org.junit.runner.notification.RunNotifier;
 import org.junit.runner.notification.StoppedByUserException;
 
 import java.util.Collection;
@@ -61,6 +62,7 @@ import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createDesc
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createIgnored;
 import static org.apache.maven.surefire.common.junit4.JUnit4RunListener.rethrowAnyTestMechanismFailures;
 import static org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory.createCustomListeners;
+import static org.apache.maven.surefire.common.junit4.Notifier.pureNotifier;
 import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
 import static org.apache.maven.surefire.testset.TestListResolver.optionallyWildcardFilter;
@@ -116,11 +118,6 @@ public class JUnit4Provider
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException
     {
-        if ( isRerunFailingTests() && isFailFast() )
-        {
-            throw new TestSetFailedException( "don't enable parameters rerunFailingTestsCount, skipAfterFailureCount" );
-        }
-
         upgradeCheck();
 
         ReporterFactory reporterFactory = providerParameters.getReporterFactory();
@@ -208,7 +205,7 @@ public class JUnit4Provider
 
     private int getSkipAfterFailureCount()
     {
-        return isFailFast() && !isRerunFailingTests() ? providerParameters.getSkipAfterFailureCount() : 0;
+        return isFailFast() ? providerParameters.getSkipAfterFailureCount() : 0;
     }
 
     private void registerShutdownListener( final TestsToRun testsToRun )
@@ -285,13 +282,15 @@ public class JUnit4Provider
             // Rerun failing tests if rerunFailingTestsCount is larger than 0
             if ( isRerunFailingTests() )
             {
+                Notifier rerunNotifier = pureNotifier();
+                notifier.copyListenersTo( rerunNotifier );
                 for ( int i = 0; i < rerunFailingTestsCount && !failureListener.getAllFailures().isEmpty(); i++ )
                 {
                     Set<ClassMethod> failedTests = generateFailingTests( failureListener.getAllFailures() );
                     failureListener.reset();
                     if ( !failedTests.isEmpty() )
                     {
-                        executeFailedMethod( notifier, failedTests );
+                        executeFailedMethod( rerunNotifier, failedTests );
                     }
                 }
             }
@@ -366,7 +365,7 @@ public class JUnit4Provider
         }
     }
 
-    private void executeFailedMethod( Notifier notifier, Set<ClassMethod> failedMethods )
+    private void executeFailedMethod( RunNotifier notifier, Set<ClassMethod> failedMethods )
         throws TestSetFailedException
     {
         for ( ClassMethod failedMethod : failedMethods )

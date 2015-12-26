@@ -43,7 +43,7 @@ import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDown
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  */
-public final class Notifier
+public class Notifier
     extends RunNotifier
 {
     private final Collection<RunListener> listeners = new ArrayList<RunListener>();
@@ -63,29 +63,107 @@ public final class Notifier
         this.skipAfterFailureCount = new AtomicInteger( skipAfterFailureCount );
     }
 
+    private Notifier()
+    {
+        reporter = null;
+        skipAfterFailureCount = null;
+    }
+
+    public static Notifier pureNotifier()
+    {
+        return new Notifier()
+        {
+            @Override
+            public Notifier asFailFast( boolean failFast )
+            {
+                throw new UnsupportedOperationException( "pure notifier" );
+            }
+        };
+    }
+
     public Notifier asFailFast( boolean failFast )
     {
         this.failFast = failFast;
         return this;
     }
 
+    public final boolean isFailFast()
+    {
+        return failFast;
+    }
+
     @Override
-    public void fireTestStarted( Description description ) throws StoppedByUserException
+    public final void fireTestStarted( Description description ) throws StoppedByUserException
     {
         // If fireTestStarted() throws exception (== skipped test), the class must not be removed from testClassNames.
         // Therefore this class will be removed only if test class started with some test method.
         super.fireTestStarted( description );
-        testClassNames.remove( cutTestClassAndMethod( description ).getClazz() );
+        if ( !testClassNames.isEmpty() )
+        {
+            testClassNames.remove( cutTestClassAndMethod( description ).getClazz() );
+        }
     }
 
     @Override
-    public void fireTestFailure( Failure failure )
+    public final void fireTestFailure( Failure failure )
     {
         if ( failFast )
         {
             fireStopEvent();
         }
         super.fireTestFailure( failure );
+    }
+
+    @Override
+    public final void addListener( RunListener listener )
+    {
+        listeners.add( listener );
+        super.addListener( listener );
+    }
+
+    public final Notifier addListeners( Collection<RunListener> given )
+    {
+        for ( RunListener listener : given )
+        {
+            addListener( listener );
+        }
+        return this;
+    }
+
+    public final Notifier addListeners( RunListener... given )
+    {
+        for ( RunListener listener : given )
+        {
+            addListener( listener );
+        }
+        return this;
+    }
+
+    @Override
+    public final void removeListener( RunListener listener )
+    {
+        listeners.remove( listener );
+        super.removeListener( listener );
+    }
+
+    public final void removeListeners()
+    {
+        for ( Iterator<RunListener> it = listeners.iterator(); it.hasNext(); )
+        {
+            RunListener listener = it.next();
+            it.remove();
+            super.removeListener( listener );
+        }
+    }
+
+    public final Queue<String> getRemainingTestClasses()
+    {
+        return failFast ? testClassNames : null;
+    }
+
+    public final void copyListenersTo( Notifier copyTo )
+    {
+        copyTo.addListeners( listeners );
     }
 
     /**
@@ -99,52 +177,5 @@ public final class Notifier
         }
 
         reporter.testExecutionSkippedByUser();
-    }
-
-    @Override
-    public void addListener( RunListener listener )
-    {
-        listeners.add( listener );
-        super.addListener( listener );
-    }
-
-    public Notifier addListeners( Collection<RunListener> given )
-    {
-        for ( RunListener listener : given )
-        {
-            addListener( listener );
-        }
-        return this;
-    }
-
-    public Notifier addListeners( RunListener... given )
-    {
-        for ( RunListener listener : given )
-        {
-            addListener( listener );
-        }
-        return this;
-    }
-
-    @Override
-    public void removeListener( RunListener listener )
-    {
-        listeners.remove( listener );
-        super.removeListener( listener );
-    }
-
-    public void removeListeners()
-    {
-        for ( Iterator<RunListener> it = listeners.iterator(); it.hasNext(); )
-        {
-            RunListener listener = it.next();
-            it.remove();
-            super.removeListener( listener );
-        }
-    }
-
-    public Queue<String> getRemainingTestClasses()
-    {
-        return testClassNames;
     }
 }

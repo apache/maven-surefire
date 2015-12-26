@@ -55,15 +55,12 @@ final class JUnitCoreWrapper
     private final Notifier notifier;
     private final JUnitCoreParameters jUnitCoreParameters;
     private final ConsoleLogger logger;
-    private final boolean failFast;
 
-    JUnitCoreWrapper( Notifier notifier, JUnitCoreParameters jUnitCoreParameters, ConsoleLogger logger,
-                      boolean failFast )
+    JUnitCoreWrapper( Notifier notifier, JUnitCoreParameters jUnitCoreParameters, ConsoleLogger logger )
     {
         this.notifier = notifier;
         this.jUnitCoreParameters = jUnitCoreParameters;
         this.logger = logger;
-        this.failFast = failFast;
     }
 
     void execute( TestsToRun testsToRun, Filter filter )
@@ -162,12 +159,12 @@ final class JUnitCoreWrapper
     {
         JUnitCore()
         {
-            super( JUnitCoreWrapper.this.notifier.asFailFast( JUnitCoreWrapper.this.failFast ) );
+            super( JUnitCoreWrapper.this.notifier );
         }
 
         JUnitCore withReportedTests( Class<?>... tests )
         {
-            Queue<String> stoppedTests = getRemainingTestClasses();
+            Queue<String> stoppedTests = JUnitCoreWrapper.this.notifier.getRemainingTestClasses();
             if ( stoppedTests != null )
             {
                 for ( Class<?> test : tests )
@@ -183,9 +180,9 @@ final class JUnitCoreWrapper
         protected void afterException( Throwable e )
             throws TestSetFailedException
         {
-            if ( JUnitCoreWrapper.this.failFast && e instanceof StoppedByUserException )
+            if ( JUnitCoreWrapper.this.notifier.isFailFast() && e instanceof StoppedByUserException )
             {
-                Queue<String> stoppedTests = getRemainingTestClasses();
+                Queue<String> stoppedTests = JUnitCoreWrapper.this.notifier.getRemainingTestClasses();
                 if ( stoppedTests != null )
                 {
                     String reason = e.getClass().getName();
@@ -206,16 +203,11 @@ final class JUnitCoreWrapper
         @Override
         protected void afterFinished()
         {
-            Queue<String> stoppedTests = getRemainingTestClasses();
+            Queue<String> stoppedTests = JUnitCoreWrapper.this.notifier.getRemainingTestClasses();
             if ( stoppedTests != null )
             {
                 stoppedTests.clear();
             }
-        }
-
-        private Queue<String> getRemainingTestClasses()
-        {
-            return JUnitCoreWrapper.this.failFast ? JUnitCoreWrapper.this.notifier.getRemainingTestClasses() : null;
         }
     }
 }

@@ -115,7 +115,7 @@ public class Surefire746Test
             // and rethrows a failure which happened in listener
             exception.expect( TestSetFailedException.class );
             JUnit4RunListener dummy = new JUnit4RunListener( new MockReporter() );
-            new JUnitCoreWrapper( new Notifier( dummy, 0 ), jUnitCoreParameters, new Logger(), false )
+            new JUnitCoreWrapper( new Notifier( dummy, 0 ), jUnitCoreParameters, new Logger() )
                 .execute( testsToRun, customRunListeners, null );
         }
         finally
