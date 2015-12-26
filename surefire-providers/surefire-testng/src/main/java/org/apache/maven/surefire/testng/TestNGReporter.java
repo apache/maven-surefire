@@ -31,6 +31,7 @@ import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
 
+import static org.apache.maven.surefire.report.SimpleReportEntry.ignored;
 import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
 
 /**
@@ -97,7 +98,9 @@ public class TestNGReporter
 
     public void onTestSkipped( ITestResult result )
     {
-        ReportEntry report = new SimpleReportEntry( getSource( result ), getUserFriendlyTestName( result ) );
+        Throwable t = result.getThrowable();
+        String reason = t == null ? null : t.getMessage();
+        ReportEntry report = ignored( getSource( result ), getUserFriendlyTestName( result ), reason );
         reporter.testSkipped( report );
     }
 
