@@ -35,7 +35,6 @@ import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
 
-import junit.framework.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -44,6 +43,8 @@ import org.junit.runner.RunWith;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
+
+import static junit.framework.Assert.assertEquals;
 
 /**
  * {@code
@@ -121,8 +122,7 @@ public class Surefire746Test
         finally
         {
             RunResult result = reporterFactory.close();
-            Assert.assertEquals( "JUnit should report correctly number of test ran(Finished)",
-                    1, result.getCompletedCount() );
+            assertEquals( "JUnit should report correctly number of test ran(Finished)", 1, result.getCompletedCount() );
         }
     }
 
@@ -133,7 +133,6 @@ public class Surefire746Test
         public void shouldNeverBeCalled()
             throws Exception
         {
-            Assert.assertTrue( true );
         }
     }
 
