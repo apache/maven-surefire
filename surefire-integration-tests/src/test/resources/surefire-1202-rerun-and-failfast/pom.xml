@@ -71,6 +71,7 @@
                         <forkCount>1</forkCount>
                         <skipAfterFailureCount>2</skipAfterFailureCount>
                         <rerunFailingTestsCount>3</rerunFailingTestsCount>
+                        <runOrder>alphabetical</runOrder>
                     </configuration>
                 </plugin>
             </plugins>
