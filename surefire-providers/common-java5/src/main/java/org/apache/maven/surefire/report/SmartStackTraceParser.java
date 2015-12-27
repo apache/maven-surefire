@@ -277,46 +277,46 @@ public class SmartStackTraceParser
 
     private static String causeToString( Throwable cause, StackTraceFilter filter )
     {
-        String resp = "";
+        StringBuilder resp = new StringBuilder();
         while ( cause != null )
         {
-            resp += "Caused by: ";
-            resp += toString( cause, asList( cause.getStackTrace() ), filter );
+            resp.append( "Caused by: " );
+            resp.append( toString( cause, asList( cause.getStackTrace() ), filter ) );
             cause = cause.getCause();
         }
-        return resp;
+        return resp.toString();
     }
 
     private static String toString( Throwable t, Iterable<StackTraceElement> elements, StackTraceFilter filter )
     {
-        String result = "";
+        StringBuilder result = new StringBuilder();
         if ( t != null )
         {
-            result += t.getClass().getName();
+            result.append( t.getClass().getName() );
             String msg = t.getMessage();
             if ( msg != null )
             {
-                result += ": ";
+                result.append( ": " );
                 if ( isMultiLine( msg ) )
                 {
                     // SUREFIRE-986
-                    result += "\n";
+                    result.append( '\n' );
                 }
-                result += msg;
+                result.append( msg );
             }
-            result += "\n";
+            result.append( '\n' );
         }
 
         for ( StackTraceElement element : elements )
         {
             if ( filter.matches( element ) )
             {
-                result += "\tat ";
-                result += element;
-                result += "\n";
+                result.append( "\tat " )
+                        .append( element )
+                        .append( '\n' );
             }
         }
-        return result;
+        return result.toString();
     }
 
     private static boolean isMultiLine( String msg )

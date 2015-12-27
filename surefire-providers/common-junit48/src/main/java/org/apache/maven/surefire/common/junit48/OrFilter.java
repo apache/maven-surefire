@@ -48,15 +48,15 @@ final class OrFilter
     @Override
     public String describe()
     {
-        String description = "";
+        StringBuilder description = new StringBuilder();
         for ( int i = 0; i < filters.length; i++ )
         {
-            description += filters[i].describe();
+            description.append( filters[i].describe() );
             if ( i != filters.length - 1 )
             {
-                description += " OR ";
+                description.append( " OR " );
             }
         }
-        return description;
+        return description.toString();
     }
 }

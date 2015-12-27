@@ -161,12 +161,10 @@ public class ForkConfiguration
 
         if ( environmentVariables != null )
         {
-
-            for ( String key : environmentVariables.keySet() )
+            for ( Map.Entry<String, String> entry : environmentVariables.entrySet() )
             {
-                String value = environmentVariables.get( key );
-
-                cli.addEnvironment( key, value == null ? "" : value );
+                String value = entry.getValue();
+                cli.addEnvironment( entry.getKey(), value == null ? "" : value );
             }
         }
 
@@ -285,15 +283,16 @@ public class ForkConfiguration
 
             // we can't use StringUtils.join here since we need to add a '/' to
             // the end of directory entries - otherwise the jvm will ignore them.
-            String cp = "";
+            StringBuilder cp = new StringBuilder();
             for ( String el : classPath )
             {
                 // NOTE: if File points to a directory, this entry MUST end in '/'.
-                cp += UrlUtils.getURL( new File( el ) ).toExternalForm() + " ";
+                cp.append( UrlUtils.getURL( new File( el ) ).toExternalForm() )
+                        .append( " " );
             }
 
             man.getMainAttributes().putValue( "Manifest-Version", "1.0" );
-            man.getMainAttributes().putValue( "Class-Path", cp.trim() );
+            man.getMainAttributes().putValue( "Class-Path", cp.toString().trim() );
             man.getMainAttributes().putValue( "Main-Class", startClassName );
 
             man.write( jos );

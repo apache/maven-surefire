@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
@@ -42,14 +44,14 @@ public class TestSet
 
     private final AtomicBoolean played = new AtomicBoolean();
 
-    private volatile boolean allScheduled;
-
-    private volatile int numberOfCompletedChildren;
+    private final AtomicInteger numberOfCompletedChildren = new AtomicInteger();
 
     // While the two parameters may seem duplicated, it is not entirely the case,
     // since numberOfTests has the correct value from the start, while testMethods grows as method execution starts.
 
-    private volatile int numberOfTests;
+    private final AtomicInteger numberOfTests = new AtomicInteger();
+
+    private volatile boolean allScheduled;
 
     public TestSet( Description testSetDescription )
     {
@@ -123,7 +125,7 @@ public class TestSet
 
     public void incrementTestMethodCount()
     {
-        numberOfTests++;
+        numberOfTests.incrementAndGet();
     }
 
     private void addTestMethod( TestMethod testMethod )
@@ -133,7 +135,7 @@ public class TestSet
 
     public void incrementFinishedTests( RunListener reporterManager, boolean reportImmediately )
     {
-        numberOfCompletedChildren++;
+        numberOfCompletedChildren.incrementAndGet();
         if ( allScheduled && isAllTestsDone() && reportImmediately )
         {
             replay( reporterManager );
@@ -151,7 +153,7 @@ public class TestSet
 
     private boolean isAllTestsDone()
     {
-        return numberOfTests == numberOfCompletedChildren;
+        return numberOfTests.get() == numberOfCompletedChildren.get();
     }
 
     public void attachToThread()

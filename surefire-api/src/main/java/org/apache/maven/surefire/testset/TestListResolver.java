@@ -326,17 +326,21 @@ public class TestListResolver
 
     private static String aggregatedTest( String testPrefix, Set<ResolvedTest> tests )
     {
-        String aggregatedTest = "";
+        StringBuilder aggregatedTest = new StringBuilder();
         for ( ResolvedTest test : tests )
         {
             String readableTest = test.toString();
-            if ( aggregatedTest.length() != 0 && readableTest != null )
+            if ( readableTest != null )
             {
-                aggregatedTest += ", ";
+                if ( aggregatedTest.length() != 0 )
+                {
+                    aggregatedTest.append( ", " );
+                }
+                aggregatedTest.append( testPrefix )
+                        .append( readableTest );
             }
-            aggregatedTest += testPrefix + readableTest;
         }
-        return aggregatedTest;
+        return aggregatedTest.toString();
     }
 
     private static Collection<String> mergeIncludedAndExcludedTests( Collection<String> included,

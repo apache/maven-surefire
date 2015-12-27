@@ -91,19 +91,19 @@ public class RunOrder
     private static String createMessageForMissingRunOrder( String name )
     {
         RunOrder[] runOrders = values();
-        String message = "There's no RunOrder with the name ";
-        message += name;
-        message += ". Please use one of the following RunOrders: ";
+        StringBuilder message = new StringBuilder( "There's no RunOrder with the name " );
+        message.append( name );
+        message.append( ". Please use one of the following RunOrders: " );
         for ( int i = 0; i < runOrders.length; i++ )
         {
             if ( i != 0 )
             {
-                message += ", ";
+                message.append( ", " );
             }
-            message += runOrders[i];
+            message.append( runOrders[i] );
         }
-        message += ".";
-        return message;
+        message.append( '.' );
+        return message.toString();
     }
 
     private static RunOrder[] values()

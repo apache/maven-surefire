@@ -117,7 +117,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.12
      */
     @Parameter( defaultValue = "${plugin}", readonly = true )
-    protected PluginDescriptor pluginDescriptor;
+    private PluginDescriptor pluginDescriptor;
 
     /**
      * Set this to "true" to skip running tests, but still compile them. Its use is NOT RECOMMENDED, but quite
@@ -149,7 +149,7 @@ public abstract class AbstractSurefireMojo
      * The Maven Project Object.
      */
     @Component
-    protected MavenProject project;
+    private MavenProject project;
 
     /**
      * The base directory of the project being tested. This can be obtained in your integration test via
@@ -205,7 +205,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.2
      */
     @Parameter( defaultValue = "${project.build.testSourceDirectory}", required = true )
-    protected File testSourceDirectory;
+    private File testSourceDirectory;
 
     /**
      * A list of &lt;exclude> elements specifying the tests (by pattern) that should be excluded in testing. When not
@@ -227,14 +227,14 @@ public abstract class AbstractSurefireMojo
      * unless overridden.
      */
     @Parameter
-    protected List<String> excludes;
+    private List<String> excludes;
 
     /**
      * ArtifactRepository of the localRepository. To obtain the directory of localRepository in unit tests use
      * System.getProperty("localRepository").
      */
     @Parameter( defaultValue = "${localRepository}", required = true, readonly = true )
-    protected ArtifactRepository localRepository;
+    private ArtifactRepository localRepository;
 
     /**
      * List of System properties to pass to the JUnit tests.
@@ -242,7 +242,7 @@ public abstract class AbstractSurefireMojo
      * @deprecated Use systemPropertyVariables instead.
      */
     @Parameter
-    protected Properties systemProperties;
+    private Properties systemProperties;
 
     /**
      * List of System properties to pass to the JUnit tests.
@@ -250,7 +250,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.5
      */
     @Parameter
-    protected Map<String, String> systemPropertyVariables;
+    private Map<String, String> systemPropertyVariables;
 
     /**
      * List of System properties, loaded from a file, to pass to the JUnit tests.
@@ -258,7 +258,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.8.2
      */
     @Parameter
-    protected File systemPropertiesFile;
+    private File systemPropertiesFile;
 
     /**
      * List of properties for configuring all TestNG related configurations. This is the new preferred method of
@@ -267,21 +267,21 @@ public abstract class AbstractSurefireMojo
      * @since 2.4
      */
     @Parameter
-    protected Properties properties;
+    private Properties properties;
 
     /**
      * Map of plugin artifacts.
      */
     // olamy: would make more sense using defaultValue but doesn't work with maven 2.x
     @Parameter( property = "plugin.artifactMap", required = true, readonly = true )
-    protected Map<String, Artifact> pluginArtifactMap;
+    private Map<String, Artifact> pluginArtifactMap;
 
     /**
      * Map of project artifacts.
      */
     // olamy: would make more sense using defaultValue but doesn't work with maven 2.x
     @Parameter( property = "project.artifactMap", readonly = true, required = true )
-    protected Map<String, Artifact> projectArtifactMap;
+    private Map<String, Artifact> projectArtifactMap;
 
     /**
      * Add custom text into report filename: TEST-testClassName-reportNameSuffix.xml,
@@ -290,7 +290,7 @@ public abstract class AbstractSurefireMojo
      * and 'testcase'--'classname' - reportNameSuffix is added to the attribute value.
      */
     @Parameter( property = "surefire.reportNameSuffix", defaultValue = "" )
-    protected String reportNameSuffix;
+    private String reportNameSuffix;
 
     /**
      * Set this to "true" to redirect the unit test standard output to a file (found in
@@ -299,7 +299,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.3
      */
     @Parameter( property = "maven.test.redirectTestOutputToFile", defaultValue = "false" )
-    protected boolean redirectTestOutputToFile;
+    private boolean redirectTestOutputToFile;
 
     /**
      * Set this to "true" to cause a failure if there are no tests to run. Defaults to "false".
@@ -307,7 +307,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.4
      */
     @Parameter( property = "failIfNoTests" )
-    protected Boolean failIfNoTests;
+    private Boolean failIfNoTests;
 
     /**
      * <strong>DEPRECATED</strong> since version 2.14. Use <code>forkCount</code> and <code>reuseForks</code> instead.
@@ -321,7 +321,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.1
      */
     @Parameter( property = "forkMode", defaultValue = "once" )
-    protected String forkMode;
+    private String forkMode;
 
     /**
      * Option to specify the jvm (or path to the java executable) to use with the forking options. For the default, the
@@ -331,7 +331,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.1
      */
     @Parameter( property = "jvm" )
-    protected String jvm;
+    private String jvm;
 
     /**
      * Arbitrary JVM options to set on the command line.
@@ -349,7 +349,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.1
      */
     @Parameter( property = "argLine" )
-    protected String argLine;
+    private String argLine;
 
     /**
      * Additional environment variables to set on the command line.
@@ -357,7 +357,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.1.3
      */
     @Parameter
-    protected Map<String, String> environmentVariables = new HashMap<String, String>();
+    private Map<String, String> environmentVariables = new HashMap<String, String>();
 
     /**
      * Command line working directory.
@@ -365,7 +365,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.1.3
      */
     @Parameter( property = "basedir" )
-    protected File workingDirectory;
+    private File workingDirectory;
 
     /**
      * When false it makes tests run using the standard classloader delegation instead of the default Maven isolated
@@ -376,7 +376,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.1
      */
     @Parameter( property = "childDelegation", defaultValue = "false" )
-    protected boolean childDelegation;
+    private boolean childDelegation;
 
     /**
      * (TestNG/JUnit47 provider with JUnit4.8+ only) Groups for this test. Only classes/methods/etc decorated with one
@@ -390,7 +390,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.2
      */
     @Parameter( property = "groups" )
-    protected String groups;
+    private String groups;
 
     /**
      * (TestNG/JUnit47 provider with JUnit4.8+ only) Excluded groups. Any methods/classes/etc with one of the groups
@@ -404,7 +404,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.2
      */
     @Parameter( property = "excludedGroups" )
-    protected String excludedGroups;
+    private String excludedGroups;
 
     /**
      * Allows you to specify the name of the JUnit artifact. If not set, <code>junit:junit</code> will be used.
@@ -412,7 +412,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.3.1
      */
     @Parameter( property = "junitArtifactName", defaultValue = "junit:junit" )
-    protected String junitArtifactName;
+    private String junitArtifactName;
 
     /**
      * Allows you to specify the name of the TestNG artifact. If not set, <code>org.testng:testng</code> will be used.
@@ -420,7 +420,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.3.1
      */
     @Parameter( property = "testNGArtifactName", defaultValue = "org.testng:testng" )
-    protected String testNGArtifactName;
+    private String testNGArtifactName;
 
     /**
      * (TestNG/JUnit 4.7 provider) The attribute thread-count allows you to specify how many threads should be
@@ -429,7 +429,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.2
      */
     @Parameter( property = "threadCount" )
-    protected int threadCount;
+    private int threadCount;
 
     /**
      * Option to specify the number of VMs to fork in parallel in order to execute the tests. When terminated with "C",
@@ -466,7 +466,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.5
      */
     @Parameter( property = "perCoreThreadCount", defaultValue = "true" )
-    protected boolean perCoreThreadCount;
+    private boolean perCoreThreadCount;
 
     /**
      * (JUnit 4.7 provider) Indicates that the thread pool will be unlimited. The <code>parallel</code> parameter and
@@ -476,7 +476,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.5
      */
     @Parameter( property = "useUnlimitedThreads", defaultValue = "false" )
-    protected boolean useUnlimitedThreads;
+    private boolean useUnlimitedThreads;
 
     /**
      * (TestNG provider) When you use the <code>parallel</code> attribute, TestNG will try to run all your test methods
@@ -495,7 +495,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.2
      */
     @Parameter( property = "parallel" )
-    protected String parallel;
+    private String parallel;
 
     /**
      * (JUnit 4.7 / provider only) The thread counts do not exceed the number of parallel suite, class runners and
@@ -506,7 +506,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.17
      */
     @Parameter( property = "parallelOptimized", defaultValue = "true" )
-    protected boolean parallelOptimized;
+    private boolean parallelOptimized;
 
     /**
      * (JUnit 4.7 provider) This attribute allows you to specify the concurrency in test suites, i.e.:
@@ -525,7 +525,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.16
      */
     @Parameter( property = "threadCountSuites", defaultValue = "0" )
-    protected int threadCountSuites;
+    private int threadCountSuites;
 
     /**
      * (JUnit 4.7 provider) This attribute allows you to specify the concurrency in test classes, i.e.:
@@ -548,7 +548,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.16
      */
     @Parameter( property = "threadCountClasses", defaultValue = "0" )
-    protected int threadCountClasses;
+    private int threadCountClasses;
 
     /**
      * (JUnit 4.7 provider) This attribute allows you to specify the concurrency in test methods, i.e.:
@@ -570,7 +570,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.16
      */
     @Parameter( property = "threadCountMethods", defaultValue = "0" )
-    protected int threadCountMethods;
+    private int threadCountMethods;
 
     /**
      * Whether to trim the stack trace in the reports to just the lines within the test, or show the full trace.
@@ -578,19 +578,19 @@ public abstract class AbstractSurefireMojo
      * @since 2.2
      */
     @Parameter( property = "trimStackTrace", defaultValue = "true" )
-    protected boolean trimStackTrace;
+    private boolean trimStackTrace;
 
     /**
      * Resolves the artifacts needed.
      */
     @Component
-    protected ArtifactResolver artifactResolver;
+    private ArtifactResolver artifactResolver;
 
     /**
      * Creates the artifact.
      */
     @Component
-    protected ArtifactFactory artifactFactory;
+    private ArtifactFactory artifactFactory;
 
     /**
      * The remote plugin repositories declared in the POM.
@@ -598,13 +598,13 @@ public abstract class AbstractSurefireMojo
      * @since 2.2
      */
     @Parameter( defaultValue = "${project.pluginArtifactRepositories}" )
-    protected List<ArtifactRepository> remoteRepositories;
+    private List<ArtifactRepository> remoteRepositories;
 
     /**
      * For retrieval of artifact's metadata.
      */
     @Component
-    protected ArtifactMetadataSource metadataSource;
+    private ArtifactMetadataSource metadataSource;
 
     /**
      * Flag to disable the generation of report files in xml format.
@@ -612,7 +612,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.2
      */
     @Parameter( property = "disableXmlReport", defaultValue = "false" )
-    protected boolean disableXmlReport;
+    private boolean disableXmlReport;
 
     /**
      * By default, Surefire enables JVM assertions for the execution of your test cases. To disable the assertions, set
@@ -621,13 +621,13 @@ public abstract class AbstractSurefireMojo
      * @since 2.3.1
      */
     @Parameter( property = "enableAssertions", defaultValue = "true" )
-    protected boolean enableAssertions;
+    private boolean enableAssertions;
 
     /**
      * The current build session instance.
      */
     @Component
-    protected MavenSession session;
+    private MavenSession session;
 
     /**
      * (TestNG only) Define the factory class used to create all test instances.
@@ -635,13 +635,13 @@ public abstract class AbstractSurefireMojo
      * @since 2.5
      */
     @Parameter( property = "objectFactory" )
-    protected String objectFactory;
+    private String objectFactory;
 
     /**
      *
      */
     @Parameter( defaultValue = "${session.parallel}", readonly = true )
-    protected Boolean parallelMavenExecution;
+    private Boolean parallelMavenExecution;
 
     /**
      * List of dependencies to scan for test classes to include in the test run.
@@ -659,7 +659,7 @@ public abstract class AbstractSurefireMojo
      *
      */
     @Component
-    protected ToolchainManager toolchainManager;
+    private ToolchainManager toolchainManager;
 
     private Artifact surefireBooterArtifact;
 

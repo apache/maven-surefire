@@ -154,7 +154,7 @@ public class VerifyMojo
      * The current build session instance.
      */
     @Component
-    protected MavenSession session;
+    private MavenSession session;
 
     private Collection<CommandLineOption> cli;
 

@@ -129,15 +129,15 @@ public class TestsToRun implements Iterable<Class<?>>
 
     public String toString()
     {
-        String sb = "TestsToRun: [";
+        StringBuilder sb = new StringBuilder( "TestsToRun: [" );
         for ( Class<?> clazz : this )
         {
-            sb += " ";
-            sb += clazz.getName();
+            sb.append( ' ' )
+                    .append( clazz.getName() );
         }
 
-        sb += ']';
-        return sb;
+        sb.append( ']' );
+        return sb.toString();
     }
 
     public boolean containsAtLeast( int atLeast )

@@ -58,16 +58,16 @@ public enum Shutdown
 
     public static String listParameters()
     {
-        String values = "";
+        StringBuilder values = new StringBuilder();
         for ( Shutdown shutdown : values() )
         {
             if ( values.length() != 0 )
             {
-                values += ", ";
+                values.append( ", " );
             }
-            values += shutdown.getParam();
+            values.append( shutdown.getParam() );
         }
-        return values;
+        return values.toString();
     }
 
     public static Shutdown parameterOf( String parameter )

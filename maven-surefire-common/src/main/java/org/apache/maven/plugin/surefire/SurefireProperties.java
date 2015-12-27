@@ -23,7 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -37,6 +37,8 @@ import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.KeyValueSource;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
+import static java.util.Arrays.asList;
+
 /**
  * A properties implementation that preserves insertion order.
  */
@@ -44,6 +46,9 @@ public class SurefireProperties
     extends Properties
     implements KeyValueSource
 {
+    private static final Collection<String> KEYS_THAT_CANNOT_BE_USED_AS_SYSTEM_PROPERTIES =
+            asList( "java.library.path", "file.encoding", "jdk.map.althashing.threshold" );
+
     private final LinkedHashSet<Object> items = new LinkedHashSet<Object>();
 
     public SurefireProperties()
@@ -96,12 +101,7 @@ public class SurefireProperties
     {
         if ( source != null )
         {
-            //noinspection unchecked
-            for ( Object key : source.keySet() )
-            {
-                Object value = source.get( key );
-                put( key, value );
-            }
+            putAll( source );
         }
     }
 
@@ -110,9 +110,6 @@ public class SurefireProperties
         //noinspection unchecked
         return keySet();
     }
-
-    private static final Set<String> KEYS_THAT_CANNOT_BE_USED_AS_SYSTEM_PROPERTIES = new HashSet<String>(
-                    Arrays.asList( "java.library.path", "file.encoding", "jdk.map.althashing.threshold" ) );
 
     public Set<Object> propertiesThatCannotBeSetASystemProperties()
     {
