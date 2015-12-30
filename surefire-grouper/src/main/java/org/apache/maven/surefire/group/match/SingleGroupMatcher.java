@@ -54,7 +54,7 @@ public class SingleGroupMatcher
     {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ( enabled == null ? 0 : enabled.hashCode() );
+        result = prime * result + enabled.hashCode();
         return result;
     }
 
@@ -74,18 +74,7 @@ public class SingleGroupMatcher
             return false;
         }
         SingleGroupMatcher other = (SingleGroupMatcher) obj;
-        if ( enabled == null )
-        {
-            if ( other.enabled != null )
-            {
-                return false;
-            }
-        }
-        else if ( !enabled.equals( other.enabled ) )
-        {
-            return false;
-        }
-        return true;
+        return enabled.equals( other.enabled );
     }
 
     @Override
@@ -118,11 +107,6 @@ public class SingleGroupMatcher
 
     public boolean enabled( String... cats )
     {
-        if ( enabled == null )
-        {
-            return true;
-        }
-
         for ( String cat : cats )
         {
             if ( cat == null || cat.trim().length() < 1 )
