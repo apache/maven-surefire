@@ -275,10 +275,19 @@ public class JUnitCoreProvider
     private Filter createJUnit48Filter()
     {
         final FilterFactory factory = new FilterFactory( testClassLoader );
-        Filter groupFilter = factory.createGroupFilter( providerParameters.getProviderProperties() );
+        Map<String, String> props = providerParameters.getProviderProperties();
+        Filter groupFilter = factory.canCreateGroupFilter( props ) ? factory.createGroupFilter( props ) : null;
         TestListResolver methodFilter = optionallyWildcardFilter( testResolver );
         boolean onlyGroups = methodFilter.isEmpty() || methodFilter.isWildcard();
-        return onlyGroups ? groupFilter : factory.and( groupFilter, factory.createMethodFilter( methodFilter ) );
+        if ( onlyGroups )
+        {
+            return groupFilter;
+        }
+        else
+        {
+            Filter jUnitMethodFilter = factory.createMethodFilter( methodFilter );
+            return groupFilter == null ? jUnitMethodFilter : factory.and( groupFilter, jUnitMethodFilter );
+        }
     }
 
     private TestsToRun scanClassPath()

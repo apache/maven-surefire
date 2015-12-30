@@ -255,21 +255,22 @@ public final class ForkedBooter
         ThreadFactory threadFactory = newDaemonThreadFactory( "last-ditch-daemon-shutdown-thread-"
                                                             + SYSTEM_EXIT_TIMEOUT_IN_SECONDS
                                                             + "sec" );
-        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor( 0, threadFactory );
+        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor( 1, threadFactory );
         executor.setMaximumPoolSize( 1 );
+        executor.prestartCoreThread();
         return executor;
     }
 
     @SuppressWarnings( "checkstyle:emptyblock" )
     private static void launchLastDitchDaemonShutdownThread( final int returnCode )
     {
-            JVM_TERMINATOR.schedule( new Runnable()
+        JVM_TERMINATOR.schedule( new Runnable()
+        {
+            public void run()
             {
-                public void run()
-                {
-                    Runtime.getRuntime().halt( returnCode );
-                }
-            }, SYSTEM_EXIT_TIMEOUT_IN_SECONDS, SECONDS );
+                Runtime.getRuntime().halt( returnCode );
+            }
+        }, SYSTEM_EXIT_TIMEOUT_IN_SECONDS, SECONDS );
     }
 
     private static RunResult invokeProviderInSameClassLoader( Object testSet, Object factory,

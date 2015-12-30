@@ -43,6 +43,7 @@ import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
 import org.junit.runner.Description;
+import org.junit.runner.Request;
 import org.junit.runner.Result;
 import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
@@ -56,7 +57,6 @@ import static java.lang.reflect.Modifier.isAbstract;
 import static java.lang.reflect.Modifier.isInterface;
 import static java.util.Collections.unmodifiableCollection;
 import static org.apache.maven.surefire.booter.CommandReader.getReader;
-import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.cutTestClassAndMethod;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTests;
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createDescription;
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createIgnored;
@@ -66,7 +66,6 @@ import static org.apache.maven.surefire.common.junit4.Notifier.pureNotifier;
 import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
 import static org.apache.maven.surefire.testset.TestListResolver.optionallyWildcardFilter;
-import static org.apache.maven.surefire.testset.TestListResolver.toClassFileName;
 import static org.apache.maven.surefire.util.TestsToRun.fromClass;
 import static org.junit.runner.Request.aClass;
 import static org.junit.runner.Request.method;
@@ -272,7 +271,7 @@ public class JUnit4Provider
             try
             {
                 notifier.asFailFast( isFailFast() );
-                execute( clazz, notifier, hasMethodFilter ? new TestResolverFilter() : new NullFilter() );
+                execute( clazz, notifier, hasMethodFilter ? createMethodFilter() : null );
             }
             finally
             {
@@ -357,7 +356,12 @@ public class JUnit4Provider
         final int classModifiers = testClass.getModifiers();
         if ( !isAbstract( classModifiers ) && !isInterface( classModifiers ) )
         {
-            Runner runner = aClass( testClass ).filterWith( filter ).getRunner();
+            Request request = aClass( testClass );
+            if ( filter != null )
+            {
+                request = request.filterWith( filter );
+            }
+            Runner runner = request.getRunner();
             if ( countTestsInRunner( runner.getDescription() ) != 0 )
             {
                 runner.run( notifier );
@@ -425,49 +429,14 @@ public class JUnit4Provider
         else
         {
             name = name.trim();
-            return name.startsWith( "initializationError0(org.junit.runner.manipulation.Filter)" ) || name.startsWith(
-                "initializationError(org.junit.runner.manipulation.Filter)" );
+            return name.startsWith( "initializationError0(org.junit.runner.manipulation.Filter)" )
+                           || name.startsWith( "initializationError(org.junit.runner.manipulation.Filter)" );
         }
     }
 
-    private class TestResolverFilter
-        extends Filter
+    private Filter createMethodFilter()
     {
-        private final TestListResolver methodFilter = optionallyWildcardFilter( JUnit4Provider.this.testResolver );
-
-        @Override
-        public boolean shouldRun( Description description )
-        {
-            // class: Java class name; method: 1. "testMethod" or 2. "testMethod[5+whatever]" in @Parameterized
-            final ClassMethod cm = cutTestClassAndMethod( description );
-            final boolean isSuite = description.isSuite();
-            final boolean isValidTest = description.isTest() && cm.isValid();
-            final String clazz = cm.getClazz();
-            final String method = cm.getMethod();
-            return isSuite || isValidTest && methodFilter.shouldRun( toClassFileName( clazz ), method );
-        }
-
-        @Override
-        public String describe()
-        {
-            return methodFilter.toString();
-        }
-    }
-
-    private final class NullFilter
-        extends TestResolverFilter
-    {
-
-        @Override
-        public boolean shouldRun( Description description )
-        {
-            return true;
-        }
-
-        @Override
-        public String describe()
-        {
-            return "";
-        }
+        TestListResolver methodFilter = optionallyWildcardFilter( testResolver );
+        return methodFilter.isEmpty() || methodFilter.isWildcard() ? null : new TestResolverFilter( methodFilter );
     }
 }
