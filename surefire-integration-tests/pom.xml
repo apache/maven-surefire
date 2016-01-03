@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire</artifactId>
-    <version>2.20-SNAPSHOT</version>
+    <version>2.19.1</version>
   </parent>
 
   <artifactId>surefire-integration-tests</artifactId>
