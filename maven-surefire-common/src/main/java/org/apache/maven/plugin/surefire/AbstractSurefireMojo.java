@@ -134,6 +134,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.3
      * @deprecated Use skipTests instead.
      */
+    @Deprecated
     @Parameter( property = "maven.test.skip.exec" )
     protected boolean skipExec;
 
@@ -241,6 +242,7 @@ public abstract class AbstractSurefireMojo
      *
      * @deprecated Use systemPropertyVariables instead.
      */
+    @Deprecated
     @Parameter
     private Properties systemProperties;
 

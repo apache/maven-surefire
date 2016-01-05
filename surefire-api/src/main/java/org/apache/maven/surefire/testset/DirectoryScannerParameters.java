@@ -30,10 +30,13 @@ public class DirectoryScannerParameters
 {
     private final File testClassesDirectory;
 
+    @Deprecated
     private final List<String> includes;
 
+    @Deprecated
     private final List<String> excludes;
 
+    @Deprecated
     private final List<String> specificTests;
 
     private final boolean failIfNoTests;
@@ -51,13 +54,15 @@ public class DirectoryScannerParameters
         this.runOrder = runOrder;
     }
 
-    public DirectoryScannerParameters( File testClassesDirectory, List<String> includes, List<String> excludes,
-                                       List<String> specificTests, boolean failIfNoTests, String runOrder )
+    public DirectoryScannerParameters( File testClassesDirectory, @Deprecated List<String> includes,
+                                       @Deprecated List<String> excludes, @Deprecated List<String> specificTests,
+                                       boolean failIfNoTests, String runOrder )
     {
         this( testClassesDirectory, includes, excludes, specificTests, failIfNoTests,
               runOrder == null ? RunOrder.DEFAULT : RunOrder.valueOfMulti( runOrder ) );
     }
 
+    @Deprecated
     public List<String> getSpecificTests()
     {
         return specificTests;
@@ -78,6 +83,7 @@ public class DirectoryScannerParameters
      *
      * @return A list of patterns. May contain both source file designators and .class extensions.
      */
+    @Deprecated
     public List<String> getIncludes()
     {
         return includes;
@@ -88,6 +94,7 @@ public class DirectoryScannerParameters
      *
      * @return A list of patterns. May contain both source file designators and .class extensions.
      */
+    @Deprecated
     public List<String> getExcludes()
     {
         return excludes;

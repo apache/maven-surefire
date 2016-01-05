@@ -80,6 +80,7 @@ public class BaseProviderFactory
         this.insideFork = insideFork;
     }
 
+    @Deprecated
     public DirectoryScanner getDirectoryScanner()
     {
         return directoryScannerParameters == null

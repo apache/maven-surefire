@@ -115,11 +115,13 @@ public class ProviderConfiguration
         return dirScannerParams;
     }
 
+    @Deprecated
     public List getIncludes()
     {
         return dirScannerParams.getIncludes();
     }
 
+    @Deprecated
     public List getExcludes()
     {
         return dirScannerParams.getExcludes();

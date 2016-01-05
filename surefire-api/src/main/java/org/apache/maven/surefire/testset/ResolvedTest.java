@@ -27,7 +27,9 @@ import java.io.File;
 
 /**
  * Single pattern test filter resolved from multi pattern filter -Dtest=MyTest#test,AnotherTest#otherTest.
+ * @deprecated will be renamed to ResolvedTestPattern
  */
+@Deprecated // will be renamed to ResolvedTestPattern
 public final class ResolvedTest
 {
     /**

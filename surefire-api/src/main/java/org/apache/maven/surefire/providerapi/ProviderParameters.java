@@ -53,6 +53,7 @@ public interface ProviderParameters
      * @return The directory scanner
      * @deprecated Use scanresult instead, as of version 2.12.2. Will be removed in next major version.
      */
+    @Deprecated
     DirectoryScanner getDirectoryScanner();
 
     /**
