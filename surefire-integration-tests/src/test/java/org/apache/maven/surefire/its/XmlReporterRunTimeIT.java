@@ -56,13 +56,15 @@ public class XmlReporterRunTimeIT
         {
             if ( "runorder.parallel.Test1".equals( report.getFullClassName() ) )
             {
+                // should be 6f but because of having Windows sleep discrepancy it is 5.95f
                 assertThat( "runorder.parallel.Test1 report.getTimeElapsed found:" + report.getTimeElapsed(),
-                            report.getTimeElapsed(), allOf( greaterThanOrEqualTo( 0.6f ), lessThan( 0.7f ) ) );
+                            report.getTimeElapsed(), allOf( greaterThanOrEqualTo( 5.95f ), lessThan( 7f ) ) );
             }
             else if ( "runorder.parallel.Test2".equals( report.getFullClassName() ) )
             {
+                // should be 5f but because of having Windows sleep discrepancy it is 4.95f
                 assertThat( "runorder.parallel.Test2 report.getTimeElapsed found:" + report.getTimeElapsed(),
-                            report.getTimeElapsed(), allOf( greaterThanOrEqualTo( 0.5f ), lessThan( 0.6f ) ) );
+                            report.getTimeElapsed(), allOf( greaterThanOrEqualTo( 4.95f ), lessThan( 6f ) ) );
             }
             else
             {

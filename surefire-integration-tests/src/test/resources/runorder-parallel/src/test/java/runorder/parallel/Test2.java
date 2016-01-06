@@ -28,23 +28,23 @@ public class Test2
 {
 
     @Test
-    public void testSleep100()
+    public void testSleep1000()
     {
-        System.out.println( "Test2.sleep100 started @ " + System.currentTimeMillis() );
-        Test1.sleep( 100 );
+        System.out.println( "Test2.sleep1000 started @ " + System.currentTimeMillis() );
+        Test1.sleep( 1000 );
     }
 
     @Test
-    public void testSleep300()
+    public void testSleep3000()
     {
-        System.out.println( "Test2.sleep300 started @ " + System.currentTimeMillis() );
-        Test1.sleep( 300 );
+        System.out.println( "Test2.sleep3000 started @ " + System.currentTimeMillis() );
+        Test1.sleep( 3000 );
     }
 
     @Test
-    public void testSleep500()
+    public void testSleep5000()
     {
-        System.out.println( "Test2.sleep500 started @ " + System.currentTimeMillis() );
-        Test1.sleep( 500 );
+        System.out.println( "Test2.sleep5000 started @ " + System.currentTimeMillis() );
+        Test1.sleep( 5000 );
     }
 }
