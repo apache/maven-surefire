@@ -198,15 +198,20 @@
         <artifactId>maven-model</artifactId>
         <version>${mavenVersion}</version>
       </dependency>
-      <dependency>
+      <!--<dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-compat</artifactId>
         <version>${mavenVersion}</version>
-      </dependency>
+      </dependency>-->
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-toolchain</artifactId>
         <version>2.2.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.shared</groupId>
+        <artifactId>maven-artifact-transfer</artifactId>
+        <version>3.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.shared</groupId>
