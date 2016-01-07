@@ -21,10 +21,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>maven-parent</artifactId>
-    <groupId>org.apache.maven</groupId>
-    <version>26</version>
-    <relativePath>../pom/maven/pom.xml</relativePath>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-plugins</artifactId>
+    <version>28</version>
   </parent>
 
   <groupId>org.apache.maven.surefire</groupId>
@@ -85,9 +84,9 @@
   </distributionManagement>
 
   <properties>
-    <mavenVersion>2.2.1</mavenVersion>
+    <mavenVersion>3.0</mavenVersion>
     <!-- <shadedVersion>2.12.4</shadedVersion> commented out due to http://jira.codehaus.org/browse/MRELEASE-799 -->
-    <mavenPluginPluginVersion>3.3</mavenPluginPluginVersion>
+    <mavenPluginPluginVersion>3.4</mavenPluginPluginVersion>
     <maven.surefire.scm.devConnection>scm:git:https://git-wip-us.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
     <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
   </properties>
@@ -133,7 +132,7 @@
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-core</artifactId>
         <version>${mavenVersion}</version>
-        <exclusions>
+        <!--<exclusions>
           <exclusion>
             <groupId>org.apache.maven.wagon</groupId>
             <artifactId>wagon-file</artifactId>
@@ -166,7 +165,7 @@
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-interactivity-api</artifactId>
           </exclusion>
-        </exclusions>
+        </exclusions>-->
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
@@ -184,16 +183,16 @@
         <artifactId>maven-artifact</artifactId>
         <version>${mavenVersion}</version>
       </dependency>
-      <dependency>
+      <!--<dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-plugin-descriptor</artifactId>
-        <version>${mavenVersion}</version>
-      </dependency>
-      <dependency>
+        <version>2.2.1</version>
+      </dependency>-->
+      <!--<dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-project</artifactId>
-        <version>${mavenVersion}</version>
-      </dependency>
+        <version>2.2.1</version>
+      </dependency>-->
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-model</artifactId>
@@ -201,13 +200,18 @@
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
-        <artifactId>maven-toolchain</artifactId>
+        <artifactId>maven-compat</artifactId>
         <version>${mavenVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-toolchain</artifactId>
+        <version>2.2.1</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.shared</groupId>
         <artifactId>maven-shared-utils</artifactId>
-        <version>0.9</version>
+        <version>3.0.0</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.shared</groupId>
@@ -272,7 +276,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>animal-sniffer-maven-plugin</artifactId>
-          <version>1.11</version>
+          <version>1.14</version>
           <executions>
             <execution>
               <id>signature-check</id>
@@ -284,8 +288,8 @@
           <configuration>
             <signature>
               <groupId>org.codehaus.mojo.signature</groupId>
-              <artifactId>java15</artifactId>
-              <version>1.0</version>
+              <artifactId>java16</artifactId>
+              <version>1.1</version>
             </signature>
           </configuration>
         </plugin>

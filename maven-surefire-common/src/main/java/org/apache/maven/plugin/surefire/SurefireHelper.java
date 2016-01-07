@@ -27,7 +27,6 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.suite.RunResult;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -121,7 +120,7 @@ public final class SurefireHelper
             Method getRequestMethod = session.getClass().getMethod( "getRequest" );
             MavenExecutionRequest request = (MavenExecutionRequest) getRequestMethod.invoke( session );
 
-            String f = getFailureBehavior( request );
+            String f = request.getReactorFailureBehavior();
             if ( f != null )
             {
                 // compatible with enums Maven 3.0
@@ -158,20 +157,4 @@ public final class SurefireHelper
             }
         }
     }
-
-    private static String getFailureBehavior( MavenExecutionRequest request )
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
-    {
-        try
-        {
-            return request.getFailureBehavior();
-        }
-        catch ( NoSuchMethodError e )
-        {
-            return (String) request.getClass()
-                .getMethod( "getReactorFailureBehavior" )
-                .invoke( request );
-        }
-    }
-
 }
