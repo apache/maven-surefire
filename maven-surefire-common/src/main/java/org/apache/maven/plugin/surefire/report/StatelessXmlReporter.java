@@ -354,7 +354,7 @@ public class StatelessXmlReporter
 
         ppw.addAttribute( "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance" );
 
-        ppw.addAttribute( "xsi:schemaLocation",
+        ppw.addAttribute( "xsi:noNamespaceSchemaLocation",
                           "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" );
 
         ppw.addAttribute( "name", report.getReportName( reportNameSuffix1 ) );
