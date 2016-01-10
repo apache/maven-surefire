@@ -1,3 +1,5 @@
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.maven.surefire/surefire/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/org.apache.maven.surefire/surefire)
+
 Surefire needs Maven 3.0.5 and JDK 1.6+ to be built.
 But in order to test it tests, you can do:
 * -DmavenHomeUsed= path to a Maven 2.x home
