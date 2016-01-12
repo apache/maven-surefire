@@ -42,6 +42,7 @@
       <item name="Using JUnit" href="examples/junit.html"/>
       <item name="Using POJO Tests" href="examples/pojo-test.html"/>
       <item name="Skipping Tests" href="examples/skipping-test.html"/>
+      <item name="Skip After Failure" href="examples/skip-after-failure.html"/>
       <item name="Inclusions and Exclusions of Tests" href="examples/inclusion-exclusion.html"/>
       <item name="Running a Single Test" href="examples/single-test.html"/>
       <item name="Re-run Failing Tests" href="examples/rerun-failing-tests.html"/>
@@ -52,6 +53,8 @@
       <item name="Selecting Providers" href="examples/providers.html"/>
       <item name="New Error Summary" href="newerrorsummary.html"/>
       <item name="Fork Options and Parallel Test Execution" href="examples/fork-options-and-parallel-execution.html"/>
+      <item name="Using Console Logs" href="examples/logging.html"/>
+      <item name="Shutdown of Forked JVM" href="examples/shutdown.html"/>
     </menu>
   </body>
 </project>

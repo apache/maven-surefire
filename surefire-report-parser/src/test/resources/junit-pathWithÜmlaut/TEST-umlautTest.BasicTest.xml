@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="umlautTest.BasicTest" time="0.002" tests="1" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+  </properties>
+  <testcase name="testSetUp" classname="umlautTest.BasicTest" time="0.002"/>
+</testsuite>

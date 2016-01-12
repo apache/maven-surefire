@@ -52,4 +52,7 @@ public final class BooterConstants
     public static final String FORKTESTSET = "forkTestSet";
     public static final String FORKTESTSET_PREFER_TESTS_FROM_IN_STREAM = "preferTestsFromInStream";
     public static final String RERUN_FAILING_TESTS_COUNT = "rerunFailingTestsCount";
+    public static final String MAIN_CLI_OPTIONS = "mainCliOptions";
+    public static final String FAIL_FAST_COUNT = "failFastCount";
+    public static final String SHUTDOWN = "shutdown";
 }

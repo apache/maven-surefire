@@ -23,13 +23,13 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire-providers</artifactId>
-    <version>2.19-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
+    <version>2.19.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>common-java5</artifactId>
 
-  <name>Shared java5 code for all providers.</name>
+  <name>Shared Java 5 Provider Base</name>
+  <description>Shared Java 5 code for all providers.</description>
 
   <dependencies>
     <dependency>

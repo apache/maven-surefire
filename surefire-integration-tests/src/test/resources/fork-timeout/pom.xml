@@ -34,7 +34,8 @@
            <configuration>
              <forkMode>${forkMode}</forkMode>
              <parallel>${junit.parallel}</parallel>
-             <threadCount>5</threadCount>
+             <threadCount>3</threadCount>
+             <perCoreThreadCount>false</perCoreThreadCount>
              <redirectTestOutputToFile>true</redirectTestOutputToFile>
              <forkedProcessTimeoutInSeconds>${timeOut}</forkedProcessTimeoutInSeconds>
              <reportFormat>plain</reportFormat>

@@ -35,6 +35,11 @@ public class SimpleReportEntry
 
     private final String message;
 
+    public SimpleReportEntry()
+    {
+        this( null, null );
+    }
+
     public SimpleReportEntry( String source, String name )
     {
         this( source, name, null, null );
@@ -94,9 +99,8 @@ public class SimpleReportEntry
     {
         try
         {
-            return ( stackTraceWriter != null && stackTraceWriter.getThrowable() != null )
-                ? stackTraceWriter.getThrowable().getMessage()
-                : null;
+            SafeThrowable t = stackTraceWriter == null ? null : stackTraceWriter.getThrowable();
+            return t == null ? null : t.getMessage();
         }
         catch ( Throwable t )
         {

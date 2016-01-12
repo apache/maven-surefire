@@ -24,7 +24,9 @@ import org.apache.maven.surefire.SpecificTestClassFilter;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Scans directories looking for tests.
@@ -32,6 +34,7 @@ import java.util.List;
  * @author Karl M. Davis
  * @author Kristian Rosenvold
  */
+@Deprecated
 public class DefaultDirectoryScanner
     implements DirectoryScanner
 {
@@ -46,15 +49,14 @@ public class DefaultDirectoryScanner
 
     private final File basedir;
 
-    private final List includes;
+    private final List<String> includes;
 
-    private final List excludes;
+    private final List<String> excludes;
 
-    private final List specificTests;
+    private final List<String> specificTests;
 
-    private final List<Class> classesSkippedByValidation = new ArrayList<Class>();
-
-    public DefaultDirectoryScanner( File basedir, List includes, List excludes, List specificTests )
+    public DefaultDirectoryScanner( File basedir, List<String> includes, List<String> excludes,
+                                    List<String> specificTests )
     {
         this.basedir = basedir;
         this.includes = includes;
@@ -65,14 +67,14 @@ public class DefaultDirectoryScanner
     public TestsToRun locateTestClasses( ClassLoader classLoader, ScannerFilter scannerFilter )
     {
         String[] testClassNames = collectTests();
-        List<Class> result = new ArrayList<Class>();
+        Set<Class<?>> result = new LinkedHashSet<Class<?>>();
 
         String[] specific = specificTests == null ? new String[0] : processIncludesExcludes( specificTests );
         SpecificTestClassFilter specificTestFilter = new SpecificTestClassFilter( specific );
 
         for ( String className : testClassNames )
         {
-            Class testClass = loadClass( classLoader, className );
+            Class<?> testClass = loadClass( classLoader, className );
 
             if ( !specificTestFilter.accept( testClass ) )
             {
@@ -84,27 +86,21 @@ public class DefaultDirectoryScanner
             {
                 result.add( testClass );
             }
-            else
-            {
-                classesSkippedByValidation.add( testClass );
-            }
         }
 
         return new TestsToRun( result );
     }
 
-    private static Class loadClass( ClassLoader classLoader, String className )
+    private static Class<?> loadClass( ClassLoader classLoader, String className )
     {
-        Class testClass;
         try
         {
-            testClass = classLoader.loadClass( className );
+            return classLoader.loadClass( className );
         }
         catch ( ClassNotFoundException e )
         {
             throw new RuntimeException( "Unable to create test class '" + className + "'", e );
         }
-        return testClass;
     }
 
     String[] collectTests()
@@ -140,12 +136,11 @@ public class DefaultDirectoryScanner
         return tests;
     }
 
-    private static String[] processIncludesExcludes( List list )
+    private static String[] processIncludesExcludes( List<String> list )
     {
         List<String> newList = new ArrayList<String>();
-        for ( Object aList : list )
+        for ( String include : list )
         {
-            String include = (String) aList;
             String[] includes = include.split( "," );
             Collections.addAll( newList, includes );
         }

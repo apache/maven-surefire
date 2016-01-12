@@ -22,6 +22,7 @@ package org.apache.maven.surefire.booter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
@@ -32,6 +33,7 @@ import org.apache.maven.surefire.testset.TestRequest;
 
 // CHECKSTYLE_OFF: imports
 import static org.apache.maven.surefire.booter.BooterConstants.*;
+import static org.apache.maven.surefire.cli.CommandLineOption.*;
 
 /**
  * Knows how to serialize and deserialize the booter configuration.
@@ -48,8 +50,6 @@ import static org.apache.maven.surefire.booter.BooterConstants.*;
  */
 public class BooterDeserializer
 {
-
-
     private final PropertiesWrapper properties;
 
     public BooterDeserializer( InputStream inputStream )
@@ -71,11 +71,11 @@ public class BooterDeserializer
         final String requestedTest = properties.getProperty( REQUESTEDTEST );
         final File sourceDirectory = properties.getFileProperty( SOURCE_DIRECTORY );
 
-        final List excludesList = properties.getStringList( EXCLUDES_PROPERTY_PREFIX );
-        final List includesList = properties.getStringList( INCLUDES_PROPERTY_PREFIX );
-        final List specificTestsList = properties.getStringList( SPECIFIC_TEST_PROPERTY_PREFIX );
+        final List<String> excludes = properties.getStringList( EXCLUDES_PROPERTY_PREFIX );
+        final List<String> includes = properties.getStringList( INCLUDES_PROPERTY_PREFIX );
+        final List<String> specificTests = properties.getStringList( SPECIFIC_TEST_PROPERTY_PREFIX );
 
-        final List testSuiteXmlFiles = properties.getStringList( TEST_SUITE_XML_FILES );
+        final List<String> testSuiteXmlFiles = properties.getStringList( TEST_SUITE_XML_FILES );
         final File testClassesDirectory = properties.getFileProperty( TEST_CLASSES_DIRECTORY );
         final String runOrder = properties.getProperty( RUN_ORDER );
         final String runStatisticsFile = properties.getProperty( RUN_STATISTICS_FILE );
@@ -83,8 +83,8 @@ public class BooterDeserializer
         final int rerunFailingTestsCount = properties.getIntProperty( RERUN_FAILING_TESTS_COUNT );
 
         DirectoryScannerParameters dirScannerParams =
-            new DirectoryScannerParameters( testClassesDirectory, includesList, excludesList, specificTestsList,
-                                            properties.getBooleanObjectProperty( FAILIFNOTESTS ), runOrder );
+            new DirectoryScannerParameters( testClassesDirectory, includes, excludes, specificTests,
+                                            properties.getBooleanProperty( FAILIFNOTESTS ), runOrder );
 
         RunOrderParameters runOrderParameters = new RunOrderParameters( runOrder, runStatisticsFile );
 
@@ -94,12 +94,18 @@ public class BooterDeserializer
                              rerunFailingTestsCount );
 
         ReporterConfiguration reporterConfiguration =
-            new ReporterConfiguration( reportsDirectory, properties.getBooleanObjectProperty( ISTRIMSTACKTRACE ) );
+            new ReporterConfiguration( reportsDirectory, properties.getBooleanProperty( ISTRIMSTACKTRACE ) );
+
+        Collection<String> cli = properties.getStringList( MAIN_CLI_OPTIONS );
+
+        int failFastCount = properties.getIntProperty( FAIL_FAST_COUNT );
+
+        Shutdown shutdown = Shutdown.valueOf( properties.getProperty( SHUTDOWN ) );
 
         return new ProviderConfiguration( dirScannerParams, runOrderParameters,
                                           properties.getBooleanProperty( FAILIFNOTESTS ), reporterConfiguration, testNg,
                                           testSuiteDefinition, properties.getProperties(), typeEncodedTestForFork,
-                                          preferTestsFromInStream );
+                                          preferTestsFromInStream, fromStrings( cli ), failFastCount, shutdown );
     }
 
     public StartupConfiguration getProviderConfiguration()

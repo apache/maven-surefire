@@ -118,4 +118,8 @@ public interface SurefireExecutionParameters
     Boolean getFailIfNoSpecifiedTests();
 
     void setFailIfNoSpecifiedTests( boolean failIfNoSpecifiedTests );
+
+    int getSkipAfterFailureCount();
+
+    String getShutdown();
 }

@@ -19,82 +19,111 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
+import org.apache.maven.surefire.common.junit4.Notifier;
 import org.apache.maven.surefire.junitcore.pc.ParallelComputer;
 import org.apache.maven.surefire.junitcore.pc.ParallelComputerBuilder;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
+import org.junit.Ignore;
 import org.junit.runner.Computer;
-import org.junit.runner.JUnitCore;
+import org.junit.runner.Description;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
-import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
-import org.junit.runner.manipulation.NoTestsRemainException;
 import org.junit.runner.notification.RunListener;
+import org.junit.runner.notification.StoppedByUserException;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Queue;
+
+import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createDescription;
+import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createIgnored;
+import static org.apache.maven.surefire.common.junit4.JUnit4RunListener.rethrowAnyTestMechanismFailures;
+import static org.junit.runner.Computer.serial;
+import static org.junit.runner.Request.classes;
 
 /**
  * Encapsulates access to JUnitCore
  *
  * @author Kristian Rosenvold
  */
-
-class JUnitCoreWrapper
+final class JUnitCoreWrapper
 {
-    public static void execute( ConsoleLogger logger, TestsToRun testsToRun, JUnitCoreParameters jUnitCoreParameters,
-                                List<RunListener> listeners, Filter filter )
+    private final Notifier notifier;
+    private final JUnitCoreParameters jUnitCoreParameters;
+    private final ConsoleLogger logger;
+
+    JUnitCoreWrapper( Notifier notifier, JUnitCoreParameters jUnitCoreParameters, ConsoleLogger logger )
+    {
+        this.notifier = notifier;
+        this.jUnitCoreParameters = jUnitCoreParameters;
+        this.logger = logger;
+    }
+
+    void execute( TestsToRun testsToRun, Filter filter )
         throws TestSetFailedException
     {
-        JUnitCore junitCore = createJUnitCore( listeners );
+        execute( testsToRun, true, Collections.<RunListener>emptyList(), filter );
+    }
+
+    void execute( TestsToRun testsToRun, Collection<RunListener> listeners, Filter filter )
+            throws TestSetFailedException
+    {
+        execute( testsToRun, false, listeners, filter );
+    }
+
+    private void execute( TestsToRun testsToRun, boolean useIterated, Collection<RunListener> listeners, Filter filter )
+        throws TestSetFailedException
+    {
         if ( testsToRun.allowEagerReading() )
         {
-            executeEager( logger, testsToRun, filter, jUnitCoreParameters, junitCore );
+            executeEager( testsToRun, filter, listeners );
         }
         else
         {
-            executeLazy( logger, testsToRun, filter, jUnitCoreParameters, junitCore );
+            executeLazy( testsToRun, useIterated, filter, listeners );
         }
     }
 
-    private static JUnitCore createJUnitCore( List<RunListener> listeners )
+    private JUnitCore createJUnitCore( Notifier notifier, Collection<RunListener> listeners )
     {
         JUnitCore junitCore = new JUnitCore();
-        for ( RunListener runListener : listeners )
-        {
-            junitCore.addListener( runListener );
-        }
+
+        // custom listeners added last
+        notifier.addListeners( listeners );
+
         return junitCore;
     }
 
-    private static void executeEager( ConsoleLogger logger, TestsToRun testsToRun, Filter filter,
-                                      JUnitCoreParameters jUnitCoreParameters, JUnitCore junitCore )
+    private void executeEager( TestsToRun testsToRun, Filter filter, Collection<RunListener> listeners )
         throws TestSetFailedException
     {
-        Class[] tests = testsToRun.getLocatedClasses();
-        Computer computer = createComputer( logger, jUnitCoreParameters );
-        createRequestAndRun( filter, computer, junitCore, tests );
+        JUnitCore junitCore = createJUnitCore( notifier, listeners );
+        Class<?>[] tests = testsToRun.getLocatedClasses();
+        Computer computer = createComputer();
+        createRequestAndRun( filter, computer, junitCore.withReportedTests( tests ), tests );
     }
 
-    private static void executeLazy( ConsoleLogger logger, TestsToRun testsToRun, Filter filter,
-                                     JUnitCoreParameters jUnitCoreParameters, JUnitCore junitCore )
+    private void executeLazy( TestsToRun testsToRun, boolean useIterated, Filter filter,
+                              Collection<RunListener> listeners )
         throws TestSetFailedException
     {
-        // in order to support LazyTestsToRun, the iterator must be used
-        for ( Class clazz : testsToRun )
+        JUnitCore junitCore = createJUnitCore( notifier, listeners );
+        for ( Iterator<Class<?>> it = useIterated ? testsToRun.iterated() : testsToRun.iterator(); it.hasNext(); )
         {
-            Computer computer = createComputer( logger, jUnitCoreParameters );
-            createRequestAndRun( filter, computer, junitCore, clazz );
+            Class<?> clazz = it.next();
+            Computer computer = createComputer();
+            createRequestAndRun( filter, computer, junitCore.withReportedTests( clazz ), clazz );
         }
     }
 
-    private static void createRequestAndRun( Filter filter, Computer computer, JUnitCore junitCore,
-                                             Class<?>... classesToRun )
+    private void createRequestAndRun( Filter filter, Computer computer, JUnitCore junitCore, Class<?>... classesToRun )
         throws TestSetFailedException
     {
-        Request req = Request.classes( computer, classesToRun );
+        Request req = classes( computer, classesToRun );
         if ( filter != null )
         {
             req = new FilteringRequest( req, filter );
@@ -105,8 +134,8 @@ class JUnitCoreWrapper
             }
         }
 
-        Result run = junitCore.run( req );
-        JUnit4RunListener.rethrowAnyTestMechanismFailures( run );
+        Result run = junitCore.run( req.getRunner() );
+        rethrowAnyTestMechanismFailures( run );
 
         if ( computer instanceof ParallelComputer )
         {
@@ -118,37 +147,67 @@ class JUnitCoreWrapper
         }
     }
 
-    private static Computer createComputer( ConsoleLogger logger, JUnitCoreParameters parameters )
-        throws TestSetFailedException
+    private Computer createComputer()
     {
-        return parameters.isNoThreading()
-            ? Computer.serial()
-            : new ParallelComputerBuilder( logger, parameters ).buildComputer();
+        return jUnitCoreParameters.isNoThreading()
+            ? serial()
+            : new ParallelComputerBuilder( logger, jUnitCoreParameters ).buildComputer();
     }
 
-    private static class FilteringRequest
-        extends Request
+    private final class JUnitCore
+        extends org.apache.maven.surefire.junitcore.JUnitCore
     {
-        private Runner filteredRunner;
-
-        public FilteringRequest( Request req, Filter filter )
+        JUnitCore()
         {
-            try
+            super( JUnitCoreWrapper.this.notifier );
+        }
+
+        JUnitCore withReportedTests( Class<?>... tests )
+        {
+            Queue<String> stoppedTests = JUnitCoreWrapper.this.notifier.getRemainingTestClasses();
+            if ( stoppedTests != null )
             {
-                Runner runner = req.getRunner();
-                filter.apply( runner );
-                filteredRunner = runner;
+                for ( Class<?> test : tests )
+                {
+                    stoppedTests.add( test.getName() );
+                }
             }
-            catch ( NoTestsRemainException e )
+            return this;
+        }
+
+        @Override
+        @SuppressWarnings( "checkstyle:innerassignment" )
+        protected void afterException( Throwable e )
+            throws TestSetFailedException
+        {
+            if ( JUnitCoreWrapper.this.notifier.isFailFast() && e instanceof StoppedByUserException )
             {
-                filteredRunner = null;
+                Queue<String> stoppedTests = JUnitCoreWrapper.this.notifier.getRemainingTestClasses();
+                if ( stoppedTests != null )
+                {
+                    String reason = e.getClass().getName();
+                    Ignore reasonForSkippedTest = createIgnored( reason );
+                    for ( String clazz; ( clazz = stoppedTests.poll() ) != null; )
+                    {
+                        Description skippedTest = createDescription( clazz, reasonForSkippedTest );
+                        JUnitCoreWrapper.this.notifier.fireTestIgnored( skippedTest );
+                    }
+                }
+            }
+            else
+            {
+                super.afterException( e );
             }
         }
 
         @Override
-        public Runner getRunner()
+        protected void afterFinished()
         {
-            return filteredRunner;
+            Queue<String> stoppedTests = JUnitCoreWrapper.this.notifier.getRemainingTestClasses();
+            if ( stoppedTests != null )
+            {
+                stoppedTests.clear();
+            }
         }
     }
 }

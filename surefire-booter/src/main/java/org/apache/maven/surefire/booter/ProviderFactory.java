@@ -22,13 +22,15 @@ package org.apache.maven.surefire.booter;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Iterator;
 
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.ReflectionUtils;
 
+import static org.apache.maven.surefire.util.ReflectionUtils.getMethod;
+import static org.apache.maven.surefire.util.ReflectionUtils.invokeGetter;
+import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray;
+import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray2;
 
 /**
  * Creates the surefire provider.
@@ -48,8 +50,11 @@ public class ProviderFactory
 
     private final Object reporterManagerFactory;
 
-    private static final Class[] INVOKE_PARAMETERS = new Class[]{ Object.class };
+    private static final Class[] INVOKE_PARAMETERS = { Object.class };
 
+    private static final Class[] INVOKE_EMPTY_PARAMETER_TYPES = { };
+
+    private static final Class[] INVOKE_EMPTY_PARAMETERS = { };
 
     public ProviderFactory( StartupConfiguration startupConfiguration, ProviderConfiguration providerConfiguration,
                             ClassLoader testsClassLoader, Object reporterManagerFactory )
@@ -63,7 +68,7 @@ public class ProviderFactory
 
     public static RunResult invokeProvider( Object testSet, ClassLoader testsClassLoader, Object factory,
                                             ProviderConfiguration providerConfiguration, boolean insideFork,
-                                            StartupConfiguration startupConfiguration1, boolean restoreStreams )
+                                            StartupConfiguration startupConfig, boolean restoreStreams )
         throws TestSetFailedException, InvocationTargetException
     {
         final PrintStream orgSystemOut = System.out;
@@ -71,12 +76,11 @@ public class ProviderFactory
         // Note that System.out/System.err are also read in the "ReporterConfiguration" instantiation
         // in createProvider below. These are the same values as here.
 
-        ProviderFactory providerFactory =
-            new ProviderFactory( startupConfiguration1, providerConfiguration, testsClassLoader, factory );
-        final SurefireProvider provider = providerFactory.createProvider( insideFork );
         try
         {
-            return provider.invoke( testSet );
+            return new ProviderFactory( startupConfig, providerConfiguration, testsClassLoader, factory )
+                .createProvider( insideFork )
+                .invoke( testSet );
         }
         finally
         {
@@ -102,6 +106,9 @@ public class ProviderFactory
         surefireReflector.setTestArtifactInfoAware( o, providerConfiguration.getTestArtifact() );
         surefireReflector.setRunOrderParameters( o, providerConfiguration.getRunOrderParameters() );
         surefireReflector.setIfDirScannerAware( o, providerConfiguration.getDirScannerParams() );
+        surefireReflector.setMainCliOptions( o, providerConfiguration.getMainCliOptions() );
+        surefireReflector.setSkipAfterFailureCount( o, providerConfiguration.getSkipAfterFailureCount() );
+        surefireReflector.setShutdown( o, providerConfiguration.getShutdown() );
 
         Object provider = surefireReflector.instantiateProvider( startupConfiguration.getActualClassName(), o );
         currentThread.setContextClassLoader( systemClassLoader );
@@ -124,12 +131,13 @@ public class ProviderFactory
             this.testsClassLoader = testsClassLoader;
         }
 
-        public Iterator getSuites()
+        @SuppressWarnings( "unchecked" )
+        public Iterable<Class<?>> getSuites()
         {
             ClassLoader current = swapClassLoader( testsClassLoader );
             try
             {
-                return (Iterator) ReflectionUtils.invokeGetter( providerInOtherClassLoader, "getSuites" );
+                return (Iterable<Class<?>>) invokeGetter( providerInOtherClassLoader, "getSuites" );
             }
             finally
             {
@@ -143,11 +151,8 @@ public class ProviderFactory
             ClassLoader current = swapClassLoader( testsClassLoader );
             try
             {
-                final Method invoke =
-                    ReflectionUtils.getMethod( providerInOtherClassLoader.getClass(), "invoke", INVOKE_PARAMETERS );
-
-                final Object result = ReflectionUtils.invokeMethodWithArray2( providerInOtherClassLoader, invoke,
-                                                                              new Object[]{ forkTestSet } );
+                Method invoke = getMethod( providerInOtherClassLoader.getClass(), "invoke", INVOKE_PARAMETERS );
+                Object result = invokeMethodWithArray2( providerInOtherClassLoader, invoke, forkTestSet );
                 return (RunResult) surefireReflector.convertIfRunResult( result );
             }
             finally
@@ -169,9 +174,9 @@ public class ProviderFactory
 
         public void cancel()
         {
-            final Method invoke =
-                ReflectionUtils.getMethod( providerInOtherClassLoader.getClass(), "cancel", new Class[]{ } );
-            ReflectionUtils.invokeMethodWithArray( providerInOtherClassLoader, invoke, null );
+            Class<?> providerType = providerInOtherClassLoader.getClass();
+            Method invoke = getMethod( providerType, "cancel", INVOKE_EMPTY_PARAMETER_TYPES );
+            invokeMethodWithArray( providerInOtherClassLoader, invoke, INVOKE_EMPTY_PARAMETERS );
         }
     }
 }

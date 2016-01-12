@@ -19,8 +19,9 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
-import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -34,8 +35,11 @@ public class TestsToRunTest
     public void testGetTestSets()
         throws Exception
     {
-        TestsToRun testsToRun = new TestsToRun( Arrays.asList( new Class[]{ T1.class, T2.class } ) );
-        Iterator it = testsToRun.iterator();
+        Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
+        classes.add( T1.class );
+        classes.add( T2.class );
+        TestsToRun testsToRun = new TestsToRun( classes );
+        Iterator<Class<?>> it = testsToRun.iterator();
         assertTrue( it.hasNext() );
         assertEquals( it.next(), T1.class );
         assertTrue( it.hasNext() );
@@ -43,16 +47,22 @@ public class TestsToRunTest
         assertFalse( it.hasNext() );
     }
 
-    public void testContainsAtleast()
+    public void testContainsAtLeast()
     {
-        TestsToRun testsToRun = new TestsToRun( Arrays.asList( new Class[]{ T1.class, T2.class } ) );
+        Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
+        classes.add( T1.class );
+        classes.add( T2.class );
+        TestsToRun testsToRun = new TestsToRun( classes );
         assertTrue( testsToRun.containsAtLeast( 2 ) );
         assertFalse( testsToRun.containsAtLeast( 3 ) );
     }
 
     public void testContainsExactly()
     {
-        TestsToRun testsToRun = new TestsToRun( Arrays.asList( new Class[]{ T1.class, T2.class } ) );
+        Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
+        classes.add( T1.class );
+        classes.add( T2.class );
+        TestsToRun testsToRun = new TestsToRun( classes );
         assertFalse( testsToRun.containsExactly( 1 ) );
         assertTrue( testsToRun.containsExactly( 2 ) );
         assertFalse( testsToRun.containsExactly( 3 ) );
@@ -60,17 +70,44 @@ public class TestsToRunTest
 
     public void testToRunArray()
     {
-        TestsToRun testsToRun = new TestsToRun( Arrays.asList( new Class[]{ T1.class, T2.class } ) );
-        Class[] locatedClasses = testsToRun.getLocatedClasses();
+        Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
+        classes.add( T1.class );
+        classes.add( T2.class );
+        TestsToRun testsToRun = new TestsToRun( classes );
+        Class<?>[] locatedClasses = testsToRun.getLocatedClasses();
         assertEquals( 2, locatedClasses.length );
     }
 
     public void testGetClassByName()
     {
-        TestsToRun testsToRun = new TestsToRun( Arrays.asList( new Class[]{ T1.class, T2.class } ) );
+        Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
+        classes.add( T1.class );
+        classes.add( T2.class );
+        TestsToRun testsToRun = new TestsToRun( classes );
         assertEquals( T1.class, testsToRun.getClassByName( "org.apache.maven.surefire.util.TestsToRunTest$T1" ) );
         assertEquals( T2.class, testsToRun.getClassByName( "org.apache.maven.surefire.util.TestsToRunTest$T2" ) );
         assertEquals( null, testsToRun.getClassByName( "org.apache.maven.surefire.util.TestsToRunTest$T3" ) );
+    }
+
+    public void testTwoIterators()
+    {
+        Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
+        classes.add( T1.class );
+        classes.add( T2.class );
+        TestsToRun testsToRun = new TestsToRun( classes );
+
+        Iterator<Class<?>> it1 = testsToRun.iterator();
+
+        assertEquals( it1.next(), T1.class );
+        assertTrue( it1.hasNext() );
+
+        Iterator<Class<?>> it2 = testsToRun.iterated();
+
+        assertEquals( it1.next(), T2.class );
+        assertFalse( it1.hasNext() );
+
+        assertEquals( it2.next(), T1.class );
+        assertFalse( it1.hasNext() );
     }
 
     class T1

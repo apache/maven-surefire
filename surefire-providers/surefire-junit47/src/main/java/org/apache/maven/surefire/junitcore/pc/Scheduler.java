@@ -207,8 +207,14 @@ public class Scheduler
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PrintStream stream = new PrintStream( out );
-        t.printStackTrace( stream );
-        stream.close();
+        try
+        {
+            t.printStackTrace( stream );
+        }
+        finally
+        {
+            stream.close();
+        }
         logger.info( out.toString() );
     }
 

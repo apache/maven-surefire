@@ -24,14 +24,14 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire</artifactId>
-    <version>2.19-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
+    <version>2.19.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>surefire-providers</artifactId>
   <packaging>pom</packaging>
 
   <name>SureFire Providers</name>
+  <description>SureFire Providers Aggregator POM</description>
 
   <modules>
     <module>common-junit3</module>

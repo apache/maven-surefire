@@ -100,6 +100,15 @@ public class JUnitTestSetTest
             throw new IllegalStateException();
         }
 
+        public void testExecutionSkippedByUser()
+        {
+        }
+
+        public void testSkippedByUser( ReportEntry report )
+        {
+            testSkipped( report );
+        }
+
         public List getSucceededTests()
         {
             return succeededTests;

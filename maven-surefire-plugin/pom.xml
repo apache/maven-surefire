@@ -24,8 +24,7 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire</artifactId>
-    <version>2.19-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
+    <version>2.19.2-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.maven.plugins</groupId>
@@ -33,6 +32,7 @@
   <packaging>maven-plugin</packaging>
 
   <name>Maven Surefire Plugin</name>
+  <description>Maven Surefire MOJO in maven-surefire-plugin.</description>
 
   <prerequisites>
     <maven>2.2.1</maven>

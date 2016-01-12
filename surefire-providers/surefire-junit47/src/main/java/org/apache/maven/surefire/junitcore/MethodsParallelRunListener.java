@@ -27,6 +27,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 /**
  * @author Kristian Rosenvold
  */
+@ThreadSafe
 public class MethodsParallelRunListener
     extends ConcurrentRunListener
 {

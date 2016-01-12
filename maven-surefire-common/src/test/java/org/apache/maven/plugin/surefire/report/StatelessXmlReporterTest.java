@@ -19,14 +19,12 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 import org.apache.maven.plugin.surefire.booterclient.output.DeserializedStacktraceWriter;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.xml.Xpp3Dom;
 import org.apache.maven.shared.utils.xml.Xpp3DomBuilder;
-import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
@@ -35,49 +33,48 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings( "ResultOfMethodCallIgnored" )
 public class StatelessXmlReporterTest
     extends TestCase
 {
-
-    private StatelessXmlReporter reporter = new StatelessXmlReporter( new File( "." ), null, false, 0,
-                    Collections.synchronizedMap( new HashMap<String, Map<String, List<WrappedReportEntry>>>() ) );
-
-    private ReportEntry reportEntry;
-
     private TestSetStats stats;
 
     private TestSetStats rerunStats;
 
     private File expectedReportFile;
 
+    private File reportDir;
+
     private final static String TEST_ONE = "aTestMethod";
     private final static String TEST_TWO = "bTestMethod";
     private final static String TEST_THREE = "cTestMethod";
+
+    private static volatile int folderPostfix;
 
     @Override
     protected void setUp()
         throws Exception
     {
-        super.setUp();
-        reportEntry = new SimpleReportEntry( this.getClass().getName(), "StatelessXMLReporterTest",
-                                             new LegacyPojoStackTraceWriter( "", "", new AssertionFailedError() ), 17 );
         stats = new TestSetStats( false, true );
         rerunStats = new TestSetStats( false, true );
-        reporter.cleanTestHistoryMap();
+
+        File basedir = new File( "." );
+        File target = new File( basedir.getCanonicalFile(), "target" );
+        target.mkdir();
+        String reportRelDir = getClass().getSimpleName() + "-" + ++folderPostfix;
+        reportDir = new File( target, reportRelDir );
+        reportDir.mkdir();
     }
 
     @Override
     protected void tearDown()
         throws Exception
     {
-        super.tearDown();
-
         if ( expectedReportFile != null )
         {
             expectedReportFile.delete();
@@ -86,15 +83,18 @@ public class StatelessXmlReporterTest
 
     public void testFileNameWithoutSuffix()
     {
-        File reportDir = new File( "." );
-        String testName = "org.apache.maven.plugin.surefire.report.StatelessXMLReporterTest";
-        reportEntry = new SimpleReportEntry( this.getClass().getName(), testName, 12 );
+        StatelessXmlReporter reporter =
+            new StatelessXmlReporter( reportDir, null, false, 0,
+                                      new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>() );
+        reporter.cleanTestHistoryMap();
+
+        ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), getClass().getName(), 12 );
         WrappedReportEntry testSetReportEntry =
             new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null );
         stats.testSucceeded( testSetReportEntry );
         reporter.testSetCompleted( testSetReportEntry, stats );
 
-        expectedReportFile = new File( reportDir, "TEST-" + testName + ".xml" );
+        expectedReportFile = new File( reportDir, "TEST-" + getClass().getName() + ".xml" );
         assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
                     expectedReportFile.exists() );
     }
@@ -103,9 +103,7 @@ public class StatelessXmlReporterTest
     public void testAllFieldsSerialized()
         throws IOException
     {
-        File reportDir = new File( "." );
-
-        reportEntry = new SimpleReportEntry( this.getClass().getName(), TEST_ONE, 12 );
+        ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), TEST_ONE, 12 );
         WrappedReportEntry testSetReportEntry =
             new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null );
         expectedReportFile = new File( reportDir, "TEST-" + TEST_ONE + ".xml" );
@@ -139,8 +137,8 @@ public class StatelessXmlReporterTest
                                     ReportEntryType.ERROR, 13, stdOut, stdErr );
 
         stats.testSucceeded( t2 );
-        StatelessXmlReporter reporter = new StatelessXmlReporter( new File( "." ), null, false, 0,
-                        Collections.synchronizedMap( new HashMap<String, Map<String, List<WrappedReportEntry>>>() ) );
+        StatelessXmlReporter reporter = new StatelessXmlReporter( reportDir, null, false, 0,
+                        new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>() );
         reporter.testSetCompleted( testSetReportEntry, stats );
 
         FileInputStream fileInputStream = new FileInputStream( expectedReportFile );
@@ -157,7 +155,7 @@ public class StatelessXmlReporterTest
         Xpp3Dom tca = testcase[0];
         assertEquals( TEST_ONE, tca.getAttribute( "name" ) ); // Hopefully same order on jdk5
         assertEquals( "0.012", tca.getAttribute( "time" ) );
-        assertEquals( this.getClass().getName(), tca.getAttribute( "classname" ) );
+        assertEquals( getClass().getName(), tca.getAttribute( "classname" ) );
 
         Xpp3Dom tcb = testcase[1];
         assertEquals( TEST_TWO, tcb.getAttribute( "name" ) );
@@ -176,8 +174,7 @@ public class StatelessXmlReporterTest
     public void testOutputRerunFlakyFailure()
         throws IOException
     {
-        File reportDir = new File( "." );
-        reportEntry = new SimpleReportEntry( this.getClass().getName(), TEST_ONE, 12 );
+        ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), TEST_ONE, 12 );
 
         WrappedReportEntry testSetReportEntry =
             new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null );
@@ -220,8 +217,7 @@ public class StatelessXmlReporterTest
         rerunStats.testSucceeded( testThreeSecondRun );
 
         StatelessXmlReporter reporter =
-            new StatelessXmlReporter(
-                                      new File( "." ),
+            new StatelessXmlReporter( reportDir,
                                       null,
                                       false,
                                       1,
@@ -234,8 +230,7 @@ public class StatelessXmlReporterTest
 
         Xpp3Dom testSuite = Xpp3DomBuilder.build( new InputStreamReader( fileInputStream, "UTF-8" ) );
         assertEquals( "testsuite", testSuite.getName() );
-        // 0.019 = 0.012 + 0.005 +0.002
-        assertEquals( "0.019", testSuite.getAttribute( "time" ) );
+        assertEquals( "0.012", testSuite.getAttribute( "time" ) );
         Xpp3Dom properties = testSuite.getChild( "properties" );
         assertEquals( System.getProperties().size(), properties.getChildCount() );
         Xpp3Dom child = properties.getChild( 1 );
@@ -246,7 +241,7 @@ public class StatelessXmlReporterTest
         Xpp3Dom testCaseOne = testcase[0];
         assertEquals( TEST_ONE, testCaseOne.getAttribute( "name" ) );
         assertEquals( "0.012", testCaseOne.getAttribute( "time" ) );
-        assertEquals( this.getClass().getName(), testCaseOne.getAttribute( "classname" ) );
+        assertEquals( getClass().getName(), testCaseOne.getAttribute( "classname" ) );
 
         Xpp3Dom testCaseTwo = testcase[1];
         assertEquals( TEST_TWO, testCaseTwo.getAttribute( "name" ) );

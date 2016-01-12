@@ -36,24 +36,19 @@ public class DirectoryScanner
 {
     private final File basedir;
 
-    private final TestListResolver includedAndExcludedTests;
+    private final TestListResolver filter;
 
-    private final TestListResolver specificTests;
-
-    public DirectoryScanner( File basedir, TestListResolver includedAndExcludedTests, TestListResolver specificTests )
+    public DirectoryScanner( File basedir, TestListResolver filter )
     {
         this.basedir = basedir;
-        this.includedAndExcludedTests = includedAndExcludedTests;
-        this.specificTests = specificTests;
+        this.filter = filter;
     }
 
     public DefaultScanResult scan()
     {
         FileScanner scanner = new FileScanner( basedir, "class" );
         List<String> result = new ArrayList<String>();
-        TestListResolver includedExcludedClasses = includedAndExcludedTests.createClassFilters();
-        TestListResolver specificClasses = specificTests.createClassFilters();
-        scanner.scanTo( result, includedExcludedClasses.and( specificClasses ) );
+        scanner.scanTo( result, filter );
         return new DefaultScanResult( result );
     }
 }

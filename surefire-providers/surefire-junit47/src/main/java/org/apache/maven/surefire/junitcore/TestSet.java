@@ -19,11 +19,12 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
@@ -35,22 +36,22 @@ import org.junit.runner.Description;
  */
 public class TestSet
 {
-    private final Description testSetDescription;
-
-    private final AtomicInteger numberOfCompletedChildren = new AtomicInteger( 0 );
-
-    // While the two parameters below may seem duplicated, it is not entirely the case,
-    // since numberOfTests has the correct value from the start, while testMethods grows as method execution starts.
-
-    private final AtomicInteger numberOfTests = new AtomicInteger( 0 );
-
-    private final List<TestMethod> testMethods = Collections.synchronizedList( new ArrayList<TestMethod>() );
-
     private static final InheritableThreadLocal<TestSet> TEST_SET = new InheritableThreadLocal<TestSet>();
 
-    private final AtomicBoolean allScheduled = new AtomicBoolean();
+    private final Description testSetDescription;
+
+    private final Collection<TestMethod> testMethods = new ConcurrentLinkedQueue<TestMethod>();
 
     private final AtomicBoolean played = new AtomicBoolean();
+
+    private final AtomicInteger numberOfCompletedChildren = new AtomicInteger();
+
+    // While the two parameters may seem duplicated, it is not entirely the case,
+    // since numberOfTests has the correct value from the start, while testMethods grows as method execution starts.
+
+    private final AtomicInteger numberOfTests = new AtomicInteger();
+
+    private volatile boolean allScheduled;
 
     public TestSet( Description testSetDescription )
     {
@@ -135,7 +136,7 @@ public class TestSet
     public void incrementFinishedTests( RunListener reporterManager, boolean reportImmediately )
     {
         numberOfCompletedChildren.incrementAndGet();
-        if ( allScheduled.get() && isAllTestsDone() && reportImmediately )
+        if ( allScheduled && isAllTestsDone() && reportImmediately )
         {
             replay( reporterManager );
         }
@@ -143,7 +144,7 @@ public class TestSet
 
     public void setAllScheduled( RunListener reporterManager )
     {
-        allScheduled.set( true );
+        allScheduled = true;
         if ( isAllTestsDone() )
         {
             replay( reporterManager );

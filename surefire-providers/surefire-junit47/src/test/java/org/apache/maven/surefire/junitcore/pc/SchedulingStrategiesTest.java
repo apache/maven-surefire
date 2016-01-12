@@ -20,10 +20,12 @@ package org.apache.maven.surefire.junitcore.pc;
  */
 
 import org.apache.maven.surefire.junitcore.Logger;
+import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -44,6 +46,8 @@ import static org.junit.Assert.assertTrue;
  */
 public class SchedulingStrategiesTest
 {
+    private static final ThreadFactory DAEMON_THREAD_FACTORY = DaemonThreadFactory.newDaemonThreadFactory();
+
     @Test
     public void invokerStrategy()
         throws InterruptedException
@@ -97,7 +101,7 @@ public class SchedulingStrategiesTest
     public void sharedPoolStrategy()
         throws InterruptedException
     {
-        ExecutorService sharedPool = Executors.newCachedThreadPool();
+        ExecutorService sharedPool = Executors.newCachedThreadPool( DAEMON_THREAD_FACTORY );
 
         SchedulingStrategy strategy1 = SchedulingStrategies.createParallelSharedStrategy( new Logger(), sharedPool );
         assertTrue( strategy1.hasSharedThreadPool() );

@@ -20,12 +20,15 @@ package org.apache.maven.surefire.util;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
 import org.apache.maven.surefire.testset.TestSetFailedException;
+
+import static java.lang.Math.max;
 
 /**
  * Contains all the tests that have been found according to specified include/exclude
@@ -33,34 +36,36 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
  *
  * @author Kristian Rosenvold (junit core adaption)
  */
-public class TestsToRun implements Iterable<Class>
+public class TestsToRun implements Iterable<Class<?>>
 {
-    private final List<Class> locatedClasses;
+    private final List<Class<?>> locatedClasses;
+
+    private volatile boolean finished;
+
+    private int iteratedCount;
 
     /**
      * Constructor
      *
-     * @param locatedClasses A list of java.lang.Class objects representing tests to run
+     * @param locatedClasses A set of java.lang.Class objects representing tests to run
      */
-    public TestsToRun( List<Class> locatedClasses )
+    public TestsToRun( Set<Class<?>> locatedClasses )
     {
-        this.locatedClasses = Collections.unmodifiableList( locatedClasses );
-        Set<Class> testSets = new HashSet<Class>();
-
-        for ( Class testClass : locatedClasses )
-        {
-            if ( testSets.contains( testClass ) )
-            {
-                throw new RuntimeException( "Duplicate test set '" + testClass.getName() + "'" );
-            }
-            testSets.add( testClass );
-        }
+        this.locatedClasses = new ArrayList<Class<?>>( locatedClasses );
     }
 
-    public static TestsToRun fromClass( Class clazz )
+    public static TestsToRun fromClass( Class<?> clazz )
         throws TestSetFailedException
     {
-        return new TestsToRun( Collections.singletonList( clazz ) );
+        return new TestsToRun( Collections.<Class<?>>singleton( clazz ) );
+    }
+
+    /**
+     * @return test classes which have been retrieved by {@link TestsToRun#iterator()}.
+     */
+    public Iterator<Class<?>> iterated()
+    {
+        return newWeakIterator();
     }
 
     /**
@@ -68,18 +73,67 @@ public class TestsToRun implements Iterable<Class>
      *
      * @return an unmodifiable iterator
      */
-    public Iterator<Class> iterator()
+    public Iterator<Class<?>> iterator()
     {
-        return locatedClasses.iterator();
+        return new ClassesIterator();
+    }
+
+    private final class ClassesIterator
+        extends CloseableIterator<Class<?>>
+    {
+        private final Iterator<Class<?>> it = TestsToRun.this.locatedClasses.iterator();
+
+        private int iteratedCount;
+
+        @Override
+        protected boolean isClosed()
+        {
+            return TestsToRun.this.isFinished();
+        }
+
+        @Override
+        protected boolean doHasNext()
+        {
+            return it.hasNext();
+        }
+
+        @Override
+        protected Class<?> doNext()
+        {
+            Class<?> nextTest = it.next();
+            TestsToRun.this.iteratedCount = max( ++iteratedCount, TestsToRun.this.iteratedCount );
+            return nextTest;
+        }
+
+        @Override
+        protected void doRemove()
+        {
+        }
+
+        @Override
+        public void remove()
+        {
+            throw new UnsupportedOperationException( "unsupported remove" );
+        }
+    }
+
+    public final void markTestSetFinished()
+    {
+        finished = true;
+    }
+
+    public final boolean isFinished()
+    {
+        return finished;
     }
 
     public String toString()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append( "TestsToRun: [" );
-        for ( Class clazz : this )
+        StringBuilder sb = new StringBuilder( "TestsToRun: [" );
+        for ( Class<?> clazz : this )
         {
-            sb.append( " " ).append( clazz.getName() );
+            sb.append( ' ' )
+                    .append( clazz.getName() );
         }
 
         sb.append( ']' );
@@ -91,7 +145,7 @@ public class TestsToRun implements Iterable<Class>
         return containsAtLeast( iterator(), atLeast );
     }
 
-    private boolean containsAtLeast( Iterator it, int atLeast )
+    private boolean containsAtLeast( Iterator<Class<?>> it, int atLeast )
     {
         for ( int i = 0; i < atLeast; i++ )
         {
@@ -108,7 +162,7 @@ public class TestsToRun implements Iterable<Class>
 
     public boolean containsExactly( int items )
     {
-        Iterator it = iterator();
+        Iterator<Class<?>> it = iterator();
         return containsAtLeast( it, items ) && !it.hasNext();
     }
 
@@ -121,18 +175,18 @@ public class TestsToRun implements Iterable<Class>
         return true;
     }
 
-    public Class[] getLocatedClasses()
+    public Class<?>[] getLocatedClasses()
     {
         if ( !allowEagerReading() )
         {
             throw new IllegalStateException( "Cannot eagerly read" );
         }
-        List<Class> result = new ArrayList<Class>();
-        for ( Class clazz : this )
+        Collection<Class<?>> result = new ArrayList<Class<?>>();
+        for ( Class<?> clazz : this )
         {
             result.add( clazz );
         }
-        return result.toArray( new Class[result.size()] );
+        return result.toArray( new Class<?>[result.size()] );
     }
 
     /**
@@ -141,9 +195,9 @@ public class TestsToRun implements Iterable<Class>
      * @param className string used to find the test class
      * @return Class object with the matching name, null if could not find a class with the matching name
      */
-    public Class getClassByName( String className )
+    public Class<?> getClassByName( String className )
     {
-        for ( Class clazz : this )
+        for ( Class<?> clazz : this )
         {
             if ( clazz.getName().equals( className ) )
             {
@@ -151,5 +205,45 @@ public class TestsToRun implements Iterable<Class>
             }
         }
         return null;
+    }
+
+    /**
+     * @return snapshot of tests upon constructs of internal iterator.
+     * Therefore weakly consistent while {@link TestsToRun#iterator()} is being iterated.
+     */
+    private Iterator<Class<?>> newWeakIterator()
+    {
+        final Iterator<Class<?>> it = locatedClasses.subList( 0, iteratedCount ).iterator();
+        return new CloseableIterator<Class<?>>()
+        {
+            @Override
+            protected boolean isClosed()
+            {
+                return TestsToRun.this.isFinished();
+            }
+
+            @Override
+            protected boolean doHasNext()
+            {
+                return it.hasNext();
+            }
+
+            @Override
+            protected Class<?> doNext()
+            {
+                return it.next();
+            }
+
+            @Override
+            protected void doRemove()
+            {
+            }
+
+            @Override
+            public void remove()
+            {
+                throw new UnsupportedOperationException( "unsupported remove" );
+            }
+        };
     }
 }

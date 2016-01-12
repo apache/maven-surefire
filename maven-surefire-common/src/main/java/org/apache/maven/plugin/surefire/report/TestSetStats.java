@@ -19,11 +19,9 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -52,8 +50,6 @@ public class TestSetStats
 
     private long lastStartAt;
 
-    private long elapsedForTestSet;
-
     public TestSetStats( boolean trimStackTrace, boolean plainFormat )
     {
         this.trimStackTrace = trimStackTrace;
@@ -62,26 +58,12 @@ public class TestSetStats
 
     public int getElapsedSinceTestSetStart()
     {
-        if ( testSetStartAt > 0 )
-        {
-            return (int) ( System.currentTimeMillis() - testSetStartAt );
-        }
-        else
-        {
-            return 0;
-        }
+        return testSetStartAt > 0 ? (int) ( System.currentTimeMillis() - testSetStartAt ) : 0;
     }
 
     public int getElapsedSinceLastStart()
     {
-        if ( lastStartAt > 0 )
-        {
-            return (int) ( System.currentTimeMillis() - lastStartAt );
-        }
-        else
-        {
-            return 0;
-        }
+        return lastStartAt > 0 ? (int) ( System.currentTimeMillis() - lastStartAt ) : 0;
     }
 
     public void testSetStart()
@@ -107,9 +89,8 @@ public class TestSetStats
         {
             testStartAt = testEndAt;
         }
-        long elapsedForThis = reportEntry.getElapsed() != null ? reportEntry.getElapsed() : testEndAt - testStartAt;
-        elapsedForTestSet += elapsedForThis;
-        return elapsedForThis;
+        Integer elapsedTime = reportEntry.getElapsed();
+        return elapsedTime != null ? elapsedTime : testEndAt - testStartAt;
     }
 
     public void testSucceeded( WrappedReportEntry reportEntry )
@@ -117,12 +98,10 @@ public class TestSetStats
         finishTest( reportEntry );
     }
 
-
     public void testError( WrappedReportEntry reportEntry )
     {
         errors += 1;
         finishTest( reportEntry );
-
     }
 
     public void testFailure( WrappedReportEntry reportEntry )
@@ -143,7 +122,6 @@ public class TestSetStats
         errors = 0;
         failures = 0;
         skipped = 0;
-        elapsedForTestSet = 0;
 
         for ( WrappedReportEntry entry : reportEntries )
         {
@@ -176,18 +154,7 @@ public class TestSetStats
 
     public String elapsedTimeAsString( long runTime )
     {
-        return numberFormat.format( (double) runTime / MS_PER_SEC );
-    }
-
-    private static final String TEST_SET_COMPLETED_PREFIX = "Tests run: ";
-
-    private final NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH );
-
-    private static final int MS_PER_SEC = 1000;
-
-    public String getElapsedForTestSet()
-    {
-        return elapsedTimeAsString( elapsedForTestSet );
+        return ReporterUtils.formatElapsedTime( runTime );
     }
 
     private void incrementCompletedCount()
@@ -197,31 +164,28 @@ public class TestSetStats
 
     public String getTestSetSummary( WrappedReportEntry reportEntry )
     {
-        StringBuilder buf = new StringBuilder();
-
-        buf.append( TEST_SET_COMPLETED_PREFIX );
-        buf.append( completedCount );
-        buf.append( ", Failures: " );
-        buf.append( failures );
-        buf.append( ", Errors: " );
-        buf.append( errors );
-        buf.append( ", Skipped: " );
-        buf.append( skipped );
-        buf.append( ", Time elapsed: " );
-        buf.append( reportEntry.elapsedTimeAsString() );
-        buf.append( " sec" );
+        String summary = "Tests run: ";
+        summary += completedCount;
+        summary += ", Failures: ";
+        summary += failures;
+        summary += ", Errors: ";
+        summary += errors;
+        summary += ", Skipped: ";
+        summary += skipped;
+        summary += ", ";
+        summary += reportEntry.getElapsedTimeVerbose();
 
         if ( failures > 0 || errors > 0 )
         {
-            buf.append( " <<< FAILURE!" );
+            summary += " <<< FAILURE!";
         }
 
-        buf.append( " - in " );
-        buf.append( reportEntry.getNameWithGroup() );
+        summary += " - in ";
+        summary += reportEntry.getNameWithGroup();
 
-        buf.append( "\n" );
+        summary += "\n";
 
-        return buf.toString();
+        return summary;
     }
 
     public List<String> getTestResults()

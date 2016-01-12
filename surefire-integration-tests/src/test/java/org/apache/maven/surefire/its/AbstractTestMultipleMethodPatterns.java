@@ -36,6 +36,10 @@ import static org.junit.Assume.assumeThat;
 public abstract class AbstractTestMultipleMethodPatterns
     extends SurefireJUnit4IntegrationTestCase
 {
+    private static final String CSV_DELIMITER_SHORT = ",";
+    private static final String CSV_DELIMITER_LONG = ", ";
+    private static final String NOT_DELIMITER = "!";
+
     protected abstract Settings getSettings();
 
     protected abstract SurefireLauncher unpack();
@@ -65,18 +69,18 @@ public abstract class AbstractTestMultipleMethodPatterns
     {
         String included = "";
         String excluded = "";
-        for ( String pattern : patterns.split( "," ) )
+        for ( String pattern : patterns.split( CSV_DELIMITER_SHORT ) )
         {
             pattern = pattern.trim();
-            if ( pattern.startsWith( "!" ) )
+            if ( pattern.startsWith( NOT_DELIMITER ) )
             {
-                excluded += pattern.substring( 1 );
-                excluded += ", ";
+                excluded += pattern.substring( NOT_DELIMITER.length() ).trim();
+                excluded += CSV_DELIMITER_LONG;
             }
             else
             {
                 included += pattern;
-                included += ", ";
+                included += CSV_DELIMITER_LONG;
             }
         }
         return new String[]{ trimEndComma( included ), trimEndComma( excluded ) };
@@ -85,7 +89,8 @@ public abstract class AbstractTestMultipleMethodPatterns
     private static String trimEndComma( String pattern )
     {
         pattern = pattern.trim();
-        return pattern.endsWith( "," ) ? pattern.substring( 0, pattern.length() - 1 ) : pattern;
+        return pattern.endsWith( CSV_DELIMITER_LONG )
+            ? pattern.substring( 0, pattern.length() - CSV_DELIMITER_LONG.length() ) : pattern;
     }
 
     @Test

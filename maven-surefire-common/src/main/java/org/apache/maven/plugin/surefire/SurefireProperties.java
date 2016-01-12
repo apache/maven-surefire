@@ -23,7 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -37,6 +37,8 @@ import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.KeyValueSource;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
+import static java.util.Arrays.asList;
+
 /**
  * A properties implementation that preserves insertion order.
  */
@@ -44,6 +46,9 @@ public class SurefireProperties
     extends Properties
     implements KeyValueSource
 {
+    private static final Collection<String> KEYS_THAT_CANNOT_BE_USED_AS_SYSTEM_PROPERTIES =
+            asList( "java.library.path", "file.encoding", "jdk.map.althashing.threshold" );
+
     private final LinkedHashSet<Object> items = new LinkedHashSet<Object>();
 
     public SurefireProperties()
@@ -96,12 +101,7 @@ public class SurefireProperties
     {
         if ( source != null )
         {
-            //noinspection unchecked
-            for ( Object key : source.keySet() )
-            {
-                Object value = source.get( key );
-                put( key, value );
-            }
+            putAll( source );
         }
     }
 
@@ -110,9 +110,6 @@ public class SurefireProperties
         //noinspection unchecked
         return keySet();
     }
-
-    private static final Set<String> KEYS_THAT_CANNOT_BE_USED_AS_SYSTEM_PROPERTIES = new HashSet<String>(
-                    Arrays.asList( "java.library.path", "file.encoding", "jdk.map.althashing.threshold" ) );
 
     public Set<Object> propertiesThatCannotBeSetASystemProperties()
     {
@@ -126,7 +123,6 @@ public class SurefireProperties
         }
         return result;
     }
-
 
     public void copyToSystemProperties()
     {
@@ -195,37 +191,35 @@ public class SurefireProperties
         }
     }
 
-    public void addList( List items, String propertyPrefix )
+    public void addList( List<?> items, String propertyPrefix )
     {
-        if ( items == null || items.isEmpty() )
+        if ( items != null && !items.isEmpty() )
         {
-            return;
-        }
-        int i = 0;
-        for ( Object item : items )
-        {
-            if ( item == null )
+            int i = 0;
+            for ( Object item : items )
             {
-                throw new NullPointerException( propertyPrefix + i + " has null value" );
+                if ( item == null )
+                {
+                    throw new NullPointerException( propertyPrefix + i + " has null value" );
+                }
+
+                String[] stringArray = StringUtils.split( item.toString(), "," );
+
+                for ( String aStringArray : stringArray )
+                {
+                    setProperty( propertyPrefix + i, aStringArray );
+                    i++;
+                }
             }
-
-            String[] stringArray = StringUtils.split( item.toString(), "," );
-
-            for ( String aStringArray : stringArray )
-            {
-                setProperty( propertyPrefix + i, aStringArray );
-                i++;
-            }
-
         }
     }
 
     public void setClasspath( String prefix, Classpath classpath )
     {
-        List classpathElements = classpath.getClassPath();
+        List<String> classpathElements = classpath.getClassPath();
         for ( int i = 0; i < classpathElements.size(); ++i )
         {
-            String element = (String) classpathElements.get( i );
+            String element = classpathElements.get( i );
             setProperty( prefix + i, element );
         }
     }
@@ -233,38 +227,26 @@ public class SurefireProperties
     private static SurefireProperties loadProperties( InputStream inStream )
         throws IOException
     {
-        Properties p = new Properties();
-
         try
         {
+            Properties p = new Properties();
             p.load( inStream );
+            return new SurefireProperties( p );
         }
         finally
         {
             close( inStream );
         }
-
-        return new SurefireProperties( p );
     }
 
     public static SurefireProperties loadProperties( File file )
         throws IOException
     {
-        if ( file != null )
-        {
-            return loadProperties( new FileInputStream( file ) );
-        }
-
-        return new SurefireProperties();
+        return file == null ? new SurefireProperties() : loadProperties( new FileInputStream( file ) );
     }
 
     private static void close( InputStream inputStream )
     {
-        if ( inputStream == null )
-        {
-            return;
-        }
-
         try
         {
             inputStream.close();
@@ -281,8 +263,5 @@ public class SurefireProperties
         {
             super.setProperty( key, value );
         }
-
     }
-
-
 }

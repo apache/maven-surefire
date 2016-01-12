@@ -44,11 +44,10 @@ public class ConsoleReporter
 
     private final PrintWriter writer;
 
-
     public ConsoleReporter( PrintStream originalSystemOut )
     {
         OutputStreamWriter out = new OutputStreamWriter( new BufferedOutputStream( originalSystemOut, BUFFER_SIZE ) );
-        this.writer = new PrintWriter( out );
+        writer = new PrintWriter( out );
     }
 
     public void testSetStarting( ReportEntry report )

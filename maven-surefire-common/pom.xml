@@ -24,13 +24,13 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire</artifactId>
-    <version>2.19-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
+    <version>2.19.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>maven-surefire-common</artifactId>
 
   <name>Maven Surefire Common</name>
+  <description>API used in Surefire and Failsafe MOJO.</description>
 
   <prerequisites>
     <maven>2.2.1</maven>
@@ -119,6 +119,9 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          <includes>
+            <include>**/JUnit4SuiteTest.java</include>
+          </includes>
         </configuration>
         <dependencies>
           <dependency>

@@ -26,6 +26,7 @@ import java.util.Map;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import junit.framework.TestCase;
+import org.testng.ReporterConfig;
 
 /**
  * @author Kristian Rosenvold
@@ -33,8 +34,8 @@ import junit.framework.TestCase;
 public class TestNGMapConfiguratorTest
     extends TestCase
 {
-    private static final String FIRST_LISTENER = "org.testng.TestListenerAdapter";
-    private static final String SECOND_LISTENER = "org.testng.reporters.ExitCodeListener";
+    public static final String FIRST_LISTENER = "org.testng.TestListenerAdapter";
+    public static final String SECOND_LISTENER = "org.testng.reporters.ExitCodeListener";
     public static final String LISTENER_PROP = "listener";
 
     public void testGetConvertedOptions()
@@ -71,6 +72,15 @@ public class TestNGMapConfiguratorTest
         Map convertedOptions = getConvertedOptions( "group-by-instances", "true" );
         boolean bool = (Boolean) convertedOptions.get( "-group-by-instances" );
         assertTrue( bool );
+    }
+
+    public void testReporter()
+        throws Exception
+    {
+        Map<String, Object> convertedOptions = getConvertedOptions( "reporter", "classname" );
+        List<ReporterConfig> reporter = (List) convertedOptions.get( "-reporterslist" );
+        ReporterConfig reporterConfig = reporter.get( 0 );
+        assertEquals( "classname", reporterConfig.getClassName() );
     }
 
     private Map getConvertedOptions( String key, String value )

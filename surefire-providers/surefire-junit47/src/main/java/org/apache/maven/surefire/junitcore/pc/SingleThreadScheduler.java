@@ -20,6 +20,7 @@ package org.apache.maven.surefire.junitcore.pc;
  */
 
 import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 import org.junit.runner.Description;
 import org.junit.runners.model.RunnerScheduler;
 
@@ -49,14 +50,8 @@ final class SingleThreadScheduler
 
     private static ExecutorService newPool()
     {
-        final ThreadFactory factory = new ThreadFactory()
-        {
-            public Thread newThread( Runnable r )
-            {
-                return new Thread( r, "maven-surefire-plugin@NotThreadSafe" );
-            }
-        };
-        return new ThreadPoolExecutor( 1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), factory );
+        ThreadFactory tf = DaemonThreadFactory.newDaemonThreadFactory( "maven-surefire-plugin@NotThreadSafe" );
+        return new ThreadPoolExecutor( 1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), tf );
     }
 
     SingleThreadScheduler( ConsoleLogger logger )

@@ -21,11 +21,10 @@ package org.apache.maven.plugin.surefire;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
 import org.apache.maven.plugin.surefire.report.ConsoleReporter;
@@ -78,7 +77,8 @@ public class StartupReportConfiguration
 
     public static final String PLAIN_REPORT_FORMAT = ConsoleReporter.PLAIN;
 
-    private final Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistoryMap;
+    private final Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistoryMap
+        = new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>();
 
     @SuppressWarnings( "checkstyle:parameternumber" )
     public StartupReportConfiguration( boolean useFile, boolean printSummary, String reportFormat,
@@ -100,9 +100,6 @@ public class StartupReportConfiguration
         this.originalSystemOut = System.out;
         this.originalSystemErr = System.err;
         this.rerunFailingTestsCount = rerunFailingTestsCount;
-        this.testClassMethodRunHistoryMap =
-                        Collections.synchronizedMap(
-                             new HashMap<String, Map<String, List<WrappedReportEntry>>>() );
     }
 
     public static StartupReportConfiguration defaultValue()
@@ -161,21 +158,17 @@ public class StartupReportConfiguration
 
     public StatelessXmlReporter instantiateStatelessXmlReporter()
     {
-        if ( !isDisableXmlReport() )
-        {
-            return new StatelessXmlReporter( reportsDirectory, reportNameSuffix, trimStackTrace,
-                                             rerunFailingTestsCount, testClassMethodRunHistoryMap );
-        }
-        return null;
+        return isDisableXmlReport()
+            ? null
+            : new StatelessXmlReporter( reportsDirectory, reportNameSuffix, trimStackTrace,
+                                        rerunFailingTestsCount, testClassMethodRunHistoryMap );
     }
 
     public FileReporter instantiateFileReporter()
     {
-        if ( isUseFile() && isBriefOrPlainFormat() )
-        {
-            return new FileReporter( reportsDirectory, getReportNameSuffix() );
-        }
-        return null;
+        return isUseFile() && isBriefOrPlainFormat()
+            ? new FileReporter( reportsDirectory, getReportNameSuffix() )
+            : null;
     }
 
     public boolean isBriefOrPlainFormat()
@@ -196,24 +189,14 @@ public class StartupReportConfiguration
 
     public TestcycleConsoleOutputReceiver instantiateConsoleOutputFileReporter()
     {
-        if ( isRedirectTestOutputToFile() )
-        {
-            return new ConsoleOutputFileReporter( reportsDirectory, getReportNameSuffix() );
-        }
-        else
-        {
-            return new DirectConsoleOutput( originalSystemOut, originalSystemErr );
-        }
+        return isRedirectTestOutputToFile()
+            ? new ConsoleOutputFileReporter( reportsDirectory, getReportNameSuffix() )
+            : new DirectConsoleOutput( originalSystemOut, originalSystemErr );
     }
 
     public StatisticsReporter instantiateStatisticsReporter()
     {
-        if ( requiresRunHistory )
-        {
-            final File target = getStatisticsFile();
-            return new StatisticsReporter( target );
-        }
-        return null;
+        return requiresRunHistory ? new StatisticsReporter( getStatisticsFile() ) : null;
     }
 
     public File getStatisticsFile()
@@ -221,12 +204,10 @@ public class StartupReportConfiguration
         return new File( reportsDirectory.getParentFile().getParentFile(), ".surefire-" + this.configurationHash );
     }
 
-
     public Properties getTestVmSystemProperties()
     {
         return testVmSystemProperties;
     }
-
 
     public boolean isTrimStackTrace()
     {
@@ -247,5 +228,4 @@ public class StartupReportConfiguration
     {
         return originalSystemOut;
     }
-
 }

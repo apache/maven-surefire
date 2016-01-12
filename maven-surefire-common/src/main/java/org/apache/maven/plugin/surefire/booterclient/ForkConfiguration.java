@@ -19,6 +19,16 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
+import org.apache.maven.plugin.surefire.util.Relocator;
+import org.apache.maven.shared.utils.StringUtils;
+import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.booter.ForkedBooter;
+import org.apache.maven.surefire.booter.StartupConfiguration;
+import org.apache.maven.surefire.booter.SurefireBooterForkException;
+import org.apache.maven.surefire.util.UrlUtils;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -29,16 +39,6 @@ import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-
-import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
-import org.apache.maven.plugin.surefire.util.Relocator;
-import org.apache.maven.shared.utils.StringUtils;
-import org.apache.maven.surefire.booter.Classpath;
-import org.apache.maven.surefire.booter.ForkedBooter;
-import org.apache.maven.surefire.booter.StartupConfiguration;
-import org.apache.maven.surefire.booter.SurefireBooterForkException;
-import org.apache.maven.surefire.util.UrlUtils;
 
 /**
  * Configuration for forking tests.
@@ -161,12 +161,10 @@ public class ForkConfiguration
 
         if ( environmentVariables != null )
         {
-
-            for ( String key : environmentVariables.keySet() )
+            for ( Map.Entry<String, String> entry : environmentVariables.entrySet() )
             {
-                String value = environmentVariables.get( key );
-
-                cli.addEnvironment( key, value == null ? "" : value );
+                String value = entry.getValue();
+                cli.addEnvironment( entry.getKey(), value == null ? "" : value );
             }
         }
 
@@ -275,27 +273,34 @@ public class ForkConfiguration
         }
         FileOutputStream fos = new FileOutputStream( file );
         JarOutputStream jos = new JarOutputStream( fos );
-        jos.setLevel( JarOutputStream.STORED );
-        JarEntry je = new JarEntry( "META-INF/MANIFEST.MF" );
-        jos.putNextEntry( je );
-
-        Manifest man = new Manifest();
-
-        // we can't use StringUtils.join here since we need to add a '/' to
-        // the end of directory entries - otherwise the jvm will ignore them.
-        String cp = "";
-        for ( String el : classPath )
+        try
         {
-            // NOTE: if File points to a directory, this entry MUST end in '/'.
-            cp += UrlUtils.getURL( new File( el ) ).toExternalForm() + " ";
+            jos.setLevel( JarOutputStream.STORED );
+            JarEntry je = new JarEntry( "META-INF/MANIFEST.MF" );
+            jos.putNextEntry( je );
+
+            Manifest man = new Manifest();
+
+            // we can't use StringUtils.join here since we need to add a '/' to
+            // the end of directory entries - otherwise the jvm will ignore them.
+            StringBuilder cp = new StringBuilder();
+            for ( String el : classPath )
+            {
+                // NOTE: if File points to a directory, this entry MUST end in '/'.
+                cp.append( UrlUtils.getURL( new File( el ) ).toExternalForm() )
+                        .append( " " );
+            }
+
+            man.getMainAttributes().putValue( "Manifest-Version", "1.0" );
+            man.getMainAttributes().putValue( "Class-Path", cp.toString().trim() );
+            man.getMainAttributes().putValue( "Main-Class", startClassName );
+
+            man.write( jos );
         }
-
-        man.getMainAttributes().putValue( "Manifest-Version", "1.0" );
-        man.getMainAttributes().putValue( "Class-Path", cp.trim() );
-        man.getMainAttributes().putValue( "Main-Class", startClassName );
-
-        man.write( jos );
-        jos.close();
+        finally
+        {
+            jos.close();
+        }
 
         return file;
     }

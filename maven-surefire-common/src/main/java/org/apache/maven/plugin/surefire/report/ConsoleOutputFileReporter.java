@@ -53,7 +53,7 @@ public class ConsoleOutputFileReporter
     public void testSetStarting( ReportEntry reportEntry )
     {
         close();
-        this.reportEntryName = reportEntry.getName();
+        reportEntryName = reportEntry.getName();
     }
 
     public void testSetCompleted( ReportEntry report )

@@ -20,9 +20,12 @@ package org.apache.maven.surefire.common.junit4;
  */
 
 import java.util.concurrent.CountDownLatch;
+
+import junit.framework.TestCase;
 import org.apache.maven.surefire.junit4.MockReporter;
 
 import junit.framework.Assert;
+import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.Request;
@@ -35,8 +38,8 @@ import org.junit.runner.notification.RunNotifier;
  * @author Kristian Rosenvold
  */
 public class JUnit4RunListenerTest
+    extends TestCase
 {
-    @Test
     public void testTestStarted()
         throws Exception
     {
@@ -47,7 +50,6 @@ public class JUnit4RunListenerTest
         junitTestRunner.run( runNotifier );
     }
 
-    @Test
     public void testParallelInvocations()
         throws Exception
     {
@@ -59,7 +61,7 @@ public class JUnit4RunListenerTest
 
         jUnit4TestSetReporter.testStarted( testSomething );
 
-        new Thread( new Runnable()
+        DaemonThreadFactory.newDaemonThread( new Runnable()
         {
             public void run()
             {

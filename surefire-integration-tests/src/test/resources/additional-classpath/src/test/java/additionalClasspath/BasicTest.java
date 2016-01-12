@@ -28,6 +28,7 @@ public class BasicTest
     public void testExtraResource()
     {
         assertNotNull( BasicTest.class.getResourceAsStream( "/test.txt" ) );
+        assertNotNull( BasicTest.class.getResourceAsStream( "/test2.txt" ) );
     }
 
 }

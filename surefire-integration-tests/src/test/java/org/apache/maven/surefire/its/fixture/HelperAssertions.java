@@ -26,7 +26,8 @@ import java.util.Locale;
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.plugins.surefire.report.SurefireReportParser;
 
-import junit.framework.Assert;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.assertEquals;
 
 @SuppressWarnings( { "JavaDoc" } )
 public class HelperAssertions
@@ -36,19 +37,19 @@ public class HelperAssertions
      */
     public static void assertTestSuiteResults( int total, int errors, int failures, int skipped, File testDir )
     {
-        IntegrationTestSuiteResults suite = parseTestResults( new File[]{ testDir } );
+        IntegrationTestSuiteResults suite = parseTestResults( testDir );
         assertTestSuiteResults( total, errors, failures, skipped, suite );
     }
 
     public static void assertTestSuiteResults( int total, int errors, int failures, int skipped, int flakes, File testDir )
     {
-        IntegrationTestSuiteResults suite = parseTestResults( new File[]{ testDir } );
+        IntegrationTestSuiteResults suite = parseTestResults( testDir );
         assertTestSuiteResults( total, errors, failures, skipped, flakes, suite );
     }
 
     public static void assertTestSuiteResults( int total, File testDir )
     {
-        IntegrationTestSuiteResults suite = parseTestResults( new File[]{ testDir } );
+        IntegrationTestSuiteResults suite = parseTestResults( testDir );
         assertTestSuiteResults( total, suite );
     }
 
@@ -58,44 +59,44 @@ public class HelperAssertions
     public static void assertIntegrationTestSuiteResults( int total, int errors, int failures, int skipped,
                                                           File testDir )
     {
-        IntegrationTestSuiteResults suite = parseIntegrationTestResults( new File[]{ testDir } );
+        IntegrationTestSuiteResults suite = parseIntegrationTestResults( testDir );
         assertTestSuiteResults( total, errors, failures, skipped, suite );
     }
 
     public static void assertIntegrationTestSuiteResults( int total, File testDir )
     {
-        IntegrationTestSuiteResults suite = parseIntegrationTestResults( new File[]{ testDir } );
+        IntegrationTestSuiteResults suite = parseIntegrationTestResults( testDir );
         assertTestSuiteResults( total, suite );
     }
 
     public static void assertTestSuiteResults( int total, int errors, int failures, int skipped,
                                                IntegrationTestSuiteResults actualSuite )
     {
-        Assert.assertEquals( "wrong number of tests", total, actualSuite.getTotal() );
-        Assert.assertEquals( "wrong number of errors", errors, actualSuite.getErrors() );
-        Assert.assertEquals( "wrong number of failures", failures, actualSuite.getFailures() );
-        Assert.assertEquals( "wrong number of skipped", skipped, actualSuite.getSkipped() );
+        assertEquals( "wrong number of tests", total, actualSuite.getTotal() );
+        assertEquals( "wrong number of errors", errors, actualSuite.getErrors() );
+        assertEquals( "wrong number of failures", failures, actualSuite.getFailures() );
+        assertEquals( "wrong number of skipped", skipped, actualSuite.getSkipped() );
     }
 
     public static void assertTestSuiteResults( int total, IntegrationTestSuiteResults actualSuite )
     {
-        Assert.assertEquals( "wrong number of tests", total, actualSuite.getTotal() );
+        assertEquals( "wrong number of tests", total, actualSuite.getTotal() );
     }
 
     public static void assertTestSuiteResults( int total, int errors, int failures, int skipped, int flakes,
                                                IntegrationTestSuiteResults actualSuite )
     {
         assertTestSuiteResults(total, errors, failures, skipped, actualSuite);
-        Assert.assertEquals( "wrong number of flaky tests", flakes, actualSuite.getFlakes() );
+        assertEquals( "wrong number of flaky tests", flakes, actualSuite.getFlakes() );
     }
 
-    public static IntegrationTestSuiteResults parseTestResults( File[] testDirs )
+    public static IntegrationTestSuiteResults parseTestResults( File... testDirs )
     {
         List<ReportTestSuite> reports = extractReports( testDirs );
         return parseReportList( reports );
     }
 
-    public static IntegrationTestSuiteResults parseIntegrationTestResults( File[] testDirs )
+    public static IntegrationTestSuiteResults parseIntegrationTestResults( File... testDirs )
     {
         List<ReportTestSuite> reports = extractITReports( testDirs );
         return parseReportList( reports );
@@ -106,7 +107,7 @@ public class HelperAssertions
      */
     public static IntegrationTestSuiteResults parseReportList( List<ReportTestSuite> reports )
     {
-        Assert.assertTrue( "No reports!", !reports.isEmpty() );
+        assertTrue( "No reports!", !reports.isEmpty() );
         int total = 0, errors = 0, failures = 0, skipped = 0, flakes = 0;
         for ( ReportTestSuite report : reports )
         {
@@ -119,47 +120,43 @@ public class HelperAssertions
         return new IntegrationTestSuiteResults( total, errors, failures, skipped, flakes );
     }
 
-    public static List<ReportTestSuite> extractReports( File[] testDirs )
+    public static List<ReportTestSuite> extractReports( File... testDirs )
     {
         List<File> reportsDirs = new ArrayList<File>();
         for ( File testDir : testDirs )
         {
             File reportsDir = new File( testDir, "target/surefire-reports" );
-            Assert.assertTrue( "Reports directory is missing: " + reportsDir.getAbsolutePath(), reportsDir.exists() );
+            assertTrue( "Reports directory is missing: " + reportsDir.getAbsolutePath(), reportsDir.exists() );
             reportsDirs.add( reportsDir );
         }
         SurefireReportParser parser = new SurefireReportParser( reportsDirs, Locale.getDefault() );
-        List<ReportTestSuite> reports;
         try
         {
-            reports = parser.parseXMLReportFiles();
+            return parser.parseXMLReportFiles();
         }
         catch ( Exception e )
         {
             throw new RuntimeException( "Couldn't parse XML reports", e );
         }
-        return reports;
     }
 
-    public static List<ReportTestSuite> extractITReports( File[] testDirs )
+    public static List<ReportTestSuite> extractITReports( File... testDirs )
     {
         List<File> reportsDirs = new ArrayList<File>();
         for ( File testDir : testDirs )
         {
             File reportsDir = new File( testDir, "target/failsafe-reports" );
-            Assert.assertTrue( "Reports directory is missing: " + reportsDir.getAbsolutePath(), reportsDir.exists() );
+            assertTrue( "Reports directory is missing: " + reportsDir.getAbsolutePath(), reportsDir.exists() );
             reportsDirs.add( reportsDir );
         }
-        SurefireReportParser   parser = new SurefireReportParser( reportsDirs, Locale.getDefault() );
-        List<ReportTestSuite> reports;
+        SurefireReportParser parser = new SurefireReportParser( reportsDirs, Locale.getDefault() );
         try
         {
-            reports = parser.parseXMLReportFiles();
+            return parser.parseXMLReportFiles();
         }
         catch ( Exception e )
         {
             throw new RuntimeException( "Couldn't parse XML reports", e );
         }
-        return reports;
     }
 }

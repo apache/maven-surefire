@@ -18,8 +18,9 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import org.apache.maven.surefire.testset.RunOrderParameters;
 
 import junit.framework.TestCase;
@@ -42,9 +43,9 @@ public class RunOrderCalculatorTest
 
     }
 
-    private List<Class> getClassesToRun()
+    private Set<Class<?>> getClassesToRun()
     {
-        List<Class> classesToRun = new ArrayList<Class>();
+        Set<Class<?>> classesToRun = new LinkedHashSet<Class<?>>();
         classesToRun.add( B.class );
         classesToRun.add( A.class );
         return classesToRun;

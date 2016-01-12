@@ -75,6 +75,7 @@ Additional Classpath Elements
           <additionalClasspathElements>
             <additionalClasspathElement>path/to/additional/resources</additionalClasspathElement>
             <additionalClasspathElement>path/to/additional/jar</additionalClasspathElement>
+            <additionalClasspathElement>path/to/csv/jar1, path/to/csv/jar2</additionalClasspathElement>
           </additionalClasspathElements>
         </configuration>
       </plugin>

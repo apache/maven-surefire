@@ -165,7 +165,6 @@ public class TestSetRunListener
     public void testStarting( ReportEntry report )
     {
         detailsForThis.testStart();
-
     }
 
     public void testSucceeded( ReportEntry reportEntry )
@@ -215,6 +214,10 @@ public class TestSetRunListener
             statisticsReporter.testSkipped( reportEntry );
         }
         clearCapture();
+    }
+
+    public void testExecutionSkippedByUser()
+    {
     }
 
     public void testAssumptionFailure( ReportEntry report )

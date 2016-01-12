@@ -29,25 +29,24 @@ import java.util.regex.PatternSyntaxException;
 public class SingleGroupMatcher
     implements GroupMatcher
 {
-
-    private String enabled;
+    private final String enabled;
+    private final Pattern pattern;
 
     private Class<?> enabledClass;
-
-    private Pattern pattern;
 
     public SingleGroupMatcher( String enabled )
     {
         this.enabled = enabled.endsWith( ".class" ) ? enabled.substring( 0, enabled.length() - 6 ) : enabled;
-
+        Pattern p;
         try
         {
-            this.pattern = Pattern.compile( enabled );
+            p = Pattern.compile( enabled );
         }
-        catch ( PatternSyntaxException pse )
+        catch ( PatternSyntaxException e )
         {
-            // ignore
+            p = null;
         }
+        pattern = p;
     }
 
     @Override
@@ -55,7 +54,7 @@ public class SingleGroupMatcher
     {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ( ( enabled == null ) ? 0 : enabled.hashCode() );
+        result = prime * result + enabled.hashCode();
         return result;
     }
 
@@ -75,18 +74,7 @@ public class SingleGroupMatcher
             return false;
         }
         SingleGroupMatcher other = (SingleGroupMatcher) obj;
-        if ( enabled == null )
-        {
-            if ( other.enabled != null )
-            {
-                return false;
-            }
-        }
-        else if ( !enabled.equals( other.enabled ) )
-        {
-            return false;
-        }
-        return true;
+        return enabled.equals( other.enabled );
     }
 
     @Override
@@ -119,11 +107,6 @@ public class SingleGroupMatcher
 
     public boolean enabled( String... cats )
     {
-        if ( enabled == null )
-        {
-            return true;
-        }
-
         for ( String cat : cats )
         {
             if ( cat == null || cat.trim().length() < 1 )
@@ -131,7 +114,6 @@ public class SingleGroupMatcher
                 continue;
             }
 
-            // System.out.println( cat + ".endsWith(" + enabled + ")? " + ( cat.endsWith( enabled ) ) );
             if ( cat.endsWith( enabled ) )
             {
                 return true;
@@ -146,16 +128,15 @@ public class SingleGroupMatcher
         return false;
     }
 
-    public void loadGroupClasses( ClassLoader cloader )
+    public void loadGroupClasses( ClassLoader classLoader )
     {
         try
         {
-            enabledClass = cloader.loadClass( enabled );
+            enabledClass = classLoader.loadClass( enabled );
         }
         catch ( ClassNotFoundException e )
         {
             throw new RuntimeException( "Unable to load category: " + enabled, e );
         }
     }
-
 }

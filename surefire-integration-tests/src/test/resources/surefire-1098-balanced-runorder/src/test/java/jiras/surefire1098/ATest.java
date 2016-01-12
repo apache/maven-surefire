@@ -28,7 +28,7 @@ public final class ATest {
     @Test
     public void someMethod() throws InterruptedException {
         System.out.println(getClass() + " " + Thread.currentThread().getName());
-        TimeUnit.SECONDS.sleep(1);
+        TimeUnit.MILLISECONDS.sleep(100);
     }
 
 }

@@ -25,9 +25,9 @@ import java.util.List;
 /**
  *
  */
-public class ReportTestSuite
+public final class ReportTestSuite
 {
-    private List<ReportTestCase> testCases = new ArrayList<ReportTestCase>();
+    private final List<ReportTestCase> testCases = new ArrayList<ReportTestCase>();
 
     private int numberOfErrors;
 
@@ -49,7 +49,7 @@ public class ReportTestSuite
 
     public List<ReportTestCase> getTestCases()
     {
-        return this.testCases;
+        return testCases;
     }
 
     public int getNumberOfErrors()
@@ -57,9 +57,16 @@ public class ReportTestSuite
         return numberOfErrors;
     }
 
-    public void setNumberOfErrors( int numberOfErrors )
+    public ReportTestSuite setNumberOfErrors( int numberOfErrors )
     {
         this.numberOfErrors = numberOfErrors;
+        return this;
+    }
+
+    public ReportTestSuite incrementNumberOfErrors()
+    {
+        ++numberOfErrors;
+        return this;
     }
 
     public int getNumberOfFailures()
@@ -67,9 +74,16 @@ public class ReportTestSuite
         return numberOfFailures;
     }
 
-    public void setNumberOfFailures( int numberOfFailures )
+    public ReportTestSuite setNumberOfFailures( int numberOfFailures )
     {
         this.numberOfFailures = numberOfFailures;
+        return this;
+    }
+
+    public ReportTestSuite incrementNumberOfFailures()
+    {
+        ++numberOfFailures;
+        return this;
     }
 
     public int getNumberOfSkipped()
@@ -77,9 +91,16 @@ public class ReportTestSuite
         return numberOfSkipped;
     }
 
-    public void setNumberOfSkipped( int numberOfSkipped )
+    public ReportTestSuite setNumberOfSkipped( int numberOfSkipped )
     {
         this.numberOfSkipped = numberOfSkipped;
+        return this;
+    }
+
+    public ReportTestSuite incrementNumberOfSkipped()
+    {
+        ++numberOfSkipped;
+        return this;
     }
 
     public int getNumberOfFlakes()
@@ -87,9 +108,16 @@ public class ReportTestSuite
         return numberOfFlakes;
     }
 
-    public void setNumberOfFlakes( int numberOfFlakes )
+    public ReportTestSuite setNumberOfFlakes( int numberOfFlakes )
     {
         this.numberOfFlakes = numberOfFlakes;
+        return this;
+    }
+
+    public ReportTestSuite incrementNumberOfFlakes()
+    {
+        ++numberOfFlakes;
+        return this;
     }
 
     public int getNumberOfTests()
@@ -105,9 +133,10 @@ public class ReportTestSuite
         return 0;
     }
 
-    public void setNumberOfTests( int numberOfTests )
+    public ReportTestSuite setNumberOfTests( int numberOfTests )
     {
         this.numberOfTests = numberOfTests;
+        return this;
     }
 
     public String getName()
@@ -115,9 +144,10 @@ public class ReportTestSuite
         return name;
     }
 
-    public void setName( String name )
+    public ReportTestSuite setName( String name )
     {
         this.name = name;
+        return this;
     }
 
     public String getFullClassName()
@@ -125,22 +155,13 @@ public class ReportTestSuite
         return fullClassName;
     }
 
-    public void setFullClassName( String fullClassName )
+    public ReportTestSuite setFullClassName( String fullClassName )
     {
         this.fullClassName = fullClassName;
         int lastDotPosition = fullClassName.lastIndexOf( "." );
-
         name = fullClassName.substring( lastDotPosition + 1, fullClassName.length() );
-
-        if ( lastDotPosition < 0 )
-        {
-            /* no package name */
-            packageName = "";
-        }
-        else
-        {
-            packageName = fullClassName.substring( 0, lastDotPosition );
-        }
+        packageName = lastDotPosition == -1 ? "" : fullClassName.substring( 0, lastDotPosition );
+        return this;
     }
 
     public String getPackageName()
@@ -148,9 +169,10 @@ public class ReportTestSuite
         return packageName;
     }
 
-    public void setPackageName( String packageName )
+    public ReportTestSuite setPackageName( String packageName )
     {
         this.packageName = packageName;
+        return this;
     }
 
     public float getTimeElapsed()
@@ -158,14 +180,17 @@ public class ReportTestSuite
         return this.timeElapsed;
     }
 
-    public void setTimeElapsed( float timeElapsed )
+    public ReportTestSuite setTimeElapsed( float timeElapsed )
     {
         this.timeElapsed = timeElapsed;
+        return this;
     }
 
-    public void setTestCases( List<ReportTestCase> testCases )
+    ReportTestSuite setTestCases( List<ReportTestCase> testCases )
     {
-        this.testCases = testCases;
+        this.testCases.clear();
+        this.testCases.addAll( testCases );
+        return this;
     }
 
     /**
@@ -173,7 +198,7 @@ public class ReportTestSuite
      */
     public String toString()
     {
-        return fullClassName + " [" + getNumberOfTests() + "/" + getNumberOfFailures() + "/" + getNumberOfErrors() + "/"
-            + getNumberOfSkipped() + "]";
+        return fullClassName + " [" + getNumberOfTests() + "/" + getNumberOfFailures() + "/"
+            + getNumberOfErrors() + "/" + getNumberOfSkipped() + "]";
     }
 }

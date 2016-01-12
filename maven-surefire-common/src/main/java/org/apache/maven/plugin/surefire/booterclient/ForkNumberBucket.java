@@ -29,19 +29,18 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author Andreas Gudian
  */
-public class ForkNumberBucket
+public final class ForkNumberBucket
 {
-
     private static final ForkNumberBucket INSTANCE = new ForkNumberBucket();
 
-    private Queue<Integer> qFree = new ConcurrentLinkedQueue<Integer>();
+    private final Queue<Integer> qFree = new ConcurrentLinkedQueue<Integer>();
 
-    private AtomicInteger highWaterMark = new AtomicInteger( 1 );
+    private final AtomicInteger highWaterMark = new AtomicInteger( 1 );
 
     /**
      * Non-public constructor
      */
-    protected ForkNumberBucket()
+    private ForkNumberBucket()
     {
     }
 
@@ -74,24 +73,16 @@ public class ForkNumberBucket
      * @return a fork number that is not currently in use. The value must be returned to the bucket using
      *         {@link #returnNumber(int)}.
      */
-    protected int drawNumberInternal()
+    private int drawNumberInternal()
     {
         Integer nextFree = qFree.poll();
-
-        if ( null == nextFree )
-        {
-            return highWaterMark.getAndIncrement();
-        }
-        else
-        {
-            return nextFree.intValue();
-        }
+        return nextFree == null ? highWaterMark.getAndIncrement() : nextFree;
     }
 
     /**
      * @return the highest number that has been drawn
      */
-    protected int getHighestDrawnNumber()
+    private int getHighestDrawnNumber()
     {
         return highWaterMark.get() - 1;
     }
@@ -99,8 +90,8 @@ public class ForkNumberBucket
     /**
      * @param number the number to return to the bucket so that it can be reused.
      */
-    protected void returnNumberInternal( int number )
+    private void returnNumberInternal( int number )
     {
-        qFree.add( Integer.valueOf( number ) );
+        qFree.add( number );
     }
 }

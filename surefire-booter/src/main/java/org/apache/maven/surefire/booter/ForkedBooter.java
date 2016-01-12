@@ -24,6 +24,11 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
@@ -32,9 +37,16 @@ import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.ReflectionUtils;
 
+import static org.apache.maven.surefire.booter.Shutdown.EXIT;
+import static org.apache.maven.surefire.booter.Shutdown.KILL;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_BYE;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_ERROR;
+import static org.apache.maven.surefire.booter.ForkingRunListener.encode;
+import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
+import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * The part of the booter that is unique to a forked vm.
@@ -46,19 +58,23 @@ import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringFo
  * @author Emmanuel Venisse
  * @author Kristian Rosenvold
  */
-public class ForkedBooter
+public final class ForkedBooter
 {
+    private static final long SYSTEM_EXIT_TIMEOUT_IN_SECONDS = 30;
+    private static final long PING_TIMEOUT_IN_SECONDS = 20;
+
+    private static final ScheduledExecutorService JVM_TERMINATOR = createJvmTerminator();
 
     /**
      * This method is invoked when Surefire is forked - this method parses and organizes the arguments passed to it and
      * then calls the Surefire class' run method. <p/> The system exit code will be 1 if an exception is thrown.
      *
      * @param args Commandline arguments
-     * @throws Throwable Upon throwables
      */
-    public static void main( String[] args )
-        throws Throwable
+    public static void main( String... args )
     {
+        final CommandReader reader = startupMasterProcessReader();
+        final ScheduledFuture<?> pingScheduler = listenToShutdownCommands( reader );
         final PrintStream originalOut = System.out;
         try
         {
@@ -93,7 +109,7 @@ public class ForkedBooter
             }
             else if ( readTestsFromInputStream )
             {
-                testSet = new LazyTestsToRun( System.in, originalOut );
+                testSet = new LazyTestsToRun( originalOut );
             }
             else
             {
@@ -106,27 +122,24 @@ public class ForkedBooter
             }
             catch ( InvocationTargetException t )
             {
-
                 LegacyPojoStackTraceWriter stackTraceWriter =
                     new LegacyPojoStackTraceWriter( "test subystem", "no method", t.getTargetException() );
                 StringBuilder stringBuilder = new StringBuilder();
-                ForkingRunListener.encode( stringBuilder, stackTraceWriter, false );
-                encodeAndWriteToOutput( ( (char) ForkingRunListener.BOOTERCODE_ERROR )
-                                     + ",0," + stringBuilder.toString() + "\n" , originalOut );
+                encode( stringBuilder, stackTraceWriter, false );
+                encodeAndWriteToOutput( ( (char) BOOTERCODE_ERROR ) + ",0," + stringBuilder + "\n" , originalOut );
             }
             catch ( Throwable t )
             {
                 StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( "test subystem", "no method", t );
                 StringBuilder stringBuilder = new StringBuilder();
-                ForkingRunListener.encode( stringBuilder, stackTraceWriter, false );
-                encodeAndWriteToOutput( ( (char) ForkingRunListener.BOOTERCODE_ERROR )
-                                     + ",0," + stringBuilder.toString() + "\n", originalOut );
+                encode( stringBuilder, stackTraceWriter, false );
+                encodeAndWriteToOutput( ( (char) BOOTERCODE_ERROR ) + ",0," + stringBuilder + "\n", originalOut );
             }
             // Say bye.
-            encodeAndWriteToOutput( ( (char) ForkingRunListener.BOOTERCODE_BYE ) + ",0,BYE!\n", originalOut );
+            encodeAndWriteToOutput( ( (char) BOOTERCODE_BYE ) + ",0,BYE!\n", originalOut );
             originalOut.flush();
             // noinspection CallToSystemExit
-            exit( 0 );
+            exit( 0, EXIT, reader, false );
         }
         catch ( Throwable t )
         {
@@ -134,8 +147,63 @@ public class ForkedBooter
             // noinspection UseOfSystemOutOrSystemErr
             t.printStackTrace( System.err );
             // noinspection ProhibitedExceptionThrown,CallToSystemExit
-            exit( 1 );
+            exit( 1, EXIT, reader, false );
         }
+        finally
+        {
+            pingScheduler.cancel( true );
+        }
+    }
+
+    private static CommandReader startupMasterProcessReader()
+    {
+        return CommandReader.getReader();
+    }
+
+    private static ScheduledFuture<?> listenToShutdownCommands( CommandReader reader )
+    {
+        reader.addShutdownListener( createExitHandler( reader ) );
+        AtomicBoolean pingDone = new AtomicBoolean( true );
+        reader.addNoopListener( createPingHandler( pingDone ) );
+        return JVM_TERMINATOR.scheduleAtFixedRate( createPingJob( pingDone, reader ),
+                                                   0, PING_TIMEOUT_IN_SECONDS, SECONDS );
+    }
+
+    private static CommandListener createPingHandler( final AtomicBoolean pingDone )
+    {
+        return new CommandListener()
+        {
+            public void update( Command command )
+            {
+                pingDone.set( true );
+            }
+        };
+    }
+
+    private static CommandListener createExitHandler( final CommandReader reader )
+    {
+        return new CommandListener()
+        {
+            public void update( Command command )
+            {
+                exit( 1, command.toShutdownData(), reader, true );
+            }
+        };
+    }
+
+    private static Runnable createPingJob( final AtomicBoolean pingDone, final CommandReader reader  )
+    {
+        return new Runnable()
+        {
+            public void run()
+            {
+                boolean hasPing = pingDone.getAndSet( false );
+                if ( !hasPing )
+                {
+                    exit( 1, KILL, reader, true );
+                }
+            }
+        };
     }
 
     private static void encodeAndWriteToOutput( String string, PrintStream out )
@@ -144,14 +212,25 @@ public class ForkedBooter
         out.write( encodeBytes, 0, encodeBytes.length );
     }
 
-    private static final long SYSTEM_EXIT_TIMEOUT = 30 * 1000;
-
-    private static void exit( final int returnCode )
+    private static void exit( int returnCode, Shutdown shutdownType, CommandReader reader, boolean stopReaderOnExit )
     {
-        launchLastDitchDaemonShutdownThread( returnCode );
-        System.exit( returnCode );
+        switch ( shutdownType )
+        {
+            case KILL:
+                Runtime.getRuntime().halt( returnCode );
+            case EXIT:
+                if ( stopReaderOnExit )
+                {
+                    reader.stop();
+                }
+                launchLastDitchDaemonShutdownThread( returnCode );
+                System.exit( returnCode );
+            case DEFAULT:
+                // refers to shutdown=testset, but not used now, keeping reader open
+            default:
+                break;
+        }
     }
-
 
     private static RunResult runSuitesInProcess( Object testSet, StartupConfiguration startupConfiguration,
                                                  ProviderConfiguration providerConfiguration,
@@ -171,31 +250,33 @@ public class ForkedBooter
         return SurefireReflector.createForkingReporterFactoryInCurrentClassLoader( trimStackTrace, originalSystemOut );
     }
 
+    private static ScheduledExecutorService createJvmTerminator()
+    {
+        ThreadFactory threadFactory = newDaemonThreadFactory( "last-ditch-daemon-shutdown-thread-"
+                                                            + SYSTEM_EXIT_TIMEOUT_IN_SECONDS
+                                                            + "sec" );
+        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor( 1, threadFactory );
+        executor.setMaximumPoolSize( 1 );
+        executor.prestartCoreThread();
+        return executor;
+    }
+
     @SuppressWarnings( "checkstyle:emptyblock" )
     private static void launchLastDitchDaemonShutdownThread( final int returnCode )
     {
-        Thread lastExit = new Thread( new Runnable()
+        JVM_TERMINATOR.schedule( new Runnable()
         {
             public void run()
             {
-                try
-                {
-                    Thread.sleep( SYSTEM_EXIT_TIMEOUT );
-                    Runtime.getRuntime().halt( returnCode );
-                }
-                catch ( InterruptedException ignore )
-                {
-                }
+                Runtime.getRuntime().halt( returnCode );
             }
-        } );
-        lastExit.setDaemon( true );
-        lastExit.start();
+        }, SYSTEM_EXIT_TIMEOUT_IN_SECONDS, SECONDS );
     }
 
-    public static RunResult invokeProviderInSameClassLoader( Object testSet, Object factory,
+    private static RunResult invokeProviderInSameClassLoader( Object testSet, Object factory,
                                                              ProviderConfiguration providerConfiguration,
                                                              boolean insideFork,
-                                                             StartupConfiguration startupConfiguration1,
+                                                             StartupConfiguration startupConfig,
                                                              boolean restoreStreams )
         throws TestSetFailedException, InvocationTargetException
     {
@@ -204,11 +285,10 @@ public class ForkedBooter
         // Note that System.out/System.err are also read in the "ReporterConfiguration" instatiation
         // in createProvider below. These are the same values as here.
 
-        final SurefireProvider provider =
-            createProviderInCurrentClassloader( startupConfiguration1, insideFork, providerConfiguration, factory );
         try
         {
-            return provider.invoke( testSet );
+            return createProviderInCurrentClassloader( startupConfig, insideFork, providerConfiguration, factory )
+                .invoke( testSet );
         }
         finally
         {
@@ -220,12 +300,11 @@ public class ForkedBooter
         }
     }
 
-    public static SurefireProvider createProviderInCurrentClassloader( StartupConfiguration startupConfiguration1,
+    private static SurefireProvider createProviderInCurrentClassloader( StartupConfiguration startupConfiguration1,
                                                                        boolean isInsideFork,
                                                                        ProviderConfiguration providerConfiguration,
                                                                        Object reporterManagerFactory1 )
     {
-
         BaseProviderFactory bpf = new BaseProviderFactory( (ReporterFactory) reporterManagerFactory1, isInsideFork );
         bpf.setTestRequest( providerConfiguration.getTestSuiteDefinition() );
         bpf.setReporterConfiguration( providerConfiguration.getReporterConfiguration() );
@@ -235,8 +314,10 @@ public class ForkedBooter
         bpf.setProviderProperties( providerConfiguration.getProviderProperties() );
         bpf.setRunOrderParameters( providerConfiguration.getRunOrderParameters() );
         bpf.setDirectoryScannerParameters( providerConfiguration.getDirScannerParams() );
-        return (SurefireProvider) ReflectionUtils.instantiateOneArg( classLoader,
-                                                                     startupConfiguration1.getActualClassName(),
-                                                                     ProviderParameters.class, bpf );
+        bpf.setMainCliOptions( providerConfiguration.getMainCliOptions() );
+        bpf.setSkipAfterFailureCount( providerConfiguration.getSkipAfterFailureCount() );
+        bpf.setShutdown( providerConfiguration.getShutdown() );
+        String providerClass = startupConfiguration1.getActualClassName();
+        return (SurefireProvider) instantiateOneArg( classLoader, providerClass, ProviderParameters.class, bpf );
     }
 }

@@ -83,16 +83,15 @@ public class RunOrder
                 }
             }
 
-            StringBuffer errorMessage = createMessageForMissingRunOrder( name );
-            throw new IllegalArgumentException( errorMessage.toString() );
+            String errorMessage = createMessageForMissingRunOrder( name );
+            throw new IllegalArgumentException( errorMessage );
         }
     }
 
-    private static StringBuffer createMessageForMissingRunOrder( String name )
+    private static String createMessageForMissingRunOrder( String name )
     {
         RunOrder[] runOrders = values();
-        StringBuffer message = new StringBuffer();
-        message.append( "There's no RunOrder with the name " );
+        StringBuilder message = new StringBuilder( "There's no RunOrder with the name " );
         message.append( name );
         message.append( ". Please use one of the following RunOrders: " );
         for ( int i = 0; i < runOrders.length; i++ )
@@ -103,8 +102,8 @@ public class RunOrder
             }
             message.append( runOrders[i] );
         }
-        message.append( "." );
-        return message;
+        message.append( '.' );
+        return message.toString();
     }
 
     private static RunOrder[] values()

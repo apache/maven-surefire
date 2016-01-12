@@ -20,7 +20,9 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  */
 
 import org.apache.maven.shared.utils.cli.StreamConsumer;
+import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -28,13 +30,14 @@ import java.util.concurrent.LinkedBlockingQueue;
  *
  * @author Kristian Rosenvold
  */
-public class ThreadedStreamConsumer
+public final class ThreadedStreamConsumer
     implements StreamConsumer
 {
-    private final java.util.concurrent.BlockingQueue<String> items = new LinkedBlockingQueue<String>();
-
     private static final String POISON = "Pioson";
+
     private static final int ITEM_LIMIT_BEFORE_SLEEP = 10000;
+
+    private final BlockingQueue<String> items = new LinkedBlockingQueue<String>();
 
     private final Thread thread;
 
@@ -43,14 +46,14 @@ public class ThreadedStreamConsumer
     static class Pumper
         implements Runnable
     {
-        private final java.util.concurrent.BlockingQueue<String> queue;
+        private final BlockingQueue<String> queue;
 
         private final StreamConsumer target;
 
         private volatile Throwable throwable;
 
 
-        Pumper( java.util.concurrent.BlockingQueue<String> queue, StreamConsumer target )
+        Pumper( BlockingQueue<String> queue, StreamConsumer target )
         {
             this.queue = queue;
             this.target = target;
@@ -85,7 +88,7 @@ public class ThreadedStreamConsumer
     public ThreadedStreamConsumer( StreamConsumer target )
     {
         pumper = new Pumper( items, target );
-        thread = new Thread( pumper, "ThreadedStreamConsumer" );
+        thread = DaemonThreadFactory.newDaemonThread( pumper, "ThreadedStreamConsumer" );
         thread.start();
     }
 

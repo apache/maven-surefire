@@ -19,7 +19,6 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
-import java.util.ResourceBundle;
 import org.apache.maven.surefire.report.CategorizedReportEntry;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
@@ -32,6 +31,9 @@ import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
 
+import static org.apache.maven.surefire.report.SimpleReportEntry.ignored;
+import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
+
 /**
  * Listens for and provides and adaptor layer so that
  * TestNG tests can report their status to the current
@@ -43,20 +45,13 @@ import org.testng.ITestResult;
 public class TestNGReporter
     implements ITestListener, ISuiteListener
 {
-    public static final String SUREFIRE_BUNDLE_NAME = "org.apache.maven.surefire.surefire";
-
-    private final ResourceBundle bundle = ResourceBundle.getBundle( SUREFIRE_BUNDLE_NAME );
-
-    /**
-     * core Surefire reporting
-     */
     private final RunListener reporter;
 
     /**
      * Constructs a new instance that will listen to
-     * test updates from a {@link TestNG} class instance.
+     * test updates from a {@link org.testng.TestNG} class instance.
      * <p/>
-     * <p/>It is assumed that the requisite {@link TestNG#addListener(ITestListener)}
+     * <p/>It is assumed that the requisite {@link org.testng.TestNG#addListener(ITestListener)}
      * method call has already associated with this instance <i>before</i> the test
      * suite is run.
      *
@@ -65,21 +60,13 @@ public class TestNGReporter
     public TestNGReporter( RunListener reportManager )
     {
         this.reporter = reportManager;
-
-        if ( reportManager == null )
-        {
-            throw new IllegalArgumentException( "ReportManager passed in was null." );
-        }
-
     }
 
     public void onTestStart( ITestResult result )
     {
-        String rawString = bundle.getString( "testStarting" );
         String group = groupString( result.getMethod().getGroups(), result.getTestClass().getName() );
-        ReportEntry report =
-            new CategorizedReportEntry( getSource( result ), getUserFriendlyTestName( result ), group );
-        reporter.testStarting( report );
+        String userFriendlyTestName = getUserFriendlyTestName( result );
+        reporter.testStarting( new CategorizedReportEntry( getSource( result ), userFriendlyTestName, group ) );
     }
 
     private String getSource( ITestResult result )
@@ -95,11 +82,10 @@ public class TestNGReporter
 
     public void onTestFailure( ITestResult result )
     {
-        ReportEntry report = SimpleReportEntry.withException( getSource( result ), getUserFriendlyTestName( result ),
-                                                              new PojoStackTraceWriter(
-                                                                  result.getTestClass().getRealClass().getName(),
-                                                                  result.getMethod().getMethodName(),
-                                                                  result.getThrowable() ) );
+        ReportEntry report = withException( getSource( result ), getUserFriendlyTestName( result ),
+                new PojoStackTraceWriter( result.getTestClass().getRealClass().getName(),
+                        result.getMethod().getMethodName(),
+                        result.getThrowable() ) );
 
         reporter.testFailed( report );
     }
@@ -112,18 +98,18 @@ public class TestNGReporter
 
     public void onTestSkipped( ITestResult result )
     {
-        ReportEntry report = new SimpleReportEntry( getSource( result ), getUserFriendlyTestName( result ) );
-
+        Throwable t = result.getThrowable();
+        String reason = t == null ? null : t.getMessage();
+        ReportEntry report = ignored( getSource( result ), getUserFriendlyTestName( result ), reason );
         reporter.testSkipped( report );
     }
 
     public void onTestFailedButWithinSuccessPercentage( ITestResult result )
     {
-        ReportEntry report = SimpleReportEntry.withException( getSource( result ), getUserFriendlyTestName( result ),
-                                                              new PojoStackTraceWriter(
-                                                                  result.getTestClass().getRealClass().getName(),
-                                                                  result.getMethod().getMethodName(),
-                                                                  result.getThrowable() ) );
+        ReportEntry report = withException( getSource( result ), getUserFriendlyTestName( result ),
+                new PojoStackTraceWriter( result.getTestClass().getRealClass().getName(),
+                        result.getMethod().getMethodName(),
+                        result.getThrowable() ) );
 
         reporter.testSucceeded( report );
     }

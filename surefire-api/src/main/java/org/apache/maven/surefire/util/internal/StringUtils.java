@@ -82,7 +82,7 @@ public class StringUtils
         }
 
         int listSize = tok.countTokens();
-        if ( ( max > 0 ) && ( listSize > max ) )
+        if ( max > 0 && listSize > max )
         {
             listSize = max;
         }
@@ -93,7 +93,7 @@ public class StringUtils
         int lastTokenEnd = 0;
         while ( tok.hasMoreTokens() )
         {
-            if ( ( max > 0 ) && ( i == listSize - 1 ) )
+            if ( max > 0 && i == listSize - 1 )
             {
                 // In the situation where we hit the max yet have
                 // tokens left over in our input, the last list
@@ -124,7 +124,21 @@ public class StringUtils
      */
     public static boolean isBlank( String str )
     {
-        return ( ( str == null ) || ( str.trim().length() == 0 ) );
+        return str == null || str.trim().length() == 0;
+    }
+
+    /**
+     * <p>
+     * Checks if a (trimmed) String is not <code>null</code> and not blank.
+     * </p>
+     *
+     * @param str the String to check
+     * @return <code>true</code> if the String is not <code>null</code> and length of trimmed
+     * <code>str</code> is not zero.
+     */
+    public static boolean isNotBlank( String str )
+    {
+        return !isBlank( str );
     }
 
     /**
@@ -325,6 +339,32 @@ public class StringUtils
         return ByteBuffer.wrap( out, 0, outPos );
     }
 
+    public static String decode( byte[] toDecode, Charset charset )
+    {
+        try
+        {
+            // @todo use new JDK 1.6 constructor String(byte bytes[], Charset charset)
+            return new String( toDecode, charset.name() );
+        }
+        catch ( UnsupportedEncodingException e )
+        {
+            throw new RuntimeException( "The JVM must support Charset " + charset, e );
+        }
+    }
+
+    public static byte[] encode( String toEncode, Charset charset )
+    {
+        try
+        {
+            // @todo use new JDK 1.6 method getBytes(Charset charset)
+            return toEncode.getBytes( charset.name() );
+        }
+        catch ( UnsupportedEncodingException e )
+        {
+            throw new RuntimeException( "The JVM must support Charset " + charset, e );
+        }
+    }
+
     public static byte[] encodeStringForForkCommunication( String string )
     {
         try
@@ -335,5 +375,25 @@ public class StringUtils
         {
            throw new RuntimeException( "The JVM must support Charset " + FORK_STREAM_CHARSET_NAME, e );
         }
+    }
+
+    /*
+    * In JDK7 use java.util.Objects instead.
+    * */
+    public static <T> T requireNonNull( T obj, String message )
+    {
+        if ( obj == null )
+        {
+            throw new NullPointerException( message );
+        }
+        return obj;
+    }
+
+    /*
+    * In JDK7 use java.util.Objects instead.
+    * */
+    public static <T> T requireNonNull( T obj )
+    {
+        return requireNonNull( obj, null );
     }
 }

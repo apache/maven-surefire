@@ -77,14 +77,19 @@ public class TestNGMapConfigurator
             Object val = entry.getValue();
             if ( "listener".equals( key ) )
             {
-                val = AbstractDirectConfigurator.loadListenerClasses( entry.getValue() );
+                val = convertListeners( entry.getValue() );
             }
             else if ( "objectfactory".equals( key ) )
             {
                 val = AbstractDirectConfigurator.loadClass( entry.getValue() );
             }
+            else if ( "testrunfactory".equals( key ) )
+            {
+                val = AbstractDirectConfigurator.loadClass( entry.getValue() );
+            }
             else if ( "reporter".equals( key ) )
             {
+                // for TestNG 5.6 or higher
                 // TODO support multiple reporters?
                 val = convertReporterConfig( val );
                 key = "reporterslist";
@@ -113,7 +118,17 @@ public class TestNGMapConfigurator
             {
                 val = convert ( val, String.class );
             }
-            // TODO objectfactory... not even documented, does it work?
+            else if ( "suitethreadpoolsize".equals( key ) )
+            {
+                // for TestNG 6.9.7 or higher
+                val = convert( val, Integer.class );
+            }
+            else if ( "dataproviderthreadcount".equals( key ) )
+            {
+                // for TestNG 5.10 or higher
+                val = convert( val, Integer.class );
+            }
+
             if ( key.startsWith( "-" ) )
             {
                 convertedOptions.put( key, val );
@@ -127,7 +142,7 @@ public class TestNGMapConfigurator
     }
 
     // ReporterConfig only became available in later versions of TestNG
-    private Object convertReporterConfig( Object val )
+    protected Object convertReporterConfig( Object val )
     {
         final String reporterConfigClassName = "org.testng.ReporterConfig";
         try
@@ -145,6 +160,11 @@ public class TestNGMapConfigurator
         }
     }
 
+    protected Object convertListeners( String listenerClasses ) throws TestSetFailedException
+    {
+        return AbstractDirectConfigurator.loadListenerClasses( listenerClasses );
+    }
+
     protected Object convert( Object val, Class<?> type )
     {
         if ( val == null )
@@ -156,12 +176,17 @@ public class TestNGMapConfigurator
             return val;
         }
 
-        if ( ( Boolean.class.equals( type ) || boolean.class.equals( type ) ) && String.class.equals( val.getClass() ) )
+        if ( ( type == Boolean.class || type == boolean.class ) && val.getClass() == String.class )
         {
             return Boolean.valueOf( (String) val );
         }
 
-        if ( String.class.equals( type ) )
+        if ( ( type == Integer.class || type == int.class ) && val.getClass() == String.class )
+        {
+            return Integer.valueOf( (String) val );
+        }
+
+        if ( type == String.class )
         {
             return val.toString();
         }

@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -39,57 +40,47 @@ import org.xml.sax.SAXException;
 /**
  *
  */
-public class SurefireReportParser
+public final class SurefireReportParser
 {
     private static final String INCLUDES = "*.xml";
 
     private static final String EXCLUDES =
                     "*.txt, testng-failed.xml, testng-failures.xml, testng-results.xml, failsafe-summary*.xml";
 
-    private NumberFormat numberFormat = NumberFormat.getInstance();
-
-    private List<File> reportsDirectories;
+    private static final int PCENT = 100;
 
     private final List<ReportTestSuite> testSuites = new ArrayList<ReportTestSuite>();
 
-    private static final int PCENT = 100;
+    private final NumberFormat numberFormat;
 
-    public SurefireReportParser()
-    {
-    }
+    private List<File> reportsDirectories;
 
     public SurefireReportParser( List<File> reportsDirectoriesFiles, Locale locale )
     {
-        this.reportsDirectories = reportsDirectoriesFiles;
-
-        setLocale( locale );
+        reportsDirectories = reportsDirectoriesFiles;
+        numberFormat = NumberFormat.getInstance( locale );
     }
 
     public List<ReportTestSuite> parseXMLReportFiles()
         throws MavenReportException
     {
-        List<File> xmlReportFileList = new ArrayList<File>();
+        final Collection<File> xmlReportFiles = new ArrayList<File>();
         for ( File reportsDirectory : reportsDirectories )
         {
-            if ( !reportsDirectory.exists() )
+            if ( reportsDirectory.exists() )
             {
-                continue;
-            }
-            String[] xmlReportFiles = getIncludedFiles( reportsDirectory, INCLUDES, EXCLUDES );
-            for ( String xmlReportFile : xmlReportFiles )
-            {
-                File xmlReport = new File( reportsDirectory, xmlReportFile );
-                xmlReportFileList.add( xmlReport );
+                for ( String xmlReportFile : getIncludedFiles( reportsDirectory, INCLUDES, EXCLUDES ) )
+                {
+                    xmlReportFiles.add( new File( reportsDirectory, xmlReportFile ) );
+                }
             }
         }
-        TestSuiteXmlParser parser = new TestSuiteXmlParser();
-        for ( File aXmlReportFileList : xmlReportFileList )
+        final TestSuiteXmlParser parser = new TestSuiteXmlParser();
+        for ( File aXmlReportFileList : xmlReportFiles )
         {
-            List<ReportTestSuite> suites;
-
             try
             {
-                suites = parser.parse( aXmlReportFileList.getAbsolutePath() );
+                testSuites.addAll( parser.parse( aXmlReportFileList.getAbsolutePath() ) );
             }
             catch ( ParserConfigurationException e )
             {
@@ -103,8 +94,6 @@ public class SurefireReportParser
             {
                 throw new MavenReportException( "Error reading JUnit XML report " + aXmlReportFileList, e );
             }
-
-            testSuites.addAll( suites );
         }
 
         return testSuites;
@@ -172,17 +161,12 @@ public class SurefireReportParser
 
     public void setReportsDirectory( File reportsDirectory )
     {
-        this.reportsDirectories = Collections.singletonList( reportsDirectory );
-    }
-
-    public final void setLocale( Locale locale )
-    {
-        numberFormat = NumberFormat.getInstance( locale );
+        reportsDirectories = Collections.singletonList( reportsDirectory );
     }
 
     public NumberFormat getNumberFormat()
     {
-        return this.numberFormat;
+        return numberFormat;
     }
 
     public Map<String, List<ReportTestSuite>> getSuitesGroupByPackage( List<ReportTestSuite> testSuitesList )
@@ -208,33 +192,23 @@ public class SurefireReportParser
 
     public String computePercentage( int tests, int errors, int failures, int skipped )
     {
-        float percentage;
-        if ( tests == 0 )
-        {
-            percentage = 0;
-        }
-        else
-        {
-            percentage = ( (float) ( tests - errors - failures - skipped ) / (float) tests ) * PCENT;
-        }
-
+        float percentage =
+            tests == 0 ? 0 : ( (float) ( tests - errors - failures - skipped ) / (float) tests ) * PCENT;
         return numberFormat.format( percentage );
     }
 
-    public List<ReportTestCase> getFailureDetails( List<ReportTestSuite> testSuitesList )
+    public List<ReportTestCase> getFailureDetails( List<ReportTestSuite> testSuites )
     {
         List<ReportTestCase> failureDetailList = new ArrayList<ReportTestCase>();
 
-        for ( ReportTestSuite suite : testSuitesList )
+        for ( ReportTestSuite suite : testSuites )
         {
-            List<ReportTestCase> testCaseList = suite.getTestCases();
-
-            if ( testCaseList != null )
+            List<ReportTestCase> testCases = suite.getTestCases();
+            if ( testCases != null )
             {
-                for ( ReportTestCase tCase : testCaseList )
+                for ( ReportTestCase tCase : testCases )
                 {
-
-                    if ( tCase.getFailure() != null )
+                    if ( tCase.hasFailure() )
                     {
                         failureDetailList.add( tCase );
                     }
@@ -254,7 +228,7 @@ public class SurefireReportParser
     public static boolean hasReportFiles( File directory )
     {
         return directory != null && directory.isDirectory()
-            && getIncludedFiles( directory, INCLUDES, EXCLUDES ).length > 0;
+            && getIncludedFiles( directory, INCLUDES, EXCLUDES ).length != 0;
     }
 
     private static String[] getIncludedFiles( File directory, String includes, String excludes )

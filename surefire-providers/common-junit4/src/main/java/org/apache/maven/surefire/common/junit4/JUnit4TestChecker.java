@@ -42,9 +42,9 @@ public class JUnit4TestChecker
 
     public JUnit4TestChecker( ClassLoader testClassLoader )
     {
-        this.jUnit3TestChecker = new JUnit3TestChecker( testClassLoader );
-        this.runWith = tryLoadClass( testClassLoader, org.junit.runner.RunWith.class.getName() );
-        this.nonAbstractClassFilter = new NonAbstractClassFilter();
+        jUnit3TestChecker = new JUnit3TestChecker( testClassLoader );
+        runWith = tryLoadClass( testClassLoader, org.junit.runner.RunWith.class.getName() );
+        nonAbstractClassFilter = new NonAbstractClassFilter();
     }
 
     public boolean accept( Class testClass )

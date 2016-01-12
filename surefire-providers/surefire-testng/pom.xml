@@ -23,13 +23,13 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire-providers</artifactId>
-    <version>2.19-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
+    <version>2.19.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>surefire-testng</artifactId>
 
   <name>SureFire TestNG Runner</name>
+  <description>SureFire TestNG Runner</description>
 
   <dependencies>
     <dependency>
@@ -51,7 +51,7 @@
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-      <version>5.7</version>
+      <version>5.10</version>
       <classifier>jdk15</classifier>
       <scope>provided</scope>
     </dependency>
@@ -64,16 +64,5 @@
         <targetPath>META-INF</targetPath>
       </resource>
     </resources>
-
-    <plugins>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <!-- DGF There are no tests in this project currently, and this
-            resolves SUREFIRE-414 -->
-          <skipExec>true</skipExec>
-        </configuration>
-      </plugin>
-    </plugins>
   </build>
 </project>

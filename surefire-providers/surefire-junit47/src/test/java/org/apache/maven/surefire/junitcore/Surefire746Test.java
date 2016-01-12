@@ -23,6 +23,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.booter.BaseProviderFactory;
 import org.apache.maven.surefire.booter.ProviderParameterNames;
+import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
+import org.apache.maven.surefire.common.junit4.Notifier;
+import org.apache.maven.surefire.junit4.MockReporter;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.DefaultConsoleReporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
@@ -32,7 +35,6 @@ import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
 
-import junit.framework.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -41,6 +43,8 @@ import org.junit.runner.RunWith;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
+
+import static junit.framework.Assert.assertEquals;
 
 /**
  * {@code
@@ -98,7 +102,7 @@ public class Surefire746Test
         RunListener listener =
             ConcurrentRunListener.createInstance( testSetMap, reporterFactory, false, false, consoleLogger );
 
-        TestsToRun testsToRun = new TestsToRun(Collections.<Class>singletonList( TestClassTest.class ) );
+        TestsToRun testsToRun = new TestsToRun( Collections.<Class<?>>singleton( TestClassTest.class ) );
 
         org.junit.runner.notification.RunListener jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap );
 
@@ -111,13 +115,14 @@ public class Surefire746Test
             // JUnitCoreWrapper#execute() is calling JUnit4RunListener#rethrowAnyTestMechanismFailures()
             // and rethrows a failure which happened in listener
             exception.expect( TestSetFailedException.class );
-            JUnitCoreWrapper.execute( new Logger(), testsToRun, jUnitCoreParameters, customRunListeners, null );
+            JUnit4RunListener dummy = new JUnit4RunListener( new MockReporter() );
+            new JUnitCoreWrapper( new Notifier( dummy, 0 ), jUnitCoreParameters, new Logger() )
+                .execute( testsToRun, customRunListeners, null );
         }
         finally
         {
             RunResult result = reporterFactory.close();
-            Assert.assertEquals( "JUnit should report correctly number of test ran(Finished)",
-                    1, result.getCompletedCount() );
+            assertEquals( "JUnit should report correctly number of test ran(Finished)", 1, result.getCompletedCount() );
         }
     }
 
@@ -128,7 +133,6 @@ public class Surefire746Test
         public void shouldNeverBeCalled()
             throws Exception
         {
-            Assert.assertTrue( true );
         }
     }
 

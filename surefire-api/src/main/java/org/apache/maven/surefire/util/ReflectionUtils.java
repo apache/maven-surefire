@@ -26,19 +26,23 @@ import java.lang.reflect.Method;
 /**
  * @author Kristian Rosenvold
  */
-public class ReflectionUtils
+public final class ReflectionUtils
 {
     private static final Class[] NO_ARGS = new Class[0];
 
     private static final Object[] NO_ARGS_VALUES = new Object[0];
 
+    private ReflectionUtils()
+    {
+        throw new IllegalStateException( "no instantiable constructor" );
+    }
 
-    public static Method getMethod( Object instance, String methodName, Class[] parameters )
+    public static Method getMethod( Object instance, String methodName, Class<?>... parameters )
     {
         return getMethod( instance.getClass(), methodName, parameters );
     }
 
-    public static Method getMethod( Class<?> clazz, String methodName, Class[] parameters )
+    public static Method getMethod( Class<?> clazz, String methodName, Class<?>... parameters )
     {
         try
         {
@@ -50,7 +54,7 @@ public class ReflectionUtils
         }
     }
 
-    public static Method tryGetMethod( Class<?> clazz, String methodName, Class[] parameters )
+    public static Method tryGetMethod( Class<?> clazz, String methodName, Class<?>... parameters )
     {
         try
         {
@@ -62,14 +66,13 @@ public class ReflectionUtils
         }
     }
 
-
     public static Object invokeGetter( Object instance, String methodName )
     {
         final Method method = getMethod( instance, methodName, NO_ARGS );
         return invokeMethodWithArray( instance, method, NO_ARGS_VALUES );
     }
 
-    public static Constructor getConstructor( Class<?> clazz, Class[] arguments )
+    public static Constructor getConstructor( Class<?> clazz, Class<?>... arguments )
     {
         try
         {
@@ -81,7 +84,7 @@ public class ReflectionUtils
         }
     }
 
-    public static Object newInstance( Constructor constructor, Object[] params )
+    public static Object newInstance( Constructor constructor, Object... params )
     {
         try
         {
@@ -101,13 +104,12 @@ public class ReflectionUtils
         }
     }
 
-    public static Object instantiate( ClassLoader classLoader, String classname )
+    public static <T> T instantiate( ClassLoader classLoader, String classname, Class<T> returnType )
     {
         try
         {
-
-            Class clazz = loadClass( classLoader, classname );
-            return clazz.newInstance();
+            Class<?> clazz = loadClass( classLoader, classname );
+            return returnType.cast( clazz.newInstance() );
         }
         catch ( InstantiationException e )
         {
@@ -119,14 +121,13 @@ public class ReflectionUtils
         }
     }
 
-    public static Object instantiateOneArg( ClassLoader classLoader, String className, Class param1Class,
+    public static Object instantiateOneArg( ClassLoader classLoader, String className, Class<?> param1Class,
                                             Object param1 )
     {
-
         try
         {
-            Class aClass = loadClass( classLoader, className );
-            Constructor constructor = ReflectionUtils.getConstructor( aClass, new Class[]{ param1Class } );
+            Class<?> aClass = loadClass( classLoader, className );
+            Constructor constructor = getConstructor( aClass, param1Class );
             return constructor.newInstance( param1 );
         }
         catch ( InvocationTargetException e )
@@ -143,14 +144,13 @@ public class ReflectionUtils
         }
     }
 
-    public static Object instantiateTwoArgs( ClassLoader classLoader, String className, Class param1Class,
+    public static Object instantiateTwoArgs( ClassLoader classLoader, String className, Class<?> param1Class,
                                              Object param1, Class param2Class, Object param2 )
     {
-
         try
         {
-            Class aClass = loadClass( classLoader, className );
-            Constructor constructor = ReflectionUtils.getConstructor( aClass, new Class[]{ param1Class, param2Class } );
+            Class<?> aClass = loadClass( classLoader, className );
+            Constructor constructor = getConstructor( aClass, param1Class, param2Class );
             return constructor.newInstance( param1, param2 );
         }
         catch ( InvocationTargetException e )
@@ -167,22 +167,18 @@ public class ReflectionUtils
         }
     }
 
-
-    public static void invokeSetter( Object o, String name, Class value1clazz, Object value )
-
+    public static void invokeSetter( Object o, String name, Class<?> value1clazz, Object value )
     {
-        final Method setter = getMethod( o, name, new Class[]{ value1clazz } );
+        Method setter = getMethod( o, name, value1clazz );
         invokeSetter( o, setter, value );
     }
 
     public static Object invokeSetter( Object target, Method method, Object value )
-
     {
-        return invokeMethodWithArray( target, method, new Object[]{ value } );
+        return invokeMethodWithArray( target, method, value );
     }
 
-    public static Object invokeMethodWithArray( Object target, Method method, Object[] args )
-
+    public static Object invokeMethodWithArray( Object target, Method method, Object... args )
     {
         try
         {
@@ -196,12 +192,10 @@ public class ReflectionUtils
         {
             throw new SurefireReflectionException( e.getTargetException() );
         }
-
     }
 
-    public static Object invokeMethodWithArray2( Object target, Method method, Object[] args )
+    public static Object invokeMethodWithArray2( Object target, Method method, Object... args )
         throws InvocationTargetException
-
     {
         try
         {
@@ -211,18 +205,17 @@ public class ReflectionUtils
         {
             throw new SurefireReflectionException( e );
         }
-
     }
 
     public static Object instantiateObject( String className, Class[] types, Object[] params, ClassLoader classLoader )
     {
-        Class clazz = loadClass( classLoader, className );
+        Class<?> clazz = loadClass( classLoader, className );
         final Constructor constructor = getConstructor( clazz, types );
         return newInstance( constructor, params );
     }
 
     @SuppressWarnings( "checkstyle:emptyblock" )
-    public static Class tryLoadClass( ClassLoader classLoader, String className )
+    public static Class<?> tryLoadClass( ClassLoader classLoader, String className )
     {
         try
         {
@@ -237,7 +230,7 @@ public class ReflectionUtils
         return null;
     }
 
-    public static Class loadClass( ClassLoader classLoader, String className )
+    public static Class<?> loadClass( ClassLoader classLoader, String className )
     {
         try
         {

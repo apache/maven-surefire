@@ -19,169 +19,96 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 
-import org.apache.maven.surefire.util.ReflectionUtils;
+import org.apache.maven.surefire.util.CloseableIterator;
 import org.apache.maven.surefire.util.TestsToRun;
 
-import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
-import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
+import static org.apache.maven.surefire.booter.CommandReader.getReader;
+import static org.apache.maven.surefire.util.ReflectionUtils.loadClass;
 
 /**
  * A variant of TestsToRun that is provided with test class names
- * from an {@link InputStream} (e.g. {@code System.in}). The method
- * {@link #iterator()} returns an Iterator that blocks on calls to
- * {@link Iterator#hasNext()} until new classes are available, or no more
- * classes will be available.
+ * from an {@code System.in}.
+ * The method {@link #iterator()} returns an Iterator that blocks on calls to
+ * {@link Iterator#hasNext()} or {@link Iterator#next()} until new classes are available, or no more
+ * classes will be available or the internal stream is closed.
+ * The iterator can be used only in one Thread and it is the thread which executes
+ * {@link org.apache.maven.surefire.providerapi.SurefireProvider provider implementation}.
  *
  * @author Andreas Gudian
+ * @author Tibor Digana
  */
-class LazyTestsToRun
+final class LazyTestsToRun
     extends TestsToRun
 {
-    private final List<Class> workQueue = new ArrayList<Class>();
-
-    private final BufferedReader inputReader;
-
     private final PrintStream originalOutStream;
-
-    private boolean streamClosed = false;
 
     /**
      * C'tor
      *
-     * @param testSource        source to read the tests from
      * @param originalOutStream the output stream to use when requesting new new tests
      */
-    public LazyTestsToRun( InputStream testSource, PrintStream originalOutStream )
+    LazyTestsToRun( PrintStream originalOutStream )
     {
-        super( Collections.<Class>emptyList() );
+        super( Collections.<Class<?>>emptySet() );
 
         this.originalOutStream = originalOutStream;
-
-        try
-        {
-            inputReader = new BufferedReader( new InputStreamReader( testSource, FORK_STREAM_CHARSET_NAME ) );
-        }
-        catch ( UnsupportedEncodingException e )
-        {
-            throw new RuntimeException( "The JVM must support Charset " + FORK_STREAM_CHARSET_NAME, e );
-        }
     }
 
-    protected void addWorkItem( String className )
+    private final class BlockingIterator
+        implements Iterator<Class<?>>
     {
-        synchronized ( workQueue )
-        {
-            workQueue.add( ReflectionUtils.loadClass( Thread.currentThread().getContextClassLoader(), className ) );
-        }
-    }
-
-    protected void requestNextTest()
-    {
-        byte[] encoded =
-            encodeStringForForkCommunication( ( (char) ForkingRunListener.BOOTERCODE_NEXT_TEST ) + ",0,want more!\n" );
-        originalOutStream.write( encoded, 0, encoded.length );
-    }
-
-    private class BlockingIterator
-        implements Iterator<Class>
-    {
-        private int lastPos = -1;
+        private final Iterator<String> it = getReader().getIterableClasses( originalOutStream ).iterator();
 
         public boolean hasNext()
         {
-            int nextPos = lastPos + 1;
-            synchronized ( workQueue )
-            {
-                if ( workQueue.size() > nextPos )
-                {
-                    return true;
-                }
-                else
-                {
-                    if ( needsToWaitForInput( nextPos ) )
-                    {
-                        requestNextTest();
-
-                        String nextClassName;
-                        try
-                        {
-                            nextClassName = inputReader.readLine();
-                            if ( nextClassName == null )
-                            {
-                                streamClosed = true;
-                            }
-                            else
-                            {
-                                addWorkItem( nextClassName );
-                            }
-                        }
-                        catch ( IOException e )
-                        {
-                            streamClosed = true;
-                            return false;
-                        }
-                    }
-
-                    return workQueue.size() > nextPos;
-                }
-            }
+            return it.hasNext();
         }
 
-        private boolean needsToWaitForInput( int nextPos )
+        public Class<?> next()
         {
-            return workQueue.size() == nextPos && !streamClosed;
-        }
-
-        public Class next()
-        {
-            synchronized ( workQueue )
-            {
-                return workQueue.get( ++lastPos );
-            }
+            return findClass( it.next() );
         }
 
         public void remove()
         {
             throw new UnsupportedOperationException();
         }
-
     }
 
-    /* (non-Javadoc)
-      * @see org.apache.maven.surefire.util.TestsToRun#iterator()
-      */
-    public Iterator<Class> iterator()
+    /**
+     * @return test classes which have been retrieved by {@link LazyTestsToRun#iterator()}.
+     */
+    @Override
+    public Iterator<Class<?>> iterated()
+    {
+        return newWeakIterator();
+    }
+
+    /**
+     * The iterator can be used only in one Thread.
+     * {@inheritDoc}
+     * @see org.apache.maven.surefire.util.TestsToRun#iterator()
+     * */
+    public Iterator<Class<?>> iterator()
     {
         return new BlockingIterator();
     }
 
     /* (non-Javadoc)
+     * {@inheritDoc}
       * @see org.apache.maven.surefire.util.TestsToRun#toString()
       */
     public String toString()
     {
-        StringBuilder sb = new StringBuilder( "LazyTestsToRun " );
-        synchronized ( workQueue )
-        {
-            sb.append( "(more items expected: " ).append( !streamClosed ).append( "): " );
-            sb.append( workQueue );
-        }
-
-        return sb.toString();
+        return "LazyTestsToRun";
     }
 
     /* (non-Javadoc)
+     * {@inheritDoc}
      * @see org.apache.maven.surefire.util.TestsToRun#allowEagerReading()
      */
     public boolean allowEagerReading()
@@ -189,4 +116,47 @@ class LazyTestsToRun
         return false;
     }
 
+    private static Class<?> findClass( String clazz )
+    {
+        return loadClass( Thread.currentThread().getContextClassLoader(), clazz );
+    }
+
+    /**
+     * @return snapshot of tests upon constructs of {@link CommandReader#iterated() iterator}.
+     * Therefore weakly consistent while {@link LazyTestsToRun#iterator()} is being iterated.
+     */
+    private Iterator<Class<?>> newWeakIterator()
+    {
+        final Iterator<String> it = getReader().iterated();
+        return new CloseableIterator<Class<?>>()
+        {
+            @Override
+            protected boolean isClosed()
+            {
+                return LazyTestsToRun.this.isFinished();
+            }
+
+            @Override
+            protected boolean doHasNext()
+            {
+                return it.hasNext();
+            }
+
+            @Override
+            protected Class<?> doNext()
+            {
+                return findClass( it.next() );
+            }
+
+            @Override
+            protected void doRemove()
+            {
+            }
+
+            public void remove()
+            {
+                throw new UnsupportedOperationException( "unsupported remove" );
+            }
+        };
+    }
 }

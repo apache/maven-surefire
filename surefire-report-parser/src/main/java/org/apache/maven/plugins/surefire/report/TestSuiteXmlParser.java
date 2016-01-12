@@ -30,12 +30,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.maven.shared.utils.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -44,9 +44,11 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  *
  */
-public class TestSuiteXmlParser
+public final class TestSuiteXmlParser
     extends DefaultHandler
 {
+    private final NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH );
+
     private ReportTestSuite defaultSuite;
 
     private ReportTestSuite currentSuite;
@@ -55,12 +57,7 @@ public class TestSuiteXmlParser
 
     private List<ReportTestSuite> suites;
 
-    private final NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH );
-
-    /**
-     * @noinspection StringBufferField
-     */
-    private StringBuffer currentElement;
+    private StringBuilder currentElement;
 
     private ReportTestCase testCase;
 
@@ -69,11 +66,7 @@ public class TestSuiteXmlParser
     public List<ReportTestSuite> parse( String xmlPath )
         throws ParserConfigurationException, SAXException, IOException
     {
-
-        File f = new File( xmlPath );
-
-        FileInputStream fileInputStream = new FileInputStream( f );
-
+        FileInputStream fileInputStream = new FileInputStream( new File( xmlPath ) );
         InputStreamReader  inputStreamReader = new InputStreamReader( fileInputStream, "UTF-8" );
 
         try
@@ -118,120 +111,103 @@ public class TestSuiteXmlParser
     public void startElement( String uri, String localName, String qName, Attributes attributes )
         throws SAXException
     {
-        if ( !valid )
+        if ( valid )
         {
-            return;
-        }
-        try
-        {
-            if ( "testsuite".equals( qName ) )
+            try
             {
-                defaultSuite = new ReportTestSuite();
-                currentSuite = defaultSuite;
-
-                try
+                if ( "testsuite".equals( qName ) )
                 {
-                    Number time = numberFormat.parse( attributes.getValue( "time" ) );
+                    defaultSuite = new ReportTestSuite();
+                    currentSuite = defaultSuite;
 
-                    defaultSuite.setTimeElapsed( time.floatValue() );
-                }
-                catch ( NullPointerException npe )
-                {
-                    System.err.println( "WARNING: no time attribute found on testsuite element" );
-                }
-
-                //check if group attribute is existing
-                if ( attributes.getValue( "group" ) != null && !"".equals( attributes.getValue( "group" ) ) )
-                {
-                    String packageName = attributes.getValue( "group" );
-                    String name = attributes.getValue( "name" );
-
-                    defaultSuite.setFullClassName( packageName + "." + name );
-                }
-                else
-                {
-                    String fullClassName = attributes.getValue( "name" );
-                    defaultSuite.setFullClassName( fullClassName );
-                }
-
-                suites.add( defaultSuite );
-                classesToSuitesIndex.put( defaultSuite.getFullClassName(), suites.size() - 1 );
-            }
-            else if ( "testcase".equals( qName ) )
-            {
-                currentElement = new StringBuffer();
-
-                testCase = new ReportTestCase();
-
-                testCase.setName( attributes.getValue( "name" ) );
-
-                String fullClassName = attributes.getValue( "classname" );
-
-                // if the testcase declares its own classname, it may need to belong to its own suite
-                if ( fullClassName != null )
-                {
-                    Integer currentSuiteIndex = classesToSuitesIndex.get( fullClassName );
-                    if ( currentSuiteIndex == null )
+                    try
                     {
-                        currentSuite = new ReportTestSuite();
-                        currentSuite.setFullClassName( fullClassName );
-                        suites.add( currentSuite );
-                        classesToSuitesIndex.put( fullClassName, suites.size() - 1 );
+                        Number time = numberFormat.parse( attributes.getValue( "time" ) );
+
+                        defaultSuite.setTimeElapsed( time.floatValue() );
                     }
-                    else
+                    catch ( NullPointerException e )
                     {
-                        currentSuite = suites.get( currentSuiteIndex );
+                        System.err.println( "WARNING: no time attribute found on testsuite element" );
+                    }
+
+                    final String name = attributes.getValue( "name" );
+                    final String group = attributes.getValue( "group" );
+                    defaultSuite.setFullClassName( StringUtils.isBlank( group )
+                                                       ? /*name is full class name*/ name
+                                                       : /*group is package name*/ group + "." + name );
+
+                    suites.add( defaultSuite );
+                    classesToSuitesIndex.put( defaultSuite.getFullClassName(), suites.size() - 1 );
+                }
+                else if ( "testcase".equals( qName ) )
+                {
+                    currentElement = new StringBuilder();
+
+                    testCase = new ReportTestCase()
+                        .setName( attributes.getValue( "name" ) );
+
+                    String fullClassName = attributes.getValue( "classname" );
+
+                    // if the testcase declares its own classname, it may need to belong to its own suite
+                    if ( fullClassName != null )
+                    {
+                        Integer currentSuiteIndex = classesToSuitesIndex.get( fullClassName );
+                        if ( currentSuiteIndex == null )
+                        {
+                            currentSuite = new ReportTestSuite()
+                                .setFullClassName( fullClassName );
+                            suites.add( currentSuite );
+                            classesToSuitesIndex.put( fullClassName, suites.size() - 1 );
+                        }
+                        else
+                        {
+                            currentSuite = suites.get( currentSuiteIndex );
+                        }
+                    }
+
+                    final String timeAsString = attributes.getValue( "time" );
+                    final Number time = StringUtils.isBlank( timeAsString ) ? 0 : numberFormat.parse( timeAsString );
+
+                    testCase.setFullClassName( currentSuite.getFullClassName() )
+                        .setClassName( currentSuite.getName() )
+                        .setFullName( currentSuite.getFullClassName() + "." + testCase.getName() )
+                        .setTime( time.floatValue() );
+
+                    if ( currentSuite != defaultSuite )
+                    {
+                        currentSuite.setTimeElapsed( testCase.getTime() + currentSuite.getTimeElapsed() );
                     }
                 }
-
-                testCase.setFullClassName( currentSuite.getFullClassName() );
-                testCase.setClassName( currentSuite.getName() );
-                testCase.setFullName( currentSuite.getFullClassName() + "." + testCase.getName() );
-
-                String timeAsString = attributes.getValue( "time" );
-
-                Number time = 0;
-
-                if ( timeAsString != null )
+                else if ( "failure".equals( qName ) )
                 {
-                    time = numberFormat.parse( timeAsString );
+                    testCase.setFailure( attributes.getValue( "message" ), attributes.getValue( "type" ) );
+                    currentSuite.incrementNumberOfFailures();
                 }
-
-                testCase.setTime( time.floatValue() );
-
-                if ( currentSuite != defaultSuite )
+                else if ( "error".equals( qName ) )
                 {
-                    currentSuite.setTimeElapsed( time.floatValue() + currentSuite.getTimeElapsed() );
+                    testCase.setFailure( attributes.getValue( "message" ), attributes.getValue( "type" ) );
+                    currentSuite.incrementNumberOfErrors();
+                }
+                else if ( "skipped".equals( qName ) )
+                {
+                    final String message = attributes.getValue( "message" );
+                    testCase.setFailure( message != null ? message : "skipped", "skipped" );
+                    currentSuite.incrementNumberOfSkipped();
+                }
+                else if ( "flakyFailure".equals( qName ) || "flakyError".equals( qName ) )
+                {
+                    currentSuite.incrementNumberOfFlakes();
+                }
+                else if ( "failsafe-summary".equals( qName ) )
+                {
+                    valid = false;
                 }
             }
-            else if ( "failure".equals( qName ) )
+            catch ( ParseException e )
             {
-                testCase.addFailure( attributes.getValue( "message" ), attributes.getValue( "type" ) );
-                currentSuite.setNumberOfFailures( 1 + currentSuite.getNumberOfFailures() );
+                throw new SAXException( e.getMessage(), e );
             }
-            else if ( "error".equals( qName ) )
-            {
-                testCase.addFailure( attributes.getValue( "message" ), attributes.getValue( "type" ) );
-                currentSuite.setNumberOfErrors( 1 + currentSuite.getNumberOfErrors() );
-            }
-            else if ( "skipped".equals( qName ) )
-            {
-                final String message = attributes.getValue( "message" );
-                testCase.addFailure( message != null ? message : "skipped", "skipped" );
-                currentSuite.setNumberOfSkipped( 1 + currentSuite.getNumberOfSkipped() );
-            }
-            else if ( "flakyFailure".equals( qName ) || "flakyError".equals( qName ) )
-            {
-                currentSuite.setNumberOfFlakes( 1 + currentSuite.getNumberOfFlakes() );
-            }
-            else if ( "failsafe-summary".equals( qName ) )
-            {
-                valid = false;
-            }
-        }
-        catch ( ParseException e )
-        {
-            throw new SAXException( e.getMessage(), e );
         }
     }
 
@@ -245,24 +221,16 @@ public class TestSuiteXmlParser
         {
             currentSuite.getTestCases().add( testCase );
         }
-        else if ( "failure".equals( qName ) )
+        else if ( "failure".equals( qName ) || "error".equals( qName ) )
         {
-            Map<String, Object> failure = testCase.getFailure();
-
-            failure.put( "detail", parseCause( currentElement.toString() ) );
-        }
-        else if ( "error".equals( qName ) )
-        {
-            Map<String, Object> error = testCase.getFailure();
-
-            error.put( "detail", parseCause( currentElement.toString() ) );
+            testCase.setFailureDetail( currentElement.toString() )
+                .setFailureErrorLine( parseErrorLine( currentElement, testCase.getFullClassName() ) );
         }
         else if ( "time".equals( qName ) )
         {
             try
             {
-                Number time = numberFormat.parse( currentElement.toString() );
-                defaultSuite.setTimeElapsed( time.floatValue() );
+                defaultSuite.setTimeElapsed( numberFormat.parse( currentElement.toString() ).floatValue() );
             }
             catch ( ParseException e )
             {
@@ -278,45 +246,87 @@ public class TestSuiteXmlParser
     public void characters( char[] ch, int start, int length )
         throws SAXException
     {
-        if ( !valid )
+        assert start >= 0;
+        assert length >= 0;
+        if ( valid && isNotBlank( start, length, ch ) )
         {
-            return;
+            currentElement.append( ch, start, length );
         }
-        String s = new String( ch, start, length );
-
-        if ( !"".equals( s.trim() ) )
-        {
-            currentElement.append( s );
-        }
-    }
-
-    private List<String> parseCause( String detail )
-    {
-        String fullName = testCase.getFullName();
-        String name = fullName.substring( fullName.lastIndexOf( "." ) + 1 );
-        return parseCause( detail, name );
-    }
-
-    private List<String> parseCause( String detail, String compareTo )
-    {
-        StringTokenizer stringTokenizer = new StringTokenizer( detail, "\n" );
-        List<String> parsedDetail = new ArrayList<String>( stringTokenizer.countTokens() );
-
-        while ( stringTokenizer.hasMoreTokens() )
-        {
-            String lineString = stringTokenizer.nextToken().trim();
-            parsedDetail.add( lineString );
-            if ( lineString.contains( compareTo ) )
-            {
-                break;
-            }
-        }
-
-        return parsedDetail;
     }
 
     public boolean isValid()
     {
         return valid;
+    }
+
+    static boolean isNotBlank( int from, int len, char... s )
+    {
+        assert from >= 0;
+        assert len >= 0;
+        if ( s != null )
+        {
+            for ( int i = 0; i < len; i++ )
+            {
+                char c = s[from++];
+                if ( c != ' ' && c != '\t' && c != '\n' && c != '\r' && c != '\f' )
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    static boolean isNumeric( StringBuilder s, final int from, final int to )
+    {
+        assert from >= 0;
+        assert from <= to;
+        for ( int i = from; i != to; )
+        {
+            if ( !Character.isDigit( s.charAt( i++ ) ) )
+            {
+                return false;
+            }
+        }
+        return from != to;
+    }
+
+    static String parseErrorLine( StringBuilder currentElement, String fullClassName )
+    {
+        final String[] linePatterns = { "at " + fullClassName + '.', "at " + fullClassName + '$' };
+        int[] indexes = lastIndexOf( currentElement, linePatterns );
+        int patternStartsAt = indexes[0];
+        if ( patternStartsAt != -1 )
+        {
+            int searchFrom = patternStartsAt + ( linePatterns[ indexes[1] ] ).length();
+            searchFrom = 1 + currentElement.indexOf( ":", searchFrom );
+            int searchTo = currentElement.indexOf( ")", searchFrom );
+            return isNumeric( currentElement, searchFrom, searchTo )
+                ? currentElement.substring( searchFrom, searchTo )
+                : "";
+        }
+        return "";
+    }
+
+    static int[] lastIndexOf( StringBuilder source, String... linePatterns )
+    {
+        int end = source.indexOf( "Caused by:" );
+        if ( end == -1 )
+        {
+            end = source.length();
+        }
+        int startsAt = -1;
+        int pattern = -1;
+        for ( int i = 0; i < linePatterns.length; i++ )
+        {
+            String linePattern = linePatterns[i];
+            int currentStartsAt = source.lastIndexOf( linePattern, end );
+            if ( currentStartsAt > startsAt )
+            {
+                startsAt = currentStartsAt;
+                pattern = i;
+            }
+        }
+        return new int[] { startsAt, pattern };
     }
 }

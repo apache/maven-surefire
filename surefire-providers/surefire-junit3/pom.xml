@@ -23,13 +23,13 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire-providers</artifactId>
-    <version>2.19-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
+    <version>2.19.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>surefire-junit3</artifactId>
 
   <name>SureFire JUnit Runner</name>
+  <description>SureFire JUnit3 Runner</description>
 
   <dependencies>
     <dependency>

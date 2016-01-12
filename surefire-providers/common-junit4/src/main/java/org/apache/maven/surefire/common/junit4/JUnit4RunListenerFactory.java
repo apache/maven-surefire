@@ -21,6 +21,8 @@ package org.apache.maven.surefire.common.junit4;
 
 import java.util.LinkedList;
 import java.util.List;
+
+import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.util.ReflectionUtils;
 
 import org.junit.runner.notification.RunListener;
@@ -30,22 +32,20 @@ import org.junit.runner.notification.RunListener;
  */
 public class JUnit4RunListenerFactory
 {
-    public static List<RunListener> createCustomListeners( String listenerProperty )
+    public static List<RunListener> createCustomListeners( String listeners )
     {
         List<RunListener> result = new LinkedList<RunListener>();
-        if ( listenerProperty == null )
+        if ( StringUtils.isNotBlank( listeners ) )
         {
-            return result;
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            for ( String listener : listeners.split( "," ) )
+            {
+                if ( StringUtils.isNotBlank( listener ) )
+                {
+                    result.add( ReflectionUtils.instantiate( cl, listener, RunListener.class ) );
+                }
+            }
         }
-
-        for ( String thisListenerName : listenerProperty.split( "," ) )
-        {
-            RunListener customRunListener =
-                (RunListener) ReflectionUtils.instantiate( Thread.currentThread().getContextClassLoader(),
-                                                           thisListenerName );
-            result.add( customRunListener );
-        }
-
         return result;
     }
 

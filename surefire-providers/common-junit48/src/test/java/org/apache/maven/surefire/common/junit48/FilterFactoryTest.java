@@ -34,6 +34,7 @@ import org.junit.runner.manipulation.Filter;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import static org.junit.runner.Description.createSuiteDescription;
 import static org.junit.runner.Description.createTestDescription;
@@ -191,7 +192,7 @@ public class FilterFactoryTest
         assertTrue( resolver.getExcludedPatterns().isEmpty() );
         assertTrue( resolver.getIncludedPatterns().isEmpty() );
         assertTrue( resolver.isEmpty() );
-        assertNull( resolver.getPluginParameterTest() );
+        assertEquals( 0, resolver.getPluginParameterTest().length() );
         assertFalse( resolver.hasExcludedMethodPatterns() );
         assertFalse( resolver.hasIncludedMethodPatterns() );
         assertFalse( resolver.hasMethodPatterns() );
@@ -204,7 +205,7 @@ public class FilterFactoryTest
         assertTrue( resolver.getExcludedPatterns().isEmpty() );
         assertTrue( resolver.getIncludedPatterns().isEmpty() );
         assertTrue( resolver.isEmpty() );
-        assertNull( resolver.getPluginParameterTest() );
+        assertEquals( 0, resolver.getPluginParameterTest().length() );
         assertFalse( resolver.hasExcludedMethodPatterns() );
         assertFalse( resolver.hasIncludedMethodPatterns() );
         assertFalse( resolver.hasMethodPatterns() );
@@ -641,10 +642,10 @@ public class FilterFactoryTest
     }
 
     @Test
-    public void testShouldNotNonExistingMethod()
+    public void testShouldRunSuiteWithIncludedMethod()
     {
         String sourceFile = "pkg" + File.separator + "XMyTest.class";
-        assertFalse( new TestListResolver( "#testMethod" ).shouldRun( sourceFile, null ) );
+        assertTrue( new TestListResolver( "#testMethod" ).shouldRun( sourceFile, null ) );
     }
 
     @Test
@@ -825,9 +826,9 @@ public class FilterFactoryTest
         Filter filter = createMethodFilter( "#nonExisting" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( Suite.class ).filterWith( filter ) );
-        assertFalse( result.wasSuccessful() );
-        assertEquals( 1, result.getRunCount() );//running the Suite
-        assertEquals( 1, result.getFailureCount() );
+        assertTrue( result.wasSuccessful() );
+        assertEquals( 0, result.getRunCount() );//running the Suite
+        assertEquals( 0, result.getFailureCount() );
         assertEquals( 0, result.getIgnoreCount() );
     }
 
@@ -884,7 +885,7 @@ public class FilterFactoryTest
     public void testShouldRunSuite()
     {
         TestListResolver filter = new TestListResolver( "Su?te" );
-        filter = filter.createMethodFilters();
+        filter = TestListResolver.optionallyWildcardFilter( filter );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( Suite.class ).filterWith( new MethodFilter( filter ) ) );
         assertTrue( result.wasSuccessful() );
@@ -901,7 +902,7 @@ public class FilterFactoryTest
                                       + "PT#testC*, "
                                       + "!PT.java#testCY[?],"
                                       + "%regex[.*.tests.pt.PT.class#w.*|x.*T.*]" );
-        filter = filter.createMethodFilters();
+        filter = TestListResolver.optionallyWildcardFilter( filter );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( PT.class ).filterWith( new MethodFilter( filter ) ) );
         assertTrue( result.wasSuccessful() );
@@ -920,7 +921,7 @@ public class FilterFactoryTest
         // x12T35[0], x12T35[1]
         TestListResolver filter =
             new TestListResolver( "%regex[.*.PT.* # w.*|x(\\d+)T(\\d+)\\[(\\d+)\\]]" );
-        filter = filter.createMethodFilters();
+        filter = TestListResolver.optionallyWildcardFilter( filter );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( PT.class ).filterWith( new MethodFilter( filter ) ) );
         assertTrue( result.wasSuccessful() );
@@ -998,7 +999,7 @@ public class FilterFactoryTest
     public void testIncludesExcludes()
     {
         Collection<String> inc = Arrays.asList( "**/NotIncludedByDefault.java", "**/*Test.java" );
-        Collection<String> exc = Arrays.asList( "**/DontRunTest.*" );
+        Collection<String> exc = Collections.singletonList( "**/DontRunTest.*" );
         TestListResolver resolver = new TestListResolver( inc, exc );
         assertFalse( resolver.shouldRun( "org/test/DontRunTest.class", null ) );
         assertTrue( resolver.shouldRun( "org/test/DefaultTest.class", null ) );
@@ -1010,5 +1011,13 @@ public class FilterFactoryTest
     {
         TestListResolver resolver = new TestListResolver( "NotIncludedByDefault" );
         assertTrue( resolver.shouldRun( "org/test/NotIncludedByDefault.class", null ) );
+    }
+
+    @Test
+    public void testFullyQualifiedClass()
+    {
+        TestListResolver resolver = new TestListResolver( "my.package.MyTest" );
+        assertFalse( resolver.shouldRun( "my/package/AnotherTest.class", null ) );
+        assertTrue( resolver.shouldRun( "my/package/MyTest.class", null ) );
     }
 }

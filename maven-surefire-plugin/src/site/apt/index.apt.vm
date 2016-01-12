@@ -79,6 +79,8 @@ mvn verify
 
   By default, these files are generated at <<<$\{basedir\}/target/${thisPlugin.toLowerCase()}-reports>>>.
 
+  The schema for the Surefire XML reports is available at {{{./xsd/surefire-test-report.xsd}Surefire XML Report Schema}}.
+
   For an HTML format of the report, please see the
   {{{http://maven.apache.org/plugins/maven-surefire-report-plugin/}Maven Surefire Report Plugin}}.
 
@@ -135,9 +137,13 @@ mvn verify
 
   * {{{./examples/skipping-test.html}Skipping Tests}}
 
+  * {{{./examples/skip-after-failure.html}Skip After Failure}}
+
   * {{{./examples/inclusion-exclusion.html}Inclusions and Exclusions of Tests}}
 
   * {{{./examples/single-test.html}Running a Single Test}}
+
+  * {{{./examples/rerun-failing-tests.html}Re-run Failing Tests}}
 
   * {{{./examples/class-loading.html}Class Loading and Forking}}
 
@@ -150,5 +156,9 @@ mvn verify
   * {{{./examples/providers.html}Selecting Providers}}
 
   * {{{./examples/fork-options-and-parallel-execution.html}Fork Options and Parallel Test Execution}}
+
+  * {{{./examples/logging.html}Using Console Logs}}
+
+  * {{{./examples/shutdown.html}Shutdown of Forked JVM}}
 
   []

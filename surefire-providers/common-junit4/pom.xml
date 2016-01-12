@@ -23,13 +23,13 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire-providers</artifactId>
-    <version>2.19-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
+    <version>2.19.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>common-junit4</artifactId>
 
   <name>Shared JUnit4 Provider Code</name>
+  <description>Shared JUnit4 Provider Code</description>
 
   <dependencies>
     <dependency>

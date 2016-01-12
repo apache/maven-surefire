@@ -184,7 +184,7 @@ public abstract class AbstractDirectConfigurator
             }
             if ( Integer.class.equals( paramClass ) || int.class.equals( paramClass ) )
             {
-                return new Integer( value );
+                return Integer.valueOf( value );
             }
 
             return value;

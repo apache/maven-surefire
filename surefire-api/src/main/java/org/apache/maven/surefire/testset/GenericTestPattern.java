@@ -24,12 +24,11 @@ import java.util.Set;
 /**
  * Resolves string test patterns in object oriented patterns {@code P}.
  *
- * @param <T>    itself
  * @param <P>    resolved atomic test, object oriented - not necessary to be a string
  * @param <C>    test class, or null if not mandatory
  * @param <M>    test method, or null if not mandatory
  */
-public interface GenericTestPattern<T extends GenericTestPattern, P, C, M>
+public interface GenericTestPattern<P, C, M>
     extends TestFilter<C, M>
 {
     boolean hasIncludedMethodPatterns();
@@ -38,10 +37,6 @@ public interface GenericTestPattern<T extends GenericTestPattern, P, C, M>
 
     boolean hasMethodPatterns();
 
-    T createMethodFilters();
-
-    T createClassFilters();
-
     boolean isEmpty();
 
     String getPluginParameterTest();
@@ -49,6 +44,4 @@ public interface GenericTestPattern<T extends GenericTestPattern, P, C, M>
     Set<P> getIncludedPatterns();
 
     Set<P> getExcludedPatterns();
-
-    Set<String> getTestSpecificClasses();
 }

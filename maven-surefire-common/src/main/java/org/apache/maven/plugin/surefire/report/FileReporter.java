@@ -19,14 +19,14 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReporterException;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
-
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterException;
 
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
 
@@ -105,18 +105,23 @@ public class FileReporter
     public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
     {
         PrintWriter writer = testSetStarting( report );
-        writer.print( testSetStats.getTestSetSummary( report ) );
-
-        if ( testResults != null )
+        try
         {
-            for ( String testResult : testResults )
+            writer.print( testSetStats.getTestSetSummary( report ) );
+
+            if ( testResults != null )
             {
-                writer.println( testResult );
+                for ( String testResult : testResults )
+                {
+                    writer.println( testResult );
+                }
             }
+
+            writer.flush();
         }
-
-        writer.flush();
-
-        writer.close();
+        finally
+        {
+            writer.close();
+        }
     }
 }

@@ -47,7 +47,7 @@ public final class JUnit3Reflector
 
     private final Class[] interfacesImplementedByDynamicProxy;
 
-    private final Class testResultClass;
+    private final Class<?> testResultClass;
 
     private final Method addListenerMethod;
 
@@ -57,9 +57,9 @@ public final class JUnit3Reflector
 
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
-    private final Class testInterface;
+    private final Class<?> testInterface;
 
-    private final Class testCase;
+    private final Class<?> testCase;
 
     private final Constructor testsSuiteConstructor;
 
@@ -70,9 +70,9 @@ public final class JUnit3Reflector
         testInterface = ReflectionUtils.tryLoadClass( testClassLoader, TEST );
         interfacesImplementedByDynamicProxy =
             new Class[]{ ReflectionUtils.tryLoadClass( testClassLoader, TEST_LISTENER ) };
-        Class[] constructorParamTypes = { Class.class };
+        Class<?>[] constructorParamTypes = { Class.class };
 
-        Class testSuite = ReflectionUtils.tryLoadClass( testClassLoader, TEST_SUITE );
+        Class<?> testSuite = ReflectionUtils.tryLoadClass( testClassLoader, TEST_SUITE );
 
         // The interface implemented by the dynamic proxy (TestListener), happens to be
         // the same as the param types of TestResult.addTestListener
@@ -82,7 +82,7 @@ public final class JUnit3Reflector
         {
             testsSuiteConstructor = ReflectionUtils.getConstructor( testSuite, constructorParamTypes );
             addListenerMethod = tryGetMethod( testResultClass, ADD_LISTENER_METHOD, addListenerParamTypes );
-            testInterfaceRunMethod = getMethod( testInterface, RUN_METHOD, new Class[]{ testResultClass } );
+            testInterfaceRunMethod = getMethod( testInterface, RUN_METHOD, testResultClass );
         }
         else
         {
@@ -93,7 +93,7 @@ public final class JUnit3Reflector
     }
 
     // Switch to reflectionutils when building with 2.7.2
-    private static Method tryGetMethod( Class clazz, String methodName, Class[] parameters )
+    private static Method tryGetMethod( Class<?> clazz, String methodName, Class<?>... parameters )
     {
         try
         {
@@ -105,7 +105,7 @@ public final class JUnit3Reflector
         }
     }
 
-    private static Method getMethod( Class clazz, String methodName, Class[] parameters )
+    private static Method getMethod( Class<?> clazz, String methodName, Class<?>... parameters )
     {
         try
         {
@@ -125,9 +125,7 @@ public final class JUnit3Reflector
 
         if ( testObject == null && testCase.isAssignableFrom( testClass ) )
         {
-            Object[] constructorParams = { testClass };
-
-            testObject = testsSuiteConstructor.newInstance( constructorParams );
+            testObject = testsSuiteConstructor.newInstance( testClass );
         }
 
         if ( testObject == null )
@@ -146,7 +144,7 @@ public final class JUnit3Reflector
         return testObject;
     }
 
-    private static Object createInstanceFromSuiteMethod( Class testClass )
+    private static Object createInstanceFromSuiteMethod( Class<?> testClass )
         throws IllegalAccessException, InvocationTargetException
     {
         Object testObject = null;
@@ -166,19 +164,17 @@ public final class JUnit3Reflector
         return testObject;
     }
 
-    private static Constructor getTestConstructor( Class testClass )
+    private static Constructor getTestConstructor( Class<?> testClass )
         throws NoSuchMethodException
     {
-        Constructor constructor;
         try
         {
-            constructor = testClass.getConstructor( new Class[]{ String.class } );
+            return testClass.getConstructor( String.class );
         }
         catch ( NoSuchMethodException e )
         {
-            constructor = testClass.getConstructor( EMPTY_CLASS_ARRAY );
+            return testClass.getConstructor( EMPTY_CLASS_ARRAY );
         }
-        return constructor;
     }
 
     public Class[] getInterfacesImplementedByDynamicProxy()
@@ -186,7 +182,7 @@ public final class JUnit3Reflector
         return interfacesImplementedByDynamicProxy;
     }
 
-    public Class getTestResultClass()
+    public Class<?> getTestResultClass()
     {
         return testResultClass;
     }
@@ -201,14 +197,14 @@ public final class JUnit3Reflector
         return testInterfaceRunMethod;
     }
 
-    public Class getTestInterface()
+    public Class<?> getTestInterface()
     {
         return testInterface;
     }
 
-    public Method getRunMethod( Class testClass )
+    public Method getRunMethod( Class<?> testClass )
     {
-        return getMethod( testClass, RUN_METHOD, new Class[]{ getTestResultClass() } );
+        return getMethod( testClass, RUN_METHOD, getTestResultClass() );
     }
 
     public boolean isJUnit3Available()

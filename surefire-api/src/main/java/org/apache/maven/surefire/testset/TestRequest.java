@@ -87,7 +87,7 @@ public class TestRequest
      */
     public int getRerunFailingTestsCount()
     {
-        return this.rerunFailingTestsCount;
+        return rerunFailingTestsCount;
     }
 
     private static List<File> createFiles( List suiteXmlFiles )

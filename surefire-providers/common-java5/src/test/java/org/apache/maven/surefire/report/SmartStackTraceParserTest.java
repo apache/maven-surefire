@@ -24,19 +24,17 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 import junit.framework.ComparisonFailure;
 import junit.framework.TestCase;
+import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 
-import static org.apache.maven.surefire.report.SmartStackTraceParser.findInnermostWithClass;
-import static org.apache.maven.surefire.report.SmartStackTraceParser.focusInsideClass;
+import static org.apache.maven.surefire.report.SmartStackTraceParser.*;
 
 @SuppressWarnings( "ThrowableResultOfMethodCallIgnored" )
 public class SmartStackTraceParserTest
     extends TestCase
 {
-
     public void testGetString()
         throws Exception
     {
@@ -150,7 +148,7 @@ public class SmartStackTraceParserTest
         {
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( CaseThatWillFail.class, e );
             String res = smartStackTraceParser.getString();
-            assertEquals( "CaseThatWillFail.testThatWillFail:29 expected:<abc> but was:<def>", res );
+            assertEquals( "CaseThatWillFail.testThatWillFail:29 expected:<[abc]> but was:<[def]>", res );
         }
     }
 
@@ -170,13 +168,13 @@ public class SmartStackTraceParserTest
     public void testCollections()
     {
         Throwable aThrownException = getAThrownException();
-
         List<StackTraceElement> innerMost =
-            focusInsideClass( aThrownException.getCause().getStackTrace(), TestClass1.InnerBTestClass.class.getName() );
-        assertEquals( 3, innerMost.size() );
+            focusInsideClass( aThrownException.getCause().getStackTrace(),
+                              new ClassNameStackTraceFilter( TestClass1.InnerBTestClass.class.getName() ) );
+        assertEquals( 2, innerMost.size() );
         StackTraceElement inner = innerMost.get( 0 );
-        assertEquals( TestClass2.InnerCTestClass.class.getName(), inner.getClassName() );
-        StackTraceElement outer = innerMost.get( 2 );
+        assertEquals( TestClass1.InnerBTestClass.class.getName(), inner.getClassName() );
+        StackTraceElement outer = innerMost.get( 1 );
         assertEquals( TestClass1.InnerBTestClass.class.getName(), outer.getClassName() );
     }
 
@@ -190,7 +188,7 @@ public class SmartStackTraceParserTest
         {
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( AssertionNoMessage.class, e );
             String res = smartStackTraceParser.getString();
-            assertEquals( "AssertionNoMessage.testThrowSomething:29 expected:<abc> but was:<xyz>", res );
+            assertEquals( "AssertionNoMessage.testThrowSomething:29 expected:<[abc]> but was:<[xyz]>", res );
         }
     }
 
@@ -217,12 +215,13 @@ public class SmartStackTraceParserTest
         catch ( Throwable t )
         {
             List<StackTraceElement> stackTraceElements =
-                focusInsideClass( t.getStackTrace(), InnerATestClass.class.getName() );
+                focusInsideClass( t.getStackTrace(),
+                                  new ClassNameStackTraceFilter( InnerATestClass.class.getName() ) );
             assertNotNull( stackTraceElements );
-            assertEquals( 5, stackTraceElements.size() );
+            assertEquals( 2, stackTraceElements.size() );
             StackTraceElement innerMost = stackTraceElements.get( 0 );
-            assertEquals( Assert.class.getName(), innerMost.getClassName() );
-            StackTraceElement outer = stackTraceElements.get( 4 );
+            assertEquals( InnerATestClass.class.getName(), innerMost.getClassName() );
+            StackTraceElement outer = stackTraceElements.get( 1 );
             assertEquals( InnerATestClass.class.getName(), outer.getClassName() );
         }
     }
@@ -251,42 +250,63 @@ public class SmartStackTraceParserTest
             String res = smartStackTraceParser.getString();
             assertEquals( "ATestClass X is not Z", res );
         }
-
     }
 
     public void testSingleNestedWithThread()
     {
         ExecutionException e = getSingleNested();
-        String name = this.getClass().getName();
-        Throwable focus = findInnermostWithClass( e, name );
-        assertEquals( e, focus );
-        List<StackTraceElement> stackTraceElements = focusInsideClass( focus.getStackTrace(), name );
+        String name = getClass().getName();
+        Throwable focus = findTopmostWithClass( e, new ClassNameStackTraceFilter( name ) );
+        assertSame( e, focus );
+        List<StackTraceElement> stackTraceElements =
+            focusInsideClass( focus.getStackTrace(), new ClassNameStackTraceFilter( name ) );
         assertEquals( stackTraceElements.get( stackTraceElements.size() - 1 ).getClassName(), name );
     }
-
 
     public void testDoubleNestedWithThread()
     {
         ExecutionException e = getDoubleNestedException();
 
-        String name = this.getClass().getName();
-        Throwable focus = findInnermostWithClass( e, name );
-        assertEquals( e, focus );
-        List<StackTraceElement> stackTraceElements = focusInsideClass( focus.getStackTrace(), name );
+        String name = getClass().getName();
+        Throwable focus = findTopmostWithClass( e, new ClassNameStackTraceFilter( name ) );
+        assertSame( e, focus );
+        List<StackTraceElement> stackTraceElements =
+            focusInsideClass( focus.getStackTrace(), new ClassNameStackTraceFilter( name ) );
         assertEquals( stackTraceElements.get( stackTraceElements.size() - 1 ).getClassName(), name );
 
-        name = "org.apache.maven.surefire.report.RunnableTestClass1";
-        focus = findInnermostWithClass( e, name );
-        assertEquals( e.getCause(), focus );
-        stackTraceElements = focusInsideClass( focus.getStackTrace(), name );
+        name = RunnableTestClass1.class.getName();
+        focus = findTopmostWithClass( e, new ClassNameStackTraceFilter( name ) );
+        assertSame( e.getCause(), focus );
+        stackTraceElements = focusInsideClass( focus.getStackTrace(), new ClassNameStackTraceFilter( name ) );
         assertEquals( stackTraceElements.get( stackTraceElements.size() - 1 ).getClassName(), name );
+    }
 
+    public void testStackTraceWithFocusOnClassAsString()
+    {
+        try
+        {
+            new StackTraceFocusedOnClass.C().c();
+            fail();
+        }
+        catch ( Exception e )
+        {
+            String trace = stackTraceWithFocusOnClassAsString( e, StackTraceFocusedOnClass.B.class.getName() );
+
+            assertEquals( "java.lang.RuntimeException: java.lang.IllegalStateException: java.io.IOException: I/O error\n"
+            + "\tat org.apache.maven.surefire.report.StackTraceFocusedOnClass$B.b(StackTraceFocusedOnClass.java:65)\n"
+            + "Caused by: java.lang.IllegalStateException: java.io.IOException: I/O error\n"
+            + "\tat org.apache.maven.surefire.report.StackTraceFocusedOnClass$B.b(StackTraceFocusedOnClass.java:61)\n"
+            + "Caused by: java.io.IOException: I/O error\n"
+            + "\tat org.apache.maven.surefire.report.StackTraceFocusedOnClass$B.abs(StackTraceFocusedOnClass.java:73)\n"
+            + "\tat org.apache.maven.surefire.report.StackTraceFocusedOnClass$B.b(StackTraceFocusedOnClass.java:61)\n",
+            trace );
+        }
     }
 
     public ExecutionException getSingleNested()
     {
         FutureTask<Object> futureTask = new FutureTask<Object>( new RunnableTestClass2() );
-        new Thread( futureTask ).start();
+        DaemonThreadFactory.newDaemonThread( futureTask ).start();
         try
         {
             futureTask.get();
@@ -306,7 +326,7 @@ public class SmartStackTraceParserTest
     private ExecutionException getDoubleNestedException()
     {
         FutureTask<Object> futureTask = new FutureTask<Object>( new RunnableTestClass1() );
-        new Thread( futureTask ).start();
+        DaemonThreadFactory.newDaemonThread( futureTask ).start();
         try
         {
             futureTask.get();

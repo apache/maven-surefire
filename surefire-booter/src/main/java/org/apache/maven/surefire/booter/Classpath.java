@@ -75,17 +75,21 @@ public class Classpath implements Iterable<String>
     {
         ArrayList<String> elems = new ArrayList<String>( other.unmodifiableElements );
         elems.add( additionalElement );
-        this.unmodifiableElements = Collections.unmodifiableList( elems );
+        unmodifiableElements = Collections.unmodifiableList( elems );
     }
 
-    public Classpath( Iterable<String> elements )
+    public Classpath( Collection<String> elements )
     {
-        List<String> newCp = new ArrayList<String>(  );
+        List<String> newCp = new ArrayList<String>( elements.size() );
         for ( String element : elements )
         {
-            newCp.add( element );
+            element = element.trim();
+            if ( element.length() != 0 )
+            {
+                newCp.add( element );
+            }
         }
-        this.unmodifiableElements = Collections.unmodifiableList( newCp );
+        unmodifiableElements = Collections.unmodifiableList( newCp );
     }
 
     public static Classpath emptyClasspath()
@@ -151,11 +155,10 @@ public class Classpath implements Iterable<String>
     {
         try
         {
-            List urls = getAsUrlList();
+            List<URL> urls = getAsUrlList();
             IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation, roleName );
-            for ( Object url1 : urls )
+            for ( URL url : urls )
             {
-                URL url = (URL) url1;
                 classLoader.addURL( url );
             }
             if ( parent != null )

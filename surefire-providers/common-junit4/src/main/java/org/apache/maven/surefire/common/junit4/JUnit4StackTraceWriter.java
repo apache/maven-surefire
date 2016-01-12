@@ -54,7 +54,24 @@ public class JUnit4StackTraceWriter
       */
     public String writeTraceToString()
     {
-        return junitFailure.getTrace();
+        Throwable t = junitFailure.getException();
+        if ( t != null )
+        {
+            String originalTrace = junitFailure.getTrace();
+            if ( isMultiLineExceptionMessage( t ) )
+            {
+                // SUREFIRE-986
+                StringBuilder builder = new StringBuilder( originalTrace );
+                String exc = t.getClass().getName() + ": ";
+                if ( originalTrace.startsWith( exc ) )
+                {
+                    builder.insert( exc.length(), '\n' );
+                }
+                return builder.toString();
+            }
+            return originalTrace;
+        }
+        return "";
     }
 
 
@@ -72,16 +89,9 @@ public class JUnit4StackTraceWriter
     public String smartTrimmedStackTrace()
     {
         Throwable exception = junitFailure.getException();
-        if ( exception != null )
-        {
-            SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( getTestClassName(), exception,
-                                                                                     getTestMethodName() );
-            return smartStackTraceParser.getString();
-        }
-        else
-        {
-            return junitFailure.getMessage();
-        }
+        return exception == null
+            ? junitFailure.getMessage()
+            : new SmartStackTraceParser( getTestClassName(), exception, getTestMethodName() ).getString();
     }
 
     /**
@@ -94,11 +104,12 @@ public class JUnit4StackTraceWriter
         String testClass = getTestClassName();
         try
         {
-            return SmartStackTraceParser.innerMostWithFocusOnClass( junitFailure.getException(), testClass );
+            Throwable e = junitFailure.getException();
+            return SmartStackTraceParser.stackTraceWithFocusOnClassAsString( e, testClass );
         }
         catch ( Throwable t )
         {
-            return SmartStackTraceParser.innerMostWithFocusOnClass( t, testClass );
+            return SmartStackTraceParser.stackTraceWithFocusOnClassAsString( t, testClass );
         }
     }
 
@@ -110,6 +121,27 @@ public class JUnit4StackTraceWriter
     public SafeThrowable getThrowable()
     {
         return new SafeThrowable( junitFailure.getException() );
+    }
+
+    private static boolean isMultiLineExceptionMessage( Throwable t )
+    {
+        String msg = t.getLocalizedMessage();
+        if ( msg != null )
+        {
+            int countNewLines = 0;
+            for ( int i = 0, length = msg.length(); i < length; i++ )
+            {
+                if ( msg.charAt( i ) == '\n' )
+                {
+                    if ( ++countNewLines == 2 )
+                    {
+                        break;
+                    }
+                }
+            }
+            return countNewLines > 1 || countNewLines == 1 && !msg.trim().endsWith( "\n" );
+        }
+        return false;
     }
 
 }

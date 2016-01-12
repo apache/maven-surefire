@@ -20,6 +20,7 @@ package org.apache.maven.surefire.junitcore.pc;
  */
 
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 import org.junit.runner.Computer;
 import org.junit.runner.Description;
 
@@ -30,6 +31,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
@@ -43,6 +45,8 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 public abstract class ParallelComputer
     extends Computer
 {
+    private static final ThreadFactory DAEMON_THREAD_FACTORY = DaemonThreadFactory.newDaemonThreadFactory();
+
     private static final double NANOS_IN_A_SECOND = 1E9;
 
     private final ShutdownStatus shutdownStatus = new ShutdownStatus();
@@ -169,7 +173,7 @@ public abstract class ParallelComputer
     {
         if ( shutdownScheduler == null )
         {
-            shutdownScheduler = Executors.newScheduledThreadPool( 2 );
+            shutdownScheduler = Executors.newScheduledThreadPool( 2, DAEMON_THREAD_FACTORY );
         }
         return shutdownScheduler;
     }

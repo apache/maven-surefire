@@ -24,8 +24,13 @@ package org.apache.maven.plugin.surefire.report;
  *
  * @author Andreas Gudian
  */
-public class FileReporterUtils
+public final class FileReporterUtils
 {
+    private FileReporterUtils()
+    {
+        throw new IllegalStateException( "non instantiable constructor" );
+    }
+
     public static String stripIllegalFilenameChars( String original )
     {
         String result = original;

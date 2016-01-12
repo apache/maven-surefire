@@ -134,3 +134,16 @@ mvn -D${thisPlugin.toLowerCase()}.rerunFailingTestsCount=2 test
 
   In the xml report, the running time of a failing test with re-runs will be the running time of the
   <<first failing run>>.
+
+* Re-run execution in JUnit Providers
+
+  The provider <<<surefire-junit4>>> executes individual test class and consequently re-runs failed tests.
+  The provider <<<surefire-junit47>>> executes all test classes and re-runs failed tests afterwards.
+
+* Re-run and skip execution
+
+  Since of 2.19.1 you can use parameters <<<skipAfterFailureCount>>> and <<<rerunFailingTestsCount>>> together.
+  This is enabled by providers <<<surefire-junit4>>> and <<<surefire-junit47>>>. You can run again failed tests
+  and skip the rest of the test-set if errors or failures reached <<<skipAfterFailureCount>>>.
+  Notice that failed tests within re-run phase are not included in <<<skipAfterFailureCount>>>.
+

@@ -46,16 +46,12 @@ public class DependencyScanner
 {
     private final List<File> dependenciesToScan;
 
-    private final TestListResolver includedAndExcludedTests;
+    private final TestListResolver filter;
 
-    private final TestListResolver specificTests;
-
-    public DependencyScanner( List<File> dependenciesToScan,
-                              TestListResolver includedAndExcludedTests, TestListResolver specificTests )
+    public DependencyScanner( List<File> dependenciesToScan, TestListResolver filter )
     {
         this.dependenciesToScan = dependenciesToScan;
-        this.includedAndExcludedTests = includedAndExcludedTests;
-        this.specificTests = specificTests;
+        this.filter = filter;
     }
 
     public DefaultScanResult scan()
@@ -66,7 +62,7 @@ public class DependencyScanner
         {
             try
             {
-                scanArtifact( artifact, includedAndExcludedTests.and( specificTests ), classes );
+                scanArtifact( artifact, filter, classes );
             }
             catch ( IOException e )
             {

@@ -19,21 +19,36 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
-import java.io.File;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
+import org.apache.maven.surefire.booter.Command;
+import org.apache.maven.surefire.booter.CommandListener;
+import org.apache.maven.surefire.booter.CommandReader;
+import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
+import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
+import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.testng.utils.FailFastEventsSingleton;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
+
+import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import static org.apache.maven.surefire.booter.CommandReader.getReader;
+import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture;
+import static org.apache.maven.surefire.testset.TestListResolver.getEmptyTestListResolver;
+import static org.apache.maven.surefire.testset.TestListResolver.optionallyWildcardFilter;
+import static org.apache.maven.surefire.util.TestsToRun.fromClass;
 
 /**
  * @author Kristian Rosenvold
@@ -56,100 +71,152 @@ public class TestNGProvider
 
     private final RunOrderCalculator runOrderCalculator;
 
+    private final List<CommandLineOption> mainCliOptions;
+
+    private final CommandReader commandsReader;
+
     private TestsToRun testsToRun;
 
-    public TestNGProvider( ProviderParameters booterParameters )
+    public TestNGProvider( ProviderParameters bootParams )
     {
-        providerParameters = booterParameters;
-        testClassLoader = booterParameters.getTestClassLoader();
-        runOrderCalculator = booterParameters.getRunOrderCalculator();
-        providerProperties = booterParameters.getProviderProperties();
-        testRequest = booterParameters.getTestRequest();
-        reporterConfiguration = booterParameters.getReporterConfiguration();
-        scanResult = booterParameters.getScanResult();
+        // don't start a thread in CommandReader while we are in in-plugin process
+        commandsReader = bootParams.isInsideFork() ? getReader().setShutdown( bootParams.getShutdown() ) : null;
+        providerParameters = bootParams;
+        testClassLoader = bootParams.getTestClassLoader();
+        runOrderCalculator = bootParams.getRunOrderCalculator();
+        providerProperties = bootParams.getProviderProperties();
+        testRequest = bootParams.getTestRequest();
+        reporterConfiguration = bootParams.getReporterConfiguration();
+        scanResult = bootParams.getScanResult();
+        mainCliOptions = bootParams.getMainCliOptions();
     }
 
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException
     {
+        if ( isFailFast() && commandsReader != null )
+        {
+            registerPleaseStopListener();
+        }
 
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
+        final RunListener reporter = reporterFactory.createReporter();
+        /**
+         * {@link org.apache.maven.surefire.report.ConsoleOutputCapture#startCapture(ConsoleOutputReceiver)}
+         * called in prior to initializing variable {@link #testsToRun}
+         */
+        startCapture( (ConsoleOutputReceiver) reporter );
 
-        if ( isTestNGXmlTestSuite( testRequest ) )
+        RunResult runResult;
+        try
         {
-            TestNGXmlTestSuite testNGXmlTestSuite = getXmlSuite();
-            testNGXmlTestSuite.locateTestSets( testClassLoader );
-            if ( forkTestSet != null && testRequest == null )
+            if ( isTestNGXmlTestSuite( testRequest ) )
             {
-                testNGXmlTestSuite.execute( (String) forkTestSet, reporterFactory );
+                if ( commandsReader != null )
+                {
+                    commandsReader.awaitStarted();
+                }
+                TestNGXmlTestSuite testNGXmlTestSuite = newXmlSuite();
+                testNGXmlTestSuite.locateTestSets();
+                testNGXmlTestSuite.execute( reporter );
             }
             else
             {
-                testNGXmlTestSuite.execute( reporterFactory );
-            }
-        }
-        else
-        {
-            if ( testsToRun == null )
-            {
-                if ( forkTestSet instanceof TestsToRun )
+                if ( testsToRun == null )
                 {
-                    testsToRun = (TestsToRun) forkTestSet;
+                    if ( forkTestSet instanceof TestsToRun )
+                    {
+                        testsToRun = (TestsToRun) forkTestSet;
+                    }
+                    else if ( forkTestSet instanceof Class )
+                    {
+                        testsToRun = fromClass( (Class<?>) forkTestSet );
+                    }
+                    else
+                    {
+                        testsToRun = scanClassPath();
+                    }
                 }
-                else if ( forkTestSet instanceof Class )
-                {
-                    testsToRun = TestsToRun.fromClass( (Class) forkTestSet );
-                }
-                else
-                {
-                    testsToRun = scanClassPath();
-                }
-            }
-            TestNGDirectoryTestSuite suite = getDirectorySuite();
-            suite.execute( testsToRun, reporterFactory );
-        }
 
-        return reporterFactory.close();
+                if ( commandsReader != null )
+                {
+                    registerShutdownListener( testsToRun );
+                    commandsReader.awaitStarted();
+                }
+                TestNGDirectoryTestSuite suite = newDirectorySuite();
+                suite.execute( testsToRun, reporter );
+            }
+        }
+        finally
+        {
+            runResult = reporterFactory.close();
+        }
+        return runResult;
     }
 
     boolean isTestNGXmlTestSuite( TestRequest testSuiteDefinition )
     {
         Collection<File> suiteXmlFiles = testSuiteDefinition.getSuiteXmlFiles();
-        return suiteXmlFiles != null && !suiteXmlFiles.isEmpty() && !hasSpecificTests();
+        return !suiteXmlFiles.isEmpty() && !hasSpecificTests();
     }
 
-    private TestNGDirectoryTestSuite getDirectorySuite()
+    private boolean isFailFast()
+    {
+        return providerParameters.getSkipAfterFailureCount() > 0;
+    }
+
+    private int getSkipAfterFailureCount()
+    {
+        return isFailFast() ? providerParameters.getSkipAfterFailureCount() : 0;
+    }
+
+    private void registerShutdownListener( final TestsToRun testsToRun )
+    {
+        commandsReader.addShutdownListener( new CommandListener()
+        {
+            public void update( Command command )
+            {
+                testsToRun.markTestSetFinished();
+            }
+        } );
+    }
+
+    private void registerPleaseStopListener()
+    {
+        commandsReader.addSkipNextTestsListener( new CommandListener()
+        {
+            public void update( Command command )
+            {
+                FailFastEventsSingleton.getInstance().setSkipOnNextTest();
+            }
+        } );
+    }
+
+    private TestNGDirectoryTestSuite newDirectorySuite()
     {
         return new TestNGDirectoryTestSuite( testRequest.getTestSourceDirectory().toString(), providerProperties,
-                                             reporterConfiguration.getReportsDirectory(), createMethodFilter(),
-                                             runOrderCalculator, scanResult );
+                                             reporterConfiguration.getReportsDirectory(), getTestFilter(),
+                                             mainCliOptions, getSkipAfterFailureCount() );
     }
 
-    private TestNGXmlTestSuite getXmlSuite()
+    private TestNGXmlTestSuite newXmlSuite()
     {
-        return new TestNGXmlTestSuite( testRequest.getSuiteXmlFiles(), testRequest.getTestSourceDirectory().toString(),
+        return new TestNGXmlTestSuite( testRequest.getSuiteXmlFiles(),
+                                       testRequest.getTestSourceDirectory().toString(),
                                        providerProperties,
-                                       reporterConfiguration.getReportsDirectory() );
+                                       reporterConfiguration.getReportsDirectory(), getSkipAfterFailureCount() );
     }
 
-
-    public Iterator getSuites()
+    public Iterable<Class<?>> getSuites()
     {
         if ( isTestNGXmlTestSuite( testRequest ) )
         {
-            try
-            {
-                return getXmlSuite().locateTestSets( testClassLoader ).keySet().iterator();
-            }
-            catch ( TestSetFailedException e )
-            {
-                throw new RuntimeException( e );
-            }
+            return Collections.emptySet();
         }
         else
         {
             testsToRun = scanClassPath();
-            return testsToRun.iterator();
+            return testsToRun;
         }
     }
 
@@ -161,13 +228,13 @@ public class TestNGProvider
 
     private boolean hasSpecificTests()
     {
-        TestListResolver tests = testRequest.getTestListResolver();
-        return tests != null && !tests.isEmpty();
+        TestListResolver specificTestPatterns = testRequest.getTestListResolver();
+        return !specificTestPatterns.isEmpty() && !specificTestPatterns.isWildcard();
     }
 
-    private TestListResolver createMethodFilter()
+    private TestListResolver getTestFilter()
     {
-        TestListResolver tests = testRequest.getTestListResolver();
-        return tests == null ? null : tests.createMethodFilters();
+        TestListResolver filter = optionallyWildcardFilter( testRequest.getTestListResolver() );
+        return filter.isWildcard() ? getEmptyTestListResolver() : filter;
     }
 }

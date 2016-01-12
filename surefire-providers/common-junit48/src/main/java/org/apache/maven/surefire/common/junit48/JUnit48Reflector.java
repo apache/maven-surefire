@@ -19,7 +19,7 @@ package org.apache.maven.surefire.common.junit48;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.ReflectionUtils;
+import static org.apache.maven.surefire.util.ReflectionUtils.tryLoadClass;
 
 /**
  * @author Kristian Rosenvold
@@ -30,14 +30,14 @@ public final class JUnit48Reflector
 
     private static final String CATEGORY = "org.junit.experimental.categories.Category";
 
-    private final Class categories;
+    private final Class<?> categories;
 
-    private final Class category;
+    private final Class<?> category;
 
     public JUnit48Reflector( ClassLoader testClassLoader )
     {
-        categories = ReflectionUtils.tryLoadClass( testClassLoader, CATEGORIES );
-        category = ReflectionUtils.tryLoadClass( testClassLoader, CATEGORY );
+        categories = tryLoadClass( testClassLoader, CATEGORIES );
+        category = tryLoadClass( testClassLoader, CATEGORY );
     }
 
     public boolean isJUnit48Available()
@@ -45,7 +45,7 @@ public final class JUnit48Reflector
         return categories != null;
     }
 
-    public boolean isCategoryAnnotationPresent( Class clazz )
+    boolean isCategoryAnnotationPresent( Class clazz )
     {
         return clazz != null && category != null
                && ( clazz.getAnnotation( category ) != null || isCategoryAnnotationPresent( clazz.getSuperclass() ) );

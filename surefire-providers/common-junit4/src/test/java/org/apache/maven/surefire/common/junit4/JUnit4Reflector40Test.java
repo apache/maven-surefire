@@ -19,7 +19,6 @@ package org.apache.maven.surefire.common.junit4;
  */
 
 import junit.framework.TestCase;
-import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Description;
@@ -30,13 +29,11 @@ import org.junit.runner.Description;
 public class JUnit4Reflector40Test
     extends TestCase
 {
-    @Test
     public void testGetAnnotatedIgnore()
     {
-        JUnit4Reflector reflector = new JUnit4Reflector();
         Description desc = Description.createTestDescription( IgnoreWithDescription.class, "testSomething2" );
-        Ignore annotatedIgnore = reflector.getAnnotatedIgnore( desc );
-        Assert.assertNull( annotatedIgnore );
+        Ignore annotatedIgnore = JUnit4Reflector.getAnnotatedIgnore( desc );
+        assertNull( annotatedIgnore );
     }
 
     private static final String reason = "Ignorance is bliss";
@@ -49,6 +46,34 @@ public class JUnit4Reflector40Test
         public void testSomething2()
         {
         }
+    }
+
+    public void testCreateIgnored()
+    {
+        Ignore ignore = JUnit4Reflector.createIgnored( "error" );
+        assertNotNull( ignore );
+        assertNotNull( ignore.value() );
+        assertEquals( "error", ignore.value() );
+    }
+
+    public void testCreateDescription()
+    {
+        Ignore ignore = JUnit4Reflector.createIgnored( "error" );
+        Description description = JUnit4Reflector.createDescription( "exception", ignore );
+        assertEquals( "exception", description.getDisplayName() );
+        assertEquals( "exception", description.toString() );
+        assertEquals( 0, description.getChildren().size() );
+        // JUnit 4 description does not get annotations
+        Ignore annotatedIgnore = JUnit4Reflector.getAnnotatedIgnore( description );
+        assertNull( annotatedIgnore );
+    }
+
+    public void testCreatePureDescription()
+    {
+        Description description = JUnit4Reflector.createDescription( "exception" );
+        assertEquals( "exception", description.getDisplayName() );
+        assertEquals( "exception", description.toString() );
+        assertEquals( 0, description.getChildren().size() );
     }
 }
 

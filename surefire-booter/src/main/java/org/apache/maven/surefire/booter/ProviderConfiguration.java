@@ -22,6 +22,8 @@ package org.apache.maven.surefire.booter;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.RunOrderParameters;
@@ -62,12 +64,20 @@ public class ProviderConfiguration
 
     private final boolean readTestsFromInStream;
 
+    private final List<CommandLineOption> mainCliOptions;
+
+    private int skipAfterFailureCount;
+
+    private Shutdown shutdown;
+
     @SuppressWarnings( "checkstyle:parameternumber" )
     public ProviderConfiguration( DirectoryScannerParameters directoryScannerParameters,
                                   RunOrderParameters runOrderParameters, boolean failIfNoTests,
                                   ReporterConfiguration reporterConfiguration, TestArtifactInfo testArtifact,
                                   TestRequest testSuiteDefinition, Map<String, String> providerProperties,
-                                  TypeEncodedValue typeEncodedTestSet, boolean readTestsFromInStream )
+                                  TypeEncodedValue typeEncodedTestSet, boolean readTestsFromInStream,
+                                  List<CommandLineOption> mainCliOptions, int skipAfterFailureCount,
+                                  Shutdown shutdown )
     {
         this.runOrderParameters = runOrderParameters;
         this.providerProperties = providerProperties;
@@ -78,8 +88,10 @@ public class ProviderConfiguration
         this.failIfNoTests = failIfNoTests;
         this.forkTestSet = typeEncodedTestSet;
         this.readTestsFromInStream = readTestsFromInStream;
+        this.mainCliOptions = mainCliOptions;
+        this.skipAfterFailureCount = skipAfterFailureCount;
+        this.shutdown = shutdown;
     }
-
 
     public ReporterConfiguration getReporterConfiguration()
     {
@@ -103,11 +115,13 @@ public class ProviderConfiguration
         return dirScannerParams;
     }
 
+    @Deprecated
     public List getIncludes()
     {
         return dirScannerParams.getIncludes();
     }
 
+    @Deprecated
     public List getExcludes()
     {
         return dirScannerParams.getExcludes();
@@ -141,5 +155,20 @@ public class ProviderConfiguration
     public boolean isReadTestsFromInStream()
     {
         return readTestsFromInStream;
+    }
+
+    public List<CommandLineOption> getMainCliOptions()
+    {
+        return mainCliOptions;
+    }
+
+    public int getSkipAfterFailureCount()
+    {
+        return skipAfterFailureCount;
+    }
+
+    public Shutdown getShutdown()
+    {
+        return shutdown;
     }
 }

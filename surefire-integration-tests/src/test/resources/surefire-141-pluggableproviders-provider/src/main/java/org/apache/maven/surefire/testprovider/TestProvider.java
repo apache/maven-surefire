@@ -19,7 +19,6 @@ package org.apache.maven.surefire.testprovider;
  * under the License.
  */
 
-import java.util.Iterator;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterException;
@@ -38,7 +37,7 @@ public class TestProvider
         invokeRuntimeExceptionIfSet( System.getProperty( "constructorCrash" ) );
     }
 
-    public Iterator getSuites()
+    public Iterable<Class<?>> getSuites()
     {
         invokeRuntimeExceptionIfSet( System.getProperty( "getSuitesCrash" ) );
         return null;

@@ -20,6 +20,7 @@ package org.apache.maven.surefire.common.junit4;
  */
 
 import org.junit.runner.notification.Failure;
+import org.junit.runner.notification.RunListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,14 +31,13 @@ import java.util.List;
  * @author Qingzhou Luo
  */
 public class JUnitTestFailureListener
-    extends org.junit.runner.notification.RunListener
+    extends RunListener
 {
-
-    List<Failure> allFailures = new ArrayList<Failure>();
+    private final List<Failure> allFailures = new ArrayList<Failure>();
 
     @Override
     public void testFailure( Failure failure )
-        throws java.lang.Exception
+        throws Exception
     {
         allFailures.add( failure );
     }

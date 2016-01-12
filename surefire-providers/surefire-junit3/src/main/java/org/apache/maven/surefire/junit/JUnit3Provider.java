@@ -19,7 +19,6 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import java.util.Iterator;
 import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 import org.apache.maven.surefire.common.junit3.JUnit3TestChecker;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
@@ -55,19 +54,19 @@ public class JUnit3Provider
 
     private final RunOrderCalculator runOrderCalculator;
 
-    private TestsToRun testsToRun;
-
     private final ScanResult scanResult;
+
+    private TestsToRun testsToRun;
 
     public JUnit3Provider( ProviderParameters booterParameters )
     {
         this.providerParameters = booterParameters;
-        this.testClassLoader = booterParameters.getTestClassLoader();
-        this.scanResult = booterParameters.getScanResult();
-        this.runOrderCalculator = booterParameters.getRunOrderCalculator();
-        this.reflector = new JUnit3Reflector( testClassLoader );
+        testClassLoader = booterParameters.getTestClassLoader();
+        scanResult = booterParameters.getScanResult();
+        runOrderCalculator = booterParameters.getRunOrderCalculator();
+        reflector = new JUnit3Reflector( testClassLoader );
         jUnit3TestChecker = new JUnit3TestChecker( testClassLoader );
-        this.testChecker = new PojoAndJUnit3Checker( jUnit3TestChecker ); // Todo; use reflector
+        testChecker = new PojoAndJUnit3Checker( jUnit3TestChecker ); // Todo; use reflector
     }
 
     public RunResult invoke( Object forkTestSet )
@@ -90,24 +89,32 @@ public class JUnit3Provider
         }
 
         ReporterFactory reporterFactory = providerParameters.getReporterFactory();
-        final RunListener reporter = reporterFactory.createReporter();
-        ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
-
-        final String smClassName = System.getProperty( "surefire.security.manager" );
-        if ( smClassName != null )
+        RunResult runResult;
+        try
         {
-            SecurityManager securityManager =
-                (SecurityManager) ReflectionUtils.instantiate( this.getClass().getClassLoader(), smClassName );
-            System.setSecurityManager( securityManager );
-        }
+            final RunListener reporter = reporterFactory.createReporter();
+            ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
 
-        for ( Class clazz : testsToRun )
+            final String smClassName = System.getProperty( "surefire.security.manager" );
+            if ( smClassName != null )
+            {
+                SecurityManager securityManager =
+                    ReflectionUtils.instantiate( getClass().getClassLoader(), smClassName, SecurityManager.class );
+                System.setSecurityManager( securityManager );
+            }
+
+            for ( Class<?> clazz : testsToRun )
+            {
+                SurefireTestSet surefireTestSet = createTestSet( clazz );
+                executeTestSet( surefireTestSet, reporter, testClassLoader );
+            }
+
+        }
+        finally
         {
-            SurefireTestSet surefireTestSet = createTestSet( clazz );
-            executeTestSet( surefireTestSet, reporter, testClassLoader );
+            runResult = reporterFactory.close();
         }
-
-        return reporterFactory.close();
+        return runResult;
     }
 
     private SurefireTestSet createTestSet( Class<?> clazz )
@@ -116,7 +123,6 @@ public class JUnit3Provider
         return reflector.isJUnit3Available() && jUnit3TestChecker.accept( clazz )
             ? new JUnitTestSet( clazz, reflector )
             : new PojoTestSet( clazz );
-
     }
 
     private void executeTestSet( SurefireTestSet testSet, RunListener reporter, ClassLoader classLoader )
@@ -138,9 +144,9 @@ public class JUnit3Provider
         return runOrderCalculator.orderTestClasses( testsToRun );
     }
 
-    public Iterator getSuites()
+    public Iterable<Class<?>> getSuites()
     {
         testsToRun = scanClassPath();
-        return testsToRun.iterator();
+        return testsToRun;
     }
 }

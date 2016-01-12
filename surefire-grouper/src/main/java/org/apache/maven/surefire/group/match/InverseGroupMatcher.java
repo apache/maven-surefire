@@ -56,7 +56,7 @@ public class InverseGroupMatcher
     {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ( ( matcher == null ) ? 0 : matcher.hashCode() );
+        result = prime * result + ( matcher == null ? 0 : matcher.hashCode() );
         return result;
     }
 
@@ -67,11 +67,8 @@ public class InverseGroupMatcher
         {
             return true;
         }
-        if ( obj == null )
-        {
-            return false;
-        }
-        if ( getClass() != obj.getClass() )
+
+        if ( obj == null || getClass() != obj.getClass() )
         {
             return false;
         }

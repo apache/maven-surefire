@@ -21,14 +21,30 @@ package org.apache.maven.surefire.testset;
 import junit.framework.TestCase;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+import static java.util.Collections.addAll;
+import static org.apache.maven.surefire.testset.TestListResolver.newTestListResolver;
+import static org.apache.maven.surefire.testset.ResolvedTest.Type.CLASS;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 public class TestListResolverTest
     extends TestCase
 {
+    private static final String DEFAULT_SUREFIRE_INCLUDED_TEST_PATTERNS =
+        "**/Test*.java, **/*Test.java, **/*TestCase.java";
+
+    private static final String DEFAULT_SUREFIRE_EXCLUDED_TEST_PATTERNS = "**/*$*";
+
     public void testRegexSanity1()
     {
         try
@@ -128,8 +144,8 @@ public class TestListResolverTest
         assertTrue( test.hasTestMethodPattern() );
         assertEquals( "**/MyTest", test.getTestClassPattern() );
         assertEquals( "myTest", test.getTestMethodPattern() );
-        assertTrue( test.shouldRun( "MyTest", "myTest" ) );
-        assertFalse( test.shouldRun( "MyTest", "otherTest" ) );
+        assertTrue( test.matchAsInclusive( "MyTest", "myTest" ) );
+        assertFalse( test.matchAsInclusive( "MyTest", "otherTest" ) );
     }
 
     public void testNonRegexClassAndMethods()
@@ -153,7 +169,7 @@ public class TestListResolverTest
         assertTrue( first.hasTestMethodPattern() );
         assertEquals( "**/MyTest.class", first.getTestClassPattern() );
         assertEquals( "first*", first.getTestMethodPattern() );
-        assertTrue( first.shouldRun( "your/pkg/MyTest.class", "firstTest" ) );
+        assertTrue( first.matchAsInclusive( "your/pkg/MyTest.class", "firstTest" ) );
         ResolvedTest second = tests.next();
         assertFalse( second.isEmpty() );
         assertFalse( second.isRegexTestClassPattern() );
@@ -162,8 +178,8 @@ public class TestListResolverTest
         assertTrue( second.hasTestMethodPattern() );
         assertEquals( "**/MyTest.class", second.getTestClassPattern() );
         assertEquals( "second*", second.getTestMethodPattern() );
-        assertTrue( second.shouldRun( "your/pkg/MyTest.class", "secondTest" ) );
-        assertFalse( second.shouldRun( "your/pkg/MyTest.class", "thirdTest" ) );
+        assertTrue( second.matchAsInclusive( "your/pkg/MyTest.class", "secondTest" ) );
+        assertFalse( second.matchAsInclusive( "your/pkg/MyTest.class", "thirdTest" ) );
     }
 
     public void testNegativeNonRegexClassAndMethod()
@@ -186,9 +202,9 @@ public class TestListResolverTest
         assertEquals( "**/MyTest", test.getTestClassPattern() );
         assertEquals( "myTest", test.getTestMethodPattern() );
         // ResolvedTest should not care about isExcluded. This attribute is handled by TestListResolver.
-        assertTrue( test.shouldRun( "MyTest", "myTest" ) );
-        assertFalse( test.shouldRun( "MyTest", "otherTest" ) );
-        assertFalse( test.shouldRun( "pkg/OtherTest.class", "myTest" ) );
+        assertTrue( test.matchAsInclusive( "MyTest", "myTest" ) );
+        assertFalse( test.matchAsInclusive( "MyTest", "otherTest" ) );
+        assertFalse( test.matchAsInclusive( "pkg/OtherTest.class", "myTest" ) );
     }
 
     public void testResolveTestRequest()
@@ -205,9 +221,14 @@ public class TestListResolverTest
         assertEquals( 1, excludedFilters.size() );
         ResolvedTest test = excludedFilters.iterator().next();
         // ResolvedTest should not care about isExcluded. This attribute is handled by TestListResolver.
-        assertTrue( test.shouldRun( "pkg/MyTest.class", "myTest" ) );
-        assertFalse( test.shouldRun( "pkg/MyTest.class", "otherTest" ) );
-        assertFalse( test.shouldRun( "pkg/OtherTest.class", "myTest" ) );
+        assertTrue( test.matchAsInclusive( "pkg/MyTest.class", "myTest" ) );
+        assertFalse( test.matchAsInclusive( "pkg/MyTest.class", "otherTest" ) );
+        assertFalse( test.matchAsInclusive( "pkg/OtherTest.class", "myTest" ) );
+    }
+
+    public void testShouldRunTestWithoutMethod()
+    {
+        new TestListResolver("**/*Test.class, !%regex[.*.MyTest.class#myTest]").shouldRun( "pkg/MyTest.class", null );
     }
 
     public void testShouldNotRunExcludedMethods()
@@ -216,15 +237,15 @@ public class TestListResolverTest
         assertTrue( resolver.shouldRun( "pkg/MyTest.class", null ) );
     }
 
-    public void testShouldNotRunIncludedMethods()
+    public void testShouldRunSuiteWithIncludedMethods()
     {
         TestListResolver resolver = new TestListResolver( "#*Fail*, %regex[#.*One], #testSuccessThree" );
-        assertFalse( resolver.shouldRun( "pkg/MyTest.class", null ) );
+        assertTrue( resolver.shouldRun( "pkg/MyTest.class", null ) );
     }
 
     public void testShouldRunAny()
     {
-        TestListResolver resolver = new TestListResolver( "" );
+        TestListResolver resolver = TestListResolver.getEmptyTestListResolver();
         assertTrue( resolver.shouldRun( "pkg/MyTest.class", null ) );
 
         resolver = new TestListResolver( Collections.<String>emptySet() );
@@ -234,24 +255,25 @@ public class TestListResolverTest
     public void testClassFilter()
     {
         TestListResolver resolver = new TestListResolver( "#test" );
-        assertTrue( resolver.createClassFilters().shouldRun( "pkg/MyTest.class", null ) );
+        assertTrue( resolver.shouldRun( "pkg/MyTest.class", null ) );
 
         resolver = new TestListResolver( "!#test" );
-        assertTrue( resolver.createClassFilters().shouldRun( "pkg/MyTest.class", null ) );
+        assertTrue( resolver.shouldRun( "pkg/MyTest.class", null ) );
 
         resolver = new TestListResolver( "SomeOtherClass" );
-        assertFalse( resolver.createClassFilters().shouldRun( "pkg/MyTest.class", null ) );
+        assertFalse( resolver.shouldRun( "pkg/MyTest.class", null ) );
     }
 
     public void testBrokenPatternThrowsException()
     {
-        Collection<String> included = Collections.emptySet();
-        Collection<String> excluded = Arrays.asList( "BasicTest, !**/TestTwo, **/TestThree.java" );
+        Collection<String> included = emptySet();
+        Collection<String> excluded = asList( "BasicTest, !**/TestTwo, **/TestThree.java" );
         try
         {
             new TestListResolver( included, excluded );
             fail( "Expected: IllegalArgumentException" );
-        } catch ( IllegalArgumentException e )
+        }
+        catch ( IllegalArgumentException e )
         {
             // JUnit 3.x style
             assertEquals( "Exclamation mark not expected in 'exclusion': BasicTest, !**/TestTwo, **/TestThree.java",
@@ -261,8 +283,8 @@ public class TestListResolverTest
 
     public void testMultipleExcludedClassesOnly()
     {
-        Collection<String> included = Collections.emptySet();
-        Collection<String> excluded = Arrays.asList( "BasicTest, **/TestTwo, **/TestThree.java" );
+        Collection<String> included = emptySet();
+        Collection<String> excluded = asList( "BasicTest, **/TestTwo, **/TestThree.java" );
         TestListResolver resolver = new TestListResolver( included, excluded );
         assertFalse( resolver.shouldRun( "jiras/surefire745/BasicTest.class", null ) );
         assertFalse( resolver.shouldRun( "jiras/surefire745/TestTwo.class", null ) );
@@ -272,8 +294,8 @@ public class TestListResolverTest
 
     public void testMultipleExcludedClasses()
     {
-        Collection<String> included = Arrays.asList( "**/Test*.java, **/*Test.java, **/*TestCase.java" );
-        Collection<String> excluded = Arrays.asList( "BasicTest, **/TestTwo, **/TestThree.java" );
+        Collection<String> included = singleton( DEFAULT_SUREFIRE_INCLUDED_TEST_PATTERNS );
+        Collection<String> excluded = asList( "BasicTest, **/TestTwo, **/TestThree.java" );
         TestListResolver resolver = new TestListResolver( included, excluded );
         assertFalse( resolver.shouldRun( "jiras/surefire745/BasicTest.class", null ) );
         assertFalse( resolver.shouldRun( "jiras/surefire745/TestTwo.class", null ) );
@@ -281,22 +303,112 @@ public class TestListResolverTest
         assertTrue( resolver.shouldRun( "jiras/surefire745/TestFour.class", null ) );
     }
 
-    public void testMultipleExcludedClassesWithNoSpecificTests()
+    public void testAndFilters()
     {
-        Collection<String> included = Arrays.asList( "**/Test*.java, **/*Test.java, **/*TestCase.java" );
-        Collection<String> excluded = Arrays.asList( "BasicTest, **/TestTwo, **/TestThree.java" );
+        TestListResolver firstFilter = new TestListResolver( "BasicTest, **/TestTwo, **/TestThree.java" );
+        TestListResolver secondFilter = new TestListResolver( "*icTest, Test???*" );
+        TestFilter<String, String> filter = firstFilter.and( secondFilter );
 
-        TestListResolver includedAndExcludedTests = new TestListResolver( included, excluded );
-        TestListResolver includedExcludedClasses = includedAndExcludedTests.createClassFilters();
+        assertTrue( filter.shouldRun( "jiras/surefire745/BasicTest.class", null ) );
+        assertTrue( filter.shouldRun( "jiras/surefire745/TestTwo.class", null ) );
+        assertTrue( filter.shouldRun( "jiras/surefire745/TestThree.class", null ) );
+        assertFalse( filter.shouldRun( "jiras/surefire745/TestFour.class", null ) );
+    }
 
-        TestListResolver specificTests = new TestListResolver( "" );
-        TestListResolver specificClasses = specificTests.createClassFilters();
+    public void testTestListResolverWithoutMethods()
+    {
+        ResolvedTest inc1 = new ResolvedTest( "A?Test.java", null, false );
+        ResolvedTest inc2 = new ResolvedTest( "**/?Test", null, false );
+        ResolvedTest exc1 = new ResolvedTest( "AATest", null, false );
+        ResolvedTest exc2 = new ResolvedTest( "**/BTest.java", null, false );
+        TestListResolver resolver = newTestListResolver( $( inc1, inc2 ), $( exc1, exc2 ) );
+        assertThat( resolver.getPluginParameterTest(), is( "A?Test.java, **/?Test, !AATest, !**/BTest.java" ) );
+        assertFalse( resolver.isEmpty() );
+        assertFalse( resolver.hasIncludedMethodPatterns() );
+        assertFalse( resolver.hasExcludedMethodPatterns() );
+        assertFalse( resolver.hasMethodPatterns() );
+        assertTrue( resolver.shouldRun( "ATest.class", null ) );
+        assertFalse( resolver.shouldRun( "AATest.class", null ) );
+        assertTrue( resolver.shouldRun( "ABTest.class", null ) );
+        assertFalse( resolver.shouldRun( "BTest.class", null ) );
+        assertTrue( resolver.shouldRun( "CTest.class", null ) );
+        assertFalse( resolver.hasMethodPatterns() );
+    }
 
-        TestFilter<String, String> filter = includedExcludedClasses.and( specificClasses );
+    public void testTestListResolverWithMethods()
+    {
+        ResolvedTest inc1 = new ResolvedTest( "A?Test.java", null, false );
+        ResolvedTest inc2 = new ResolvedTest( "*?Test", null, false );
+        ResolvedTest exc1 = new ResolvedTest( "AATest", null, false );
+        ResolvedTest exc2 = new ResolvedTest( "*BTest.java", "failedTest", false );
+        TestListResolver resolver = newTestListResolver( $( inc1, inc2 ), $( exc1, exc2 ) );
+        assertThat( resolver.getPluginParameterTest(), is( "A?Test.java, *?Test, !AATest, !*BTest.java#failedTest" ) );
+        assertFalse( resolver.isEmpty() );
+        assertFalse( resolver.hasIncludedMethodPatterns() );
+        assertTrue( resolver.hasExcludedMethodPatterns() );
+        assertTrue( resolver.hasMethodPatterns() );
+        assertTrue( resolver.shouldRun( "ATest.class", null ) );
+        assertFalse( resolver.shouldRun( "AATest.class", null ) );
+        assertTrue( resolver.shouldRun( "ABTest.class", null ) );
+        assertTrue( resolver.shouldRun( "BTest.class", null ) );
+        assertFalse( resolver.shouldRun( "BTest.class", "failedTest" ) );
+        assertTrue( resolver.shouldRun( "CTest.class", null ) );
+        assertFalse( TestListResolver.optionallyWildcardFilter( resolver ).isEmpty() );
+    }
 
-        assertFalse( filter.shouldRun( "jiras/surefire745/BasicTest.class", null ) );
-        assertFalse( filter.shouldRun( "jiras/surefire745/TestTwo.class", null ) );
-        assertFalse( filter.shouldRun( "jiras/surefire745/TestThree.class", null ) );
-        assertTrue( filter.shouldRun( "jiras/surefire745/TestFour.class", null ) );
+    private static Set<ResolvedTest> $( ResolvedTest... patterns )
+    {
+        Set<ResolvedTest> set = new LinkedHashSet<ResolvedTest>();
+        addAll( set, patterns );
+        return set;
+    }
+
+    public void testDefaultPatternsMatching()
+    {
+        Set<ResolvedTest> inclusions = resolveClass( DEFAULT_SUREFIRE_INCLUDED_TEST_PATTERNS );
+        Set<ResolvedTest> exclusions = resolveClass( DEFAULT_SUREFIRE_EXCLUDED_TEST_PATTERNS );
+        TestListResolver tlr = newTestListResolver( inclusions, exclusions );
+        boolean shouldRun = tlr.shouldRun( "org/apache/maven/surefire/SomeTest.class", null );
+        assertTrue( shouldRun );
+    }
+
+    public void testDefaultPatternsNotMatching()
+    {
+        Set<ResolvedTest> inclusions = resolveClass( DEFAULT_SUREFIRE_INCLUDED_TEST_PATTERNS );
+        Set<ResolvedTest> exclusions = resolveClass( DEFAULT_SUREFIRE_EXCLUDED_TEST_PATTERNS );
+        TestListResolver tlr = newTestListResolver( inclusions, exclusions );
+        boolean shouldRun = tlr.shouldRun( "org/apache/maven/surefire/SomeTestNotRunning.class", null );
+        assertFalse( shouldRun );
+    }
+
+    public void testInclusiveWithDefaultExclusivePattern()
+    {
+        Set<ResolvedTest> defaultExclusions = resolveClass( DEFAULT_SUREFIRE_EXCLUDED_TEST_PATTERNS );
+        boolean runnable = newTestListResolver( resolveClass( "A*Test" ), defaultExclusions )
+            .shouldRun( "org/apache/maven/surefire/ARunnableTest.class", null );
+        assertTrue( runnable );
+    }
+
+    public void testWildcard()
+    {
+        TestListResolver tlr = TestListResolver.optionallyWildcardFilter( new TestListResolver( (String) null ) );
+        assertThat( tlr, is( new TestListResolver( "**/*.class" ) ) );
+        assertThat( tlr.isWildcard(), is( true ) );
+        assertThat( tlr.isEmpty(), is( false ) );
+
+        tlr = TestListResolver.optionallyWildcardFilter( new TestListResolver( "**/**/MethodLessPattern.class" ) );
+        assertThat( tlr, is( new TestListResolver( "**/*.class" ) ) );
+        assertThat( tlr.isWildcard(), is( true ) );
+        assertThat( tlr.isEmpty(), is( false ) );
+    }
+
+    private static Set<ResolvedTest> resolveClass( String patterns )
+    {
+        Set<ResolvedTest> resolved = new HashSet<ResolvedTest>();
+        for ( String pattern : patterns.split( "," ) )
+        {
+            resolved.add( new ResolvedTest( CLASS, pattern, false ) );
+        }
+        return resolved;
     }
 }

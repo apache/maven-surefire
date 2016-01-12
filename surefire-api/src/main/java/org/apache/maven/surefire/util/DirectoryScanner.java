@@ -22,6 +22,7 @@ package org.apache.maven.surefire.util;
 /**
  * @author Kristian Rosenvold
  */
+@Deprecated
 public interface DirectoryScanner
 {
     /**

@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -55,18 +56,18 @@ public class DefaultRunOrderCalculator
     @SuppressWarnings( "checkstyle:magicnumber" )
     public TestsToRun orderTestClasses( TestsToRun scannedClasses )
     {
-        List<Class> result = new ArrayList<Class>( 512 );
+        List<Class<?>> result = new ArrayList<Class<?>>( 512 );
 
-        for ( Class scannedClass : scannedClasses )
+        for ( Class<?> scannedClass : scannedClasses )
         {
             result.add( scannedClass );
         }
 
         orderTestClasses( result, runOrder.length != 0 ? runOrder[0] : null );
-        return new TestsToRun( result );
+        return new TestsToRun( new LinkedHashSet<Class<?>>( result ) );
     }
 
-    private void orderTestClasses( List<Class> testClasses, RunOrder runOrder )
+    private void orderTestClasses( List<Class<?>> testClasses, RunOrder runOrder )
     {
         if ( RunOrder.RANDOM.equals( runOrder ) )
         {
@@ -75,7 +76,7 @@ public class DefaultRunOrderCalculator
         else if ( RunOrder.FAILEDFIRST.equals( runOrder ) )
         {
             RunEntryStatisticsMap stat = RunEntryStatisticsMap.fromFile( runOrderParameters.getRunStatisticsFile() );
-            List<Class> prioritized = stat.getPrioritizedTestsByFailureFirst( testClasses );
+            List<Class<?>> prioritized = stat.getPrioritizedTestsByFailureFirst( testClasses );
             testClasses.clear();
             testClasses.addAll( prioritized );
 
@@ -83,7 +84,7 @@ public class DefaultRunOrderCalculator
         else if ( RunOrder.BALANCED.equals( runOrder ) )
         {
             RunEntryStatisticsMap stat = RunEntryStatisticsMap.fromFile( runOrderParameters.getRunStatisticsFile() );
-            List<Class> prioritized = stat.getPrioritizedTestsClassRunTime( testClasses, threadCount );
+            List<Class<?>> prioritized = stat.getPrioritizedTestsClassRunTime( testClasses, threadCount );
             testClasses.clear();
             testClasses.addAll( prioritized );
 

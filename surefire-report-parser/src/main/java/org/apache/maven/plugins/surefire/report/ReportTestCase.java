@@ -19,13 +19,12 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.maven.shared.utils.StringUtils;
 
 /**
  *
  */
-public class ReportTestCase
+public final class ReportTestCase
 {
     private String fullClassName;
 
@@ -37,16 +36,25 @@ public class ReportTestCase
 
     private float time;
 
-    private Map<String, Object> failure;
+    private String failureMessage;
+
+    private String failureType;
+
+    private String failureErrorLine;
+
+    private String failureDetail;
+
+    private boolean hasFailure;
 
     public String getName()
     {
         return name;
     }
 
-    public void setName( String name )
+    public ReportTestCase setName( String name )
     {
         this.name = name;
+        return this;
     }
 
     public String getFullClassName()
@@ -54,9 +62,10 @@ public class ReportTestCase
         return fullClassName;
     }
 
-    public void setFullClassName( String name )
+    public ReportTestCase setFullClassName( String name )
     {
-        this.fullClassName = name;
+        fullClassName = name;
+        return this;
     }
 
     public String getClassName()
@@ -64,9 +73,10 @@ public class ReportTestCase
         return className;
     }
 
-    public void setClassName( String name )
+    public ReportTestCase setClassName( String name )
     {
-        this.className = name;
+        className = name;
+        return this;
     }
 
     public float getTime()
@@ -74,14 +84,10 @@ public class ReportTestCase
         return time;
     }
 
-    public void setTime( float time )
+    public ReportTestCase setTime( float time )
     {
         this.time = time;
-    }
-
-    public Map<String, Object> getFailure()
-    {
-        return failure;
+        return this;
     }
 
     public String getFullName()
@@ -89,16 +95,65 @@ public class ReportTestCase
         return fullName;
     }
 
-    public void setFullName( String fullName )
+    public ReportTestCase setFullName( String fullName )
     {
         this.fullName = fullName;
+        return this;
     }
 
-    public void addFailure( String message, String type )
+    public String getFailureMessage()
     {
-        failure = new HashMap<String, Object>();
-        failure.put( "message", message );
-        failure.put( "type", type );
+        return failureMessage;
+    }
+
+    private ReportTestCase setFailureMessage( String failureMessage )
+    {
+        this.failureMessage = failureMessage;
+        return this;
+    }
+
+    public String getFailureType()
+    {
+        return failureType;
+    }
+
+    private ReportTestCase setFailureType( String failureType )
+    {
+        this.failureType = failureType;
+        return this;
+    }
+
+    public String getFailureErrorLine()
+    {
+        return failureErrorLine;
+    }
+
+    public ReportTestCase setFailureErrorLine( String failureErrorLine )
+    {
+        this.failureErrorLine = failureErrorLine;
+        return this;
+    }
+
+    public String getFailureDetail()
+    {
+        return failureDetail;
+    }
+
+    public ReportTestCase setFailureDetail( String failureDetail )
+    {
+        this.failureDetail = failureDetail;
+        return this;
+    }
+
+    public ReportTestCase setFailure( String message, String type )
+    {
+        hasFailure = StringUtils.isNotBlank( type );
+        return setFailureMessage( message ).setFailureType( type );
+    }
+
+    public boolean hasFailure()
+    {
+        return hasFailure;
     }
 
     /**

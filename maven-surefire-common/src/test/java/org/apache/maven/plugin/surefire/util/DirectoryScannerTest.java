@@ -19,38 +19,60 @@ package org.apache.maven.plugin.surefire.util;
  * under the License.
  */
 
-import junit.framework.TestCase;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.util.ScanResult;
+import org.hamcrest.Matcher;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.runners.Parameterized.*;
 
 /**
  * @author Kristian Rosenvold
  */
+@RunWith( Parameterized.class )
 public class DirectoryScannerTest
-    extends TestCase
 {
-    public void testLocateTestClasses()
+    @Parameters( name = "\"{0}\" should count {1} classes" )
+    public static Iterable<Object[]> data() {
+        return Arrays.asList( new Object[][] {
+            { "**/*ZT*A.java", is( 3 ) },
+            { "**/*ZT*A.java#testMethod", is( 3 ) },
+            { "**/*ZT?A.java#testMethod, !*ZT2A", is( 2 ) },
+            { "**/*ZT?A.java#testMethod, !*ZT2A#testMethod", is( 3 ) },
+            { "#testMethod", is( greaterThanOrEqualTo( 3 ) ) },
+        } );
+    }
+
+    @Parameter( 0 )
+    public String filter;
+
+    @Parameter( 1 )
+    public Matcher<? super Integer> expectedClassesCount;
+
+    @Test
+    public void locateTestClasses()
         throws Exception
     {
         // use target as people can configure ide to compile in an other place than maven
         File baseDir = new File( new File( "target/test-classes" ).getCanonicalPath() );
-        List<String> include = new ArrayList<String>();
-        include.add( "**/*ZT*A.java" );
-        List<String> exclude = new ArrayList<String>();
-
-        DirectoryScanner surefireDirectoryScanner =
-            new DirectoryScanner( baseDir, new TestListResolver( include, exclude ), new TestListResolver( "" ) );
+        TestListResolver resolver = new TestListResolver( filter );
+        DirectoryScanner surefireDirectoryScanner = new DirectoryScanner( baseDir, resolver );
 
         ScanResult classNames = surefireDirectoryScanner.scan();
-        assertNotNull( classNames );
-        System.out.println( "classNames " + Collections.singletonList(classNames));
-        assertEquals( 3, classNames.size() );
+        assertThat( classNames, is( notNullValue() ) );
+        assertThat( classNames.size(), is( expectedClassesCount ) );
 
         Map<String, String> props = new HashMap<String, String>();
         classNames.writeTo( props );
-        assertEquals( 3, props.size() );
+        assertThat( props.values(), hasSize( expectedClassesCount ) );
     }
 }

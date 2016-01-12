@@ -20,6 +20,8 @@ package org.apache.maven.plugin.surefire;
  */
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -103,7 +105,6 @@ public class SurefirePlugin
      */
     @Parameter( property = "surefire.useFile", defaultValue = "true" )
     private boolean useFile;
-
 
     /**
      * Set this to "true" to cause a failure if the none of the tests specified in -Dtest=... are run. Defaults to
@@ -218,7 +219,7 @@ public class SurefirePlugin
      * However, all the failing attempts will be recorded.
      */
     @Parameter( property = "surefire.rerunFailingTestsCount", defaultValue = "0" )
-    protected int rerunFailingTestsCount;
+    private int rerunFailingTestsCount;
 
     /**
      * (TestNG) List of &lt;suiteXmlFile> elements specifying TestNG suite xml file locations. Note that
@@ -257,7 +258,7 @@ public class SurefirePlugin
      * @since 2.7
      */
     @Parameter( property = "surefire.runOrder", defaultValue = "filesystem" )
-    protected String runOrder;
+    private String runOrder;
 
     /**
      * A file containing include patterns. Blank lines, or lines starting with # are ignored. If {@code includes} are
@@ -279,6 +280,33 @@ public class SurefirePlugin
     @Parameter( property = "surefire.excludesFile" )
     private File excludesFile;
 
+    /**
+     * Set to error/failure count in order to skip remaining tests.
+     * Due to race conditions in parallel/forked execution this may not be fully guaranteed.<br/>
+     * Enable with system property -Dsurefire.skipAfterFailureCount=1 or any number greater than zero.
+     * Defaults to "0".<br/>
+     * See the prerequisites and limitations in documentation:<br/>
+     * <a href="http://maven.apache.org/plugins/maven-surefire-plugin/examples/skip-after-failure.html">
+     *     http://maven.apache.org/plugins/maven-surefire-plugin/examples/skip-after-failure.html</a>
+     *
+     * @since 2.19
+     */
+    @Parameter( property = "surefire.skipAfterFailureCount", defaultValue = "0" )
+    private int skipAfterFailureCount;
+
+    /**
+     * After the plugin process is shutdown by sending SIGTERM signal (CTRL+C), SHUTDOWN command is received by every
+     * forked JVM. By default (shutdown=testset) forked JVM would not continue with new test which means that
+     * the current test may still continue to run.<br/>
+     * The parameter can be configured with other two values "exit" and "kill".<br/>
+     * Using "exit" forked JVM executes System.exit(1) after the plugin process has received SIGTERM signal.<br/>
+     * Using "kill" the JVM executes Runtime.halt(1) and kills itself.
+     *
+     * @since 2.19
+     */
+    @Parameter( property = "surefire.shutdown", defaultValue = "testset" )
+    private String shutdown;
+
     protected int getRerunFailingTestsCount()
     {
         return rerunFailingTestsCount;
@@ -298,15 +326,6 @@ public class SurefirePlugin
         if ( firstForkException != null )
         {
             throw new MojoFailureException( firstForkException.getMessage(), firstForkException );
-        }
-    }
-
-    private void assertNoFailureOrTimeout( Exception summary )
-        throws MojoFailureException
-    {
-        if ( summary != null )
-        {
-            throw new MojoFailureException( "Failure or timeout" );
         }
     }
 
@@ -448,6 +467,16 @@ public class SurefirePlugin
         this.failIfNoSpecifiedTests = failIfNoSpecifiedTests;
     }
 
+    public int getSkipAfterFailureCount()
+    {
+        return skipAfterFailureCount;
+    }
+
+    public String getShutdown()
+    {
+        return shutdown;
+    }
+
     public boolean isPrintSummary()
     {
         return printSummary;
@@ -537,13 +566,13 @@ public class SurefirePlugin
 
     public File[] getSuiteXmlFiles()
     {
-        return suiteXmlFiles;
+        return suiteXmlFiles.clone();
     }
 
     @SuppressWarnings( "UnusedDeclaration" )
     public void setSuiteXmlFiles( File[] suiteXmlFiles )
     {
-        this.suiteXmlFiles = suiteXmlFiles;
+        this.suiteXmlFiles = suiteXmlFiles.clone();
     }
 
     public String getRunOrder()
@@ -567,5 +596,17 @@ public class SurefirePlugin
     public File getExcludesFile()
     {
         return excludesFile;
+    }
+
+    @Override
+    protected final List<File> suiteXmlFiles()
+    {
+        return hasSuiteXmlFiles() ? Arrays.asList( suiteXmlFiles ) : Collections.<File>emptyList();
+    }
+
+    @Override
+    protected final boolean hasSuiteXmlFiles()
+    {
+        return suiteXmlFiles != null && suiteXmlFiles.length != 0;
     }
 }

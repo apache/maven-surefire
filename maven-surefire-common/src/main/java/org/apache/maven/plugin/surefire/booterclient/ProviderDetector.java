@@ -90,14 +90,14 @@ public class ProviderDetector
                     {
                         continue nextUrl; // next url
                     }
-                    char cp = line.charAt( 0 ); // should use codePointAt but this is JDK1.3
+                    char cp = line.charAt( 0 ); // should use codePointAt but this was JDK1.3
                     if ( !Character.isJavaIdentifierStart( cp ) )
                     {
                         continue nextUrl; // next url
                     }
                     for ( int i = 1; i < n; i++ )
                     {
-                        cp = line.charAt( i );  // should use codePointAt but this is JDK1.3
+                        cp = line.charAt( i );  // should use codePointAt but this was JDK1.3
                         if ( !Character.isJavaIdentifierPart( cp ) && ( cp != '.' ) )
                         {
                             continue nextUrl; // next url

@@ -31,9 +31,12 @@ public class Surefire408ManualProviderSelectionIT
     extends SurefireJUnit4IntegrationTestCase
 {
     @Test
-    public void testPaallelBuildResultCount()
+    public void testParallelBuildResultCount()
     {
-        unpack( "/surefire-408-manual-provider-selection" ).showErrorStackTraces().executeTest().verifyTextInLog(
-            "Using configured provider org.apache.maven.surefire.junit.JUnit3Provider" );
+        unpack( "/surefire-408-manual-provider-selection" )
+            .showErrorStackTraces()
+            .debugLogging()
+            .executeTest()
+            .verifyTextInLog( "Using configured provider org.apache.maven.surefire.junit.JUnit3Provider" );
     }
 }

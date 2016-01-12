@@ -41,7 +41,7 @@ public class Surefire1053SystemPropertiesIT
             .executeTest()
             .verifyErrorFree( 1 )
             .verifyTextInLog( "file.encoding cannot be set as system property, use <argLine>-D"
-                                  + "file.encoding=...<argLine> instead" );
+                                  + "file.encoding=...</argLine> instead" );
     }
     @Test
     public void checkWarningsSysPropTwice() throws Exception

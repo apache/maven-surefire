@@ -19,7 +19,6 @@ package org.apache.maven.surefire.common.junit48;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.group.match.GroupMatcher;
 import org.apache.maven.surefire.group.parse.GroupMatcherParser;
 import org.apache.maven.surefire.group.parse.ParseException;
@@ -28,6 +27,10 @@ import org.junit.runner.manipulation.Filter;
 
 import java.util.Map;
 import java.util.Set;
+
+import static org.apache.maven.surefire.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
+import static org.apache.maven.surefire.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
+import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
 
 /**
  * @author Todd Lipcon
@@ -41,13 +44,29 @@ public class FilterFactory
         this.testClassLoader = testClassLoader;
     }
 
+    /**
+     * @return <tt>true</tt> if non-blank
+     * {@link org.apache.maven.surefire.booter.ProviderParameterNames#TESTNG_GROUPS_PROP} and/or
+     * {@link org.apache.maven.surefire.booter.ProviderParameterNames#TESTNG_EXCLUDEDGROUPS_PROP} exists.
+     */
+    public boolean canCreateGroupFilter( Map<String, String> providerProperties )
+    {
+        String groups = providerProperties.get( TESTNG_GROUPS_PROP );
+        String excludedGroups = providerProperties.get( TESTNG_EXCLUDEDGROUPS_PROP );
+        return isNotBlank( groups ) || isNotBlank( excludedGroups );
+    }
+
+    /**
+     * Creates filter using he key
+     * {@link org.apache.maven.surefire.booter.ProviderParameterNames#TESTNG_GROUPS_PROP} and/or
+     * {@link org.apache.maven.surefire.booter.ProviderParameterNames#TESTNG_EXCLUDEDGROUPS_PROP}.
+     */
     public Filter createGroupFilter( Map<String, String> providerProperties )
     {
-        String groups = providerProperties.get( ProviderParameterNames.TESTNG_GROUPS_PROP );
-        String excludedGroups = providerProperties.get( ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP );
+        String groups = providerProperties.get( TESTNG_GROUPS_PROP );
 
         GroupMatcher included = null;
-        if ( groups != null && groups.trim().length() > 0 )
+        if ( isNotBlank( groups ) )
         {
             try
             {
@@ -60,8 +79,10 @@ public class FilterFactory
             }
         }
 
+        String excludedGroups = providerProperties.get( TESTNG_EXCLUDEDGROUPS_PROP );
+
         GroupMatcher excluded = null;
-        if ( excludedGroups != null && excludedGroups.trim().length() > 0 )
+        if ( isNotBlank( excludedGroups ) )
         {
             try
             {

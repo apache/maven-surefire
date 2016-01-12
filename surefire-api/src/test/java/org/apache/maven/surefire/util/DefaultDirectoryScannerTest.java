@@ -41,10 +41,10 @@ public class DefaultDirectoryScannerTest
         File baseDir = new File( new File( "target" ).getCanonicalPath() );
         List<String> include = new ArrayList<String>();
         include.add( "**/*ZT*A.java" );
-        List exclude = new ArrayList();
+        List<String> exclude = new ArrayList<String>();
 
         DefaultDirectoryScanner surefireDirectoryScanner =
-            new DefaultDirectoryScanner( baseDir, include, exclude, new ArrayList() );
+            new DefaultDirectoryScanner( baseDir, include, exclude, new ArrayList<String>() );
 
         String[] classNames = surefireDirectoryScanner.collectTests();
         assertNotNull( classNames );

@@ -20,9 +20,11 @@ package org.apache.maven.surefire.junitcore.pc;
  */
 
 import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * The factory of {@link SchedulingStrategy}.
@@ -32,6 +34,7 @@ import java.util.concurrent.Executors;
  */
 public class SchedulingStrategies
 {
+    private static final ThreadFactory DAEMON_THREAD_FACTORY = DaemonThreadFactory.newDaemonThreadFactory();
 
     /**
      * @param logger current error logger
@@ -49,7 +52,8 @@ public class SchedulingStrategies
      */
     public static SchedulingStrategy createParallelStrategy( ConsoleLogger logger, int nThreads )
     {
-        return new NonSharedThreadPoolStrategy( logger, Executors.newFixedThreadPool( nThreads ) );
+        return new NonSharedThreadPoolStrategy( logger,
+                                                Executors.newFixedThreadPool( nThreads, DAEMON_THREAD_FACTORY ) );
     }
 
     /**
@@ -58,7 +62,7 @@ public class SchedulingStrategies
      */
     public static SchedulingStrategy createParallelStrategyUnbounded( ConsoleLogger logger )
     {
-        return new NonSharedThreadPoolStrategy( logger, Executors.newCachedThreadPool() );
+        return new NonSharedThreadPoolStrategy( logger, Executors.newCachedThreadPool( DAEMON_THREAD_FACTORY ) );
     }
 
     /**

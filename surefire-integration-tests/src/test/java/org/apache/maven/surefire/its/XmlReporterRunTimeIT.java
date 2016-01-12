@@ -20,15 +20,15 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
-import org.apache.maven.surefire.its.fixture.HelperAssertions;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
-import java.io.File;
-import java.util.List;
-
-import static org.junit.Assert.assertTrue;
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.extractReports;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.lessThan;
 
 /**
  * Test reported runtime
@@ -42,26 +42,34 @@ public class XmlReporterRunTimeIT
     public void testForkModeAlways()
         throws Exception
     {
-        OutputValidator outputValidator = unpack( "/runorder-parallel" ).parallelMethods().executeTest();
+        // just generate .surefire-<hash> in order to apply runOrder
+        unpack( "/runorder-parallel" )
+            .executeTest()
+            .verifyErrorFree( 9 );
 
-        List<ReportTestSuite> reports = HelperAssertions.extractReports( new File[]{ outputValidator.getBaseDir() } );
-        for ( ReportTestSuite report : reports )
+        // now assert test results match expected values
+        OutputValidator outputValidator = unpack( "/runorder-parallel" )
+            .executeTest()
+            .verifyErrorFree( 9 );
+
+        for ( ReportTestSuite report : extractReports( outputValidator.getBaseDir() ) )
         {
             if ( "runorder.parallel.Test1".equals( report.getFullClassName() ) )
             {
-                assertTrue( "runorder.parallel.Test1 report.getTimeElapsed found:" + report.getTimeElapsed(),
-                            report.getTimeElapsed() >= 1.2f );
+                // should be 6f but because of having Windows sleep discrepancy it is 5.95f
+                assertThat( "runorder.parallel.Test1 report.getTimeElapsed found:" + report.getTimeElapsed(),
+                            report.getTimeElapsed(), allOf( greaterThanOrEqualTo( 5.95f ), lessThan( 7f ) ) );
             }
             else if ( "runorder.parallel.Test2".equals( report.getFullClassName() ) )
             {
-                assertTrue( "runorder.parallel.Test2 report.getTimeElapsed found:" + report.getTimeElapsed(),
-                            report.getTimeElapsed() >= 0.9f );
+                // should be 5f but because of having Windows sleep discrepancy it is 4.95f
+                assertThat( "runorder.parallel.Test2 report.getTimeElapsed found:" + report.getTimeElapsed(),
+                            report.getTimeElapsed(), allOf( greaterThanOrEqualTo( 4.95f ), lessThan( 6f ) ) );
             }
             else
             {
                 System.out.println( "report = " + report );
             }
         }
-
     }
 }

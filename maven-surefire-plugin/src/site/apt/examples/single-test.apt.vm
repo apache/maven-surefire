@@ -37,6 +37,12 @@ Running a Single Test
 mvn -Dtest=TestCircle test
 +---+
 
+If you have multiple executions configured in surefire plugin within your POM, you may want to execute the only default test phase:
+
++---+
+mvn surefire:test -Dtest=TestCircle
++---+
+
   The value for the <<<test>>> parameter is the name of the test class (without the extension; we'll strip off the extension if you accidentally provide one).
 #{else}
   During development, you may run a single test class repeatedly. To run this
@@ -73,17 +79,16 @@ mvn -Dit.test=ITSquare,ITCi*le verify
 +---+
 #{end}
 
-  << NOTE: Use syntax e.g. "foo/MyTest.java", "**/MyTest.java", "MyTest" for "test" parameter (see includes/excludes)
-  instead of fully qualified Java class names. >>
+  << NOTE: Use syntax e.g. "foo/MyTest.java", "**/MyTest.java", "MyTest" for "test" parameter (see includes/excludes). >>
 
 Running a Set of Methods in a Single Test Class
 
   As of Surefire 2.7.3, you can also run only a subset of the tests in a test class.
   
   << NOTE : This feature is supported only for Junit 4.x and TestNG. Use syntax e.g. "foo/MyTest.java",
-  "**/MyTest.java", "MyTest" for "test" parameter (see includes/excludes) instead of fully qualified Java class names. >>
+  "**/MyTest.java", "MyTest" for "test" parameter (see includes/excludes). >>
   
-  You must use the following syntax:
+  You should use the following syntax:
   
 #{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
@@ -145,3 +150,17 @@ mvn "-Dit.test=Basic*, !%regex[.*.Unstable.*], !%regex[.*.MyIT.class#one.*|two.*
   non-regex method pattern would become <<<#testMethod[*]>>>. If using the JUnit annotation
   <<<@Parameters(name="\{index\}: fib(\{0\})=\{1\}")>>> and selecting the index e.g. 5 in pattern, the non-regex
   method pattern would become <<<#testMethod[5:*]>>>.
+
+* Fully qualified class name
+
+  As of ${thisPlugin} Plugin 2.19.1, the syntax with fully qualified class names or packages can be used, e.g.:
+
++---+
+<test>my.package.???Test#testMethod, another.package.*</test>
++---+
+
+  The character (?) replaces single character and (*) represents zero or more characters.
+  Multiple formats can be additionally combined.
+
+
+

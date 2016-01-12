@@ -37,7 +37,7 @@ public enum ReportEntryType
 
     private final String rerunXmlTag;
 
-    private ReportEntryType( String xmlTag, String flakyXmlTag, String rerunXmlTag )
+    ReportEntryType( String xmlTag, String flakyXmlTag, String rerunXmlTag )
     {
         this.xmlTag = xmlTag;
         this.flakyXmlTag = flakyXmlTag;

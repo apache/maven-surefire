@@ -33,9 +33,9 @@ public class PojoStackTraceWriter
 {
     private final Throwable t;
 
-    protected final String testClass;
+    private final String testClass;
 
-    protected final String testMethod;
+    private final String testMethod;
 
     public PojoStackTraceWriter( String testClass, String testMethod, Throwable t )
     {
@@ -46,43 +46,67 @@ public class PojoStackTraceWriter
 
     public String writeTraceToString()
     {
-        StringWriter w = new StringWriter();
         if ( t != null )
         {
-            t.printStackTrace( new PrintWriter( w ) );
+            StringWriter w = new StringWriter();
+            PrintWriter stackTrace = new PrintWriter( w );
+            try
+            {
+                t.printStackTrace( stackTrace );
+            }
+            finally
+            {
+                stackTrace.close();
+            }
             w.flush();
+            StringBuffer builder = w.getBuffer();
+            if ( isMultiLineExceptionMessage( t ) )
+            {
+                // SUREFIRE-986
+                String exc = t.getClass().getName() + ": ";
+                if ( builder.toString().startsWith( exc ) )
+                {
+                    builder.insert( exc.length(), '\n' );
+                }
+            }
+            return builder.toString();
         }
-        return w.toString();
+        return "";
     }
 
     public String smartTrimmedStackTrace()
     {
-        if ( t == null )
-        {
-            return "";
-        }
-
-        SmartStackTraceParser parser = new SmartStackTraceParser( testClass, t, testMethod );
-        return parser.getString();
+        return t == null ? "" : new SmartStackTraceParser( testClass, t, testMethod ).getString();
     }
 
     public String writeTrimmedTraceToString()
     {
-        if ( t == null )
-        {
-            return "";
-        }
-
-        return SmartStackTraceParser.innerMostWithFocusOnClass( t, testClass );
+        return t == null ? "" : SmartStackTraceParser.stackTraceWithFocusOnClassAsString( t, testClass );
     }
 
     public SafeThrowable getThrowable()
     {
-        if ( t == null )
-        {
-            return null;
-        }
+        return t == null ? null : new SafeThrowable( t );
+    }
 
-        return new SafeThrowable( t );
+    private static boolean isMultiLineExceptionMessage( Throwable t )
+    {
+        String msg = t.getLocalizedMessage();
+        if ( msg != null )
+        {
+            int countNewLines = 0;
+            for ( int i = 0, length = msg.length(); i < length; i++ )
+            {
+                if ( msg.charAt( i ) == '\n' )
+                {
+                    if ( ++countNewLines == 2 )
+                    {
+                        break;
+                    }
+                }
+            }
+            return countNewLines > 1 || countNewLines == 1 && !msg.trim().endsWith( "\n" );
+        }
+        return false;
     }
 }

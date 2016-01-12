@@ -27,10 +27,13 @@ final class ScannerUtil
 
     private ScannerUtil()
     {
+        throw new IllegalStateException( "not instantiable constructor" );
     }
 
+    @Deprecated
     private static final String FS = System.getProperty( "file.separator" );
 
+    @Deprecated
     private static final boolean IS_NON_UNIX_FS = ( !FS.equals( "/" ) );
 
     @SuppressWarnings( "checkstyle:modifierorder" )
@@ -40,6 +43,7 @@ final class ScannerUtil
     }
 
     @SuppressWarnings( "checkstyle:modifierorder" )
+    @Deprecated
     public static @Nonnull String convertSlashToSystemFileSeparator( @Nonnull String path )
     {
         return ( IS_NON_UNIX_FS ? path.replace( "/", FS ) : path );

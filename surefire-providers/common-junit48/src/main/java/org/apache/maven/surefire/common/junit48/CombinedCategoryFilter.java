@@ -40,11 +40,11 @@ final class CombinedCategoryFilter
     @Override
     public boolean shouldRun( Description description )
     {
-        return ( includedFilters.isEmpty() || inOneOfFilters( includedFilters, description ) )
-            && ( excludedFilters.isEmpty() || !inOneOfFilters( excludedFilters, description ) );
+        return ( includedFilters.isEmpty() || anyFilterMatchesDescription( includedFilters, description ) )
+            && ( excludedFilters.isEmpty() || allFiltersMatchDescription( excludedFilters, description ) );
     }
 
-    private boolean inOneOfFilters( Collection<Filter> filters, Description description )
+    private boolean anyFilterMatchesDescription( Collection<Filter> filters, Description description )
     {
         for ( Filter f : filters )
         {
@@ -54,6 +54,18 @@ final class CombinedCategoryFilter
             }
         }
         return false;
+    }
+
+    private boolean allFiltersMatchDescription( Collection<Filter> filters, Description description )
+    {
+        for ( Filter f : filters )
+        {
+            if ( !f.shouldRun( description ) )
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
