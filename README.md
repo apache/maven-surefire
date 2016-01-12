@@ -2,7 +2,7 @@
 [![CI](https://img.shields.io/badge/CI-Jenkins-red.svg?style=flat-square)](https://jenkins-ci.org/)
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.maven.surefire/surefire/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/org.apache.maven.surefire/surefire)
-[![license](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
+[![license](http://img.shields.io/:license-apache-red.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 [![coverage](https://img.shields.io/jenkins/c/https/builds.apache.org/maven-surefire.svg)](https://img.shields.io/jenkins/c/https/builds.apache.org/maven-surefire.svg)
 [![tests](https://img.shields.io/jenkins/t/https/builds.apache.org/maven-surefire.svg)](https://img.shields.io/jenkins/t/https/builds.apache.org/maven-surefire.svg)
 [![Build Status](https://builds.apache.org/job/maven-surefire/badge/icon)](https://builds.apache.org/job/maven-surefire)
