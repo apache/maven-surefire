@@ -1,5 +1,5 @@
 [![Built with Maven](http://maven.apache.org/images/logos/maven-feather.png)](https://maven.apache.org/surefire/)
-[!CI](https://img.shields.io/badge/CI-Jenkins-red.svg?style=flat-square)](https://jenkins-ci.org/)
+[![CI](https://img.shields.io/badge/CI-Jenkins-red.svg?style=flat-square)](https://jenkins-ci.org/)
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.maven.surefire/surefire/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/org.apache.maven.surefire/surefire)
 [![license](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
