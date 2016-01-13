@@ -73,6 +73,7 @@ final class TestNGExecutor
         throw new IllegalStateException( "not instantiable constructor" );
     }
 
+    @SuppressWarnings( "checkstyle:parameternumbercheck" )
     static void run( Iterable<Class<?>> testClasses, String testSourceDirectory,
                             Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
                             RunListener reportManager, File reportsDirectory,
