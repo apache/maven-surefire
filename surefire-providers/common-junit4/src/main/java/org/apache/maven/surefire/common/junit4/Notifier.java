@@ -91,6 +91,7 @@ public class Notifier
         return failFast;
     }
 
+    // CHECKSTYLE:OFF
     @Override
     @SuppressWarnings( "checkstyle:redundantthrowscheck" ) // checkstyle is wrong here, see super.fireTestStarted()
     public final void fireTestStarted( Description description ) throws StoppedByUserException
@@ -103,6 +104,7 @@ public class Notifier
             testClassNames.remove( cutTestClassAndMethod( description ).getClazz() );
         }
     }
+    // CHECKSTYLE:ON
 
     @Override
     public final void fireTestFailure( Failure failure )

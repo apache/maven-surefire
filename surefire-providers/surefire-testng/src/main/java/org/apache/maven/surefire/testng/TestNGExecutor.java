@@ -73,6 +73,7 @@ final class TestNGExecutor
         throw new IllegalStateException( "not instantiable constructor" );
     }
 
+    // CHECKSTYLE:OFF
     @SuppressWarnings( "checkstyle:parameternumbercheck" )
     static void run( Iterable<Class<?>> testClasses, String testSourceDirectory,
                             Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
@@ -132,6 +133,7 @@ final class TestNGExecutor
                        extractVerboseLevel( options ) );
         testng.run();
     }
+    // CHECKSTYLE:ON
 
     private static boolean isCliDebugOrShowErrors( List<CommandLineOption> mainCliOptions )
     {
