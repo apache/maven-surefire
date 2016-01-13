@@ -32,16 +32,17 @@ Fork Options and Parallel Test Execution
   substantial impact on the memory requirements and the execution time of your
   build system.
 
-  Surefire offers a variety of options to execute tests in parallel, allowing
-  you to make best use of the hardware at your disposal. But forking in
-  particular can also help keeping the memory requirements low.
+  The ${thisPlugin.toLowerCase()} offers a variety of options to execute tests
+  in parallel, allowing you to make best use of the hardware at your disposal.
+  But forking in particular can also help keeping the memory requirements low.
 
   This page shall give you some ideas of how you can configure the test
   execution in a way best suitable for your environment.
 
 * Parallel Test Execution
 
-  Basically, there are two ways in Surefire to achieve parallel test execution.
+  Basically, there are two ways in ${project.artifactId} to achieve parallel test
+  execution.
   
   The most obvious one is by using the <<<parallel>>> parameter. The possible
   values depend on the test provider used. For JUnit 4.7 and onwards, this may
@@ -51,51 +52,56 @@ Fork Options and Parallel Test Execution
   <<<org.junit.runners.ParentRunner>>>. If no runner is specified through the
   annotation <<<@org.junit.runner.RunWith>>>, the prerequisite is accomplished.
 
-  As of Surefire 2.16, the value "<<<both>>>" is deprecated but it still can be
-  used and behaves same as <<<classesAndMethods>>>.
+  As of ${project.artifactId}:2.16, the value "<<<both>>>" is deprecated but it
+  still can be used and behaves same as <<<classesAndMethods>>>.
 
   See the example pages for {{{./junit.html#Running_tests_in_parallel}JUnit}}
   and {{{./testng.html#Running_tests_in_parallel}TestNG}} for details.
 
-  The <extent> of the parallelism is configured using the following parameters.
-  The parameter <<<useUnlimitedThreads>>> allows for an unlimited number of
-  threads. Unless <<<useUnlimitedThreads>>> is set to "<<<true>>>", the parameter
-  <<<threadCount>>> can be used with the optional parameter
-  <<<perCoreThreadCount>>>.
+  The extension of the parallelism is configured using the following parameters.
+  The parameter <<<useUnlimitedThreads>>> allows for an unlimited number of threads.
+  Unless <<<useUnlimitedThreads=true>>>, the parameter <<<threadCount>>> can be used
+  with the optional parameter <<<perCoreThreadCount=true>>> (true by default).
   The parameters <<<useUnlimitedThreads>>> and <<<threadCount>>> are to be interpreted
   in the context of the value specified for the <<<parallel>>> parameter.
   
-  One can impose thread-count limitations on suites, classes or methods
-  using one or more of the parameters <<<threadCountSuites>>>,
-  <<<threadCountClasses>>> and <<<threadCountMethods>>>.
-  If only <<<threadCount>>> is specified, Surefire attempts to estimate the
-  thread counts for suites, classes and methods and reuses the threads in favor
-  of a leaf, e.g. parallel methods (possibly increasing concurrent methods).
+  As of ${project.artifactId}:2.16, one can impose thread-count limitations on
+  suites, classes or methods using one or more of the parameters
+  <<<threadCountSuites>>>, <<<threadCountClasses>>> and <<<threadCountMethods>>>.
+  If only <<<threadCount>>> is specified, ${project.artifactId} attempts to
+  <<optimize>> the thread counts for suites, classes and methods and reuses
+  the threads in favor of a <<leaf>>, e.g. parallel methods (optionally
+  increasing concurrent methods).
   
   As an example with an unlimited number of threads, there is maximum of three
   concurrent threads to execute suites:
-  parallel = all, useUnlimitedThreads = true, threadCountSuites = 3.
+  <<<parallel=all>>>, <<<useUnlimitedThreads=true>>>, <<<threadCountSuites=3>>>.
   
   In the second example, the number of concurrent methods is not strictly
   limited:
-  parallel = classesAndMethods, threadCount = 8, threadCountClasses = 3.
+  <<<parallel=classesAndMethods>>>, <<<threadCount=8>>>, <<<threadCountClasses=3>>>.
   Here the number of parallel methods is varying from 5 to 7.
-  Accordingly parallel = all, but the sum of <<<threadCountSuites>>> and
+  Accordingly <<<parallel=all>>>, but the sum of <<<threadCountSuites>>> and
   <<<threadCountClasses>>> must not exceed certain (<<<threadCount>>> - 1).
-  Other combinations are possible with unspecified thread-count leaf. Make sure
-  that the leaf is last from the order suites-classes-methods in <<<parallel>>>.
+  Other combinations are possible with unspecified thread-count <<leaf>>.
+  Make sure that the <<leaf>> is last from the order suites-classes-methods
+  in <<<parallel>>>.
   
   In the third example the thread-counts represent a ratio, e.g. for
-  parallel = all, threadCount = 16, threadCountSuites = 2,
-  threadCountClasses = 3, threadCountMethods = 5. Thus the concurrent suites
-  will be 20%, concurrent classes 30%, and concurrent methods 50%.
+  <<<parallel=all>>>, <<<threadCount=16>>>, <<<threadCountSuites=2>>>,
+  <<<threadCountClasses=3>>>, <<<threadCountMethods=5>>>. Thus the concurrent
+  suites will be 20%, concurrent classes 30%, and concurrent methods 50%.
   
   Finally, the <<<threadCount>>> and <<<useUnlimitedThreads>>> may not be
   necessarily configured if the equivalent thread-counts are specified for the
   value in <<<parallel>>>.
   
-  The surefire is always trying to reuse threads, optimize the thread-counts,
-  and prefers thread fairness.
+  The ${project.artifactId} is trying to reuse threads, thus <<optimize>>
+  the thread-counts, and prefers thread fairness. The optimization
+  <<<parallelOptimized>>> of the number of Threads is enabled by default in terms
+  of e.g. the number of <Suite> runners do not necessarily have to waste <Suite>'s
+  Thread resources. If <<<threadCount>>> is used, then the <<leaf>> with unlimited
+  thread-count may speed up especially at the end of test phase.
 
   The parameters <<<parallelTestsTimeoutInSeconds>>> and
   <<<parallelTestsTimeoutForcedInSeconds>>> are used to specify an optional
@@ -104,6 +110,12 @@ Fork Options and Parallel Test Execution
   <"These tests were executed in prior to the shutdown operation">, and
   <"These tests are incomplete"> if the running Threads were <<interrupted>>.
 
+  <<Note:>> As designed by JUnit runners, the static methods annotated with e.g.
+  <@Parameters>, <@BeforeClass> and <@AfterClass> are called in parent thread.
+  For the sake of memory visibility between threads synchronize the methods.
+  See the keywords: <volatile>, <synchronized>, <<immutable>> and <final> in
+  {{{https://jcp.org/en/jsr/detail?id=133}Java Memory Model - JSR-133}}.
+
   <<The important thing to remember>> with the <<<parallel>>> option is: the
   concurrency happens within the same JVM process. That is efficient in terms of
   memory and execution time, but you may be more vulnerable towards race
@@ -111,43 +123,72 @@ Fork Options and Parallel Test Execution
 
   The other possibility for parallel test execution is setting the parameter 
   <<<forkCount>>> to a value higher than 1. The next section covers the details 
-  about this and the related <<<reuseForks>>> property.
+  about this and the related <<<reuseForks>>> parameter.
+  Using <<<reuseForks=true>>> (by default) and forking the test classes in reusable
+  JVMs may lead to the same problem with shared <static code> across <@BeforeClass>
+  class initializers if using <<<parallel>>> without forking. Therefore setting
+  <<<reuseForks=false>>> may help however it would not guarantee proper
+  functionality of some features, e.g. <<<skipAfterFailureCount>>>.
 
 * Parallel Test Execution and Single Thread Execution
 
   As mentioned above the <<<parallel>>> test execution is used with specific
-  thread count. Since of Surefire 2.18, you can apply the JCIP annotation
-  <<<@net.jcip.annotations.NotThreadSafe>>> on the Java class of JUnit test
-  (test class, Suite, Parameterized, etc.) in order to execute it in single
-  Thread instance. The Thread has name "maven-surefire-plugin@NotThreadSafe".
+  thread count. Since of ${project.artifactId}:2.18, you can apply the <JCIP>
+  annotation <<<@net.jcip.annotations.NotThreadSafe>>> on the Java class of JUnit
+  test (pure test class, <Suite>, <Parameterized>, etc.) in order to execute it in
+  single Thread instance. The Thread has name <maven-surefire-plugin@NotThreadSafe>.
 
-  Just use the dependency net.jcip:jcip-annotations:1.0, or another Artifact
-  with Apache License com.github.stephenc.jcip:jcip-annotations:1.0-1.
+  Just use project dependency <net.jcip:jcip-annotations:1.0> or another artifact
+  <com.github.stephenc.jcip:jcip-annotations:1.0-1> with Apache License 2.0.
+  
++---+
+<dependencies>
+  [...]
+  <dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <!-- 4.7 or higher -->
+    <version>4.7</version>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>com.github.stephenc.jcip</groupId>
+    <artifactId>jcip-annotations</artifactId>
+    <version>1.0-1</version>
+    <scope>test</scope>
+  </dependency>
+  [...]
+</dependencies>
++---+
 
   This way the parallel execution of tests classes annotated with
   <<<@NotThreadSafe>>> are forked in single thread instance (don't mean
   forked JVM process).
 
-  If the Suite or Parameterized is annotated with @NotThreadSafe, the
+  If the <Suite> or <Parameterized> is annotated with <<<@NotThreadSafe>>>, the
   suite classes are executed in single thread.
-  You can also annotate individual test class referenced by Suite, and the other
-  unannotated test classes in the Suite can be subject to run in parallel.
+  You can also annotate individual test class referenced by <Suite>, and the other
+  unannotated test classes in the <Suite> can be subject to run in parallel.
 
-  Note: As designed by JUnit runners, the static methods annotated with
-  @BeforeClass and @AfterClass are called in parent thread. Assign classes
-  to the @NotThreadSafe Suite to prevent from this trouble.
+  <<Note:>> As designed by JUnit runners, the static methods annotated with e.g.
+  <@Parameters>, <@BeforeClass> and <@AfterClass> are called in parent thread.
+  Assign classes to <<<@NotThreadSafe Suite>>> to prevent from this trouble. If you
+  do not want to change the hierarchy of your test classes, you may synchronize such
+  methods for the sake of improving memory visibility as a simplistic treatment.
+  See the keywords: <volatile>, <synchronized>, <<immutable>> and <final> in
+  {{{https://jcp.org/en/jsr/detail?id=133}Java Memory Model - JSR-133}}.
 
-* Parallel Surefire Execution in Multi-Module Maven Parallel Build
+* Parallel ${project.artifactId} Execution in Multi-Module Maven Parallel Build
 
   Maven core allows building modules of multi-module projects in parallel with
   the command line option <<<-T>>>. This <multiplies> the extent of concurrency
-  configured directly in Surefire.
+  configured directly in ${project.artifactId}.
 
 * Forked Test Execution
 
-  The parameter <<<forkCount>>> defines the maximum number of JVM processes
-  that Surefire will spawn <concurrently> to execute the tests. It supports the
-  same syntax as <<<-T>>> in maven-core: if you terminate the value with a 'C',
+  The parameter <<<forkCount>>> defines the maximum number of JVM processes that
+  ${project.artifactId} will spawn <concurrently> to execute the tests. It supports
+  the same syntax as <<<-T>>> in maven-core: if you terminate the value with a 'C',
   that value will be multiplied with the number of available CPU cores in your
   system. For example <<<forkCount=2.5C>>> on a Quad-Core system will result
   in forking up to ten concurrent JVM processes that execute tests.
@@ -158,8 +199,8 @@ Fork Options and Parallel Test Execution
   execute the next tests (<<<reuseForks=true>>>).
 
   The <default setting> is <<<forkCount=1>>>/<<<reuseForks=true>>>, which means
-  that Surefire creates one new JVM process to execute all tests in one maven
-  module.
+  that ${project.artifactId} creates one new JVM process to execute all tests
+  in one Maven module.
 
   <<<forkCount=1>>>/<<<reuseForks=false>>> executes each test class in its own 
   JVM process, one after another. It creates the highest level of separation for 
@@ -176,11 +217,11 @@ Fork Options and Parallel Test Execution
   You can use the place holder <<<$\{surefire.forkNumber\}>>> within 
   <<<argLine>>>, or within the system properties (both those specified via 
   <<<mvn test -D...>>> and via <<<systemPropertyVariables>>>). Before executing 
-  the tests, Surefire replaces that place holder by the number of the actually 
-  executing process, counting from 1 to the effective value of <<<forkCount>>> 
-  times the maximum number of parallel Surefire executions in maven parallel 
-  builds, i.e. the effective value of the <<<-T>>> command line argument of 
-  maven core.
+  the tests, the ${thisPlugin.toLowerCase()} plugin replaces that place holder
+  by the number of the actually executing process, counting from 1 to the
+  effective value of <<<forkCount>>> times the maximum number of parallel
+  executions in Maven parallel builds, i.e. the effective value of the <<<-T>>>
+  command line argument of Maven core.
 
   In case of disabled forking (<<<forkCount=0>>>), the place holder will be
   replaced with <1>.
@@ -249,8 +290,8 @@ Fork Options and Parallel Test Execution
 
 * Migrating the Deprecated forkMode Parameter to forkCount and reuseForks
 
-  Surefire versions prior 2.14 used the parameter <<<forkMode>>> to configure
-  forking. Although that parameter is still supported for backward
+  ${thisPlugin.toLowerCase()} versions prior 2.14 used the parameter <<<forkMode>>>
+  to configure forking. Although that parameter is still supported for backward
   compatibility, users are strongly encouraged to migrate their configuration
   and use <<<forkCount>>> and <<<reuseForks>>> instead.
 
@@ -277,5 +318,6 @@ Fork Options and Parallel Test Execution
  * <<<$\{surefire.forkNumber\}>>> propagation is not supported on Maven 2.x
    (the variable will be resolved to null value all the time)
 
- * <<<$\{surefire.forkNumber\}>>> is properly propagated within <<<workingDirectory>>> since Surefire 2.19,
-   more details in {{{https://jira.codehaus.org/browse/SUREFIRE-1136}SUREFIRE-1136}}
+ * <<<$\{surefire.forkNumber\}>>> is properly propagated within <<<workingDirectory>>>
+ since ${project.artifactId}:2.19, more details in
+ {{{https://jira.codehaus.org/browse/SUREFIRE-1136}SUREFIRE-1136}}
