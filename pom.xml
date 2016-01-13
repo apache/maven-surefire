@@ -295,6 +295,7 @@
           <configuration>
             <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
             <useSystemClassLoader>false</useSystemClassLoader>
+            <argLine>${surefireArgLine}</argLine>
           </configuration>
         </plugin>
         <plugin>
@@ -313,6 +314,14 @@
           <version>${mavenPluginPluginVersion}</version>
           <configuration>
             <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>0.7.5.201505241946</version>
+          <configuration>
+            <propertyName>surefireArgLine</propertyName>
           </configuration>
         </plugin>
       </plugins>
