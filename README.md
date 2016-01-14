@@ -16,10 +16,11 @@
 
 Surefire needs Maven 3.0.5 and JDK 1.6+ to be built.
 But in order to run IT tests, you can do:
-* -DmavenHomeUsed= path to a Maven 2.x home
-* or -Pmaven-2.2.1, this profile will download Maven 2.2.1 distribution and use it for integration tests.
-In order to run tests for a release check during the vote the following memory requirements are needed:
-export MAVEN_OPTS="-Xmx768m -XX:MaxPermSize=1g -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true"
+* -DmavenHomeUsed= path to a Maven 2.x home or -Pmaven-2.2.1, this profile will download Maven 2.2.1 distribution.
+  Use it to run integration tests.
+* In order to run tests for a release check during the vote the following memory requirements are needed:
+  $ export MAVEN_OPTS="-Xmx768m -XX:MaxPermSize=1g -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true"
+* $ mvn install site site:stage -P reporting,run-its
 
 Deploying web site
 ------------------
