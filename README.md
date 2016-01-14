@@ -7,6 +7,7 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.maven.surefire/surefire/badge.svg?style=plastic)](https://maven-badges.herokuapp.com/maven-central/org.apache.maven.surefire/surefire)
 
 [JIRA Change Log]
+
 Usage of [maven-surefire-plugin], [maven-failsafe-plugin], [maven-surefire-report-plugin].
 
 # Project Documentation
