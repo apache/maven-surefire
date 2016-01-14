@@ -4,7 +4,7 @@
 
 # Project Documentation
 
-[![documentation](https://img.shields.io/badge/site-documentation-blue.svg?style=flat-square)](https://maven.apache.org/surefire/)
+[![documentation](https://img.shields.io/badge/site-documentation-blue.svg?style=plastic)](https://maven.apache.org/surefire/)
 
 # Build Status
 
