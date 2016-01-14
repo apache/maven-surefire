@@ -12,13 +12,13 @@ Usage of [maven-surefire-plugin], [maven-failsafe-plugin], [maven-surefire-repor
 
 # Project Documentation
 
-[![documentation](https://img.shields.io/badge/site-documentation-blue.svg?style=plastic)](https://maven.apache.org/surefire/)
+[![documentation](https://img.shields.io/badge/maven%20site-documentation-blue.svg?style=plastic)](https://maven.apache.org/surefire/)
 
 # Build Status
 
 [![dependencies](https://www.versioneye.com/java/org.apache.maven.plugins:maven-surefire-plugin/badge.svg?style=plastic)](https://builds.apache.org/job/maven-surefire/depgraph-view/) Maven 2.2.1 Plugin API
 
-[![license](http://img.shields.io/:license-apache-red.svg?style=plastic)](http://www.apache.org/licenses/LICENSE-2.0.html) [![coverage](https://img.shields.io/jenkins/c/https/builds.apache.org/maven-surefire.svg?style=plastic)](https://builds.apache.org/job/maven-surefire/jacoco/) [![tests](https://img.shields.io/jenkins/t/https/builds.apache.org/maven-surefire.svg?style=plastic)](https://img.shields.io/jenkins/t/https/builds.apache.org/maven-surefire.svg) [![Build Status](https://builds.apache.org/job/maven-surefire/badge/icon?style=plastic)](https://builds.apache.org/job/maven-surefire) [![Build Status](https://builds.apache.org/job/maven-surefire-windows/badge/icon?style=plastic)](https://builds.apache.org/job/maven-surefire-windows) [![Build Status](https://builds.apache.org/job/maven-surefire-mvn-2.2.1/badge/icon?style=plastic)](https://builds.apache.org/job/maven-surefire-mvn-2.2.1)
+[![license](http://img.shields.io/:license-apache-red.svg?style=plastic)](http://www.apache.org/licenses/LICENSE-2.0.html) [![coverage](https://img.shields.io/jenkins/c/https/builds.apache.org/maven-surefire.svg?style=plastic)](https://builds.apache.org/job/maven-surefire/jacoco/) [![tests](https://img.shields.io/jenkins/t/https/builds.apache.org/maven-surefire.svg?style=plastic)](https://builds.apache.org/job/maven-surefire/lastBuild/testReport/) [![Build Status](https://builds.apache.org/job/maven-surefire/badge/icon?style=plastic)](https://builds.apache.org/job/maven-surefire) [![Build Status](https://builds.apache.org/job/maven-surefire-windows/badge/icon?style=plastic)](https://builds.apache.org/job/maven-surefire-windows) [![Build Status](https://builds.apache.org/job/maven-surefire-mvn-2.2.1/badge/icon?style=plastic)](https://builds.apache.org/job/maven-surefire-mvn-2.2.1)
 
 # Development Information
 
