@@ -7,6 +7,7 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.maven.surefire/surefire/badge.svg?style=plastic)](https://maven-badges.herokuapp.com/maven-central/org.apache.maven.surefire/surefire)
 
 [JIRA Change Log]
+Usage of [maven-surefire-plugin], [maven-failsafe-plugin], [maven-surefire-report-plugin].
 
 # Project Documentation
 
@@ -36,3 +37,6 @@ see http://maven.apache.org/developers/website/deploy-component-reference-docume
 [Join us @ irc://freenode/maven]: https://www.irccloud.com/invite?channel=&amp;hostname=irc.freenode.net&amp;port=6697&amp;ssl=1
 [Webchat with us @channel maven]: https://webchat.freenode.net/
 [JIRA Change Log]: https://issues.apache.org/jira/browse/SUREFIRE/?selectedTab=com.atlassian.jira.jira-projects-plugin:changelog-panel
+[maven-surefire-plugin]: https://maven.apache.org/surefire/maven-surefire-plugin/usage.html
+[maven-failsafe-plugin]: https://maven.apache.org/surefire/maven-failsafe-plugin/usage.html
+[maven-surefire-report-plugin]: https://maven.apache.org/surefire/maven-surefire-report-plugin/usage.html
