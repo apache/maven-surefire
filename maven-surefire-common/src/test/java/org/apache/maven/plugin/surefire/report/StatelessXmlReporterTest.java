@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings( "ResultOfMethodCallIgnored" )
 public class StatelessXmlReporterTest
@@ -53,8 +54,7 @@ public class StatelessXmlReporterTest
     private final static String TEST_ONE = "aTestMethod";
     private final static String TEST_TWO = "bTestMethod";
     private final static String TEST_THREE = "cTestMethod";
-
-    private static volatile int folderPostfix;
+    private static final AtomicInteger FOLDER_POSTFIX = new AtomicInteger();
 
     @Override
     protected void setUp()
@@ -66,7 +66,7 @@ public class StatelessXmlReporterTest
         File basedir = new File( "." );
         File target = new File( basedir.getCanonicalFile(), "target" );
         target.mkdir();
-        String reportRelDir = getClass().getSimpleName() + "-" + ++folderPostfix;
+        String reportRelDir = getClass().getSimpleName() + "-" + FOLDER_POSTFIX.incrementAndGet();
         reportDir = new File( target, reportRelDir );
         reportDir.mkdir();
     }
