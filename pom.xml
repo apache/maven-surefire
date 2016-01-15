@@ -295,7 +295,7 @@
           <configuration>
             <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
             <useSystemClassLoader>false</useSystemClassLoader>
-            <argLine>${surefireArgLine}</argLine>
+            <argLine>${jacoco.agent}</argLine>
           </configuration>
         </plugin>
         <plugin>
@@ -319,9 +319,14 @@
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.7.4.201502262128</version>
+          <version>0.7.5.201505241946</version>
           <configuration>
-            <propertyName>surefireArgLine</propertyName>
+            <includes>
+              <include>**/failsafe/*</include>
+              <include>**/failsafe/**/*</include>
+              <include>**/surefire/*</include>
+              <include>**/surefire/**/*</include>
+            </includes>
           </configuration>
         </plugin>
       </plugins>
@@ -512,6 +517,28 @@
                 <mojoExecution>org.apache.maven.plugins:maven-resources-plugin::</mojoExecution>
               </mojoExecutions>
             </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>jenkins</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>jacoco-agent</id>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+                <configuration>
+                  <propertyName>jacoco.agent</propertyName>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
       </build>

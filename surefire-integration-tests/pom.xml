@@ -94,7 +94,7 @@
           <threadCount>1</threadCount>
           <perCoreThreadCount>false</perCoreThreadCount>
           <forkMode>never</forkMode>
-          <argLine>-Xmx512m -XX:MaxPermSize=356m</argLine>
+          <argLine>${argLine}</argLine>
           <includes>
             <include>org/apache/**/*IT*.java</include>
           </includes>
@@ -184,13 +184,12 @@
             <configuration>
               <parallel>classes</parallel>
               <threadCount>${surefire.threadcount}</threadCount>
-              <argLine>-Xmx2512m -XX:MaxPermSize=256m</argLine>
+              <argLine>${argLine} -Xmx512m -XX:MaxPermSize=356m</argLine>
             </configuration>
           </plugin>
         </plugins>
       </build>
     </profile>
-
     <profile>
       <id>embedded</id>
       <activation>
@@ -203,7 +202,6 @@
         <verifier.forkMode>auto</verifier.forkMode>
       </properties>
     </profile>
-
     <profile>
       <id>maven-2.2.1</id>
       <properties>
@@ -248,6 +246,36 @@
         </plugins>
       </build>
     </profile>
-
+    <profile>
+      <id>jenkins</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>jacoco-agent</id>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+                <configuration>
+                  <skip>true</skip>
+                </configuration>
+              </execution>
+              <execution>
+                <id>jacoco-agent-it</id>
+                <goals>
+                  <goal>prepare-agent-integration</goal>
+                </goals>
+                <configuration>
+                  <propertyName>argLine</propertyName>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>
