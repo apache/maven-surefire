@@ -36,15 +36,13 @@ final class ScannerUtil
     @Deprecated
     private static final boolean IS_NON_UNIX_FS = ( !FS.equals( "/" ) );
 
-    @SuppressWarnings( "checkstyle:modifierorder" )
-    public static @Nonnull String convertJarFileResourceToJavaClassName( @Nonnull String test )
+    @Nonnull public static String convertJarFileResourceToJavaClassName( @Nonnull String test )
     {
         return StringUtils.removeEnd( test, ".class" ).replace( "/", "." );
     }
 
-    @SuppressWarnings( "checkstyle:modifierorder" )
     @Deprecated
-    public static @Nonnull String convertSlashToSystemFileSeparator( @Nonnull String path )
+    @Nonnull public static String convertSlashToSystemFileSeparator( @Nonnull String path )
     {
         return ( IS_NON_UNIX_FS ? path.replace( "/", FS ) : path );
     }

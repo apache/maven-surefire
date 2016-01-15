@@ -237,20 +237,6 @@ public final class TestLessInputStream
         }
 
         @SuppressWarnings( "checkstyle:innerassignment" )
-        private void addTailNode( Command command )
-        {
-            Node newTail = new Node( command );
-            Node currentTail = head;
-            do
-            {
-                for ( Node successor; ( successor = currentTail.next.get() ) != null; )
-                {
-                    currentTail = successor;
-                }
-            } while ( !currentTail.next.compareAndSet( null, newTail ) );
-        }
-
-        @SuppressWarnings( "checkstyle:innerassignment" )
         private boolean addTailNodeIfAbsent( Command command )
         {
             Node newTail = new Node( command );

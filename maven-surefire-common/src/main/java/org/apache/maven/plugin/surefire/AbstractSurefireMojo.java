@@ -1607,8 +1607,7 @@ public abstract class AbstractSurefireMojo
         return StringUtils.isNotBlank( getTest() );
     }
 
-    @SuppressWarnings( "checkstyle:modifierorder" )
-    private @Nonnull List<String> readListFromFile( @Nonnull final File file )
+    @Nonnull private List<String> readListFromFile( @Nonnull final File file )
     {
         getLog().debug( "Reading list from: " + file );
 
@@ -1645,8 +1644,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    @SuppressWarnings( "checkstyle:modifierorder" )
-    private @Nonnull List<String> getExcludeList()
+    @Nonnull private List<String> getExcludeList()
         throws MojoFailureException
     {
         List<String> actualExcludes = null;
@@ -1752,8 +1750,7 @@ public abstract class AbstractSurefireMojo
         return specificTests;
     }
 
-    @SuppressWarnings( "checkstyle:modifierorder" )
-    private @Nonnull List<String> filterNulls( @Nonnull List<String> toFilter )
+    @Nonnull private List<String> filterNulls( @Nonnull List<String> toFilter )
     {
         List<String> result = new ArrayList<String>( toFilter.size() );
         for ( String item : toFilter )
@@ -2471,8 +2468,7 @@ public abstract class AbstractSurefireMojo
             this.testNgArtifact = testNgArtifact;
         }
 
-        @SuppressWarnings( "checkstyle:modifierorder" )
-        public @Nonnull String getProviderName()
+        @Nonnull public String getProviderName()
         {
             return "org.apache.maven.surefire.testng.TestNGProvider";
         }
@@ -2664,7 +2660,6 @@ public abstract class AbstractSurefireMojo
             this.dynamicProvider = dynamicProviderInfo;
         }
 
-        @SuppressWarnings( "checkstyle:modifierorder" )
         @Nonnull List<ProviderInfo> resolve()
         {
             List<ProviderInfo> providersToRun = new ArrayList<ProviderInfo>();
@@ -2679,8 +2674,7 @@ public abstract class AbstractSurefireMojo
             return manuallyConfiguredProviders.isEmpty() ? autoDetectOneProvider() : providersToRun;
         }
 
-        @SuppressWarnings( "checkstyle:modifierorder" )
-        private @Nonnull List<ProviderInfo> autoDetectOneProvider()
+        @Nonnull private List<ProviderInfo> autoDetectOneProvider()
         {
             List<ProviderInfo> providersToRun = new ArrayList<ProviderInfo>();
             for ( ProviderInfo wellKnownProvider : wellKnownProviders )

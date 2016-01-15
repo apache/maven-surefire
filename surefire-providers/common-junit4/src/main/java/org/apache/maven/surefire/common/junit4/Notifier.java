@@ -74,17 +74,16 @@ public class Notifier
         return new Notifier()
         {
             @Override
-            public Notifier asFailFast( boolean failFast )
+            public void asFailFast( @SuppressWarnings( { "unused", "checkstyle:hiddenfieldcheck" } ) boolean failFast )
             {
                 throw new UnsupportedOperationException( "pure notifier" );
             }
         };
     }
 
-    public Notifier asFailFast( boolean failFast )
+    public void asFailFast( boolean enableFailFast )
     {
-        this.failFast = failFast;
-        return this;
+        failFast = enableFailFast;
     }
 
     public final boolean isFailFast()
@@ -93,6 +92,7 @@ public class Notifier
     }
 
     @Override
+    @SuppressWarnings( "checkstyle:redundantthrowscheck" ) // checkstyle is wrong here, see super.fireTestStarted()
     public final void fireTestStarted( Description description ) throws StoppedByUserException
     {
         // If fireTestStarted() throws exception (== skipped test), the class must not be removed from testClassNames.
@@ -130,6 +130,7 @@ public class Notifier
         return this;
     }
 
+    @SuppressWarnings( "unused" )
     public final Notifier addListeners( RunListener... given )
     {
         for ( RunListener listener : given )
