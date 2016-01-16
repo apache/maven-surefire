@@ -41,9 +41,12 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.artifact.resolve.ArtifactResolver;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ExcludesArtifactFilter;
@@ -68,6 +71,7 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
+import org.apache.maven.shared.artifact.resolve.ArtifactResolverException;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.io.FileUtils;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
@@ -1570,11 +1574,11 @@ public abstract class AbstractSurefireMojo
             return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration,
                                              isForking(), false );
         }
-        catch ( ArtifactResolutionException e )
+        catch ( AbstractArtifactResolutionException e )
         {
             throw new MojoExecutionException( "Unable to generate classpath: " + e, e );
         }
-        catch ( ArtifactNotFoundException e )
+        catch ( ArtifactResolverException e )
         {
             throw new MojoExecutionException( "Unable to generate classpath: " + e, e );
         }
@@ -2096,8 +2100,8 @@ public abstract class AbstractSurefireMojo
      * @throws ArtifactResolutionException when it happens
      */
     private Classpath generateTestClasspath()
-        throws InvalidVersionSpecificationException, MojoFailureException, ArtifactResolutionException,
-        ArtifactNotFoundException, MojoExecutionException
+            throws InvalidVersionSpecificationException, MojoFailureException,
+                   AbstractArtifactResolutionException, MojoExecutionException, ArtifactResolverException
     {
         List<String> classpath = new ArrayList<String>( 2 + getProject().getArtifacts().size() );
 
@@ -2155,7 +2159,7 @@ public abstract class AbstractSurefireMojo
     }
 
     private void addTestNgUtilsArtifacts( List<String> classpath )
-        throws ArtifactResolutionException, ArtifactNotFoundException
+            throws AbstractArtifactResolutionException, ArtifactResolverException
     {
         Artifact surefireArtifact = getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
         String surefireVersion = surefireArtifact.getBaseVersion();
@@ -2170,8 +2174,10 @@ public abstract class AbstractSurefireMojo
 
         for ( Artifact artifact : extraTestNgArtifacts )
         {
-            getArtifactResolver().resolve( artifact, getRemoteRepositories(), getLocalRepository() );
-
+            ProjectBuildingRequest request = new DefaultProjectBuildingRequest();
+            request.setLocalRepository( getLocalRepository() );
+            request.setRemoteRepositories( getRemoteRepositories() );
+            getArtifactResolver().resolveArtifact( request, artifact );
             String path = artifact.getFile().getPath();
             classpath.add( path );
         }
@@ -2227,11 +2233,7 @@ public abstract class AbstractSurefireMojo
                                                               originatingArtifact, getLocalRepository(),
                                                               getRemoteRepositories(), getMetadataSource(), filter );
         }
-        catch ( ArtifactResolutionException e )
-        {
-            throw new RuntimeException( e );
-        }
-        catch ( ArtifactNotFoundException e )
+        catch ( AbstractArtifactResolutionException e )
         {
             throw new RuntimeException( e );
         }
