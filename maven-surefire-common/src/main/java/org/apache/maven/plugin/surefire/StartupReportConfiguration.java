@@ -45,6 +45,10 @@ import javax.annotation.Nonnull;
  */
 public class StartupReportConfiguration
 {
+    public static final String BRIEF_REPORT_FORMAT = ConsoleReporter.BRIEF;
+
+    public static final String PLAIN_REPORT_FORMAT = ConsoleReporter.PLAIN;
+
     private final PrintStream originalSystemOut;
 
     private final PrintStream originalSystemErr;
@@ -71,13 +75,11 @@ public class StartupReportConfiguration
 
     private final int rerunFailingTestsCount;
 
+    private String xsdSchemaLocation;
+
     private final Properties testVmSystemProperties = new Properties();
 
-    public static final String BRIEF_REPORT_FORMAT = ConsoleReporter.BRIEF;
-
-    public static final String PLAIN_REPORT_FORMAT = ConsoleReporter.PLAIN;
-
-    private final Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistoryMap
+    private final Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistory
         = new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>();
 
     @SuppressWarnings( "checkstyle:parameternumber" )
@@ -85,7 +87,7 @@ public class StartupReportConfiguration
                                        boolean redirectTestOutputToFile, boolean disableXmlReport,
                                        @Nonnull File reportsDirectory, boolean trimStackTrace, String reportNameSuffix,
                                        String configurationHash, boolean requiresRunHistory,
-                                       int rerunFailingTestsCount )
+                                       int rerunFailingTestsCount, String xsdSchemaLocation )
     {
         this.useFile = useFile;
         this.printSummary = printSummary;
@@ -100,20 +102,27 @@ public class StartupReportConfiguration
         this.originalSystemOut = System.out;
         this.originalSystemErr = System.err;
         this.rerunFailingTestsCount = rerunFailingTestsCount;
+        this.xsdSchemaLocation = xsdSchemaLocation;
     }
 
+    /**
+     * For testing purposes only.
+     */
     public static StartupReportConfiguration defaultValue()
     {
         File target = new File( "./target" );
         return new StartupReportConfiguration( true, true, "PLAIN", false, false, target, false, null, "TESTHASH",
-                                               false, 0 );
+                                               false, 0, null );
     }
 
+    /**
+     * For testing purposes only.
+     */
     public static StartupReportConfiguration defaultNoXml()
     {
         File target = new File( "./target" );
         return new StartupReportConfiguration( true, true, "PLAIN", false, true, target, false, null, "TESTHASHxXML",
-                                               false, 0 );
+                                               false, 0, null );
     }
 
     public boolean isUseFile()
@@ -160,8 +169,8 @@ public class StartupReportConfiguration
     {
         return isDisableXmlReport()
             ? null
-            : new StatelessXmlReporter( reportsDirectory, reportNameSuffix, trimStackTrace,
-                                        rerunFailingTestsCount, testClassMethodRunHistoryMap );
+            : new StatelessXmlReporter( reportsDirectory, reportNameSuffix, trimStackTrace, rerunFailingTestsCount,
+                                        testClassMethodRunHistory, xsdSchemaLocation );
     }
 
     public FileReporter instantiateFileReporter()
@@ -227,5 +236,10 @@ public class StartupReportConfiguration
     public PrintStream getOriginalSystemOut()
     {
         return originalSystemOut;
+    }
+
+    public String getXsdSchemaLocation()
+    {
+        return xsdSchemaLocation;
     }
 }

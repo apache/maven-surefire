@@ -62,7 +62,7 @@ public class DefaultReporterFactoryTest
     public void testMergeTestHistoryResult()
     {
         StartupReportConfiguration reportConfig = new StartupReportConfiguration( true, true, "PLAIN", false, false, new File("target"), false, null, "TESTHASH",
-                                                                                                 false, 1 );
+                                                                                                 false, 1, null );
 
         DefaultReporterFactory factory = new DefaultReporterFactory( reportConfig );
 

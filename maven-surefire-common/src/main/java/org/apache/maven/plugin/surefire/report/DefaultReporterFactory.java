@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import static org.apache.maven.plugin.surefire.report.ConsoleReporter.PLAIN;
+
 /**
  * Provides reporting modules on the plugin side.
  * <p/>
@@ -46,7 +48,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class DefaultReporterFactory
     implements ReporterFactory
 {
-
     private RunStatistics globalStats = new RunStatistics();
 
     private final StartupReportConfiguration reportConfiguration;
@@ -78,7 +79,7 @@ public class DefaultReporterFactory
                                     reportConfiguration.instantiateStatelessXmlReporter(),
                                     reportConfiguration.instantiateConsoleOutputFileReporter(), statisticsReporter,
                                     reportConfiguration.isTrimStackTrace(),
-                                    ConsoleReporter.PLAIN.equals( reportConfiguration.getReportFormat() ),
+                                    PLAIN.equals( reportConfiguration.getReportFormat() ),
                                     reportConfiguration.isBriefOrPlainFormat() );
         addListener( testSetRunListener );
         return testSetRunListener;
@@ -151,6 +152,9 @@ public class DefaultReporterFactory
         return globalStats;
     }
 
+    /**
+     * For testing purposes only.
+     */
     public static DefaultReporterFactory defaultNoXml()
     {
         return new DefaultReporterFactory( StartupReportConfiguration.defaultNoXml() );

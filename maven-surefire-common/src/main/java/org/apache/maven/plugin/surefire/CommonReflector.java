@@ -59,21 +59,21 @@ public class CommonReflector
                                                   surefireClassLoader );
     }
 
-
-    Object createStartupReportConfiguration( @Nonnull StartupReportConfiguration reporterConfiguration )
+    private Object createStartupReportConfiguration( @Nonnull StartupReportConfiguration reporterConfiguration )
     {
         Constructor<?> constructor = ReflectionUtils.getConstructor( startupReportConfiguration,
                                                                      boolean.class, boolean.class,
                                                                      String.class, boolean.class, boolean.class,
                                                                      File.class, boolean.class, String.class,
-                                                                     String.class, boolean.class, int.class );
+                                                                     String.class, boolean.class, int.class,
+                                                                     String.class );
         //noinspection BooleanConstructorCall
         Object[] params = { reporterConfiguration.isUseFile(), reporterConfiguration.isPrintSummary(),
             reporterConfiguration.getReportFormat(), reporterConfiguration.isRedirectTestOutputToFile(),
             reporterConfiguration.isDisableXmlReport(), reporterConfiguration.getReportsDirectory(),
             reporterConfiguration.isTrimStackTrace(), reporterConfiguration.getReportNameSuffix(),
             reporterConfiguration.getConfigurationHash(), reporterConfiguration.isRequiresRunHistory(),
-            reporterConfiguration.getRerunFailingTestsCount() };
+            reporterConfiguration.getRerunFailingTestsCount(), reporterConfiguration.getXsdSchemaLocation() };
         return ReflectionUtils.newInstance( constructor, params );
     }
 

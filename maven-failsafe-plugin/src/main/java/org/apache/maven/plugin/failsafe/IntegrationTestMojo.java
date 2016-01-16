@@ -390,6 +390,12 @@ public class IntegrationTestMojo
         return new String[]{ "**/IT*.java", "**/*IT.java", "**/*ITCase.java" };
     }
 
+    @Override
+    protected String getReportSchemaLocation()
+    {
+        return "https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report.xsd";
+    }
+
     public boolean isSkipTests()
     {
         return skipTests;
