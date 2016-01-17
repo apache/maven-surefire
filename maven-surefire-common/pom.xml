@@ -158,7 +158,7 @@
                   <include>commons-io:commons-io</include>
                 </includes>
               </artifactSet>
-              <relocations>
+              <!--<relocations>
                 <relocation>
                   <pattern>org.apache.maven.shared</pattern>
                   <shadedPattern>org.apache.maven.surefire.shade.org.apache.maven.shared</shadedPattern>
@@ -167,7 +167,7 @@
                   <pattern>org.apache.commons.io</pattern>
                   <shadedPattern>org.apache.maven.surefire.shade.org.apache.commons.io</shadedPattern>
                 </relocation>
-              </relocations>
+              </relocations>-->
             </configuration>
           </execution>
         </executions>
