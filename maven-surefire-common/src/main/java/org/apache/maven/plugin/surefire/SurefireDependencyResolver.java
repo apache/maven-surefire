@@ -20,28 +20,31 @@ package org.apache.maven.plugin.surefire;
  */
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
-import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ExcludesArtifactFilter;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.shared.artifact.resolve.ArtifactResolver;
+import org.apache.maven.repository.RepositorySystem;
+import org.apache.maven.shared.artifact.resolve.ArtifactResolverException;
 import org.apache.maven.surefire.booter.Classpath;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import static java.util.Collections.singletonList;
+import static org.apache.maven.artifact.Artifact.SCOPE_TEST;
+import static org.apache.maven.artifact.versioning.VersionRange.createFromVersion;
 
 /**
  * Does dependency resolution and artifact handling for the surefire plugin.
@@ -51,35 +54,29 @@ import javax.annotation.Nullable;
  */
 public class SurefireDependencyResolver
 {
-
-    private final ArtifactResolver artifactResolver;
+    private final RepositorySystem repositorySystem;
 
     private final ArtifactFactory artifactFactory;
 
-    private final org.apache.maven.plugin.logging.Log log;
+    private final Log log;
 
     private final ArtifactRepository localRepository;
 
     private final List<ArtifactRepository> remoteRepositories;
 
-    private final ArtifactMetadataSource artifactMetadataSource;
-
     private final String pluginName;
 
-    protected SurefireDependencyResolver( ArtifactResolver artifactResolver, ArtifactFactory artifactFactory, Log log,
+    protected SurefireDependencyResolver( RepositorySystem repositorySystem, ArtifactFactory artifactFactory, Log log,
                                           ArtifactRepository localRepository,
-                                          List<ArtifactRepository> remoteRepositories,
-                                          ArtifactMetadataSource artifactMetadataSource, String pluginName )
+                                          List<ArtifactRepository> remoteRepositories, String pluginName )
     {
-        this.artifactResolver = artifactResolver;
+        this.repositorySystem = repositorySystem;
         this.artifactFactory = artifactFactory;
         this.log = log;
         this.localRepository = localRepository;
         this.remoteRepositories = remoteRepositories;
-        this.artifactMetadataSource = artifactMetadataSource;
         this.pluginName = pluginName;
     }
-
 
     public boolean isWithinVersionSpec( @Nullable Artifact artifact, @Nonnull String versionSpec )
     {
@@ -109,46 +106,49 @@ public class SurefireDependencyResolver
         }
     }
 
-
-    public ArtifactResolutionResult resolveArtifact( @Nullable Artifact filteredArtifact, Artifact providerArtifact )
-        throws ArtifactResolutionException, ArtifactNotFoundException
+    public ArtifactResolutionResult resolveArtifact( Artifact providerArtifact )
+        throws ArtifactNotFoundException, ArtifactResolverException, ArtifactResolutionException
     {
-        ArtifactFilter filter = null;
-        if ( filteredArtifact != null )
-        {
-            filter = new ExcludesArtifactFilter(
-                Collections.singletonList( filteredArtifact.getGroupId() + ":" + filteredArtifact.getArtifactId() ) );
-        }
-
-        Artifact originatingArtifact = artifactFactory.createBuildArtifact( "dummy", "dummy", "1.0", "jar" );
-
-        return artifactResolver.resolveTransitively( Collections.singleton( providerArtifact ), originatingArtifact,
-                                                     localRepository, remoteRepositories, artifactMetadataSource,
-                                                     filter );
+        return resolveArtifact( providerArtifact, null );
     }
 
-    public Classpath getProviderClasspath( String provider, String version, Artifact filteredArtifact )
-        throws ArtifactNotFoundException, ArtifactResolutionException
+    public ArtifactResolutionResult resolveArtifact( Artifact providerArtifact, Artifact excludeArtifact )
+        throws ArtifactResolutionException, ArtifactNotFoundException, ArtifactResolverException
+    {
+        ArtifactResolutionRequest request = new ArtifactResolutionRequest()
+                                                    .setArtifact( providerArtifact )
+                                                    .setRemoteRepositories( remoteRepositories )
+                                                    .setLocalRepository( localRepository );
+        if ( excludeArtifact != null )
+        {
+            String pattern = excludeArtifact.getGroupId() + ":" + excludeArtifact.getArtifactId();
+            request.setCollectionFilter( new ExcludesArtifactFilter( singletonList( pattern ) ) );
+        }
+        return repositorySystem.resolve( request );
+    }
+
+    public Classpath getProviderClasspath( String provider, String version )
+            throws ArtifactNotFoundException, ArtifactResolutionException, ArtifactResolverException
+    {
+        return getProviderClasspath( provider, version, null );
+    }
+
+    public Classpath getProviderClasspath( String provider, String version, Artifact excludeArtifact )
+        throws ArtifactNotFoundException, ArtifactResolutionException, ArtifactResolverException
     {
         Classpath classPath = ClasspathCache.getCachedClassPath( provider );
         if ( classPath == null )
         {
-            Artifact providerArtifact = artifactFactory.createDependencyArtifact( "org.apache.maven.surefire", provider,
-                                                                                  VersionRange.createFromVersion(
-                                                                                      version ), "jar", null,
-                                                                                  Artifact.SCOPE_TEST );
-            ArtifactResolutionResult result = resolveArtifact( filteredArtifact, providerArtifact );
+            Artifact providerArtifact =
+                    artifactFactory.createDependencyArtifact( "org.apache.maven.surefire", provider,
+                                                              createFromVersion( version ), "jar", null, SCOPE_TEST );
             List<String> files = new ArrayList<String>();
-
-            for ( Object o : result.getArtifacts() )
+            for ( Artifact artifact : resolveArtifact( providerArtifact ).getArtifacts() )
             {
-                Artifact artifact = (Artifact) o;
-
-                log.debug(
-                    "Adding to " + pluginName + " test classpath: " + artifact.getFile().getAbsolutePath() + " Scope: "
+                String artifactPath = artifact.getFile().getAbsolutePath();
+                log.debug( "Adding to " + pluginName + " test classpath: " + artifactPath + " Scope: "
                         + artifact.getScope() );
-
-                files.add( artifact.getFile().getAbsolutePath() );
+                files.add( artifactPath );
             }
             classPath = new Classpath( files );
             ClasspathCache.setCachedClasspath( provider, classPath );
@@ -157,12 +157,12 @@ public class SurefireDependencyResolver
     }
 
     public Classpath addProviderToClasspath( Map<String, Artifact> pluginArtifactMap, Artifact surefireArtifact )
-        throws ArtifactResolutionException, ArtifactNotFoundException
+        throws ArtifactResolutionException, ArtifactNotFoundException, ArtifactResolverException
     {
         List<String> files = new ArrayList<String>();
         if ( surefireArtifact != null )
         {
-            final ArtifactResolutionResult artifactResolutionResult = resolveArtifact( null, surefireArtifact );
+            final ArtifactResolutionResult artifactResolutionResult = resolveArtifact( surefireArtifact );
             for ( Artifact artifact : pluginArtifactMap.values() )
             {
                 if ( !artifactResolutionResult.getArtifacts().contains( artifact ) )

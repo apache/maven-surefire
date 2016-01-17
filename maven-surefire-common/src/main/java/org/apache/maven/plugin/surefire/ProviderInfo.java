@@ -22,6 +22,7 @@ package org.apache.maven.plugin.surefire;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.shared.artifact.resolve.ArtifactResolverException;
 import org.apache.maven.surefire.booter.Classpath;
 
 import javax.annotation.Nonnull;
@@ -37,7 +38,7 @@ public interface ProviderInfo
     boolean isApplicable();
 
     Classpath getProviderClasspath()
-        throws ArtifactResolutionException, ArtifactNotFoundException;
+            throws ArtifactResolutionException, ArtifactNotFoundException, ArtifactResolverException;
 
     void addProviderProperties() throws MojoExecutionException;
 }

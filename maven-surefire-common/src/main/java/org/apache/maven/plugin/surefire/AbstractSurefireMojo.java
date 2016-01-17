@@ -22,7 +22,6 @@ package org.apache.maven.plugin.surefire;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,12 +43,13 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.shared.artifact.resolve.ArtifactResolver;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
-import org.apache.maven.artifact.resolver.filter.ExcludesArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -667,6 +667,9 @@ public abstract class AbstractSurefireMojo
     @Component
     private ToolchainManager toolchainManager;
 
+    @Component
+    private RepositorySystem repositorySystem;
+
     private Artifact surefireBooterArtifact;
 
     private Toolchain toolchain;
@@ -901,8 +904,8 @@ public abstract class AbstractSurefireMojo
     private void createDependencyResolver()
     {
         dependencyResolver =
-            new SurefireDependencyResolver( getArtifactResolver(), getArtifactFactory(), getLog(), getLocalRepository(),
-                                            getRemoteRepositories(), getMetadataSource(), getPluginName() );
+            new SurefireDependencyResolver( repositorySystem, getArtifactFactory(), getLog(), getLocalRepository(),
+                                            getRemoteRepositories(), getPluginName() );
     }
 
     protected List<ProviderInfo> createProviders()
@@ -2215,28 +2218,13 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-
-    private ArtifactResolutionResult resolveArtifact( Artifact filteredArtifact, Artifact providerArtifact )
+    private ArtifactResolutionResult resolveArtifact( Artifact providerArtifact )
     {
-        ArtifactFilter filter = null;
-        if ( filteredArtifact != null )
-        {
-            filter = new ExcludesArtifactFilter(
-                Collections.singletonList( filteredArtifact.getGroupId() + ":" + filteredArtifact.getArtifactId() ) );
-        }
-
-        Artifact originatingArtifact = getArtifactFactory().createBuildArtifact( "dummy", "dummy", "1.0", "jar" );
-
-        try
-        {
-            return getArtifactResolver().resolveTransitively( Collections.singleton( providerArtifact ),
-                                                              originatingArtifact, getLocalRepository(),
-                                                              getRemoteRepositories(), getMetadataSource(), filter );
-        }
-        catch ( AbstractArtifactResolutionException e )
-        {
-            throw new RuntimeException( e );
-        }
+        ArtifactResolutionRequest request = new ArtifactResolutionRequest()
+                                                    .setArtifact( providerArtifact )
+                                                    .setRemoteRepositories( remoteRepositories )
+                                                    .setLocalRepository( localRepository );
+        return repositorySystem.resolve( request );
     }
 
     private Classpath getArtifactClasspath( Artifact surefireArtifact )
@@ -2244,18 +2232,13 @@ public abstract class AbstractSurefireMojo
         Classpath existing = ClasspathCache.getCachedClassPath( surefireArtifact.getArtifactId() );
         if ( existing == null )
         {
-            ArtifactResolutionResult result = resolveArtifact( null, surefireArtifact );
-
             List<String> items = new ArrayList<String>();
-            for ( Object o : result.getArtifacts() )
+            for ( Artifact artifact : resolveArtifact( surefireArtifact ).getArtifacts() )
             {
-                Artifact artifact = (Artifact) o;
-
-                getLog().debug(
-                    "Adding to " + getPluginName() + " booter test classpath: " + artifact.getFile().getAbsolutePath()
+                String artifactPath = artifact.getFile().getAbsolutePath();
+                getLog().debug( "Adding to " + getPluginName() + " booter test classpath: " + artifactPath
                     + " Scope: " + artifact.getScope() );
-
-                items.add( artifact.getFile().getAbsolutePath() );
+                items.add( artifactPath );
             }
             existing = new Classpath( items );
             ClasspathCache.setCachedClasspath( surefireArtifact.getArtifactId(), existing );
@@ -2265,33 +2248,8 @@ public abstract class AbstractSurefireMojo
 
     private Properties getUserProperties()
     {
-        Properties props = null;
-        try
-        {
-            // try calling MavenSession.getUserProperties() from Maven 2.1.0-M1+
-            Method getUserProperties = getSession().getClass().getMethod( "getUserProperties" );
-            props = (Properties) getUserProperties.invoke( getSession() );
-        }
-        catch ( Exception e )
-        {
-            String msg = "Build uses Maven 2.0.x, cannot propagate system properties"
-                + " from command line to tests (cf. SUREFIRE-121)";
-            if ( getLog().isDebugEnabled() )
-            {
-                getLog().warn( msg, e );
-            }
-            else
-            {
-                getLog().warn( msg );
-            }
-        }
-        if ( props == null )
-        {
-            props = new Properties();
-        }
-        return props;
+        return getSession().getUserProperties();
     }
-
 
     private void ensureWorkingDirectoryExists()
         throws MojoFailureException
@@ -2486,7 +2444,7 @@ public abstract class AbstractSurefireMojo
         }
 
         public Classpath getProviderClasspath()
-            throws ArtifactResolutionException, ArtifactNotFoundException
+            throws ArtifactResolutionException, ArtifactNotFoundException, ArtifactResolverException
         {
             Artifact surefireArtifact = getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
             return dependencyResolver.getProviderClasspath( "surefire-testng", surefireArtifact.getBaseVersion(),
@@ -2512,12 +2470,12 @@ public abstract class AbstractSurefireMojo
         }
 
         public Classpath getProviderClasspath()
-            throws ArtifactResolutionException, ArtifactNotFoundException
+            throws ArtifactResolutionException, ArtifactNotFoundException, ArtifactResolverException
         {
             // add the JUnit provider as default - it doesn't require JUnit to be present,
             // since it supports POJO tests.
-            return dependencyResolver.getProviderClasspath( "surefire-junit3", surefireBooterArtifact.getBaseVersion(),
-                                                            null );
+            return dependencyResolver.getProviderClasspath( "surefire-junit3",
+                                                            surefireBooterArtifact.getBaseVersion() );
 
         }
     }
@@ -2550,10 +2508,10 @@ public abstract class AbstractSurefireMojo
         }
 
         public Classpath getProviderClasspath()
-            throws ArtifactResolutionException, ArtifactNotFoundException
+            throws ArtifactResolutionException, ArtifactNotFoundException, ArtifactResolverException
         {
-            return dependencyResolver.getProviderClasspath( "surefire-junit4", surefireBooterArtifact.getBaseVersion(),
-                                                            null );
+            return dependencyResolver.getProviderClasspath( "surefire-junit4",
+                                                            surefireBooterArtifact.getBaseVersion() );
         }
 
     }
@@ -2595,10 +2553,10 @@ public abstract class AbstractSurefireMojo
         }
 
         public Classpath getProviderClasspath()
-            throws ArtifactResolutionException, ArtifactNotFoundException
+            throws ArtifactResolutionException, ArtifactNotFoundException, ArtifactResolverException
         {
-            return dependencyResolver.getProviderClasspath( "surefire-junit47", surefireBooterArtifact.getBaseVersion(),
-                                                            null );
+            return dependencyResolver.getProviderClasspath( "surefire-junit47",
+                                                            surefireBooterArtifact.getBaseVersion() );
         }
     }
 
@@ -2639,7 +2597,7 @@ public abstract class AbstractSurefireMojo
         }
 
         public Classpath getProviderClasspath()
-            throws ArtifactResolutionException, ArtifactNotFoundException
+            throws ArtifactResolutionException, ArtifactNotFoundException, ArtifactResolverException
         {
             final Map<String, Artifact> pluginArtifactMap = getPluginArtifactMap();
             Artifact plugin = pluginArtifactMap.get( "org.apache.maven.plugins:maven-surefire-plugin" );

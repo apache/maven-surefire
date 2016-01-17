@@ -73,6 +73,10 @@
       <type>zip</type>
       <classifier>site-source</classifier>
     </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-artifact-transfer</artifactId>
+    </dependency>
   </dependencies>
 
   <build>

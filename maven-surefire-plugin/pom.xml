@@ -65,6 +65,10 @@
       <artifactId>maven-plugin-annotations</artifactId>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-artifact-transfer</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
