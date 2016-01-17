@@ -344,6 +344,12 @@ public class SurefirePlugin
         return new String[]{ "**/Test*.java", "**/*Test.java", "**/*TestCase.java" };
     }
 
+    @Override
+    protected String getReportSchemaLocation()
+    {
+        return "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd";
+    }
+
     // now for the implementation of the field accessors
 
     public boolean isSkipTests()

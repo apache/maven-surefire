@@ -727,6 +727,8 @@ public abstract class AbstractSurefireMojo
 
     protected abstract String[] getDefaultIncludes();
 
+    protected abstract String getReportSchemaLocation();
+
     private String getDefaultExcludes()
     {
         return "**/*$*";
@@ -1606,7 +1608,8 @@ public abstract class AbstractSurefireMojo
         return new StartupReportConfiguration( isUseFile(), isPrintSummary(), getReportFormat(),
                                                isRedirectTestOutputToFile(), isDisableXmlReport(),
                                                getReportsDirectory(), isTrimStackTrace(), getReportNameSuffix(),
-                                               configChecksum, requiresRunHistory(), getRerunFailingTestsCount() );
+                                               configChecksum, requiresRunHistory(), getRerunFailingTestsCount(),
+                                               getReportSchemaLocation() );
     }
 
     private boolean isSpecificTestSpecified()

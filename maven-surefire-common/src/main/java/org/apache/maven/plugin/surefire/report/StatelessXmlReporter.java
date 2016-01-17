@@ -94,19 +94,23 @@ public class StatelessXmlReporter
 
     private final int rerunFailingTestsCount;
 
+    private final String xsdSchemaLocation;
+
     // Map between test class name and a map between test method name
     // and the list of runs for each test method
     private final Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistoryMap;
 
     public StatelessXmlReporter( File reportsDirectory, String reportNameSuffix, boolean trimStackTrace,
                                  int rerunFailingTestsCount,
-                                 Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistoryMap )
+                                 Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistoryMap,
+                                 String xsdSchemaLocation )
     {
         this.reportsDirectory = reportsDirectory;
         this.reportNameSuffix = reportNameSuffix;
         this.trimStackTrace = trimStackTrace;
         this.rerunFailingTestsCount = rerunFailingTestsCount;
         this.testClassMethodRunHistoryMap = testClassMethodRunHistoryMap;
+        this.xsdSchemaLocation = xsdSchemaLocation;
     }
 
     public void testSetCompleted( WrappedReportEntry testSetReportEntry, TestSetStats testSetStats )
@@ -128,8 +132,7 @@ public class StatelessXmlReporter
             XMLWriter ppw = new PrettyPrintXMLWriter( fw );
             ppw.setEncoding( ENCODING );
 
-            createTestSuiteElement( ppw, testSetReportEntry, testSetStats, reportNameSuffix,
-                                    testSetReportEntry.elapsedTimeAsString() );
+            createTestSuiteElement( ppw, testSetReportEntry, testSetStats, testSetReportEntry.elapsedTimeAsString() );
 
             showProperties( ppw );
 
@@ -347,17 +350,15 @@ public class StatelessXmlReporter
         ppw.addAttribute( "time", timeAsString );
     }
 
-    private static void createTestSuiteElement( XMLWriter ppw, WrappedReportEntry report, TestSetStats testSetStats,
-                                                String reportNameSuffix1, String timeAsString )
+    private void createTestSuiteElement( XMLWriter ppw, WrappedReportEntry report, TestSetStats testSetStats,
+                                         String timeAsString )
     {
         ppw.startElement( "testsuite" );
 
         ppw.addAttribute( "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance" );
+        ppw.addAttribute( "xsi:noNamespaceSchemaLocation", xsdSchemaLocation );
 
-        ppw.addAttribute( "xsi:noNamespaceSchemaLocation",
-                          "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" );
-
-        ppw.addAttribute( "name", report.getReportName( reportNameSuffix1 ) );
+        ppw.addAttribute( "name", report.getReportName( reportNameSuffix ) );
 
         if ( report.getGroup() != null )
         {

@@ -37,24 +37,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings( "ResultOfMethodCallIgnored" )
 public class StatelessXmlReporterTest
     extends TestCase
 {
-    private TestSetStats stats;
-
-    private TestSetStats rerunStats;
-
-    private File expectedReportFile;
-
-    private File reportDir;
-
+    private static final String XSD =
+            "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd";
     private final static String TEST_ONE = "aTestMethod";
     private final static String TEST_TWO = "bTestMethod";
     private final static String TEST_THREE = "cTestMethod";
+    private static final AtomicInteger FOLDER_POSTFIX = new AtomicInteger();
 
-    private static volatile int folderPostfix;
+    private TestSetStats stats;
+    private TestSetStats rerunStats;
+    private File expectedReportFile;
+    private File reportDir;
 
     @Override
     protected void setUp()
@@ -66,7 +65,7 @@ public class StatelessXmlReporterTest
         File basedir = new File( "." );
         File target = new File( basedir.getCanonicalFile(), "target" );
         target.mkdir();
-        String reportRelDir = getClass().getSimpleName() + "-" + ++folderPostfix;
+        String reportRelDir = getClass().getSimpleName() + "-" + FOLDER_POSTFIX.incrementAndGet();
         reportDir = new File( target, reportRelDir );
         reportDir.mkdir();
     }
@@ -85,7 +84,7 @@ public class StatelessXmlReporterTest
     {
         StatelessXmlReporter reporter =
             new StatelessXmlReporter( reportDir, null, false, 0,
-                                      new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>() );
+                                      new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>(), XSD );
         reporter.cleanTestHistoryMap();
 
         ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), getClass().getName(), 12 );
@@ -138,7 +137,7 @@ public class StatelessXmlReporterTest
 
         stats.testSucceeded( t2 );
         StatelessXmlReporter reporter = new StatelessXmlReporter( reportDir, null, false, 0,
-                        new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>() );
+                        new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>(), XSD );
         reporter.testSetCompleted( testSetReportEntry, stats );
 
         FileInputStream fileInputStream = new FileInputStream( expectedReportFile );
@@ -217,11 +216,8 @@ public class StatelessXmlReporterTest
         rerunStats.testSucceeded( testThreeSecondRun );
 
         StatelessXmlReporter reporter =
-            new StatelessXmlReporter( reportDir,
-                                      null,
-                                      false,
-                                      1,
-                                      new HashMap<String, Map<String, List<WrappedReportEntry>>>() );
+            new StatelessXmlReporter( reportDir, null, false, 1,
+                                      new HashMap<String, Map<String, List<WrappedReportEntry>>>(), XSD );
 
         reporter.testSetCompleted( testSetReportEntry, stats );
         reporter.testSetCompleted( testSetReportEntry, rerunStats );
