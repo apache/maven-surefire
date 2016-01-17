@@ -118,7 +118,8 @@ public class SurefireDependencyResolver
         ArtifactResolutionRequest request = new ArtifactResolutionRequest()
                                                     .setArtifact( providerArtifact )
                                                     .setRemoteRepositories( remoteRepositories )
-                                                    .setLocalRepository( localRepository );
+                                                    .setLocalRepository( localRepository )
+                                                    .setResolveTransitively( true );
         if ( excludeArtifact != null )
         {
             String pattern = excludeArtifact.getGroupId() + ":" + excludeArtifact.getArtifactId();
