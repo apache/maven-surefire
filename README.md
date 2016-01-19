@@ -8,7 +8,7 @@
 
 [JIRA Change Log]
 
-![tag](http://img.shields.io/github/tag/apache/maven-surefire.svg)
+[![tag](http://img.shields.io/github/tag/apache/maven-surefire.svg)](https://github.com/apache/maven-surefire/releases)
 
 Usage of [maven-surefire-plugin], [maven-failsafe-plugin], [maven-surefire-report-plugin].
 
