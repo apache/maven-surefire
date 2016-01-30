@@ -82,7 +82,7 @@ public class SelfDestructMojo
 
         if ( timeoutInMillis > 0 )
         {
-            getLog().warn( "Self-Destruct in " + timeoutInMillis + " millis using " + destructMethod );
+            getLog().warn( "Self-Destruct in " + timeoutInMillis + " ms using " + destructMethod );
             Timer timer = new Timer( "", true );
             timer.schedule( new SelfDestructionTask( destructMethod ), timeoutInMillis );
         }

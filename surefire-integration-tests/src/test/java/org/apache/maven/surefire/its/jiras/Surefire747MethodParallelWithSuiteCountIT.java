@@ -74,14 +74,14 @@ public class Surefire747MethodParallelWithSuiteCountIT
         {
             long duration = duration( testLine );
             long min = 250, max = 750;
-            assertTrue( String.format( "duration %d should be between %d and %d millis", duration, min, max ),
+            assertTrue( String.format( "duration %d should be between %d and %d ms", duration, min, max ),
                         duration > min && duration < max );
         }
         Set<String> suiteLines = printTestLines( validator, "suite finished after duration=" );
         assertThat( suiteLines.size(), is( 1 ) );
         long duration = duration( suiteLines.iterator().next() );
         long min = 750, max = 1250;
-        assertTrue( String.format( "duration %d should be between %d and %d millis", duration, min, max ),
+        assertTrue( String.format( "duration %d should be between %d and %d ms", duration, min, max ),
                     duration > min && duration < max );
 
         for ( String line : validator.loadLogLines() )
@@ -95,8 +95,8 @@ public class Surefire747MethodParallelWithSuiteCountIT
                         containsString( "Time elapsed: 0.7" ),
                         containsString( "Time elapsed: 0.8" ) ) );
                 assertThat( line, anyOf(
-                        endsWith(" sec - in surefire747.SuiteTest1" ),
-                        endsWith(" sec - in surefire747.SuiteTest2" ) ) );
+                        endsWith(" s - in surefire747.SuiteTest1" ),
+                        endsWith(" s - in surefire747.SuiteTest2" ) ) );
             }
         }
     }
@@ -112,14 +112,14 @@ public class Surefire747MethodParallelWithSuiteCountIT
         {
             long duration = duration( testLine );
             long min = 1250, max = 1750;
-            assertTrue( String.format( "duration %d should be between %d and %d millis", duration, min, max ),
+            assertTrue( String.format( "duration %d should be between %d and %d ms", duration, min, max ),
                         duration > min && duration < max );
         }
         Set<String> suiteLines = printTestLines( validator, "suite finished after duration=" );
         assertThat( suiteLines.size(), is( 1 ) );
         long duration = duration( suiteLines.iterator().next() );
         long min = 1250, max = 1750;
-        assertTrue( String.format( "duration %d should be between %d and %d millis", duration, min, max ),
+        assertTrue( String.format( "duration %d should be between %d and %d ms", duration, min, max ),
                     duration > min && duration < max );
     }
 

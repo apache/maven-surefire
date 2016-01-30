@@ -65,7 +65,7 @@ public class WrappedReportEntryTest
         ReportEntry reportEntry = new SimpleReportEntry( "fud", category );
         WrappedReportEntry wr = new WrappedReportEntry( reportEntry, null, 12, null, null );
         String elapsedTimeSummary = wr.getElapsedTimeSummary();
-        assertEquals( "[0] 1, 2, 3 (testSum)(surefire.testcase.JunitParamsTest)  Time elapsed: 0.012 sec",
+        assertEquals( "[0] 1, 2, 3 (testSum)(surefire.testcase.JunitParamsTest)  Time elapsed: 0.012 s",
                       elapsedTimeSummary );
     }
 

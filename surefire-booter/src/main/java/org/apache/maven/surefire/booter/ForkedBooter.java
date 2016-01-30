@@ -254,7 +254,7 @@ public final class ForkedBooter
     {
         ThreadFactory threadFactory = newDaemonThreadFactory( "last-ditch-daemon-shutdown-thread-"
                                                             + SYSTEM_EXIT_TIMEOUT_IN_SECONDS
-                                                            + "sec" );
+                                                            + "s" );
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor( 1, threadFactory );
         executor.setMaximumPoolSize( 1 );
         executor.prestartCoreThread();

@@ -132,7 +132,7 @@ public class DefaultReporterFactory
         if ( reportConfiguration.isPrintSummary() )
         {
             logger.info( "" );
-            logger.info( "Results :" );
+            logger.info( "Results:" );
             logger.info( "" );
         }
         boolean printedFailures = printTestFailures( logger, TestResultType.failure );

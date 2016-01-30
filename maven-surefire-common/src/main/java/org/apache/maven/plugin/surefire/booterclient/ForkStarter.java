@@ -661,7 +661,7 @@ public class ForkStarter
 
     private static ScheduledExecutorService createPingScheduler()
     {
-        ThreadFactory threadFactory = newDaemonThreadFactory( "ping-timer-" + PING_IN_SECONDS + "sec" );
+        ThreadFactory threadFactory = newDaemonThreadFactory( "ping-timer-" + PING_IN_SECONDS + "s" );
         return Executors.newScheduledThreadPool( 1, threadFactory );
     }
 

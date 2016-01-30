@@ -136,7 +136,7 @@ public class WrappedReportEntry
 
     public String getElapsedTimeVerbose()
     {
-        return "Time elapsed: " + elapsedTimeAsString() + " sec";
+        return "Time elapsed: " + elapsedTimeAsString() + " s";
     }
 
     public String getElapsedTimeSummary()

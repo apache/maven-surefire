@@ -55,6 +55,6 @@ public class Junit47concurrencyIT
         }
         assertNotNull( result);
         assertThat( result, anyOf( containsString( "Time elapsed: 1." ), containsString( "Time elapsed: 0.9" ) ) );
-        assertThat( result, endsWith( " sec - in concurrentjunit47.src.test.java.junit47.BasicTest" ) );
+        assertThat( result, endsWith( " s - in concurrentjunit47.src.test.java.junit47.BasicTest" ) );
     }
 }
