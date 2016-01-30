@@ -136,7 +136,7 @@ mvn verify
 
   * {{{./examples/pojo-test.html}Using POJO Tests}}
 
-  * {{{./examples/skipping-test.html}Skipping Tests}}
+  * {{{./examples/skipping-tests.html}Skipping Tests}}
 
   * {{{./examples/skip-after-failure.html}Skip After Failure}}
 

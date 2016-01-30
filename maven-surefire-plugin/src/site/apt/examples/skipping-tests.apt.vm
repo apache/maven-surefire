@@ -7,7 +7,7 @@
   ------
   July 2006
   ------
-  
+
  ~~ Licensed to the Apache Software Foundation (ASF) under one
  ~~ or more contributor license agreements.  See the NOTICE file
  ~~ distributed with this work for additional information
@@ -94,7 +94,7 @@ Skipping by Default
         <artifactId>${project.artifactId}</artifactId>
         <version>${project.version}</version>
         <configuration>
-          <skipTests>${skipTests}</skipTests>
+          <skipTests>${esc.d}{skipTests}</skipTests>
         </configuration>
       </plugin>
     </plugins>
