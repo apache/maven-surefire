@@ -37,8 +37,8 @@ Deploying web site
 
 see http://maven.apache.org/developers/website/deploy-component-reference-documentation.html
 
-[Join us @ irc://freenode/maven]: https://www.irccloud.com/invite?channel=&amp;hostname=irc.freenode.net&amp;port=6697&amp;ssl=1
-[Webchat with us @channel maven]: https://webchat.freenode.net/
+[Join us @ irc://freenode/maven]: https://www.irccloud.com/invite?channel=maven&amp;hostname=irc.freenode.net&amp;port=6697&amp;ssl=1
+[Webchat with us @channel maven]: http://webchat.freenode.net/?channels=%23maven
 [JIRA Change Log]: https://issues.apache.org/jira/browse/SUREFIRE/?selectedTab=com.atlassian.jira.jira-projects-plugin:changelog-panel
 [maven-surefire-plugin]: https://maven.apache.org/surefire/maven-surefire-plugin/usage.html
 [maven-failsafe-plugin]: https://maven.apache.org/surefire/maven-failsafe-plugin/usage.html
