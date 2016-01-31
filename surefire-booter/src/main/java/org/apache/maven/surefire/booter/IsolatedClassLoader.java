@@ -49,9 +49,15 @@ public class IsolatedClassLoader
         this.roleName = roleName;
     }
 
+    /**
+     * @deprecated this method will use {@link java.io.File} instead of {@link URL} in the next
+     * major version.
+     */
+    @Deprecated
     public void addURL( URL url )
     {
         // avoid duplicates
+        // todo avoid URL due to calling equals method may cause some overhead due to resolving host or file.
         if ( !urls.contains( url ) )
         {
             super.addURL( url );
@@ -62,13 +68,9 @@ public class IsolatedClassLoader
     public synchronized Class loadClass( String name )
         throws ClassNotFoundException
     {
-        Class c;
-
         if ( childDelegation )
         {
-            c = findLoadedClass( name );
-
-            ClassNotFoundException ex = null;
+            Class<?> c = findLoadedClass( name );
 
             if ( c == null )
             {
@@ -78,26 +80,23 @@ public class IsolatedClassLoader
                 }
                 catch ( ClassNotFoundException e )
                 {
-                    ex = e;
-
-                    if ( parent != null )
+                    if ( parent == null )
+                    {
+                        throw e;
+                    }
+                    else
                     {
                         c = parent.loadClass( name );
                     }
                 }
             }
 
-            if ( c == null )
-            {
-                throw ex;
-            }
+            return c;
         }
         else
         {
-            c = super.loadClass( name );
+            return super.loadClass( name );
         }
-
-        return c;
     }
 
     public String toString()

@@ -317,7 +317,6 @@ public class DefaultReporterFactory
     // Use default visibility for testing
     boolean printTestFailures( DefaultDirectConsoleReporter logger, TestResultType type )
     {
-        boolean printed = false;
         final Map<String, List<TestMethodStats>> testStats;
         switch ( type )
         {
@@ -331,9 +330,10 @@ public class DefaultReporterFactory
                 testStats = flakyTests;
                 break;
             default:
-                return printed;
+                return false;
         }
 
+        boolean printed = false;
         if ( !testStats.isEmpty() )
         {
             logger.info( type.getLogPrefix() );
@@ -371,7 +371,7 @@ public class DefaultReporterFactory
     }
 
     // Describe the result of a given test
-    static enum TestResultType
+    enum TestResultType
     {
 
         error( "Tests in error: " ),
@@ -383,7 +383,7 @@ public class DefaultReporterFactory
 
         private final String logPrefix;
 
-        private TestResultType( String logPrefix )
+        TestResultType( String logPrefix )
         {
             this.logPrefix = logPrefix;
         }

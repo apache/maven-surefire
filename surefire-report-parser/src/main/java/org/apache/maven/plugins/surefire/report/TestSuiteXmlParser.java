@@ -115,6 +115,7 @@ public final class TestSuiteXmlParser
         {
             try
             {
+                // todo: use jdk7 switch-case
                 if ( "testsuite".equals( qName ) )
                 {
                     defaultSuite = new ReportTestSuite();
@@ -217,6 +218,7 @@ public final class TestSuiteXmlParser
     public void endElement( String uri, String localName, String qName )
         throws SAXException
     {
+        // todo: use jdk7 switch-case
         if ( "testcase".equals( qName ) )
         {
             currentSuite.getTestCases().add( testCase );

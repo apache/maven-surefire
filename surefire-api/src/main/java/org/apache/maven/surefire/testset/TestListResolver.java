@@ -330,7 +330,7 @@ public class TestListResolver
         for ( ResolvedTest test : tests )
         {
             String readableTest = test.toString();
-            if ( readableTest != null )
+            if ( readableTest.length() != 0 )
             {
                 if ( aggregatedTest.length() != 0 )
                 {

@@ -31,8 +31,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+
+import static java.util.Collections.unmodifiableList;
+import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_ERROR;
+import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_WARN;
+import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_INFO;
+import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
+import static org.apache.maven.surefire.cli.CommandLineOption.SHOW_ERRORS;
 
 /**
  * Helper class for surefire plugins
@@ -57,7 +63,7 @@ public final class SurefireHelper
         {
             if ( result.getCompletedCount() == 0 )
             {
-                if ( ( reportParameters.getFailIfNoTests() == null ) || !reportParameters.getFailIfNoTests() )
+                if ( reportParameters.getFailIfNoTests() == null || !reportParameters.getFailIfNoTests() )
                 {
                     return;
                 }
@@ -98,22 +104,22 @@ public final class SurefireHelper
         List<CommandLineOption> cli = new ArrayList<CommandLineOption>();
         if ( log.isErrorEnabled() )
         {
-            cli.add( CommandLineOption.LOGGING_LEVEL_ERROR );
+            cli.add( LOGGING_LEVEL_ERROR );
         }
 
         if ( log.isWarnEnabled() )
         {
-            cli.add( CommandLineOption.LOGGING_LEVEL_WARN );
+            cli.add( LOGGING_LEVEL_WARN );
         }
 
         if ( log.isInfoEnabled() )
         {
-            cli.add( CommandLineOption.LOGGING_LEVEL_INFO );
+            cli.add( LOGGING_LEVEL_INFO );
         }
 
         if ( log.isDebugEnabled() )
         {
-            cli.add( CommandLineOption.LOGGING_LEVEL_DEBUG );
+            cli.add( LOGGING_LEVEL_DEBUG );
         }
 
         try
@@ -130,23 +136,23 @@ public final class SurefireHelper
 
             if ( request.isShowErrors() )
             {
-                cli.add( CommandLineOption.SHOW_ERRORS );
+                cli.add( SHOW_ERRORS );
             }
         }
         catch ( Exception e )
         {
             // don't need to log the exception that Maven 2 does not have getRequest() method in Maven Session
         }
-        return Collections.unmodifiableList( cli );
+        return unmodifiableList( cli );
     }
 
     public static void logDebugOrCliShowErrors( CharSequence s, Log log, Collection<CommandLineOption> cli )
     {
-        if ( cli.contains( CommandLineOption.LOGGING_LEVEL_DEBUG ) )
+        if ( cli.contains( LOGGING_LEVEL_DEBUG ) )
         {
             log.debug( s );
         }
-        else if ( cli.contains( CommandLineOption.SHOW_ERRORS ) )
+        else if ( cli.contains( SHOW_ERRORS ) )
         {
             if ( log.isDebugEnabled() )
             {

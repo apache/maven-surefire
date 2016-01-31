@@ -37,12 +37,13 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 public class PojoTestSet
     implements SurefireTestSet
 {
-
     private static final String TEST_METHOD_PREFIX = "test";
 
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
     private final Object testObject;
+
+    private final Class<?> testClass;
 
     private List<Method> testMethods;
 
@@ -50,14 +51,12 @@ public class PojoTestSet
 
     private Method tearDownMethod;
 
-    private final Class testClass;
-
-    public PojoTestSet( Class testClass )
+    public PojoTestSet( Class<?> testClass )
         throws TestSetFailedException
     {
         if ( testClass == null )
         {
-            throw new NullPointerException( "testClass is null" );
+            throw new IllegalArgumentException( "testClass is null" );
         }
 
         this.testClass = testClass;
@@ -295,7 +294,7 @@ public class PojoTestSet
         return testClass.getName();
     }
 
-    public Class getTestClass()
+    public Class<?> getTestClass()
     {
         return testClass;
     }
