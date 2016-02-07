@@ -98,6 +98,7 @@ import org.apache.maven.surefire.util.DefaultScanResult;
 import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
+import org.sonatype.aether.RepositorySystemSession;
 
 import javax.annotation.Nonnull;
 
@@ -670,6 +671,12 @@ public abstract class AbstractSurefireMojo
     @Component
     private RepositorySystem repositorySystem;
 
+    /**
+     * The current repository configuration.
+     */
+    @Parameter( defaultValue = "${repositorySystemSession}", readonly = true )
+    private RepositorySystemSession repoSession;
+
     private Artifact surefireBooterArtifact;
 
     private Toolchain toolchain;
@@ -906,8 +913,8 @@ public abstract class AbstractSurefireMojo
     private void createDependencyResolver()
     {
         dependencyResolver =
-            new SurefireDependencyResolver( repositorySystem, getArtifactFactory(), getLog(), getLocalRepository(),
-                                            getRemoteRepositories(), getPluginName() );
+            new SurefireDependencyResolver( getRepositorySystem(), getArtifactFactory(), getLog(),
+                                            getLocalRepository(), getRemoteRepositories(), getPluginName() );
     }
 
     protected List<ProviderInfo> createProviders()
@@ -1083,6 +1090,26 @@ public abstract class AbstractSurefireMojo
     {
         logDebugOrCliShowErrors(
             StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
+    }
+
+    public RepositorySystem getRepositorySystem()
+    {
+        return repositorySystem;
+    }
+
+    public void setRepositorySystem( RepositorySystem repositorySystem )
+    {
+        this.repositorySystem = repositorySystem;
+    }
+
+    public RepositorySystemSession getRepoSession()
+    {
+        return repoSession;
+    }
+
+    public void setRepoSession( RepositorySystemSession repoSession )
+    {
+        this.repoSession = repoSession;
     }
 
     final Toolchain getToolchain()
@@ -2180,10 +2207,12 @@ public abstract class AbstractSurefireMojo
 
         for ( Artifact artifact : extraTestNgArtifacts )
         {
-            ProjectBuildingRequest request = new DefaultProjectBuildingRequest();
-            request.setLocalRepository( getLocalRepository() );
-            request.setRemoteRepositories( getRemoteRepositories() );
-            getArtifactResolver().resolveArtifact( request, artifact );
+            ProjectBuildingRequest request = new DefaultProjectBuildingRequest()
+                                                     .setLocalRepository( getLocalRepository() )
+                                                     .setRemoteRepositories( getRemoteRepositories() )
+                                                     .setRepositorySession( getRepoSession() )
+                                                     .setResolveDependencies( true );
+            artifact = getArtifactResolver().resolveArtifact( request, artifact ).getArtifact();
             String path = artifact.getFile().getPath();
             classpath.add( path );
         }
@@ -2225,9 +2254,9 @@ public abstract class AbstractSurefireMojo
     {
         ArtifactResolutionRequest request = new ArtifactResolutionRequest()
                                                     .setArtifact( providerArtifact )
-                                                    .setRemoteRepositories( remoteRepositories )
-                                                    .setLocalRepository( localRepository );
-        return repositorySystem.resolve( request );
+                                                    .setRemoteRepositories( getRemoteRepositories() )
+                                                    .setLocalRepository( getLocalRepository() );
+        return getRepositorySystem().resolve( request );
     }
 
     private Classpath getArtifactClasspath( Artifact surefireArtifact )
