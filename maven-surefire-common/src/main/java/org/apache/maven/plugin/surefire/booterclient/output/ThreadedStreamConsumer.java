@@ -23,6 +23,7 @@ import org.apache.maven.shared.utils.cli.StreamConsumer;
 import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 
 import java.util.concurrent.BlockingQueue;
+import java.io.Closeable;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -31,7 +32,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * @author Kristian Rosenvold
  */
 public final class ThreadedStreamConsumer
-    implements StreamConsumer
+    implements StreamConsumer, Closeable
 {
     private static final String POISON = "Pioson";
 

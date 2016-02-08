@@ -33,6 +33,7 @@ import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsum
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.shared.utils.cli.CommandLineCallable;
 import org.apache.maven.shared.utils.cli.CommandLineException;
+import org.apache.maven.shared.utils.cli.ShutdownHookUtils;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.KeyValueSource;
@@ -49,12 +50,13 @@ import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DefaultScanResult;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Queue;
@@ -65,33 +67,33 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static java.lang.StrictMath.min;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.createCopyAndReplaceForkNumPlaceholder;
+import static org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream
+    .TestLessInputStreamBuilder;
 import static org.apache.maven.shared.utils.cli.CommandLineUtils.executeCommandLineAsCallable;
 import static org.apache.maven.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
 import static org.apache.maven.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
-import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
-import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThread;
-import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
-import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.createCopyAndReplaceForkNumPlaceholder;
-import static org.apache.maven.plugin.surefire.booterclient.lazytestprovider.
-    TestLessInputStream.TestLessInputStreamBuilder;
-import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDownToZero;
 import static org.apache.maven.surefire.booter.Classpath.join;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.writePropertiesFile;
 import static org.apache.maven.surefire.suite.RunResult.timeout;
 import static org.apache.maven.surefire.suite.RunResult.failure;
 import static org.apache.maven.surefire.suite.RunResult.SUCCESS;
-import static java.lang.StrictMath.min;
+import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDownToZero;
+import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThread;
+import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
+import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
 
 /**
  * Starts the fork or runs in-process.
@@ -144,31 +146,63 @@ public class ForkStarter
     private final Collection<DefaultReporterFactory> defaultReporterFactories;
 
     /**
-     * Closes an InputStream
+     * Closes stuff, with a shutdown hook to make sure things really get closed.
      */
-    private static class InputStreamCloser
-        implements Runnable
+    private static class CloseableCloser
+        implements Runnable, Closeable
     {
-        private final AtomicReference<InputStream> testProvidingInputStream;
+        private final List<AtomicReference<Closeable>> testProvidingInputStream;
 
-        public InputStreamCloser( InputStream testProvidingInputStream )
+        private final Thread inputStreamCloserHook;
+
+        public CloseableCloser( Closeable... testProvidingInputStream )
         {
-            this.testProvidingInputStream = new AtomicReference<InputStream>( testProvidingInputStream );
+
+            this.testProvidingInputStream = new ArrayList<AtomicReference<Closeable>>();
+            for ( Closeable closeable : testProvidingInputStream )
+            {
+                if ( closeable != null )
+                {
+                    this.testProvidingInputStream.add( new AtomicReference<Closeable>( closeable ) );
+                }
+            }
+            if ( this.testProvidingInputStream.size() > 0 )
+            {
+                inputStreamCloserHook = newDaemonThread( this, "closer-shutdown-hook" );
+                ShutdownHookUtils.addShutDownHook( inputStreamCloserHook );
+            }
+            else
+            {
+                inputStreamCloserHook = null;
+            }
         }
 
         public void run()
         {
-            InputStream stream = testProvidingInputStream.getAndSet( null );
-            if ( stream != null )
+            for ( AtomicReference<Closeable> closeableAtomicReference : testProvidingInputStream )
             {
-                try
+                Closeable closeable = closeableAtomicReference.getAndSet( null );
+                if ( closeable != null )
                 {
-                    stream.close();
+                    try
+                    {
+                        closeable.close();
+                    }
+                    catch ( IOException e )
+                    {
+                        // ignore
+                    }
                 }
-                catch ( IOException e )
-                {
-                    // ignore
-                }
+
+            }
+        }
+
+        public void close()
+        {
+            run();
+            if ( inputStreamCloserHook != null )
+            {
+                ShutdownHookUtils.removeShutdownHook( inputStreamCloserHook );
             }
         }
     }
@@ -517,10 +551,10 @@ public class ForkStarter
         OutputStreamFlushableCommandline cli =
             forkConfiguration.createCommandLine( bootClasspath.getClassPath(), startupConfiguration, forkNumber );
 
-        InputStreamCloser inputStreamCloser = new InputStreamCloser( testProvidingInputStream );
-        Thread inputStreamCloserHook = newDaemonThread( inputStreamCloser, "input-stream-closer" );
-        testProvidingInputStream.setFlushReceiverProvider( cli );
-        addShutDownHook( inputStreamCloserHook );
+        if ( testProvidingInputStream != null )
+        {
+            testProvidingInputStream.setFlushReceiverProvider( cli );
+        }
 
         cli.createArg().setFile( surefireProperties );
 
@@ -530,6 +564,7 @@ public class ForkStarter
         }
 
         ThreadedStreamConsumer threadedStreamConsumer = new ThreadedStreamConsumer( forkClient );
+        final CloseableCloser closer = new CloseableCloser( threadedStreamConsumer, testProvidingInputStream );
 
         if ( forkConfiguration.isDebug() )
         {
@@ -542,7 +577,7 @@ public class ForkStarter
         {
             CommandLineCallable future =
                 executeCommandLineAsCallable( cli, testProvidingInputStream, threadedStreamConsumer,
-                                              threadedStreamConsumer, 0, inputStreamCloser,
+                                              threadedStreamConsumer, 0, closer,
                                               Charset.forName( FORK_STREAM_CHARSET_NAME ) );
 
             currentForkClients.add( forkClient );
@@ -565,11 +600,7 @@ public class ForkStarter
         }
         finally
         {
-            currentForkClients.remove( forkClient );
-            threadedStreamConsumer.close();
-            inputStreamCloser.run();
-            removeShutdownHook( inputStreamCloserHook );
-
+            closer.close();
             if ( runResult == null )
             {
                 runResult = forkClient.getDefaultReporterFactory().getGlobalRunStatistics().getRunResult();
