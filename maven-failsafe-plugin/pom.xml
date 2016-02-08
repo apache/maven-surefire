@@ -110,27 +110,6 @@
         </dependencies>
       </plugin>
       <plugin>
-        <artifactId>maven-invoker-plugin</artifactId>
-        <configuration>
-          <projectsDirectory>src/it</projectsDirectory>
-          <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
-          <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
-          <showErrors>true</showErrors>
-          <streamLogs>true</streamLogs>
-          <goals>
-            <goal>verify</goal>
-          </goals>
-          <setupIncludes>
-            <setupInclude>dummy-*/pom.xml</setupInclude>
-          </setupIncludes>
-          <pomIncludes>
-            <pomInclude>*/pom.xml</pomInclude>
-          </pomIncludes>
-          <postBuildHookScript>verify.bsh</postBuildHookScript>
-          <settingsFile>src/it/settings.xml</settingsFile>
-        </configuration>
-      </plugin>
-      <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
@@ -279,20 +258,45 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-invoker-plugin</artifactId>
-            <configuration>
-              <streamLogs>false</streamLogs>
-              <skipInstallation>${skipTests}</skipInstallation>
-              <skipInvocation>${skipTests}</skipInvocation>
-            </configuration>
             <executions>
+              <execution>
+                <id>pre-its</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>install</goal>
+                </goals>
+                <configuration>
+                  <skipInstallation>${skipTests}</skipInstallation>
+                </configuration>
+              </execution>
               <execution>
                 <id>integration-test</id>
                 <goals>
-                  <goal>install</goal>
                   <goal>run</goal>
                 </goals>
+                <configuration>
+                  <projectsDirectory>src/it</projectsDirectory>
+                  <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+                  <goals>
+                    <goal>verify</goal>
+                  </goals>
+                  <setupIncludes>
+                    <setupInclude>dummy-*/pom.xml</setupInclude>
+                  </setupIncludes>
+                  <pomIncludes>
+                    <pomInclude>*/pom.xml</pomInclude>
+                  </pomIncludes>
+                  <postBuildHookScript>verify.bsh</postBuildHookScript>
+                  <settingsFile>src/it/settings.xml</settingsFile>
+                  <skipInvocation>${skipTests}</skipInvocation>
+                  <streamLogs>false</streamLogs>
+                  <showErrors>true</showErrors>
+                </configuration>
               </execution>
             </executions>
+            <configuration>
+              <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+            </configuration>
           </plugin>
         </plugins>
       </build>
