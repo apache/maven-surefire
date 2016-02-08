@@ -399,6 +399,7 @@
                   <exclude>**/*.jj</exclude>
                   <exclude>src/main/resources/META-INF/services/org.apache.maven.surefire.providerapi.SurefireProvider
                   </exclude>
+                  <exclude>DEPENDENCIES</exclude>
                 </excludes>
               </configuration>
             </execution>
