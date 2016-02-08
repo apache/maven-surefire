@@ -38,13 +38,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.repository.RepositorySystem;
@@ -59,7 +59,6 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
@@ -67,7 +66,6 @@ import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
 import org.apache.maven.plugin.surefire.booterclient.ProviderDetector;
 import org.apache.maven.plugin.surefire.util.DependencyScanner;
 import org.apache.maven.plugin.surefire.util.DirectoryScanner;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
@@ -112,18 +110,6 @@ public abstract class AbstractSurefireMojo
     extends AbstractMojo
     implements SurefireExecutionParameters
 {
-
-    // common mojo parameters
-
-    /**
-     * Information about this plugin, mainly used to lookup this plugin's configuration from the currently executing
-     * project.
-     *
-     * @since 2.12
-     */
-    @Parameter( defaultValue = "${plugin}", readonly = true )
-    private PluginDescriptor pluginDescriptor;
-
     /**
      * Set this to "true" to skip running tests, but still compile them. Its use is NOT RECOMMENDED, but quite
      * convenient on occasion.
@@ -154,7 +140,7 @@ public abstract class AbstractSurefireMojo
     /**
      * The Maven Project Object.
      */
-    @Component
+    @Parameter( defaultValue = "${project}", required = true, readonly = true )
     private MavenProject project;
 
     /**
@@ -279,14 +265,12 @@ public abstract class AbstractSurefireMojo
     /**
      * Map of plugin artifacts.
      */
-    // olamy: would make more sense using defaultValue but doesn't work with maven 2.x
     @Parameter( property = "plugin.artifactMap", required = true, readonly = true )
     private Map<String, Artifact> pluginArtifactMap;
 
     /**
      * Map of project artifacts.
      */
-    // olamy: would make more sense using defaultValue but doesn't work with maven 2.x
     @Parameter( property = "project.artifactMap", readonly = true, required = true )
     private Map<String, Artifact> projectArtifactMap;
 
@@ -608,12 +592,6 @@ public abstract class AbstractSurefireMojo
     private List<ArtifactRepository> remoteRepositories;
 
     /**
-     * For retrieval of artifact's metadata.
-     */
-    @Component
-    private ArtifactMetadataSource metadataSource;
-
-    /**
      * Flag to disable the generation of report files in xml format.
      *
      * @since 2.2
@@ -633,7 +611,7 @@ public abstract class AbstractSurefireMojo
     /**
      * The current build session instance.
      */
-    @Component
+    @Parameter( defaultValue = "${session}", required = true, readonly = true )
     private MavenSession session;
 
     /**
@@ -645,7 +623,7 @@ public abstract class AbstractSurefireMojo
     private String objectFactory;
 
     /**
-     *
+     * Parallel Maven Execution.
      */
     @Parameter( defaultValue = "${session.parallel}", readonly = true )
     private Boolean parallelMavenExecution;
@@ -662,9 +640,6 @@ public abstract class AbstractSurefireMojo
     @Parameter( property = "dependenciesToScan" )
     private String[] dependenciesToScan;
 
-    /**
-     *
-     */
     @Component
     private ToolchainManager toolchainManager;
 
@@ -674,7 +649,7 @@ public abstract class AbstractSurefireMojo
     /**
      * The current repository configuration.
      */
-    @Parameter( defaultValue = "${repositorySystemSession}", readonly = true )
+    @Parameter( defaultValue = "${repositorySystemSession}", required = true, readonly = true )
     private RepositorySystemSession repoSession;
 
     private Artifact surefireBooterArtifact;
@@ -3063,18 +3038,6 @@ public abstract class AbstractSurefireMojo
         this.remoteRepositories = remoteRepositories;
     }
 
-    public ArtifactMetadataSource getMetadataSource()
-    {
-        return metadataSource;
-    }
-
-    @SuppressWarnings( "UnusedDeclaration" )
-    public void setMetadataSource( ArtifactMetadataSource metadataSource )
-    {
-        this.metadataSource = metadataSource;
-    }
-
-
     public boolean isDisableXmlReport()
     {
         return disableXmlReport;
@@ -3157,11 +3120,6 @@ public abstract class AbstractSurefireMojo
     public void setDependenciesToScan( String[] dependenciesToScan )
     {
         this.dependenciesToScan = dependenciesToScan;
-    }
-
-    public PluginDescriptor getPluginDescriptor()
-    {
-        return pluginDescriptor;
     }
 
     public MavenProject getProject()
