@@ -81,11 +81,13 @@ public final class ResolvedTest
         if ( isRegex && classPattern != null )
         {
             classPattern = wrapRegex( classPattern );
+            regexSanityCheck( classPattern );
         }
 
         if ( isRegex && methodPattern != null )
         {
             methodPattern = wrapRegex( methodPattern );
+            regexSanityCheck( methodPattern );
         }
 
         this.classPattern = reformatClassPattern( classPattern, isRegex );
@@ -105,6 +107,7 @@ public final class ResolvedTest
         if ( isRegex && pattern != null )
         {
             pattern = wrapRegex( pattern );
+            regexSanityCheck( pattern );
         }
         classPattern = isClass ? reformatClassPattern( pattern, isRegex ) : null;
         methodPattern = !isClass ? pattern : null;
@@ -391,4 +394,24 @@ public final class ResolvedTest
             return cls;
         }
     }
+    
+    private static void regexSanityCheck( String methodNameExpr )
+    {
+        try
+        {
+            // this will emit regex exceptions
+            from( methodNameExpr );
+            if ( methodNameExpr.indexOf( "#" ) != -1 )
+            {
+                throw new IllegalArgumentException( "Extra # in regex: " + methodNameExpr );
+            }
+        }
+        catch ( IllegalArgumentException pse )
+        {
+            throw new IllegalArgumentException( "%regex[] usage rule violation, valid regex rules:\n"
+                + " * <classNameRegex>#<methodNameRegex> - where both regex can be individually evaluated as a regex\n"
+                + " * you may use at most 1 '#' to in one regex filter.", pse );
+        }
+    }
+    
 }

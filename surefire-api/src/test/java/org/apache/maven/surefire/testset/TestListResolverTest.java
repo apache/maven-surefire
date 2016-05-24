@@ -411,4 +411,81 @@ public class TestListResolverTest
         }
         return resolved;
     }
+    
+    public void testRegexRuleViolationQuotedHashMark()
+    {
+        try
+        {
+            new TestListResolver( "%regex[.\\Q#\\E.]" );
+            fail( "IllegalArgumentException is expected" );
+        }
+        catch ( IllegalArgumentException iea )
+        {
+            // expected
+        }
+    }
+
+    public void testRegexRuleViolationEnclosedMethodSeparator()
+    {
+        try
+        {
+            new TestListResolver( "%regex[(.|.#.)]" );
+            fail( "IllegalArgumentException is expected" );
+        }
+        catch ( IllegalArgumentException iea )
+        {
+            // expected
+        }
+    }
+
+    public void testRegexRuleViolationMultipleHashmarkWithClassConstraint()
+    {
+        try
+        {
+            new TestListResolver( "%regex[.*#.|#.]" );
+            fail( "IllegalArgumentException is expected" );
+        }
+        catch ( IllegalArgumentException iea )
+        {
+            // expected
+        }
+    }
+
+    public void testRegexRuleViolationMultipleHashmarkForMethods()
+    {
+        try
+        {
+            new TestListResolver( "%regex[#.|#.]" );
+            fail( "IllegalArgumentException is expected" );
+        }
+        catch ( IllegalArgumentException iea )
+        {
+            // expected
+        }
+    }
+    public void testRegexRuleViolationInvalidClassPattern()
+    {
+        try
+        {
+            new TestListResolver( "%regex[.(.]" );
+            fail( "IllegalArgumentException is expected" );
+        }
+        catch ( IllegalArgumentException iea )
+        {
+            // expected
+        }
+    }
+    public void testRegexRuleViolationInvalidMethodPattern()
+    {
+        try
+        {
+            new TestListResolver( "%regex[#.(.]" );
+            fail( "IllegalArgumentException is expected" );
+        }
+        catch ( IllegalArgumentException iea )
+        {
+            // expected
+        }
+    }
+
 }
