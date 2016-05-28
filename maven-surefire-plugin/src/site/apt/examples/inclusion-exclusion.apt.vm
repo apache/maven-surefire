@@ -150,7 +150,7 @@ Inclusions and Exclusions of Tests
         <version>${project.version}</version>
         <configuration>
           <includes>
-            <include>%regex[.*[Cat|Dog].*Test.*]</include>
+            <include>%regex[.*(Cat|Dog).*Test.*]</include>
           </includes>
         </configuration>
       </plugin>
@@ -169,7 +169,7 @@ Inclusions and Exclusions of Tests
 
 +---+
   [...]
-          <include>%regex[.*[Cat|Dog].*], !%regex[pkg.*Slow.*.class], pkg/**/*Fast*.java, Basic????, !Unstable*</include>
+          <include>%regex[.*(Cat|Dog).*], !%regex[pkg.*Slow.*.class], pkg/**/*Fast*.java, Basic????, !Unstable*</include>
   [...]
           <exclude>%regex[pkg.*Slow.*.class], Unstable*</exclude>
   [...]
