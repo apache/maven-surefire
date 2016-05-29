@@ -136,7 +136,8 @@ Fork Options and Parallel Test Execution
   thread count. Since of ${project.artifactId}:2.18, you can apply the <JCIP>
   annotation <<<@net.jcip.annotations.NotThreadSafe>>> on the Java class of JUnit
   test (pure test class, <Suite>, <Parameterized>, etc.) in order to execute it in
-  single Thread instance. The Thread has name <maven-surefire-plugin@NotThreadSafe>.
+  single Thread instance. The Thread has name <maven-surefire-plugin@NotThreadSafe>
+  and it is executed at the end of the test run.
 
   Just use project dependency <net.jcip:jcip-annotations:1.0> or another artifact
   <com.github.stephenc.jcip:jcip-annotations:1.0-1> with Apache License 2.0.
@@ -169,6 +170,8 @@ Fork Options and Parallel Test Execution
   suite classes are executed in single thread.
   You can also annotate individual test class referenced by <Suite>, and the other
   unannotated test classes in the <Suite> can be subject to run in parallel.
+  This way you can isolate conflicting groups of tests and still run their
+  individual tests in parallel.
 
   <<Note:>> As designed by JUnit runners, the static methods annotated with e.g.
   <@Parameters>, <@BeforeClass> and <@AfterClass> are called in parent thread.
