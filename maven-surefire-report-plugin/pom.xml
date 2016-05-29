@@ -76,31 +76,20 @@
     </dependency>
     <dependency>
       <groupId>org.apache.maven.reporting</groupId>
-      <artifactId>maven-reporting-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.reporting</groupId>
       <artifactId>maven-reporting-impl</artifactId>
       <version>2.4</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.doxia</groupId>
-      <artifactId>doxia-sink-api</artifactId>
-      <version>1.6</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.doxia</groupId>
       <artifactId>doxia-site-renderer</artifactId>
       <version>1.6</version>
     </dependency>
-    <dependency> <!-- //todo Someone, somewhere is missing doxia own -pu dep -->
+    <dependency>
+      <!-- using the same transient version 3.0.15 from doxia-site-renderer:1.6 which is in conflict
+      with version 1.5.15 in maven-project:2.2.1 on the same level of dependency tree -->
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
       <version>3.0.15</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.shared</groupId>
-      <artifactId>maven-shared-utils</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.plugin-testing</groupId>
@@ -160,7 +149,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-docck-plugin</artifactId>
-            <version>1.0-beta-1</version>
+            <version>1.1</version>
             <executions>
               <execution>
                 <goals>
