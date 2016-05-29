@@ -33,7 +33,6 @@ import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsum
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.shared.utils.cli.CommandLineCallable;
 import org.apache.maven.shared.utils.cli.CommandLineException;
-import org.apache.maven.shared.utils.cli.ShutdownHookUtils;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.KeyValueSource;
@@ -56,7 +55,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Queue;
@@ -80,6 +78,8 @@ import static java.lang.StrictMath.min;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.createCopyAndReplaceForkNumPlaceholder;
+import static org.apache.maven.plugin.surefire.booterclient.ForkNumberBucket.drawNumber;
+import static org.apache.maven.plugin.surefire.booterclient.ForkNumberBucket.returnNumber;
 import static org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream
     .TestLessInputStreamBuilder;
 import static org.apache.maven.shared.utils.cli.CommandLineUtils.executeCommandLineAsCallable;
@@ -151,14 +151,13 @@ public class ForkStarter
     private static class CloseableCloser
         implements Runnable, Closeable
     {
-        private final List<AtomicReference<Closeable>> testProvidingInputStream;
+        private final Queue<AtomicReference<Closeable>> testProvidingInputStream;
 
         private final Thread inputStreamCloserHook;
 
         public CloseableCloser( Closeable... testProvidingInputStream )
         {
-
-            this.testProvidingInputStream = new ArrayList<AtomicReference<Closeable>>();
+            this.testProvidingInputStream = new ConcurrentLinkedQueue<AtomicReference<Closeable>>();
             for ( Closeable closeable : testProvidingInputStream )
             {
                 if ( closeable != null )
@@ -166,10 +165,10 @@ public class ForkStarter
                     this.testProvidingInputStream.add( new AtomicReference<Closeable>( closeable ) );
                 }
             }
-            if ( this.testProvidingInputStream.size() > 0 )
+            if ( !this.testProvidingInputStream.isEmpty() )
             {
                 inputStreamCloserHook = newDaemonThread( this, "closer-shutdown-hook" );
-                ShutdownHookUtils.addShutDownHook( inputStreamCloserHook );
+                addShutDownHook( inputStreamCloserHook );
             }
             else
             {
@@ -202,7 +201,7 @@ public class ForkStarter
             run();
             if ( inputStreamCloserHook != null )
             {
-                ShutdownHookUtils.removeShutdownHook( inputStreamCloserHook );
+                removeShutdownHook( inputStreamCloserHook );
             }
         }
     }
@@ -488,7 +487,7 @@ public class ForkStarter
                             AbstractForkInputStream testProvidingInputStream, boolean readTestsFromInStream )
         throws SurefireBooterForkException
     {
-        int forkNumber = ForkNumberBucket.drawNumber();
+        int forkNumber = drawNumber();
         try
         {
             return fork( testSet, providerProperties, forkClient, effectiveSystemProperties, forkNumber,
@@ -496,7 +495,7 @@ public class ForkStarter
         }
         finally
         {
-            ForkNumberBucket.returnNumber( forkNumber );
+            returnNumber( forkNumber );
         }
     }
 

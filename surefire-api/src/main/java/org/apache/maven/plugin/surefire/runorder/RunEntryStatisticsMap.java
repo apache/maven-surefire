@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +38,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.util.Collections.sort;
+import static org.apache.maven.plugin.surefire.runorder.RunEntryStatistics.fromReportEntry;
+import static org.apache.maven.plugin.surefire.runorder.RunEntryStatistics.fromString;
 
 /**
  * @author Kristian Rosenvold
@@ -49,7 +52,7 @@ public class RunEntryStatisticsMap
 
     public RunEntryStatisticsMap( Map<String, RunEntryStatistics> runEntryStatistics )
     {
-        this.runEntryStatistics = Collections.synchronizedMap( runEntryStatistics );
+        this.runEntryStatistics = new ConcurrentHashMap<String, RunEntryStatistics>( runEntryStatistics );
     }
 
     public RunEntryStatisticsMap()
@@ -69,9 +72,9 @@ public class RunEntryStatisticsMap
             {
                 throw new RuntimeException( e );
             }
-            catch ( IOException e1 )
+            catch ( IOException e )
             {
-                throw new RuntimeException( e1 );
+                throw new RuntimeException( e );
             }
         }
         else
@@ -90,7 +93,7 @@ public class RunEntryStatisticsMap
         {
             if ( !line.startsWith( "#" ) )
             {
-                final RunEntryStatistics stats = RunEntryStatistics.fromString( line );
+                final RunEntryStatistics stats = fromString( line );
                 result.put( stats.getTestName(), stats );
             }
             line = bufferedReader.readLine();
@@ -106,7 +109,7 @@ public class RunEntryStatisticsMap
         try
         {
             List<RunEntryStatistics> items = new ArrayList<RunEntryStatistics>( runEntryStatistics.values() );
-            Collections.sort( items, new RunCountComparator() );
+            sort( items, new RunCountComparator() );
             for ( RunEntryStatistics item : items )
             {
                 printWriter.println( item.toString() );
@@ -121,7 +124,7 @@ public class RunEntryStatisticsMap
     public RunEntryStatistics findOrCreate( ReportEntry reportEntry )
     {
         final RunEntryStatistics item = runEntryStatistics.get( reportEntry.getName() );
-        return item != null ? item : RunEntryStatistics.fromReportEntry( reportEntry );
+        return item != null ? item : fromReportEntry( reportEntry );
     }
 
     public RunEntryStatistics createNextGeneration( ReportEntry reportEntry )
@@ -187,7 +190,7 @@ public class RunEntryStatisticsMap
             PrioritizedTest prioritizedTest = new PrioritizedTest( clazz, pri );
             tests.add( prioritizedTest );
         }
-        Collections.sort( tests, new PrioritizedTestComparator() );
+        sort( tests, new PrioritizedTestComparator() );
         return tests;
     }
 
@@ -220,7 +223,7 @@ public class RunEntryStatisticsMap
         }
 
         List<Priority> items = new ArrayList<Priority>( priorities.values() );
-        Collections.sort( items, priorityComparator );
+        sort( items, priorityComparator );
         Map<String, Priority> result = new HashMap<String, Priority>();
         int i = 0;
         for ( Priority pri : items )

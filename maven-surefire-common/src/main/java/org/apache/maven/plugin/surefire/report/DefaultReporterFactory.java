@@ -77,7 +77,8 @@ public class DefaultReporterFactory
             new TestSetRunListener( reportConfiguration.instantiateConsoleReporter(),
                                     reportConfiguration.instantiateFileReporter(),
                                     reportConfiguration.instantiateStatelessXmlReporter(),
-                                    reportConfiguration.instantiateConsoleOutputFileReporter(), statisticsReporter,
+                                    reportConfiguration.instantiateConsoleOutputFileReporter(),
+                                    statisticsReporter,
                                     reportConfiguration.isTrimStackTrace(),
                                     PLAIN.equals( reportConfiguration.getReportFormat() ),
                                     reportConfiguration.isBriefOrPlainFormat() );

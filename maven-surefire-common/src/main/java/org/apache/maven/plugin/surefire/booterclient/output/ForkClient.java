@@ -33,7 +33,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
-import org.apache.maven.surefire.booter.ForkingRunListener;
 import org.apache.maven.surefire.report.CategorizedReportEntry;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
@@ -43,7 +42,25 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_BYE;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_CONSOLE;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_ERROR;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_NEXT_TEST;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_STDERR;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_STDOUT;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_STOP_ON_NEXT_TEST;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_SYSPROPS;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_TEST_ASSUMPTIONFAILURE;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_TEST_ERROR;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_TEST_FAILED;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_TEST_SKIPPED;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_TEST_STARTING;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_TEST_SUCCEEDED;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_TESTSET_COMPLETED;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_TESTSET_STARTING;
 import static org.apache.maven.surefire.booter.Shutdown.KILL;
+import static org.apache.maven.surefire.util.internal.StringUtils.unescapeBytes;
+import static org.apache.maven.surefire.util.internal.StringUtils.unescapeString;
 
 /**
  * Knows how to reconstruct *all* the state transmitted over stdout by the forked process.
@@ -66,7 +83,7 @@ public class ForkClient
 
     /**
      * <t>testSetStartedAt</t> is set to non-zero after received
-     * {@link ForkingRunListener#BOOTERCODE_TESTSET_STARTING test-set}.
+     * {@link org.apache.maven.surefire.booter.ForkingRunListener#BOOTERCODE_TESTSET_STARTING test-set}.
      */
     private final AtomicLong testSetStartedAt = new AtomicLong( START_TIME_ZERO );
 
@@ -148,62 +165,62 @@ public class ForkClient
 
             switch ( operationId )
             {
-                case ForkingRunListener.BOOTERCODE_TESTSET_STARTING:
+                case BOOTERCODE_TESTSET_STARTING:
                     getOrCreateReporter( channelNumber ).testSetStarting( createReportEntry( remaining ) );
                     setCurrentStartTime();
                     break;
-                case ForkingRunListener.BOOTERCODE_TESTSET_COMPLETED:
+                case BOOTERCODE_TESTSET_COMPLETED:
                     getOrCreateReporter( channelNumber ).testSetCompleted( createReportEntry( remaining ) );
                     break;
-                case ForkingRunListener.BOOTERCODE_TEST_STARTING:
+                case BOOTERCODE_TEST_STARTING:
                     getOrCreateReporter( channelNumber ).testStarting( createReportEntry( remaining ) );
                     break;
-                case ForkingRunListener.BOOTERCODE_TEST_SUCCEEDED:
+                case BOOTERCODE_TEST_SUCCEEDED:
                     getOrCreateReporter( channelNumber ).testSucceeded( createReportEntry( remaining ) );
                     break;
-                case ForkingRunListener.BOOTERCODE_TEST_FAILED:
+                case BOOTERCODE_TEST_FAILED:
                     getOrCreateReporter( channelNumber ).testFailed( createReportEntry( remaining ) );
                     break;
-                case ForkingRunListener.BOOTERCODE_TEST_SKIPPED:
+                case BOOTERCODE_TEST_SKIPPED:
                     getOrCreateReporter( channelNumber ).testSkipped( createReportEntry( remaining ) );
                     break;
-                case ForkingRunListener.BOOTERCODE_TEST_ERROR:
+                case BOOTERCODE_TEST_ERROR:
                     getOrCreateReporter( channelNumber ).testError( createReportEntry( remaining ) );
                     break;
-                case ForkingRunListener.BOOTERCODE_TEST_ASSUMPTIONFAILURE:
+                case BOOTERCODE_TEST_ASSUMPTIONFAILURE:
                     getOrCreateReporter( channelNumber ).testAssumptionFailure( createReportEntry( remaining ) );
                     break;
-                case ForkingRunListener.BOOTERCODE_SYSPROPS:
+                case BOOTERCODE_SYSPROPS:
                     int keyEnd = remaining.indexOf( "," );
                     StringBuilder key = new StringBuilder();
                     StringBuilder value = new StringBuilder();
-                    StringUtils.unescapeString( key, remaining.substring( 0, keyEnd ) );
-                    StringUtils.unescapeString( value, remaining.substring( keyEnd + 1 ) );
+                    unescapeString( key, remaining.substring( 0, keyEnd ) );
+                    unescapeString( value, remaining.substring( keyEnd + 1 ) );
 
                     synchronized ( testVmSystemProperties )
                     {
                         testVmSystemProperties.put( key.toString(), value.toString() );
                     }
                     break;
-                case ForkingRunListener.BOOTERCODE_STDOUT:
+                case BOOTERCODE_STDOUT:
                     writeTestOutput( channelNumber, remaining, true );
                     break;
-                case ForkingRunListener.BOOTERCODE_STDERR:
+                case BOOTERCODE_STDERR:
                     writeTestOutput( channelNumber, remaining, false );
                     break;
-                case ForkingRunListener.BOOTERCODE_CONSOLE:
+                case BOOTERCODE_CONSOLE:
                     getOrCreateConsoleLogger( channelNumber ).info( createConsoleMessage( remaining ) );
                     break;
-                case ForkingRunListener.BOOTERCODE_NEXT_TEST:
+                case BOOTERCODE_NEXT_TEST:
                     notifiableTestStream.provideNewTest();
                     break;
-                case ForkingRunListener.BOOTERCODE_ERROR:
+                case BOOTERCODE_ERROR:
                     errorInFork = deserializeStackTraceWriter( new StringTokenizer( remaining, "," ) );
                     break;
-                case ForkingRunListener.BOOTERCODE_BYE:
+                case BOOTERCODE_BYE:
                     saidGoodBye = true;
                     break;
-                case ForkingRunListener.BOOTERCODE_STOP_ON_NEXT_TEST:
+                case BOOTERCODE_STOP_ON_NEXT_TEST:
                     stopOnNextTest();
                     break;
                 default:
@@ -231,7 +248,7 @@ public class ForkClient
         int csNameEnd = remaining.indexOf( ',' );
         String charsetName = remaining.substring( 0, csNameEnd );
         String byteEncoded = remaining.substring( csNameEnd + 1 );
-        ByteBuffer unescaped = StringUtils.unescapeBytes( byteEncoded, charsetName );
+        ByteBuffer unescaped = unescapeBytes( byteEncoded, charsetName );
 
         if ( unescaped.hasArray() )
         {
@@ -305,7 +322,7 @@ public class ForkClient
     private String unescape( String source )
     {
         StringBuilder stringBuffer = new StringBuilder( source.length() );
-        StringUtils.unescapeString( stringBuffer, source );
+        unescapeString( stringBuffer, source );
         return stringBuffer.toString();
     }
 
