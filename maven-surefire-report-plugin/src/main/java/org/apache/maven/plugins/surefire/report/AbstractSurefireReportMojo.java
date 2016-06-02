@@ -21,7 +21,6 @@ package org.apache.maven.plugins.surefire.report;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -33,6 +32,9 @@ import org.apache.maven.reporting.AbstractMavenReport;
 import org.apache.maven.reporting.MavenReportException;
 import org.apache.maven.shared.utils.PathTool;
 import org.apache.maven.shared.utils.StringUtils;
+
+import static java.util.Collections.addAll;
+import static org.apache.maven.plugins.surefire.report.SurefireReportParser.hasReportFiles;
 
 /**
  * Abstract base class for reporting test results using Surefire.
@@ -145,7 +147,7 @@ public abstract class AbstractSurefireReportMojo
             boolean atLeastOneDirectoryExists = false;
             for ( Iterator<File> i = reportsDirectoryList.iterator(); i.hasNext() && !atLeastOneDirectoryExists; )
             {
-                atLeastOneDirectoryExists = SurefireReportParser.hasReportFiles( i.next() );
+                atLeastOneDirectoryExists = hasReportFiles( i.next() );
             }
             if ( !atLeastOneDirectoryExists )
             {
@@ -178,7 +180,7 @@ public abstract class AbstractSurefireReportMojo
             boolean atLeastOneDirectoryExists = false;
             for ( Iterator<File> i = reportsDirectoryList.iterator(); i.hasNext() && !atLeastOneDirectoryExists; )
             {
-                atLeastOneDirectoryExists = SurefireReportParser.hasReportFiles( i.next() );
+                atLeastOneDirectoryExists = hasReportFiles( i.next() );
             }
             if ( !atLeastOneDirectoryExists )
             {
@@ -191,17 +193,17 @@ public abstract class AbstractSurefireReportMojo
 
     private List<File> getReportsDirectories()
     {
-        final List<File> reportsDirectoryList = new ArrayList<File>();
+        final List<File> reportsDirectories = new ArrayList<File>();
 
-        if ( reportsDirectories != null )
+        if ( this.reportsDirectories != null )
         {
-            reportsDirectoryList.addAll( Arrays.asList( reportsDirectories ) );
+            addAll( reportsDirectories, this.reportsDirectories );
         }
         //noinspection deprecation
         if ( reportsDirectory != null )
         {
             //noinspection deprecation
-            reportsDirectoryList.add( reportsDirectory );
+            reportsDirectories.add( reportsDirectory );
         }
         if ( aggregate )
         {
@@ -209,11 +211,11 @@ public abstract class AbstractSurefireReportMojo
             {
                 return null;
             }
-            if ( reportsDirectories == null )
+            if ( this.reportsDirectories == null )
             {
                 for ( MavenProject mavenProject : getProjectsWithoutRoot() )
                 {
-                    reportsDirectoryList.add( getSurefireReportsDirectory( mavenProject ) );
+                    reportsDirectories.add( getSurefireReportsDirectory( mavenProject ) );
                 }
             }
             else
@@ -224,7 +226,7 @@ public abstract class AbstractSurefireReportMojo
                 for ( MavenProject subProject : getProjectsWithoutRoot() )
                 {
                     String moduleBaseDir = subProject.getBasedir().getAbsolutePath();
-                    for ( File reportsDirectory1 : reportsDirectories )
+                    for ( File reportsDirectory1 : this.reportsDirectories )
                     {
                         String reportDir = reportsDirectory1.getPath();
                         if ( reportDir.startsWith( parentBaseDir ) )
@@ -235,7 +237,7 @@ public abstract class AbstractSurefireReportMojo
                         if ( reportsDirectory.exists() && reportsDirectory.isDirectory() )
                         {
                             getLog().debug( "Adding report dir : " + moduleBaseDir + reportDir );
-                            reportsDirectoryList.add( reportsDirectory );
+                            reportsDirectories.add( reportsDirectory );
                         }
                     }
                 }
@@ -243,13 +245,13 @@ public abstract class AbstractSurefireReportMojo
         }
         else
         {
-            if ( reportsDirectoryList.isEmpty() )
+            if ( reportsDirectories.isEmpty() )
             {
 
-                reportsDirectoryList.add( getSurefireReportsDirectory( project ) );
+                reportsDirectories.add( getSurefireReportsDirectory( project ) );
             }
         }
-        return reportsDirectoryList;
+        return reportsDirectories;
     }
 
     /**
