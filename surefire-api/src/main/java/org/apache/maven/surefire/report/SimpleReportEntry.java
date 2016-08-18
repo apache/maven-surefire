@@ -55,6 +55,10 @@ public class SimpleReportEntry
         this( source, name, null, elapsed );
     }
 
+    public SimpleReportEntry( String source, String name, String message ) 
+    {
+        this( source, name, null, null, message );
+    }
     protected SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed,
                                  String message )
     {

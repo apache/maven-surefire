@@ -126,7 +126,8 @@ public class JUnit4RunListener
     @SuppressWarnings( { "UnusedDeclaration" } )
     public void testAssumptionFailure( Failure failure )
     {
-        reporter.testAssumptionFailure( createReportEntry( failure.getDescription() ) );
+        reporter.testAssumptionFailure( new SimpleReportEntry( getClassName( failure.getDescription() ) ,
+              failure.getDescription().getDisplayName() , failure.getMessage() ) );
         failureFlag.set( true );
     }
 
