@@ -30,8 +30,9 @@
 
 Skipping Tests
 
- To skip running the tests for a particular project, set the <<skipTests>>
- property to <<true>>.
+#{if}(${project.artifactId}=="maven-surefire-plugin")
+
+ To skip running the tests for a particular project, set the <<skipTests>> property to <<true>>.
 
 +---+
 <project>
@@ -58,7 +59,35 @@ Skipping Tests
 mvn install -DskipTests
 +---+
 
-#{if}(${project.artifactId}=="maven-failsafe-plugin")
+#{else}
+
+ To skip running the tests for a particular project, set the <<skipITs>> property to <<true>>.
+
++---+
+<project>
+    [...]
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>${project.artifactId}</artifactId>
+                <version>${project.version}</version>
+                <configuration>
+                    <skipITs>true</skipITs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    [...]
+</project>
++---+
+
+ You can also skip the tests via the command line by executing the following command:
+
++---+
+mvn install -DskipITs
++---+
+
  Since <<<skipTests>>> is also supported by the ${thatPlugin} Plugin, this will have the effect
  of not running any tests.  If, instead, you want to skip only the integration tests
  being run by the ${thisPlugin} Plugin, you would use the <<<skipITs>>> property instead:
@@ -68,6 +97,9 @@ mvn install -DskipITs
 +---+
 
 #{end}
+
+
+
  If you absolutely must, you can also use the <<<maven.test.skip>>> property to skip compiling the tests.
  <<<maven.test.skip>>> is honored by Surefire, Failsafe and the Compiler Plugin.
 
@@ -79,6 +111,8 @@ Skipping by Default
 
    If you want to skip tests by default but want the ability to re-enable tests from the
    command line, you need to go via a properties section in the pom:
+
+#{if}(${project.artifactId}=="maven-surefire-plugin")
 
 +---+
 <project>
@@ -103,7 +137,34 @@ Skipping by Default
 </project>
 +---+
 
-   This will allow you to run with tests disabled by default and to run them with this command:
+#{else}
+
++---+
+<project>
+    [...]
+    <properties>
+        <skipTests>true</skipTests>
+    </properties>
+    [...]
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>${project.artifactId}</artifactId>
+                <version>${project.version}</version>
+                <configuration>
+                    <skipITs>${esc.d}{skipTests}</skipITs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    [...]
+</project>
++---+
+
+#{end}
+
+   This will allow you to run with all tests disabled by default and to run them with this command:
 
 +---+
 mvn install -DskipTests=false
