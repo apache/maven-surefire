@@ -179,6 +179,7 @@ else
           <name>listener</name>
           <value>com.mycompany.MyResultListener,com.mycompany.MyResultListener2</value>
         </property>
+      </properties>
     </configuration>
   </plugin>
 [...]
