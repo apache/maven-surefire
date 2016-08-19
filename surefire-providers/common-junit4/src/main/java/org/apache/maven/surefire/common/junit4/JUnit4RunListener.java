@@ -31,6 +31,7 @@ import org.junit.runner.notification.Failure;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.isFailureInsideJUnitItself;
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.getAnnotatedIgnoreValue;
 import static org.apache.maven.surefire.report.SimpleReportEntry.ignored;
 import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
@@ -198,16 +199,12 @@ public class JUnit4RunListener
     public static void rethrowAnyTestMechanismFailures( Result run )
         throws TestSetFailedException
     {
-        if ( run.getFailureCount() > 0 )
+        for ( Failure failure : run.getFailures() )
         {
-            for ( Failure failure : run.getFailures() )
+            if ( isFailureInsideJUnitItself( failure.getDescription() ) )
             {
-                Description description = failure.getDescription();
-                if ( JUnit4ProviderUtil.isFailureInsideJUnitItself( description ) )
-                {
-                    final Throwable exception = failure.getException();
-                    throw new TestSetFailedException( exception );
-                }
+                throw new TestSetFailedException( failure.getTestHeader() + " :: " + failure.getMessage(),
+                                                        failure.getException() );
             }
         }
     }
