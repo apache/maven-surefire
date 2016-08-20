@@ -25,12 +25,15 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import static java.util.Collections.unmodifiableSet;
 import static org.apache.maven.shared.utils.StringUtils.isBlank;
 import static org.apache.maven.shared.utils.StringUtils.isNotBlank;
 import static org.apache.maven.shared.utils.StringUtils.split;
 import static org.apache.maven.shared.utils.io.SelectorUtils.PATTERN_HANDLER_SUFFIX;
 import static org.apache.maven.shared.utils.io.SelectorUtils.REGEX_HANDLER_PREFIX;
 import static java.util.Collections.singleton;
+import static org.apache.maven.surefire.testset.ResolvedTest.Type.CLASS;
+import static org.apache.maven.surefire.testset.ResolvedTest.Type.METHOD;
 
 /**
  * Resolved multi pattern filter e.g. -Dtest=MyTest#test,!AnotherTest#otherTest into an object model
@@ -78,8 +81,8 @@ public class TestListResolver
             }
         }
 
-        this.includedPatterns = Collections.unmodifiableSet( includedFilters );
-        this.excludedPatterns = Collections.unmodifiableSet( excludedFilters );
+        this.includedPatterns = unmodifiableSet( includedFilters );
+        this.excludedPatterns = unmodifiableSet( excludedFilters );
         this.hasIncludedMethodPatterns = patterns.hasIncludedMethodPatterns;
         this.hasExcludedMethodPatterns = patterns.hasExcludedMethodPatterns;
     }
@@ -401,10 +404,10 @@ public class TestListResolver
         return unwrap( regex.substring( from, to ) );
     }
 
-    static String[] unwrap( String request )
+    static String[] unwrap( final String request )
     {
-        String[] classAndMethod = new String[] { "", "" };
-        int indexOfHash = request.indexOf( '#' );
+        final String[] classAndMethod = { "", "" };
+        final int indexOfHash = request.indexOf( '#' );
         if ( indexOfHash == -1 )
         {
             classAndMethod[0] = request.trim();
@@ -452,11 +455,11 @@ public class TestListResolver
             }
             else if ( hasClass )
             {
-                test = new ResolvedTest( ResolvedTest.Type.CLASS, unwrapped[0], true );
+                test = new ResolvedTest( CLASS, unwrapped[0], true );
             }
             else if ( hasMethod )
             {
-                test = new ResolvedTest( ResolvedTest.Type.METHOD, unwrapped[1], true );
+                test = new ResolvedTest( METHOD, unwrapped[1], true );
             }
         }
         else
@@ -464,7 +467,7 @@ public class TestListResolver
             final int indexOfMethodSeparator = request.indexOf( '#' );
             if ( indexOfMethodSeparator == -1 )
             {
-                test = new ResolvedTest( ResolvedTest.Type.CLASS, request, false );
+                test = new ResolvedTest( CLASS, request, false );
             }
             else
             {
