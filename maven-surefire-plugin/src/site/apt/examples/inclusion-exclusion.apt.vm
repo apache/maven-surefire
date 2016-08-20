@@ -40,6 +40,9 @@ Inclusions and Exclusions of Tests
    * <<<"**/*Test.java">>> - includes all of its subdirectories and all Java
    filenames that end with "Test".
 
+   * <<<"**/*Tests.java">>> - includes all of its subdirectories and all Java
+   filenames that end with "Tests".
+
    * <<<"**/*TestCase.java">>> - includes all of its subdirectories and all Java
    filenames that end with "TestCase".
 

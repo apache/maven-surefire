@@ -168,6 +168,7 @@ public class SurefirePlugin
      * &lt;includes><br/>
      * &nbsp;&lt;include>**&#47;Test*.java&lt;/include><br/>
      * &nbsp;&lt;include>**&#47;*Test.java&lt;/include><br/>
+     * &nbsp;&lt;include>**&#47;*Tests.java&lt;/include><br/>
      * &nbsp;&lt;include>**&#47;*TestCase.java&lt;/include><br/>
      * &lt;/includes><br/>
      * </code>
@@ -341,7 +342,7 @@ public class SurefirePlugin
 
     protected String[] getDefaultIncludes()
     {
-        return new String[]{ "**/Test*.java", "**/*Test.java", "**/*TestCase.java" };
+        return new String[]{ "**/Test*.java", "**/*Test.java", "**/*Tests.java", "**/*TestCase.java" };
     }
 
     @Override
