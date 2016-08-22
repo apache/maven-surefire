@@ -19,10 +19,15 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashSet;
 import java.util.Set;
+
+import static java.lang.ClassLoader.getSystemClassLoader;
+import static org.apache.maven.surefire.util.ReflectionUtils.tryGetMethod;
 
 /**
  * @noinspection CustomClassloader
@@ -30,7 +35,7 @@ import java.util.Set;
 public class IsolatedClassLoader
     extends URLClassLoader
 {
-    private final ClassLoader parent = ClassLoader.getSystemClassLoader();
+    private final ClassLoader parent = parentClassLoader();
 
     private final Set<URL> urls = new HashSet<URL>();
 
@@ -102,5 +107,22 @@ public class IsolatedClassLoader
     public String toString()
     {
         return "IsolatedClassLoader{roleName='" + roleName + "'}";
+    }
+
+    private static ClassLoader parentClassLoader()
+    {
+        Method platformCL = tryGetMethod( ClassLoader.class, "getPlatformClassLoader" );
+        try
+        {
+            return platformCL == null ? getSystemClassLoader() : (ClassLoader) platformCL.invoke( null );
+        }
+        catch ( IllegalAccessException e )
+        {
+            throw new IllegalStateException( e.getLocalizedMessage(), e );
+        }
+        catch ( InvocationTargetException e )
+        {
+            throw new IllegalStateException( e.getLocalizedMessage(), e );
+        }
     }
 }
