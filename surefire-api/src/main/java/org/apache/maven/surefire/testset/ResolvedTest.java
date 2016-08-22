@@ -100,6 +100,7 @@ public final class ResolvedTest
         this.methodPattern = methodPattern;
         isRegexTestClassPattern = isRegex;
         isRegexTestMethodPattern = isRegex;
+        methodMatcher.sanityCheck();
     }
 
     /**
@@ -118,6 +119,7 @@ public final class ResolvedTest
         methodPattern = !isClass ? pattern : null;
         isRegexTestClassPattern = isRegex && isClass;
         isRegexTestMethodPattern = isRegex && !isClass;
+        methodMatcher.sanityCheck();
     }
 
     /**
@@ -369,7 +371,7 @@ public final class ResolvedTest
 
         boolean matchTestClassFile( String testClassFile )
         {
-            return ResolvedTest.this.isRegexTestClassPattern
+            return ResolvedTest.this.isRegexTestClassPattern()
                            ? matchClassRegexPatter( testClassFile )
                            : matchClassPatter( testClassFile );
         }
@@ -378,13 +380,17 @@ public final class ResolvedTest
         {
             if ( cache == null )
             {
-                cache = from( sources );
-                return cache;
+                try
+                {
+                    checkIllegalCharacters( sources );
+                    cache = from( sources );
+                }
+                catch ( IllegalArgumentException e )
+                {
+                    throwSanityError( e );
+                }
             }
-            else
-            {
-                return cache;
-            }
+            return cache;
         }
 
         private boolean matchClassPatter( String testClassFile )
@@ -421,16 +427,9 @@ public final class ResolvedTest
 
         boolean matchMethodName( String methodName )
         {
-            if ( ResolvedTest.this.isRegexTestMethodPattern )
+            if ( ResolvedTest.this.isRegexTestMethodPattern() )
             {
-                if ( cache == null )
-                {
-                    int from = REGEX_HANDLER_PREFIX.length();
-                    int to = ResolvedTest.this.methodPattern.length() - PATTERN_HANDLER_SUFFIX.length();
-                    String pattern = ResolvedTest.this.methodPattern.substring( from, to );
-                    cache = compile( pattern );
-                }
-
+                fetchCache();
                 return cache.matcher( methodName )
                                .matches();
             }
@@ -439,5 +438,52 @@ public final class ResolvedTest
                 return matchPath( ResolvedTest.this.methodPattern, methodName );
             }
         }
+
+        void sanityCheck()
+        {
+            if ( ResolvedTest.this.isRegexTestMethodPattern() && ResolvedTest.this.hasTestMethodPattern() )
+            {
+                try
+                {
+                    checkIllegalCharacters( ResolvedTest.this.methodPattern );
+                    fetchCache();
+                }
+                catch ( IllegalArgumentException e )
+                {
+                    throwSanityError( e );
+                }
+            }
+        }
+
+        private void fetchCache()
+        {
+            if ( cache == null )
+            {
+                int from = REGEX_HANDLER_PREFIX.length();
+                int to = ResolvedTest.this.methodPattern.length() - PATTERN_HANDLER_SUFFIX.length();
+                String pattern = ResolvedTest.this.methodPattern.substring( from, to );
+                cache = compile( pattern );
+            }
+        }
+    }
+
+    private static void checkIllegalCharacters( String... expressions )
+    {
+        for ( String expression : expressions )
+        {
+            if ( expression.contains( "#" ) )
+            {
+                throw new IllegalArgumentException( "Extra '#' in regex: " + expression );
+            }
+        }
+    }
+
+    private static void throwSanityError( IllegalArgumentException e )
+    {
+        throw new IllegalArgumentException( "%regex[] usage rule violation, valid regex rules:\n"
+                                                    + " * <classNameRegex>#<methodNameRegex> - "
+                                                    + "where both regex can be individually evaluated as a regex\n"
+                                                    + " * you may use at most 1 '#' to in one regex filter. "
+                                                    + e.getLocalizedMessage(), e );
     }
 }
