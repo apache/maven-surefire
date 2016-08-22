@@ -116,11 +116,7 @@ public class IsolatedClassLoader
         {
             return platformCL == null ? getSystemClassLoader() : (ClassLoader) platformCL.invoke( null );
         }
-        catch ( IllegalAccessException e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage(), e );
-        }
-        catch ( InvocationTargetException e )
+        catch ( ReflectiveOperationException e )
         {
             throw new IllegalStateException( e.getLocalizedMessage(), e );
         }
