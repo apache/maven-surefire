@@ -19,14 +19,12 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashSet;
 import java.util.Set;
 
-import static java.lang.ClassLoader.getSystemClassLoader;
 import static org.apache.maven.surefire.util.ReflectionUtils.tryGetMethod;
 
 /**
@@ -116,7 +114,7 @@ public class IsolatedClassLoader
         {
             return platformCL == null ? getSystemClassLoader() : (ClassLoader) platformCL.invoke( null );
         }
-        catch ( ReflectiveOperationException e )
+        catch ( Exception e )
         {
             throw new IllegalStateException( e.getLocalizedMessage(), e );
         }
