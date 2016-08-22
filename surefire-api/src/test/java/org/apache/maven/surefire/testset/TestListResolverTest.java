@@ -84,6 +84,13 @@ public class TestListResolverTest
         }
     }
 
+    public void testMinRegexLength()
+    {
+        assertFalse( TestListResolver.isRegexMinLength( "%regex[]" ) );
+        assertFalse( TestListResolver.isRegexMinLength( "%regex[ ]" ) );
+        assertTrue( TestListResolver.isRegexMinLength( "%regex[*Test]" ) );
+    }
+
     public void testRemoveExclamationMark()
     {
         String pattern = TestListResolver.removeExclamationMark( "!%regex[]" );

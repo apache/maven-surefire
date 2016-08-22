@@ -20,8 +20,12 @@ package org.apache.maven.surefire.testset;
  */
 
 import org.apache.maven.shared.utils.StringUtils;
+import org.apache.maven.shared.utils.io.MatchPatterns;
+
+import java.util.regex.Pattern;
 
 import static java.io.File.separatorChar;
+import static java.util.regex.Pattern.compile;
 import static org.apache.maven.shared.utils.StringUtils.isBlank;
 import static org.apache.maven.shared.utils.io.MatchPatterns.from;
 import static org.apache.maven.shared.utils.io.SelectorUtils.PATTERN_HANDLER_SUFFIX;
@@ -61,6 +65,10 @@ public final class ResolvedTest
     private final boolean isRegexTestMethodPattern;
 
     private final String description;
+
+    private final ClassMatcher classMatcher = new ClassMatcher();
+
+    private final MethodMatcher methodMatcher = new MethodMatcher();
 
     /**
      * '*' means zero or more characters<br>
@@ -269,49 +277,12 @@ public final class ResolvedTest
 
     private boolean matchClass( String testClassFile )
     {
-        return classPattern == null || matchTestClassFile( testClassFile );
+        return classPattern == null || classMatcher.matchTestClassFile( testClassFile );
     }
 
     private boolean matchMethod( String methodName )
     {
-        return methodPattern == null || methodName == null || matchMethodName( methodName );
-    }
-
-    private boolean matchTestClassFile( String testClassFile )
-    {
-        return isRegexTestClassPattern ? matchClassRegexPatter( testClassFile ) : matchClassPatter( testClassFile );
-    }
-
-    private boolean matchMethodName( String methodName )
-    {
-        return matchPath( methodPattern, methodName );
-    }
-
-    private boolean matchClassPatter( String testClassFile )
-    {
-        //@todo We have to use File.separator only because the MatchPatterns is using it internally - cannot override.
-        String classPattern = this.classPattern;
-        if ( separatorChar != '/' )
-        {
-            testClassFile = testClassFile.replace( '/', separatorChar );
-            classPattern = classPattern.replace( '/', separatorChar );
-        }
-
-        if ( classPattern.endsWith( WILDCARD_FILENAME_POSTFIX ) || classPattern.endsWith( CLASS_FILE_EXTENSION ) )
-        {
-            return from( classPattern ).matches( testClassFile, true );
-        }
-        else
-        {
-            String[] classPatterns = { classPattern + CLASS_FILE_EXTENSION, classPattern };
-            return from( classPatterns ).matches( testClassFile, true );
-        }
-    }
-
-    private boolean matchClassRegexPatter( String testClassFile )
-    {
-        String realFile = separatorChar == '/' ? testClassFile : testClassFile.replace( '/', separatorChar );
-        return from( classPattern ).matches( realFile, true );
+        return methodPattern == null || methodName == null || methodMatcher.matchMethodName( methodName );
     }
 
     private static String tryBlank( String s )
@@ -389,6 +360,84 @@ public final class ResolvedTest
         else
         {
             return cls;
+        }
+    }
+
+    private final class ClassMatcher
+    {
+        private volatile MatchPatterns cache;
+
+        boolean matchTestClassFile( String testClassFile )
+        {
+            return ResolvedTest.this.isRegexTestClassPattern
+                           ? matchClassRegexPatter( testClassFile )
+                           : matchClassPatter( testClassFile );
+        }
+
+        private MatchPatterns of( String... sources )
+        {
+            if ( cache == null )
+            {
+                cache = from( sources );
+                return cache;
+            }
+            else
+            {
+                return cache;
+            }
+        }
+
+        private boolean matchClassPatter( String testClassFile )
+        {
+            //@todo We have to use File.separator only because the MatchPatterns is using it internally - cannot override.
+            String classPattern = ResolvedTest.this.classPattern;
+            if ( separatorChar != '/' )
+            {
+                testClassFile = testClassFile.replace( '/', separatorChar );
+                classPattern = classPattern.replace( '/', separatorChar );
+            }
+
+            if ( classPattern.endsWith( WILDCARD_FILENAME_POSTFIX ) || classPattern.endsWith( CLASS_FILE_EXTENSION ) )
+            {
+                return of( classPattern ).matches( testClassFile, true );
+            }
+            else
+            {
+                String[] classPatterns = { classPattern + CLASS_FILE_EXTENSION, classPattern };
+                return of( classPatterns ).matches( testClassFile, true );
+            }
+        }
+
+        private boolean matchClassRegexPatter( String testClassFile )
+        {
+            String realFile = separatorChar == '/' ? testClassFile : testClassFile.replace( '/', separatorChar );
+            return of( classPattern ).matches( realFile, true );
+        }
+    }
+
+    private final class MethodMatcher
+    {
+        private volatile Pattern cache;
+
+        boolean matchMethodName( String methodName )
+        {
+            if ( ResolvedTest.this.isRegexTestMethodPattern )
+            {
+                if ( cache == null )
+                {
+                    int from = REGEX_HANDLER_PREFIX.length();
+                    int to = ResolvedTest.this.methodPattern.length() - PATTERN_HANDLER_SUFFIX.length();
+                    String pattern = ResolvedTest.this.methodPattern.substring( from, to );
+                    cache = compile( pattern );
+                }
+
+                return cache.matcher( methodName )
+                               .matches();
+            }
+            else
+            {
+                return matchPath( ResolvedTest.this.methodPattern, methodName );
+            }
         }
     }
 }

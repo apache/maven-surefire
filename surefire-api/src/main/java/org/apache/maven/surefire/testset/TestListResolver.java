@@ -381,8 +381,9 @@ public class TestListResolver
         if ( indexOfRegex != -1 )
         {
             if ( indexOfRegex != 0
-                || !pattern.endsWith( PATTERN_HANDLER_SUFFIX )
-                || pattern.indexOf( REGEX_HANDLER_PREFIX, prefixLength ) != -1 )
+                         || !pattern.endsWith( PATTERN_HANDLER_SUFFIX )
+                         || !isRegexMinLength( pattern )
+                         || pattern.indexOf( REGEX_HANDLER_PREFIX, prefixLength ) != -1 )
             {
                 String msg = "Illegal test|includes|excludes regex '%s'. Expected %%regex[class#method] "
                     + "or !%%regex[class#method] " + "with optional class or #method.";
@@ -394,6 +395,14 @@ public class TestListResolver
         {
             return false;
         }
+    }
+
+
+    static boolean isRegexMinLength( String pattern )
+    {
+        //todo bug in maven-shared-utils: '+1' should not appear in the condition
+        //todo cannot reuse code from SelectorUtils.java because method isRegexPrefixedPattern is in private package.
+        return pattern.length() > REGEX_HANDLER_PREFIX.length() + PATTERN_HANDLER_SUFFIX.length() + 1;
     }
 
     static String[] unwrapRegex( String regex )
