@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.isFailureInsideJUnitItself;
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.getAnnotatedIgnoreValue;
+import static org.apache.maven.surefire.report.SimpleReportEntry.assumption;
 import static org.apache.maven.surefire.report.SimpleReportEntry.ignored;
 import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
 
@@ -126,8 +127,9 @@ public class JUnit4RunListener
     @SuppressWarnings( { "UnusedDeclaration" } )
     public void testAssumptionFailure( Failure failure )
     {
-        reporter.testAssumptionFailure( new SimpleReportEntry( getClassName( failure.getDescription() ) ,
-              failure.getDescription().getDisplayName() , failure.getMessage() ) );
+        Description desc = failure.getDescription();
+        String test = getClassName( desc );
+        reporter.testAssumptionFailure( assumption( test, desc.getDisplayName(), failure.getMessage() ) );
         failureFlag.set( true );
     }
 

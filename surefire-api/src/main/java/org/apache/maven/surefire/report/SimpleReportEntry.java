@@ -90,9 +90,14 @@ public class SimpleReportEntry
         this( source, name, stackTraceWriter, elapsed, safeGetMessage( stackTraceWriter ) );
     }
 
+    public static SimpleReportEntry assumption( String source, String name, String message )
+    {
+        return new SimpleReportEntry( source, name, message );
+    }
+
     public static SimpleReportEntry ignored( String source, String name, String message )
     {
-        return new SimpleReportEntry( source, name, null, null, message );
+        return new SimpleReportEntry( source, name, message );
     }
 
     public static SimpleReportEntry withException( String source, String name, StackTraceWriter stackTraceWriter )
