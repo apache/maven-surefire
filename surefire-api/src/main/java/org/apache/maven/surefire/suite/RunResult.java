@@ -121,6 +121,7 @@ public class RunResult
         try
         {
             e.printStackTrace( pw );
+            pw.flush();
         }
         finally
         {

@@ -114,6 +114,7 @@ public class RunEntryStatisticsMap
             {
                 printWriter.println( item.toString() );
             }
+            printWriter.flush();
         }
         finally
         {

@@ -139,6 +139,7 @@ public abstract class SchedulingStrategy
         try
         {
             t.printStackTrace( stream );
+            stream.flush();
         }
         finally
         {

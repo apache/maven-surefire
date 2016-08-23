@@ -53,12 +53,12 @@ public class PojoStackTraceWriter
             try
             {
                 t.printStackTrace( stackTrace );
+                stackTrace.flush();
             }
             finally
             {
                 stackTrace.close();
             }
-            w.flush();
             StringBuffer builder = w.getBuffer();
             if ( isMultiLineExceptionMessage( t ) )
             {
