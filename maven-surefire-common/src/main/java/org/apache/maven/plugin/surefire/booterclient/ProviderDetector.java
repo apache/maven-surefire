@@ -25,17 +25,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+
+import static java.lang.Character.isJavaIdentifierPart;
+import static java.lang.Character.isJavaIdentifierStart;
+import static java.util.Collections.emptySet;
 
 /**
  * @author Stephen Conolly
  * @author Kristian Rosenvold
  * @noinspection UnusedDeclaration
  */
-public class ProviderDetector
+public final class ProviderDetector
 {
 
     @Nonnull public static Set<String> getServiceNames( Class<?> clazz, ClassLoader classLoader )
@@ -45,7 +48,7 @@ public class ProviderDetector
 
         if ( classLoader == null )
         {
-            return Collections.emptySet();
+            return emptySet();
         }
         final Enumeration<URL> urlEnumeration = classLoader.getResources( resourceName );
         return getNames( urlEnumeration );
@@ -71,8 +74,7 @@ public class ProviderDetector
             final BufferedReader reader = getReader( url );
             try
             {
-                String line;
-                while ( ( line = reader.readLine() ) != null )
+                for ( String line; ( line = reader.readLine() ) != null; )
                 {
                     int ci = line.indexOf( '#' );
                     if ( ci >= 0 )
@@ -86,19 +88,19 @@ public class ProviderDetector
                         continue; // next line
                     }
 
-                    if ( ( line.indexOf( ' ' ) >= 0 ) || ( line.indexOf( '\t' ) >= 0 ) )
+                    if ( line.indexOf( ' ' ) >= 0 || line.indexOf( '\t' ) >= 0 )
                     {
                         continue nextUrl; // next url
                     }
                     char cp = line.charAt( 0 ); // should use codePointAt but this was JDK1.3
-                    if ( !Character.isJavaIdentifierStart( cp ) )
+                    if ( !isJavaIdentifierStart( cp ) )
                     {
                         continue nextUrl; // next url
                     }
                     for ( int i = 1; i < n; i++ )
                     {
                         cp = line.charAt( i );  // should use codePointAt but this was JDK1.3
-                        if ( !Character.isJavaIdentifierPart( cp ) && ( cp != '.' ) )
+                        if ( !isJavaIdentifierPart( cp ) && cp != '.' )
                         {
                             continue nextUrl; // next url
                         }
