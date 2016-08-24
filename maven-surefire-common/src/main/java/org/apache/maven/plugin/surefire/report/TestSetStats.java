@@ -164,26 +164,17 @@ public class TestSetStats
 
     public String getTestSetSummary( WrappedReportEntry reportEntry )
     {
-        String summary = "Tests run: ";
-        summary += completedCount;
-        summary += ", Failures: ";
-        summary += failures;
-        summary += ", Errors: ";
-        summary += errors;
-        summary += ", Skipped: ";
-        summary += skipped;
-        summary += ", ";
-        summary += reportEntry.getElapsedTimeVerbose();
+        String summary =
+                "Tests run: " + completedCount
+                        +  ", Failures: " + failures + ", Errors: " + errors + ", Skipped: " + skipped + ", "
+                        + reportEntry.getElapsedTimeVerbose();
 
         if ( failures > 0 || errors > 0 )
         {
             summary += " <<< FAILURE!";
         }
 
-        summary += " - in ";
-        summary += reportEntry.getNameWithGroup();
-
-        summary += "\n";
+        summary += " - in " + reportEntry.getNameWithGroup() + "\n";
 
         return summary;
     }

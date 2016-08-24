@@ -328,8 +328,8 @@ public final class ResolvedTest
         {
             if ( className.endsWith( JAVA_FILE_EXTENSION ) )
             {
-                className = className.substring( 0, className.length() - JAVA_FILE_EXTENSION.length() );
-                className += CLASS_FILE_EXTENSION;
+                className = className.substring( 0, className.length() - JAVA_FILE_EXTENSION.length() )
+                                    + CLASS_FILE_EXTENSION;
             }
             return className;
         }
