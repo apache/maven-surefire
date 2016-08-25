@@ -36,6 +36,7 @@ import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 
+import java.io.PrintStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -129,10 +130,9 @@ public class BaseProviderFactory
 
     public ConsoleLogger getConsoleLogger()
     {
-        return insideFork
-                ? new ForkingRunListener( reporterConfiguration.getOriginalSystemOut(), ROOT_CHANNEL,
-                                           reporterConfiguration.isTrimStackTrace() )
-                : new DefaultDirectConsoleReporter( reporterConfiguration.getOriginalSystemOut() );
+        boolean trim = reporterConfiguration.isTrimStackTrace();
+        PrintStream out = reporterConfiguration.getOriginalSystemOut();
+        return insideFork ? new ForkingRunListener( out, ROOT_CHANNEL, trim ) : new DefaultDirectConsoleReporter( out );
     }
 
     public void setTestRequest( TestRequest testRequest )
