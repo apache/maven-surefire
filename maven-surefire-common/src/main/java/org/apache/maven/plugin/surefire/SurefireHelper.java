@@ -127,16 +127,16 @@ public final class SurefireHelper
             Method getRequestMethod = session.getClass().getMethod( "getRequest" );
             MavenExecutionRequest request = (MavenExecutionRequest) getRequestMethod.invoke( session );
 
+            if ( request.isShowErrors() )
+            {
+                cli.add( SHOW_ERRORS );
+            }
+
             String f = getFailureBehavior( request );
             if ( f != null )
             {
                 // compatible with enums Maven 3.0
                 cli.add( CommandLineOption.valueOf( f.startsWith( "REACTOR_" ) ? f : "REACTOR_" + f ) );
-            }
-
-            if ( request.isShowErrors() )
-            {
-                cli.add( SHOW_ERRORS );
             }
         }
         catch ( Exception e )
