@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire.report;
 
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
+import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
@@ -37,6 +38,10 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static org.apache.maven.plugin.surefire.report.ConsoleReporter.PLAIN;
+import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.*;
+import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
+import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
+import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
 
 /**
  * Provides reporting modules on the plugin side.
@@ -68,7 +73,7 @@ public class DefaultReporterFactory
     public DefaultReporterFactory( StartupReportConfiguration reportConfiguration )
     {
         this.reportConfiguration = reportConfiguration;
-        this.statisticsReporter = reportConfiguration.instantiateStatisticsReporter();
+        statisticsReporter = reportConfiguration.instantiateStatisticsReporter();
     }
 
     public RunListener createReporter()
@@ -120,7 +125,7 @@ public class DefaultReporterFactory
 
     public void runStarting()
     {
-        final DefaultDirectConsoleReporter consoleReporter = createConsoleLogger();
+        ConsoleLogger consoleReporter = createConsoleLogger();
         consoleReporter.info( "" );
         consoleReporter.info( "-------------------------------------------------------" );
         consoleReporter.info( " T E S T S" );
@@ -129,16 +134,16 @@ public class DefaultReporterFactory
 
     private void runCompleted()
     {
-        final DefaultDirectConsoleReporter logger = createConsoleLogger();
+        final ConsoleLogger logger = createConsoleLogger();
         if ( reportConfiguration.isPrintSummary() )
         {
             logger.info( "" );
             logger.info( "Results:" );
             logger.info( "" );
         }
-        boolean printedFailures = printTestFailures( logger, TestResultType.failure );
-        printedFailures |= printTestFailures( logger, TestResultType.error );
-        printedFailures |= printTestFailures( logger, TestResultType.flake );
+        boolean printedFailures = printTestFailures( logger, failure );
+        printedFailures |= printTestFailures( logger, error );
+        printedFailures |= printTestFailures( logger, flake );
         if ( printedFailures )
         {
             logger.info( "" );
@@ -165,30 +170,30 @@ public class DefaultReporterFactory
      * Get the result of a test based on all its runs. If it has success and failures/errors, then it is a flake;
      * if it only has errors or failures, then count its result based on its first run
      *
-     * @param reportEntryList the list of test run report type for a given test
+     * @param reportEntries the list of test run report type for a given test
      * @param rerunFailingTestsCount configured rerun count for failing tests
      * @return the type of test result
      */
     // Use default visibility for testing
-    static TestResultType getTestResultType( List<ReportEntryType> reportEntryList, int rerunFailingTestsCount  )
+    static TestResultType getTestResultType( List<ReportEntryType> reportEntries, int rerunFailingTestsCount  )
     {
-        if ( reportEntryList == null || reportEntryList.isEmpty() )
+        if ( reportEntries == null || reportEntries.isEmpty() )
         {
-            return TestResultType.unknown;
+            return unknown;
         }
 
         boolean seenSuccess = false, seenFailure = false, seenError = false;
-        for ( ReportEntryType resultType : reportEntryList )
+        for ( ReportEntryType resultType : reportEntries )
         {
-            if ( resultType == ReportEntryType.SUCCESS )
+            if ( resultType == SUCCESS )
             {
                 seenSuccess = true;
             }
-            else if ( resultType == ReportEntryType.FAILURE )
+            else if ( resultType == FAILURE )
             {
                 seenFailure = true;
             }
-            else if ( resultType == ReportEntryType.ERROR )
+            else if ( resultType == ERROR )
             {
                 seenError = true;
             }
@@ -198,27 +203,27 @@ public class DefaultReporterFactory
         {
             if ( seenSuccess && rerunFailingTestsCount > 0 )
             {
-                return TestResultType.flake;
+                return flake;
             }
             else
             {
                 if ( seenError )
                 {
-                    return TestResultType.error;
+                    return error;
                 }
                 else
                 {
-                    return TestResultType.failure;
+                    return failure;
                 }
             }
         }
         else if ( seenSuccess )
         {
-            return TestResultType.success;
+            return success;
         }
         else
         {
-            return TestResultType.skipped;
+            return skipped;
         }
     }
 
@@ -264,23 +269,20 @@ public class DefaultReporterFactory
             String testClassMethodName = entry.getKey();
             completedCount++;
 
-            List<ReportEntryType> resultTypeList = new ArrayList<ReportEntryType>();
+            List<ReportEntryType> resultTypes = new ArrayList<ReportEntryType>();
             for ( TestMethodStats methodStats : testMethodStats )
             {
-                resultTypeList.add( methodStats.getResultType() );
+                resultTypes.add( methodStats.getResultType() );
             }
 
-            TestResultType resultType = getTestResultType( resultTypeList,
-                                                           reportConfiguration.getRerunFailingTestsCount() );
-
-            switch ( resultType )
+            switch ( getTestResultType( resultTypes, reportConfiguration.getRerunFailingTestsCount() ) )
             {
                 case success:
                     // If there are multiple successful runs of the same test, count all of them
                     int successCount = 0;
-                    for ( ReportEntryType type : resultTypeList )
+                    for ( ReportEntryType type : resultTypes )
                     {
-                        if ( type == ReportEntryType.SUCCESS )
+                        if ( type == SUCCESS )
                         {
                             successCount++;
                         }
@@ -316,7 +318,7 @@ public class DefaultReporterFactory
      * @return {@code true} if printed some lines
      */
     // Use default visibility for testing
-    boolean printTestFailures( DefaultDirectConsoleReporter logger, TestResultType type )
+    boolean printTestFailures( ConsoleLogger logger, TestResultType type )
     {
         final Map<String, List<TestMethodStats>> testStats;
         switch ( type )
@@ -375,12 +377,12 @@ public class DefaultReporterFactory
     enum TestResultType
     {
 
-        error( "Tests in error: " ),
-        failure( "Failed tests: " ),
-        flake( "Flaked tests: " ),
-        success( "Success: " ),
-        skipped( "Skipped: " ),
-        unknown( "Unknown: " );
+        error(   "Tests in error: " ),
+        failure( "Failed tests: "   ),
+        flake(   "Flaked tests: "   ),
+        success( "Success: "        ),
+        skipped( "Skipped: "        ),
+        unknown( "Unknown: "        );
 
         private final String logPrefix;
 
