@@ -93,7 +93,7 @@ public class ConsoleReporter
      * @param report report whose test set is starting
      * @return the message
      */
-    static String getTestSetStartingMessage( ReportEntry report )
+    private static String getTestSetStartingMessage( ReportEntry report )
     {
         return TEST_SET_STARTING_PREFIX + report.getNameWithGroup() + "\n";
     }
