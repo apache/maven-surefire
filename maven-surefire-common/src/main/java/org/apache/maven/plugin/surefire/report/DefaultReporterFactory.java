@@ -38,7 +38,12 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static org.apache.maven.plugin.surefire.report.ConsoleReporter.PLAIN;
-import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.*;
+import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.error;
+import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.failure;
+import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.flake;
+import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.skipped;
+import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.success;
+import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.unknown;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
