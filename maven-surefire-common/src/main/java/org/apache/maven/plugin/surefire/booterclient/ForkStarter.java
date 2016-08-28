@@ -72,9 +72,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static java.lang.StrictMath.min;
+import static java.util.Collections.addAll;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.createCopyAndReplaceForkNumPlaceholder;
@@ -94,6 +94,7 @@ import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDown
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThread;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
 import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
+import static org.apache.maven.surefire.util.internal.StringUtils.requireNonNull;
 
 /**
  * Starts the fork or runs in-process.
@@ -151,48 +152,38 @@ public class ForkStarter
     private static class CloseableCloser
         implements Runnable, Closeable
     {
-        private final Queue<AtomicReference<Closeable>> testProvidingInputStream;
+        private final Queue<Closeable> testProvidingInputStream;
 
         private final Thread inputStreamCloserHook;
 
         public CloseableCloser( Closeable... testProvidingInputStream )
         {
-            this.testProvidingInputStream = new ConcurrentLinkedQueue<AtomicReference<Closeable>>();
-            for ( Closeable closeable : testProvidingInputStream )
+            this.testProvidingInputStream = new ConcurrentLinkedQueue<Closeable>();
+            addAll( this.testProvidingInputStream, testProvidingInputStream );
+            if ( this.testProvidingInputStream.isEmpty() )
             {
-                if ( closeable != null )
-                {
-                    this.testProvidingInputStream.add( new AtomicReference<Closeable>( closeable ) );
-                }
+                inputStreamCloserHook = null;
             }
-            if ( !this.testProvidingInputStream.isEmpty() )
+            else
             {
                 inputStreamCloserHook = newDaemonThread( this, "closer-shutdown-hook" );
                 addShutDownHook( inputStreamCloserHook );
             }
-            else
-            {
-                inputStreamCloserHook = null;
-            }
         }
 
+        @SuppressWarnings( "checkstyle:innerassignment" )
         public void run()
         {
-            for ( AtomicReference<Closeable> closeableAtomicReference : testProvidingInputStream )
+            for ( Closeable closeable; ( closeable = testProvidingInputStream.poll() ) != null; )
             {
-                Closeable closeable = closeableAtomicReference.getAndSet( null );
-                if ( closeable != null )
+                try
                 {
-                    try
-                    {
-                        closeable.close();
-                    }
-                    catch ( IOException e )
-                    {
-                        // ignore
-                    }
+                    closeable.close();
                 }
-
+                catch ( IOException e )
+                {
+                    // ignore
+                }
             }
         }
 
@@ -562,8 +553,9 @@ public class ForkStarter
             cli.createArg().setFile( systPropsFile );
         }
 
-        ThreadedStreamConsumer threadedStreamConsumer = new ThreadedStreamConsumer( forkClient );
-        final CloseableCloser closer = new CloseableCloser( threadedStreamConsumer, testProvidingInputStream );
+        final ThreadedStreamConsumer threadedStreamConsumer = new ThreadedStreamConsumer( forkClient );
+        final CloseableCloser closer =
+                new CloseableCloser( threadedStreamConsumer, requireNonNull( testProvidingInputStream, "null param" ) );
 
         if ( forkConfiguration.isDebug() )
         {
