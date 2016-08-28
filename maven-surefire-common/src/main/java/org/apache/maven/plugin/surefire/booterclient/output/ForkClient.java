@@ -33,15 +33,15 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
-import org.apache.maven.surefire.report.CategorizedReportEntry;
 import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.surefire.util.internal.StringUtils;
 
+import static java.lang.Integer.parseInt;
+import static java.lang.System.currentTimeMillis;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_BYE;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_CONSOLE;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_ERROR;
@@ -59,6 +59,8 @@ import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_TES
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_TESTSET_COMPLETED;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_TESTSET_STARTING;
 import static org.apache.maven.surefire.booter.Shutdown.KILL;
+import static org.apache.maven.surefire.report.CategorizedReportEntry.reportEntry;
+import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
 import static org.apache.maven.surefire.util.internal.StringUtils.unescapeBytes;
 import static org.apache.maven.surefire.util.internal.StringUtils.unescapeString;
 
@@ -127,7 +129,7 @@ public class ForkClient
 
     public final void consumeLine( String s )
     {
-        if ( StringUtils.isNotBlank( s ) )
+        if ( isNotBlank( s ) )
         {
             processLine( s );
         }
@@ -139,7 +141,7 @@ public class ForkClient
         {
             // Not necessary to call JNI library library #currentTimeMillis
             // which may waste 10 - 30 machine cycles in callback. Callbacks should be fast.
-            testSetStartedAt.compareAndSet( START_TIME_ZERO, System.currentTimeMillis() );
+            testSetStartedAt.compareAndSet( START_TIME_ZERO, currentTimeMillis() );
         }
     }
 
@@ -153,14 +155,14 @@ public class ForkClient
         try
         {
             final byte operationId = (byte) s.charAt( 0 );
-            int commma = s.indexOf( ",", 3 );
-            if ( commma < 0 )
+            int comma = s.indexOf( ",", 3 );
+            if ( comma < 0 )
             {
                 System.out.println( s );
                 return;
             }
-            final int channelNumber = Integer.parseInt( s.substring( 2, commma ), 16 );
-            int rest = s.indexOf( ",", commma );
+            final int channelNumber = parseInt( s.substring( 2, comma ), 16 );
+            int rest = s.indexOf( ",", comma );
             final String remaining = s.substring( rest + 1 );
 
             switch ( operationId )
@@ -296,7 +298,7 @@ public class ForkClient
             final StackTraceWriter stackTraceWriter =
                 tokens.hasMoreTokens() ? deserializeStackTraceWriter( tokens ) : null;
 
-            return CategorizedReportEntry.reportEntry( source, name, group, stackTraceWriter, elapsed, message );
+            return reportEntry( source, name, group, stackTraceWriter, elapsed, message );
         }
         catch ( RuntimeException e )
         {
@@ -309,9 +311,8 @@ public class ForkClient
         String stackTraceMessage = nullableCsv( tokens.nextToken() );
         String smartStackTrace = nullableCsv( tokens.nextToken() );
         String stackTrace = tokens.hasMoreTokens() ? nullableCsv( tokens.nextToken() ) : null;
-        return stackTrace != null
-            ? new DeserializedStacktraceWriter( stackTraceMessage, smartStackTrace, stackTrace )
-            : null;
+        boolean hasTrace = stackTrace != null;
+        return hasTrace ? new DeserializedStacktraceWriter( stackTraceMessage, smartStackTrace, stackTrace ) : null;
     }
 
     private String nullableCsv( String source )
