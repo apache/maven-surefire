@@ -63,18 +63,19 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.StrictMath.min;
+import static java.lang.System.currentTimeMillis;
+import static java.lang.Thread.currentThread;
 import static java.util.Collections.addAll;
+import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.createCopyAndReplaceForkNumPlaceholder;
@@ -283,7 +284,7 @@ public class ForkStarter
     private RunResult runSuitesForkOnceMultiple( final SurefireProperties effectiveSystemProperties, int forkCount )
         throws SurefireBooterForkException
     {
-        ThreadPoolExecutor executorService = new ThreadPoolExecutor( forkCount, forkCount, 60, TimeUnit.SECONDS,
+        ThreadPoolExecutor executorService = new ThreadPoolExecutor( forkCount, forkCount, 60, SECONDS,
                                                                   new ArrayBlockingQueue<Runnable>( forkCount ) );
         executorService.setThreadFactory( FORKED_JVM_DAEMON_THREAD_FACTORY );
 
@@ -364,7 +365,7 @@ public class ForkStarter
     {
         ArrayList<Future<RunResult>> results = new ArrayList<Future<RunResult>>( 500 );
         ThreadPoolExecutor executorService =
-            new ThreadPoolExecutor( forkCount, forkCount, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>() );
+            new ThreadPoolExecutor( forkCount, forkCount, 60, SECONDS, new LinkedBlockingQueue<Runnable>() );
         executorService.setThreadFactory( FORKED_JVM_DAEMON_THREAD_FACTORY );
         final TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
         ScheduledFuture<?> ping = triggerPingTimerForShutdown( builder );
@@ -443,7 +444,7 @@ public class ForkStarter
             catch ( InterruptedException e )
             {
                 executorService.shutdownNow();
-                Thread.currentThread().interrupt();
+                currentThread().interrupt();
                 throw new SurefireBooterForkException( "Interrupted", e );
             }
             catch ( ExecutionException e )
@@ -464,11 +465,11 @@ public class ForkStarter
         try
         {
             // Should stop immediately, as we got all the results if we are here
-            executorService.awaitTermination( 60 * 60, TimeUnit.SECONDS );
+            executorService.awaitTermination( 60 * 60, SECONDS );
         }
         catch ( InterruptedException e )
         {
-            Thread.currentThread().interrupt();
+            currentThread().interrupt();
             throw new SurefireBooterForkException( "Interrupted", e );
         }
     }
@@ -684,13 +685,13 @@ public class ForkStarter
     private static ScheduledExecutorService createPingScheduler()
     {
         ThreadFactory threadFactory = newDaemonThreadFactory( "ping-timer-" + PING_IN_SECONDS + "s" );
-        return Executors.newScheduledThreadPool( 1, threadFactory );
+        return newScheduledThreadPool( 1, threadFactory );
     }
 
     private static ScheduledExecutorService createTimeoutCheckScheduler()
     {
         ThreadFactory threadFactory = newDaemonThreadFactory( "timeout-check-timer" );
-        return Executors.newScheduledThreadPool( 1, threadFactory );
+        return newScheduledThreadPool( 1, threadFactory );
     }
 
     private ScheduledFuture<?> triggerPingTimerForShutdown( final TestLessInputStreamBuilder builder )
@@ -724,7 +725,7 @@ public class ForkStarter
         {
             public void run()
             {
-                long systemTime = System.currentTimeMillis();
+                long systemTime = currentTimeMillis();
                 for ( ForkClient forkClient : currentForkClients )
                 {
                     forkClient.tryToTimeout( systemTime, forkedProcessTimeoutInSeconds );
