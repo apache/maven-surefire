@@ -379,6 +379,7 @@ public class StringUtils
 
     /*
     * In JDK7 use java.util.Objects instead.
+    * todo
     * */
     public static <T> T requireNonNull( T obj, String message )
     {
@@ -391,6 +392,7 @@ public class StringUtils
 
     /*
     * In JDK7 use java.util.Objects instead.
+    * todo
     * */
     public static <T> T requireNonNull( T obj )
     {
