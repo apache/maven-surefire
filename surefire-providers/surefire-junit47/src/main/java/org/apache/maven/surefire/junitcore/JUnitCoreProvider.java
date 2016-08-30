@@ -41,15 +41,12 @@ import org.apache.maven.surefire.util.ScannerFilter;
 import org.apache.maven.surefire.util.TestsToRun;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.Failure;
-import org.junit.runner.notification.RunListener;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static java.util.Collections.unmodifiableCollection;
 import static org.apache.maven.surefire.booter.CommandReader.getReader;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTests;
 import static org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory.createCustomListeners;
@@ -72,7 +69,7 @@ public class JUnitCoreProvider
 
     private final ScannerFilter scannerFilter;
 
-    private final Collection<RunListener> customRunListeners;
+    private final String customRunListeners;
 
     private final ProviderParameters providerParameters;
 
@@ -102,8 +99,7 @@ public class JUnitCoreProvider
         scannerFilter = new JUnit48TestChecker( testClassLoader );
         testResolver = bootParams.getTestRequest().getTestListResolver();
         rerunFailingTestsCount = bootParams.getTestRequest().getRerunFailingTestsCount();
-        String listeners = bootParams.getProviderProperties().get( "listener" );
-        customRunListeners = unmodifiableCollection( createCustomListeners( listeners ) );
+        customRunListeners = bootParams.getProviderProperties().get( "listener" );
         jUnit48Reflector = new JUnit48Reflector( testClassLoader );
     }
 
@@ -158,7 +154,7 @@ public class JUnitCoreProvider
             }
 
             notifier.asFailFast( isFailFast() );
-            core.execute( testsToRun, customRunListeners, filter );
+            core.execute( testsToRun, createCustomListeners( customRunListeners ), filter );
             notifier.asFailFast( false );
 
             // Rerun failing tests if rerunFailingTestsCount is larger than 0
