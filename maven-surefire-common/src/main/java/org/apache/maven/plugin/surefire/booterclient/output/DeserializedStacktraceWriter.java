@@ -35,15 +35,15 @@ public class DeserializedStacktraceWriter
 {
     private final String message;
 
-    private final String stackTrace;
-
     private final String smartTrimmed;
+
+    private final String stackTrace;
 
     public DeserializedStacktraceWriter( String message, String smartTrimmed, String stackTrace )
     {
         this.message = message;
-        this.stackTrace = stackTrace;
         this.smartTrimmed = smartTrimmed;
+        this.stackTrace = stackTrace;
     }
 
     public String smartTrimmedStackTrace()
