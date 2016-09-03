@@ -63,7 +63,9 @@ public final class ProviderDetector
      * @return The set of service provider names
      * @throws IOException When reading the streams fails
      */
-    @Nonnull private static Set<String> getNames( final Enumeration<URL> urlEnumeration )
+    @Nonnull
+    @SuppressWarnings( "checkstyle:innerassignment" )
+    private static Set<String> getNames( final Enumeration<URL> urlEnumeration )
         throws IOException
     {
         final Set<String> names = new HashSet<String>();
