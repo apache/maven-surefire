@@ -55,7 +55,6 @@ import java.util.Set;
 
 import static java.lang.reflect.Modifier.isAbstract;
 import static java.lang.reflect.Modifier.isInterface;
-import static java.util.Collections.unmodifiableCollection;
 import static org.apache.maven.surefire.booter.CommandReader.getReader;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTests;
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createDescription;
@@ -80,7 +79,7 @@ public class JUnit4Provider
 
     private final ClassLoader testClassLoader;
 
-    private final Collection<org.junit.runner.notification.RunListener> customRunListeners;
+    private final String customRunListeners;
 
     private final JUnit4TestChecker jUnit4TestChecker;
 
@@ -106,8 +105,7 @@ public class JUnit4Provider
         testClassLoader = bootParams.getTestClassLoader();
         scanResult = bootParams.getScanResult();
         runOrderCalculator = bootParams.getRunOrderCalculator();
-        String listeners = bootParams.getProviderProperties().get( "listener" );
-        customRunListeners = unmodifiableCollection( createCustomListeners( listeners ) );
+        customRunListeners = bootParams.getProviderProperties().get( "listener" );
         jUnit4TestChecker = new JUnit4TestChecker( testClassLoader );
         TestRequest testRequest = bootParams.getTestRequest();
         testResolver = testRequest.getTestListResolver();
@@ -136,7 +134,7 @@ public class JUnit4Provider
 
             Notifier notifier = new Notifier( new JUnit4RunListener( reporter ), getSkipAfterFailureCount() );
             Result result = new Result();
-            notifier.addListeners( customRunListeners )
+            notifier.addListeners( createCustomListeners( customRunListeners ) )
                 .addListener( result.createListener() );
 
             if ( isFailFast() && commandsReader != null )
