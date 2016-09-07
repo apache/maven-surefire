@@ -21,10 +21,10 @@ package junit5;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * A test using the JUnit 5 API, which should be executed by JUnit jupiter enigne
@@ -53,13 +53,13 @@ public class JUnit5Test
     @Test
     public void testSetUp()
     {
-        assertTrue( setUpCalled, "setUp was not called" );
+        Assertions.assertTrue( setUpCalled, "setUp was not called" );
     }
 
     @AfterAll
     public static void oneTimeTearDown()
     {
-        assertTrue( tearDownCalled, "tearDown was not called" );
+        Assertions.assertTrue( tearDownCalled, "tearDown was not called" );
     }
 
 }
