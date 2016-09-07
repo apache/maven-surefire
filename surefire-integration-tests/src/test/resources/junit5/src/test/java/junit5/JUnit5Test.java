@@ -40,14 +40,12 @@ public class JUnit5Test
     public void setUp()
     {
         setUpCalled = true;
-        tearDownCalled = false;
         System.out.println( "Called setUp" );
     }
 
     @AfterEach
     public void tearDown()
     {
-        setUpCalled = false;
         tearDownCalled = true;
         System.out.println( "Called tearDown" );
     }

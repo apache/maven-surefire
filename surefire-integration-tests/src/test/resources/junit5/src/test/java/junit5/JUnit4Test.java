@@ -39,14 +39,12 @@ public class JUnit4Test
     public void setUp()
     {
         setUpCalled = true;
-        tearDownCalled = false;
         System.out.println( "Called setUp" );
     }
 
     @After
     public void tearDown()
     {
-        setUpCalled = false;
         tearDownCalled = true;
         System.out.println( "Called tearDown" );
     }
