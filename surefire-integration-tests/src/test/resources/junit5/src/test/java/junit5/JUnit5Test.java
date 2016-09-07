@@ -58,7 +58,6 @@ public class JUnit5Test
         assertTrue( setUpCalled, "setUp was not called" );
     }
 
-
     @AfterAll
     public static void oneTimeTearDown()
     {

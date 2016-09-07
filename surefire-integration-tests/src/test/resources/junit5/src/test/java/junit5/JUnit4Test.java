@@ -34,7 +34,7 @@ public class JUnit4Test
     private boolean setUpCalled;
 
     private static boolean tearDownCalled;
-    
+
     @Before
     public void setUp()
     {
@@ -56,12 +56,11 @@ public class JUnit4Test
     {
         Assert.assertTrue( "setUp was not called", setUpCalled );
     }
-  
 
     @AfterClass
     public static void oneTimeTearDown()
     {
-        
+
     }
 
 }
