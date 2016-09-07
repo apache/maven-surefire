@@ -32,9 +32,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class JUnit5Test
 {
 
-    private boolean setUpCalled = false;
+    private boolean setUpCalled;
 
-    private static boolean tearDownCalled = false;
+    private static boolean tearDownCalled;
 
     @BeforeEach
     public void setUp()
