@@ -31,9 +31,9 @@ import org.junit.Test;
 public class JUnit4Test
 {
 
-    private boolean setUpCalled = false;
+    private boolean setUpCalled;
 
-    private static boolean tearDownCalled = false;
+    private static boolean tearDownCalled;
     
     @Before
     public void setUp()
