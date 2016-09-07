@@ -59,7 +59,7 @@ public class JUnit5Test
     @AfterAll
     public static void oneTimeTearDown()
     {
-
+        assertTrue( tearDownCalled, "tearDown was not called" );
     }
 
 }
