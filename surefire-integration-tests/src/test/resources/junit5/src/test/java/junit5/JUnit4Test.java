@@ -58,7 +58,7 @@ public class JUnit4Test
     @AfterClass
     public static void oneTimeTearDown()
     {
-
+        Assert.assertTrue( "tearDown was not called", tearDownCalled );
     }
 
 }
