@@ -19,6 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.commons.lang3.JavaVersion;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,9 +28,9 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.junit.Assume.assumeThat;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_5;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.junit.runners.Parameterized.Parameter;
 import static org.junit.runners.Parameterized.Parameters;
 
@@ -47,10 +48,10 @@ public class CheckTestNgListenerReporterIT
     public static Collection<Object[]> data()
     {
         return Arrays.asList(new Object[][] {
-            { "5.6", "1.5" }, // First TestNG version with reporter support
-            { "5.7", "1.5" }, // default version from pom of the test case
-            { "5.10", "1.5" },
-            { "5.13", "1.5" }, // "reporterslist" param becomes String instead of List<ReporterConfig>
+            { "5.6", JAVA_1_5 }, // First TestNG version with reporter support
+            { "5.7", JAVA_1_5 }, // default version from pom of the test case
+            { "5.10", JAVA_1_5 },
+            { "5.13", JAVA_1_5 }, // "reporterslist" param becomes String instead of List<ReporterConfig>
                         // "listener" param becomes String instead of List<Class>
 
                 // configure(Map) in 5.14.1 and 5.14.2 is transforming List<Class> into a String with a space as separator.
@@ -69,10 +70,10 @@ public class CheckTestNgListenerReporterIT
             //{ "5.14.4", "1.5" }, { "5.14.5", "1.5" }, // Fails: not able to test due to system dependency org.testng:guice missed the path and use to break CI
                                         // ClassNotFoundException: com.beust.jcommander.ParameterException
 
-            { "5.14.6", "1.5" }, // Usage of org.testng:guice removed
-            { "5.14.9", "1.5" }, // Latest 5.14.x TestNG version
-            { "6.0", "1.5" },
-            { "6.9.9", "1.7" } // Currently latest TestNG version
+            { "5.14.6", JAVA_1_5 }, // Usage of org.testng:guice removed
+            { "5.14.9", JAVA_1_5 }, // Latest 5.14.x TestNG version
+            { "6.0", JAVA_1_5 },
+            { "6.9.9", JAVA_1_7 } // Currently latest TestNG version
         });
     }
 
@@ -80,13 +81,13 @@ public class CheckTestNgListenerReporterIT
     public String version;
 
     @Parameter(1)
-    public String javaVersion;
+    public JavaVersion javaVersion;
 
     @Test
     public void testNgListenerReporter()
     {
 
-        assumeThat( System.getProperty( "java.version" ), is( greaterThanOrEqualTo( javaVersion ) ) );
+        assumeJavaVersion( javaVersion );
         unpack( "testng-listener-reporter", "_" + version )
                 .resetInitialGoals( version )
                 .executeTest()
