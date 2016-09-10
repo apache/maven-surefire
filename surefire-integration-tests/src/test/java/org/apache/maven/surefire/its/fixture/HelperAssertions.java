@@ -23,13 +23,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.commons.lang3.JavaVersion;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.PrintStreamLogger;
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.plugins.surefire.report.SurefireReportParser;
 
-import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeThat;
 
 @SuppressWarnings( { "JavaDoc" } )
 public class HelperAssertions
@@ -162,5 +167,11 @@ public class HelperAssertions
         {
             throw new RuntimeException( "Couldn't parse XML reports", e );
         }
+    }
+
+    public static void assumeJavaVersion( JavaVersion version )
+    {
+        assumeThat( "java.specification.version: ",
+                SystemUtils.JAVA_SPECIFICATION_VERSION, is( greaterThanOrEqualTo( version.toString() ) ) );
     }
 }
