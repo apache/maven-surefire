@@ -32,6 +32,7 @@ import org.apache.maven.plugins.surefire.report.SurefireReportParser;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
+import static org.apache.commons.lang3.SystemUtils.JAVA_SPECIFICATION_VERSION;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
@@ -172,6 +173,6 @@ public class HelperAssertions
     public static void assumeJavaVersion( JavaVersion version )
     {
         assumeThat( "java.specification.version: ",
-                SystemUtils.JAVA_SPECIFICATION_VERSION, is( greaterThanOrEqualTo( version.toString() ) ) );
+                JAVA_SPECIFICATION_VERSION, is( greaterThanOrEqualTo( version.toString() ) ) );
     }
 }
