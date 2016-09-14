@@ -34,7 +34,7 @@ public class JUnit5IT
     @Test
     public void test()
     {
-        unpack( "/junit5" ).executeTest().verifyErrorFree( 1 );
+        unpack( "/junit5" ).executeTest().verifyErrorFree( 2 );
     }
 
 }
