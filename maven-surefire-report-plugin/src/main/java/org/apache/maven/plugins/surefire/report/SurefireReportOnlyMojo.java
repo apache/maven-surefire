@@ -27,7 +27,7 @@ import org.apache.maven.plugins.annotations.Mojo;
  * Creates a nicely formatted Surefire Test Report in html format.
  * This goal does not run the tests, it only builds the reports.
  * This is a workaround for
- * <a href="http://jira.codehaus.org/browse/SUREFIRE-257">http://jira.codehaus.org/browse/SUREFIRE-257</a>
+ * <a href="https://issues.apache.org/jira/browse/SUREFIRE-257">https://issues.apache.org/jira/browse/SUREFIRE-257</a>
  *
  * @author <a href="mailto:baerrach@gmail.com">Barrie Treloar</a>
  * @since 2.3

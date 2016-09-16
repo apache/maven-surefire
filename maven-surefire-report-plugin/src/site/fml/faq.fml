@@ -26,7 +26,7 @@ under the License.
       <answer>
         <p>
           No. This is a well-known issue with older versions of the plugin. Please see
-          <a href="http://jira.codehaus.org/browse/SUREFIRE-257">SUREFIRE-257</a>
+          <a href="https://issues.apache.org/jira/browse/SUREFIRE-257">SUREFIRE-257</a>
           for details. Upgrading to version 2.7.2 or newer will resolve this issue.
         </p>
       </answer>
