@@ -31,6 +31,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.surefire.suite.RunResult;
 
+import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
+
 /**
  * Run tests using Surefire.
  *
@@ -318,7 +320,7 @@ public class SurefirePlugin
     {
         assertNoException( firstForkException );
 
-        SurefireHelper.reportExecution( this, summary, getLog() );
+        reportExecution( this, summary, getConsoleLogger() );
     }
 
     private void assertNoException( Exception firstForkException )

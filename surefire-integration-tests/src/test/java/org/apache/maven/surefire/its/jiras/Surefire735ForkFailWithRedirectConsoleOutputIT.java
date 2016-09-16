@@ -19,17 +19,14 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.Not2xCompatible;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * @author Kristian Rosenvold
  */
-@Category( Not2xCompatible.class )
 public class Surefire735ForkFailWithRedirectConsoleOutputIT
     extends SurefireJUnit4IntegrationTestCase
 {

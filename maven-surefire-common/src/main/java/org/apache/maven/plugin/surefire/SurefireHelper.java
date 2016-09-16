@@ -23,7 +23,7 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.suite.RunResult;
 
@@ -54,7 +54,8 @@ public final class SurefireHelper
         throw new IllegalAccessError( "Utility class" );
     }
 
-    public static void reportExecution( SurefireReportParameters reportParameters, RunResult result, Log log )
+    public static void reportExecution( SurefireReportParameters reportParameters, RunResult result,
+                                        PluginConsoleLogger log )
         throws MojoFailureException, MojoExecutionException
     {
         boolean timeoutOrOtherFailure = result.isFailureOrTimeout();
@@ -99,7 +100,7 @@ public final class SurefireHelper
         }
     }
 
-    public static List<CommandLineOption> commandLineOptions( MavenSession session, Log log )
+    public static List<CommandLineOption> commandLineOptions( MavenSession session, PluginConsoleLogger log )
     {
         List<CommandLineOption> cli = new ArrayList<CommandLineOption>();
         if ( log.isErrorEnabled() )
@@ -146,7 +147,7 @@ public final class SurefireHelper
         return unmodifiableList( cli );
     }
 
-    public static void logDebugOrCliShowErrors( CharSequence s, Log log, Collection<CommandLineOption> cli )
+    public static void logDebugOrCliShowErrors( String s, PluginConsoleLogger log, Collection<CommandLineOption> cli )
     {
         if ( cli.contains( LOGGING_LEVEL_DEBUG ) )
         {

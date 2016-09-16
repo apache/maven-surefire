@@ -38,11 +38,19 @@ import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
+import static java.lang.System.err;
+import static java.lang.System.out;
+import static java.lang.System.setErr;
+import static java.lang.System.setOut;
+import static java.lang.Thread.currentThread;
+import static org.apache.maven.surefire.booter.CommandReader.getReader;
 import static org.apache.maven.surefire.booter.Shutdown.EXIT;
 import static org.apache.maven.surefire.booter.Shutdown.KILL;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_BYE;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_ERROR;
 import static org.apache.maven.surefire.booter.ForkingRunListener.encode;
+import static org.apache.maven.surefire.booter.SurefireReflector.createForkingReporterFactoryInCurrentClassLoader;
+import static org.apache.maven.surefire.booter.SystemPropertyManager.setSystemProperties;
 import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
@@ -75,12 +83,12 @@ public final class ForkedBooter
     {
         final CommandReader reader = startupMasterProcessReader();
         final ScheduledFuture<?> pingScheduler = listenToShutdownCommands( reader );
-        final PrintStream originalOut = System.out;
+        final PrintStream originalOut = out;
         try
         {
             if ( args.length > 1 )
             {
-                SystemPropertyManager.setSystemProperties( new File( args[1] ) );
+                setSystemProperties( new File( args[1] ) );
             }
 
             File surefirePropertiesFile = new File( args[0] );
@@ -98,7 +106,7 @@ public final class ForkedBooter
                 classpathConfiguration.trickClassPathWhenManifestOnlyClasspath();
             }
 
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            ClassLoader classLoader = currentThread().getContextClassLoader();
             classLoader.setDefaultAssertionStatus( classpathConfiguration.isEnableAssertions() );
             startupConfiguration.writeSurefireTestClasspathProperty();
 
@@ -145,7 +153,7 @@ public final class ForkedBooter
         {
             // Just throwing does getMessage() and a local trace - we want to call printStackTrace for a full trace
             // noinspection UseOfSystemOutOrSystemErr
-            t.printStackTrace( System.err );
+            t.printStackTrace( err );
             // noinspection ProhibitedExceptionThrown,CallToSystemExit
             exit( 1, EXIT, reader, false );
         }
@@ -157,7 +165,7 @@ public final class ForkedBooter
 
     private static CommandReader startupMasterProcessReader()
     {
-        return CommandReader.getReader();
+        return getReader();
     }
 
     private static ScheduledFuture<?> listenToShutdownCommands( CommandReader reader )
@@ -240,14 +248,14 @@ public final class ForkedBooter
         final ReporterFactory factory = createForkingReporterFactory( providerConfiguration, originalSystemOut );
 
         return invokeProviderInSameClassLoader( testSet, factory, providerConfiguration, true, startupConfiguration,
-                                                false );
+                                                      false );
     }
 
     private static ReporterFactory createForkingReporterFactory( ProviderConfiguration providerConfiguration,
                                                                  PrintStream originalSystemOut )
     {
         final boolean trimStackTrace = providerConfiguration.getReporterConfiguration().isTrimStackTrace();
-        return SurefireReflector.createForkingReporterFactoryInCurrentClassLoader( trimStackTrace, originalSystemOut );
+        return createForkingReporterFactoryInCurrentClassLoader( trimStackTrace, originalSystemOut );
     }
 
     private static ScheduledExecutorService createJvmTerminator()
@@ -274,41 +282,41 @@ public final class ForkedBooter
     }
 
     private static RunResult invokeProviderInSameClassLoader( Object testSet, Object factory,
-                                                             ProviderConfiguration providerConfiguration,
-                                                             boolean insideFork,
-                                                             StartupConfiguration startupConfig,
-                                                             boolean restoreStreams )
+                                                              ProviderConfiguration providerConfig,
+                                                              boolean insideFork,
+                                                              StartupConfiguration startupConfig,
+                                                              boolean restoreStreams )
         throws TestSetFailedException, InvocationTargetException
     {
-        final PrintStream orgSystemOut = System.out;
-        final PrintStream orgSystemErr = System.err;
+        final PrintStream orgSystemOut = out;
+        final PrintStream orgSystemErr = err;
         // Note that System.out/System.err are also read in the "ReporterConfiguration" instatiation
         // in createProvider below. These are the same values as here.
 
         try
         {
-            return createProviderInCurrentClassloader( startupConfig, insideFork, providerConfiguration, factory )
-                .invoke( testSet );
+            return createProviderInCurrentClassloader( startupConfig, insideFork, providerConfig, factory )
+                           .invoke( testSet );
         }
         finally
         {
             if ( restoreStreams && System.getSecurityManager() == null )
             {
-                System.setOut( orgSystemOut );
-                System.setErr( orgSystemErr );
+                setOut( orgSystemOut );
+                setErr( orgSystemErr );
             }
         }
     }
 
-    private static SurefireProvider createProviderInCurrentClassloader( StartupConfiguration startupConfiguration1,
-                                                                       boolean isInsideFork,
+    private static SurefireProvider createProviderInCurrentClassloader( StartupConfiguration startupConfiguration,
+                                                                        boolean isInsideFork,
                                                                        ProviderConfiguration providerConfiguration,
-                                                                       Object reporterManagerFactory1 )
+                                                                       Object reporterManagerFactory )
     {
-        BaseProviderFactory bpf = new BaseProviderFactory( (ReporterFactory) reporterManagerFactory1, isInsideFork );
+        BaseProviderFactory bpf = new BaseProviderFactory( (ReporterFactory) reporterManagerFactory, isInsideFork );
         bpf.setTestRequest( providerConfiguration.getTestSuiteDefinition() );
         bpf.setReporterConfiguration( providerConfiguration.getReporterConfiguration() );
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        ClassLoader classLoader = currentThread().getContextClassLoader();
         bpf.setClassLoaders( classLoader );
         bpf.setTestArtifactInfo( providerConfiguration.getTestArtifact() );
         bpf.setProviderProperties( providerConfiguration.getProviderProperties() );
@@ -317,7 +325,7 @@ public final class ForkedBooter
         bpf.setMainCliOptions( providerConfiguration.getMainCliOptions() );
         bpf.setSkipAfterFailureCount( providerConfiguration.getSkipAfterFailureCount() );
         bpf.setShutdown( providerConfiguration.getShutdown() );
-        String providerClass = startupConfiguration1.getActualClassName();
+        String providerClass = startupConfiguration.getActualClassName();
         return (SurefireProvider) instantiateOneArg( classLoader, providerClass, ProviderParameters.class, bpf );
     }
 }

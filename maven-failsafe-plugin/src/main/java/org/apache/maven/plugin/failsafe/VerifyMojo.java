@@ -33,15 +33,20 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.SurefireHelper;
 import org.apache.maven.plugin.surefire.SurefireReportParameters;
+import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.shared.utils.ReaderFactory;
-import org.apache.maven.shared.utils.StringUtils;
-import org.apache.maven.shared.utils.io.IOUtil;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.suite.RunResult;
+
+import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
+import static org.apache.maven.shared.utils.ReaderFactory.FILE_ENCODING;
+import static org.apache.maven.shared.utils.StringUtils.capitalizeFirstLetter;
+import static org.apache.maven.shared.utils.StringUtils.isEmpty;
+import static org.apache.maven.shared.utils.io.IOUtil.close;
+import static org.apache.maven.surefire.suite.RunResult.noTestsRun;
 
 /**
  * Verify integration tests ran using Surefire.
@@ -159,6 +164,8 @@ public class VerifyMojo
 
     private Collection<CommandLineOption> cli;
 
+    private volatile PluginConsoleLogger consoleLogger;
+
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
@@ -166,26 +173,28 @@ public class VerifyMojo
         if ( verifyParameters() )
         {
             logDebugOrCliShowErrors(
-                StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
+                capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
 
             RunResult summary;
             try
             {
                 final String encoding;
-                if ( StringUtils.isEmpty( this.encoding ) )
+                if ( isEmpty( this.encoding ) )
                 {
-                    getLog().warn( "File encoding has not been set, using platform encoding "
-                            + ReaderFactory.FILE_ENCODING
-                            + ", i.e. build is platform dependent! The file encoding for reports output files "
-                            + "should be provided by the POM property ${project.reporting.outputEncoding}." );
-                    encoding = ReaderFactory.FILE_ENCODING;
+                    getConsoleLogger()
+                            .warning( "File encoding has not been set, using platform encoding "
+                                              + FILE_ENCODING
+                                              + ", i.e. build is platform dependent! The file encoding for "
+                                              + "reports output files should be provided by the POM property "
+                                              + "${project.reporting.outputEncoding}." );
+                    encoding = FILE_ENCODING;
                 }
                 else
                 {
                     encoding = this.encoding;
                 }
 
-                summary = existsSummaryFile() ? readSummary( encoding, summaryFile ) : RunResult.noTestsRun();
+                summary = existsSummaryFile() ? readSummary( encoding, summaryFile ) : noTestsRun();
 
                 if ( existsSummaryFiles() )
                 {
@@ -200,8 +209,23 @@ public class VerifyMojo
                 throw new MojoExecutionException( e.getMessage(), e );
             }
 
-            SurefireHelper.reportExecution( this, summary, getLog() );
+            reportExecution( this, summary, getConsoleLogger() );
         }
+    }
+
+    private PluginConsoleLogger getConsoleLogger()
+    {
+        if ( consoleLogger == null )
+        {
+            synchronized ( this )
+            {
+                if ( consoleLogger == null )
+                {
+                    consoleLogger = new PluginConsoleLogger( getLog() );
+                }
+            }
+        }
+        return consoleLogger;
     }
 
     private RunResult readSummary( String encoding, File summaryFile )
@@ -219,9 +243,9 @@ public class VerifyMojo
         }
         finally
         {
-            IOUtil.close( reader );
-            IOUtil.close( bufferedInputStream );
-            IOUtil.close( fileInputStream );
+            close( reader );
+            close( bufferedInputStream );
+            close( fileInputStream );
         }
     }
 
@@ -230,7 +254,7 @@ public class VerifyMojo
     {
         if ( isSkip() || isSkipTests() || isSkipITs() || isSkipExec() )
         {
-            getLog().info( "Tests are skipped." );
+            getConsoleLogger().info( "Tests are skipped." );
             return false;
         }
 
@@ -244,7 +268,7 @@ public class VerifyMojo
 
         if ( !existsSummary() )
         {
-            getLog().info( "No tests to run." );
+            getConsoleLogger().info( "No tests to run." );
             return false;
         }
 
@@ -370,12 +394,12 @@ public class VerifyMojo
 
     private Collection<CommandLineOption> commandLineOptions()
     {
-        return SurefireHelper.commandLineOptions( session, getLog() );
+        return SurefireHelper.commandLineOptions( session, getConsoleLogger() );
     }
 
-    private void logDebugOrCliShowErrors( CharSequence s )
+    private void logDebugOrCliShowErrors( String s )
     {
-        SurefireHelper.logDebugOrCliShowErrors( s, getLog(), cli );
+        SurefireHelper.logDebugOrCliShowErrors( s, getConsoleLogger(), cli );
     }
 
 }

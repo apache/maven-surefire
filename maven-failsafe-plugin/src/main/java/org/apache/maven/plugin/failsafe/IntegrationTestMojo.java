@@ -34,9 +34,10 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.shared.utils.ReaderFactory;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.suite.RunResult;
+
+import static org.apache.maven.shared.utils.ReaderFactory.FILE_ENCODING;
 
 /**
  * Run integration tests using Surefire.
@@ -363,10 +364,11 @@ public class IntegrationTestMojo
     {
         if ( StringUtils.isEmpty( encoding ) )
         {
-            getLog().warn( "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING
-                           + ", i.e. build is platform dependent! The file encoding for reports output files "
-                               + "should be provided by the POM property ${project.reporting.outputEncoding}." );
-            return ReaderFactory.FILE_ENCODING;
+            getConsoleLogger().warning( "File encoding has not been set, using platform encoding "
+                + FILE_ENCODING
+                + ", i.e. build is platform dependent! The file encoding for reports output files "
+                + "should be provided by the POM property ${project.reporting.outputEncoding}." );
+            return FILE_ENCODING;
         }
         else
         {

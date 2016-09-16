@@ -20,20 +20,24 @@ package org.apache.maven.surefire.booter;
  */
 
 import java.io.PrintStream;
-import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLoggerUtils;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.report.ConsoleStream;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.surefire.util.internal.StringUtils;
 
+import static java.lang.Integer.toHexString;
+import static java.nio.charset.Charset.defaultCharset;
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
+import static org.apache.maven.surefire.util.internal.StringUtils.escapeBytesToPrintable;
+import static org.apache.maven.surefire.util.internal.StringUtils.escapeToPrintable;
 
 /**
  * Encodes the full output of the test run to the stdout stream.
@@ -53,7 +57,7 @@ import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringFo
  * @author Kristian Rosenvold
  */
 public class ForkingRunListener
-    implements RunListener, ConsoleLogger, ConsoleOutputReceiver
+    implements RunListener, ConsoleLogger, ConsoleOutputReceiver, ConsoleStream
 {
     public static final byte BOOTERCODE_TESTSET_STARTING = (byte) '1';
 
@@ -75,6 +79,10 @@ public class ForkingRunListener
 
     public static final byte BOOTERCODE_TEST_ASSUMPTIONFAILURE = (byte) 'G';
 
+    /**
+     * INFO logger
+     * @see ConsoleLogger#info(String)
+     */
     public static final byte BOOTERCODE_CONSOLE = (byte) 'H';
 
     public static final byte BOOTERCODE_SYSPROPS = (byte) 'I';
@@ -83,9 +91,26 @@ public class ForkingRunListener
 
     public static final byte BOOTERCODE_STOP_ON_NEXT_TEST = (byte) 'S';
 
+    /**
+     * ERROR logger
+     * @see ConsoleLogger#error(String)
+     */
     public static final byte BOOTERCODE_ERROR = (byte) 'X';
 
     public static final byte BOOTERCODE_BYE = (byte) 'Z';
+
+    /**
+     * DEBUG logger
+     * @see ConsoleLogger#debug(String)
+     */
+    public static final byte BOOTERCODE_DEBUG = (byte) 'D';
+
+    /**
+     * WARNING logger
+     * @see ConsoleLogger#warning(String)
+     */
+    public static final byte BOOTERCODE_WARNING = (byte) 'W';
+
 
     private final PrintStream target;
 
@@ -172,7 +197,7 @@ public class ForkingRunListener
         byte[] header = stdout ? stdOutHeader : stdErrHeader;
         byte[] content =
             new byte[buf.length * 3 + 1]; // Hex-escaping can be up to 3 times length of a regular byte.
-        int i = StringUtils.escapeBytesToPrintable( content, 0, buf, off, len );
+        int i = escapeBytesToPrintable( content, 0, buf, off, len );
         content[i++] = (byte) '\n';
 
         synchronized ( target ) // See notes about synchronization/thread safety in class javadoc
@@ -187,22 +212,52 @@ public class ForkingRunListener
         return encodeStringForForkCommunication( String.valueOf( (char) booterCode )
                 + ','
                 + Integer.toString( testSetChannel, 16 )
-                + ',' + Charset.defaultCharset().name()
+                + ',' + defaultCharset().name()
                 + ',' );
     }
 
-    public void info( String message )
+    private void log( byte bootCode, String message )
     {
         if ( message != null )
         {
             StringBuilder sb = new StringBuilder( 7 + message.length() * 5 );
-            append( sb, BOOTERCODE_CONSOLE ); comma( sb );
-            append( sb, Integer.toHexString( testSetChannelId ) ); comma( sb );
-            StringUtils.escapeToPrintable( sb, message );
+            append( sb, bootCode ); comma( sb );
+            append( sb, toHexString( testSetChannelId ) ); comma( sb );
+            escapeToPrintable( sb, message );
 
             sb.append( '\n' );
             encodeAndWriteToTarget( sb.toString() );
         }
+    }
+
+    public void debug( String message )
+    {
+        log( BOOTERCODE_DEBUG, message );
+    }
+
+    public void info( String message )
+    {
+        log( BOOTERCODE_CONSOLE, message );
+    }
+
+    public void warning( String message )
+    {
+        log( BOOTERCODE_WARNING, message );
+    }
+
+    public void error( String message )
+    {
+        log( BOOTERCODE_ERROR, message );
+    }
+
+    public void error( String message, Throwable t )
+    {
+        error( ConsoleLoggerUtils.toString( message, t ) );
+    }
+
+    public void error( Throwable t )
+    {
+        error( null, t );
     }
 
     private void encodeAndWriteToTarget( String string )
@@ -219,11 +274,11 @@ public class ForkingRunListener
         StringBuilder stringBuilder = new StringBuilder();
 
         append( stringBuilder, BOOTERCODE_SYSPROPS ); comma( stringBuilder );
-        append( stringBuilder, Integer.toHexString( testSetChannelId ) ); comma( stringBuilder );
+        append( stringBuilder, toHexString( testSetChannelId ) ); comma( stringBuilder );
 
-        StringUtils.escapeToPrintable( stringBuilder, key );
+        escapeToPrintable( stringBuilder, key );
         comma( stringBuilder );
-        StringUtils.escapeToPrintable( stringBuilder, value );
+        escapeToPrintable( stringBuilder, value );
         stringBuilder.append( "\n" );
         return stringBuilder.toString();
     }
@@ -232,7 +287,7 @@ public class ForkingRunListener
     {
         StringBuilder stringBuilder = new StringBuilder();
         append( stringBuilder, operationCode ); comma( stringBuilder );
-        append( stringBuilder, Integer.toHexString( testSetChannelId ) ); comma( stringBuilder );
+        append( stringBuilder, toHexString( testSetChannelId ) ); comma( stringBuilder );
 
         nullableEncoding( stringBuilder, reportEntry.getSourceName() );
         comma( stringBuilder );
@@ -291,7 +346,7 @@ public class ForkingRunListener
         }
         else
         {
-            StringUtils.escapeToPrintable( stringBuilder, source );
+            escapeToPrintable( stringBuilder, source );
         }
     }
 
@@ -319,5 +374,16 @@ public class ForkingRunListener
                 ? stackTraceWriter.writeTrimmedTraceToString()
                 : stackTraceWriter.writeTraceToString() );
         }
+    }
+
+    public void println( String message )
+    {
+        byte[] buf = message.getBytes();
+        println( buf, 0, buf.length );
+    }
+
+    public void println( byte[] buf, int off, int len )
+    {
+        writeTestOutput( buf, off, len, true );
     }
 }

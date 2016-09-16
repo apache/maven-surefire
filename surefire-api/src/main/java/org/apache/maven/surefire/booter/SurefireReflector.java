@@ -29,6 +29,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLoggerDecorator;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
@@ -41,6 +43,8 @@ import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.surefire.util.SurefireReflectionException;
+
+import javax.annotation.Nonnull;
 
 import static java.util.Collections.checkedList;
 
@@ -101,7 +105,6 @@ public class SurefireReflector
     private final Class<?> shutdownAwareClass;
 
     private final Class<Enum> shutdownClass;
-
 
     @SuppressWarnings( "unchecked" )
     public SurefireReflector( ClassLoader surefireClassLoader )
@@ -408,6 +411,11 @@ public class SurefireReflector
         return runResult.isAssignableFrom( o.getClass() );
     }
 
+    public Object createConsoleLogger( @Nonnull ConsoleLogger consoleLogger )
+    {
+        return createConsoleLogger( consoleLogger, surefireClassLoader );
+    }
+
     private static Collection<Integer> toOrdinals( Collection<? extends Enum> enums )
     {
         Collection<Integer> ordinals = new ArrayList<Integer>( enums.size() );
@@ -416,6 +424,19 @@ public class SurefireReflector
             ordinals.add( e.ordinal() );
         }
         return ordinals;
+    }
+
+    public static Object createConsoleLogger( ConsoleLogger consoleLogger, ClassLoader cl )
+    {
+        try
+        {
+            Class<?> decoratorClass = cl.loadClass( ConsoleLoggerDecorator.class.getName() );
+            return getConstructor( decoratorClass, Object.class ).newInstance( consoleLogger );
+        }
+        catch ( Exception e )
+        {
+            throw new SurefireReflectionException( e );
+        }
     }
 
 }

@@ -19,11 +19,9 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.Not2xCompatible;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * SUREFIRE-1136 Correct current working directory propagation in forked mode
@@ -33,7 +31,6 @@ import org.junit.experimental.categories.Category;
  *
  * @author Norbert Wnuk
  */
-@Category( Not2xCompatible.class )
 public class Surefire1136CwdPropagationInForkedModeIT
     extends SurefireJUnit4IntegrationTestCase
 {

@@ -28,18 +28,20 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.shared.utils.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import static java.util.Locale.ENGLISH;
 
 /**
  *
@@ -47,7 +49,9 @@ import org.xml.sax.helpers.DefaultHandler;
 public final class TestSuiteXmlParser
     extends DefaultHandler
 {
-    private final NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH );
+    private final NumberFormat numberFormat = NumberFormat.getInstance( ENGLISH );
+
+    private final ConsoleLogger consoleLogger;
 
     private ReportTestSuite defaultSuite;
 
@@ -62,6 +66,11 @@ public final class TestSuiteXmlParser
     private ReportTestCase testCase;
 
     private boolean valid;
+
+    public TestSuiteXmlParser( ConsoleLogger consoleLogger )
+    {
+        this.consoleLogger = consoleLogger;
+    }
 
     public List<ReportTestSuite> parse( String xmlPath )
         throws ParserConfigurationException, SAXException, IOException
@@ -129,7 +138,7 @@ public final class TestSuiteXmlParser
                     }
                     catch ( NullPointerException e )
                     {
-                        System.err.println( "WARNING: no time attribute found on testsuite element" );
+                        consoleLogger.error( "WARNING: no time attribute found on testsuite element" );
                     }
 
                     final String name = attributes.getValue( "name" );

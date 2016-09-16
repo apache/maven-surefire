@@ -19,8 +19,8 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
-import org.apache.maven.surefire.booter.ProviderFactory;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.suite.RunResult;
@@ -30,6 +30,8 @@ import org.apache.maven.surefire.util.DefaultScanResult;
 import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
+
+import static org.apache.maven.surefire.booter.ProviderFactory.invokeProvider;
 
 /**
  * Starts the provider in the same VM as the surefire plugin.
@@ -45,20 +47,20 @@ import java.util.Map;
  */
 public class InPluginVMSurefireStarter
 {
+    private final StartupConfiguration startupConfig;
+    private final StartupReportConfiguration startupReportConfig;
+    private final ProviderConfiguration providerConfig;
+    private final ConsoleLogger consoleLogger;
 
-    private final StartupConfiguration startupConfiguration;
-
-    private final StartupReportConfiguration startupReportConfiguration;
-
-    private final ProviderConfiguration providerConfiguration;
-
-    public InPluginVMSurefireStarter( @Nonnull StartupConfiguration startupConfiguration,
-                                      @Nonnull ProviderConfiguration providerConfiguration,
-                                      @Nonnull StartupReportConfiguration startupReportConfiguration )
+    public InPluginVMSurefireStarter( @Nonnull StartupConfiguration startupConfig,
+                                      @Nonnull ProviderConfiguration providerConfig,
+                                      @Nonnull StartupReportConfiguration startupReportConfig,
+                                      @Nonnull ConsoleLogger consoleLogger )
     {
-        this.startupConfiguration = startupConfiguration;
-        this.startupReportConfiguration = startupReportConfiguration;
-        this.providerConfiguration = providerConfiguration;
+        this.startupConfig = startupConfig;
+        this.startupReportConfig = startupReportConfig;
+        this.providerConfig = providerConfig;
+        this.consoleLogger = consoleLogger;
     }
 
     public RunResult runSuitesInProcess( @Nonnull DefaultScanResult scanResult )
@@ -67,20 +69,19 @@ public class InPluginVMSurefireStarter
         // The test classloader must be constructed first to avoid issues with commons-logging until we properly
         // separate the TestNG classloader
 
-        Map<String, String> providerProperties = providerConfiguration.getProviderProperties();
+        Map<String, String> providerProperties = providerConfig.getProviderProperties();
         scanResult.writeTo( providerProperties );
 
-        startupConfiguration.writeSurefireTestClasspathProperty();
-        ClassLoader testsClassLoader = startupConfiguration.getClasspathConfiguration().createMergedClassLoader();
+        startupConfig.writeSurefireTestClasspathProperty();
+        ClassLoader testClassLoader = startupConfig.getClasspathConfiguration().createMergedClassLoader();
 
-        CommonReflector surefireReflector = new CommonReflector( testsClassLoader );
+        CommonReflector surefireReflector = new CommonReflector( testClassLoader );
 
-        final Object factory = surefireReflector.createReportingReporterFactory( startupReportConfiguration );
+        Object factory = surefireReflector.createReportingReporterFactory( startupReportConfig, consoleLogger );
 
         try
         {
-            return ProviderFactory.invokeProvider( null, testsClassLoader, factory,
-                                                   providerConfiguration, false, startupConfiguration, true );
+            return invokeProvider( null, testClassLoader, factory, providerConfig, false, startupConfig, true );
         }
         catch ( InvocationTargetException e )
         {

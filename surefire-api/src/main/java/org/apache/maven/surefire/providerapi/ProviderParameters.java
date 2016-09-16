@@ -21,7 +21,7 @@ package org.apache.maven.surefire.providerapi;
 
 import org.apache.maven.surefire.booter.Shutdown;
 import org.apache.maven.surefire.cli.CommandLineOption;
-import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.report.ConsoleStream;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
@@ -84,9 +84,9 @@ public interface ProviderParameters
      * This output is intended for provider-oriented messages that are not attached to a single test-set
      * and will normally be written to something console-like immediately.
      *
-     * @return A console logger
+     * @return A console stream logger
      */
-    ConsoleLogger getConsoleLogger();
+    ConsoleStream getConsoleLogger();
 
     /**
      * The raw parameters used in creating the directory scanner

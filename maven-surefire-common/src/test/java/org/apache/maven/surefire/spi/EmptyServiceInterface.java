@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.its;
+package org.apache.maven.surefire.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,9 +19,12 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+
 /**
- * Marks an integration test as not compatible with 2.2.1
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 2.19.2
  */
-public interface Not2xCompatible
+public interface EmptyServiceInterface
 {
+    String whoAmI();
 }

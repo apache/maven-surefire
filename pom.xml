@@ -49,6 +49,7 @@
   </contributors>
 
   <modules>
+    <module>surefire-logger-api</module>
     <module>surefire-shadefire</module>
     <module>surefire-api</module>
     <module>surefire-booter</module>
@@ -112,6 +113,11 @@
       <dependency>
         <groupId>org.apache.maven.surefire</groupId>
         <artifactId>surefire-booter</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>surefire-logger-api</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

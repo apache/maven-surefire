@@ -67,6 +67,8 @@ public final class StagedLocalRepoHelper
         Random entropy = new Random();
         try
         {
+            System.out.println( Settings.class.getClassLoader()
+                                        .getResource( "org/apache/maven/settings/Server.class" ) );
             Settings settings = new SettingsXpp3Reader().read( ReaderFactory.newXmlReader( originalSettingsXml ) );
 
             String localRepo = System.getProperty( "maven.repo.local" );

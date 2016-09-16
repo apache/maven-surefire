@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junitcore;
+package org.apache.maven.surefire.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,12 +19,15 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ConsoleLogger;
-
-public final class Logger implements ConsoleLogger
+/**
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 2.19.2
+ */
+public interface IDefault
 {
-    public void info( String message )
-    {
-        System.out.println( message );
-    }
+    /**
+     * @return <tt>true</tt> if SPI implementation vendor is maven-surefire-plugin or maven-failsafe-plugin.
+     * <tt>false</tt> if customized by users.
+     */
+    boolean isDefault();
 }

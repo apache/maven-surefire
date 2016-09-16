@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.report;
+package org.apache.maven.surefire.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,23 +19,15 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.io.PrintStream;
-
 /**
- * @author <a href="mailto:kristian@zenior.no">Kristian Rosenvold</a>
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 2.19.2
  */
-public class DefaultConsoleReporter
-    implements ConsoleLogger
+public class CustomizedImpl
+    implements IDefault
 {
-    private final PrintStream systemOut;
-
-    public DefaultConsoleReporter( PrintStream systemOut )
+    public boolean isDefault()
     {
-        this.systemOut = systemOut;
-    }
-
-    public void info( String message )
-    {
-        systemOut.println( message );
+        return false;
     }
 }

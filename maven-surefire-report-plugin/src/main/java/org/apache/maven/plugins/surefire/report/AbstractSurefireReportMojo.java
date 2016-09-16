@@ -26,15 +26,16 @@ import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import org.apache.maven.model.ReportPlugin;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.AbstractMavenReport;
 import org.apache.maven.reporting.MavenReportException;
 import org.apache.maven.shared.utils.PathTool;
-import org.apache.maven.shared.utils.StringUtils;
 
 import static java.util.Collections.addAll;
 import static org.apache.maven.plugins.surefire.report.SurefireReportParser.hasReportFiles;
+import static org.apache.maven.shared.utils.StringUtils.isEmpty;
 
 /**
  * Abstract base class for reporting test results using Surefire.
@@ -44,6 +45,7 @@ import static org.apache.maven.plugins.surefire.report.SurefireReportParser.hasR
 public abstract class AbstractSurefireReportMojo
     extends AbstractMavenReport
 {
+
     /**
      * If set to false, only failures are shown.
      *
@@ -102,6 +104,8 @@ public abstract class AbstractSurefireReportMojo
     @Parameter( defaultValue = "false", property = "aggregate" )
     private boolean aggregate;
 
+    private List<File> resolvedReportsDirectories;
+
     /**
      * Whether the report should be generated or not.
      *
@@ -130,47 +134,32 @@ public abstract class AbstractSurefireReportMojo
     public void executeReport( Locale locale )
         throws MavenReportException
     {
-        if ( isSkipped() )
+        if ( !hasReportDirectories() )
         {
             return;
         }
 
-        final List<File> reportsDirectoryList = getReportsDirectories();
-
-        if ( reportsDirectoryList == null )
-        {
-            return;
-        }
-
-        if ( !isGeneratedWhenNoResults() )
-        {
-            boolean atLeastOneDirectoryExists = false;
-            for ( Iterator<File> i = reportsDirectoryList.iterator(); i.hasNext() && !atLeastOneDirectoryExists; )
-            {
-                atLeastOneDirectoryExists = hasReportFiles( i.next() );
-            }
-            if ( !atLeastOneDirectoryExists )
-            {
-                return;
-            }
-        }
-
-        SurefireReportGenerator report =
-            new SurefireReportGenerator( reportsDirectoryList, locale, showSuccess, determineXrefLocation() );
-
-        report.doGenerateReport( getBundle( locale ), getSink() );
+        new SurefireReportGenerator( getReportsDirectories(), locale, showSuccess, determineXrefLocation(),
+                                           getConsoleLogger() )
+                .doGenerateReport( getBundle( locale ), getSink() );
     }
 
+    @Override
     public boolean canGenerateReport()
+    {
+        return hasReportDirectories() && super.canGenerateReport();
+    }
+
+    private boolean hasReportDirectories()
     {
         if ( isSkipped() )
         {
             return false;
         }
 
-        final List<File> reportsDirectoryList = getReportsDirectories();
+        final List<File> reportsDirectories = getReportsDirectories();
 
-        if ( reportsDirectoryList == null )
+        if ( reportsDirectories == null )
         {
             return false;
         }
@@ -178,7 +167,7 @@ public abstract class AbstractSurefireReportMojo
         if ( !isGeneratedWhenNoResults() )
         {
             boolean atLeastOneDirectoryExists = false;
-            for ( Iterator<File> i = reportsDirectoryList.iterator(); i.hasNext() && !atLeastOneDirectoryExists; )
+            for ( Iterator<File> i = reportsDirectories.iterator(); i.hasNext() && !atLeastOneDirectoryExists; )
             {
                 atLeastOneDirectoryExists = hasReportFiles( i.next() );
             }
@@ -187,23 +176,27 @@ public abstract class AbstractSurefireReportMojo
                 return false;
             }
         }
-
-        return super.canGenerateReport();
+        return true;
     }
 
     private List<File> getReportsDirectories()
     {
-        final List<File> reportsDirectories = new ArrayList<File>();
+        if ( resolvedReportsDirectories != null )
+        {
+            return resolvedReportsDirectories;
+        }
+
+        resolvedReportsDirectories = new ArrayList<File>();
 
         if ( this.reportsDirectories != null )
         {
-            addAll( reportsDirectories, this.reportsDirectories );
+            addAll( resolvedReportsDirectories, this.reportsDirectories );
         }
         //noinspection deprecation
         if ( reportsDirectory != null )
         {
             //noinspection deprecation
-            reportsDirectories.add( reportsDirectory );
+            resolvedReportsDirectories.add( reportsDirectory );
         }
         if ( aggregate )
         {
@@ -215,7 +208,7 @@ public abstract class AbstractSurefireReportMojo
             {
                 for ( MavenProject mavenProject : getProjectsWithoutRoot() )
                 {
-                    reportsDirectories.add( getSurefireReportsDirectory( mavenProject ) );
+                    resolvedReportsDirectories.add( getSurefireReportsDirectory( mavenProject ) );
                 }
             }
             else
@@ -236,8 +229,8 @@ public abstract class AbstractSurefireReportMojo
                         File reportsDirectory = new File( moduleBaseDir, reportDir );
                         if ( reportsDirectory.exists() && reportsDirectory.isDirectory() )
                         {
-                            getLog().debug( "Adding report dir : " + moduleBaseDir + reportDir );
-                            reportsDirectories.add( reportsDirectory );
+                            getConsoleLogger().debug( "Adding report dir : " + moduleBaseDir + reportDir );
+                            resolvedReportsDirectories.add( reportsDirectory );
                         }
                     }
                 }
@@ -245,13 +238,13 @@ public abstract class AbstractSurefireReportMojo
         }
         else
         {
-            if ( reportsDirectories.isEmpty() )
+            if ( resolvedReportsDirectories.isEmpty() )
             {
 
-                reportsDirectories.add( getSurefireReportsDirectory( project ) );
+                resolvedReportsDirectories.add( getSurefireReportsDirectory( project ) );
             }
         }
-        return reportsDirectories;
+        return resolvedReportsDirectories;
     }
 
     /**
@@ -283,7 +276,7 @@ public abstract class AbstractSurefireReportMojo
         if ( linkXRef )
         {
             String relativePath = PathTool.getRelativePath( getOutputDirectory(), xrefLocation.getAbsolutePath() );
-            if ( StringUtils.isEmpty( relativePath ) )
+            if ( isEmpty( relativePath ) )
             {
                 relativePath = ".";
             }
@@ -310,7 +303,7 @@ public abstract class AbstractSurefireReportMojo
 
             if ( location == null )
             {
-                getLog().warn( "Unable to locate Test Source XRef to link to - DISABLED" );
+                getConsoleLogger().warning( "Unable to locate Test Source XRef to link to - DISABLED" );
             }
         }
         return location;
@@ -339,6 +332,11 @@ public abstract class AbstractSurefireReportMojo
 
     private ResourceBundle getBundle( Locale locale )
     {
-        return ResourceBundle.getBundle( "surefire-report", locale, this.getClass().getClassLoader() );
+        return ResourceBundle.getBundle( "surefire-report", locale, getClass().getClassLoader() );
+    }
+
+    protected final ConsoleLogger getConsoleLogger()
+    {
+        return new PluginConsoleLogger( getLog() );
     }
 }
