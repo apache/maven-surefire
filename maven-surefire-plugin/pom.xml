@@ -120,6 +120,32 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <minimizeJar>true</minimizeJar>
+              <artifactSet>
+                <includes>
+                  <include>org.apache.maven.shared:maven-shared-utils</include>
+                </includes>
+              </artifactSet>
+              <relocations>
+                <relocation>
+                  <pattern>org.apache.maven.shared</pattern>
+                  <shadedPattern>org.apache.maven.surefire.shade.org.apache.maven.shared</shadedPattern>
+                </relocation>
+              </relocations>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 

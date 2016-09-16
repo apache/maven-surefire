@@ -40,14 +40,12 @@ public class Junit47concurrencyIT
         throws Exception
     {
         OutputValidator validator = unpack( "concurrentjunit47" )
-            .sysProp( "junitVersion", "4.7" )
-            .setJUnitVersion( "4.7" )
             .executeTest()
             .verifyErrorFree( 4 );
         String result = null;
         for ( String line : validator.loadLogLines() )
         {
-            if ( line.startsWith( "Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed:" ) )
+            if ( line.startsWith( "[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed:" ) )
             {
                 result = line;
                 break;

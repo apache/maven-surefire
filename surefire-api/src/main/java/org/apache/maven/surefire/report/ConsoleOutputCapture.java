@@ -23,6 +23,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import static java.lang.System.setErr;
+import static java.lang.System.setOut;
+
 /**
  * Deals with system.out/err.
  * <p/>
@@ -31,16 +34,16 @@ public class ConsoleOutputCapture
 {
     public static void startCapture( ConsoleOutputReceiver target )
     {
-        System.setOut( new ForwardingPrintStream( true, target ) );
-
-        System.setErr( new ForwardingPrintStream( false, target ) );
+        setOut( new ForwardingPrintStream( true, target ) );
+        setErr( new ForwardingPrintStream( false, target ) );
     }
 
     private static class ForwardingPrintStream
         extends PrintStream
     {
-        private final boolean isStdout;
+        private static final String NL = System.getProperty( "line.separator" );
 
+        private final boolean isStdout;
         private final ConsoleOutputReceiver target;
 
         ForwardingPrintStream( boolean stdout, ConsoleOutputReceiver target )
@@ -83,7 +86,7 @@ public class ConsoleOutputCapture
             {
                 s = "null"; // Shamelessly taken from super.print
             }
-            final byte[] bytes = ( s + "\n" ).getBytes();
+            final byte[] bytes = ( s + NL ).getBytes();
             target.writeTestOutput( bytes, 0, bytes.length, isStdout );
         }
 

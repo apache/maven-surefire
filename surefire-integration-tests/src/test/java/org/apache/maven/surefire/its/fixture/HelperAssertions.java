@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.PrintStreamLogger;
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.plugins.surefire.report.SurefireReportParser;
 
@@ -129,7 +131,8 @@ public class HelperAssertions
             assertTrue( "Reports directory is missing: " + reportsDir.getAbsolutePath(), reportsDir.exists() );
             reportsDirs.add( reportsDir );
         }
-        SurefireReportParser parser = new SurefireReportParser( reportsDirs, Locale.getDefault() );
+        ConsoleLogger logger = new PrintStreamLogger( System.out );
+        SurefireReportParser parser = new SurefireReportParser( reportsDirs, Locale.getDefault(), logger );
         try
         {
             return parser.parseXMLReportFiles();
@@ -149,7 +152,8 @@ public class HelperAssertions
             assertTrue( "Reports directory is missing: " + reportsDir.getAbsolutePath(), reportsDir.exists() );
             reportsDirs.add( reportsDir );
         }
-        SurefireReportParser parser = new SurefireReportParser( reportsDirs, Locale.getDefault() );
+        ConsoleLogger logger = new PrintStreamLogger( System.out );
+        SurefireReportParser parser = new SurefireReportParser( reportsDirs, Locale.getDefault(), logger );
         try
         {
             return parser.parseXMLReportFiles();

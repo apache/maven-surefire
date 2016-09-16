@@ -21,7 +21,7 @@ package org.apache.maven.surefire.booter;
 
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.report.ConsoleStream;
 import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -41,6 +41,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.emptyList;
+
 /**
  * @author Kristian Rosenvold
  */
@@ -55,7 +57,7 @@ public class BaseProviderFactory
 
     private final boolean insideFork;
 
-    private List<CommandLineOption> mainCliOptions = Collections.emptyList();
+    private List<CommandLineOption> mainCliOptions = emptyList();
 
     private Map<String, String> providerProperties;
 
@@ -128,7 +130,7 @@ public class BaseProviderFactory
         this.testClassLoader = testClassLoader;
     }
 
-    public ConsoleLogger getConsoleLogger()
+    public ConsoleStream getConsoleLogger()
     {
         boolean trim = reporterConfiguration.isTrimStackTrace();
         PrintStream out = reporterConfiguration.getOriginalSystemOut();

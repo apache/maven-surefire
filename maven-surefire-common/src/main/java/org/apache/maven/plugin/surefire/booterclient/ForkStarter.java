@@ -19,7 +19,6 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.surefire.CommonReflector;
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.SurefireProperties;
@@ -29,6 +28,7 @@ import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStre
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStream;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
+import org.apache.maven.plugin.surefire.booterclient.output.NativeStdErrStreamConsumer;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.shared.utils.cli.CommandLineCallable;
@@ -44,6 +44,7 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestRequest;
@@ -141,7 +142,7 @@ public class ForkStarter
 
     private final StartupReportConfiguration startupReportConfiguration;
 
-    private final Log log;
+    private final ConsoleLogger log;
 
     private final DefaultReporterFactory defaultReporterFactory;
 
@@ -200,7 +201,7 @@ public class ForkStarter
 
     public ForkStarter( ProviderConfiguration providerConfiguration, StartupConfiguration startupConfiguration,
                         ForkConfiguration forkConfiguration, int forkedProcessTimeoutInSeconds,
-                        StartupReportConfiguration startupReportConfiguration, Log log )
+                        StartupReportConfiguration startupReportConfiguration, ConsoleLogger log )
     {
         this.forkConfiguration = forkConfiguration;
         this.providerConfiguration = providerConfiguration;
@@ -208,7 +209,7 @@ public class ForkStarter
         this.startupConfiguration = startupConfiguration;
         this.startupReportConfiguration = startupReportConfiguration;
         this.log = log;
-        defaultReporterFactory = new DefaultReporterFactory( startupReportConfiguration );
+        defaultReporterFactory = new DefaultReporterFactory( startupReportConfiguration, log );
         defaultReporterFactory.runStarting();
         defaultReporterFactories = new ConcurrentLinkedQueue<DefaultReporterFactory>();
         currentForkClients = new ConcurrentLinkedQueue<ForkClient>();
@@ -239,13 +240,13 @@ public class ForkStarter
     private RunResult run( SurefireProperties effectiveSystemProperties, Map<String, String> providerProperties )
             throws SurefireBooterForkException
     {
-        DefaultReporterFactory forkedReporterFactory = new DefaultReporterFactory( startupReportConfiguration );
+        DefaultReporterFactory forkedReporterFactory = new DefaultReporterFactory( startupReportConfiguration, log );
         defaultReporterFactories.add( forkedReporterFactory );
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
         PropertiesWrapper props = new PropertiesWrapper( providerProperties );
         TestLessInputStream stream = builder.build();
-        ForkClient forkClient =
-            new ForkClient( forkedReporterFactory, startupReportConfiguration.getTestVmSystemProperties(), stream );
+        Properties sysProps = startupReportConfiguration.getTestVmSystemProperties();
+        ForkClient forkClient = new ForkClient( forkedReporterFactory, sysProps, stream, log );
         Thread shutdown = createImmediateShutdownHookThread( builder, providerConfiguration.getShutdown() );
         ScheduledFuture<?> ping = triggerPingTimerForShutdown( builder );
         try
@@ -318,12 +319,12 @@ public class ForkStarter
                     public RunResult call()
                         throws Exception
                     {
-                        DefaultReporterFactory reporter = new DefaultReporterFactory( startupReportConfiguration );
+                        DefaultReporterFactory reporter = new DefaultReporterFactory( startupReportConfiguration, log );
                         defaultReporterFactories.add( reporter );
 
                         Properties vmProps = startupReportConfiguration.getTestVmSystemProperties();
 
-                        ForkClient forkClient = new ForkClient( reporter, vmProps, testProvidingInputStream )
+                        ForkClient forkClient = new ForkClient( reporter, vmProps, testProvidingInputStream, log )
                         {
                             @Override
                             protected void stopOnNextTest()
@@ -383,11 +384,11 @@ public class ForkStarter
                         throws Exception
                     {
                         DefaultReporterFactory forkedReporterFactory =
-                            new DefaultReporterFactory( startupReportConfiguration );
+                            new DefaultReporterFactory( startupReportConfiguration, log );
                         defaultReporterFactories.add( forkedReporterFactory );
                         Properties vmProps = startupReportConfiguration.getTestVmSystemProperties();
                         ForkClient forkClient = new ForkClient( forkedReporterFactory, vmProps,
-                                                                builder.getImmediateCommands() )
+                                                                      builder.getImmediateCommands(), log )
                         {
                             @Override
                             protected void stopOnNextTest()
@@ -533,11 +534,8 @@ public class ForkStarter
             join( bootClasspathConfiguration, startupConfiguration.getClasspathConfiguration().getTestClasspath() ),
             startupConfiguration.getClasspathConfiguration().getProviderClasspath() );
 
-        if ( log.isDebugEnabled() )
-        {
-            log.debug( bootClasspath.getLogMessage( "boot" ) );
-            log.debug( bootClasspath.getCompactLogMessage( "boot(compact)" ) );
-        }
+        log.debug( bootClasspath.getLogMessage( "boot" ) );
+        log.debug( bootClasspath.getCompactLogMessage( "boot(compact)" ) );
 
         OutputStreamFlushableCommandline cli =
             forkConfiguration.createCommandLine( bootClasspath.getClassPath(), startupConfiguration, forkNumber );
@@ -558,10 +556,7 @@ public class ForkStarter
         final CloseableCloser closer =
                 new CloseableCloser( threadedStreamConsumer, requireNonNull( testProvidingInputStream, "null param" ) );
 
-        if ( forkConfiguration.isDebug() )
-        {
-            System.out.println( "Forking command line: " + cli );
-        }
+        log.debug( "Forking command line: " + cli );
 
         RunResult runResult = null;
 
@@ -569,7 +564,7 @@ public class ForkStarter
         {
             CommandLineCallable future =
                 executeCommandLineAsCallable( cli, testProvidingInputStream, threadedStreamConsumer,
-                                              threadedStreamConsumer, 0, closer,
+                                              new NativeStdErrStreamConsumer(), 0, closer,
                                               Charset.forName( FORK_STREAM_CHARSET_NAME ) );
 
             currentForkClients.add( forkClient );
@@ -630,7 +625,7 @@ public class ForkStarter
             ClassLoader unifiedClassLoader = classpathConfiguration.createMergedClassLoader();
 
             CommonReflector commonReflector = new CommonReflector( unifiedClassLoader );
-            Object reporterFactory = commonReflector.createReportingReporterFactory( startupReportConfiguration );
+            Object reporterFactory = commonReflector.createReportingReporterFactory( startupReportConfiguration, log );
 
             ProviderFactory providerFactory =
                 new ProviderFactory( startupConfiguration, providerConfiguration, unifiedClassLoader, reporterFactory );

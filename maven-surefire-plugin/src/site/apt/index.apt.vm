@@ -30,6 +30,10 @@
 
 Maven ${thisPlugin} Plugin
 
+
+  Requirements: Maven 2.2.1 or 3.x, and JDK 1.5 or higher. Due to wrong formatting of console text messages
+  in Maven Version prior to 3.1.0 it is highly recommended to use Maven 3.1.0 or higher.
+
 #{if}(${project.artifactId}=="maven-surefire-plugin")
   The Surefire Plugin is used during the <<<test>>> phase of the build
   lifecycle to execute the unit tests of an application. It generates reports

@@ -22,7 +22,7 @@ package org.apache.maven.surefire.junitcore;
 import org.apache.maven.surefire.common.junit4.Notifier;
 import org.apache.maven.surefire.junitcore.pc.ParallelComputer;
 import org.apache.maven.surefire.junitcore.pc.ParallelComputerBuilder;
-import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.report.ConsoleStream;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
 import org.junit.Ignore;
@@ -54,13 +54,13 @@ final class JUnitCoreWrapper
 {
     private final Notifier notifier;
     private final JUnitCoreParameters jUnitCoreParameters;
-    private final ConsoleLogger logger;
+    private final ConsoleStream consoleStream;
 
-    JUnitCoreWrapper( Notifier notifier, JUnitCoreParameters jUnitCoreParameters, ConsoleLogger logger )
+    JUnitCoreWrapper( Notifier notifier, JUnitCoreParameters jUnitCoreParameters, ConsoleStream consoleStream )
     {
         this.notifier = notifier;
         this.jUnitCoreParameters = jUnitCoreParameters;
-        this.logger = logger;
+        this.consoleStream = consoleStream;
     }
 
     void execute( TestsToRun testsToRun, Filter filter )
@@ -151,7 +151,7 @@ final class JUnitCoreWrapper
     {
         return jUnitCoreParameters.isNoThreading()
             ? serial()
-            : new ParallelComputerBuilder( logger, jUnitCoreParameters ).buildComputer();
+            : new ParallelComputerBuilder( consoleStream, jUnitCoreParameters ).buildComputer();
     }
 
     private final class JUnitCore

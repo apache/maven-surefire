@@ -106,6 +106,12 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
+      <version>1.13</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
       <version>1.8.4</version>
@@ -116,12 +122,52 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.12</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>shared-logging-generated-sources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
+              <overWriteIfNewer>false</overWriteIfNewer>
+              <artifact>org.apache.maven.shared:maven-shared-utils:3.1.0:jar:sources</artifact>
+              <includes>org/apache/maven/shared/utils/logging/*.java</includes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <includes>
             <include>**/JUnit4SuiteTest.java</include>
           </includes>
+          <classpathDependencyExcludes>
+            <classpathDependencyExclude>org.fusesource.jansi:jansi</classpathDependencyExclude>
+          </classpathDependencyExcludes>
         </configuration>
         <dependencies>
           <dependency>

@@ -37,7 +37,6 @@
     <it.settings.showPasswords>false</it.settings.showPasswords>
     <testng.version>5.7</testng.version>
     <surefire.threadcount>5</surefire.threadcount>
-    <mavenHomeUsed>${maven.home}</mavenHomeUsed>
     <useInterpolatedSettings>false</useInterpolatedSettings>
   </properties>
 
@@ -103,7 +102,7 @@
           <systemPropertyVariables>
             <surefire.version>${project.version}</surefire.version>
             <testng.version>${testng.version}</testng.version>
-            <maven.home>${mavenHomeUsed}</maven.home>
+            <maven.home>${maven.home}</maven.home>
             <maven.settings.file>${project.basedir}/../surefire-setup-integration-tests/target/private/it-settings.xml
             </maven.settings.file>
             <maven.repo.local>${project.basedir}/../surefire-setup-integration-tests/target/it-repo</maven.repo.local>
@@ -201,50 +200,6 @@
       <properties>
         <verifier.forkMode>auto</verifier.forkMode>
       </properties>
-    </profile>
-    <profile>
-      <id>maven-2.2.1</id>
-      <properties>
-        <mavenHomeUsed>${project.build.directory}/maven-extract/apache-maven-2.2.1</mavenHomeUsed>
-      </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <version>2.4</version>
-            <executions>
-              <execution>
-                <id>unpack</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>unpack</goal>
-                </goals>
-                <configuration>
-                  <artifactItems>
-                    <artifactItem>
-                      <groupId>org.apache.maven</groupId>
-                      <artifactId>apache-maven</artifactId>
-                      <version>2.2.1</version>
-                      <type>tar.gz</type>
-                      <classifier>bin</classifier>
-                      <overWrite>false</overWrite>
-                      <outputDirectory>${project.build.directory}/maven-extract</outputDirectory>
-                    </artifactItem>
-                  </artifactItems>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <artifactId>maven-failsafe-plugin</artifactId>
-            <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to http://jira.codehaus.org/browse/MRELEASE-799 -->
-            <configuration>
-              <excludedGroups>org.apache.maven.surefire.its.Not2xCompatible</excludedGroups>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
     <profile>
       <id>jenkins</id>

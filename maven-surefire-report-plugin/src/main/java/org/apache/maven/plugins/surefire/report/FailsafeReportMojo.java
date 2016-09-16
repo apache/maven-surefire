@@ -111,6 +111,6 @@ public class FailsafeReportMojo
     */
     private ResourceBundle getBundle( Locale locale )
     {
-        return ResourceBundle.getBundle( "surefire-report", locale, this.getClass().getClassLoader() );
+        return ResourceBundle.getBundle( "surefire-report", locale, getClass().getClassLoader() );
     }
 }

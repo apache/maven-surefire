@@ -19,6 +19,8 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.io.DataInputStream;
@@ -46,10 +48,11 @@ import static org.apache.maven.surefire.booter.MasterProcessCommand.SHUTDOWN;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.TEST_SET_FINISHED;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.decode;
-import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
-import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
-import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThread;
+import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
+import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
+import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
+import static org.apache.maven.surefire.util.internal.StringUtils.requireNonNull;
 
 /**
  * Reader of commands coming from plugin(master) process.
@@ -80,6 +83,12 @@ public final class CommandReader
 
     private int iteratedCount;
 
+    private volatile ConsoleLogger logger = new NullConsoleLogger();
+
+    private CommandReader()
+    {
+    }
+
     public static CommandReader getReader()
     {
         final CommandReader reader = READER;
@@ -93,6 +102,12 @@ public final class CommandReader
     public CommandReader setShutdown( Shutdown shutdown )
     {
         this.shutdown = shutdown;
+        return this;
+    }
+
+    public CommandReader setLogger( ConsoleLogger logger )
+    {
+        this.logger = requireNonNull( logger, "null logger" );
         return this;
     }
 
@@ -360,7 +375,7 @@ public final class CommandReader
                     Command command = decode( stdIn );
                     if ( command == null )
                     {
-                        System.err.println( "[SUREFIRE] std/in stream corrupted: first sequence not recognized" );
+                        logger.error( "[SUREFIRE] std/in stream corrupted: first sequence not recognized" );
                         break;
                     }
                     else
@@ -409,8 +424,7 @@ public final class CommandReader
                 // If #stop() method is called, reader thread is interrupted and cause is InterruptedException.
                 if ( !( e.getCause() instanceof InterruptedException ) )
                 {
-                    System.err.println( "[SUREFIRE] std/in stream corrupted" );
-                    e.printStackTrace();
+                    logger.error( "[SUREFIRE] std/in stream corrupted", e );
                 }
             }
             finally

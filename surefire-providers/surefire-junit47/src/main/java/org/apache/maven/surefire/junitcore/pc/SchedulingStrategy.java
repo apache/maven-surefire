@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.report.ConsoleStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -43,9 +43,9 @@ public abstract class SchedulingStrategy
 
     private final AtomicBoolean canSchedule = new AtomicBoolean( true );
 
-    private final ConsoleLogger logger;
+    private final ConsoleStream logger;
 
-    protected SchedulingStrategy( ConsoleLogger logger )
+    protected SchedulingStrategy( ConsoleStream logger )
     {
         this.logger = logger;
     }
@@ -145,6 +145,6 @@ public abstract class SchedulingStrategy
         {
             stream.close();
         }
-        logger.info( out.toString() );
+        logger.println( out.toString() );
     }
 }

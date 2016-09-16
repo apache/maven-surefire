@@ -27,7 +27,6 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
-import org.apache.maven.plugin.surefire.report.ConsoleReporter;
 import org.apache.maven.plugin.surefire.report.DirectConsoleOutput;
 import org.apache.maven.plugin.surefire.report.FileReporter;
 import org.apache.maven.plugin.surefire.report.StatelessXmlReporter;
@@ -37,6 +36,9 @@ import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 
 import javax.annotation.Nonnull;
 
+import static org.apache.maven.plugin.surefire.report.ConsoleReporter.BRIEF;
+import static org.apache.maven.plugin.surefire.report.ConsoleReporter.PLAIN;
+
 /**
  * All the parameters used to construct reporters
  * <p/>
@@ -45,9 +47,9 @@ import javax.annotation.Nonnull;
  */
 public class StartupReportConfiguration
 {
-    public static final String BRIEF_REPORT_FORMAT = ConsoleReporter.BRIEF;
+    public static final String BRIEF_REPORT_FORMAT = BRIEF;
 
-    public static final String PLAIN_REPORT_FORMAT = ConsoleReporter.PLAIN;
+    public static final String PLAIN_REPORT_FORMAT = PLAIN;
 
     private final PrintStream originalSystemOut;
 
@@ -184,16 +186,6 @@ public class StartupReportConfiguration
     {
         String fmt = getReportFormat();
         return BRIEF_REPORT_FORMAT.equals( fmt ) || PLAIN_REPORT_FORMAT.equals( fmt );
-    }
-
-    public ConsoleReporter instantiateConsoleReporter()
-    {
-        return shouldReportToConsole() ? new ConsoleReporter( originalSystemOut ) : null;
-    }
-
-    private boolean shouldReportToConsole()
-    {
-        return isUseFile() ? isPrintSummary() : isRedirectTestOutputToFile() || isBriefOrPlainFormat();
     }
 
     public TestcycleConsoleOutputReceiver instantiateConsoleOutputFileReporter()

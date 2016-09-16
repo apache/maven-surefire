@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.report;
+package org.apache.maven.surefire.junitcore;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,15 +19,50 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+
+import java.io.PrintStream;
+
 /**
- * Allows providers to write console messages on the running maven process.
- * <p/>
- * This output is associated with the entire test run and not a specific
- * test, which means it just goes "straight" to the console "immediately".
- * <p/>
- * s* <p/>
+ * @author <a href="mailto:kristian@zenior.no">Kristian Rosenvold</a>
  */
-public interface ConsoleLogger
+public class DefaultConsoleReporter
+    implements ConsoleLogger
 {
-    void info( String message );
+    private final PrintStream systemOut;
+
+    public DefaultConsoleReporter( PrintStream systemOut )
+    {
+        this.systemOut = systemOut;
+    }
+
+    public void debug( String message )
+    {
+
+    }
+
+    public void info( String message )
+    {
+        systemOut.println( message );
+    }
+
+    public void warning( String message )
+    {
+
+    }
+
+    public void error( String message )
+    {
+
+    }
+
+    public void error( String message, Throwable t )
+    {
+
+    }
+
+    public void error( Throwable t )
+    {
+
+    }
 }

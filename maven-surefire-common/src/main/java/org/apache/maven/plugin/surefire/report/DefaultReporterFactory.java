@@ -21,12 +21,14 @@ package org.apache.maven.plugin.surefire.report;
 
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
-import org.apache.maven.surefire.report.ConsoleLogger;
-import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
+import org.apache.maven.shared.utils.logging.MessageBuilder;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.report.StackTraceWriter;
+import org.apache.maven.plugin.surefire.log.api.Level;
 import org.apache.maven.surefire.suite.RunResult;
 
 import java.util.ArrayList;
@@ -47,6 +49,8 @@ import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.Tes
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
+import static org.apache.maven.plugin.surefire.log.api.Level.resolveLevel;
+import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
 
 /**
  * Provides reporting modules on the plugin side.
@@ -58,13 +62,12 @@ import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
 public class DefaultReporterFactory
     implements ReporterFactory
 {
-    private RunStatistics globalStats = new RunStatistics();
-
     private final StartupReportConfiguration reportConfiguration;
-
+    private final ConsoleLogger consoleLogger;
     private final StatisticsReporter statisticsReporter;
+    private final Collection<TestSetRunListener> listeners;
 
-    private final Collection<TestSetRunListener> listeners = new ConcurrentLinkedQueue<TestSetRunListener>();
+    private RunStatistics globalStats = new RunStatistics();
 
     // from "<testclass>.<testmethod>" -> statistics about all the runs for flaky tests
     private Map<String, List<TestMethodStats>> flakyTests;
@@ -75,16 +78,19 @@ public class DefaultReporterFactory
     // from "<testclass>.<testmethod>" -> statistics about all the runs for error tests
     private Map<String, List<TestMethodStats>> errorTests;
 
-    public DefaultReporterFactory( StartupReportConfiguration reportConfiguration )
+    public DefaultReporterFactory( StartupReportConfiguration reportConfiguration, ConsoleLogger consoleLogger )
     {
         this.reportConfiguration = reportConfiguration;
+        this.consoleLogger = consoleLogger;
         statisticsReporter = reportConfiguration.instantiateStatisticsReporter();
+        listeners = new ConcurrentLinkedQueue<TestSetRunListener>();
     }
 
     public RunListener createReporter()
     {
+        ConsoleReporter consoleReporter = shouldReportToConsole() ? new ConsoleReporter( consoleLogger ) : null;
         TestSetRunListener testSetRunListener =
-            new TestSetRunListener( reportConfiguration.instantiateConsoleReporter(),
+            new TestSetRunListener( consoleReporter,
                                     reportConfiguration.instantiateFileReporter(),
                                     reportConfiguration.instantiateStatelessXmlReporter(),
                                     reportConfiguration.instantiateConsoleOutputFileReporter(),
@@ -94,6 +100,13 @@ public class DefaultReporterFactory
                                     reportConfiguration.isBriefOrPlainFormat() );
         addListener( testSetRunListener );
         return testSetRunListener;
+    }
+
+    private boolean shouldReportToConsole()
+    {
+        return reportConfiguration.isUseFile()
+                       ? reportConfiguration.isPrintSummary()
+                       : reportConfiguration.isRedirectTestOutputToFile() || reportConfiguration.isBriefOrPlainFormat();
     }
 
     public void mergeFromOtherFactories( Collection<DefaultReporterFactory> factories )
@@ -123,38 +136,33 @@ public class DefaultReporterFactory
         return globalStats.getRunResult();
     }
 
-    private DefaultDirectConsoleReporter createConsoleLogger()
-    {
-        return new DefaultDirectConsoleReporter( reportConfiguration.getOriginalSystemOut() );
-    }
-
     public void runStarting()
     {
-        ConsoleLogger consoleReporter = createConsoleLogger();
-        consoleReporter.info( "" );
-        consoleReporter.info( "-------------------------------------------------------" );
-        consoleReporter.info( " T E S T S" );
-        consoleReporter.info( "-------------------------------------------------------" );
+        log( "" );
+        log( "-------------------------------------------------------" );
+        log( " T E S T S" );
+        log( "-------------------------------------------------------" );
     }
 
     private void runCompleted()
     {
-        final ConsoleLogger logger = createConsoleLogger();
         if ( reportConfiguration.isPrintSummary() )
         {
-            logger.info( "" );
-            logger.info( "Results:" );
-            logger.info( "" );
+            log( "" );
+            log( "Results:" );
+            log( "" );
         }
-        boolean printedFailures = printTestFailures( logger, failure );
-        printedFailures |= printTestFailures( logger, error );
-        printedFailures |= printTestFailures( logger, flake );
-        if ( printedFailures )
+        boolean printedFailures = printTestFailures( failure );
+        boolean printedErrors = printTestFailures( error );
+        boolean printedFlakes = printTestFailures( flake );
+        if ( printedFailures | printedErrors | printedFlakes )
         {
-            logger.info( "" );
+            log( "" );
         }
-        logger.info( globalStats.getSummary() );
-        logger.info( "" );
+        boolean hasSuccessful = globalStats.getCompletedCount() > 0;
+        boolean hasSkipped = globalStats.getSkipped() > 0;
+        log( globalStats.getSummary(), hasSuccessful, printedFailures, printedErrors, hasSkipped, printedFlakes );
+        log( "" );
     }
 
     public RunStatistics getGlobalRunStatistics()
@@ -168,7 +176,7 @@ public class DefaultReporterFactory
      */
     public static DefaultReporterFactory defaultNoXml()
     {
-        return new DefaultReporterFactory( StartupReportConfiguration.defaultNoXml() );
+        return new DefaultReporterFactory( StartupReportConfiguration.defaultNoXml(), new NullConsoleLogger() );
     }
 
     /**
@@ -318,24 +326,27 @@ public class DefaultReporterFactory
      * Print failed tests and flaked tests. A test is considered as a failed test if it failed/got an error with
      * all the runs. If a test passes in ever of the reruns, it will be count as a flaked test
      *
-     * @param logger the logger used to log information
      * @param type   the type of results to be printed, could be error, failure or flake
      * @return {@code true} if printed some lines
      */
     // Use default visibility for testing
-    boolean printTestFailures( ConsoleLogger logger, TestResultType type )
+    boolean printTestFailures( TestResultType type )
     {
         final Map<String, List<TestMethodStats>> testStats;
+        final Level level;
         switch ( type )
         {
             case failure:
                 testStats = failedTests;
+                level = Level.FAILURE;
                 break;
             case error:
                 testStats = errorTests;
+                level = Level.FAILURE;
                 break;
             case flake:
                 testStats = flakyTests;
+                level = Level.UNSTABLE;
                 break;
             default:
                 return false;
@@ -344,7 +355,7 @@ public class DefaultReporterFactory
         boolean printed = false;
         if ( !testStats.isEmpty() )
         {
-            logger.info( type.getLogPrefix() );
+            log( type.getLogPrefix(), level );
             printed = true;
         }
 
@@ -355,24 +366,24 @@ public class DefaultReporterFactory
             if ( testMethodStats.size() == 1 )
             {
                 // No rerun, follow the original output format
-                logger.info( "  " + testMethodStats.get( 0 ).getStackTraceWriter().smartTrimmedStackTrace() );
+                failure( "  " + testMethodStats.get( 0 ).getStackTraceWriter().smartTrimmedStackTrace() );
             }
             else
             {
-                logger.info( entry.getKey() );
+                log( entry.getKey(), level );
                 for ( int i = 0; i < testMethodStats.size(); i++ )
                 {
                     StackTraceWriter failureStackTrace = testMethodStats.get( i ).getStackTraceWriter();
                     if ( failureStackTrace == null )
                     {
-                        logger.info( "  Run " + ( i + 1 ) + ": PASS" );
+                        success( "  Run " + ( i + 1 ) + ": PASS" );
                     }
                     else
                     {
-                        logger.info( "  Run " + ( i + 1 ) + ": " + failureStackTrace.smartTrimmedStackTrace() );
+                        failure( "  Run " + ( i + 1 ) + ": " + failureStackTrace.smartTrimmedStackTrace() );
                     }
                 }
-                logger.info( "" );
+                log( "" );
             }
         }
         return printed;
@@ -400,5 +411,59 @@ public class DefaultReporterFactory
         {
             return logPrefix;
         }
+    }
+
+    private void log( String s, boolean success, boolean failures, boolean errors, boolean skipped, boolean flakes )
+    {
+        Level level = resolveLevel( success, failures, errors, skipped, flakes );
+        log( s, level );
+    }
+
+    private void log( String s, Level level )
+    {
+        MessageBuilder builder = buffer();
+        switch ( level )
+        {
+            case FAILURE:
+                consoleLogger.error( builder.failure( s ).toString() );
+                break;
+            case UNSTABLE:
+                consoleLogger.warning( builder.warning( s ).toString() );
+                break;
+            case SUCCESS:
+                consoleLogger.info( builder.info( s ).toString() );
+                break;
+            default:
+                consoleLogger.info( builder.a( s ).toString() );
+        }
+    }
+
+    private void log( String s )
+    {
+        consoleLogger.info( s );
+    }
+
+    private void info( String s )
+    {
+        MessageBuilder builder = buffer();
+        consoleLogger.info( builder.info( s ).toString() );
+    }
+
+    private void err( String s )
+    {
+        MessageBuilder builder = buffer();
+        consoleLogger.error( builder.error( s ).toString() );
+    }
+
+    private void success( String s )
+    {
+        MessageBuilder builder = buffer();
+        consoleLogger.info( builder.success( s ).toString() );
+    }
+
+    private void failure( String s )
+    {
+        MessageBuilder builder = buffer();
+        consoleLogger.error( builder.failure( s ).toString() );
     }
 }
