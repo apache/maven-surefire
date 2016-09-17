@@ -36,6 +36,7 @@ import static org.apache.commons.lang3.SystemUtils.JAVA_SPECIFICATION_VERSION;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
+import static org.junit.Assume.assumeTrue;
 
 @SuppressWarnings( { "JavaDoc" } )
 public class HelperAssertions
@@ -172,7 +173,7 @@ public class HelperAssertions
 
     public static void assumeJavaVersion( JavaVersion version )
     {
-        assumeThat( "java.specification.version: ",
-                JAVA_SPECIFICATION_VERSION, is( greaterThanOrEqualTo( version.toString() ) ) );
+        assumeTrue( "java.specification.version: " + JAVA_SPECIFICATION_VERSION,
+                SystemUtils.isJavaVersionAtLeast( version ) );
     }
 }
