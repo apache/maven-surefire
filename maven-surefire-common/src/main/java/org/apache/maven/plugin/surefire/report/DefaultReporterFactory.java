@@ -431,7 +431,7 @@ public class DefaultReporterFactory
                 consoleLogger.warning( builder.warning( s ).toString() );
                 break;
             case SUCCESS:
-                consoleLogger.info( builder.info( s ).toString() );
+                consoleLogger.info( builder.success( s ).toString() );
                 break;
             default:
                 consoleLogger.info( builder.a( s ).toString() );
