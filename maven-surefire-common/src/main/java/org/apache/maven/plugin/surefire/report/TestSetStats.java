@@ -260,14 +260,7 @@ public class TestSetStats
                 .a( reportEntry.getElapsedTimeVerbose() );
         if ( isFailureOrError )
         {
-            if ( isFailure )
-            {
-                builder.failure( FAILURE_MARKER );
-            }
-            else
-            {
-                builder.warning( FAILURE_MARKER );
-            }
+            builder.failure( FAILURE_MARKER );
         }
         builder.a( IN_MARKER );
         return concatenateWithTestGroup( builder, reportEntry );
