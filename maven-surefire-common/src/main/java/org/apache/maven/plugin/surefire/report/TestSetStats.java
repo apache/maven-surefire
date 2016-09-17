@@ -250,7 +250,7 @@ public class TestSetStats
         builder.a( COMMA );
         if ( isSkipped )
         {
-            builder.failure( SKIPPED ).failure( skipped );
+            builder.failure( SKIPPED ).warning( skipped );
         }
         else
         {
