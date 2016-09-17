@@ -55,13 +55,6 @@ public class Surefire943ReportContentIT
             .sysProp( "threadCount", 4 )
             .withFailure().executeTest();
 
-        System.out.println("===== START EXECUTION LOG =====");
-        for ( String line : validator.loadLogLines() )
-        {
-            System.out.println( line );
-        }
-        System.out.println("===== END EXECUTION LOG =====");
-
         validator.assertTestSuiteResults( 10, 1, 3, 3 );
 
         validate( validator, "org.sample.module.My1Test", 1 );
