@@ -22,6 +22,9 @@ package org.apache.maven.surefire.its;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
+
 /**
  * Basic suite test currently only running against JUnit 5 M2
  *
@@ -34,6 +37,8 @@ public class JUnit5IT
     @Test
     public void test()
     {
+        assumeJavaVersion( JAVA_1_8 );
+
         unpack( "/junit5" ).executeTest().verifyErrorFree( 2 );
     }
 
