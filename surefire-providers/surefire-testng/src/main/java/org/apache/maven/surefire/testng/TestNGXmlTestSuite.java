@@ -76,7 +76,7 @@ final class TestNGXmlTestSuite
         finishTestSuite( reporter );
     }
 
-    void locateTestSets()
+    Iterable locateTestSets()
         throws TestSetFailedException
     {
         if ( suiteFilePaths != null )
@@ -89,7 +89,8 @@ final class TestNGXmlTestSuite
             throw new IllegalStateException( "No suite files were specified" );
         }
 
-        suiteFilePaths = new ArrayList<String>();
+        suiteFilePaths = new ArrayList<String>( suiteFiles.size() );
+        ArrayList<File> testSets = new ArrayList<File>( suiteFiles.size() );
 
         for ( File suiteFile : suiteFiles )
         {
@@ -97,8 +98,10 @@ final class TestNGXmlTestSuite
             {
                 throw new TestSetFailedException( "Suite file " + suiteFile + " is not a valid file" );
             }
+            testSets.add( suiteFile );
             suiteFilePaths.add( suiteFile.getAbsolutePath() );
         }
+        return testSets;
     }
 
     @Override
