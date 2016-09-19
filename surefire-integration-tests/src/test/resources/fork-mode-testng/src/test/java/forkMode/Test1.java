@@ -34,8 +34,10 @@ public class Test1
 	
     @Test
     public void test1()
-        throws IOException
+        throws IOException, InterruptedException
     {
+        int sleepLength = Integer.valueOf( System.getProperty( "sleepLength", "750" ));
+        Thread.sleep(sleepLength);
         dumpPidFile( "test1" );
     }
 
