@@ -82,7 +82,7 @@ public class DefaultReporterFactory
     {
         this.reportConfiguration = reportConfiguration;
         this.consoleLogger = consoleLogger;
-        statisticsReporter = reportConfiguration.instantiateStatisticsReporter();
+        statisticsReporter = reportConfiguration.getStatisticsReporter();
         listeners = new ConcurrentLinkedQueue<TestSetRunListener>();
     }
 

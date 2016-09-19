@@ -45,7 +45,7 @@ import static org.apache.maven.plugin.surefire.report.ConsoleReporter.PLAIN;
  *
  * @author Kristian Rosenvold
  */
-public class StartupReportConfiguration
+public final class StartupReportConfiguration
 {
     public static final String BRIEF_REPORT_FORMAT = BRIEF;
 
@@ -77,12 +77,14 @@ public class StartupReportConfiguration
 
     private final int rerunFailingTestsCount;
 
-    private String xsdSchemaLocation;
+    private final String xsdSchemaLocation;
 
     private final Properties testVmSystemProperties = new Properties();
 
     private final Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistory
         = new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>();
+
+    private StatisticsReporter statisticsReporter;
 
     @SuppressWarnings( "checkstyle:parameternumber" )
     public StartupReportConfiguration( boolean useFile, boolean printSummary, String reportFormat,
@@ -195,9 +197,13 @@ public class StartupReportConfiguration
             : new DirectConsoleOutput( originalSystemOut, originalSystemErr );
     }
 
-    public StatisticsReporter instantiateStatisticsReporter()
+    public synchronized StatisticsReporter getStatisticsReporter()
     {
-        return requiresRunHistory ? new StatisticsReporter( getStatisticsFile() ) : null;
+        if ( statisticsReporter == null )
+        {
+            statisticsReporter = requiresRunHistory ? new StatisticsReporter( getStatisticsFile() ) : null;
+        }
+        return statisticsReporter;
     }
 
     public File getStatisticsFile()
