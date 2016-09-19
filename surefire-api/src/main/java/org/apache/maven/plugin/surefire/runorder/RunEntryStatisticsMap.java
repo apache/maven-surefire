@@ -205,7 +205,7 @@ public final class RunEntryStatisticsMap
         return result;
     }
 
-    public Map getPriorities( Comparator<Priority> priorityComparator )
+    private Map getPriorities( Comparator<Priority> priorityComparator )
     {
         Map<String, Priority> priorities = new HashMap<String, Priority>();
         for ( Object o : runEntryStatistics.keySet() )
