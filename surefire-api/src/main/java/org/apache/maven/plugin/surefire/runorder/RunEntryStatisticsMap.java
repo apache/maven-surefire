@@ -46,7 +46,7 @@ import static org.apache.maven.plugin.surefire.runorder.RunEntryStatistics.fromS
 /**
  * @author Kristian Rosenvold
  */
-public class RunEntryStatisticsMap
+public final class RunEntryStatisticsMap
 {
     private final Map<String, RunEntryStatistics> runEntryStatistics;
 
@@ -147,7 +147,7 @@ public class RunEntryStatisticsMap
         runEntryStatistics.put( item.getTestName(), item );
     }
 
-    class RunCountComparator
+    static final class RunCountComparator
         implements Comparator<RunEntryStatistics>
     {
         public int compare( RunEntryStatistics o, RunEntryStatistics o1 )
@@ -235,7 +235,7 @@ public class RunEntryStatisticsMap
         return result;
     }
 
-    class PrioritizedTestComparator
+    static final class PrioritizedTestComparator
         implements Comparator<PrioritizedTest>
     {
         public int compare( PrioritizedTest o, PrioritizedTest o1 )
@@ -244,7 +244,7 @@ public class RunEntryStatisticsMap
         }
     }
 
-    class TestRuntimeComparator
+    static final class TestRuntimeComparator
         implements Comparator<Priority>
     {
         public int compare( Priority o, Priority o1 )
@@ -253,7 +253,7 @@ public class RunEntryStatisticsMap
         }
     }
 
-    class LeastFailureComparator
+    static final class LeastFailureComparator
         implements Comparator<Priority>
     {
         public int compare( Priority o, Priority o1 )
