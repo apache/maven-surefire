@@ -1029,7 +1029,7 @@ public abstract class AbstractSurefireMojo
         ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration();
         provider.addProviderProperties();
         RunOrderParameters runOrderParameters =
-            new RunOrderParameters( getRunOrder(), getStatisticsFileName( getConfigChecksum() ) );
+            new RunOrderParameters( getRunOrder(), getStatisticsFile( getConfigChecksum() ) );
 
         if ( isNotForking() )
         {
@@ -1562,10 +1562,9 @@ public abstract class AbstractSurefireMojo
         return h;
     }
 
-    public String getStatisticsFileName( String configurationHash )
+    public File getStatisticsFile( String configurationHash )
     {
-        return getReportsDirectory().getParentFile().getParentFile() + File.separator + ".surefire-"
-            + configurationHash;
+        return new File( getBasedir(), ".surefire-" + configurationHash );
     }
 
     StartupConfiguration createStartupConfiguration( ProviderInfo provider,
@@ -1631,8 +1630,8 @@ public abstract class AbstractSurefireMojo
         return new StartupReportConfiguration( isUseFile(), isPrintSummary(), getReportFormat(),
                                                isRedirectTestOutputToFile(), isDisableXmlReport(),
                                                getReportsDirectory(), isTrimStackTrace(), getReportNameSuffix(),
-                                               configChecksum, requiresRunHistory(), getRerunFailingTestsCount(),
-                                               getReportSchemaLocation() );
+                                               getStatisticsFile( configChecksum ), requiresRunHistory(),
+                                               getRerunFailingTestsCount(), getReportSchemaLocation() );
     }
 
     private boolean isSpecificTestSpecified()
@@ -2091,7 +2090,6 @@ public abstract class AbstractSurefireMojo
         checksum.add( getRerunFailingTestsCount() );
         addPluginSpecificChecksumItems( checksum );
         return checksum.getSha1();
-
     }
 
     protected void addPluginSpecificChecksumItems( ChecksumCalculator checksum )

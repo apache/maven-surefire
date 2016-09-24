@@ -86,7 +86,8 @@ public class BooterDeserializer
             new DirectoryScannerParameters( testClassesDirectory, includes, excludes, specificTests,
                                             properties.getBooleanProperty( FAILIFNOTESTS ), runOrder );
 
-        RunOrderParameters runOrderParameters = new RunOrderParameters( runOrder, runStatisticsFile );
+        RunOrderParameters runOrderParameters
+                = new RunOrderParameters( runOrder, runStatisticsFile == null ? null : new File( runStatisticsFile ) );
 
         TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testArtifactClassifier );
         TestRequest testSuiteDefinition =

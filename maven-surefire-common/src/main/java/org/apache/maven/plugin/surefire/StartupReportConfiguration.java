@@ -63,7 +63,7 @@ public final class StartupReportConfiguration
 
     private final String reportNameSuffix;
 
-    private final String configurationHash;
+    private final File statisticsFile;
 
     private final boolean requiresRunHistory;
 
@@ -90,7 +90,7 @@ public final class StartupReportConfiguration
     public StartupReportConfiguration( boolean useFile, boolean printSummary, String reportFormat,
                                        boolean redirectTestOutputToFile, boolean disableXmlReport,
                                        @Nonnull File reportsDirectory, boolean trimStackTrace, String reportNameSuffix,
-                                       String configurationHash, boolean requiresRunHistory,
+                                       File statisticsFile, boolean requiresRunHistory,
                                        int rerunFailingTestsCount, String xsdSchemaLocation )
     {
         this.useFile = useFile;
@@ -101,7 +101,7 @@ public final class StartupReportConfiguration
         this.reportsDirectory = reportsDirectory;
         this.trimStackTrace = trimStackTrace;
         this.reportNameSuffix = reportNameSuffix;
-        this.configurationHash = configurationHash;
+        this.statisticsFile = statisticsFile;
         this.requiresRunHistory = requiresRunHistory;
         this.originalSystemOut = System.out;
         this.originalSystemErr = System.err;
@@ -115,7 +115,8 @@ public final class StartupReportConfiguration
     public static StartupReportConfiguration defaultValue()
     {
         File target = new File( "./target" );
-        return new StartupReportConfiguration( true, true, "PLAIN", false, false, target, false, null, "TESTHASH",
+        File statisticsFile = new File( target, "TESTHASH" );
+        return new StartupReportConfiguration( true, true, "PLAIN", false, false, target, false, null, statisticsFile,
                                                false, 0, null );
     }
 
@@ -125,7 +126,8 @@ public final class StartupReportConfiguration
     public static StartupReportConfiguration defaultNoXml()
     {
         File target = new File( "./target" );
-        return new StartupReportConfiguration( true, true, "PLAIN", false, true, target, false, null, "TESTHASHxXML",
+        File statisticsFile = new File( target, "TESTHASHxXML" );
+        return new StartupReportConfiguration( true, true, "PLAIN", false, true, target, false, null, statisticsFile,
                                                false, 0, null );
     }
 
@@ -208,7 +210,7 @@ public final class StartupReportConfiguration
 
     public File getStatisticsFile()
     {
-        return new File( reportsDirectory.getParentFile().getParentFile(), ".surefire-" + this.configurationHash );
+        return statisticsFile;
     }
 
     public Properties getTestVmSystemProperties()
@@ -219,11 +221,6 @@ public final class StartupReportConfiguration
     public boolean isTrimStackTrace()
     {
         return trimStackTrace;
-    }
-
-    public String getConfigurationHash()
-    {
-        return configurationHash;
     }
 
     public boolean isRequiresRunHistory()
