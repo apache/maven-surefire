@@ -2087,6 +2087,8 @@ public abstract class AbstractSurefireMojo
         checksum.add( getFailIfNoTests() );
         checksum.add( getRunOrder() );
         checksum.add( getDependenciesToScan() );
+        checksum.add( getForkedProcessExitTimeoutInSeconds() );
+        checksum.add( getRerunFailingTestsCount() );
         addPluginSpecificChecksumItems( checksum );
         return checksum.getSha1();
 
