@@ -1543,7 +1543,8 @@ public abstract class AbstractSurefireMojo
                                           testNg, // Not really used in provider. Limited to de/serializer.
                                           testSuiteDefinition, providerProperties, null,
                                           false, cli, getSkipAfterFailureCount(),
-                                          Shutdown.parameterOf( getShutdown() ) );
+                                          Shutdown.parameterOf( getShutdown() ),
+                                          getForkedProcessExitTimeoutInSeconds() );
     }
 
     private static Map<String, String> toStringProperties( Properties properties )

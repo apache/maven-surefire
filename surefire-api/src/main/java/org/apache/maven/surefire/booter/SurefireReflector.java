@@ -20,7 +20,6 @@ package org.apache.maven.surefire.booter;
  */
 
 import java.io.File;
-import java.io.PrintStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -261,12 +260,6 @@ public class SurefireReflector
         return newInstance( constructor, reporterConfig.getReportsDirectory(), reporterConfig.isTrimStackTrace() );
     }
 
-    public static ReporterFactory createForkingReporterFactoryInCurrentClassLoader( boolean trimStackTrace,
-                                                                                    PrintStream originalSystemOut )
-    {
-        return new ForkingReporterFactory( trimStackTrace, originalSystemOut );
-    }
-
     public Object createBooterConfiguration( ClassLoader surefireClassLoader, Object factoryInstance,
                                              boolean insideFork )
     {
@@ -322,6 +315,11 @@ public class SurefireReflector
                 }
             }
         }
+    }
+
+    public void setSystemExitTimeout( Object o, Integer systemExitTimeout )
+    {
+        invokeSetter( o, "setSystemExitTimeout", Integer.class, systemExitTimeout );
     }
 
     public void setDirectoryScannerParameters( Object o, DirectoryScannerParameters dirScannerParams )

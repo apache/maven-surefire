@@ -102,10 +102,15 @@ public class BooterDeserializer
 
         Shutdown shutdown = Shutdown.valueOf( properties.getProperty( SHUTDOWN ) );
 
+        String systemExitTimeoutAsString = properties.getProperty( SYSTEM_EXIT_TIMEOUT );
+        Integer systemExitTimeout =
+                systemExitTimeoutAsString == null ? null : Integer.valueOf( systemExitTimeoutAsString );
+
         return new ProviderConfiguration( dirScannerParams, runOrderParameters,
                                           properties.getBooleanProperty( FAILIFNOTESTS ), reporterConfiguration, testNg,
                                           testSuiteDefinition, properties.getProperties(), typeEncodedTestForFork,
-                                          preferTestsFromInStream, fromStrings( cli ), failFastCount, shutdown );
+                                          preferTestsFromInStream, fromStrings( cli ), failFastCount, shutdown,
+                                          systemExitTimeout );
     }
 
     public StartupConfiguration getProviderConfiguration()

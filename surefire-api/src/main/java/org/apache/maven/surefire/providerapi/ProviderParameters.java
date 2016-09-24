@@ -147,4 +147,6 @@ public interface ProviderParameters
     boolean isInsideFork();
 
     Shutdown getShutdown();
+
+    Integer getSystemExitTimeout();
 }

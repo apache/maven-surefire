@@ -49,7 +49,6 @@ import static org.apache.maven.surefire.booter.Shutdown.KILL;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_BYE;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_ERROR;
 import static org.apache.maven.surefire.booter.ForkingRunListener.encode;
-import static org.apache.maven.surefire.booter.SurefireReflector.createForkingReporterFactoryInCurrentClassLoader;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.setSystemProperties;
 import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
@@ -68,10 +67,11 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  */
 public final class ForkedBooter
 {
-    private static final long SYSTEM_EXIT_TIMEOUT_IN_SECONDS = 30;
+    private static final long DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS = 30;
     private static final long PING_TIMEOUT_IN_SECONDS = 20;
-
     private static final ScheduledExecutorService JVM_TERMINATOR = createJvmTerminator();
+
+    private static volatile long systemExitTimeoutInSeconds = DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS;
 
     /**
      * This method is invoked when Surefire is forked - this method parses and organizes the arguments passed to it and
@@ -96,7 +96,8 @@ public final class ForkedBooter
             BooterDeserializer booterDeserializer = new BooterDeserializer( stream );
             ProviderConfiguration providerConfiguration = booterDeserializer.deserialize();
             final StartupConfiguration startupConfiguration = booterDeserializer.getProviderConfiguration();
-
+            systemExitTimeoutInSeconds =
+                    providerConfiguration.systemExitTimeout( DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS );
             TypeEncodedValue forkedTestSet = providerConfiguration.getTestForFork();
             boolean readTestsFromInputStream = providerConfiguration.isReadTestsFromInStream();
 
@@ -255,13 +256,13 @@ public final class ForkedBooter
                                                                  PrintStream originalSystemOut )
     {
         final boolean trimStackTrace = providerConfiguration.getReporterConfiguration().isTrimStackTrace();
-        return createForkingReporterFactoryInCurrentClassLoader( trimStackTrace, originalSystemOut );
+        return new ForkingReporterFactory( trimStackTrace, originalSystemOut );
     }
 
     private static ScheduledExecutorService createJvmTerminator()
     {
         ThreadFactory threadFactory = newDaemonThreadFactory( "last-ditch-daemon-shutdown-thread-"
-                                                            + SYSTEM_EXIT_TIMEOUT_IN_SECONDS
+                                                            + systemExitTimeoutInSeconds
                                                             + "s" );
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor( 1, threadFactory );
         executor.setMaximumPoolSize( 1 );
@@ -278,7 +279,7 @@ public final class ForkedBooter
             {
                 Runtime.getRuntime().halt( returnCode );
             }
-        }, SYSTEM_EXIT_TIMEOUT_IN_SECONDS, SECONDS );
+        }, systemExitTimeoutInSeconds, SECONDS );
     }
 
     private static RunResult invokeProviderInSameClassLoader( Object testSet, Object factory,
@@ -325,6 +326,7 @@ public final class ForkedBooter
         bpf.setMainCliOptions( providerConfiguration.getMainCliOptions() );
         bpf.setSkipAfterFailureCount( providerConfiguration.getSkipAfterFailureCount() );
         bpf.setShutdown( providerConfiguration.getShutdown() );
+        bpf.setSystemExitTimeout( providerConfiguration.getSystemExitTimeout() );
         String providerClass = startupConfiguration.getActualClassName();
         return (SurefireProvider) instantiateOneArg( classLoader, providerClass, ProviderParameters.class, bpf );
     }
