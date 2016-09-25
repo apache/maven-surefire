@@ -323,4 +323,4 @@ Fork Options and Parallel Test Execution
 
  * <<<$\{surefire.forkNumber\}>>> is properly propagated within <<<workingDirectory>>>
  since ${project.artifactId}:2.19, more details in
- {{{https://jira.codehaus.org/browse/SUREFIRE-1136}SUREFIRE-1136}}
+ {{{https://issues.apache.org/jira/browse/SUREFIRE-1136}SUREFIRE-1136}}
