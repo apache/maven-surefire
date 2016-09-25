@@ -22,14 +22,14 @@ package org.apache.maven.plugin.surefire.report;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
 
+import static org.apache.maven.surefire.util.internal.StringUtils.NL;
+
 /**
  * @author Kristian Rosenvold
  */
 public class WrappedReportEntry
     implements ReportEntry
 {
-    private static final String NL = System.getProperty( "line.separator" );
-
     private final ReportEntry original;
 
     private final ReportEntryType reportEntryType;
