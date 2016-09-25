@@ -56,6 +56,7 @@ public class IntegrationTestMojo
     /**
      * The path representing project <em>JAR</em> file, if exists; Otherwise the directory containing generated
      * classes of the project being tested. This will be included after the test classes in the test classpath.
+     * Defaults to built artifact <em>JAR</em> file or ${project.build.outputDirectory}.
      */
     @Parameter
     private File classesDirectory;
