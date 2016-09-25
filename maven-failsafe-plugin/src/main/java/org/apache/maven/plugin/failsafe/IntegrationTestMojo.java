@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
@@ -58,8 +57,11 @@ public class IntegrationTestMojo
      * The path representing project <em>JAR</em> file, if exists; Otherwise the directory containing generated
      * classes of the project being tested. This will be included after the test classes in the test classpath.
      */
-    @Parameter( defaultValue = "${project.build.outputDirectory}" )
+    @Parameter
     private File classesDirectory;
+
+    @Parameter( readonly = true, defaultValue = "${project.build.outputDirectory}" )
+    private File defaultClassesDirectory;
 
     /**
      * Set this to "true" to skip running integration tests, but still compile them. Its use is NOT RECOMMENDED, but
@@ -388,6 +390,23 @@ public class IntegrationTestMojo
         }
     }
 
+    private boolean isJarArtifact( File artifactFile )
+    {
+        return artifactFile != null && artifactFile.isFile() && artifactFile.getName().toLowerCase().endsWith( ".jar" );
+    }
+
+    private static File toAbsoluteCanonical( File f )
+    {
+        try
+        {
+            return f == null ? null : f.getAbsoluteFile().getCanonicalFile();
+        }
+        catch ( IOException e )
+        {
+            throw new IllegalStateException( e.getLocalizedMessage(), e );
+        }
+    }
+
     @SuppressWarnings( "deprecation" )
     protected boolean isSkipExecution()
     {
@@ -481,18 +500,19 @@ public class IntegrationTestMojo
      */
     public File getClassesDirectory()
     {
-        Artifact artifact = getProject().getArtifact();
-        File artifactFile = artifact.getFile();
-
-        boolean useArtifactFile = artifactFile != null && artifactFile.isFile()
-            && artifactFile.getName().toLowerCase().endsWith( ".jar" );
-
-        return useArtifactFile ? artifactFile : classesDirectory;
+        File artifact = getProject().getArtifact().getFile();
+        boolean isDefaultClsDir = classesDirectory == null;
+        return isDefaultClsDir ? ( isJarArtifact( artifact ) ? artifact : defaultClassesDirectory ) : classesDirectory;
     }
 
     public void setClassesDirectory( File classesDirectory )
     {
-        this.classesDirectory = classesDirectory;
+        this.classesDirectory = toAbsoluteCanonical( classesDirectory );
+    }
+
+    public void setDefaultClassesDirectory( File defaultClassesDirectory )
+    {
+        this.defaultClassesDirectory = toAbsoluteCanonical( defaultClassesDirectory );
     }
 
     public File getReportsDirectory()
