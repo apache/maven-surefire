@@ -293,7 +293,6 @@ public class StatelessXmlReporter
 
         try
         {
-
             return new FileOutputStream( reportFile );
         }
         catch ( Exception e )
@@ -322,9 +321,9 @@ public class StatelessXmlReporter
     private static File getReportFile( ReportEntry report, File reportsDirectory, String reportNameSuffix )
     {
         String reportName = "TEST-" + report.getName();
-        return isNotBlank( reportNameSuffix )
-            ? new File( reportsDirectory, stripIllegalFilenameChars( reportName + "-" + reportNameSuffix + ".xml" ) )
-            : new File( reportsDirectory, stripIllegalFilenameChars( reportName + ".xml" ) );
+        String reportFileName =
+                isNotBlank( reportNameSuffix ) ? reportName + "-" + reportNameSuffix + ".xml" : reportName + ".xml";
+        return new File( reportsDirectory, stripIllegalFilenameChars( reportFileName ) );
     }
 
     private static void startTestElement( XMLWriter ppw, WrappedReportEntry report, String reportNameSuffix,
