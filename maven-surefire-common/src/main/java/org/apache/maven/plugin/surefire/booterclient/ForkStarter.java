@@ -716,7 +716,7 @@ public class ForkStarter
 
     private ScheduledFuture<?> triggerTimeoutCheck()
     {
-        return pingThreadScheduler.scheduleAtFixedRate( new Runnable()
+        return timeoutCheckScheduler.scheduleAtFixedRate( new Runnable()
         {
             public void run()
             {
