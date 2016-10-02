@@ -45,7 +45,7 @@ import java.util.StringTokenizer;
 
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType;
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
-import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
+import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 
 // CHECKSTYLE_OFF: LineLength
 /**
@@ -321,9 +321,8 @@ public class StatelessXmlReporter
     private static File getReportFile( ReportEntry report, File reportsDirectory, String reportNameSuffix )
     {
         String reportName = "TEST-" + report.getName();
-        String reportFileName =
-                isNotBlank( reportNameSuffix ) ? reportName + "-" + reportNameSuffix + ".xml" : reportName + ".xml";
-        return new File( reportsDirectory, stripIllegalFilenameChars( reportFileName ) );
+        String customizedReportName = isBlank( reportNameSuffix ) ? reportName : reportName + "-" + reportNameSuffix;
+        return new File( reportsDirectory, stripIllegalFilenameChars( customizedReportName + ".xml" ) );
     }
 
     private static void startTestElement( XMLWriter ppw, WrappedReportEntry report, String reportNameSuffix,
@@ -490,7 +489,6 @@ public class StatelessXmlReporter
                 xmlWriter.addAttribute( "value", extraEscape( value, true ) );
 
                 xmlWriter.endElement();
-
             }
         }
         xmlWriter.endElement();
@@ -506,14 +504,10 @@ public class StatelessXmlReporter
     private static String extraEscape( String message, boolean attribute )
     {
         // Someday convert to xml 1.1 which handles everything but 0 inside string
-        if ( !containsEscapesIllegalnXml10( message ) )
-        {
-            return message;
-        }
-        return escapeXml( message, attribute );
+        return containsEscapesIllegalXml10( message ) ? escapeXml( message, attribute ) : message;
     }
 
-    private static class EncodingOutputStream
+    private static final class EncodingOutputStream
         extends FilterOutputStream
     {
         private int c1;
@@ -563,7 +557,7 @@ public class StatelessXmlReporter
         }
     }
 
-    private static boolean containsEscapesIllegalnXml10( String message )
+    private static boolean containsEscapesIllegalXml10( String message )
     {
         int size = message.length();
         for ( int i = 0; i < size; i++ )
@@ -611,7 +605,7 @@ public class StatelessXmlReporter
         return sb.toString();
     }
 
-    private static class ByteConstantsHolder
+    private static final class ByteConstantsHolder
     {
         private static final byte[] CDATA_START_BYTES;
 
