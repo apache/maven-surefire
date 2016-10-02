@@ -143,6 +143,7 @@ public class SurefirePlugin
      * by <em>System.exit()</em>. Use this parameter in order to determine the timeout of terminating the process.
      * <a href="http://maven.apache.org/surefire/maven-surefire-plugin/examples/shutdown.html">see the documentation:
      * http://maven.apache.org/surefire/maven-surefire-plugin/examples/shutdown.html</a>
+     * Turns to default fallback value of 30 seconds if negative integer.
      *
      * @since 2.19.2
      */

@@ -182,6 +182,6 @@ public class ProviderConfiguration
 
     public long systemExitTimeout( long fallback )
     {
-        return systemExitTimeout == null ? fallback : systemExitTimeout;
+        return systemExitTimeout == null || systemExitTimeout < 0 ? fallback : systemExitTimeout;
     }
 }
