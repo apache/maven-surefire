@@ -1048,12 +1048,23 @@ public abstract class AbstractSurefireMojo
             }
 
             Properties originalSystemProperties = (Properties) System.getProperties().clone();
+            ForkStarter forkStarter = null;
             try
             {
-                ForkStarter forkStarter =
-                    createForkStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters,
-                                       getConsoleLogger() );
+                forkStarter = createForkStarter( provider, forkConfiguration, classLoaderConfiguration,
+                                                       runOrderParameters, getConsoleLogger() );
+
                 return forkStarter.run( effectiveProperties, scanResult );
+            }
+            catch ( SurefireExecutionException e )
+            {
+                forkStarter.killOrphanForks();
+                throw e;
+            }
+            catch ( SurefireBooterForkException e )
+            {
+                forkStarter.killOrphanForks();
+                throw e;
             }
             finally
             {

@@ -112,6 +112,14 @@ public class ForkClient
     {
     }
 
+    public void kill()
+    {
+        if ( !saidGoodBye )
+        {
+            notifiableTestStream.shutdown( KILL );
+        }
+    }
+
     /**
      * Called in concurrent Thread.
      */

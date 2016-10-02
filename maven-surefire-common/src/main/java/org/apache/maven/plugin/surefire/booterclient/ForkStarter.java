@@ -237,6 +237,14 @@ public class ForkStarter
         }
     }
 
+    public void killOrphanForks()
+    {
+        for ( ForkClient fork : currentForkClients )
+        {
+            fork.kill();
+        }
+    }
+
     private RunResult run( SurefireProperties effectiveSystemProperties, Map<String, String> providerProperties )
             throws SurefireBooterForkException
     {
