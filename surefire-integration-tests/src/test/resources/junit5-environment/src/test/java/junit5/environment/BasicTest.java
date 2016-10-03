@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.its;
+package junit5.environment;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,32 +19,19 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * Test basic default configuration, runs the JUnit 3 test in the src/test directory.
- *
- * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
- */
-public class EnvironmentVariableIT
-    extends SurefireJUnit4IntegrationTestCase
+public class BasicTest
 {
 
     @Test
-    public void environmentVariable()
+    public void testEnvVar()
     {
-        executeErrorFreeTest( "junit44-environment", 1 );
+        assertNotNull( System.getenv( "PATH" ) );
+        assertEquals( "foo", System.getenv( "DUMMY_ENV_VAR" ) );
     }
 
-    @Test
-    public void environmentVariableJunit5()
-    {
-        assumeJavaVersion( JAVA_1_8 );
-
-        executeErrorFreeTest( "junit5-environment", 1 );
-    }
 }
