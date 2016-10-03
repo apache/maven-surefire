@@ -34,7 +34,7 @@ import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaV
  * 
  * @author agudian
  */
-public class Junit47WithCucumberIT
+public class JUnit47WithCucumberIT
     extends SurefireJUnit4IntegrationTestCase
 {
 

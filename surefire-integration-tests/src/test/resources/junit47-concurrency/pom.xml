@@ -23,7 +23,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>it-parent</artifactId>
@@ -32,9 +31,9 @@
   </parent>
 
   <groupId>org.apache.maven.plugins.surefire</groupId>
-  <artifactId>junit47</artifactId>
+  <artifactId>junit47-concurrency</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>Test for JUnit 4.7</name>
+  <name>Concurrency test for JUnit 4.7</name>
 
   <dependencies>
     <dependency>
@@ -50,11 +49,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-          <configuration>
-              <parallel>methods</parallel>
-              <perCoreThreadCount>false</perCoreThreadCount>
-              <threadCount>3</threadCount>
-          </configuration>
+        <configuration>
+          <parallel>methods</parallel>
+          <perCoreThreadCount>false</perCoreThreadCount>
+          <threadCount>3</threadCount>
+        </configuration>
       </plugin>
     </plugins>
   </build>

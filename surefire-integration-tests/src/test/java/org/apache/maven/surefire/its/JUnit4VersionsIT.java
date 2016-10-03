@@ -37,7 +37,7 @@ import static org.junit.runners.Parameterized.*;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 @RunWith( Parameterized.class )
-public class Junit4VersionsIT
+public class JUnit4VersionsIT
     extends SurefireJUnit4IntegrationTestCase
 {
 
