@@ -11,7 +11,7 @@ public class CTest
         throws InterruptedException
     {
         // checking processros # due to very slow Windows Jenkins machines
-        TimeUnit.MILLISECONDS.sleep( Runtime.getRuntime().availableProcessors() == 1 ? 3000 : 1250 );
+        TimeUnit.MILLISECONDS.sleep( Runtime.getRuntime().availableProcessors() == 1 ? 9000 : 3750 );
     }
 
 }
