@@ -394,6 +394,7 @@ public class ForkClient
 
     public void close( boolean hadTimeout )
     {
+        // no op
     }
 
     public final boolean isSaidGoodBye()

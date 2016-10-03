@@ -567,7 +567,7 @@ public class ForkStarter
         log.debug( "Forking command line: " + cli );
 
         RunResult runResult = null;
-
+        SurefireBooterForkException booterForkException = null;
         try
         {
             CommandLineCallable future =
@@ -585,13 +585,17 @@ public class ForkStarter
             }
             else if ( result != SUCCESS )
             {
-                throw new SurefireBooterForkException( "Error occurred in starting fork, check output in log" );
+                booterForkException =
+                        new SurefireBooterForkException( "Error occurred in starting fork, check output in log" );
             }
         }
         catch ( CommandLineException e )
         {
             runResult = failure( forkClient.getDefaultReporterFactory().getGlobalRunStatistics().getRunResult(), e );
-            throw new SurefireBooterForkException( "Error while executing forked tests.", e.getCause() );
+            String cliErr = e.getLocalizedMessage();
+            Throwable cause = e.getCause();
+            booterForkException =
+                    new SurefireBooterForkException( "Error while executing forked tests.", cliErr, cause, runResult );
         }
         finally
         {
@@ -600,25 +604,36 @@ public class ForkStarter
             {
                 runResult = forkClient.getDefaultReporterFactory().getGlobalRunStatistics().getRunResult();
             }
+            forkClient.close( runResult.isTimeout() );
 
             if ( !runResult.isTimeout() )
             {
-                StackTraceWriter errorInFork = forkClient.getErrorInFork();
-                if ( errorInFork != null )
+                Throwable cause = booterForkException == null ? null : booterForkException.getCause();
+                String detail = booterForkException == null ? "" : "\n" + booterForkException.getMessage();
+
+                if ( forkClient.isErrorInFork() )
                 {
+                    StackTraceWriter errorInFork = forkClient.getErrorInFork();
                     // noinspection ThrowFromFinallyBlock
-                    throw new RuntimeException(
-                        "There was an error in the forked process\n" + errorInFork.writeTraceToString() );
+                    throw new RuntimeException( "There was an error in the forked process"
+                                                        + detail
+                                                        + '\n'
+                                                        + errorInFork.writeTraceToString(), cause );
                 }
                 if ( !forkClient.isSaidGoodBye() )
                 {
                     // noinspection ThrowFromFinallyBlock
                     throw new RuntimeException(
                         "The forked VM terminated without properly saying goodbye. VM crash or System.exit called?"
-                            + "\nCommand was " + cli.toString() );
+                            + "\nCommand was " + cli.toString() + detail, cause );
                 }
             }
-            forkClient.close( runResult.isTimeout() );
+
+            if ( booterForkException != null )
+            {
+                // noinspection ThrowFromFinallyBlock
+                throw booterForkException;
+            }
         }
 
         return runResult;
