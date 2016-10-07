@@ -23,12 +23,18 @@ import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Before;
 import org.junit.Test;
 
+import java.text.Format;
+import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
+import static java.lang.String.format;
+import static java.math.RoundingMode.DOWN;
+import static java.util.Locale.ROOT;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.endsWith;
@@ -40,11 +46,15 @@ import static org.junit.Assert.assertTrue;
  * @author Kristian Rosenvold
  */
 public class Surefire747MethodParallelWithSuiteCountIT
-    extends SurefireJUnit4IntegrationTestCase
+        extends SurefireJUnit4IntegrationTestCase
 {
+    // if you want to change his constant, change it in SuiteTest1.java and SuiteTest2.java as well
+    private static final int PERFORMANCE_TEST_MULTIPLICATION_FACTOR = 4;
+
+    private Format lowerScaleFormatter, noFractionalDigitsFormatter;
 
     private static Set<String> printTestLines( OutputValidator validator, String pattern )
-        throws VerificationException
+            throws VerificationException
     {
         Set<String> log = new TreeSet<String>( validator.loadLogLines() );
         for ( Iterator<String> it = log.iterator(); it.hasNext(); )
@@ -63,9 +73,25 @@ public class Surefire747MethodParallelWithSuiteCountIT
         return Integer.decode( logLine.split( "=" )[1] );
     }
 
+    @Before
+    public void init()
+    {
+        NumberFormat lowScaleFormatter = NumberFormat.getInstance( ROOT );
+        lowScaleFormatter.setRoundingMode( DOWN );
+        lowScaleFormatter.setMinimumFractionDigits( 1 );
+        lowScaleFormatter.setMaximumFractionDigits( 1 );
+        this.lowerScaleFormatter = lowScaleFormatter;
+
+        NumberFormat noFractionalDigitsFormatter = NumberFormat.getInstance( ROOT );
+        noFractionalDigitsFormatter.setRoundingMode( DOWN );
+        noFractionalDigitsFormatter.setMinimumFractionDigits( 0 );
+        noFractionalDigitsFormatter.setMaximumFractionDigits( 0 );
+        this.noFractionalDigitsFormatter = noFractionalDigitsFormatter;
+    }
+
     @Test
     public void testMethodsParallelWithSuite()
-        throws VerificationException
+            throws VerificationException
     {
         OutputValidator validator = unpack().executeTest().verifyErrorFree( 6 );
         Set<String> testLines = printTestLines( validator, "test finished after duration=" );
@@ -73,37 +99,45 @@ public class Surefire747MethodParallelWithSuiteCountIT
         for ( String testLine : testLines )
         {
             long duration = duration( testLine );
-            long min = 250, max = 750;
-            assertTrue( String.format( "duration %d should be between %d and %d ms", duration, min, max ),
-                        duration > min && duration < max );
+            long min = 250 * PERFORMANCE_TEST_MULTIPLICATION_FACTOR;
+            long max = 750 * PERFORMANCE_TEST_MULTIPLICATION_FACTOR;
+            assertTrue( format( "duration %d should be between %d and %d ms", duration, min, max ),
+                              duration > min && duration < max
+            );
         }
         Set<String> suiteLines = printTestLines( validator, "suite finished after duration=" );
         assertThat( suiteLines.size(), is( 1 ) );
         long duration = duration( suiteLines.iterator().next() );
-        long min = 750, max = 1250;
-        assertTrue( String.format( "duration %d should be between %d and %d ms", duration, min, max ),
-                    duration > min && duration < max );
+        long min = 750 * PERFORMANCE_TEST_MULTIPLICATION_FACTOR;
+        long max = 1250 * PERFORMANCE_TEST_MULTIPLICATION_FACTOR;
+        assertTrue( format( "duration %d should be between %d and %d ms", duration, min, max ),
+                          duration > min && duration < max
+        );
+
+        String delayMin = lowerScaleFormatter.format( 0.98 * PERFORMANCE_TEST_MULTIPLICATION_FACTOR * 0.5 );
+        String delayMax = noFractionalDigitsFormatter.format( PERFORMANCE_TEST_MULTIPLICATION_FACTOR * 0.5 ) + ".";
 
         for ( String line : validator.loadLogLines() )
         {
             if ( line.startsWith( "Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed:" ) )
             {
-                assertThat( line, anyOf( // 0.5 sec, the delta -1.0/+0.3 can be varying depending on CI jobs
-                        containsString( "Time elapsed: 0.4" ),
-                        containsString( "Time elapsed: 0.5" ),
-                        containsString( "Time elapsed: 0.6" ),
-                        containsString( "Time elapsed: 0.7" ),
-                        containsString( "Time elapsed: 0.8" ) ) );
+                assertThat( line, anyOf( // 1.9xx to 2.xxx can vary depending on CI jobs
+                                               containsString( "Time elapsed: " + delayMin ),
+                                               containsString( "Time elapsed: " + delayMax )
+                        )
+                );
                 assertThat( line, anyOf(
-                        endsWith(" s - in surefire747.SuiteTest1" ),
-                        endsWith(" s - in surefire747.SuiteTest2" ) ) );
+                                               endsWith( " s - in surefire747.SuiteTest1" ),
+                                               endsWith( " s - in surefire747.SuiteTest2" )
+                        )
+                );
             }
         }
     }
 
     @Test
     public void testClassesParallelWithSuite()
-        throws VerificationException
+            throws VerificationException
     {
         OutputValidator validator = unpack().parallelClasses().executeTest().verifyErrorFree( 6 );
         Set<String> testLines = printTestLines( validator, "test finished after duration=" );
@@ -111,16 +145,20 @@ public class Surefire747MethodParallelWithSuiteCountIT
         for ( String testLine : testLines )
         {
             long duration = duration( testLine );
-            long min = 1250, max = 1750;
-            assertTrue( String.format( "duration %d should be between %d and %d ms", duration, min, max ),
-                        duration > min && duration < max );
+            long min = 1450 * PERFORMANCE_TEST_MULTIPLICATION_FACTOR;
+            long max = 1750 * PERFORMANCE_TEST_MULTIPLICATION_FACTOR;
+            assertTrue( format( "duration %d should be between %d and %d ms", duration, min, max ),
+                              duration > min && duration < max
+            );
         }
         Set<String> suiteLines = printTestLines( validator, "suite finished after duration=" );
         assertThat( suiteLines.size(), is( 1 ) );
         long duration = duration( suiteLines.iterator().next() );
-        long min = 1250, max = 1750;
-        assertTrue( String.format( "duration %d should be between %d and %d ms", duration, min, max ),
-                    duration > min && duration < max );
+        long min = 1450 * PERFORMANCE_TEST_MULTIPLICATION_FACTOR;
+        long max = 1750 * PERFORMANCE_TEST_MULTIPLICATION_FACTOR;
+        assertTrue( format( "duration %d should be between %d and %d ms", duration, min, max ),
+                          duration > min && duration < max
+        );
     }
 
     public SurefireLauncher unpack()
