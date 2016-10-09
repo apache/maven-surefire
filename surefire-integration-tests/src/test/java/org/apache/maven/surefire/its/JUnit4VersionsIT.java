@@ -83,6 +83,15 @@ public class JUnit4VersionsIT
     }
 
     @Test
+    public void test412M2()
+            throws Exception
+    {
+        assumeJavaVersion( JAVA_1_8 );
+
+        runJUnitTest( "4.12.0-M2" );
+    }
+
+    @Test
     public void test500M2()
         throws Exception
     {
@@ -99,10 +108,14 @@ public class JUnit4VersionsIT
 
     private String getProfile( String version )
     {
-        if ( version.startsWith( "4" ) )
+        if ( version.startsWith( "4.12" ) )
         {
-            return "junit4";
+            return "junit5-vintage";
         }
-        return "junit5";
+        else if ( version.startsWith( "5" ) )
+        {
+            return "junit5-jupiter";
+        }
+        return "junit4";
     }
 }
