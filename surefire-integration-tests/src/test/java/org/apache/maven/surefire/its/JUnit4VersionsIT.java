@@ -31,6 +31,9 @@ import org.junit.runners.Parameterized.Parameter;
 
 import static org.junit.runners.Parameterized.*;
 
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
+
 /**
  * Basic suite test using all known versions of JUnit 4.x
  *
@@ -79,9 +82,27 @@ public class JUnit4VersionsIT
         runJUnitTest( version );
     }
 
+    @Test
+    public void test500M2()
+        throws Exception
+    {
+        assumeJavaVersion( JAVA_1_8 );
+
+        runJUnitTest( "5.0.0-M2" );
+    }
+
     public void runJUnitTest( String version )
         throws Exception
     {
-        unpack().setJUnitVersion( version ).executeTest().verifyErrorFree( 1 );
+        unpack().setJUnitVersion( version ).activateProfile( getProfile( version ) ).executeTest().verifyErrorFree( 1 );
+    }
+
+    private String getProfile( String version )
+    {
+        if ( version.startsWith( "4" ) )
+        {
+            return "junit4";
+        }
+        return "junit5";
     }
 }
