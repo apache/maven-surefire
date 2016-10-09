@@ -28,9 +28,27 @@
   <version>1.0-SNAPSHOT</version>
   <name>Test for JUnit 4</name>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
   <profiles>
     <profile>
       <id>junit4</id>
+
+      <properties>
+        <java.version>1.5</java.version>
+      </properties>
+
       <dependencies>
         <dependency>
           <groupId>junit</groupId>
@@ -42,14 +60,6 @@
 
       <build>
         <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <source>1.5</source>
-              <target>1.5</target>
-            </configuration>
-          </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
@@ -77,23 +87,10 @@
           <version>${junit.jupiter.version}</version>
           <scope>test</scope>
         </dependency>
-        <dependency>
-          <groupId>org.junit.vintage</groupId>
-          <artifactId>junit-vintage-engine</artifactId>
-          <version>${junit.vintage.version}</version>
-          <scope>test</scope>
-        </dependency>
       </dependencies>
 
       <build>
         <plugins>
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <source>${java.version}</source>
-              <target>${java.version}</target>
-            </configuration>
-          </plugin>
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <version>${surefire.version}</version>
@@ -129,13 +126,6 @@
 
       <build>
         <plugins>
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <source>${java.version}</source>
-              <target>${java.version}</target>
-            </configuration>
-          </plugin>
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <version>${surefire.version}</version>
