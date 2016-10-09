@@ -42,8 +42,9 @@ public class Junit4VersionsIT
 {
 
     @Parameters( name = "{index}: JUnit {0}" )
-    public static Collection<Object[]> junitVersions() {
-        return Arrays.asList( new Object[][]{
+    public static Collection<Object[]> junitVersions()
+    {
+        return Arrays.asList( new Object[][] {
                 { "4.0" },
                 { "4.1" },
                 { "4.2" },
@@ -52,7 +53,14 @@ public class Junit4VersionsIT
                 { "4.4" },
                 { "4.5" },
                 { "4.6" },
-                { "4.7" }
+                { "4.7" },
+                { "4.8" },
+                { "4.8.1" },
+                { "4.8.2" },
+                { "4.9" },
+                { "4.10" },
+                { "4.11" },
+                { "4.12" }
         } );
     }
 
