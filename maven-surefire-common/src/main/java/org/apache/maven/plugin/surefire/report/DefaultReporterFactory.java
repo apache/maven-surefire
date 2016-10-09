@@ -20,9 +20,9 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
-import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
+import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.shared.utils.logging.MessageBuilder;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 import static org.apache.maven.plugin.surefire.report.ConsoleReporter.PLAIN;
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.error;
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.failure;
@@ -64,7 +65,6 @@ public class DefaultReporterFactory
 {
     private final StartupReportConfiguration reportConfiguration;
     private final ConsoleLogger consoleLogger;
-    private final StatisticsReporter statisticsReporter;
     private final Collection<TestSetRunListener> listeners;
 
     private RunStatistics globalStats = new RunStatistics();
@@ -82,24 +82,52 @@ public class DefaultReporterFactory
     {
         this.reportConfiguration = reportConfiguration;
         this.consoleLogger = consoleLogger;
-        statisticsReporter = reportConfiguration.getStatisticsReporter();
         listeners = new ConcurrentLinkedQueue<TestSetRunListener>();
     }
 
     public RunListener createReporter()
     {
-        ConsoleReporter consoleReporter = shouldReportToConsole() ? new ConsoleReporter( consoleLogger ) : null;
         TestSetRunListener testSetRunListener =
-            new TestSetRunListener( consoleReporter,
-                                    reportConfiguration.instantiateFileReporter(),
-                                    reportConfiguration.instantiateStatelessXmlReporter(),
-                                    reportConfiguration.instantiateConsoleOutputFileReporter(),
-                                    statisticsReporter,
+            new TestSetRunListener( createConsoleReporter(),
+                                    createFileReporter(),
+                                    createSimpleXMLReporter(),
+                                    createConsoleOutputReceiver(),
+                                    createStatisticsReporter(),
                                     reportConfiguration.isTrimStackTrace(),
                                     PLAIN.equals( reportConfiguration.getReportFormat() ),
                                     reportConfiguration.isBriefOrPlainFormat() );
         addListener( testSetRunListener );
         return testSetRunListener;
+    }
+
+    private ConsoleReporter createConsoleReporter()
+    {
+        return shouldReportToConsole() ? new ConsoleReporter( consoleLogger ) : NullConsoleReporter.INSTANCE;
+    }
+
+    private FileReporter createFileReporter()
+    {
+        final FileReporter fileReporter = reportConfiguration.instantiateFileReporter();
+        return defaultIfNull( fileReporter, NullFileReporter.INSTANCE );
+    }
+
+    private StatelessXmlReporter createSimpleXMLReporter()
+    {
+        final StatelessXmlReporter xmlReporter = reportConfiguration.instantiateStatelessXmlReporter();
+        return defaultIfNull( xmlReporter, NullStatelessXmlReporter.INSTANCE );
+    }
+
+    private TestcycleConsoleOutputReceiver createConsoleOutputReceiver()
+    {
+        final TestcycleConsoleOutputReceiver consoleOutputReceiver =
+                reportConfiguration.instantiateConsoleOutputFileReporter();
+        return defaultIfNull( consoleOutputReceiver, NullConsoleOutputReceiver.INSTANCE );
+    }
+
+    private StatisticsReporter createStatisticsReporter()
+    {
+        final StatisticsReporter statisticsReporter = reportConfiguration.getStatisticsReporter();
+        return defaultIfNull( statisticsReporter, NullStatisticsReporter.INSTANCE );
     }
 
     private boolean shouldReportToConsole()

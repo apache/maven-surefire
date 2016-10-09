@@ -28,7 +28,7 @@ import static org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMap.fr
 /**
  * @author Kristian Rosenvold
  */
-public final class StatisticsReporter
+public class StatisticsReporter
 {
     private final RunEntryStatisticsMap existing;
 
@@ -38,9 +38,14 @@ public final class StatisticsReporter
 
     public StatisticsReporter( File dataFile )
     {
+        this( dataFile, fromFile( dataFile ), new RunEntryStatisticsMap() );
+    }
+
+    protected StatisticsReporter( File dataFile, RunEntryStatisticsMap existing, RunEntryStatisticsMap newRestuls )
+    {
         this.dataFile = dataFile;
-        existing = fromFile( dataFile );
-        newResults = new RunEntryStatisticsMap();
+        this.existing = existing;
+        this.newResults = newRestuls;
     }
 
     public synchronized void testSetCompleted()
