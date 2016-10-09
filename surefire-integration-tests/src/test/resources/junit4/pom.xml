@@ -28,11 +28,6 @@
   <version>1.0-SNAPSHOT</version>
   <name>Test for JUnit 4</name>
 
-
-  <properties>
-    <junitVersion>4.4</junitVersion>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
