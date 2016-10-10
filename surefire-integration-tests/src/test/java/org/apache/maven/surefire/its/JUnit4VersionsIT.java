@@ -29,10 +29,26 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 
+import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_10;
+import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_11;
+import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_12;
+import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_8;
+import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_8_1;
+import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_8_2;
+import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_9;
 import static org.junit.runners.Parameterized.*;
 
-import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
+import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_0;
+import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_1;
+import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_2;
+import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_3;
+import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_3_1;
+import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_4;
+import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_5;
+import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_6;
+import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_7;
+import static org.apache.maven.surefire.its.JUnitVersion.JUPITER_5_0_0_M2;
+import static org.apache.maven.surefire.its.JUnitVersion.VINTAGE_4_12_0_M2;
 
 /**
  * Basic suite test using all known versions of JUnit 4.x
@@ -48,31 +64,33 @@ public class JUnit4VersionsIT
     public static Collection<Object[]> junitVersions()
     {
         return Arrays.asList( new Object[][] {
-                { "4.0" },
-                { "4.1" },
-                { "4.2" },
-                { "4.3" },
-                { "4.3.1" },
-                { "4.4" },
-                { "4.5" },
-                { "4.6" },
-                { "4.7" },
-                { "4.8" },
-                { "4.8.1" },
-                { "4.8.2" },
-                { "4.9" },
-                { "4.10" },
-                { "4.11" },
-                { "4.12" }
+                { JUNIT_4_0 },
+                { JUNIT_4_1 },
+                { JUNIT_4_2 },
+                { JUNIT_4_3 },
+                { JUNIT_4_3_1 },
+                { JUNIT_4_4 },
+                { JUNIT_4_5 },
+                { JUNIT_4_6 },
+                { JUNIT_4_7 },
+                { JUNIT_4_8 },
+                { JUNIT_4_8_1 },
+                { JUNIT_4_8_2 },
+                { JUNIT_4_9 },
+                { JUNIT_4_10 },
+                { JUNIT_4_11 },
+                { JUNIT_4_12 },
+                { VINTAGE_4_12_0_M2 },
+                { JUPITER_5_0_0_M2 }
         } );
     }
 
     @Parameter
-    public String version;
+    public JUnitVersion version;
 
     private SurefireLauncher unpack()
     {
-        return unpack( "/junit4", version );
+        return unpack( "/junit4", version.toString() );
     }
 
     @Test
@@ -82,40 +100,10 @@ public class JUnit4VersionsIT
         runJUnitTest( version );
     }
 
-    @Test
-    public void test412M2()
-            throws Exception
-    {
-        assumeJavaVersion( JAVA_1_8 );
-
-        runJUnitTest( "4.12.0-M2" );
-    }
-
-    @Test
-    public void test500M2()
+    private void runJUnitTest( JUnitVersion version )
         throws Exception
     {
-        assumeJavaVersion( JAVA_1_8 );
-
-        runJUnitTest( "5.0.0-M2" );
+        version.configure( unpack() ).executeTest().verifyErrorFree( 1 );
     }
 
-    public void runJUnitTest( String version )
-        throws Exception
-    {
-        unpack().setJUnitVersion( version ).activateProfile( getProfile( version ) ).executeTest().verifyErrorFree( 1 );
-    }
-
-    private String getProfile( String version )
-    {
-        if ( version.startsWith( "4.12" ) )
-        {
-            return "junit5-vintage";
-        }
-        else if ( version.startsWith( "5" ) )
-        {
-            return "junit5-jupiter";
-        }
-        return "junit4";
-    }
 }
