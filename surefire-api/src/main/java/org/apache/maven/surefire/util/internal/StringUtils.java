@@ -55,7 +55,7 @@ import java.util.StringTokenizer;
  *               NOTE: This class is not part of any api and is public purely for technical reasons !
  * @since 1.0
  */
-public class StringUtils
+public final class StringUtils
 {
     public static final String NL = System.getProperty( "line.separator" );
 
@@ -67,6 +67,11 @@ public class StringUtils
 
     // 8-bit charset Latin-1
     public static final String FORK_STREAM_CHARSET_NAME = "ISO-8859-1";
+
+    private StringUtils()
+    {
+        throw new IllegalStateException( "no instantiable constructor" );
+    }
 
     public static String[] split( String text, String separator )
     {
@@ -377,27 +382,5 @@ public class StringUtils
         {
            throw new RuntimeException( "The JVM must support Charset " + FORK_STREAM_CHARSET_NAME, e );
         }
-    }
-
-    /*
-    * In JDK7 use java.util.Objects instead.
-    * todo
-    * */
-    public static <T> T requireNonNull( T obj, String message )
-    {
-        if ( obj == null )
-        {
-            throw new NullPointerException( message );
-        }
-        return obj;
-    }
-
-    /*
-    * In JDK7 use java.util.Objects instead.
-    * todo
-    * */
-    public static <T> T requireNonNull( T obj )
-    {
-        return requireNonNull( obj, null );
     }
 }

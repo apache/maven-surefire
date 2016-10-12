@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire.report;
 
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.Level;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.shared.utils.logging.MessageBuilder;
@@ -28,7 +29,6 @@ import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.plugin.surefire.log.api.Level;
 import org.apache.maven.surefire.suite.RunResult;
 
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
+import static org.apache.maven.plugin.surefire.log.api.Level.resolveLevel;
 import static org.apache.maven.plugin.surefire.report.ConsoleReporter.PLAIN;
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.error;
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.failure;
@@ -50,8 +50,8 @@ import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.Tes
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
-import static org.apache.maven.plugin.surefire.log.api.Level.resolveLevel;
 import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
+import static org.apache.maven.surefire.util.internal.ObjectUtils.useNonNull;
 
 /**
  * Provides reporting modules on the plugin side.
@@ -108,26 +108,26 @@ public class DefaultReporterFactory
     private FileReporter createFileReporter()
     {
         final FileReporter fileReporter = reportConfiguration.instantiateFileReporter();
-        return defaultIfNull( fileReporter, NullFileReporter.INSTANCE );
+        return useNonNull( fileReporter, NullFileReporter.INSTANCE );
     }
 
     private StatelessXmlReporter createSimpleXMLReporter()
     {
         final StatelessXmlReporter xmlReporter = reportConfiguration.instantiateStatelessXmlReporter();
-        return defaultIfNull( xmlReporter, NullStatelessXmlReporter.INSTANCE );
+        return useNonNull( xmlReporter, NullStatelessXmlReporter.INSTANCE );
     }
 
     private TestcycleConsoleOutputReceiver createConsoleOutputReceiver()
     {
         final TestcycleConsoleOutputReceiver consoleOutputReceiver =
                 reportConfiguration.instantiateConsoleOutputFileReporter();
-        return defaultIfNull( consoleOutputReceiver, NullConsoleOutputReceiver.INSTANCE );
+        return useNonNull( consoleOutputReceiver, NullConsoleOutputReceiver.INSTANCE );
     }
 
     private StatisticsReporter createStatisticsReporter()
     {
         final StatisticsReporter statisticsReporter = reportConfiguration.getStatisticsReporter();
-        return defaultIfNull( statisticsReporter, NullStatisticsReporter.INSTANCE );
+        return useNonNull( statisticsReporter, NullStatisticsReporter.INSTANCE );
     }
 
     private boolean shouldReportToConsole()

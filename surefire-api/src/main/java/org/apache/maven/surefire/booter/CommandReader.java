@@ -52,7 +52,7 @@ import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDae
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
-import static org.apache.maven.surefire.util.internal.StringUtils.requireNonNull;
+import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
 
 /**
  * Reader of commands coming from plugin(master) process.

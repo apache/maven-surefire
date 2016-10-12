@@ -96,7 +96,7 @@ import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDown
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThread;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
 import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
-import static org.apache.maven.surefire.util.internal.StringUtils.requireNonNull;
+import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
 
 /**
  * Starts the fork or runs in-process.
