@@ -138,6 +138,19 @@ public class SurefirePlugin
     private int forkedProcessTimeoutInSeconds;
 
     /**
+     * Forked process is normally terminated without any significant delay after given tests have completed.
+     * If the particular tests started non-daemon Thread(s), the process hangs instead of been properly terminated
+     * by <em>System.exit()</em>. Use this parameter in order to determine the timeout of terminating the process.
+     * <a href="http://maven.apache.org/surefire/maven-surefire-plugin/examples/shutdown.html">see the documentation:
+     * http://maven.apache.org/surefire/maven-surefire-plugin/examples/shutdown.html</a>
+     * Turns to default fallback value of 30 seconds if negative integer.
+     *
+     * @since 2.19.2
+     */
+    @Parameter( property = "surefire.exitTimeout", defaultValue = "30" )
+    private int forkedProcessExitTimeoutInSeconds;
+
+    /**
      * Stop executing queued parallel JUnit tests after a certain number of seconds.
      * <br/>
      * Example values: "3.5", "4"<br/>
@@ -534,6 +547,16 @@ public class SurefirePlugin
     public void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds )
     {
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
+    }
+
+    public int getForkedProcessExitTimeoutInSeconds()
+    {
+        return forkedProcessExitTimeoutInSeconds;
+    }
+
+    public void setForkedProcessExitTimeoutInSeconds( int forkedProcessExitTimeoutInSeconds )
+    {
+        this.forkedProcessExitTimeoutInSeconds = forkedProcessExitTimeoutInSeconds;
     }
 
     public double getParallelTestsTimeoutInSeconds()

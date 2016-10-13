@@ -25,6 +25,8 @@ import java.io.IOException;
 
 import org.apache.maven.surefire.report.ReportEntry;
 
+import static org.apache.maven.plugin.surefire.report.FileReporter.getReportFile;
+
 /**
  * Surefire output consumer proxy that writes test output to a {@link java.io.File} for each test suite.
  * <p/>
@@ -88,8 +90,7 @@ public class ConsoleOutputFileReporter
                     //noinspection ResultOfMethodCallIgnored
                     reportsDirectory.mkdirs();
                 }
-                File file =
-                    FileReporter.getReportFile( reportsDirectory, reportEntryName, reportNameSuffix, "-output.txt" );
+                File file = getReportFile( reportsDirectory, reportEntryName, reportNameSuffix, "-output.txt" );
                 fileOutputStream = new FileOutputStream( file );
             }
             fileOutputStream.write( buf, off, len );

@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
@@ -88,50 +88,32 @@ public class TestSetRunListener
 
     public void debug( String message )
     {
-        if ( consoleReporter != null )
-        {
-            consoleReporter.getConsoleLogger().debug( trimTrailingNewLine( message ) );
-        }
+        consoleReporter.getConsoleLogger().debug( trimTrailingNewLine( message ) );
     }
 
     public void info( String message )
     {
-        if ( consoleReporter != null )
-        {
-            consoleReporter.getConsoleLogger().info( trimTrailingNewLine( message ) );
-        }
+        consoleReporter.getConsoleLogger().info( trimTrailingNewLine( message ) );
     }
 
     public void warning( String message )
     {
-        if ( consoleReporter != null )
-        {
-            consoleReporter.getConsoleLogger().warning( trimTrailingNewLine( message ) );
-        }
+        consoleReporter.getConsoleLogger().warning( trimTrailingNewLine( message ) );
     }
 
     public void error( String message )
     {
-        if ( consoleReporter != null )
-        {
-            consoleReporter.getConsoleLogger().error( trimTrailingNewLine( message ) );
-        }
+        consoleReporter.getConsoleLogger().error( trimTrailingNewLine( message ) );
     }
 
     public void error( String message, Throwable t )
     {
-        if ( consoleReporter != null )
-        {
-            consoleReporter.getConsoleLogger().error( message, t );
-        }
+        consoleReporter.getConsoleLogger().error( message, t );
     }
 
     public void error( Throwable t )
     {
-        if ( consoleReporter != null )
-        {
-            consoleReporter.getConsoleLogger().error( t );
-        }
+        consoleReporter.getConsoleLogger().error( t );
     }
 
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
@@ -157,10 +139,7 @@ public class TestSetRunListener
     public void testSetStarting( ReportEntry report )
     {
         detailsForThis.testSetStart();
-        if ( consoleReporter != null )
-        {
-            consoleReporter.testSetStarting( report );
-        }
+        consoleReporter.testSetStarting( report );
         consoleOutputReceiver.testSetStarting( report );
     }
 
@@ -175,27 +154,12 @@ public class TestSetRunListener
         final WrappedReportEntry wrap = wrapTestSet( report );
         final List<String> testResults =
                 briefOrPlainFormat ? detailsForThis.getTestResults() : Collections.<String>emptyList();
-        if ( fileReporter != null )
-        {
-            fileReporter.testSetCompleted( wrap, detailsForThis, testResults );
-        }
-        if ( simpleXMLReporter != null )
-        {
-            simpleXMLReporter.testSetCompleted( wrap, detailsForThis );
-        }
-        if ( statisticsReporter != null )
-        {
-            statisticsReporter.testSetCompleted();
-        }
-        if ( consoleReporter != null )
-        {
-            consoleReporter.testSetCompleted( wrap, detailsForThis, testResults );
-        }
+        fileReporter.testSetCompleted( wrap, detailsForThis, testResults );
+        simpleXMLReporter.testSetCompleted( wrap, detailsForThis );
+        statisticsReporter.testSetCompleted();
+        consoleReporter.testSetCompleted( wrap, detailsForThis, testResults );
         consoleOutputReceiver.testSetCompleted( wrap );
-        if ( consoleReporter != null )
-        {
-            consoleReporter.reset();
-        }
+        consoleReporter.reset();
 
         wrap.getStdout().free();
         wrap.getStdErr().free();
@@ -218,10 +182,7 @@ public class TestSetRunListener
     {
         WrappedReportEntry wrapped = wrap( reportEntry, SUCCESS );
         detailsForThis.testSucceeded( wrapped );
-        if ( statisticsReporter != null )
-        {
-            statisticsReporter.testSucceeded( reportEntry );
-        }
+        statisticsReporter.testSucceeded( reportEntry );
         clearCapture();
     }
 
@@ -229,10 +190,7 @@ public class TestSetRunListener
     {
         WrappedReportEntry wrapped = wrap( reportEntry, ERROR );
         detailsForThis.testError( wrapped );
-        if ( statisticsReporter != null )
-        {
-            statisticsReporter.testError( reportEntry );
-        }
+        statisticsReporter.testError( reportEntry );
         clearCapture();
     }
 
@@ -240,10 +198,7 @@ public class TestSetRunListener
     {
         WrappedReportEntry wrapped = wrap( reportEntry, FAILURE );
         detailsForThis.testFailure( wrapped );
-        if ( statisticsReporter != null )
-        {
-            statisticsReporter.testFailed( reportEntry );
-        }
+        statisticsReporter.testFailed( reportEntry );
         clearCapture();
     }
 
@@ -256,10 +211,7 @@ public class TestSetRunListener
         WrappedReportEntry wrapped = wrap( reportEntry, SKIPPED );
 
         detailsForThis.testSkipped( wrapped );
-        if ( statisticsReporter != null )
-        {
-            statisticsReporter.testSkipped( reportEntry );
-        }
+        statisticsReporter.testSkipped( reportEntry );
         clearCapture();
     }
 
@@ -303,10 +255,7 @@ public class TestSetRunListener
 
     public void close()
     {
-        if ( consoleOutputReceiver != null )
-        {
-            consoleOutputReceiver.close();
-        }
+        consoleOutputReceiver.close();
     }
 
     public void  addTestMethodStats()

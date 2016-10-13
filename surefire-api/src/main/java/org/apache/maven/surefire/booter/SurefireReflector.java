@@ -20,7 +20,6 @@ package org.apache.maven.surefire.booter;
  */
 
 import java.io.File;
-import java.io.PrintStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -236,11 +235,10 @@ public class SurefireReflector
             return null;
         }
         //Can't use the constructor with the RunOrder parameter. Using it causes some integration tests to fail.
-        Class<?>[] arguments = { String.class, String.class };
+        Class<?>[] arguments = { String.class, File.class };
         Constructor constructor = getConstructor( this.runOrderParameters, arguments );
         File runStatisticsFile = runOrderParameters.getRunStatisticsFile();
-        return newInstance( constructor, RunOrder.asString( runOrderParameters.getRunOrder() ),
-                            runStatisticsFile == null ? null : runStatisticsFile.getAbsolutePath() );
+        return newInstance( constructor, RunOrder.asString( runOrderParameters.getRunOrder() ), runStatisticsFile );
     }
 
     Object createTestArtifactInfo( TestArtifactInfo testArtifactInfo )
@@ -254,17 +252,10 @@ public class SurefireReflector
         return newInstance( constructor, testArtifactInfo.getVersion(), testArtifactInfo.getClassifier() );
     }
 
-
     Object createReporterConfiguration( ReporterConfiguration reporterConfig )
     {
         Constructor constructor = getConstructor( reporterConfiguration, File.class, boolean.class );
         return newInstance( constructor, reporterConfig.getReportsDirectory(), reporterConfig.isTrimStackTrace() );
-    }
-
-    public static ReporterFactory createForkingReporterFactoryInCurrentClassLoader( boolean trimStackTrace,
-                                                                                    PrintStream originalSystemOut )
-    {
-        return new ForkingReporterFactory( trimStackTrace, originalSystemOut );
     }
 
     public Object createBooterConfiguration( ClassLoader surefireClassLoader, Object factoryInstance,
@@ -322,6 +313,11 @@ public class SurefireReflector
                 }
             }
         }
+    }
+
+    public void setSystemExitTimeout( Object o, Integer systemExitTimeout )
+    {
+        invokeSetter( o, "setSystemExitTimeout", Integer.class, systemExitTimeout );
     }
 
     public void setDirectoryScannerParameters( Object o, DirectoryScannerParameters dirScannerParams )

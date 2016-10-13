@@ -77,6 +77,8 @@ public class BaseProviderFactory
 
     private Shutdown shutdown;
 
+    private Integer systemExitTimeout;
+
     public BaseProviderFactory( ReporterFactory reporterFactory, boolean insideFork )
     {
         this.reporterFactory = reporterFactory;
@@ -220,5 +222,15 @@ public class BaseProviderFactory
     public void setShutdown( Shutdown shutdown )
     {
         this.shutdown = shutdown;
+    }
+
+    public Integer getSystemExitTimeout()
+    {
+        return systemExitTimeout;
+    }
+
+    public void setSystemExitTimeout( Integer systemExitTimeout )
+    {
+        this.systemExitTimeout = systemExitTimeout;
     }
 }

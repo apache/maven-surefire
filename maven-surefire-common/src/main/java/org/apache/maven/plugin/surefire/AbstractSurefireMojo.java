@@ -1029,7 +1029,7 @@ public abstract class AbstractSurefireMojo
         ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration();
         provider.addProviderProperties();
         RunOrderParameters runOrderParameters =
-            new RunOrderParameters( getRunOrder(), getStatisticsFileName( getConfigChecksum() ) );
+            new RunOrderParameters( getRunOrder(), getStatisticsFile( getConfigChecksum() ) );
 
         if ( isNotForking() )
         {
@@ -1048,12 +1048,23 @@ public abstract class AbstractSurefireMojo
             }
 
             Properties originalSystemProperties = (Properties) System.getProperties().clone();
+            ForkStarter forkStarter = null;
             try
             {
-                ForkStarter forkStarter =
-                    createForkStarter( provider, forkConfiguration, classLoaderConfiguration, runOrderParameters,
-                                       getConsoleLogger() );
+                forkStarter = createForkStarter( provider, forkConfiguration, classLoaderConfiguration,
+                                                       runOrderParameters, getConsoleLogger() );
+
                 return forkStarter.run( effectiveProperties, scanResult );
+            }
+            catch ( SurefireExecutionException e )
+            {
+                forkStarter.killOrphanForks();
+                throw e;
+            }
+            catch ( SurefireBooterForkException e )
+            {
+                forkStarter.killOrphanForks();
+                throw e;
             }
             finally
             {
@@ -1543,7 +1554,8 @@ public abstract class AbstractSurefireMojo
                                           testNg, // Not really used in provider. Limited to de/serializer.
                                           testSuiteDefinition, providerProperties, null,
                                           false, cli, getSkipAfterFailureCount(),
-                                          Shutdown.parameterOf( getShutdown() ) );
+                                          Shutdown.parameterOf( getShutdown() ),
+                                          getForkedProcessExitTimeoutInSeconds() );
     }
 
     private static Map<String, String> toStringProperties( Properties properties )
@@ -1561,10 +1573,9 @@ public abstract class AbstractSurefireMojo
         return h;
     }
 
-    public String getStatisticsFileName( String configurationHash )
+    public File getStatisticsFile( String configurationHash )
     {
-        return getReportsDirectory().getParentFile().getParentFile() + File.separator + ".surefire-"
-            + configurationHash;
+        return new File( getBasedir(), ".surefire-" + configurationHash );
     }
 
     StartupConfiguration createStartupConfiguration( ProviderInfo provider,
@@ -1630,8 +1641,8 @@ public abstract class AbstractSurefireMojo
         return new StartupReportConfiguration( isUseFile(), isPrintSummary(), getReportFormat(),
                                                isRedirectTestOutputToFile(), isDisableXmlReport(),
                                                getReportsDirectory(), isTrimStackTrace(), getReportNameSuffix(),
-                                               configChecksum, requiresRunHistory(), getRerunFailingTestsCount(),
-                                               getReportSchemaLocation() );
+                                               getStatisticsFile( configChecksum ), requiresRunHistory(),
+                                               getRerunFailingTestsCount(), getReportSchemaLocation() );
     }
 
     private boolean isSpecificTestSpecified()
@@ -2086,9 +2097,10 @@ public abstract class AbstractSurefireMojo
         checksum.add( getFailIfNoTests() );
         checksum.add( getRunOrder() );
         checksum.add( getDependenciesToScan() );
+        checksum.add( getForkedProcessExitTimeoutInSeconds() );
+        checksum.add( getRerunFailingTestsCount() );
         addPluginSpecificChecksumItems( checksum );
         return checksum.getSha1();
-
     }
 
     protected void addPluginSpecificChecksumItems( ChecksumCalculator checksum )

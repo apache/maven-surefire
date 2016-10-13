@@ -20,15 +20,15 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
-import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.Level;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
+import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.shared.utils.logging.MessageBuilder;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.plugin.surefire.log.api.Level;
 import org.apache.maven.surefire.suite.RunResult;
 
 import java.util.ArrayList;
@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import static org.apache.maven.plugin.surefire.log.api.Level.resolveLevel;
 import static org.apache.maven.plugin.surefire.report.ConsoleReporter.PLAIN;
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.error;
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.failure;
@@ -49,8 +50,8 @@ import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.Tes
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
-import static org.apache.maven.plugin.surefire.log.api.Level.resolveLevel;
 import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
+import static org.apache.maven.surefire.util.internal.ObjectUtils.useNonNull;
 
 /**
  * Provides reporting modules on the plugin side.
@@ -64,7 +65,6 @@ public class DefaultReporterFactory
 {
     private final StartupReportConfiguration reportConfiguration;
     private final ConsoleLogger consoleLogger;
-    private final StatisticsReporter statisticsReporter;
     private final Collection<TestSetRunListener> listeners;
 
     private RunStatistics globalStats = new RunStatistics();
@@ -82,24 +82,52 @@ public class DefaultReporterFactory
     {
         this.reportConfiguration = reportConfiguration;
         this.consoleLogger = consoleLogger;
-        statisticsReporter = reportConfiguration.getStatisticsReporter();
         listeners = new ConcurrentLinkedQueue<TestSetRunListener>();
     }
 
     public RunListener createReporter()
     {
-        ConsoleReporter consoleReporter = shouldReportToConsole() ? new ConsoleReporter( consoleLogger ) : null;
         TestSetRunListener testSetRunListener =
-            new TestSetRunListener( consoleReporter,
-                                    reportConfiguration.instantiateFileReporter(),
-                                    reportConfiguration.instantiateStatelessXmlReporter(),
-                                    reportConfiguration.instantiateConsoleOutputFileReporter(),
-                                    statisticsReporter,
+            new TestSetRunListener( createConsoleReporter(),
+                                    createFileReporter(),
+                                    createSimpleXMLReporter(),
+                                    createConsoleOutputReceiver(),
+                                    createStatisticsReporter(),
                                     reportConfiguration.isTrimStackTrace(),
                                     PLAIN.equals( reportConfiguration.getReportFormat() ),
                                     reportConfiguration.isBriefOrPlainFormat() );
         addListener( testSetRunListener );
         return testSetRunListener;
+    }
+
+    private ConsoleReporter createConsoleReporter()
+    {
+        return shouldReportToConsole() ? new ConsoleReporter( consoleLogger ) : NullConsoleReporter.INSTANCE;
+    }
+
+    private FileReporter createFileReporter()
+    {
+        final FileReporter fileReporter = reportConfiguration.instantiateFileReporter();
+        return useNonNull( fileReporter, NullFileReporter.INSTANCE );
+    }
+
+    private StatelessXmlReporter createSimpleXMLReporter()
+    {
+        final StatelessXmlReporter xmlReporter = reportConfiguration.instantiateStatelessXmlReporter();
+        return useNonNull( xmlReporter, NullStatelessXmlReporter.INSTANCE );
+    }
+
+    private TestcycleConsoleOutputReceiver createConsoleOutputReceiver()
+    {
+        final TestcycleConsoleOutputReceiver consoleOutputReceiver =
+                reportConfiguration.instantiateConsoleOutputFileReporter();
+        return useNonNull( consoleOutputReceiver, NullConsoleOutputReceiver.INSTANCE );
+    }
+
+    private StatisticsReporter createStatisticsReporter()
+    {
+        final StatisticsReporter statisticsReporter = reportConfiguration.getStatisticsReporter();
+        return useNonNull( statisticsReporter, NullStatisticsReporter.INSTANCE );
     }
 
     private boolean shouldReportToConsole()

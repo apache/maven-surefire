@@ -34,4 +34,4 @@ becomes:
          May not contain whitespace
 
 The plugin supports Groovy assertion output.
-For more information see the issue https://jira.codehaus.org/browse/SUREFIRE-986.
+For more information see the issue https://issues.apache.org/jira/browse/SUREFIRE-986.

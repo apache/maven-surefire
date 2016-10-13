@@ -86,7 +86,7 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <skip>true</skip>
+          <test>*Test</test>
         </configuration>
       </plugin>
       <plugin>
@@ -116,6 +116,7 @@
             <testBuildDirectory>${project.build.testOutputDirectory}</testBuildDirectory>
             <verifier.forkMode>${verifier.forkMode}</verifier.forkMode>
           </systemPropertyVariables>
+          <redirectTestOutputToFile>false</redirectTestOutputToFile>
         </configuration>
         <dependencies>
           <dependency>

@@ -139,10 +139,12 @@ class BooterSerializer
             properties.addList( mainCliOptions, MAIN_CLI_OPTIONS );
         }
 
+        properties.setNullableProperty( SYSTEM_EXIT_TIMEOUT,
+                                              String.valueOf( booterConfiguration.getSystemExitTimeout() ) );
+
         return SystemPropertyManager.writePropertiesFile( properties, forkConfiguration.getTempDirectory(),
                                                           "surefire", forkConfiguration.isDebug() );
     }
-
 
     private String getTypeEncoded( Object value )
     {

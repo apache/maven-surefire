@@ -27,7 +27,6 @@ import junit.framework.TestCase;
 
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.report.StackTraceWriter;
@@ -62,9 +61,10 @@ public class DefaultReporterFactoryTest
 
     public void testMergeTestHistoryResult()
     {
+        File reportsDirectory = new File("target");
         StartupReportConfiguration reportConfig =
-                new StartupReportConfiguration( true, true, "PLAIN", false, false, new File("target"), false, null,
-                                                      "TESTHASH", false, 1, null );
+                new StartupReportConfiguration( true, true, "PLAIN", false, false, reportsDirectory, false, null,
+                                                      new File( reportsDirectory, "TESTHASH" ), false, 1, null );
 
         DummyTestReporter reporter = new DummyTestReporter();
 

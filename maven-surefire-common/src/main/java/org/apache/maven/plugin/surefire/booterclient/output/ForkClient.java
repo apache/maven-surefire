@@ -112,6 +112,14 @@ public class ForkClient
     {
     }
 
+    public void kill()
+    {
+        if ( !saidGoodBye )
+        {
+            notifiableTestStream.shutdown( KILL );
+        }
+    }
+
     /**
      * Called in concurrent Thread.
      */
@@ -386,6 +394,7 @@ public class ForkClient
 
     public void close( boolean hadTimeout )
     {
+        // no op
     }
 
     public final boolean isSaidGoodBye()

@@ -32,14 +32,14 @@ import static org.hamcrest.CoreMatchers.*;
  *
  * @author Kristian Rosenvold
  */
-public class Junit47concurrencyIT
+public class JUnit47ConcurrencyIT
     extends SurefireJUnit4IntegrationTestCase
 {
     @Test
     public void test47()
         throws Exception
     {
-        OutputValidator validator = unpack( "concurrentjunit47" )
+        OutputValidator validator = unpack( "junit47-concurrency" )
             .executeTest()
             .verifyErrorFree( 4 );
         String result = null;

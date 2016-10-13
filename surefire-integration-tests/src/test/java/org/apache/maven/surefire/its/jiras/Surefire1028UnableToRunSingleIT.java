@@ -41,7 +41,7 @@ import org.junit.Test;
  * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-1028}
  * @since 2.18
  */
-public class Surefire1028UnableToRunSingleTest
+public class Surefire1028UnableToRunSingleIT
     extends SurefireJUnit4IntegrationTestCase
 {
 

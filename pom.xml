@@ -221,10 +221,9 @@
         <version>1.6</version>
       </dependency>
       <dependency>
-        <groupId>jmock</groupId>
-        <artifactId>jmock</artifactId>
-        <version>1.0.1</version>
-        <scope>test</scope>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>1.10.19</version>
       </dependency>
       <dependency>
         <groupId>junit</groupId>

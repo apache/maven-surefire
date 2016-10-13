@@ -48,6 +48,7 @@ The Default Classpath
 
 #{if}(${project.artifactId}=="maven-failsafe-plugin")
   Notice that loading JAR file is preferable over the output classes directory in the maven-failsafe-plugin.
+  This behavior can be changed by configuration parameter <<<classesDirectory>>>.
 #{end}
 
 

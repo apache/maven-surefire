@@ -28,7 +28,7 @@ import org.junit.Test;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-public class Junit4IgnoreIT
+public class JUnit4IgnoreIT
     extends SurefireJUnit4IntegrationTestCase
 {
     @Test

@@ -25,6 +25,7 @@ import java.io.PrintStream;
 
 import static java.lang.System.setErr;
 import static java.lang.System.setOut;
+import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 
 /**
  * Deals with system.out/err.
@@ -41,8 +42,6 @@ public class ConsoleOutputCapture
     private static class ForwardingPrintStream
         extends PrintStream
     {
-        private static final String NL = System.getProperty( "line.separator" );
-
         private final boolean isStdout;
         private final ConsoleOutputReceiver target;
 
