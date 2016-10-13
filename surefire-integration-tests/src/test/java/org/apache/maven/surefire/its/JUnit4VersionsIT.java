@@ -69,7 +69,7 @@ public class JUnit4VersionsIT
 
     private SurefireLauncher unpack()
     {
-        return unpack( "/junit4" );
+        return unpack( "/junit4", version );
     }
 
     @Test
