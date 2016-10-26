@@ -12,7 +12,7 @@ public class ATest
         throws Exception
     {
         // checking processros # due to very slow Windows Jenkins machines
-        TimeUnit.MILLISECONDS.sleep( Runtime.getRuntime().availableProcessors() == 1 ? 1200 : 500 );
+        TimeUnit.MILLISECONDS.sleep( Runtime.getRuntime().availableProcessors() == 1 ? 3600 : 1500 );
         throw new RuntimeException( "assert \"foo\" == \"bar\"\n" +
                                         "             |\n"
                                         + "             false" );

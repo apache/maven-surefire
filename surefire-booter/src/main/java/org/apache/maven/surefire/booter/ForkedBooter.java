@@ -131,15 +131,15 @@ public final class ForkedBooter
             }
             catch ( InvocationTargetException t )
             {
-                LegacyPojoStackTraceWriter stackTraceWriter =
-                    new LegacyPojoStackTraceWriter( "test subystem", "no method", t.getTargetException() );
+                StackTraceWriter stackTraceWriter =
+                    new LegacyPojoStackTraceWriter( "test subsystem", "no method", t.getTargetException() );
                 StringBuilder stringBuilder = new StringBuilder();
                 encode( stringBuilder, stackTraceWriter, false );
                 encodeAndWriteToOutput( ( (char) BOOTERCODE_ERROR ) + ",0," + stringBuilder + "\n" , originalOut );
             }
             catch ( Throwable t )
             {
-                StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( "test subystem", "no method", t );
+                StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( "test subsystem", "no method", t );
                 StringBuilder stringBuilder = new StringBuilder();
                 encode( stringBuilder, stackTraceWriter, false );
                 encodeAndWriteToOutput( ( (char) BOOTERCODE_ERROR ) + ",0," + stringBuilder + "\n", originalOut );

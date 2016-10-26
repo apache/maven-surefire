@@ -29,7 +29,7 @@ import java.nio.charset.Charset;
 
 import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
-import static org.apache.maven.surefire.util.internal.StringUtils.requireNonNull;
+import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
 import static java.lang.String.format;
 
 /**

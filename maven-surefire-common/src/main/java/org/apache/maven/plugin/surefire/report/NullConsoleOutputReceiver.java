@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.its;
+package org.apache.maven.plugin.surefire.report;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,14 +19,37 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
+import org.apache.maven.surefire.report.ReportEntry;
 
-public class Junit47StaticInnerClassTestsIT extends SurefireJUnit4IntegrationTestCase
+/**
+ * ConsoleReporter doing nothing rather than using null.
+ *
+ * @author <a href="mailto:britter@apache.org">Benedikt Ritter</a>
+ * @since 2.19.2
+ */
+class NullConsoleOutputReceiver
+    implements TestcycleConsoleOutputReceiver
 {
 
-    @Test
-	public void testStaticInnerClassTests() {
-		executeErrorFreeTest( "junit47-static-inner-class-tests", 3 );
-	}
+    static final NullConsoleOutputReceiver INSTANCE = new NullConsoleOutputReceiver();
+
+    private NullConsoleOutputReceiver()
+    {
+    }
+
+    public void testSetStarting( ReportEntry reportEntry )
+    {
+    }
+
+    public void testSetCompleted( ReportEntry report )
+    {
+    }
+
+    public void close()
+    {
+    }
+
+    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    {
+    }
 }
