@@ -19,39 +19,51 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.HelperAssertions;
+import org.apache.maven.surefire.its.fixture.IntegrationTestSuiteResults;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import static org.junit.Assert.*;
 import org.junit.Test;
 
-/**
- * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
- */
 public class InTestCrashDetectionIT
     extends SurefireJUnit4IntegrationTestCase
 {
     @Test
     public void crashInFork()
     {
-        checkCrashTypes(unpack( "crash-during-test" ));
+        checkCrashTypes(unpack( "crash-during-test" ), 1);
+    }
+    
+    @Test
+    public void crashInSingleUseFork()
+    {
+        checkCrashTypes(unpack( "crash-during-test" ).forkCount(1).reuseForks(false), 2);
     }
 
     @Test
     public void crashInReusableFork()
     {
-        checkCrashTypes(unpack( "crash-during-test" ).forkOncePerThread().threadCount( 1 ));
+        checkCrashTypes(unpack( "crash-during-test" ).forkOncePerThread().threadCount( 1 ), 1);
     }
 
-    void checkCrashTypes(SurefireLauncher launcher) {
-        checkCrash( launcher.addGoal( "-DcrashType=exit" ));
-        checkCrash( launcher.addGoal( "-DcrashType=abort" ));
-        checkCrash( launcher.addGoal( "-DcrashType=segfault" ));
+    void checkCrashTypes(SurefireLauncher launcher, int expectedTotal) {
+        checkCrash( launcher.addGoal( "-DcrashType=exit" ), expectedTotal);
+        checkCrash( launcher.addGoal( "-DcrashType=abort" ), expectedTotal);
+        checkCrash( launcher.addGoal( "-DcrashType=segfault" ), expectedTotal);
     }
 
-    void checkCrash(SurefireLauncher launcher) {
-        launcher.maven().withFailure().executeTest()
-                .assertTestSuiteResults(1, 1, 0, 0)
+    void checkCrash(SurefireLauncher launcher, int expectedTotal) {
+        OutputValidator ov = launcher.maven().withFailure().executeTest()
                 .verifyTextInLog("FAILURE! - in testCrashJvm(junit44.environment.BasicTest)")
                 .verifyTextInLog("Tests in error:")
                 .verifyTextInLog("The forked VM terminated without properly saying goodbye. VM crash or System.exit called?");
+        
+        IntegrationTestSuiteResults results = HelperAssertions.parseTestResults(ov.getBaseDir());
+        assertEquals(1, results.getErrors());
+        assertEquals(0, results.getFailures());
+        assertEquals(0, results.getSkipped());
+        assertEquals(expectedTotal, results.getTotal());
     }
 }
