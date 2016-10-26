@@ -32,6 +32,12 @@
   <name>Maven Surefire Common</name>
   <description>API used in Surefire and Failsafe MOJO.</description>
 
+  <properties>
+    <checkstyle.skip>true</checkstyle.skip>
+    <rat.skip>true</rat.skip>
+    <animal.sniffer.skip>true</animal.sniffer.skip>
+  </properties>
+
   <prerequisites>
     <maven>2.2.1</maven>
   </prerequisites>

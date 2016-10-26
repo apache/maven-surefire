@@ -43,6 +43,9 @@ import org.apache.maven.surefire.report.StackTraceWriter;
 import static java.lang.Integer.decode;
 import static java.lang.Integer.parseInt;
 import static java.lang.System.currentTimeMillis;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_BYE;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_CONSOLE;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_DEBUG;
@@ -97,6 +100,8 @@ public class ForkClient
     private volatile boolean saidGoodBye;
 
     private volatile StackTraceWriter errorInFork;
+
+    private final Map<Integer,String> testsInProgressByChannel = Collections.synchronizedMap(new HashMap());
 
     public ForkClient( DefaultReporterFactory defaultReporterFactory, Properties testVmSystemProperties,
                        NotifiableTestStream notifiableTestStream, ConsoleLogger log )
@@ -192,14 +197,17 @@ public class ForkClient
                             .testSetCompleted( createReportEntry( remaining ) );
                     break;
                 case BOOTERCODE_TEST_STARTING:
+                    testsInProgressByChannel.put(channelNumber, s.substring(1));
                     getOrCreateReporter( channelNumber )
                             .testStarting( createReportEntry( remaining ) );
                     break;
                 case BOOTERCODE_TEST_SUCCEEDED:
+                    testsInProgressByChannel.remove(channelNumber);
                     getOrCreateReporter( channelNumber )
                             .testSucceeded( createReportEntry( remaining ) );
                     break;
                 case BOOTERCODE_TEST_FAILED:
+                    testsInProgressByChannel.remove(channelNumber);
                     getOrCreateReporter( channelNumber )
                             .testFailed( createReportEntry( remaining ) );
                     break;
@@ -208,10 +216,12 @@ public class ForkClient
                             .testSkipped( createReportEntry( remaining ) );
                     break;
                 case BOOTERCODE_TEST_ERROR:
+                    testsInProgressByChannel.remove(channelNumber);
                     getOrCreateReporter( channelNumber )
                             .testError( createReportEntry( remaining ) );
                     break;
                 case BOOTERCODE_TEST_ASSUMPTIONFAILURE:
+                    testsInProgressByChannel.remove(channelNumber);
                     getOrCreateReporter( channelNumber )
                             .testAssumptionFailure( createReportEntry( remaining ) );
                     break;
@@ -399,6 +409,21 @@ public class ForkClient
     public final boolean isSaidGoodBye()
     {
         return saidGoodBye;
+    }
+
+    public boolean notifyOfMissingByeIfTestsRunning()
+    {
+        log.warning("Missing goodbye handling engaged.");
+        if (testsInProgressByChannel.isEmpty()) {
+            return false;
+        }
+        for (Integer channelNumber : testsInProgressByChannel.keySet())
+        {
+            String thisTest = testsInProgressByChannel.get( channelNumber );
+            processLine( (char) BOOTERCODE_TEST_ERROR + thisTest );
+            processLine( (char) BOOTERCODE_TESTSET_COMPLETED + thisTest );
+        }
+        return true;
     }
 
     public final StackTraceWriter getErrorInFork()
