@@ -330,9 +330,9 @@ public abstract class AbstractSurefireMojo
     private String forkMode;
 
     /**
-     * Directory for temporary test files. Be removed after tests execute. Value is relative path from reportsDirectory parent
+     * Relative path to <i>project.build.directory</i> containing internal Surefire temporary files. It is removed after the test set has completed.
      *
-     * @since 2.19
+     * @since 2.19.2
      */
     @Parameter( property = "tempDir", defaultValue = "surefire" )
     private String tempDir;
