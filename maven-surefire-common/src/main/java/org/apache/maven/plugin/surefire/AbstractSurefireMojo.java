@@ -650,6 +650,13 @@ public abstract class AbstractSurefireMojo
     private Boolean parallelMavenExecution;
 
     /**
+     * Read-only parameter with value of Maven property <i>project.build.directory</i>.
+     * @since 2.19.2
+     */
+    @Parameter( defaultValue = "${project.build.directory}", readonly = true )
+    private File projectBuildDirectory;
+
+    /**
      * List of dependencies to scan for test classes to include in the test run.
      * The child elements of this element must be &lt;dependency&gt; elements, and the
      * contents of each of these elements must be a string which follows the format:
@@ -2025,7 +2032,7 @@ public abstract class AbstractSurefireMojo
      */
     private File getSurefireTempDir()
     {
-        return new File( getReportsDirectory().getParentFile(), "surefire" );
+        return new File( getProjectBuildDirectory(), "surefire" );
     }
 
     /**
@@ -2046,6 +2053,7 @@ public abstract class AbstractSurefireMojo
         checksum.add( getClasspathDependencyScopeExclude() );
         checksum.add( getAdditionalClasspathElements() );
         checksum.add( getReportsDirectory() );
+        checksum.add( getProjectBuildDirectory() );
         checksum.add( getTestSourceDirectory() );
         checksum.add( getTest() );
         checksum.add( getIncludes() );
@@ -3277,6 +3285,16 @@ public abstract class AbstractSurefireMojo
     public void setClasspathDependencyScopeExclude( String classpathDependencyScopeExclude )
     {
         this.classpathDependencyScopeExclude = classpathDependencyScopeExclude;
+    }
+
+    public File getProjectBuildDirectory()
+    {
+        return projectBuildDirectory;
+    }
+
+    public void setProjectBuildDirectory( File projectBuildDirectory )
+    {
+        this.projectBuildDirectory = projectBuildDirectory;
     }
 
     protected void logDebugOrCliShowErrors( String s )
