@@ -330,6 +330,14 @@ public abstract class AbstractSurefireMojo
     private String forkMode;
 
     /**
+     * Relative path to <i>project.build.directory</i> containing internal Surefire temporary files. It is removed after the test set has completed.
+     *
+     * @since 2.19.2
+     */
+    @Parameter( property = "tempDir", defaultValue = "surefire" )
+    private String tempDir;
+
+    /**
      * Option to specify the jvm (or path to the java executable) to use with the forking options. For the default, the
      * jvm will be a new instance of the same VM as the one used to run Maven. JVM settings are not inherited from
      * MAVEN_OPTS.
@@ -2032,7 +2040,7 @@ public abstract class AbstractSurefireMojo
      */
     private File getSurefireTempDir()
     {
-        return new File( getProjectBuildDirectory(), "surefire" );
+        return new File( getReportsDirectory().getParentFile(), getTempDir() );
     }
 
     /**
@@ -3300,5 +3308,13 @@ public abstract class AbstractSurefireMojo
     protected void logDebugOrCliShowErrors( String s )
     {
         SurefireHelper.logDebugOrCliShowErrors( s, getConsoleLogger(), cli );
+    }
+
+    public String getTempDir() {
+        return tempDir;
+    }
+
+    public void setTempDir(String tempDir) {
+        this.tempDir = tempDir;
     }
 }
