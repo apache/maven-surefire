@@ -20,23 +20,6 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
@@ -62,13 +45,13 @@ import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
 import org.apache.maven.plugin.surefire.booterclient.ProviderDetector;
 import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.util.DependencyScanner;
 import org.apache.maven.plugin.surefire.util.DirectoryScanner;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
-import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.io.FileUtils;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
@@ -82,7 +65,6 @@ import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
@@ -97,10 +79,28 @@ import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 
 import javax.annotation.Nonnull;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Thread.currentThread;
 import static org.apache.maven.shared.utils.StringUtils.capitalizeFirstLetter;
+import static org.apache.maven.shared.utils.StringUtils.isEmpty;
 import static org.apache.maven.shared.utils.StringUtils.isNotBlank;
+import static org.apache.maven.shared.utils.StringUtils.split;
 
 /**
  * Abstract base class for running tests using Surefire.
@@ -328,6 +328,15 @@ public abstract class AbstractSurefireMojo
      */
     @Parameter( property = "forkMode", defaultValue = "once" )
     private String forkMode;
+
+    /**
+     * Relative path to <i>project.build.directory</i> containing internal Surefire temporary files.
+     * It is deleted after the test set has completed.
+     *
+     * @since 2.19.2
+     */
+    @Parameter( property = "tempDir", defaultValue = "surefire" )
+    private String tempDir;
 
     /**
      * Option to specify the jvm (or path to the java executable) to use with the forking options. For the default, the
@@ -874,6 +883,7 @@ public abstract class AbstractSurefireMojo
             warnIfRerunClashes();
             warnIfWrongShutdownValue();
             warnIfNotApplicableSkipAfterFailureCount();
+            warnIfIllegalTempDir();
         }
         return true;
     }
@@ -881,7 +891,6 @@ public abstract class AbstractSurefireMojo
     private void executeAfterPreconditionsChecked( DefaultScanResult scanResult )
         throws MojoExecutionException, MojoFailureException
     {
-
         List<ProviderInfo> providers = createProviders();
 
         RunResult current = RunResult.noTestsRun();
@@ -1735,7 +1744,7 @@ public abstract class AbstractSurefireMojo
         if ( isSpecificTestSpecified() )
         {
             includes = new ArrayList<String>();
-            Collections.addAll( includes, StringUtils.split( getTest(), "," ) );
+            Collections.addAll( includes, split( getTest(), "," ) );
         }
         else
         {
@@ -2002,7 +2011,7 @@ public abstract class AbstractSurefireMojo
             jvmToUse = toolchain.findTool( "java" ); //NOI18N
         }
 
-        if ( StringUtils.isEmpty( jvmToUse ) )
+        if ( isEmpty( jvmToUse ) )
         {
             // use the same JVM as the one used to run Maven (the "java.home" one)
             jvmToUse = System.getProperty( "java.home" ) + File.separator + "bin" + File.separator + "java";
@@ -2032,7 +2041,7 @@ public abstract class AbstractSurefireMojo
      */
     private File getSurefireTempDir()
     {
-        return new File( getProjectBuildDirectory(), "surefire" );
+        return new File( getProjectBuildDirectory(), getTempDir() );
     }
 
     /**
@@ -2107,6 +2116,7 @@ public abstract class AbstractSurefireMojo
         checksum.add( getDependenciesToScan() );
         checksum.add( getForkedProcessExitTimeoutInSeconds() );
         checksum.add( getRerunFailingTestsCount() );
+        checksum.add( getTempDir() );
         addPluginSpecificChecksumItems( checksum );
         return checksum.getSha1();
     }
@@ -2193,7 +2203,7 @@ public abstract class AbstractSurefireMojo
             {
                 if ( classpathElement != null )
                 {
-                    Collections.addAll( classpath, StringUtils.split( classpathElement, "," ) );
+                    Collections.addAll( classpath, split( classpathElement, "," ) );
                 }
             }
         }
@@ -2509,6 +2519,14 @@ public abstract class AbstractSurefireMojo
             {
                 throw new RuntimeException( e );
             }
+        }
+    }
+
+    private void warnIfIllegalTempDir() throws MojoFailureException
+    {
+        if ( isEmpty( getTempDir() ) )
+        {
+            throw new MojoFailureException( "Parameter 'tempDir' should not be blank string." );
         }
     }
 
@@ -3300,5 +3318,15 @@ public abstract class AbstractSurefireMojo
     protected void logDebugOrCliShowErrors( String s )
     {
         SurefireHelper.logDebugOrCliShowErrors( s, getConsoleLogger(), cli );
+    }
+
+    public String getTempDir()
+    {
+        return tempDir;
+    }
+
+    public void setTempDir( String tempDir )
+    {
+        this.tempDir = tempDir;
     }
 }
