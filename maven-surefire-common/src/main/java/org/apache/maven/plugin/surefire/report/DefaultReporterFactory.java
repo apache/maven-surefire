@@ -417,8 +417,9 @@ public class DefaultReporterFactory
         return printed;
     }
 
-    private String getStackTraceOrTestNameIfNoStackTrace(TestMethodStats tms) {
-        if (tms.getStackTraceWriter() == null)
+    private String getStackTraceOrTestNameIfNoStackTrace( TestMethodStats tms )
+    {
+        if ( tms.getStackTraceWriter() == null )
         {
             return tms.getTestClassMethodName();
         }

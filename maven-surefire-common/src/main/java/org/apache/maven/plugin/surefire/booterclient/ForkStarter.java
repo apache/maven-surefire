@@ -588,13 +588,13 @@ public class ForkStarter
                 boolean testsRunning = forkClient.notifyOfMissingByeIfTestsRunning();
                 String message = "The forked VM terminated without properly saying goodbye. VM crash or "
                         + "System.exit called?\nCommand was " + cli.toString() + "\nExit code was " + result;
-                if (testsRunning)
+                if ( testsRunning )
                 {
-                    log.error(message + "\nTests were running at the time.");
+                    log.error( message + "\nTests were running at the time." );
                 }
                 else
                 {
-                    throw new RuntimeException(message + "\nNo tests were in progress at the time.");
+                    throw new RuntimeException( message + "\nNo tests were in progress at the time." );
                 }
             }
             else if ( result != SUCCESS )
