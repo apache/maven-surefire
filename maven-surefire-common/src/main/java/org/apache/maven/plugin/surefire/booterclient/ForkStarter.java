@@ -583,6 +583,20 @@ public class ForkStarter
             {
                 runResult = timeout( forkClient.getDefaultReporterFactory().getGlobalRunStatistics().getRunResult() );
             }
+            else if ( !forkClient.isSaidGoodBye() )
+            {
+                boolean testsRunning = forkClient.notifyOfMissingByeIfTestsRunning();
+                String message = "The forked VM terminated without properly saying goodbye. VM crash or "
+                        + "System.exit called?\nCommand was " + cli.toString() + "\nExit code was " + result;
+                if ( testsRunning )
+                {
+                    log.error( message + "\nTests were running at the time." );
+                }
+                else
+                {
+                    throw new RuntimeException( message + "\nNo tests were in progress at the time." );
+                }
+            }
             else if ( result != SUCCESS )
             {
                 booterForkException =
@@ -619,13 +633,6 @@ public class ForkStarter
                                                         + detail
                                                         + '\n'
                                                         + errorInFork.writeTraceToString(), cause );
-                }
-                if ( !forkClient.isSaidGoodBye() )
-                {
-                    // noinspection ThrowFromFinallyBlock
-                    throw new RuntimeException(
-                        "The forked VM terminated without properly saying goodbye. VM crash or System.exit called?"
-                            + "\nCommand was " + cli.toString() + detail, cause );
                 }
             }
 

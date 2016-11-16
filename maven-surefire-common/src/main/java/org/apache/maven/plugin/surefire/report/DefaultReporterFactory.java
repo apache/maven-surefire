@@ -394,7 +394,7 @@ public class DefaultReporterFactory
             if ( testMethodStats.size() == 1 )
             {
                 // No rerun, follow the original output format
-                failure( "  " + testMethodStats.get( 0 ).getStackTraceWriter().smartTrimmedStackTrace() );
+                failure( "  " + getStackTraceOrTestNameIfNoStackTrace( testMethodStats.get( 0 ) ) );
             }
             else
             {
@@ -415,6 +415,18 @@ public class DefaultReporterFactory
             }
         }
         return printed;
+    }
+
+    private String getStackTraceOrTestNameIfNoStackTrace( TestMethodStats tms )
+    {
+        if ( tms.getStackTraceWriter() == null )
+        {
+            return tms.getTestClassMethodName();
+        }
+        else
+        {
+            return tms.getStackTraceWriter().smartTrimmedStackTrace();
+        }
     }
 
     // Describe the result of a given test
