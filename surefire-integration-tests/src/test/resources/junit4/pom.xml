@@ -89,15 +89,6 @@
         <junit.platform.version>1.0.0-M2</junit.platform.version>
       </properties>
 
-      <dependencies>
-        <dependency>
-          <groupId>org.junit.jupiter</groupId>
-          <artifactId>junit-jupiter-engine</artifactId>
-          <version>${junit.jupiter.version}</version>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
-
       <build>
         <plugins>
           <plugin>
@@ -108,6 +99,11 @@
                 <groupId>org.junit.platform</groupId>
                 <artifactId>junit-platform-surefire-provider</artifactId>
                 <version>${junit.platform.version}</version>
+              </dependency>
+              <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${junit.jupiter.version}</version>
               </dependency>
             </dependencies>
           </plugin>
@@ -123,15 +119,6 @@
         <junit.platform.version>1.0.0-M2</junit.platform.version>
       </properties>
 
-      <dependencies>
-        <dependency>
-          <groupId>org.junit.vintage</groupId>
-          <artifactId>junit-vintage-engine</artifactId>
-          <version>${junit.version}</version>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
-
       <build>
         <plugins>
           <plugin>
@@ -143,12 +130,16 @@
                 <artifactId>junit-platform-surefire-provider</artifactId>
                 <version>${junit.platform.version}</version>
               </dependency>
+              <dependency>
+                <groupId>org.junit.vintage</groupId>
+                <artifactId>junit-vintage-engine</artifactId>
+                <version>${junit.version}</version>
+              </dependency>
             </dependencies>
           </plugin>
         </plugins>
       </build>
     </profile>
   </profiles>
-
 
 </project>

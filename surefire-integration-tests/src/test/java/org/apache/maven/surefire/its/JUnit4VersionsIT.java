@@ -88,11 +88,6 @@ public class JUnit4VersionsIT
     @Parameter
     public JUnitVersion version;
 
-    private SurefireLauncher unpack()
-    {
-        return unpack( "/junit4", version.toString() );
-    }
-
     @Test
     public void testJunit()
         throws Exception
@@ -104,6 +99,11 @@ public class JUnit4VersionsIT
         throws Exception
     {
         version.configure( unpack() ).executeTest().verifyErrorFree( 1 );
+    }
+
+    private SurefireLauncher unpack()
+    {
+        return unpack( "/junit4", version.toString() );
     }
 
 }
