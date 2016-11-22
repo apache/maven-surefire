@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.its;
+package org.apache.maven.surefire.its.jiras;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
