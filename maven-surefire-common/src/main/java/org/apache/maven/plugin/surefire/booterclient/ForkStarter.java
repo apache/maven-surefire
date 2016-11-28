@@ -114,6 +114,8 @@ import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull
  */
 public class ForkStarter
 {
+    private static final String EXECUTION_EXCEPTION = "ExecutionException";
+
     private static final long PING_IN_SECONDS = 10;
 
     private static final int TIMEOUT_CHECK_PERIOD_MILLIS = 100;
@@ -436,6 +438,7 @@ public class ForkStarter
         throws SurefireBooterForkException
     {
         RunResult globalResult = new RunResult( 0, 0, 0, 0 );
+        SurefireBooterForkException exception = null;
         for ( Future<RunResult> result : results )
         {
             try
@@ -459,10 +462,31 @@ public class ForkStarter
             catch ( ExecutionException e )
             {
                 Throwable realException = e.getCause();
-                String error = realException == null ? "" : realException.getLocalizedMessage();
-                throw new SurefireBooterForkException( "ExecutionException " + error, realException );
+                if ( realException == null )
+                {
+                    if ( exception == null )
+                    {
+                        exception = new SurefireBooterForkException( EXECUTION_EXCEPTION );
+                    }
+                }
+                else
+                {
+                    String previousError = "";
+                    if ( exception != null && !EXECUTION_EXCEPTION.equals( exception.getLocalizedMessage().trim() ) )
+                    {
+                        previousError = exception.getLocalizedMessage() + "\n";
+                    }
+                    String error = previousError + EXECUTION_EXCEPTION + " " + realException.getLocalizedMessage();
+                    exception = new SurefireBooterForkException( error, realException );
+                }
             }
         }
+
+        if ( exception != null )
+        {
+            throw exception;
+        }
+
         return globalResult;
     }
 
@@ -566,6 +590,7 @@ public class ForkStarter
 
         log.debug( "Forking command line: " + cli );
 
+        Integer result = null;
         RunResult runResult = null;
         SurefireBooterForkException booterForkException = null;
         try
@@ -577,7 +602,7 @@ public class ForkStarter
 
             currentForkClients.add( forkClient );
 
-            int result = future.call();
+            result = future.call();
 
             if ( forkClient.hadTimeout() )
             {
@@ -622,10 +647,16 @@ public class ForkStarter
                 }
                 if ( !forkClient.isSaidGoodBye() )
                 {
+                    String errorCode = result == null ? "" : "\nProcess Exit Code: " + result;
+                    String testsInProgress = forkClient.hasTestsInProgress() ? "\nCrashed tests:" : "";
+                    for ( String test : forkClient.testsInProgress() )
+                    {
+                        testsInProgress += "\n" + test;
+                    }
                     // noinspection ThrowFromFinallyBlock
                     throw new RuntimeException(
                         "The forked VM terminated without properly saying goodbye. VM crash or System.exit called?"
-                            + "\nCommand was " + cli.toString() + detail, cause );
+                            + "\nCommand was " + cli.toString() + detail + errorCode + testsInProgress, cause );
                 }
             }
 
