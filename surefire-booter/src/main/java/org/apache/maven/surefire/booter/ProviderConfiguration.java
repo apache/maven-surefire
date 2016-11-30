@@ -41,11 +41,6 @@ import org.apache.maven.surefire.testset.TestRequest;
  */
 public class ProviderConfiguration
 {
-    /**
-     * @noinspection UnusedDeclaration
-     */
-    public static final int TESTS_SUCCEEDED_EXIT_CODE = 0;
-
     private final DirectoryScannerParameters dirScannerParams;
 
     private final ReporterConfiguration reporterConfiguration;
