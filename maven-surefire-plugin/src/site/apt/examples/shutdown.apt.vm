@@ -85,4 +85,10 @@ Shutdown of Forked JVM
   amount of time and the whole plugin fails with the error message:
 
   <<<There was a timeout or other error in the fork>>>
-  
+
+
+* Crashed forked JVM caused listing the crashed test(s)
+
+  After the JVM exited abruptly, the console lists the message <<<Crashed tests:>>> if the entire
+  test-set has not been yet completed. This happens if a test exited, killed JVM or segmentation fault crashed JVM.
+

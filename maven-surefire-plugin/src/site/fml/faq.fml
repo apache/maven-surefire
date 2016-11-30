@@ -67,6 +67,16 @@ under the License.
         </p>
       </answer>
     </faq>
+    <faq id="crashed-forks">
+      <question>Crashed Surefire or Failsafe plugin must indicate crashed tests</question>
+      <answer>
+        <p>
+        After a forked JVM has crashed the console of forked JVM prints <em>Crashed tests:</em> and lists the last test
+        which has crashed. In the console log you can find the message
+        <em>The forked VM terminated without properly saying goodbye</em>.
+        </p>
+      </answer>
+    </faq>
     <faq id="GWT">
       <question>How can I run GWT tests?</question>
       <answer>
