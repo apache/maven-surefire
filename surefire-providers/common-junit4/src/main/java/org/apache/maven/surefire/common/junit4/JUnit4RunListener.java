@@ -120,7 +120,7 @@ public class JUnit4RunListener
         failureFlag.set( true );
     }
 
-    @SuppressWarnings( { "UnusedDeclaration" } )
+    @SuppressWarnings( "UnusedDeclaration" )
     public void testAssumptionFailure( Failure failure )
     {
         Description desc = failure.getDescription();
@@ -152,16 +152,16 @@ public class JUnit4RunListener
         reporter.testExecutionSkippedByUser();
     }
 
-    private static String getClassName( Description description )
+    private String getClassName( Description description )
     {
-        String name = extractClassName( description );
+        String name = extractDescriptionClassName( description );
         if ( name == null || isInsaneJunitNullString( name ) )
         {
             // This can happen upon early failures (class instantiation error etc)
             Description subDescription = description.getChildren().get( 0 );
             if ( subDescription != null )
             {
-                name = extractClassName( subDescription );
+                name = extractDescriptionClassName( subDescription );
             }
             if ( name == null )
             {
@@ -179,6 +179,16 @@ public class JUnit4RunListener
     protected SimpleReportEntry createReportEntry( Description description )
     {
         return new SimpleReportEntry( getClassName( description ), description.getDisplayName() );
+    }
+
+    protected String extractDescriptionClassName( Description description )
+    {
+        return extractClassName( description );
+    }
+
+    protected String extractDescriptionMethodName( Description description )
+    {
+        return extractMethodName( description );
     }
 
     public static String extractClassName( Description description )

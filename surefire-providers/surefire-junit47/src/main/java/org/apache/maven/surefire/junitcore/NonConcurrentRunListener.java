@@ -37,7 +37,6 @@ public class NonConcurrentRunListener
     extends JUnit4RunListener
     implements ConsoleOutputReceiver
 {
-
     private Description currentTestSetDescription;
 
     private Description lastFinishedDescription;
@@ -56,12 +55,25 @@ public class NonConcurrentRunListener
 
     protected SimpleReportEntry createReportEntry( Description description )
     {
-        return new SimpleReportEntry( description.getClassName(), description.getDisplayName() );
+        return new SimpleReportEntry( extractDescriptionClassName( description ), description.getDisplayName() );
     }
 
     protected SimpleReportEntry createReportEntryForTestSet( Description description )
     {
-        return new SimpleReportEntry( description.getClassName(), description.getClassName() );
+        String testClassName = extractDescriptionClassName( description );
+        return new SimpleReportEntry( testClassName, testClassName );
+    }
+
+    @Override
+    protected String extractDescriptionClassName( Description description )
+    {
+        return description.getClassName();
+    }
+
+    @Override
+    protected String extractDescriptionMethodName( Description description )
+    {
+        return description.getMethodName();
     }
 
     @Override
@@ -110,7 +122,7 @@ public class NonConcurrentRunListener
         throws Exception
     {
         super.testFinished( description );
-        this.lastFinishedDescription = description;
+        lastFinishedDescription = description;
     }
 
     @Override
@@ -120,7 +132,7 @@ public class NonConcurrentRunListener
         finishLastTestSetIfNecessary( description );
 
         super.testIgnored( description );
-        this.lastFinishedDescription = description;
+        lastFinishedDescription = description;
     }
 
     @Override
@@ -130,14 +142,14 @@ public class NonConcurrentRunListener
         finishLastTestSetIfNecessary( failure.getDescription() );
 
         super.testFailure( failure );
-        this.lastFinishedDescription = failure.getDescription();
+        lastFinishedDescription = failure.getDescription();
     }
 
     @Override
     public void testAssumptionFailure( Failure failure )
     {
         super.testAssumptionFailure( failure );
-        this.lastFinishedDescription = failure.getDescription();
+        lastFinishedDescription = failure.getDescription();
     }
 
     @Override
