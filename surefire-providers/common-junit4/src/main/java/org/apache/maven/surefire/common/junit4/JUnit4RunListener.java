@@ -44,11 +44,7 @@ import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
 public class JUnit4RunListener
     extends org.junit.runner.notification.RunListener
 {
-    private static final Pattern PARENS = Pattern.compile( "^" + ".+" //any character
-                                                               + "\\(("
-                                                               // then an open-paren (start matching a group)
-                                                               + "[^\\\\(\\\\)]+" //non-parens
-                                                               + ")\\)" + "$" );
+    private static final Pattern METHOD_CLASS_PATTERN = Pattern.compile( "([\\s\\S]*)\\((.*)\\)" );
 
     protected final RunListener reporter;
 
@@ -188,8 +184,8 @@ public class JUnit4RunListener
     public static String extractClassName( Description description )
     {
         String displayName = description.getDisplayName();
-        Matcher m = PARENS.matcher( displayName );
-        return m.find() ? m.group( 1 ) : displayName;
+        Matcher m = METHOD_CLASS_PATTERN.matcher( displayName );
+        return m.matches() ? m.group( 2 ) : displayName;
     }
 
     public static String extractMethodName( Description description )
