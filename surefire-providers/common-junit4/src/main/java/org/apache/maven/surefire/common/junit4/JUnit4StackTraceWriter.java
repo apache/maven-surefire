@@ -24,8 +24,8 @@ import org.apache.maven.surefire.report.SmartStackTraceParser;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.junit.runner.notification.Failure;
 
-import static org.apache.maven.surefire.common.junit4.JUnit4RunListener.extractClassName;
-import static org.apache.maven.surefire.common.junit4.JUnit4RunListener.extractMethodName;
+import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractClassName;
+import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractMethodName;
 import static org.apache.maven.surefire.report.SmartStackTraceParser.stackTraceWithFocusOnClassAsString;
 
 /**
@@ -79,12 +79,12 @@ public class JUnit4StackTraceWriter
 
     protected String getTestClassName()
     {
-        return extractClassName( junitFailure.getDescription() );
+        return extractClassName( junitFailure.getDescription().getDisplayName() );
     }
 
     protected String getTestMethodName()
     {
-        return extractMethodName( junitFailure.getDescription() );
+        return extractMethodName( junitFailure.getDescription().getDisplayName() );
     }
 
     @SuppressWarnings( "ThrowableResultOfMethodCallIgnored" )

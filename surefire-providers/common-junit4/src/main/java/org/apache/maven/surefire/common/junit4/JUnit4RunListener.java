@@ -28,14 +28,13 @@ import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.isFailureInsideJUnitItself;
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.getAnnotatedIgnoreValue;
 import static org.apache.maven.surefire.report.SimpleReportEntry.assumption;
 import static org.apache.maven.surefire.report.SimpleReportEntry.ignored;
 import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
+import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractClassName;
+import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractMethodName;
 
 /**
  * RunListener for JUnit4, delegates to our own RunListener
@@ -44,8 +43,6 @@ import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
 public class JUnit4RunListener
     extends org.junit.runner.notification.RunListener
 {
-    private static final Pattern METHOD_CLASS_PATTERN = Pattern.compile( "([\\s\\S]*)\\((.*)\\)" );
-
     protected final RunListener reporter;
 
     /**
@@ -183,26 +180,12 @@ public class JUnit4RunListener
 
     protected String extractDescriptionClassName( Description description )
     {
-        return extractClassName( description );
+        return extractClassName( description.getDisplayName() );
     }
 
     protected String extractDescriptionMethodName( Description description )
     {
-        return extractMethodName( description );
-    }
-
-    public static String extractClassName( Description description )
-    {
-        String displayName = description.getDisplayName();
-        Matcher m = METHOD_CLASS_PATTERN.matcher( displayName );
-        return m.matches() ? m.group( 2 ) : displayName;
-    }
-
-    public static String extractMethodName( Description description )
-    {
-        String displayName = description.getDisplayName();
-        int i = displayName.indexOf( "(" );
-        return i >= 0 ? displayName.substring( 0, i ) : displayName;
+        return extractMethodName( description.getDisplayName() );
     }
 
     public static void rethrowAnyTestMechanismFailures( Result run )
