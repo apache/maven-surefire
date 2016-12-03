@@ -19,8 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.UrlUtils;
-
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -32,6 +30,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import static java.io.File.pathSeparatorChar;
+import static org.apache.maven.surefire.util.internal.UrlUtils.toURL;
 
 /**
  * An ordered list of classpath elements with set behaviour
@@ -124,7 +123,7 @@ public class Classpath implements Iterable<String>
         for ( String url : unmodifiableElements )
         {
             File f = new File( url );
-            urls.add( UrlUtils.getURL( f ) );
+            urls.add( toURL( f ) );
         }
         return urls;
     }

@@ -19,12 +19,14 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
+import junit.framework.TestCase;
+
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 
-import junit.framework.TestCase;
+import static org.apache.maven.surefire.util.internal.UrlUtils.toURL;
 
 /**
  * Test the URL utilities.
@@ -55,7 +57,7 @@ public class UrlUtilsTest
         throws Exception
     {
         File f = new File( homeDir, fileName );
-        URL u = UrlUtils.getURL( f );
+        URL u = toURL( f );
         String url = u.toString();
         assertStartsWith( url, "file:" );
         assertEndsWith( url, expectedFileName );

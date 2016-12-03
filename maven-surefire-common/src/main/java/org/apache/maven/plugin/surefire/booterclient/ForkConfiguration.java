@@ -27,7 +27,6 @@ import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ForkedBooter;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
-import org.apache.maven.surefire.util.UrlUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,6 +38,8 @@ import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+
+import static org.apache.maven.surefire.util.internal.UrlUtils.toURL;
 
 /**
  * Configuration for forking tests.
@@ -287,7 +288,7 @@ public class ForkConfiguration
             for ( String el : classPath )
             {
                 // NOTE: if File points to a directory, this entry MUST end in '/'.
-                cp.append( UrlUtils.getURL( new File( el ) ).toExternalForm() )
+                cp.append( toURL( new File( el ) ).toExternalForm() )
                         .append( " " );
             }
 

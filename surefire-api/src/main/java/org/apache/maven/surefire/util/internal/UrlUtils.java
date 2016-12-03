@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.util;
+package org.apache.maven.surefire.util.internal;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -28,7 +28,7 @@ import java.util.BitSet;
 /**
  * Utility for dealing with URLs in pre-JDK 1.4.
  */
-public class UrlUtils
+public final class UrlUtils
 {
     private static final BitSet UNRESERVED = new BitSet( Byte.MAX_VALUE - Byte.MIN_VALUE + 1 );
 
@@ -38,6 +38,7 @@ public class UrlUtils
 
     private UrlUtils()
     {
+        throw new IllegalStateException( "no instantiable constructor" );
     }
 
     private static final String ENCODING = "UTF-8";
@@ -59,7 +60,7 @@ public class UrlUtils
         }
     }
 
-    public static URL getURL( File file )
+    public static URL toURL( File file )
         throws MalformedURLException
     {
         // with JDK 1.4+, code would be: return new URL( file.toURI().toASCIIString() );
