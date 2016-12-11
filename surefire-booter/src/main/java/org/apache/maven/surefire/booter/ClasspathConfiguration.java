@@ -82,7 +82,7 @@ public class ClasspathConfiguration
         throws SurefireExecutionException
     {
         return Classpath.join( inprocClasspath, classpathUrls )
-            .createClassLoader( null, this.childDelegation, enableAssertions, "test" );
+            .createClassLoader( null, childDelegation, enableAssertions, "test" );
     }
 
     public Classpath getProviderClasspath()
@@ -90,8 +90,7 @@ public class ClasspathConfiguration
         return surefireClasspathUrls;
     }
 
-
-        public Classpath getTestClasspath()
+    public Classpath getTestClasspath()
     {
         return classpathUrls;
     }
