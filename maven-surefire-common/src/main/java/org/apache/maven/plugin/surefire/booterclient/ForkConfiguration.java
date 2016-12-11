@@ -39,8 +39,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
-import static org.apache.maven.surefire.util.internal.UrlUtils.toURL;
-
 /**
  * Configuration for forking tests.
  *
@@ -287,8 +285,10 @@ public class ForkConfiguration
             StringBuilder cp = new StringBuilder();
             for ( String el : classPath )
             {
-                // NOTE: if File points to a directory, this entry MUST end in '/'.
-                cp.append( toURL( new File( el ) ).toExternalForm() )
+                File file1 = new File( el );
+                String pathEnd = file1.isDirectory() ? "/" : "";
+                cp.append( file1.toURI().toASCIIString() )
+                        .append( pathEnd )
                         .append( " " );
             }
 

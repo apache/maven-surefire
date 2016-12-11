@@ -162,9 +162,9 @@ public class Classpath implements Iterable<String>
         try
         {
             IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation, roleName );
-            for ( URL url : getAsUrlList() )
+            for ( String classPathElement : unmodifiableElements )
             {
-                classLoader.addURL( url );
+                classLoader.addURL( new File( classPathElement ).toURL() );
             }
             if ( parent != null )
             {
@@ -178,7 +178,6 @@ public class Classpath implements Iterable<String>
             throw new SurefireExecutionException( "When creating classloader", e );
         }
     }
-
 
     public int hashCode()
     {
