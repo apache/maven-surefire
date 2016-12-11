@@ -101,6 +101,8 @@ import static org.apache.maven.shared.utils.StringUtils.capitalizeFirstLetter;
 import static org.apache.maven.shared.utils.StringUtils.isEmpty;
 import static org.apache.maven.shared.utils.StringUtils.isNotBlank;
 import static org.apache.maven.shared.utils.StringUtils.split;
+import static org.apache.maven.surefire.suite.RunResult.failure;
+import static org.apache.maven.surefire.suite.RunResult.noTestsRun;
 
 /**
  * Abstract base class for running tests using Surefire.
@@ -774,7 +776,7 @@ public abstract class AbstractSurefireMojo
                     throw new MojoFailureException(
                         "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
                 }
-                handleSummary( RunResult.noTestsRun(), null );
+                handleSummary( noTestsRun(), null );
                 return;
             }
             logReportsDirectory();
@@ -893,7 +895,7 @@ public abstract class AbstractSurefireMojo
     {
         List<ProviderInfo> providers = createProviders();
 
-        RunResult current = RunResult.noTestsRun();
+        RunResult current = noTestsRun();
 
         Exception firstForkException = null;
         for ( ProviderInfo provider : providers )
@@ -927,7 +929,7 @@ public abstract class AbstractSurefireMojo
 
         if ( firstForkException != null )
         {
-            current = RunResult.failure( current, firstForkException );
+            current = failure( current, firstForkException );
         }
 
         handleSummary( current, firstForkException );
