@@ -331,18 +331,7 @@ public class SurefirePlugin
     protected void handleSummary( RunResult summary, Exception firstForkException )
         throws MojoExecutionException, MojoFailureException
     {
-        assertNoException( firstForkException );
-
-        reportExecution( this, summary, getConsoleLogger() );
-    }
-
-    private void assertNoException( Exception firstForkException )
-        throws MojoFailureException
-    {
-        if ( firstForkException != null )
-        {
-            throw new MojoFailureException( firstForkException.getMessage(), firstForkException );
-        }
+        reportExecution( this, summary, getConsoleLogger(), firstForkException );
     }
 
     protected boolean isSkipExecution()

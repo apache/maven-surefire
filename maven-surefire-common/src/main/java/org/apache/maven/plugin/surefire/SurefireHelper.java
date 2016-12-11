@@ -26,6 +26,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -34,10 +35,10 @@ import java.util.Collection;
 import java.util.List;
 
 import static java.util.Collections.unmodifiableList;
-import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_ERROR;
-import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_WARN;
-import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_INFO;
 import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
+import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_ERROR;
+import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_INFO;
+import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_WARN;
 import static org.apache.maven.surefire.cli.CommandLineOption.SHOW_ERRORS;
 
 /**
@@ -55,48 +56,26 @@ public final class SurefireHelper
     }
 
     public static void reportExecution( SurefireReportParameters reportParameters, RunResult result,
-                                        PluginConsoleLogger log )
+                                        PluginConsoleLogger log, Exception firstForkException )
         throws MojoFailureException, MojoExecutionException
     {
-        boolean timeoutOrOtherFailure = result.isFailureOrTimeout();
-
-        if ( !timeoutOrOtherFailure )
+        if ( firstForkException == null && !result.isTimeout() && result.isErrorFree() )
         {
-            if ( result.getCompletedCount() == 0 )
+            if ( result.getCompletedCount() == 0 && failIfNoTests( reportParameters ) )
             {
-                if ( reportParameters.getFailIfNoTests() == null || !reportParameters.getFailIfNoTests() )
-                {
-                    return;
-                }
-                throw new MojoFailureException(
-                    "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
+                throw new MojoFailureException( "No tests were executed!  "
+                                                        + "(Set -DfailIfNoTests=false to ignore this error.)" );
             }
-
-            if ( result.isErrorFree() )
-            {
-                return;
-            }
+            return;
         }
-
-        String msg = timeoutOrOtherFailure
-            ? "There was a timeout or other error in the fork"
-            : "There are test failures.\n\nPlease refer to " + reportParameters.getReportsDirectory()
-                + " for the individual test results.";
 
         if ( reportParameters.isTestFailureIgnore() )
         {
-            log.error( msg );
+            log.error( createErrorMessage( reportParameters, result, firstForkException ) );
         }
         else
         {
-            if ( result.isFailure() )
-            {
-                throw new MojoExecutionException( msg );
-            }
-            else
-            {
-                throw new MojoFailureException( msg );
-            }
+            throwException( reportParameters, result, firstForkException );
         }
     }
 
@@ -179,6 +158,57 @@ public final class SurefireHelper
                 .getMethod( "getReactorFailureBehavior" )
                 .invoke( request );
         }
+    }
+
+    private static boolean failIfNoTests( SurefireReportParameters reportParameters )
+    {
+        return reportParameters.getFailIfNoTests() != null && reportParameters.getFailIfNoTests();
+    }
+
+    private static boolean isNotFatal( Exception firstForkException )
+    {
+        return firstForkException == null || firstForkException instanceof TestSetFailedException;
+    }
+
+    private static void throwException( SurefireReportParameters reportParameters, RunResult result,
+                                           Exception firstForkException )
+            throws MojoFailureException, MojoExecutionException
+    {
+        if ( isNotFatal( firstForkException ) )
+        {
+            throw new MojoFailureException( createErrorMessage( reportParameters, result, firstForkException ),
+                                                    firstForkException );
+        }
+        else
+        {
+            throw new MojoExecutionException( createErrorMessage( reportParameters, result, firstForkException ),
+                                                    firstForkException );
+        }
+    }
+
+    private static String createErrorMessage( SurefireReportParameters reportParameters, RunResult result,
+                                              Exception firstForkException )
+    {
+        StringBuilder msg = new StringBuilder( 128 );
+
+        if ( result.isTimeout() )
+        {
+            msg.append( "There was a timeout or other error in the fork" );
+        }
+        else
+        {
+            msg.append( "There are test failures.\n\nPlease refer to " )
+                    .append( reportParameters.getReportsDirectory() )
+                    .append( " for the individual test results." );
+        }
+
+        if ( firstForkException != null && firstForkException.getLocalizedMessage() != null )
+        {
+            msg.append( '\n' )
+                    .append( firstForkException.getLocalizedMessage() );
+        }
+
+        return msg.toString();
     }
 
 }

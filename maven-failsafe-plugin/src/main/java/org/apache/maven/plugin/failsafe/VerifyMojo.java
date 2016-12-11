@@ -209,7 +209,7 @@ public class VerifyMojo
                 throw new MojoExecutionException( e.getMessage(), e );
             }
 
-            reportExecution( this, summary, getConsoleLogger() );
+            reportExecution( this, summary, getConsoleLogger(), null );
         }
     }
 

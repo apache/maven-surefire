@@ -177,7 +177,7 @@ public class RunResult
     /* Indicates test timeout or technical failure */
     public boolean isFailureOrTimeout()
     {
-        return this.timeout || isFailure();
+        return isTimeout() || isFailure();
     }
 
     public boolean isFailure()
@@ -194,7 +194,6 @@ public class RunResult
     {
         return timeout;
     }
-
 
     public RunResult aggregate( RunResult other )
     {
