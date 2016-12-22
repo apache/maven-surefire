@@ -421,9 +421,9 @@ public class DefaultReporterFactory
     enum TestResultType
     {
 
-        error(   "Tests in error: " ),
-        failure( "Failed tests: "   ),
-        flake(   "Flaked tests: "   ),
+        error(  "Erroneous Tests: " ),
+        failure( "Failed Tests: "   ),
+        flake(    "Flaky Tests: "   ),
         success( "Success: "        ),
         skipped( "Skipped: "        ),
         unknown( "Unknown: "        );

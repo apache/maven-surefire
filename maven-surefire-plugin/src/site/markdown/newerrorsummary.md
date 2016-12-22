@@ -26,11 +26,11 @@ report of the run or the files on disk.
 
 ### Example output:
 
-    Failed tests:
+    Failed Tests:
       Test1.assertion1:59 Bending maths expected:<[123]> but was:<[312]>
       Test1.assertion2:64 True is false
 
-    Tests in error:
+    Erroneous Tests:
       Test1.nullPointerInLibrary:38 » NullPointer
       Test1.failInMethod:43->innerFailure:68 NullPointer Fail here
       Test1.failInLibInMethod:48 » NullPointer
