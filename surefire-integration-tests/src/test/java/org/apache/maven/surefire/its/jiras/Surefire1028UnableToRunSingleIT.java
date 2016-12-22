@@ -28,13 +28,13 @@ import org.junit.Test;
  * <p/>
  * With Surefire 2.15
  * {@code $ mvn test -Dtest=MyTest#testFoo}
- * Results :
+ * Results:
  * Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
  * <p/>
  * With Surefire 2.16
  * {@code $ mvn test -Dtest=MyTest#testFoo}
  * <p/>
- * Results :
+ * Results:
  * Tests run: 0, Failures: 0, Errors: 0, Skipped: 0
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
