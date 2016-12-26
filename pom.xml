@@ -380,6 +380,7 @@
         <plugin>
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
+          <version>0.12</version>
           <executions>
             <execution>
               <id>rat-check</id>
