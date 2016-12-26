@@ -89,6 +89,7 @@ Shutdown of Forked JVM
 
 * Crashed forked JVM caused listing the crashed test(s)
 
-  After the JVM exited abruptly, the console lists the message <<<Crashed tests:>>> if the entire
-  test-set has not been yet completed. This happens if a test exited, killed JVM or segmentation fault crashed JVM.
+  After the JVM exited abruptly, the console lists the message <<<Crashed tests:>>> with a list of crashed tests if the
+  entire test-set has not been yet completed. This happens if a test exited, killed JVM or a segmentation fault crashed
+  JVM. In such cases you may be interested in dump files generated in reports directory, see {{{../faq.html#dumpfiles}FAQ}}.
 

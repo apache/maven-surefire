@@ -30,6 +30,7 @@ import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvid
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.booterclient.output.NativeStdErrStreamConsumer;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.shared.utils.cli.CommandLineCallable;
 import org.apache.maven.shared.utils.cli.CommandLineException;
@@ -44,11 +45,11 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DefaultScanResult;
+import org.apache.maven.surefire.util.internal.DumpFileUtils;
 
 import java.io.Closeable;
 import java.io.File;
@@ -83,20 +84,20 @@ import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.createCopyAn
 import static org.apache.maven.plugin.surefire.booterclient.ForkNumberBucket.drawNumber;
 import static org.apache.maven.plugin.surefire.booterclient.ForkNumberBucket.returnNumber;
 import static org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream
-    .TestLessInputStreamBuilder;
+                      .TestLessInputStreamBuilder;
 import static org.apache.maven.shared.utils.cli.CommandLineUtils.executeCommandLineAsCallable;
 import static org.apache.maven.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
 import static org.apache.maven.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
 import static org.apache.maven.surefire.booter.Classpath.join;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.writePropertiesFile;
-import static org.apache.maven.surefire.suite.RunResult.timeout;
-import static org.apache.maven.surefire.suite.RunResult.failure;
 import static org.apache.maven.surefire.suite.RunResult.SUCCESS;
+import static org.apache.maven.surefire.suite.RunResult.failure;
+import static org.apache.maven.surefire.suite.RunResult.timeout;
 import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDownToZero;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThread;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
-import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
 import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
+import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
 
 /**
  * Starts the fork or runs in-process.
@@ -127,6 +128,10 @@ public class ForkStarter
         = newDaemonThreadFactory( "surefire-jvm-killer-shutdownhook" );
 
     private static final AtomicInteger SYSTEM_PROPERTIES_FILE_COUNTER = new AtomicInteger();
+
+    private static final String DUMP_FILE_PREFIX = DumpFileUtils.newFormattedDateFileName() + "-jvmRun";
+
+    private static final AtomicInteger DUMP_FILE_POSTFIX_COUNTER = new AtomicInteger();
 
     private final ScheduledExecutorService pingThreadScheduler = createPingScheduler();
 
@@ -529,10 +534,12 @@ public class ForkStarter
                             AbstractForkInputStream testProvidingInputStream, boolean readTestsFromInStream )
         throws SurefireBooterForkException
     {
+        final String tempDir;
         final File surefireProperties;
         final File systPropsFile;
         try
         {
+            tempDir = forkConfiguration.getTempDirectory().getCanonicalPath();
             BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
 
             surefireProperties = booterSerializer.serialize( providerProperties, providerConfiguration,
@@ -577,11 +584,12 @@ public class ForkStarter
             testProvidingInputStream.setFlushReceiverProvider( cli );
         }
 
-        cli.createArg().setFile( surefireProperties );
-
+        cli.createArg().setValue( tempDir );
+        cli.createArg().setValue( DUMP_FILE_PREFIX + DUMP_FILE_POSTFIX_COUNTER.incrementAndGet() );
+        cli.createArg().setValue( surefireProperties.getName() );
         if ( systPropsFile != null )
         {
-            cli.createArg().setFile( systPropsFile );
+            cli.createArg().setValue( systPropsFile.getName() );
         }
 
         final ThreadedStreamConsumer threadedStreamConsumer = new ThreadedStreamConsumer( forkClient );
@@ -640,10 +648,10 @@ public class ForkStarter
                 {
                     StackTraceWriter errorInFork = forkClient.getErrorInFork();
                     // noinspection ThrowFromFinallyBlock
-                    throw new RuntimeException( "There was an error in the forked process"
+                    throw new SurefireBooterForkException( "There was an error in the forked process"
                                                         + detail
                                                         + '\n'
-                                                        + errorInFork.writeTraceToString(), cause );
+                                                        + errorInFork.getThrowable().getLocalizedMessage(), cause );
                 }
                 if ( !forkClient.isSaidGoodBye() )
                 {
@@ -654,7 +662,7 @@ public class ForkStarter
                         testsInProgress += "\n" + test;
                     }
                     // noinspection ThrowFromFinallyBlock
-                    throw new RuntimeException(
+                    throw new SurefireBooterForkException(
                         "The forked VM terminated without properly saying goodbye. VM crash or System.exit called?"
                             + "\nCommand was " + cli.toString() + detail + errorCode + testsInProgress, cause );
                 }

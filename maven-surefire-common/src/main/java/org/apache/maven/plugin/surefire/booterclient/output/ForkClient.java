@@ -271,6 +271,7 @@ public class ForkClient
                             .warning( createConsoleMessage( remaining ) );
                     break;
                 default:
+                    LostCommandsDumpSingleton.getSingleton().dumpText( s, defaultReporterFactory );
                     log.warning( s );
             }
         }
@@ -278,15 +279,18 @@ public class ForkClient
         {
             // SUREFIRE-859
             log.warning( s );
+            LostCommandsDumpSingleton.getSingleton().dumpException( e, s, defaultReporterFactory );
         }
         catch ( NoSuchElementException e )
         {
             // SUREFIRE-859
             log.warning( s );
+            LostCommandsDumpSingleton.getSingleton().dumpException( e, s, defaultReporterFactory );
         }
         catch ( ReporterException e )
         {
-            throw new RuntimeException( e );
+            LostCommandsDumpSingleton.getSingleton().dumpException( e, s, defaultReporterFactory );
+            throw e;
         }
     }
 

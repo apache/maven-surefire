@@ -22,9 +22,11 @@ package org.apache.maven.surefire.booter;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.internal.DumpFileUtils;
 
 import java.io.DataInputStream;
 import java.io.EOFException;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Iterator;
@@ -85,6 +87,8 @@ public final class CommandReader
 
     private volatile ConsoleLogger logger = new NullConsoleLogger();
 
+    private volatile File dumpFile;
+
     private CommandReader()
     {
     }
@@ -97,6 +101,11 @@ public final class CommandReader
             reader.commandThread.start();
         }
         return reader;
+    }
+
+    public void setDumpFile( File dumpFile )
+    {
+        this.dumpFile = dumpFile;
     }
 
     public CommandReader setShutdown( Shutdown shutdown )
@@ -123,6 +132,7 @@ public final class CommandReader
             }
             catch ( InterruptedException e )
             {
+                DumpFileUtils.dumpException( e, dumpFile );
                 throw new TestSetFailedException( e.getLocalizedMessage() );
             }
         }
@@ -375,7 +385,9 @@ public final class CommandReader
                     Command command = decode( stdIn );
                     if ( command == null )
                     {
-                        logger.error( "[SUREFIRE] std/in stream corrupted: first sequence not recognized" );
+                        String errorMessage = "[SUREFIRE] std/in stream corrupted: first sequence not recognized";
+                        DumpFileUtils.dumpText( errorMessage, dumpFile );
+                        logger.error( errorMessage );
                         break;
                     }
                     else
@@ -411,6 +423,8 @@ public final class CommandReader
             }
             catch ( EOFException e )
             {
+                DumpFileUtils.dumpException( e, dumpFile );
+
                 CommandReader.this.state.set( TERMINATED );
                 if ( !isTestSetFinished )
                 {
@@ -420,6 +434,8 @@ public final class CommandReader
             }
             catch ( IOException e )
             {
+                DumpFileUtils.dumpException( e, dumpFile );
+
                 CommandReader.this.state.set( TERMINATED );
                 // If #stop() method is called, reader thread is interrupted and cause is InterruptedException.
                 if ( !( e.getCause() instanceof InterruptedException ) )

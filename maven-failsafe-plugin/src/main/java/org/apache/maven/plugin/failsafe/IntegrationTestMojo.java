@@ -19,12 +19,6 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
@@ -36,6 +30,16 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.suite.RunResult;
 
+import javax.xml.bind.JAXBException;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+
+import static org.apache.maven.plugin.failsafe.xmlsummary.FailsafeSummaryXmlUtils.writeSummary;
 import static org.apache.maven.shared.utils.ReaderFactory.FILE_ENCODING;
 
 /**
@@ -46,9 +50,9 @@ import static org.apache.maven.shared.utils.ReaderFactory.FILE_ENCODING;
  * @noinspection JavaDoc,
  */
 @Mojo( name = "integration-test", requiresProject = true, requiresDependencyResolution = ResolutionScope.TEST,
-       defaultPhase = LifecyclePhase.INTEGRATION_TEST, threadSafe = true )
+             defaultPhase = LifecyclePhase.INTEGRATION_TEST, threadSafe = true )
 public class IntegrationTestMojo
-    extends AbstractSurefireMojo
+        extends AbstractSurefireMojo
 {
 
     private static final String FAILSAFE_IN_PROGRESS_CONTEXT_KEY = "failsafe-in-progress";
@@ -235,7 +239,7 @@ public class IntegrationTestMojo
      * By default, Surefire forks your tests using a manifest-only JAR; set this parameter to "false" to force it to
      * launch your tests with a plain old Java classpath. (See the
      * <a href="http://maven.apache.org/plugins/maven-failsafe-plugin/examples/class-loading.html">
-     *     http://maven.apache.org/plugins/maven-failsafe-plugin/examples/class-loading.html</a>
+     * http://maven.apache.org/plugins/maven-failsafe-plugin/examples/class-loading.html</a>
      * for a more detailed explanation of manifest-only JARs and their benefits.)
      * <br/>
      * Beware, setting this to "false" may cause your tests to fail on Windows if your classpath is too long.
@@ -326,7 +330,7 @@ public class IntegrationTestMojo
      * Defaults to "0".<br/>
      * See the prerequisites and limitations in documentation:<br/>
      * <a href="http://maven.apache.org/plugins/maven-failsafe-plugin/examples/skip-after-failure.html">
-     *     http://maven.apache.org/plugins/maven-failsafe-plugin/examples/skip-after-failure.html</a>
+     * http://maven.apache.org/plugins/maven-failsafe-plugin/examples/skip-after-failure.html</a>
      *
      * @since 2.19
      */
@@ -353,7 +357,7 @@ public class IntegrationTestMojo
 
     @SuppressWarnings( "unchecked" )
     protected void handleSummary( RunResult summary, Exception firstForkException )
-        throws MojoExecutionException, MojoFailureException
+            throws MojoExecutionException, MojoFailureException
     {
         File summaryFile = getSummaryFile();
         if ( !summaryFile.getParentFile().isDirectory() )
@@ -365,9 +369,13 @@ public class IntegrationTestMojo
         try
         {
             Object token = getPluginContext().get( FAILSAFE_IN_PROGRESS_CONTEXT_KEY );
-            summary.writeSummary( summaryFile, token != null, getEncodingOrDefault() );
+            writeSummary( summary, summaryFile, token != null, toCharset( getEncodingOrDefault() ) );
         }
         catch ( IOException e )
+        {
+            throw new MojoExecutionException( e.getMessage(), e );
+        }
+        catch ( JAXBException e )
         {
             throw new MojoExecutionException( e.getMessage(), e );
         }
@@ -379,10 +387,12 @@ public class IntegrationTestMojo
     {
         if ( StringUtils.isEmpty( encoding ) )
         {
-            getConsoleLogger().warning( "File encoding has not been set, using platform encoding "
-                + FILE_ENCODING
-                + ", i.e. build is platform dependent! The file encoding for reports output files "
-                + "should be provided by the POM property ${project.reporting.outputEncoding}." );
+            getConsoleLogger()
+                    .warning( "File encoding has not been set, using platform encoding "
+                                      + FILE_ENCODING
+                                      + ", i.e. build is platform dependent! The file encoding for reports output files"
+                                      + " should be provided by the POM property ${project.reporting.outputEncoding}."
+            );
             return FILE_ENCODING;
         }
         else
@@ -740,5 +750,10 @@ public class IntegrationTestMojo
     protected final boolean hasSuiteXmlFiles()
     {
         return suiteXmlFiles != null && suiteXmlFiles.length != 0;
+    }
+
+    static Charset toCharset( String encoding )
+    {
+        return Charset.forName( Charset.isSupported( encoding ) ? encoding : encoding.toUpperCase( Locale.ROOT ) );
     }
 }

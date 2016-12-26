@@ -165,31 +165,31 @@ public final class SurefireHelper
         return reportParameters.getFailIfNoTests() != null && reportParameters.getFailIfNoTests();
     }
 
-    private static boolean isNotFatal( Exception firstForkException )
+    private static boolean isFatal( Exception firstForkException )
     {
-        return firstForkException == null || firstForkException instanceof TestSetFailedException;
+        return firstForkException != null && !( firstForkException instanceof TestSetFailedException );
     }
 
     private static void throwException( SurefireReportParameters reportParameters, RunResult result,
                                            Exception firstForkException )
             throws MojoFailureException, MojoExecutionException
     {
-        if ( isNotFatal( firstForkException ) )
+        if ( isFatal( firstForkException ) || result.isInternalError()  )
         {
-            throw new MojoFailureException( createErrorMessage( reportParameters, result, firstForkException ),
+            throw new MojoExecutionException( createErrorMessage( reportParameters, result, firstForkException ),
                                                     firstForkException );
         }
         else
         {
-            throw new MojoExecutionException( createErrorMessage( reportParameters, result, firstForkException ),
-                                                    firstForkException );
+            throw new MojoFailureException( createErrorMessage( reportParameters, result, firstForkException ),
+                                                  firstForkException );
         }
     }
 
     private static String createErrorMessage( SurefireReportParameters reportParameters, RunResult result,
                                               Exception firstForkException )
     {
-        StringBuilder msg = new StringBuilder( 128 );
+        StringBuilder msg = new StringBuilder( 512 );
 
         if ( result.isTimeout() )
         {
@@ -199,13 +199,22 @@ public final class SurefireHelper
         {
             msg.append( "There are test failures.\n\nPlease refer to " )
                     .append( reportParameters.getReportsDirectory() )
-                    .append( " for the individual test results." );
+                    .append( " for the individual test results." )
+                    .append( '\n' )
+                    .append( "Please refer to dump files (if any exist) "
+                                     + "[date]-jvmRun[N].dump, [date].dumpstream and [date]-jvmRun[N].dumpstream" );
         }
 
         if ( firstForkException != null && firstForkException.getLocalizedMessage() != null )
         {
             msg.append( '\n' )
                     .append( firstForkException.getLocalizedMessage() );
+        }
+
+        if ( result.isFailure() )
+        {
+            msg.append( '\n' )
+                    .append( result.getFailure() );
         }
 
         return msg.toString();

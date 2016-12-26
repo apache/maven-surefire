@@ -108,13 +108,32 @@ under the License.
       </answer>
     </faq>
     <faq id="failsafe-jar">
-      <question>How maven-failsafe-plugin allows me to configure the jar file or classes to use</question>
+      <question>How maven-failsafe-plugin allows me to configure the jar file or classes to use?</question>
       <answer>
         <p>
-        By default maven-failsafe-plugin uses project artifact file if packaging is set to "jar" in pom.xml.
-        This can be modified and for instance set to main project classes if you use configuration parameter
+        By default maven-failsafe-plugin uses project artifact file in test classpath if packaging is set to "jar" in
+        pom.xml. This can be modified and for instance set to main project classes if you use configuration parameter
         "classesDirectory". This would mean that you set value "${project.build.outputDirectory}" for the parameter
         "classesDirectory" in the configuration of plugin.
+        </p>
+      </answer>
+    </faq>
+    <faq id="dumpfiles">
+      <question>How to dump fatal errors and stack trace of plugin runtime if it fails?</question>
+      <answer>
+        <p>
+        By default <em>maven-failsafe-plugin</em> and <em>maven-surefire-plugin</em> dumps fatal errors in dump files
+        and these are located in <em>target/failsafe-reports</em> and <em>target/surefire-reports</em>.
+        Names of dump files are formatted as follows:
+        <br/>
+        <code>
+        <![CDATA[ [date]-jvmRun[N].dump]]><br/>
+        <![CDATA[ [date]-jvmRun[N].dumpstream]]><br/>
+        <![CDATA[ [date].dumpstream]]><br/>
+        </code>
+
+        Forked JVM process and plugin process communicate via std/out. If this channel is corrupted, for a whatever
+        reason, the dump of the corrupted stream appears in <em>*.dumpstream</em>.
         </p>
       </answer>
     </faq>

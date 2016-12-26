@@ -31,6 +31,7 @@ import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -98,6 +99,11 @@ public class DefaultReporterFactory
                                     reportConfiguration.isBriefOrPlainFormat() );
         addListener( testSetRunListener );
         return testSetRunListener;
+    }
+
+    public File getReportsDirectory()
+    {
+        return reportConfiguration.getReportsDirectory();
     }
 
     private ConsoleReporter createConsoleReporter()

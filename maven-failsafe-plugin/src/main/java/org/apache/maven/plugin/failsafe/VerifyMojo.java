@@ -19,18 +19,11 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.Collection;
-
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.failsafe.xmlsummary.FailsafeSummaryXmlUtils;
 import org.apache.maven.plugin.surefire.SurefireHelper;
 import org.apache.maven.plugin.surefire.SurefireReportParameters;
 import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
@@ -41,11 +34,12 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.suite.RunResult;
 
+import javax.xml.bind.JAXBException;
+import java.io.File;
+import java.util.Collection;
+
 import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
-import static org.apache.maven.shared.utils.ReaderFactory.FILE_ENCODING;
 import static org.apache.maven.shared.utils.StringUtils.capitalizeFirstLetter;
-import static org.apache.maven.shared.utils.StringUtils.isEmpty;
-import static org.apache.maven.shared.utils.io.IOUtil.close;
 import static org.apache.maven.surefire.suite.RunResult.noTestsRun;
 
 /**
@@ -54,10 +48,11 @@ import static org.apache.maven.surefire.suite.RunResult.noTestsRun;
  * @author Stephen Connolly
  * @author Jason van Zyl
  */
+@SuppressWarnings( "unused" )
 @Mojo( name = "verify", defaultPhase = LifecyclePhase.VERIFY, requiresProject = true, threadSafe = true )
 public class VerifyMojo
-    extends AbstractMojo
-    implements SurefireReportParameters
+        extends AbstractMojo
+        implements SurefireReportParameters
 {
 
     /**
@@ -167,44 +162,28 @@ public class VerifyMojo
     private volatile PluginConsoleLogger consoleLogger;
 
     public void execute()
-        throws MojoExecutionException, MojoFailureException
+            throws MojoExecutionException, MojoFailureException
     {
         cli = commandLineOptions();
         if ( verifyParameters() )
         {
-            logDebugOrCliShowErrors(
-                capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
+            logDebugOrCliShowErrors( capitalizeFirstLetter( getPluginName() )
+                                             + " report directory: " + getReportsDirectory() );
 
             RunResult summary;
             try
             {
-                final String encoding;
-                if ( isEmpty( this.encoding ) )
-                {
-                    getConsoleLogger()
-                            .warning( "File encoding has not been set, using platform encoding "
-                                              + FILE_ENCODING
-                                              + ", i.e. build is platform dependent! The file encoding for "
-                                              + "reports output files should be provided by the POM property "
-                                              + "${project.reporting.outputEncoding}." );
-                    encoding = FILE_ENCODING;
-                }
-                else
-                {
-                    encoding = this.encoding;
-                }
-
-                summary = existsSummaryFile() ? readSummary( encoding, summaryFile ) : noTestsRun();
+                summary = existsSummaryFile() ? readSummary( summaryFile ) : noTestsRun();
 
                 if ( existsSummaryFiles() )
                 {
                     for ( final File summaryFile : summaryFiles )
                     {
-                        summary = summary.aggregate( readSummary( encoding, summaryFile ) );
+                        summary = summary.aggregate( readSummary( summaryFile ) );
                     }
                 }
             }
-            catch ( IOException e )
+            catch ( JAXBException e )
             {
                 throw new MojoExecutionException( e.getMessage(), e );
             }
@@ -228,29 +207,13 @@ public class VerifyMojo
         return consoleLogger;
     }
 
-    private RunResult readSummary( String encoding, File summaryFile )
-        throws IOException
+    private RunResult readSummary( File summaryFile ) throws JAXBException
     {
-        FileInputStream fileInputStream = null;
-        BufferedInputStream bufferedInputStream = null;
-        Reader reader = null;
-        try
-        {
-            fileInputStream = new FileInputStream( summaryFile );
-            bufferedInputStream = new BufferedInputStream( fileInputStream );
-            reader = new InputStreamReader( bufferedInputStream, encoding );
-            return RunResult.fromInputStream( bufferedInputStream, encoding );
-        }
-        finally
-        {
-            close( reader );
-            close( bufferedInputStream );
-            close( fileInputStream );
-        }
+        return FailsafeSummaryXmlUtils.toRunResult( summaryFile );
     }
 
     protected boolean verifyParameters()
-        throws MojoFailureException
+            throws MojoFailureException
     {
         if ( isSkip() || isSkipTests() || isSkipITs() || isSkipExec() )
         {
