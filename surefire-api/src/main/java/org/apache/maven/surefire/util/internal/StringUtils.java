@@ -59,9 +59,8 @@ public final class StringUtils
 {
     public static final String NL = System.getProperty( "line.separator" );
 
-    private static final byte[] HEX_CHARS = new byte[] {
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        'A', 'B', 'C', 'D', 'E', 'F' };
+    private static final byte[] HEX_CHARS = {
+                    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
     private static final Charset DEFAULT_CHARSET = Charset.defaultCharset();
 

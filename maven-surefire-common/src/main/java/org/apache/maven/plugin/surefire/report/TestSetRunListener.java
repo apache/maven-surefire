@@ -166,7 +166,6 @@ public class TestSetRunListener
 
         addTestMethodStats();
         detailsForThis.reset();
-
     }
 
     // ----------------------------------------------------------------------

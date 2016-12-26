@@ -2047,7 +2047,7 @@ public abstract class AbstractSurefireMojo
     }
 
     /**
-     * Operates on raw plugin paramenters, not the "effective" values.
+     * Operates on raw plugin parameters, not the "effective" values.
      *
      * @return The checksum
      */

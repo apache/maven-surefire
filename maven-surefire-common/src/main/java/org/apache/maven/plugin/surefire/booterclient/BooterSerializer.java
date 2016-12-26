@@ -61,7 +61,7 @@ class BooterSerializer
 {
     private final ForkConfiguration forkConfiguration;
 
-    public BooterSerializer( ForkConfiguration forkConfiguration )
+    BooterSerializer( ForkConfiguration forkConfiguration )
     {
         this.forkConfiguration = forkConfiguration;
     }
@@ -69,7 +69,7 @@ class BooterSerializer
     /**
      * Does not modify sourceProperties
      */
-    public File serialize( KeyValueSource sourceProperties, ProviderConfiguration booterConfiguration,
+    File serialize( KeyValueSource sourceProperties, ProviderConfiguration booterConfiguration,
                            StartupConfiguration providerConfiguration, Object testSet, boolean readTestsFromInStream )
         throws IOException
     {
