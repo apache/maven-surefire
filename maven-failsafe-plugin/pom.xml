@@ -282,6 +282,7 @@
                   <projectsDirectory>src/it</projectsDirectory>
                   <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                   <goals>
+                    <goal>clean</goal>
                     <goal>verify</goal>
                   </goals>
                   <setupIncludes>
