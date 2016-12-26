@@ -120,7 +120,7 @@ public class DefaultReporterFactoryTest
         // Now test the result will be printed out correctly
         factory.printTestFailures( flake );
         String[] expectedFlakeOutput =
-            { "Flaky Tests: ", TEST_FOUR, "  Run 1: " + ASSERTION_FAIL, "  Run 2: PASS", "", TEST_ONE,
+            { "Flakes: ", TEST_FOUR, "  Run 1: " + ASSERTION_FAIL, "  Run 2: PASS", "", TEST_ONE,
                 "  Run 1: " + ERROR, "  Run 2: " + ASSERTION_FAIL, "  Run 3: PASS", "", TEST_TWO, "  Run 1: " + ERROR,
                 "  Run 2: PASS", "" };
         assertEquals( asList( expectedFlakeOutput ), reporter.getMessages() );
@@ -128,7 +128,7 @@ public class DefaultReporterFactoryTest
         reporter.reset();
         factory.printTestFailures( error );
         String[] expectedFailureOutput =
-            { "Erroneous Tests: ", TEST_THREE, "  Run 1: " + ASSERTION_FAIL, "  Run 2: " + ERROR, "  Run 3: " + ERROR, ""
+            { "Errors: ", TEST_THREE, "  Run 1: " + ASSERTION_FAIL, "  Run 2: " + ERROR, "  Run 3: " + ERROR, ""
             };
         assertEquals( asList( expectedFailureOutput ), reporter.getMessages() );
 

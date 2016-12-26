@@ -427,12 +427,12 @@ public class DefaultReporterFactory
     enum TestResultType
     {
 
-        error(  "Erroneous Tests: " ),
-        failure( "Failed Tests: "   ),
-        flake(    "Flaky Tests: "   ),
-        success( "Success: "        ),
-        skipped( "Skipped: "        ),
-        unknown( "Unknown: "        );
+        error(   "Errors: "   ),
+        failure( "Failures: " ),
+        flake(   "Flakes: "   ),
+        success( "Success: "  ),
+        skipped( "Skipped: "  ),
+        unknown( "Unknown: "  );
 
         private final String logPrefix;
 

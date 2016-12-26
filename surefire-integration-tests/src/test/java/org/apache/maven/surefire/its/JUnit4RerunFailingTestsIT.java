@@ -216,11 +216,11 @@ public class JUnit4RerunFailingTestsIT
     private void verifyFailuresOneRetry( OutputValidator outputValidator, int run, int failures, int errors,
                                          int flakes )
     {
-        outputValidator.verifyTextInLog( "Failed Tests:" );
+        outputValidator.verifyTextInLog( "Failures:" );
         outputValidator.verifyTextInLog( "Run 1: FlakyFirstTimeTest.testFailingTestOne" );
         outputValidator.verifyTextInLog( "Run 2: FlakyFirstTimeTest.testFailingTestOne" );
 
-        outputValidator.verifyTextInLog( "Erroneous Tests:" );
+        outputValidator.verifyTextInLog( "Errors:" );
         outputValidator.verifyTextInLog( "Run 1: FlakyFirstTimeTest.testErrorTestOne" );
         outputValidator.verifyTextInLog( "Run 2: FlakyFirstTimeTest.testErrorTestOne" );
 
@@ -230,7 +230,7 @@ public class JUnit4RerunFailingTestsIT
     private void verifyOnlyFailuresOneRetry( OutputValidator outputValidator, int run, int failures, int errors,
                                              int flakes )
     {
-        outputValidator.verifyTextInLog( "Failed Tests:" );
+        outputValidator.verifyTextInLog( "Failures:" );
         outputValidator.verifyTextInLog( "Run 1: FlakyFirstTimeTest.testFailingTestOne" );
         outputValidator.verifyTextInLog( "Run 2: FlakyFirstTimeTest.testFailingTestOne" );
 
@@ -240,7 +240,7 @@ public class JUnit4RerunFailingTestsIT
     private void verifyFailuresTwoRetry( OutputValidator outputValidator, int run, int failures, int errors,
                                          int flakes )
     {
-        outputValidator.verifyTextInLog( "Flaky Tests:" );
+        outputValidator.verifyTextInLog( "Flakes:" );
         outputValidator.verifyTextInLog( "Run 1: FlakyFirstTimeTest.testFailingTestOne" );
         outputValidator.verifyTextInLog( "Run 2: FlakyFirstTimeTest.testFailingTestOne" );
         outputValidator.verifyTextInLog( "Run 3: PASS" );
@@ -253,7 +253,7 @@ public class JUnit4RerunFailingTestsIT
 
     private void verifyFailuresNoRetry( OutputValidator outputValidator, int run, int failures, int errors, int flakes )
     {
-        outputValidator.verifyTextInLog( "Failed Tests:" );
+        outputValidator.verifyTextInLog( "Failures:" );
         outputValidator.verifyTextInLog( "testFailingTestOne(junit4.FlakyFirstTimeTest)" );
         outputValidator.verifyTextInLog( "ERROR" );
         outputValidator.verifyTextInLog( "testErrorTestOne(junit4.FlakyFirstTimeTest)" );
