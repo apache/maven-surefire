@@ -5,7 +5,7 @@
   ------
   2010-01-09
   ------
-  
+
  ~~ Licensed to the Apache Software Foundation (ASF) under one
  ~~ or more contributor license agreements.  See the NOTICE file
  ~~ distributed with this work for additional information
@@ -164,7 +164,16 @@ Inclusions and Exclusions of Tests
 +---+
 
   Note the syntax <<<%regex[expr]>>>, where <<<expr>>> is the actual expression and the rest is just wrapping. Also
-  note that regex matches are done over <<<*.class>>> files and not <<<*.java>>> files.
+  note the following about the use of regular expressions:
+
+   * Regex matches are done over <<<*.class>>> files and not <<<*.java>>> files
+
+   * Regex matches are done over paths using slashes ("<<</>>>") and not package names using dots ("<<<.>>>"), so the
+      "<<<.>>>" in <<<pkg.*Slow.*.class>>> is a regex metacharacter, which happens to match any character, notably
+      the (forward) slashes ("<<</>>>") that make up the path. Slashes here are <forward>, even on Windows
+
+   * The trailing <<<.class>>> is interpreted literally, and not as a regular expression ("<<<\.class>>>" does not
+      work here)
 
 * Multiple Formats in One
 
