@@ -35,6 +35,7 @@ import static java.util.Collections.singleton;
 import static org.apache.maven.surefire.testset.ResolvedTest.Type.CLASS;
 import static org.apache.maven.surefire.testset.ResolvedTest.Type.METHOD;
 
+// TODO In Surefire 3.0 see SUREFIRE-1309 and use normal fully qualified class name regex instead.
 /**
  * Resolved multi pattern filter e.g. -Dtest=MyTest#test,!AnotherTest#otherTest into an object model
  * composed of included and excluded tests.<br/>
