@@ -79,8 +79,6 @@ public class ForkClient
     private static final long START_TIME_ZERO = 0L;
     private static final long START_TIME_NEGATIVE_TIMEOUT = -1L;
 
-    private final RunListener testSetReporter;
-
     private final DefaultReporterFactory defaultReporterFactory;
 
     private final Properties testVmSystemProperties;
@@ -97,6 +95,8 @@ public class ForkClient
 
     private final ConsoleLogger log;
 
+    private RunListener testSetReporter;
+
     private volatile boolean saidGoodBye;
 
     private volatile StackTraceWriter errorInFork;
@@ -104,7 +104,6 @@ public class ForkClient
     public ForkClient( DefaultReporterFactory defaultReporterFactory, Properties testVmSystemProperties,
                        NotifiableTestStream notifiableTestStream, ConsoleLogger log )
     {
-        testSetReporter = defaultReporterFactory.createReporter();
         this.defaultReporterFactory = defaultReporterFactory;
         this.testVmSystemProperties = testVmSystemProperties;
         this.notifiableTestStream = notifiableTestStream;
@@ -168,6 +167,15 @@ public class ForkClient
         return testSetStartedAt.get() == START_TIME_NEGATIVE_TIMEOUT;
     }
 
+    private RunListener getTestSetReporter()
+    {
+        if ( testSetReporter == null )
+        {
+            testSetReporter = defaultReporterFactory.createReporter();
+        }
+        return testSetReporter;
+    }
+
     private void processLine( String s )
     {
         try
@@ -185,49 +193,49 @@ public class ForkClient
             switch ( operationId )
             {
                 case BOOTERCODE_TESTSET_STARTING:
-                    testSetReporter.testSetStarting( createReportEntry( remaining ) );
+                    getTestSetReporter().testSetStarting( createReportEntry( remaining ) );
                     setCurrentStartTime();
                     break;
                 case BOOTERCODE_TESTSET_COMPLETED:
                     testsInProgress.clear();
                     
-                    testSetReporter.testSetCompleted( createReportEntry( remaining ) );
+                    getTestSetReporter().testSetCompleted( createReportEntry( remaining ) );
                     break;
                 case BOOTERCODE_TEST_STARTING:
                     ReportEntry reportEntry = createReportEntry( remaining );
                     testsInProgress.offer( reportEntry.getSourceName() );
                     
-                    testSetReporter.testStarting( createReportEntry( remaining ) );
+                    getTestSetReporter().testStarting( createReportEntry( remaining ) );
                     break;
                 case BOOTERCODE_TEST_SUCCEEDED:
                     reportEntry = createReportEntry( remaining );
                     testsInProgress.remove( reportEntry.getSourceName() );
                     
-                    testSetReporter.testSucceeded( createReportEntry( remaining ) );
+                    getTestSetReporter().testSucceeded( createReportEntry( remaining ) );
                     break;
                 case BOOTERCODE_TEST_FAILED:
                     reportEntry = createReportEntry( remaining );
                     testsInProgress.remove( reportEntry.getSourceName() );
                     
-                    testSetReporter.testFailed( createReportEntry( remaining ) );
+                    getTestSetReporter().testFailed( createReportEntry( remaining ) );
                     break;
                 case BOOTERCODE_TEST_SKIPPED:
                     reportEntry = createReportEntry( remaining );
                     testsInProgress.remove( reportEntry.getSourceName() );
                     
-                    testSetReporter.testSkipped( createReportEntry( remaining ) );
+                    getTestSetReporter().testSkipped( createReportEntry( remaining ) );
                     break;
                 case BOOTERCODE_TEST_ERROR:
                     reportEntry = createReportEntry( remaining );
                     testsInProgress.remove( reportEntry.getSourceName() );
                     
-                    testSetReporter.testError( createReportEntry( remaining ) );
+                    getTestSetReporter().testError( createReportEntry( remaining ) );
                     break;
                 case BOOTERCODE_TEST_ASSUMPTIONFAILURE:
                     reportEntry = createReportEntry( remaining );
                     testsInProgress.remove( reportEntry.getSourceName() );
                     
-                    testSetReporter.testAssumptionFailure( createReportEntry( remaining ) );
+                    getTestSetReporter().testAssumptionFailure( createReportEntry( remaining ) );
                     break;
                 case BOOTERCODE_SYSPROPS:
                     int keyEnd = remaining.indexOf( "," );
@@ -373,22 +381,23 @@ public class ForkClient
 
     /**
      * Used when getting reporters on the plugin side of a fork.
+     * Used by testing purposes only. May not be volatile variable.
      *
      * @return A mock provider reporter
      */
     public final RunListener getReporter()
     {
-        return testSetReporter;
+        return getTestSetReporter();
     }
 
     private ConsoleOutputReceiver getOrCreateConsoleOutputReceiver()
     {
-        return (ConsoleOutputReceiver) testSetReporter;
+        return (ConsoleOutputReceiver) getTestSetReporter();
     }
 
     private ConsoleLogger getOrCreateConsoleLogger()
     {
-        return (ConsoleLogger) testSetReporter;
+        return (ConsoleLogger) getTestSetReporter();
     }
 
     public void close( boolean hadTimeout )
