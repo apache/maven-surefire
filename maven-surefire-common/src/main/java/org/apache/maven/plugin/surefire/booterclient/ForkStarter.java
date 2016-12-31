@@ -603,10 +603,13 @@ public class ForkStarter
         SurefireBooterForkException booterForkException = null;
         try
         {
+            NativeStdErrStreamConsumer stdErrConsumer =
+                    new NativeStdErrStreamConsumer( forkClient.getDefaultReporterFactory() );
+
             CommandLineCallable future =
-                executeCommandLineAsCallable( cli, testProvidingInputStream, threadedStreamConsumer,
-                                              new NativeStdErrStreamConsumer(), 0, closer,
-                                              Charset.forName( FORK_STREAM_CHARSET_NAME ) );
+                    executeCommandLineAsCallable( cli, testProvidingInputStream, threadedStreamConsumer,
+                                                        stdErrConsumer, 0, closer,
+                                                        Charset.forName( FORK_STREAM_CHARSET_NAME ) );
 
             currentForkClients.add( forkClient );
 

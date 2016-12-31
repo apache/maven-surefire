@@ -272,19 +272,16 @@ public class ForkClient
                     break;
                 default:
                     LostCommandsDumpSingleton.getSingleton().dumpText( s, defaultReporterFactory );
-                    log.warning( s );
             }
         }
         catch ( NumberFormatException e )
         {
             // SUREFIRE-859
-            log.warning( s );
             LostCommandsDumpSingleton.getSingleton().dumpException( e, s, defaultReporterFactory );
         }
         catch ( NoSuchElementException e )
         {
             // SUREFIRE-859
-            log.warning( s );
             LostCommandsDumpSingleton.getSingleton().dumpException( e, s, defaultReporterFactory );
         }
         catch ( ReporterException e )

@@ -19,6 +19,7 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
 
 /**
@@ -31,8 +32,15 @@ import org.apache.maven.shared.utils.cli.StreamConsumer;
 public final class NativeStdErrStreamConsumer
     implements StreamConsumer
 {
+    private final DefaultReporterFactory defaultReporterFactory;
+
+    public NativeStdErrStreamConsumer( DefaultReporterFactory defaultReporterFactory )
+    {
+        this.defaultReporterFactory = defaultReporterFactory;
+    }
+
     public void consumeLine( String line )
     {
-        System.err.println( line );
+        LostCommandsDumpSingleton.getSingleton().dumpText( line, defaultReporterFactory );
     }
 }
