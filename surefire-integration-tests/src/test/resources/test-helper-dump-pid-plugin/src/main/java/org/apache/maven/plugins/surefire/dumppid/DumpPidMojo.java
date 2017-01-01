@@ -41,30 +41,42 @@ public class DumpPidMojo
     public void execute()
         throws MojoExecutionException
     {
-        File target;
+        FileWriter fw = null;
         try
         {
             getLog().info( "Dumping PID to " + targetDir );
-            
+
             if ( !targetDir.exists() )
             {
                 targetDir.mkdirs();
             }
-            
-            target = new File( targetDir, "maven.pid" ).getCanonicalFile();
 
-            FileWriter fw = new FileWriter( target );
-            String pid = ManagementFactory.getRuntimeMXBean().getName();
+            final String pid = ManagementFactory.getRuntimeMXBean().getName();
+            final File target = new File( targetDir, "maven.pid" ).getCanonicalFile();
+            fw = new FileWriter( target );
             fw.write( pid );
-            fw.flush();
             fw.close();
-            
+            fw = null;
+
             getLog().info( "Wrote " + pid + " to " + target );
-            
         }
         catch ( IOException e )
         {
             throw new MojoExecutionException( "Unable to create pid file", e );
+        }
+        finally
+        {
+            try
+            {
+                if ( fw != null )
+                {
+                    fw.close();
+                }
+            }
+            catch ( final IOException e )
+            {
+                // Suppressed.
+            }
         }
     }
 }

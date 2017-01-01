@@ -23,12 +23,13 @@ package org.apache.maven.plugin.surefire.runorder;
 import org.apache.maven.surefire.report.ReportEntry;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -40,6 +41,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.util.Collections.sort;
+import org.apache.maven.shared.utils.io.IOUtil;
 import static org.apache.maven.plugin.surefire.runorder.RunEntryStatistics.fromReportEntry;
 import static org.apache.maven.plugin.surefire.runorder.RunEntryStatistics.fromString;
 
@@ -64,9 +66,14 @@ public final class RunEntryStatisticsMap
     {
         if ( file.exists() )
         {
+            Reader reader = null;
             try
             {
-                return fromReader( new FileReader( file ) );
+                reader = new FileReader( file );
+                final RunEntryStatisticsMap result = fromReader( reader );
+                reader.close();
+                reader = null;
+                return result;
             }
             catch ( FileNotFoundException e )
             {
@@ -75,6 +82,10 @@ public final class RunEntryStatisticsMap
             catch ( IOException e )
             {
                 throw new RuntimeException( e );
+            }
+            finally
+            {
+                IOUtil.close( reader );
             }
         }
         else
@@ -102,23 +113,26 @@ public final class RunEntryStatisticsMap
     }
 
     public void serialize( File file )
-        throws FileNotFoundException
+        throws IOException
     {
-        FileOutputStream fos = new FileOutputStream( file );
-        PrintWriter printWriter = new PrintWriter( fos );
+        BufferedWriter writer = null;
         try
         {
+            writer = new BufferedWriter( new OutputStreamWriter( new FileOutputStream( file ) ) );
             List<RunEntryStatistics> items = new ArrayList<RunEntryStatistics>( runEntryStatistics.values() );
             sort( items, new RunCountComparator() );
             for ( RunEntryStatistics item : items )
             {
-                printWriter.println( item.toString() );
+                writer.append( item.toString() );
+                writer.newLine();
             }
-            printWriter.flush();
+
+            writer.close();
+            writer = null;
         }
         finally
         {
-            printWriter.close();
+            IOUtil.close( writer );
         }
     }
 

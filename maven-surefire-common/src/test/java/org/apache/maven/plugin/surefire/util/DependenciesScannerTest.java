@@ -75,9 +75,10 @@ public class DependenciesScannerTest
         File output = new File( "target/DependenciesScannerTest-tests.jar" );
         output.delete();
 
-        ZipOutputStream out = new ZipOutputStream( new FileOutputStream( output ) );
+        ZipOutputStream out = null;
         try
         {
+            out = new ZipOutputStream( new FileOutputStream( output ) );
             out.putNextEntry( new ZipEntry( "org/test/TestA.class" ) );
             out.closeEntry();
             out.putNextEntry( new ZipEntry( "org/test/TestB.class" ) );
@@ -86,7 +87,10 @@ public class DependenciesScannerTest
         }
         finally
         {
-            out.close();
+            if ( out != null )
+            {
+                out.close();
+            }
         }
     }
 }

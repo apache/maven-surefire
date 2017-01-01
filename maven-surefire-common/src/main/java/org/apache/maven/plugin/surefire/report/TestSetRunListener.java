@@ -151,22 +151,29 @@ public class TestSetRunListener
 
     public void testSetCompleted( ReportEntry report )
     {
-        final WrappedReportEntry wrap = wrapTestSet( report );
-        final List<String> testResults =
+        try
+        {
+            final WrappedReportEntry wrap = wrapTestSet( report );
+            final List<String> testResults =
                 briefOrPlainFormat ? detailsForThis.getTestResults() : Collections.<String>emptyList();
-        fileReporter.testSetCompleted( wrap, detailsForThis, testResults );
-        simpleXMLReporter.testSetCompleted( wrap, detailsForThis );
-        statisticsReporter.testSetCompleted();
-        consoleReporter.testSetCompleted( wrap, detailsForThis, testResults );
-        consoleOutputReceiver.testSetCompleted( wrap );
-        consoleReporter.reset();
+            fileReporter.testSetCompleted( wrap, detailsForThis, testResults );
+            simpleXMLReporter.testSetCompleted( wrap, detailsForThis );
+            statisticsReporter.testSetCompleted();
+            consoleReporter.testSetCompleted( wrap, detailsForThis, testResults );
+            consoleOutputReceiver.testSetCompleted( wrap );
+            consoleReporter.reset();
 
-        wrap.getStdout().free();
-        wrap.getStdErr().free();
+            wrap.getStdout().free();
+            wrap.getStdErr().free();
 
-        addTestMethodStats();
-        detailsForThis.reset();
-        clearCapture();
+            addTestMethodStats();
+            detailsForThis.reset();
+            clearCapture();
+        }
+        catch ( final IOException e )
+        {
+            throw new RuntimeException( "Unexpected IOException.e", e );
+        }
     }
 
     // ----------------------------------------------------------------------

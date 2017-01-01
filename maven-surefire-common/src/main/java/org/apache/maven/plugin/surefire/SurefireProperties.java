@@ -32,12 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
+import static java.util.Arrays.asList;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.KeyValueSource;
 import org.apache.maven.surefire.util.internal.StringUtils;
-
-import static java.util.Arrays.asList;
 
 /**
  * A properties implementation that preserves insertion order.
@@ -46,6 +44,7 @@ public class SurefireProperties
     extends Properties
     implements KeyValueSource
 {
+
     private static final Collection<String> KEYS_THAT_CANNOT_BE_USED_AS_SYSTEM_PROPERTIES =
             asList( "java.library.path", "file.encoding", "jdk.map.althashing.threshold", "line.separator" );
 
@@ -153,7 +152,6 @@ public class SurefireProperties
         // user specified properties for SUREFIRE-121, causing SUREFIRE-491.
         // Not gonna do THAT any more... instead, we only propagate those system properties
         // that have been explicitly specified by the user via -Dkey=value on the CLI
-
         result.copyPropertiesFrom( userProperties );
         return result;
     }
@@ -224,18 +222,32 @@ public class SurefireProperties
         }
     }
 
-    private static SurefireProperties loadProperties( InputStream inStream )
+    private static SurefireProperties loadProperties( final InputStream inStream )
         throws IOException
     {
+        InputStream in = inStream;
+
         try
         {
-            Properties p = new Properties();
-            p.load( inStream );
+            final Properties p = new Properties();
+            p.load( in );
+            in.close();
+            in = null;
             return new SurefireProperties( p );
         }
         finally
         {
-            close( inStream );
+            try
+            {
+                if ( in != null )
+                {
+                    in.close();
+                }
+            }
+            catch ( final IOException e )
+            {
+                // Suppressed.
+            }
         }
     }
 
@@ -245,18 +257,6 @@ public class SurefireProperties
         return file == null ? new SurefireProperties() : loadProperties( new FileInputStream( file ) );
     }
 
-    private static void close( InputStream inputStream )
-    {
-        try
-        {
-            inputStream.close();
-        }
-        catch ( IOException ex )
-        {
-            // ignore
-        }
-    }
-
     public void setNullableProperty( String key, String value )
     {
         if ( value != null )
@@ -264,4 +264,5 @@ public class SurefireProperties
             super.setProperty( key, value );
         }
     }
+
 }

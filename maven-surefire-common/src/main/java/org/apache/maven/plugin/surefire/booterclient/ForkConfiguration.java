@@ -19,15 +19,6 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
-import org.apache.maven.plugin.surefire.util.Relocator;
-import org.apache.maven.shared.utils.StringUtils;
-import org.apache.maven.surefire.booter.Classpath;
-import org.apache.maven.surefire.booter.ForkedBooter;
-import org.apache.maven.surefire.booter.StartupConfiguration;
-import org.apache.maven.surefire.booter.SurefireBooterForkException;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,6 +29,15 @@ import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
+import org.apache.maven.plugin.surefire.util.Relocator;
+import org.apache.maven.shared.utils.StringUtils;
+import org.apache.maven.shared.utils.io.IOUtil;
+import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.booter.ForkedBooter;
+import org.apache.maven.surefire.booter.StartupConfiguration;
+import org.apache.maven.surefire.booter.SurefireBooterForkException;
 
 /**
  * Configuration for forking tests.
@@ -270,10 +270,10 @@ public class ForkConfiguration
         {
             file.deleteOnExit();
         }
-        FileOutputStream fos = new FileOutputStream( file );
-        JarOutputStream jos = new JarOutputStream( fos );
+        JarOutputStream jos = null;
         try
         {
+            jos = new JarOutputStream( new FileOutputStream( file ) );
             jos.setLevel( JarOutputStream.STORED );
             JarEntry je = new JarEntry( "META-INF/MANIFEST.MF" );
             jos.putNextEntry( je );
@@ -297,10 +297,13 @@ public class ForkConfiguration
             man.getMainAttributes().putValue( "Main-Class", startClassName );
 
             man.write( jos );
+
+            jos.close();
+            jos = null;
         }
         finally
         {
-            jos.close();
+            IOUtil.close( jos );
         }
 
         return file;

@@ -20,6 +20,7 @@ package org.apache.maven.surefire.report;
  */
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import org.apache.maven.plugin.surefire.report.FileReporter;
 import org.apache.maven.plugin.surefire.report.ReportEntryType;
@@ -38,7 +39,7 @@ public class FileReporterTest
 
     private static final String testName = "org.apache.maven.surefire.report.FileReporterTest";
 
-    public void testFileNameWithoutSuffix()
+    public void testFileNameWithoutSuffix() throws IOException
     {
         File reportDir = new File( "target" );
         reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
@@ -58,7 +59,7 @@ public class FileReporterTest
         return new TestSetStats( true, true );
     }
 
-    public void testFileNameWithSuffix()
+    public void testFileNameWithSuffix() throws IOException
     {
         File reportDir = new File( "target" );
         String suffixText = "sampleSuffixText";

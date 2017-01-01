@@ -124,14 +124,15 @@ public enum MasterProcessCommand
             int dataLength = is.readInt();
             if ( dataLength > 0 )
             {
-                byte[] buffer = new byte[dataLength];
+                byte[] buffer = new byte[ dataLength ];
                 int read = 0;
                 int total = 0;
                 do
                 {
                     total += read;
                     read = is.read( buffer, total, dataLength - total );
-                } while ( read > 0 );
+                }
+                while ( total < dataLength && read >= 0 );
 
                 if ( command.getDataType() == Void.class )
                 {

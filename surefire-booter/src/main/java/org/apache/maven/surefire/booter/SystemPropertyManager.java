@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,6 +49,8 @@ public class SystemPropertyManager
         {
             Properties p = new Properties();
             p.load( inStream );
+            inStream.close();
+            inStream = null;
             Map<String, String> map = new ConcurrentHashMap<String, String>( p.size() );
             // @todo use .stringPropertyNames() JDK6 instead of .keySet()
             for ( Map.Entry<?, ?> entry : p.entrySet() )
@@ -93,15 +96,27 @@ public class SystemPropertyManager
     public static void writePropertiesFile( File file, String name, Properties properties )
         throws IOException
     {
-        FileOutputStream out = new FileOutputStream( file );
-
+        OutputStream out = null;
         try
         {
+            out = new FileOutputStream( file );
             properties.store( out, name );
+            out.close();
+            out = null;
         }
         finally
         {
-            out.close();
+            try
+            {
+                if ( out != null )
+                {
+                    out.close();
+                }
+            }
+            catch ( final IOException e1 )
+            {
+                // Suppressed.
+            }
         }
     }
 

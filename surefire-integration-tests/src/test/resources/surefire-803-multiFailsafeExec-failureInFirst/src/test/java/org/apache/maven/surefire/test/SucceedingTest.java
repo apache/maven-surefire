@@ -66,6 +66,8 @@ public class SucceedingTest
         {
             w = new FileWriter( f, true );
             w.write( name.getMethodName() );
+            w.close();
+            w = null;
         }
         finally
         {
@@ -77,6 +79,7 @@ public class SucceedingTest
                 }
                 catch ( final IOException e )
                 {
+                    // Suppressed.
                 }
             }
         }

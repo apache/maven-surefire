@@ -43,18 +43,35 @@ public class BasicTest
 
     private Properties getProperties(String resource)
     {
-        InputStream in = getClass().getResourceAsStream( resource );
-        assertNotNull( in );
+        InputStream in = null;
         try
         {
-	        Properties props = new Properties();
-	        props.load( in );
-	        return props;
+            in = getClass().getResourceAsStream( resource );
+            assertNotNull( in );
+            Properties props = new Properties();
+            props.load( in );
+            in.close();
+            in = null;
+            return props;
         }
-        catch (IOException e)
+        catch ( IOException e )
         {
-            fail(e.toString());
+            fail( e.toString() );
             return null;
+        }
+        finally
+        {
+            try
+            {
+                if ( in != null )
+                {
+                    in.close();
+                }
+            }
+            catch ( final IOException e )
+            {
+                // Suppressed.
+            }
         }
     }
 

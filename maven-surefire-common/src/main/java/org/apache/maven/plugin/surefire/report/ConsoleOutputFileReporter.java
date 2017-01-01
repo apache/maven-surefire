@@ -69,13 +69,15 @@ public class ConsoleOutputFileReporter
         {
             try
             {
-                fileOutputStream.flush();
                 fileOutputStream.close();
             }
             catch ( IOException e )
             {
             }
-            fileOutputStream = null;
+            finally
+            {
+                fileOutputStream = null;
+            }
         }
     }
 
@@ -97,6 +99,15 @@ public class ConsoleOutputFileReporter
         }
         catch ( IOException e )
         {
+            try
+            {
+                fileOutputStream.close();
+                // Intentionally no setting to null.
+            }
+            catch ( final IOException e1 )
+            {
+                // Suppressed.
+            }
             throw new RuntimeException( e );
         }
     }

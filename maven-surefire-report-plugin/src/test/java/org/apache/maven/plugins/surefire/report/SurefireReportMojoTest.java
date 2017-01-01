@@ -640,6 +640,8 @@ public class SurefireReportMojoTest
             writer = WriterFactory.newXmlWriter( outputHtml );
 
             renderer.generateDocument( writer, (SiteRendererSink) mojo.getSink(), context );
+            writer.close();
+            writer = null;
         }
         finally
         {

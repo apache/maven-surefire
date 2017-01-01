@@ -206,6 +206,10 @@ public class ForkingRunListener
         synchronized ( target ) // See notes about synchronization/thread safety in class javadoc
         {
             target.write( encodeBytes, 0, encodeBytes.length );
+            if ( target.checkError() )
+            {
+                throw new RuntimeException( "Unexpected IOException." );
+            }
         }
     }
 
@@ -268,6 +272,10 @@ public class ForkingRunListener
         synchronized ( target ) // See notes about synchronization/thread safety in class javadoc
         {
             target.write( encodeBytes, 0, encodeBytes.length );
+            if ( target.checkError() )
+            {
+                throw new RuntimeException( "Unexpected IOException." );
+            }
         }
     }
 

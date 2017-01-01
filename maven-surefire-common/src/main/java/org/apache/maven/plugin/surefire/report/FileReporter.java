@@ -19,15 +19,13 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterException;
-
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
-
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReporterException;
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
 import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
 
@@ -49,7 +47,7 @@ public class FileReporter
         this.reportNameSuffix = reportNameSuffix;
     }
 
-    private PrintWriter testSetStarting( ReportEntry report )
+    private BufferedWriter testSetStarting( ReportEntry report )
     {
         File reportFile = getReportFile( reportsDirectory, report.getName(), reportNameSuffix, ".txt" );
 
@@ -58,21 +56,39 @@ public class FileReporter
         // noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
 
+        BufferedWriter writer = null;
         try
         {
-            PrintWriter writer = new PrintWriter( new FileWriter( reportFile ) );
+            writer = new BufferedWriter( new FileWriter( reportFile ) );
 
-            writer.println( "-------------------------------------------------------------------------------" );
+            writer.append( "-------------------------------------------------------------------------------" );
+            writer.newLine();
 
-            writer.println( "Test set: " + report.getName() );
+            writer.append( "Test set: " + report.getName() );
+            writer.newLine();
 
-            writer.println( "-------------------------------------------------------------------------------" );
+            writer.append( "-------------------------------------------------------------------------------" );
+            writer.newLine();
 
             return writer;
         }
         catch ( IOException e )
         {
-            throw new ReporterException( "Unable to create file for report: " + e.getMessage(), e );
+            try
+            {
+                if ( writer != null )
+                {
+                    writer.close();
+                }
+            }
+            catch ( final IOException e1 )
+            {
+                // Suppressed.
+            }
+            finally
+            {
+                throw new ReporterException( "Unable to create file for report: " + e.getMessage(), e );
+            }
         }
     }
 
@@ -85,20 +101,37 @@ public class FileReporter
     }
 
     public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
+        throws IOException
     {
-        PrintWriter writer = testSetStarting( report );
+        BufferedWriter writer = null;
         try
         {
-            writer.println( testSetStats.getTestSetSummary( report ) );
+            writer = testSetStarting( report );
+            writer.append( testSetStats.getTestSetSummary( report ) );
+            writer.newLine();
+
             for ( String testResult : testResults )
             {
-                writer.println( testResult );
+                writer.append( testResult );
+                writer.newLine();
             }
-            writer.flush();
+
+            writer.close();
+            writer = null;
         }
         finally
         {
-            writer.close();
+            try
+            {
+                if ( writer != null )
+                {
+                    writer.close();
+                }
+            }
+            catch ( final IOException e )
+            {
+                // Suppressed.
+            }
         }
     }
 }
