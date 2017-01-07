@@ -19,13 +19,14 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.List;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.List;
+
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
 import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
 
@@ -47,7 +48,7 @@ public class FileReporter
         this.reportNameSuffix = reportNameSuffix;
     }
 
-    private BufferedWriter testSetStarting( ReportEntry report )
+    private PrintWriter testSetStarting( ReportEntry report )
     {
         File reportFile = getReportFile( reportsDirectory, report.getName(), reportNameSuffix, ".txt" );
 
@@ -56,39 +57,27 @@ public class FileReporter
         // noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
 
-        BufferedWriter writer = null;
         try
         {
-            writer = new BufferedWriter( new FileWriter( reportFile ) );
+            /**
+             * The implementation of constructor {@link PrintWriter(File)}
+             * uses {@link java.io.BufferedWriter}
+             * which is guaranteed by Java 1.5 Javadoc of the constructor:
+             * "The output will be written to the file and is buffered."
+             */
+            PrintWriter writer = new PrintWriter( reportFile );
 
-            writer.append( "-------------------------------------------------------------------------------" );
-            writer.newLine();
+            writer.println( "-------------------------------------------------------------------------------" );
 
-            writer.append( "Test set: " + report.getName() );
-            writer.newLine();
+            writer.println( "Test set: " + report.getName() );
 
-            writer.append( "-------------------------------------------------------------------------------" );
-            writer.newLine();
+            writer.println( "-------------------------------------------------------------------------------" );
 
             return writer;
         }
         catch ( IOException e )
         {
-            try
-            {
-                if ( writer != null )
-                {
-                    writer.close();
-                }
-            }
-            catch ( final IOException e1 )
-            {
-                // Suppressed.
-            }
-            finally
-            {
-                throw new ReporterException( "Unable to create file for report: " + e.getMessage(), e );
-            }
+            throw new ReporterException( "Unable to create file for report: " + e.getMessage(), e );
         }
     }
 
@@ -101,37 +90,23 @@ public class FileReporter
     }
 
     public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
-        throws IOException
     {
-        BufferedWriter writer = null;
+        /**
+         * Using buffered stream internally.
+         */
+        PrintWriter writer = testSetStarting( report );
         try
         {
-            writer = testSetStarting( report );
-            writer.append( testSetStats.getTestSetSummary( report ) );
-            writer.newLine();
-
+            writer.println( testSetStats.getTestSetSummary( report ) );
             for ( String testResult : testResults )
             {
-                writer.append( testResult );
-                writer.newLine();
+                writer.println( testResult );
             }
-
-            writer.close();
-            writer = null;
+            writer.flush();
         }
         finally
         {
-            try
-            {
-                if ( writer != null )
-                {
-                    writer.close();
-                }
-            }
-            catch ( final IOException e )
-            {
-                // Suppressed.
-            }
+            writer.close();
         }
     }
 }

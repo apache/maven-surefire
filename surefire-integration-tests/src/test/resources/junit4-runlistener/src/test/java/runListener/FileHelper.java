@@ -33,8 +33,7 @@ public class FileHelper
         {
             writer = new FileWriter( new File( new File( "target" ).getAbsoluteFile(), fileName ) );
             writer.write( content );
-            writer.close();
-            writer = null;
+            writer.flush();
         }
         catch ( IOException e )
         {

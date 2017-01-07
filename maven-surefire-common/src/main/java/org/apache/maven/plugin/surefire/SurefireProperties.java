@@ -19,6 +19,10 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.booter.KeyValueSource;
+import org.apache.maven.surefire.util.internal.StringUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -32,10 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
 import static java.util.Arrays.asList;
-import org.apache.maven.surefire.booter.Classpath;
-import org.apache.maven.surefire.booter.KeyValueSource;
-import org.apache.maven.surefire.util.internal.StringUtils;
+import static org.apache.maven.shared.utils.io.IOUtil.close;
 
 /**
  * A properties implementation that preserves insertion order.
@@ -225,29 +228,15 @@ public class SurefireProperties
     private static SurefireProperties loadProperties( final InputStream inStream )
         throws IOException
     {
-        InputStream in = inStream;
-
         try
         {
             final Properties p = new Properties();
-            p.load( in );
-            in.close();
-            in = null;
+            p.load( inStream );
             return new SurefireProperties( p );
         }
         finally
         {
-            try
-            {
-                if ( in != null )
-                {
-                    in.close();
-                }
-            }
-            catch ( final IOException e )
-            {
-                // Suppressed.
-            }
+            close( inStream ); // @todo use try-with-resources JDK7, search in all code
         }
     }
 

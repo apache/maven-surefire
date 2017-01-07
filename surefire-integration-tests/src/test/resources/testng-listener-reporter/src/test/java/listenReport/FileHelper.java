@@ -33,8 +33,6 @@ public class FileHelper
         {
             writer = new FileWriter( new File( new File( "target" ).getAbsoluteFile(), fileName ) );
             writer.write( content );
-            writer.close();
-            writer = null;
         }
         catch ( IOException e )
         {
@@ -51,7 +49,7 @@ public class FileHelper
             }
             catch ( final IOException e )
             {
-                // Suppressed.
+                throw new RuntimeException( e );
             }
         }
     }

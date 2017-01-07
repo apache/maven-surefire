@@ -54,8 +54,6 @@ import static org.apache.maven.surefire.booter.Shutdown.KILL;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.setSystemProperties;
 import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
-import static org.apache.maven.surefire.util.internal.DumpFileUtils.dumpException;
-import static org.apache.maven.surefire.util.internal.DumpFileUtils.newDumpFile;
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 
 /**
@@ -73,8 +71,6 @@ public final class ForkedBooter
     private static final long DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS = 30;
     private static final long PING_TIMEOUT_IN_SECONDS = 20;
     private static final ScheduledExecutorService JVM_TERMINATOR = createJvmTerminator();
-    private static final String DUMP_FILE_EXT = ".dump";
-    private static final String DUMPSTREAM_FILE_EXT = ".dumpstream";
 
     private static volatile long systemExitTimeoutInSeconds = DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS;
 
@@ -89,7 +85,6 @@ public final class ForkedBooter
         final CommandReader reader = startupMasterProcessReader();
         final ScheduledFuture<?> pingScheduler = listenToShutdownCommands( reader );
         final PrintStream originalOut = out;
-        File dumpFile = null;
         try
         {
             final String tmpDir = args[0];
@@ -105,9 +100,7 @@ public final class ForkedBooter
             }
 
             final ProviderConfiguration providerConfiguration = booterDeserializer.deserialize();
-
-            dumpFile = createDumpFile( dumpFileName, providerConfiguration );
-            reader.setDumpFile( createDumpstreamFile( dumpFileName, providerConfiguration ) );
+            DumpErrorSingleton.getSingleton().init( dumpFileName, providerConfiguration.getReporterConfiguration() );
 
             final StartupConfiguration startupConfiguration = booterDeserializer.getProviderConfiguration();
             systemExitTimeoutInSeconds =
@@ -145,7 +138,7 @@ public final class ForkedBooter
             }
             catch ( InvocationTargetException t )
             {
-                dumpException( t, dumpFile );
+                DumpErrorSingleton.getSingleton().dumpException( t );
                 StackTraceWriter stackTraceWriter =
                     new LegacyPojoStackTraceWriter( "test subsystem", "no method", t.getTargetException() );
                 StringBuilder stringBuilder = new StringBuilder();
@@ -154,7 +147,7 @@ public final class ForkedBooter
             }
             catch ( Throwable t )
             {
-                dumpException( t, dumpFile );
+                DumpErrorSingleton.getSingleton().dumpException( t );
                 StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( "test subsystem", "no method", t );
                 StringBuilder stringBuilder = new StringBuilder();
                 encode( stringBuilder, stackTraceWriter, false );
@@ -168,7 +161,7 @@ public final class ForkedBooter
         }
         catch ( Throwable t )
         {
-            dumpException( t, dumpFile );
+            DumpErrorSingleton.getSingleton().dumpException( t );
             // Just throwing does getMessage() and a local trace - we want to call printStackTrace for a full trace
             // noinspection UseOfSystemOutOrSystemErr
             t.printStackTrace( err );
@@ -353,15 +346,5 @@ public final class ForkedBooter
     {
         File surefirePropertiesFile = new File( tmpDir, propFileName );
         return surefirePropertiesFile.exists() ? new FileInputStream( surefirePropertiesFile ) : null;
-    }
-
-    private static File createDumpFile( String dumpFileName, ProviderConfiguration providerConfiguration )
-    {
-        return newDumpFile( dumpFileName + DUMP_FILE_EXT, providerConfiguration.getReporterConfiguration() );
-    }
-
-    private static File createDumpstreamFile( String dumpFileName, ProviderConfiguration providerConfiguration )
-    {
-        return newDumpFile( dumpFileName + DUMPSTREAM_FILE_EXT, providerConfiguration.getReporterConfiguration() );
     }
 }
