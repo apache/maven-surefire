@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -218,11 +219,11 @@ public class DefaultReporterFactory
      * if it only has errors or failures, then count its result based on its first run
      *
      * @param reportEntries the list of test run report type for a given test
-     * @param rerunFailingTestsCount configured rerun count for failing tests
+     * @param hasRerunFailingTestsCount <tt>true</tt> if rerun count for failing tests is greater than zero
      * @return the type of test result
      */
     // Use default visibility for testing
-    static TestResultType getTestResultType( List<ReportEntryType> reportEntries, int rerunFailingTestsCount  )
+    static TestResultType getTestResultType( List<ReportEntryType> reportEntries, boolean hasRerunFailingTestsCount  )
     {
         if ( reportEntries == null || reportEntries.isEmpty() )
         {
@@ -248,7 +249,7 @@ public class DefaultReporterFactory
 
         if ( seenFailure || seenError )
         {
-            if ( seenSuccess && rerunFailingTestsCount > 0 )
+            if ( seenSuccess & hasRerunFailingTestsCount )
             {
                 return flake;
             }
@@ -310,7 +311,7 @@ public class DefaultReporterFactory
         // Update globalStatistics by iterating through mergedTestHistoryResult
         int completedCount = 0, skipped = 0;
 
-        for ( Map.Entry<String, List<TestMethodStats>> entry : mergedTestHistoryResult.entrySet() )
+        for ( Entry<String, List<TestMethodStats>> entry : mergedTestHistoryResult.entrySet() )
         {
             List<TestMethodStats> testMethodStats = entry.getValue();
             String testClassMethodName = entry.getKey();
@@ -322,7 +323,7 @@ public class DefaultReporterFactory
                 resultTypes.add( methodStats.getResultType() );
             }
 
-            switch ( getTestResultType( resultTypes, reportConfiguration.getRerunFailingTestsCount() ) )
+            switch ( getTestResultType( resultTypes, reportConfiguration.hasRerunFailingTestsCount() ) )
             {
                 case success:
                     // If there are multiple successful runs of the same test, count all of them
@@ -393,7 +394,7 @@ public class DefaultReporterFactory
             printed = true;
         }
 
-        for ( Map.Entry<String, List<TestMethodStats>> entry : testStats.entrySet() )
+        for ( Entry<String, List<TestMethodStats>> entry : testStats.entrySet() )
         {
             printed = true;
             List<TestMethodStats> testMethodStats = entry.getValue();

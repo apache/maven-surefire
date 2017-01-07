@@ -25,7 +25,6 @@ import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.StackTraceWriter;
 
@@ -68,6 +67,7 @@ import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
 import static org.apache.maven.surefire.util.internal.StringUtils.unescapeBytes;
 import static org.apache.maven.surefire.util.internal.StringUtils.unescapeString;
 
+// todo move to the same package with ForkStarter
 /**
  * Knows how to reconstruct *all* the state transmitted over stdout by the forked process.
  *
@@ -284,16 +284,25 @@ public class ForkClient
         }
         catch ( NumberFormatException e )
         {
+            // native stream sent a text e.g. GC verbose
             // SUREFIRE-859
             LostCommandsDumpSingleton.getSingleton().dumpException( e, s, defaultReporterFactory );
         }
         catch ( NoSuchElementException e )
         {
+            // native stream sent a text e.g. GC verbose
             // SUREFIRE-859
             LostCommandsDumpSingleton.getSingleton().dumpException( e, s, defaultReporterFactory );
         }
-        catch ( ReporterException e )
+        catch ( IndexOutOfBoundsException e )
         {
+            // native stream sent a text e.g. GC verbose
+            // SUREFIRE-859
+            LostCommandsDumpSingleton.getSingleton().dumpException( e, s, defaultReporterFactory );
+        }
+        catch ( RuntimeException e )
+        {
+            // e.g. ReporterException
             LostCommandsDumpSingleton.getSingleton().dumpException( e, s, defaultReporterFactory );
             throw e;
         }

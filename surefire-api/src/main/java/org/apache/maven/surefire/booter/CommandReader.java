@@ -377,7 +377,7 @@ public final class CommandReader
                     if ( command == null )
                     {
                         String errorMessage = "[SUREFIRE] std/in stream corrupted: first sequence not recognized";
-                        DumpErrorSingleton.getSingleton().dumpText( errorMessage );
+                        DumpErrorSingleton.getSingleton().dumpStreamText( errorMessage );
                         logger.error( errorMessage );
                         break;
                     }
@@ -414,24 +414,27 @@ public final class CommandReader
             }
             catch ( EOFException e )
             {
-                DumpErrorSingleton.getSingleton().dumpException( e );
-
                 CommandReader.this.state.set( TERMINATED );
                 if ( !isTestSetFinished )
                 {
+                    String msg = "TestSet has not finished before stream error has appeared >> "
+                                         + "initializing exit by non-null configuration: "
+                                         + CommandReader.this.shutdown;
+                    DumpErrorSingleton.getSingleton().dumpStreamException( e, msg );
+
                     exitByConfiguration();
                     // does not go to finally
                 }
             }
             catch ( IOException e )
             {
-                DumpErrorSingleton.getSingleton().dumpException( e );
-
                 CommandReader.this.state.set( TERMINATED );
                 // If #stop() method is called, reader thread is interrupted and cause is InterruptedException.
                 if ( !( e.getCause() instanceof InterruptedException ) )
                 {
-                    logger.error( "[SUREFIRE] std/in stream corrupted", e );
+                    String msg = "[SUREFIRE] std/in stream corrupted";
+                    DumpErrorSingleton.getSingleton().dumpStreamException( e, msg );
+                    logger.error( msg, e );
                 }
             }
             finally

@@ -189,9 +189,9 @@ public class ForkStarter
                 {
                     closeable.close();
                 }
-                catch ( IOException e )
+                catch ( Throwable e )
                 {
-                    // ignore
+                    e.printStackTrace();
                 }
             }
         }

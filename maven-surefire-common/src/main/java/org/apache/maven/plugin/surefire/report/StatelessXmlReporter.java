@@ -92,7 +92,7 @@ public class StatelessXmlReporter
 
     private final boolean trimStackTrace;
 
-    private final int rerunFailingTestsCount;
+    private final boolean hasRerunFailingTestsCount;
 
     private final String xsdSchemaLocation;
 
@@ -101,14 +101,14 @@ public class StatelessXmlReporter
     private final Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistoryMap;
 
     public StatelessXmlReporter( File reportsDirectory, String reportNameSuffix, boolean trimStackTrace,
-                                 int rerunFailingTestsCount,
+                                 boolean hasRerunFailingTestsCount,
                                  Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistoryMap,
                                  String xsdSchemaLocation )
     {
         this.reportsDirectory = reportsDirectory;
         this.reportNameSuffix = reportNameSuffix;
         this.trimStackTrace = trimStackTrace;
-        this.rerunFailingTestsCount = rerunFailingTestsCount;
+        this.hasRerunFailingTestsCount = hasRerunFailingTestsCount;
         this.testClassMethodRunHistoryMap = testClassMethodRunHistoryMap;
         this.xsdSchemaLocation = xsdSchemaLocation;
     }
@@ -147,7 +147,7 @@ public class StatelessXmlReporter
 
                 if ( !methodEntryList.isEmpty() )
                 {
-                    if ( rerunFailingTestsCount > 0 )
+                    if ( hasRerunFailingTestsCount )
                     {
                         TestResultType resultType = getTestResultType( methodEntryList );
                         switch ( resultType )
@@ -268,7 +268,7 @@ public class StatelessXmlReporter
             testResultTypeList.add( singleRunEntry.getReportEntryType() );
         }
 
-        return DefaultReporterFactory.getTestResultType( testResultTypeList, rerunFailingTestsCount );
+        return DefaultReporterFactory.getTestResultType( testResultTypeList, hasRerunFailingTestsCount );
     }
 
     private Map<String, List<WrappedReportEntry>> getAddMethodRunHistoryMap( String testClassName )

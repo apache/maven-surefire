@@ -46,7 +46,7 @@ public enum MasterProcessCommand
     /** To tell a forked process that the master process is still alive. Repeated after 10 seconds. */
     NOOP( 4, Void.class );
 
-    private static final Charset ASCII = Charset.forName( "ASCII" );
+    private static final Charset ASCII = Charset.forName( "US-ASCII" );
 
     private final int id;
 
@@ -150,7 +150,7 @@ public enum MasterProcessCommand
                 case RUN_CLASS:
                     return new String( data, FORK_STREAM_CHARSET_NAME );
                 case SHUTDOWN:
-                    return StringUtils.decode( data, ASCII );
+                    return new String( data, ASCII );
                 default:
                     return null;
             }
@@ -168,7 +168,7 @@ public enum MasterProcessCommand
             case RUN_CLASS:
                 return encodeStringForForkCommunication( data );
             case SHUTDOWN:
-                return StringUtils.encode( data, ASCII );
+                return data.getBytes( ASCII );
             default:
                 return new byte[0];
         }

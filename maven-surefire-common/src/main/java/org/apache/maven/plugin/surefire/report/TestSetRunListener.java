@@ -276,7 +276,7 @@ public class TestSetRunListener
         }
     }
 
-    public List<TestMethodStats> getTestMethodStats()
+    List<TestMethodStats> getTestMethodStats()
     {
         return testMethodStats;
     }

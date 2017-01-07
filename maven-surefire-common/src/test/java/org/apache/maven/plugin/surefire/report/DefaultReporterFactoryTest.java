@@ -185,41 +185,41 @@ public class DefaultReporterFactoryTest
     public void testGetTestResultType()
     {
         List<ReportEntryType> emptyList = new ArrayList<ReportEntryType>();
-        assertEquals( unknown, getTestResultType( emptyList, 1 ) );
+        assertEquals( unknown, getTestResultType( emptyList, true ) );
 
         List<ReportEntryType> successList = new ArrayList<ReportEntryType>();
         successList.add( ReportEntryType.SUCCESS );
         successList.add( ReportEntryType.SUCCESS );
-        assertEquals( success, getTestResultType( successList, 1 ) );
+        assertEquals( success, getTestResultType( successList, true ) );
 
         List<ReportEntryType> failureErrorList = new ArrayList<ReportEntryType>();
         failureErrorList.add( ReportEntryType.FAILURE );
         failureErrorList.add( ReportEntryType.ERROR );
-        assertEquals( error, getTestResultType( failureErrorList, 1 ) );
+        assertEquals( error, getTestResultType( failureErrorList, true ) );
 
         List<ReportEntryType> errorFailureList = new ArrayList<ReportEntryType>();
         errorFailureList.add( ReportEntryType.ERROR );
         errorFailureList.add( ReportEntryType.FAILURE );
-        assertEquals( error, getTestResultType( errorFailureList, 1 ) );
+        assertEquals( error, getTestResultType( errorFailureList, true ) );
 
         List<ReportEntryType> flakeList = new ArrayList<ReportEntryType>();
         flakeList.add( ReportEntryType.SUCCESS );
         flakeList.add( ReportEntryType.FAILURE );
-        assertEquals( flake, getTestResultType( flakeList, 1 ) );
+        assertEquals( flake, getTestResultType( flakeList, true ) );
 
-        assertEquals( failure, getTestResultType( flakeList, 0 ) );
+        assertEquals( failure, getTestResultType( flakeList, false ) );
 
         flakeList = new ArrayList<ReportEntryType>();
         flakeList.add( ReportEntryType.ERROR );
         flakeList.add( ReportEntryType.SUCCESS );
         flakeList.add( ReportEntryType.FAILURE );
-        assertEquals( flake, getTestResultType( flakeList, 1 ) );
+        assertEquals( flake, getTestResultType( flakeList, true ) );
 
-        assertEquals( error, getTestResultType( flakeList, 0 ) );
+        assertEquals( error, getTestResultType( flakeList, false ) );
 
         List<ReportEntryType> skippedList = new ArrayList<ReportEntryType>();
         skippedList.add( ReportEntryType.SKIPPED );
-        assertEquals( skipped, getTestResultType( skippedList, 1 ) );
+        assertEquals( skipped, getTestResultType( skippedList, true ) );
     }
 
     static class DummyStackTraceWriter
