@@ -71,7 +71,7 @@ public class SystemPropertyManager
             }
             catch ( final IOException e1 )
             {
-                // Suppressed.
+                // Suppressed, so that the exception thrown in the try block will be propagated.
             }
         }
     }

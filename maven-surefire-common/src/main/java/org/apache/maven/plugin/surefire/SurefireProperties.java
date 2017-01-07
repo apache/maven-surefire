@@ -247,7 +247,7 @@ public class SurefireProperties
             }
             catch ( final IOException e )
             {
-                // Suppressed.
+                // Suppressed, so that the exception thrown in the try block will be propagated.
             }
         }
     }
