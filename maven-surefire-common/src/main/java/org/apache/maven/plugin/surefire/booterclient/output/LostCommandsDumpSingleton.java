@@ -21,8 +21,15 @@ package org.apache.maven.plugin.surefire.booterclient.output;
 
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.util.internal.DumpFileUtils;
+
 import java.io.File;
 
+/**
+ * Dumps lost commands and caused exceptions in {@link ForkClient}.
+ *
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 2.19.2
+ */
 final class LostCommandsDumpSingleton
 {
     private static final LostCommandsDumpSingleton SINGLETON = new LostCommandsDumpSingleton();
