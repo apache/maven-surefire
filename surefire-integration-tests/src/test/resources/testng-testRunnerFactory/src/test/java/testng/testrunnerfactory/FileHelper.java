@@ -8,18 +8,32 @@ public class FileHelper
 {
     public static void writeFile( String fileName, String content )
     {
+        FileWriter out = null;
         try
         {
             File target = new File( System.getProperty("user.dir"), "target" ).getCanonicalFile();
             File listenerOutput = new File( target, fileName );
-            FileWriter out = new FileWriter( listenerOutput, true );
+            out = new FileWriter( listenerOutput, true );
             out.write( content );
             out.flush();
-            out.close();
         }
-        catch ( IOException exception )
+        catch ( IOException e )
         {
-            throw new RuntimeException( exception );
+            throw new RuntimeException( e );
+        }
+        finally
+        {
+            if ( out != null )
+            {
+                try
+                {
+                    out.close();
+                }
+                catch ( IOException e )
+                {
+                    throw new RuntimeException( e );
+                }
+            }
         }
     }
 }

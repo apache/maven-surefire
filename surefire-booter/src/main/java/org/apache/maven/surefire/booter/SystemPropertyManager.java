@@ -97,6 +97,9 @@ public class SystemPropertyManager
 
         try
         {
+            /**
+             * See {@link Properties#store(java.io.OutputStream, String)} Javadoc - stream is flushed.
+             */
             properties.store( out, name );
         }
         finally

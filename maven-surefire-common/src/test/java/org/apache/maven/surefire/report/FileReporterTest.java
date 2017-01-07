@@ -19,14 +19,14 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.io.File;
-import java.util.ArrayList;
+import junit.framework.TestCase;
 import org.apache.maven.plugin.surefire.report.FileReporter;
 import org.apache.maven.plugin.surefire.report.ReportEntryType;
 import org.apache.maven.plugin.surefire.report.TestSetStats;
 import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
 
-import junit.framework.TestCase;
+import java.io.File;
+import java.util.ArrayList;
 
 public class FileReporterTest
     extends TestCase

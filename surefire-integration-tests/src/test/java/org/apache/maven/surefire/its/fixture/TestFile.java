@@ -94,23 +94,35 @@ public class TestFile
 
     public String slurpFile()
     {
+        BufferedReader reader = null;
         try
         {
             StringBuilder sb = new StringBuilder();
-            BufferedReader reader;
             reader = new BufferedReader( new FileReader( file ) );
             for ( String line = reader.readLine(); line != null; line = reader.readLine() )
             {
                 sb.append( line );
             }
-            reader.close();
             return sb.toString();
         }
         catch ( IOException e )
         {
             throw new SurefireVerifierException( e );
         }
-
+        finally
+        {
+            try
+            {
+                if ( reader != null )
+                {
+                    reader.close();
+                }
+            }
+            catch ( final IOException e )
+            {
+                // Suppressed.
+            }
+        }
     }
 
     public String readFileToString()
