@@ -22,9 +22,8 @@ package org.apache.maven.plugin.surefire.report;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
+import org.apache.maven.shared.utils.io.IOUtil;
 import org.apache.maven.surefire.report.ReportEntry;
-
 import static org.apache.maven.plugin.surefire.report.FileReporter.getReportFile;
 
 /**
@@ -65,19 +64,17 @@ public class ConsoleOutputFileReporter
     @SuppressWarnings( "checkstyle:emptyblock" )
     public void close()
     {
-        if ( fileOutputStream != null )
+        try
         {
-            try
-            {
-                fileOutputStream.close();
-            }
-            catch ( IOException e )
-            {
-            }
-            finally
-            {
-                fileOutputStream = null;
-            }
+            this.fileOutputStream.close();
+        }
+        catch ( final IOException e )
+        {
+            throw new RuntimeException( "Failure closing reporter.", e );
+        }
+        finally
+        {
+            this.fileOutputStream = null;
         }
     }
 
@@ -99,15 +96,7 @@ public class ConsoleOutputFileReporter
         }
         catch ( IOException e )
         {
-            try
-            {
-                fileOutputStream.close();
-                // Intentionally no setting to null.
-            }
-            catch ( final IOException e1 )
-            {
-                // Suppressed.
-            }
+            IOUtil.close( fileOutputStream );
             throw new RuntimeException( e );
         }
     }

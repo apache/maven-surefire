@@ -28,10 +28,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.List;
-import org.apache.commons.io.FileUtils;
-
 import junit.framework.Assert;
-
+import org.apache.commons.io.FileUtils;
 import static junit.framework.Assert.assertTrue;
 
 /**

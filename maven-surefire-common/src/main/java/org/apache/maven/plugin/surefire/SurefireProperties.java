@@ -237,6 +237,7 @@ public class SurefireProperties
         }
         finally
         {
+            // @todo use try-with-resources JDK7, search in all code
             try
             {
                 if ( in != null )

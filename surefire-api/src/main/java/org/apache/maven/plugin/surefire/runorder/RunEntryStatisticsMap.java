@@ -20,13 +20,9 @@ package org.apache.maven.plugin.surefire.runorder;
  */
 
 
-import org.apache.maven.surefire.report.ReportEntry;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -39,9 +35,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import static java.util.Collections.sort;
 import org.apache.maven.shared.utils.io.IOUtil;
+import org.apache.maven.surefire.report.ReportEntry;
 import static org.apache.maven.plugin.surefire.runorder.RunEntryStatistics.fromReportEntry;
 import static org.apache.maven.plugin.surefire.runorder.RunEntryStatistics.fromString;
 
@@ -75,10 +71,6 @@ public final class RunEntryStatisticsMap
                 reader = null;
                 return result;
             }
-            catch ( FileNotFoundException e )
-            {
-                throw new RuntimeException( e );
-            }
             catch ( IOException e )
             {
                 throw new RuntimeException( e );
@@ -97,19 +89,27 @@ public final class RunEntryStatisticsMap
     static RunEntryStatisticsMap fromReader( Reader fileReader )
         throws IOException
     {
+        BufferedReader reader = null;
         Map<String, RunEntryStatistics> result = new HashMap<String, RunEntryStatistics>();
-        BufferedReader bufferedReader = new BufferedReader( fileReader );
-        String line = bufferedReader.readLine();
-        while ( line != null )
+        try
         {
-            if ( !line.startsWith( "#" ) )
+            reader = new BufferedReader( fileReader );
+            for ( String line = reader.readLine(); line != null; line = reader.readLine() )
             {
-                final RunEntryStatistics stats = fromString( line );
-                result.put( stats.getTestName(), stats );
+                if ( !line.startsWith( "#" ) )
+                {
+                    RunEntryStatistics stats = fromString( line );
+                    result.put( stats.getTestName(), stats );
+                }
             }
-            line = bufferedReader.readLine();
+            reader.close();
+            reader = null;
+            return new RunEntryStatisticsMap( result );
         }
-        return new RunEntryStatisticsMap( result );
+        finally
+        {
+            IOUtil.close( reader );
+        }
     }
 
     public void serialize( File file )

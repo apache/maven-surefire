@@ -22,12 +22,11 @@ package org.apache.maven.surefire.report;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import junit.framework.TestCase;
 import org.apache.maven.plugin.surefire.report.FileReporter;
 import org.apache.maven.plugin.surefire.report.ReportEntryType;
 import org.apache.maven.plugin.surefire.report.TestSetStats;
 import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
-
-import junit.framework.TestCase;
 
 public class FileReporterTest
     extends TestCase

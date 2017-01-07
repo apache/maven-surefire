@@ -61,7 +61,18 @@ public class SystemPropertyManager
         }
         finally
         {
-            close( inStream ); // @todo use try-with-resources JDK7, search in all code
+            // @todo use try-with-resources JDK7, search in all code
+            try
+            {
+                if ( inStream != null )
+                {
+                    inStream.close();
+                }
+            }
+            catch ( final IOException e1 )
+            {
+                // Suppressed.
+            }
         }
     }
 
@@ -120,6 +131,10 @@ public class SystemPropertyManager
         }
     }
 
+    /**
+     * @deprecated As of Java 7, please use the try-with-resources statement.
+     */
+    @Deprecated
     public static void close( InputStream inputStream )
     {
         if ( inputStream == null )

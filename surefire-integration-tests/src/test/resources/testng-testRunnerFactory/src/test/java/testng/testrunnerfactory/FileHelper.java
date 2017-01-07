@@ -19,22 +19,22 @@ public class FileHelper
             writer.close();
             writer = null;
         }
-        catch ( IOException exception )
+        catch ( IOException e )
         {
-            throw new RuntimeException( exception );
+            throw new RuntimeException( e );
         }
         finally
         {
-            try
+            if ( writer != null )
             {
-                if ( writer != null )
+                try
                 {
                     writer.close();
                 }
-            }
-            catch ( final IOException e )
-            {
-                // Suppressed.
+                catch ( IOException e )
+                {
+                    // Suppressed, so that the exception thrown in the try block will be propagated.
+                }
             }
         }
     }
