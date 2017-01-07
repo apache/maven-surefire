@@ -20,16 +20,15 @@ package org.apache.maven.plugin.surefire.runorder;
  */
 
 
+import org.apache.maven.shared.utils.io.IOUtil;
 import org.apache.maven.surefire.report.ReportEntry;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -41,7 +40,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.util.Collections.sort;
-import org.apache.maven.shared.utils.io.IOUtil;
 import static org.apache.maven.plugin.surefire.runorder.RunEntryStatistics.fromReportEntry;
 import static org.apache.maven.plugin.surefire.runorder.RunEntryStatistics.fromString;
 
@@ -70,14 +68,7 @@ public final class RunEntryStatisticsMap
             try
             {
                 reader = new FileReader( file );
-                final RunEntryStatisticsMap result = fromReader( reader );
-                reader.close();
-                reader = null;
-                return result;
-            }
-            catch ( FileNotFoundException e )
-            {
-                throw new RuntimeException( e );
+                return fromReader( reader );
             }
             catch ( IOException e )
             {
@@ -98,41 +89,38 @@ public final class RunEntryStatisticsMap
         throws IOException
     {
         Map<String, RunEntryStatistics> result = new HashMap<String, RunEntryStatistics>();
-        BufferedReader bufferedReader = new BufferedReader( fileReader );
-        String line = bufferedReader.readLine();
-        while ( line != null )
+        BufferedReader reader = new BufferedReader( fileReader );
+        for ( String line = reader.readLine(); line != null && !line.startsWith( "#" ); line = reader.readLine() )
         {
-            if ( !line.startsWith( "#" ) )
-            {
-                final RunEntryStatistics stats = fromString( line );
-                result.put( stats.getTestName(), stats );
-            }
-            line = bufferedReader.readLine();
+            RunEntryStatistics stats = fromString( line );
+            result.put( stats.getTestName(), stats );
         }
         return new RunEntryStatisticsMap( result );
     }
 
     public void serialize( File file )
-        throws IOException
+        throws FileNotFoundException
     {
-        BufferedWriter writer = null;
+        /**
+         * The implementation of constructor {@link PrintWriter(File)}
+         * uses {@link java.io.BufferedWriter}
+         * which is guaranteed by Java 1.5 Javadoc of the constructor:
+         * "The output will be written to the file and is buffered."
+         */
+        PrintWriter printWriter = new PrintWriter( file );
         try
         {
-            writer = new BufferedWriter( new OutputStreamWriter( new FileOutputStream( file ) ) );
             List<RunEntryStatistics> items = new ArrayList<RunEntryStatistics>( runEntryStatistics.values() );
             sort( items, new RunCountComparator() );
             for ( RunEntryStatistics item : items )
             {
-                writer.append( item.toString() );
-                writer.newLine();
+                printWriter.println( item.toString() );
             }
-
-            writer.close();
-            writer = null;
+            printWriter.flush();
         }
         finally
         {
-            IOUtil.close( writer );
+            printWriter.close();
         }
     }
 

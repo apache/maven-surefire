@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.apache.maven.shared.utils.io.IOUtil;
 import org.apache.maven.surefire.report.ReportEntry;
 
 import static org.apache.maven.plugin.surefire.report.FileReporter.getReportFile;
@@ -69,10 +70,12 @@ public class ConsoleOutputFileReporter
         {
             try
             {
+                fileOutputStream.flush();
                 fileOutputStream.close();
             }
             catch ( IOException e )
             {
+                // do nothing
             }
             finally
             {
@@ -99,15 +102,7 @@ public class ConsoleOutputFileReporter
         }
         catch ( IOException e )
         {
-            try
-            {
-                fileOutputStream.close();
-                // Intentionally no setting to null.
-            }
-            catch ( final IOException e1 )
-            {
-                // Suppressed.
-            }
+            IOUtil.close( fileOutputStream );
             throw new RuntimeException( e );
         }
     }

@@ -19,9 +19,10 @@ package org.apache.maven.plugin.surefire.runorder;
  * under the License.
  */
 
-import java.io.File;
-import java.io.IOException;
 import org.apache.maven.surefire.report.ReportEntry;
+
+import java.io.File;
+import java.io.FileNotFoundException;
 
 import static org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMap.fromFile;
 
@@ -54,7 +55,7 @@ public class StatisticsReporter
         {
             newResults.serialize( dataFile );
         }
-        catch ( IOException e )
+        catch ( FileNotFoundException e )
         {
             throw new RuntimeException( e );
         }

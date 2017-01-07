@@ -103,8 +103,6 @@ public class TestFile
             {
                 sb.append( line );
             }
-            reader.close();
-            reader = null;
             return sb.toString();
         }
         catch ( IOException e )
