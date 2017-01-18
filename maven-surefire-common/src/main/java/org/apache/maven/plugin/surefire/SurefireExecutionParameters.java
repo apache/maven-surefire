@@ -99,10 +99,6 @@ public interface SurefireExecutionParameters
 
     void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds );
 
-    int getForkedProcessExitTimeoutInSeconds();
-
-    void setForkedProcessExitTimeoutInSeconds( int forkedProcessTerminationTimeoutInSeconds );
-
     double getParallelTestsTimeoutInSeconds();
 
     void setParallelTestsTimeoutInSeconds( double parallelTestsTimeoutInSeconds );

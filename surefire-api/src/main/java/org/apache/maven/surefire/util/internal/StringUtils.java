@@ -55,22 +55,16 @@ import java.util.StringTokenizer;
  *               NOTE: This class is not part of any api and is public purely for technical reasons !
  * @since 1.0
  */
-public final class StringUtils
+public class StringUtils
 {
-    public static final String NL = System.getProperty( "line.separator", "\n" );
-
-    private static final byte[] HEX_CHARS = {
-                    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+    private static final byte[] HEX_CHARS = new byte[] {
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+        'A', 'B', 'C', 'D', 'E', 'F' };
 
     private static final Charset DEFAULT_CHARSET = Charset.defaultCharset();
 
     // 8-bit charset Latin-1
     public static final String FORK_STREAM_CHARSET_NAME = "ISO-8859-1";
-
-    private StringUtils()
-    {
-        throw new IllegalStateException( "no instantiable constructor" );
-    }
 
     public static String[] split( String text, String separator )
     {
@@ -345,6 +339,32 @@ public final class StringUtils
         return ByteBuffer.wrap( out, 0, outPos );
     }
 
+    public static String decode( byte[] toDecode, Charset charset )
+    {
+        try
+        {
+            // @todo use new JDK 1.6 constructor String(byte bytes[], Charset charset)
+            return new String( toDecode, charset.name() );
+        }
+        catch ( UnsupportedEncodingException e )
+        {
+            throw new RuntimeException( "The JVM must support Charset " + charset, e );
+        }
+    }
+
+    public static byte[] encode( String toEncode, Charset charset )
+    {
+        try
+        {
+            // @todo use new JDK 1.6 method getBytes(Charset charset)
+            return toEncode.getBytes( charset.name() );
+        }
+        catch ( UnsupportedEncodingException e )
+        {
+            throw new RuntimeException( "The JVM must support Charset " + charset, e );
+        }
+    }
+
     public static byte[] encodeStringForForkCommunication( String string )
     {
         try
@@ -355,5 +375,25 @@ public final class StringUtils
         {
            throw new RuntimeException( "The JVM must support Charset " + FORK_STREAM_CHARSET_NAME, e );
         }
+    }
+
+    /*
+    * In JDK7 use java.util.Objects instead.
+    * */
+    public static <T> T requireNonNull( T obj, String message )
+    {
+        if ( obj == null )
+        {
+            throw new NullPointerException( message );
+        }
+        return obj;
+    }
+
+    /*
+    * In JDK7 use java.util.Objects instead.
+    * */
+    public static <T> T requireNonNull( T obj )
+    {
+        return requireNonNull( obj, null );
     }
 }

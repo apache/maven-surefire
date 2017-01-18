@@ -32,7 +32,7 @@ import org.junit.runner.notification.Failure;
  * T E S T S
  * -------------------------------------------------------
  * <p/>
- * Results:
+ * Results :
  * <p/>
  * Tests run: 0, Failures: 0, Errors: 0, Skipped: 0
  * <p/>

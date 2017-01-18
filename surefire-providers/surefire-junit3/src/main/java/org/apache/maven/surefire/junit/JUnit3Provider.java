@@ -128,6 +128,7 @@ public class JUnit3Provider
     private void executeTestSet( SurefireTestSet testSet, RunListener reporter, ClassLoader classLoader )
         throws TestSetFailedException
     {
+
         ReportEntry report = new SimpleReportEntry( this.getClass().getName(), testSet.getName() );
 
         reporter.testSetStarting( report );

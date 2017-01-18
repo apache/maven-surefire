@@ -30,8 +30,6 @@ import org.junit.Test;
  */
 public class SuiteTest2
 {
-    private static final int PERFORMANCE_TEST_MULTIPLICATION_FACTOR = 4;
-
     private static long startedAt;
 
     public SuiteTest2()
@@ -69,7 +67,7 @@ public class SuiteTest2
         throws InterruptedException
     {
         System.out.println( "begin SuiteTest2.first" );
-        Thread.sleep( 500 * PERFORMANCE_TEST_MULTIPLICATION_FACTOR );
+        Thread.sleep( 500 );
         System.out.println( "end SuiteTest2.first" );
     }
 
@@ -78,7 +76,7 @@ public class SuiteTest2
         throws InterruptedException
     {
         System.out.println( "begin SuiteTest2.second" );
-        Thread.sleep( 500 * PERFORMANCE_TEST_MULTIPLICATION_FACTOR );
+        Thread.sleep( 500 );
         System.out.println( "end SuiteTest2.second" );
     }
 
@@ -87,7 +85,7 @@ public class SuiteTest2
         throws InterruptedException
     {
         System.out.println( "begin SuiteTest2.third" );
-        Thread.sleep( 500 * PERFORMANCE_TEST_MULTIPLICATION_FACTOR );
+        Thread.sleep( 500 );
         System.out.println( "end SuiteTest2.third" );
     }
 }

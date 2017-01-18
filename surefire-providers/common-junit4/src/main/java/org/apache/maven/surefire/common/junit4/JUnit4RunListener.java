@@ -28,13 +28,12 @@ import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
-import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.isFailureInsideJUnitItself;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.getAnnotatedIgnoreValue;
-import static org.apache.maven.surefire.report.SimpleReportEntry.assumption;
 import static org.apache.maven.surefire.report.SimpleReportEntry.ignored;
 import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
-import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractClassName;
-import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractMethodName;
 
 /**
  * RunListener for JUnit4, delegates to our own RunListener
@@ -43,6 +42,12 @@ import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.e
 public class JUnit4RunListener
     extends org.junit.runner.notification.RunListener
 {
+    private static final Pattern PARENS = Pattern.compile( "^" + ".+" //any character
+                                                               + "\\(("
+                                                               // then an open-paren (start matching a group)
+                                                               + "[^\\\\(\\\\)]+" //non-parens
+                                                               + ")\\)" + "$" );
+
     protected final RunListener reporter;
 
     /**
@@ -117,12 +122,10 @@ public class JUnit4RunListener
         failureFlag.set( true );
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
+    @SuppressWarnings( { "UnusedDeclaration" } )
     public void testAssumptionFailure( Failure failure )
     {
-        Description desc = failure.getDescription();
-        String test = getClassName( desc );
-        reporter.testAssumptionFailure( assumption( test, desc.getDisplayName(), failure.getMessage() ) );
+        reporter.testAssumptionFailure( createReportEntry( failure.getDescription() ) );
         failureFlag.set( true );
     }
 
@@ -149,16 +152,16 @@ public class JUnit4RunListener
         reporter.testExecutionSkippedByUser();
     }
 
-    private String getClassName( Description description )
+    private static String getClassName( Description description )
     {
-        String name = extractDescriptionClassName( description );
+        String name = extractClassName( description );
         if ( name == null || isInsaneJunitNullString( name ) )
         {
             // This can happen upon early failures (class instantiation error etc)
             Description subDescription = description.getChildren().get( 0 );
             if ( subDescription != null )
             {
-                name = extractDescriptionClassName( subDescription );
+                name = extractClassName( subDescription );
             }
             if ( name == null )
             {
@@ -178,25 +181,33 @@ public class JUnit4RunListener
         return new SimpleReportEntry( getClassName( description ), description.getDisplayName() );
     }
 
-    protected String extractDescriptionClassName( Description description )
+    public static String extractClassName( Description description )
     {
-        return extractClassName( description.getDisplayName() );
+        String displayName = description.getDisplayName();
+        Matcher m = PARENS.matcher( displayName );
+        return m.find() ? m.group( 1 ) : displayName;
     }
 
-    protected String extractDescriptionMethodName( Description description )
+    public static String extractMethodName( Description description )
     {
-        return extractMethodName( description.getDisplayName() );
+        String displayName = description.getDisplayName();
+        int i = displayName.indexOf( "(" );
+        return i >= 0 ? displayName.substring( 0, i ) : displayName;
     }
 
     public static void rethrowAnyTestMechanismFailures( Result run )
         throws TestSetFailedException
     {
-        for ( Failure failure : run.getFailures() )
+        if ( run.getFailureCount() > 0 )
         {
-            if ( isFailureInsideJUnitItself( failure.getDescription() ) )
+            for ( Failure failure : run.getFailures() )
             {
-                throw new TestSetFailedException( failure.getTestHeader() + " :: " + failure.getMessage(),
-                                                        failure.getException() );
+                Description description = failure.getDescription();
+                if ( JUnit4ProviderUtil.isFailureInsideJUnitItself( description ) )
+                {
+                    final Throwable exception = failure.getException();
+                    throw new TestSetFailedException( exception );
+                }
             }
         }
     }

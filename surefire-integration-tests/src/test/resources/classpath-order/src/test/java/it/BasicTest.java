@@ -19,62 +19,42 @@ package it;
  * under the License.
  */
 
-import junit.framework.TestCase;
-
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.IOException;
 import java.util.Properties;
 
+import junit.framework.TestCase;
+
 public class BasicTest
-        extends TestCase
+    extends TestCase
 {
 
     public void testTestClassesBeforeMainClasses()
-            throws IOException
     {
         Properties props = getProperties( "/surefire-classpath-order.properties" );
         assertEquals( "test-classes", props.getProperty( "Surefire" ) );
     }
 
     public void testMainClassesBeforeDependencies()
-            throws IOException
     {
         Properties props = getProperties( "/surefire-report.properties" );
         assertEquals( "classes", props.getProperty( "Surefire" ) );
     }
 
-    private Properties getProperties( String resource )
-        throws IOException
+    private Properties getProperties(String resource)
     {
-        InputStream in = null;
+        InputStream in = getClass().getResourceAsStream( resource );
+        assertNotNull( in );
         try
         {
-            in = getClass().getResourceAsStream( resource );
-            assertNotNull( in );
-            Properties props = new Properties();
-            props.load( in );
-            in.close();
-            in = null;
-            return props;
+	        Properties props = new Properties();
+	        props.load( in );
+	        return props;
         }
-        catch ( IOException e )
+        catch (IOException e)
         {
-            fail( e.toString() );
+            fail(e.toString());
             return null;
-        }
-        finally
-        {
-            try
-            {
-                if ( in != null )
-                {
-                    in.close();
-                }
-            }
-            catch ( final IOException e )
-            {
-                // Suppressed.
-            }
         }
     }
 

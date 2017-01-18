@@ -25,17 +25,13 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import static java.util.Collections.unmodifiableSet;
 import static org.apache.maven.shared.utils.StringUtils.isBlank;
 import static org.apache.maven.shared.utils.StringUtils.isNotBlank;
 import static org.apache.maven.shared.utils.StringUtils.split;
 import static org.apache.maven.shared.utils.io.SelectorUtils.PATTERN_HANDLER_SUFFIX;
 import static org.apache.maven.shared.utils.io.SelectorUtils.REGEX_HANDLER_PREFIX;
 import static java.util.Collections.singleton;
-import static org.apache.maven.surefire.testset.ResolvedTest.Type.CLASS;
-import static org.apache.maven.surefire.testset.ResolvedTest.Type.METHOD;
 
-// TODO In Surefire 3.0 see SUREFIRE-1309 and use normal fully qualified class name regex instead.
 /**
  * Resolved multi pattern filter e.g. -Dtest=MyTest#test,!AnotherTest#otherTest into an object model
  * composed of included and excluded tests.<br/>
@@ -82,8 +78,8 @@ public class TestListResolver
             }
         }
 
-        this.includedPatterns = unmodifiableSet( includedFilters );
-        this.excludedPatterns = unmodifiableSet( excludedFilters );
+        this.includedPatterns = Collections.unmodifiableSet( includedFilters );
+        this.excludedPatterns = Collections.unmodifiableSet( excludedFilters );
         this.hasIncludedMethodPatterns = patterns.hasIncludedMethodPatterns;
         this.hasExcludedMethodPatterns = patterns.hasExcludedMethodPatterns;
     }
@@ -334,7 +330,7 @@ public class TestListResolver
         for ( ResolvedTest test : tests )
         {
             String readableTest = test.toString();
-            if ( readableTest.length() != 0 )
+            if ( readableTest != null )
             {
                 if ( aggregatedTest.length() != 0 )
                 {
@@ -382,9 +378,8 @@ public class TestListResolver
         if ( indexOfRegex != -1 )
         {
             if ( indexOfRegex != 0
-                         || !pattern.endsWith( PATTERN_HANDLER_SUFFIX )
-                         || !isRegexMinLength( pattern )
-                         || pattern.indexOf( REGEX_HANDLER_PREFIX, prefixLength ) != -1 )
+                || !pattern.endsWith( PATTERN_HANDLER_SUFFIX )
+                || pattern.indexOf( REGEX_HANDLER_PREFIX, prefixLength ) != -1 )
             {
                 String msg = "Illegal test|includes|excludes regex '%s'. Expected %%regex[class#method] "
                     + "or !%%regex[class#method] " + "with optional class or #method.";
@@ -398,14 +393,6 @@ public class TestListResolver
         }
     }
 
-
-    static boolean isRegexMinLength( String pattern )
-    {
-        //todo bug in maven-shared-utils: '+1' should not appear in the condition
-        //todo cannot reuse code from SelectorUtils.java because method isRegexPrefixedPattern is in private package.
-        return pattern.length() > REGEX_HANDLER_PREFIX.length() + PATTERN_HANDLER_SUFFIX.length() + 1;
-    }
-
     static String[] unwrapRegex( String regex )
     {
         regex = regex.trim();
@@ -414,10 +401,10 @@ public class TestListResolver
         return unwrap( regex.substring( from, to ) );
     }
 
-    static String[] unwrap( final String request )
+    static String[] unwrap( String request )
     {
-        final String[] classAndMethod = { "", "" };
-        final int indexOfHash = request.indexOf( '#' );
+        String[] classAndMethod = new String[] { "", "" };
+        int indexOfHash = request.indexOf( '#' );
         if ( indexOfHash == -1 )
         {
             classAndMethod[0] = request.trim();
@@ -465,11 +452,11 @@ public class TestListResolver
             }
             else if ( hasClass )
             {
-                test = new ResolvedTest( CLASS, unwrapped[0], true );
+                test = new ResolvedTest( ResolvedTest.Type.CLASS, unwrapped[0], true );
             }
             else if ( hasMethod )
             {
-                test = new ResolvedTest( METHOD, unwrapped[1], true );
+                test = new ResolvedTest( ResolvedTest.Type.METHOD, unwrapped[1], true );
             }
         }
         else
@@ -477,7 +464,7 @@ public class TestListResolver
             final int indexOfMethodSeparator = request.indexOf( '#' );
             if ( indexOfMethodSeparator == -1 )
             {
-                test = new ResolvedTest( CLASS, request, false );
+                test = new ResolvedTest( ResolvedTest.Type.CLASS, request, false );
             }
             else
             {

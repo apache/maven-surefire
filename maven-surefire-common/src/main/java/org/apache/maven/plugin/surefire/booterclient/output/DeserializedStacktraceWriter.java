@@ -35,15 +35,15 @@ public class DeserializedStacktraceWriter
 {
     private final String message;
 
-    private final String smartTrimmed;
-
     private final String stackTrace;
+
+    private final String smartTrimmed;
 
     public DeserializedStacktraceWriter( String message, String smartTrimmed, String stackTrace )
     {
         this.message = message;
-        this.smartTrimmed = smartTrimmed;
         this.stackTrace = stackTrace;
+        this.smartTrimmed = smartTrimmed;
     }
 
     public String smartTrimmedStackTrace()
@@ -64,6 +64,6 @@ public class DeserializedStacktraceWriter
 
     public SafeThrowable getThrowable()
     {
-        return new SafeThrowable( message );
+        return new SafeThrowable( new Throwable( message ) );
     }
 }

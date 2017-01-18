@@ -21,7 +21,7 @@ package org.apache.maven.surefire.providerapi;
 
 import org.apache.maven.surefire.booter.Shutdown;
 import org.apache.maven.surefire.cli.CommandLineOption;
-import org.apache.maven.surefire.report.ConsoleStream;
+import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
@@ -53,7 +53,6 @@ public interface ProviderParameters
      * @return The directory scanner
      * @deprecated Use scanresult instead, as of version 2.12.2. Will be removed in next major version.
      */
-    @Deprecated
     DirectoryScanner getDirectoryScanner();
 
     /**
@@ -84,9 +83,9 @@ public interface ProviderParameters
      * This output is intended for provider-oriented messages that are not attached to a single test-set
      * and will normally be written to something console-like immediately.
      *
-     * @return A console stream logger
+     * @return A console logger
      */
-    ConsoleStream getConsoleLogger();
+    ConsoleLogger getConsoleLogger();
 
     /**
      * The raw parameters used in creating the directory scanner
@@ -147,6 +146,4 @@ public interface ProviderParameters
     boolean isInsideFork();
 
     Shutdown getShutdown();
-
-    Integer getSystemExitTimeout();
 }

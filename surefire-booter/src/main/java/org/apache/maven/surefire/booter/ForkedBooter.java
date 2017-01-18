@@ -21,7 +21,6 @@ package org.apache.maven.surefire.booter;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
@@ -30,12 +29,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
-import static java.lang.System.err;
-import static java.lang.System.out;
-import static java.lang.System.setErr;
-import static java.lang.System.setOut;
-import static java.lang.Thread.currentThread;
-import static java.util.concurrent.TimeUnit.SECONDS;
+
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
@@ -43,16 +37,16 @@ import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import static org.apache.maven.surefire.booter.CommandReader.getReader;
+
+import static org.apache.maven.surefire.booter.Shutdown.EXIT;
+import static org.apache.maven.surefire.booter.Shutdown.KILL;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_BYE;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_ERROR;
 import static org.apache.maven.surefire.booter.ForkingRunListener.encode;
-import static org.apache.maven.surefire.booter.Shutdown.EXIT;
-import static org.apache.maven.surefire.booter.Shutdown.KILL;
-import static org.apache.maven.surefire.booter.SystemPropertyManager.setSystemProperties;
 import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * The part of the booter that is unique to a forked vm.
@@ -66,11 +60,10 @@ import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringFo
  */
 public final class ForkedBooter
 {
-    private static final long DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS = 30;
+    private static final long SYSTEM_EXIT_TIMEOUT_IN_SECONDS = 30;
     private static final long PING_TIMEOUT_IN_SECONDS = 20;
-    private static final ScheduledExecutorService JVM_TERMINATOR = createJvmTerminator();
 
-    private static volatile long systemExitTimeoutInSeconds = DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS;
+    private static final ScheduledExecutorService JVM_TERMINATOR = createJvmTerminator();
 
     /**
      * This method is invoked when Surefire is forked - this method parses and organizes the arguments passed to it and
@@ -82,29 +75,22 @@ public final class ForkedBooter
     {
         final CommandReader reader = startupMasterProcessReader();
         final ScheduledFuture<?> pingScheduler = listenToShutdownCommands( reader );
-        final PrintStream originalOut = out;
+        final PrintStream originalOut = System.out;
         try
         {
-            final String tmpDir = args[0];
-            final String dumpFileName = args[1];
-            final String surefirePropsFileName = args[2];
-
-            BooterDeserializer booterDeserializer =
-                    new BooterDeserializer( createSurefirePropertiesIfFileExists( tmpDir, surefirePropsFileName ) );
-            if ( args.length > 3 )
+            if ( args.length > 1 )
             {
-                final String effectiveSystemPropertiesFileName = args[3];
-                setSystemProperties( new File( tmpDir, effectiveSystemPropertiesFileName ) );
+                SystemPropertyManager.setSystemProperties( new File( args[1] ) );
             }
 
-            final ProviderConfiguration providerConfiguration = booterDeserializer.deserialize();
-            DumpErrorSingleton.getSingleton().init( dumpFileName, providerConfiguration.getReporterConfiguration() );
-
+            File surefirePropertiesFile = new File( args[0] );
+            InputStream stream = surefirePropertiesFile.exists() ? new FileInputStream( surefirePropertiesFile ) : null;
+            BooterDeserializer booterDeserializer = new BooterDeserializer( stream );
+            ProviderConfiguration providerConfiguration = booterDeserializer.deserialize();
             final StartupConfiguration startupConfiguration = booterDeserializer.getProviderConfiguration();
-            systemExitTimeoutInSeconds =
-                    providerConfiguration.systemExitTimeout( DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS );
-            final TypeEncodedValue forkedTestSet = providerConfiguration.getTestForFork();
-            final boolean readTestsFromInputStream = providerConfiguration.isReadTestsFromInStream();
+
+            TypeEncodedValue forkedTestSet = providerConfiguration.getTestForFork();
+            boolean readTestsFromInputStream = providerConfiguration.isReadTestsFromInStream();
 
             final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
             if ( startupConfiguration.isManifestOnlyJarRequestedAndUsable() )
@@ -112,7 +98,7 @@ public final class ForkedBooter
                 classpathConfiguration.trickClassPathWhenManifestOnlyClasspath();
             }
 
-            final ClassLoader classLoader = currentThread().getContextClassLoader();
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             classLoader.setDefaultAssertionStatus( classpathConfiguration.isEnableAssertions() );
             startupConfiguration.writeSurefireTestClasspathProperty();
 
@@ -136,17 +122,15 @@ public final class ForkedBooter
             }
             catch ( InvocationTargetException t )
             {
-                DumpErrorSingleton.getSingleton().dumpException( t );
-                StackTraceWriter stackTraceWriter =
-                    new LegacyPojoStackTraceWriter( "test subsystem", "no method", t.getTargetException() );
+                LegacyPojoStackTraceWriter stackTraceWriter =
+                    new LegacyPojoStackTraceWriter( "test subystem", "no method", t.getTargetException() );
                 StringBuilder stringBuilder = new StringBuilder();
                 encode( stringBuilder, stackTraceWriter, false );
                 encodeAndWriteToOutput( ( (char) BOOTERCODE_ERROR ) + ",0," + stringBuilder + "\n" , originalOut );
             }
             catch ( Throwable t )
             {
-                DumpErrorSingleton.getSingleton().dumpException( t );
-                StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( "test subsystem", "no method", t );
+                StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( "test subystem", "no method", t );
                 StringBuilder stringBuilder = new StringBuilder();
                 encode( stringBuilder, stackTraceWriter, false );
                 encodeAndWriteToOutput( ( (char) BOOTERCODE_ERROR ) + ",0," + stringBuilder + "\n", originalOut );
@@ -159,10 +143,9 @@ public final class ForkedBooter
         }
         catch ( Throwable t )
         {
-            DumpErrorSingleton.getSingleton().dumpException( t );
             // Just throwing does getMessage() and a local trace - we want to call printStackTrace for a full trace
             // noinspection UseOfSystemOutOrSystemErr
-            t.printStackTrace( err );
+            t.printStackTrace( System.err );
             // noinspection ProhibitedExceptionThrown,CallToSystemExit
             exit( 1, EXIT, reader, false );
         }
@@ -174,7 +157,7 @@ public final class ForkedBooter
 
     private static CommandReader startupMasterProcessReader()
     {
-        return getReader();
+        return CommandReader.getReader();
     }
 
     private static ScheduledFuture<?> listenToShutdownCommands( CommandReader reader )
@@ -257,21 +240,21 @@ public final class ForkedBooter
         final ReporterFactory factory = createForkingReporterFactory( providerConfiguration, originalSystemOut );
 
         return invokeProviderInSameClassLoader( testSet, factory, providerConfiguration, true, startupConfiguration,
-                                                      false );
+                                                false );
     }
 
     private static ReporterFactory createForkingReporterFactory( ProviderConfiguration providerConfiguration,
                                                                  PrintStream originalSystemOut )
     {
         final boolean trimStackTrace = providerConfiguration.getReporterConfiguration().isTrimStackTrace();
-        return new ForkingReporterFactory( trimStackTrace, originalSystemOut );
+        return SurefireReflector.createForkingReporterFactoryInCurrentClassLoader( trimStackTrace, originalSystemOut );
     }
 
     private static ScheduledExecutorService createJvmTerminator()
     {
         ThreadFactory threadFactory = newDaemonThreadFactory( "last-ditch-daemon-shutdown-thread-"
-                                                            + systemExitTimeoutInSeconds
-                                                            + "s" );
+                                                            + SYSTEM_EXIT_TIMEOUT_IN_SECONDS
+                                                            + "sec" );
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor( 1, threadFactory );
         executor.setMaximumPoolSize( 1 );
         executor.prestartCoreThread();
@@ -287,45 +270,45 @@ public final class ForkedBooter
             {
                 Runtime.getRuntime().halt( returnCode );
             }
-        }, systemExitTimeoutInSeconds, SECONDS );
+        }, SYSTEM_EXIT_TIMEOUT_IN_SECONDS, SECONDS );
     }
 
     private static RunResult invokeProviderInSameClassLoader( Object testSet, Object factory,
-                                                              ProviderConfiguration providerConfig,
-                                                              boolean insideFork,
-                                                              StartupConfiguration startupConfig,
-                                                              boolean restoreStreams )
+                                                             ProviderConfiguration providerConfiguration,
+                                                             boolean insideFork,
+                                                             StartupConfiguration startupConfig,
+                                                             boolean restoreStreams )
         throws TestSetFailedException, InvocationTargetException
     {
-        final PrintStream orgSystemOut = out;
-        final PrintStream orgSystemErr = err;
+        final PrintStream orgSystemOut = System.out;
+        final PrintStream orgSystemErr = System.err;
         // Note that System.out/System.err are also read in the "ReporterConfiguration" instatiation
         // in createProvider below. These are the same values as here.
 
         try
         {
-            return createProviderInCurrentClassloader( startupConfig, insideFork, providerConfig, factory )
-                           .invoke( testSet );
+            return createProviderInCurrentClassloader( startupConfig, insideFork, providerConfiguration, factory )
+                .invoke( testSet );
         }
         finally
         {
             if ( restoreStreams && System.getSecurityManager() == null )
             {
-                setOut( orgSystemOut );
-                setErr( orgSystemErr );
+                System.setOut( orgSystemOut );
+                System.setErr( orgSystemErr );
             }
         }
     }
 
-    private static SurefireProvider createProviderInCurrentClassloader( StartupConfiguration startupConfiguration,
-                                                                        boolean isInsideFork,
+    private static SurefireProvider createProviderInCurrentClassloader( StartupConfiguration startupConfiguration1,
+                                                                       boolean isInsideFork,
                                                                        ProviderConfiguration providerConfiguration,
-                                                                       Object reporterManagerFactory )
+                                                                       Object reporterManagerFactory1 )
     {
-        BaseProviderFactory bpf = new BaseProviderFactory( (ReporterFactory) reporterManagerFactory, isInsideFork );
+        BaseProviderFactory bpf = new BaseProviderFactory( (ReporterFactory) reporterManagerFactory1, isInsideFork );
         bpf.setTestRequest( providerConfiguration.getTestSuiteDefinition() );
         bpf.setReporterConfiguration( providerConfiguration.getReporterConfiguration() );
-        ClassLoader classLoader = currentThread().getContextClassLoader();
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         bpf.setClassLoaders( classLoader );
         bpf.setTestArtifactInfo( providerConfiguration.getTestArtifact() );
         bpf.setProviderProperties( providerConfiguration.getProviderProperties() );
@@ -334,15 +317,7 @@ public final class ForkedBooter
         bpf.setMainCliOptions( providerConfiguration.getMainCliOptions() );
         bpf.setSkipAfterFailureCount( providerConfiguration.getSkipAfterFailureCount() );
         bpf.setShutdown( providerConfiguration.getShutdown() );
-        bpf.setSystemExitTimeout( providerConfiguration.getSystemExitTimeout() );
-        String providerClass = startupConfiguration.getActualClassName();
+        String providerClass = startupConfiguration1.getActualClassName();
         return (SurefireProvider) instantiateOneArg( classLoader, providerClass, ProviderParameters.class, bpf );
-    }
-
-    private static InputStream createSurefirePropertiesIfFileExists( String tmpDir, String propFileName )
-            throws FileNotFoundException
-    {
-        File surefirePropertiesFile = new File( tmpDir, propFileName );
-        return surefirePropertiesFile.exists() ? new FileInputStream( surefirePropertiesFile ) : null;
     }
 }

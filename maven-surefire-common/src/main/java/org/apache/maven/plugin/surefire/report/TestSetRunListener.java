@@ -21,19 +21,13 @@ package org.apache.maven.plugin.surefire.report;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
+import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
-
-import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
-import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
-import static org.apache.maven.plugin.surefire.report.ReportEntryType.SKIPPED;
-import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
 
 /**
  * Reports data for a single test set.
@@ -82,38 +76,16 @@ public class TestSetRunListener
         this.simpleXMLReporter = simpleXMLReporter;
         this.consoleOutputReceiver = consoleOutputReceiver;
         this.briefOrPlainFormat = briefOrPlainFormat;
-        detailsForThis = new TestSetStats( trimStackTrace, isPlainFormat );
-        testMethodStats = new ArrayList<TestMethodStats>();
-    }
-
-    public void debug( String message )
-    {
-        consoleReporter.getConsoleLogger().debug( trimTrailingNewLine( message ) );
+        this.detailsForThis = new TestSetStats( trimStackTrace, isPlainFormat );
+        this.testMethodStats = new ArrayList<TestMethodStats>(  );
     }
 
     public void info( String message )
     {
-        consoleReporter.getConsoleLogger().info( trimTrailingNewLine( message ) );
-    }
-
-    public void warning( String message )
-    {
-        consoleReporter.getConsoleLogger().warning( trimTrailingNewLine( message ) );
-    }
-
-    public void error( String message )
-    {
-        consoleReporter.getConsoleLogger().error( trimTrailingNewLine( message ) );
-    }
-
-    public void error( String message, Throwable t )
-    {
-        consoleReporter.getConsoleLogger().error( message, t );
-    }
-
-    public void error( Throwable t )
-    {
-        consoleReporter.getConsoleLogger().error( t );
+        if ( consoleReporter != null )
+        {
+            consoleReporter.writeMessage( message );
+        }
     }
 
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
@@ -139,7 +111,10 @@ public class TestSetRunListener
     public void testSetStarting( ReportEntry report )
     {
         detailsForThis.testSetStart();
-        consoleReporter.testSetStarting( report );
+        if ( consoleReporter != null )
+        {
+            consoleReporter.testSetStarting( report );
+        }
         consoleOutputReceiver.testSetStarting( report );
     }
 
@@ -151,29 +126,36 @@ public class TestSetRunListener
 
     public void testSetCompleted( ReportEntry report )
     {
-        try
+        WrappedReportEntry wrap = wrapTestSet( report );
+        List<String> testResults = briefOrPlainFormat ? detailsForThis.getTestResults() : null;
+        if ( fileReporter != null )
         {
-            final WrappedReportEntry wrap = wrapTestSet( report );
-            final List<String> testResults =
-                briefOrPlainFormat ? detailsForThis.getTestResults() : Collections.<String>emptyList();
             fileReporter.testSetCompleted( wrap, detailsForThis, testResults );
-            simpleXMLReporter.testSetCompleted( wrap, detailsForThis );
-            statisticsReporter.testSetCompleted();
-            consoleReporter.testSetCompleted( wrap, detailsForThis, testResults );
-            consoleOutputReceiver.testSetCompleted( wrap );
-            consoleReporter.reset();
-
-            wrap.getStdout().free();
-            wrap.getStdErr().free();
-
-            addTestMethodStats();
-            detailsForThis.reset();
-            clearCapture();
         }
-        catch ( final IOException e )
+        if ( simpleXMLReporter != null )
         {
-            throw new RuntimeException( "Unexpected IOException.e", e );
+            simpleXMLReporter.testSetCompleted( wrap, detailsForThis );
         }
+        if ( statisticsReporter != null )
+        {
+            statisticsReporter.testSetCompleted();
+        }
+        if ( consoleReporter != null )
+        {
+            consoleReporter.testSetCompleted( wrap, detailsForThis, testResults );
+        }
+        consoleOutputReceiver.testSetCompleted( wrap );
+        if ( consoleReporter != null )
+        {
+            consoleReporter.reset();
+        }
+
+        wrap.getStdout().free();
+        wrap.getStdErr().free();
+
+        addTestMethodStats();
+        detailsForThis.reset();
+
     }
 
     // ----------------------------------------------------------------------
@@ -187,25 +169,34 @@ public class TestSetRunListener
 
     public void testSucceeded( ReportEntry reportEntry )
     {
-        WrappedReportEntry wrapped = wrap( reportEntry, SUCCESS );
+        WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.SUCCESS );
         detailsForThis.testSucceeded( wrapped );
-        statisticsReporter.testSucceeded( reportEntry );
+        if ( statisticsReporter != null )
+        {
+            statisticsReporter.testSucceeded( reportEntry );
+        }
         clearCapture();
     }
 
     public void testError( ReportEntry reportEntry )
     {
-        WrappedReportEntry wrapped = wrap( reportEntry, ERROR );
+        WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.ERROR );
         detailsForThis.testError( wrapped );
-        statisticsReporter.testError( reportEntry );
+        if ( statisticsReporter != null )
+        {
+            statisticsReporter.testError( reportEntry );
+        }
         clearCapture();
     }
 
     public void testFailed( ReportEntry reportEntry )
     {
-        WrappedReportEntry wrapped = wrap( reportEntry, FAILURE );
+        WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.FAILURE );
         detailsForThis.testFailure( wrapped );
-        statisticsReporter.testFailed( reportEntry );
+        if ( statisticsReporter != null )
+        {
+            statisticsReporter.testFailed( reportEntry );
+        }
         clearCapture();
     }
 
@@ -215,10 +206,13 @@ public class TestSetRunListener
 
     public void testSkipped( ReportEntry reportEntry )
     {
-        WrappedReportEntry wrapped = wrap( reportEntry, SKIPPED );
+        WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.SKIPPED );
 
         detailsForThis.testSkipped( wrapped );
-        statisticsReporter.testSkipped( reportEntry );
+        if ( statisticsReporter != null )
+        {
+            statisticsReporter.testSkipped( reportEntry );
+        }
         clearCapture();
     }
 
@@ -234,7 +228,7 @@ public class TestSetRunListener
     private WrappedReportEntry wrap( ReportEntry other, ReportEntryType reportEntryType )
     {
         final int estimatedElapsed;
-        if ( reportEntryType != SKIPPED )
+        if ( reportEntryType != ReportEntryType.SKIPPED )
         {
             if ( other.getElapsed() != null )
             {
@@ -262,7 +256,10 @@ public class TestSetRunListener
 
     public void close()
     {
-        consoleOutputReceiver.close();
+        if ( consoleOutputReceiver != null )
+        {
+            consoleOutputReceiver.close();
+        }
     }
 
     public void  addTestMethodStats()
@@ -276,19 +273,8 @@ public class TestSetRunListener
         }
     }
 
-    List<TestMethodStats> getTestMethodStats()
+    public List<TestMethodStats> getTestMethodStats()
     {
         return testMethodStats;
-    }
-
-    public static String trimTrailingNewLine( final String message )
-    {
-        final int e = message == null ? 0 : lineBoundSymbolWidth( message );
-        return message != null && e != 0 ? message.substring( 0, message.length() - e ) : message;
-    }
-
-    private static int lineBoundSymbolWidth( String message )
-    {
-        return message.endsWith( "\n" ) || message.endsWith( "\r" ) ? 1 : ( message.endsWith( "\r\n" ) ? 2 : 0 );
     }
 }

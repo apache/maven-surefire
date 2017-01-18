@@ -22,37 +22,23 @@ package runListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 
 public class FileHelper
 {
     public static void writeFile( String fileName, String content )
     {
-        Writer writer = null;
         try
         {
-            writer = new FileWriter( new File( new File( "target" ).getAbsoluteFile(), fileName ) );
-            writer.write( content );
-            writer.close();
-            writer = null;
+            File target = new File( "target" ).getAbsoluteFile();
+            File listenerOutput = new File( target, fileName );
+            FileWriter out = new FileWriter( listenerOutput );
+            out.write( content );
+            out.flush();
+            out.close();
         }
         catch ( IOException e )
         {
             throw new RuntimeException( e );
-        }
-        finally
-        {
-            try
-            {
-                if ( writer != null )
-                {
-                    writer.close();
-                }
-            }
-            catch ( final IOException e )
-            {
-                // Suppressed, so that the exception thrown in the try block will be propagated.
-            }
         }
     }
 }

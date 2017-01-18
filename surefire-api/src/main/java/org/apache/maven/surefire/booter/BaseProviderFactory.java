@@ -21,7 +21,7 @@ package org.apache.maven.surefire.booter;
 
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.report.ConsoleStream;
+import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -36,12 +36,9 @@ import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 
-import java.io.PrintStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import static java.util.Collections.emptyList;
 
 /**
  * @author Kristian Rosenvold
@@ -57,7 +54,7 @@ public class BaseProviderFactory
 
     private final boolean insideFork;
 
-    private List<CommandLineOption> mainCliOptions = emptyList();
+    private List<CommandLineOption> mainCliOptions = Collections.emptyList();
 
     private Map<String, String> providerProperties;
 
@@ -77,15 +74,12 @@ public class BaseProviderFactory
 
     private Shutdown shutdown;
 
-    private Integer systemExitTimeout;
-
     public BaseProviderFactory( ReporterFactory reporterFactory, boolean insideFork )
     {
         this.reporterFactory = reporterFactory;
         this.insideFork = insideFork;
     }
 
-    @Deprecated
     public DirectoryScanner getDirectoryScanner()
     {
         return directoryScannerParameters == null
@@ -132,11 +126,12 @@ public class BaseProviderFactory
         this.testClassLoader = testClassLoader;
     }
 
-    public ConsoleStream getConsoleLogger()
+    public ConsoleLogger getConsoleLogger()
     {
-        boolean trim = reporterConfiguration.isTrimStackTrace();
-        PrintStream out = reporterConfiguration.getOriginalSystemOut();
-        return insideFork ? new ForkingRunListener( out, ROOT_CHANNEL, trim ) : new DefaultDirectConsoleReporter( out );
+        return insideFork
+                ? new ForkingRunListener( reporterConfiguration.getOriginalSystemOut(), ROOT_CHANNEL,
+                                           reporterConfiguration.isTrimStackTrace() )
+                : new DefaultDirectConsoleReporter( reporterConfiguration.getOriginalSystemOut() );
     }
 
     public void setTestRequest( TestRequest testRequest )
@@ -222,15 +217,5 @@ public class BaseProviderFactory
     public void setShutdown( Shutdown shutdown )
     {
         this.shutdown = shutdown;
-    }
-
-    public Integer getSystemExitTimeout()
-    {
-        return systemExitTimeout;
-    }
-
-    public void setSystemExitTimeout( Integer systemExitTimeout )
-    {
-        this.systemExitTimeout = systemExitTimeout;
     }
 }

@@ -21,34 +21,26 @@ package org.apache.maven.surefire.testset;
 
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.io.MatchPatterns;
+import org.apache.maven.shared.utils.io.SelectorUtils;
 
-import java.util.regex.Pattern;
-
-import static java.io.File.separatorChar;
-import static java.util.regex.Pattern.compile;
-import static org.apache.maven.shared.utils.StringUtils.isBlank;
-import static org.apache.maven.shared.utils.io.MatchPatterns.from;
-import static org.apache.maven.shared.utils.io.SelectorUtils.PATTERN_HANDLER_SUFFIX;
-import static org.apache.maven.shared.utils.io.SelectorUtils.REGEX_HANDLER_PREFIX;
-import static org.apache.maven.shared.utils.io.SelectorUtils.matchPath;
+import java.io.File;
 
 /**
  * Single pattern test filter resolved from multi pattern filter -Dtest=MyTest#test,AnotherTest#otherTest.
- * @deprecated will be renamed to ResolvedTestPattern
  */
-// will be renamed to ResolvedTestPattern
-@Deprecated
 public final class ResolvedTest
 {
     /**
      * Type of patterns in ResolvedTest constructor.
      */
-    public enum Type
+    public static enum Type
     {
         CLASS, METHOD
     }
 
     private static final String CLASS_FILE_EXTENSION = ".class";
+
+    private static final String WILDCARD_CLASS_FILE_EXTENSION = ".class";
 
     private static final String JAVA_FILE_EXTENSION = ".java";
 
@@ -65,10 +57,6 @@ public final class ResolvedTest
     private final boolean isRegexTestMethodPattern;
 
     private final String description;
-
-    private final ClassMatcher classMatcher = new ClassMatcher();
-
-    private final MethodMatcher methodMatcher = new MethodMatcher();
 
     /**
      * '*' means zero or more characters<br>
@@ -100,7 +88,6 @@ public final class ResolvedTest
         this.methodPattern = methodPattern;
         isRegexTestClassPattern = isRegex;
         isRegexTestMethodPattern = isRegex;
-        methodMatcher.sanityCheck();
     }
 
     /**
@@ -119,7 +106,6 @@ public final class ResolvedTest
         methodPattern = !isClass ? pattern : null;
         isRegexTestClassPattern = isRegex && isClass;
         isRegexTestMethodPattern = isRegex && !isClass;
-        methodMatcher.sanityCheck();
     }
 
     /**
@@ -217,7 +203,7 @@ public final class ResolvedTest
     @Override
     public String toString()
     {
-        return isEmpty() ? "" : description;
+        return isEmpty() ? null : description;
     }
 
     private static String description( String clazz, String method, boolean isRegex )
@@ -244,24 +230,9 @@ public final class ResolvedTest
 
     private boolean canMatchExclusive( String testClassFile, String methodName )
     {
-        return canMatchExclusiveMethods( testClassFile, methodName )
-            || canMatchExclusiveClasses( testClassFile, methodName )
-            || canMatchExclusiveAll( testClassFile, methodName );
-    }
-
-    private boolean canMatchExclusiveMethods( String testClassFile, String methodName )
-    {
-        return testClassFile == null && methodName != null && classPattern == null && methodPattern != null;
-    }
-
-    private boolean canMatchExclusiveClasses( String testClassFile, String methodName )
-    {
-        return testClassFile != null && methodName == null && classPattern != null && methodPattern == null;
-    }
-
-    private boolean canMatchExclusiveAll( String testClassFile, String methodName )
-    {
-        return testClassFile != null && methodName != null && ( classPattern != null || methodPattern != null );
+        return testClassFile == null && methodName != null && classPattern == null && methodPattern != null
+            || testClassFile != null && methodName == null && classPattern != null && methodPattern == null
+            || testClassFile != null && methodName != null && ( classPattern != null || methodPattern != null );
     }
 
     /**
@@ -274,17 +245,48 @@ public final class ResolvedTest
 
     private boolean match( String testClassFile, String methodName )
     {
-        return matchClass( testClassFile ) && matchMethod( methodName );
+        return ( classPattern == null || matchTestClassFile( testClassFile ) )
+            && ( methodPattern == null || methodName == null || matchMethodName( methodName ) );
     }
 
-    private boolean matchClass( String testClassFile )
+    private boolean matchTestClassFile( String testClassFile )
     {
-        return classPattern == null || classMatcher.matchTestClassFile( testClassFile );
+        return isRegexTestClassPattern ? matchClassRegexPatter( testClassFile ) : matchClassPatter( testClassFile );
     }
 
-    private boolean matchMethod( String methodName )
+    private boolean matchMethodName( String methodName )
     {
-        return methodPattern == null || methodName == null || methodMatcher.matchMethodName( methodName );
+        return SelectorUtils.matchPath( methodPattern, methodName );
+    }
+
+    private boolean matchClassPatter( String testClassFile )
+    {
+        //@todo We have to use File.separator only because the MatchPatterns is using it internally - cannot override.
+        String classPattern = this.classPattern;
+        if ( File.separatorChar != '/' )
+        {
+            testClassFile = testClassFile.replace( '/', File.separatorChar );
+            classPattern = classPattern.replace( '/', File.separatorChar );
+        }
+
+        if ( classPattern.endsWith( WILDCARD_FILENAME_POSTFIX ) || classPattern.endsWith( CLASS_FILE_EXTENSION ) )
+        {
+            return MatchPatterns.from( classPattern ).matches( testClassFile, true );
+        }
+        else
+        {
+            String[] classPatterns = { classPattern + CLASS_FILE_EXTENSION, classPattern };
+            return MatchPatterns.from( classPatterns ).matches( testClassFile, true );
+        }
+    }
+
+    private boolean matchClassRegexPatter( String testClassFile )
+    {
+        if ( File.separatorChar != '/' )
+        {
+            testClassFile = testClassFile.replace( '/', File.separatorChar );
+        }
+        return MatchPatterns.from( classPattern ).matches( testClassFile, true );
     }
 
     private static String tryBlank( String s )
@@ -295,8 +297,8 @@ public final class ResolvedTest
         }
         else
         {
-            String trimmed = s.trim();
-            return StringUtils.isEmpty( trimmed ) ? null : trimmed;
+            s = s.trim();
+            return StringUtils.isEmpty( s ) ? null : s;
         }
     }
 
@@ -304,23 +306,19 @@ public final class ResolvedTest
     {
         if ( s != null && !isRegex )
         {
-            String path = convertToPath( s );
-            path = fromFullyQualifiedClass( path );
-            if ( path != null && !path.startsWith( WILDCARD_PATH_PREFIX ) )
+            s = convertToPath( s );
+            s = fromFullyQualifiedClass( s );
+            if ( s != null && !s.startsWith( WILDCARD_PATH_PREFIX ) )
             {
-                path = WILDCARD_PATH_PREFIX + path;
+                s = WILDCARD_PATH_PREFIX + s;
             }
-            return path;
         }
-        else
-        {
-            return s;
-        }
+        return s;
     }
 
     private static String convertToPath( String className )
     {
-        if ( isBlank( className ) )
+        if ( StringUtils.isBlank( className ) )
         {
             return null;
         }
@@ -328,8 +326,8 @@ public final class ResolvedTest
         {
             if ( className.endsWith( JAVA_FILE_EXTENSION ) )
             {
-                className = className.substring( 0, className.length() - JAVA_FILE_EXTENSION.length() )
-                                    + CLASS_FILE_EXTENSION;
+                className = className.substring( 0, className.length() - JAVA_FILE_EXTENSION.length() );
+                className += CLASS_FILE_EXTENSION;
             }
             return className;
         }
@@ -337,22 +335,23 @@ public final class ResolvedTest
 
     static String wrapRegex( String unwrapped )
     {
-        return REGEX_HANDLER_PREFIX + unwrapped + PATTERN_HANDLER_SUFFIX;
+        return SelectorUtils.REGEX_HANDLER_PREFIX + unwrapped + SelectorUtils.PATTERN_HANDLER_SUFFIX;
     }
 
     static String fromFullyQualifiedClass( String cls )
     {
         if ( cls.endsWith( CLASS_FILE_EXTENSION ) )
         {
-            String className = cls.substring( 0, cls.length() - CLASS_FILE_EXTENSION.length() );
-            return className.replace( '.', '/' ) + CLASS_FILE_EXTENSION;
+            cls = cls.substring( 0, cls.length() - CLASS_FILE_EXTENSION.length() );
+            return cls.replace( '.', '/' ) + CLASS_FILE_EXTENSION;
         }
         else if ( !cls.contains( "/" ) )
         {
-            if ( cls.endsWith( WILDCARD_FILENAME_POSTFIX ) )
+            if ( cls.endsWith( WILDCARD_CLASS_FILE_EXTENSION ) )
             {
-                String clsName = cls.substring( 0, cls.length() - WILDCARD_FILENAME_POSTFIX.length() );
-                return clsName.contains( "." ) ? clsName.replace( '.', '/' ) + WILDCARD_FILENAME_POSTFIX : cls;
+                String origin = cls;
+                cls = cls.substring( 0, cls.length() - WILDCARD_CLASS_FILE_EXTENSION.length() );
+                return cls.contains( "." ) ? cls.replace( '.', '/' ) + WILDCARD_CLASS_FILE_EXTENSION : origin;
             }
             else
             {
@@ -363,127 +362,5 @@ public final class ResolvedTest
         {
             return cls;
         }
-    }
-
-    private final class ClassMatcher
-    {
-        private volatile MatchPatterns cache;
-
-        boolean matchTestClassFile( String testClassFile )
-        {
-            return ResolvedTest.this.isRegexTestClassPattern()
-                           ? matchClassRegexPatter( testClassFile )
-                           : matchClassPatter( testClassFile );
-        }
-
-        private MatchPatterns of( String... sources )
-        {
-            if ( cache == null )
-            {
-                try
-                {
-                    checkIllegalCharacters( sources );
-                    cache = from( sources );
-                }
-                catch ( IllegalArgumentException e )
-                {
-                    throwSanityError( e );
-                }
-            }
-            return cache;
-        }
-
-        private boolean matchClassPatter( String testClassFile )
-        {
-            //@todo We have to use File.separator only because the MatchPatterns is using it internally - cannot override.
-            String classPattern = ResolvedTest.this.classPattern;
-            if ( separatorChar != '/' )
-            {
-                testClassFile = testClassFile.replace( '/', separatorChar );
-                classPattern = classPattern.replace( '/', separatorChar );
-            }
-
-            if ( classPattern.endsWith( WILDCARD_FILENAME_POSTFIX ) || classPattern.endsWith( CLASS_FILE_EXTENSION ) )
-            {
-                return of( classPattern ).matches( testClassFile, true );
-            }
-            else
-            {
-                String[] classPatterns = { classPattern + CLASS_FILE_EXTENSION, classPattern };
-                return of( classPatterns ).matches( testClassFile, true );
-            }
-        }
-
-        private boolean matchClassRegexPatter( String testClassFile )
-        {
-            String realFile = separatorChar == '/' ? testClassFile : testClassFile.replace( '/', separatorChar );
-            return of( classPattern ).matches( realFile, true );
-        }
-    }
-
-    private final class MethodMatcher
-    {
-        private volatile Pattern cache;
-
-        boolean matchMethodName( String methodName )
-        {
-            if ( ResolvedTest.this.isRegexTestMethodPattern() )
-            {
-                fetchCache();
-                return cache.matcher( methodName )
-                               .matches();
-            }
-            else
-            {
-                return matchPath( ResolvedTest.this.methodPattern, methodName );
-            }
-        }
-
-        void sanityCheck()
-        {
-            if ( ResolvedTest.this.isRegexTestMethodPattern() && ResolvedTest.this.hasTestMethodPattern() )
-            {
-                try
-                {
-                    checkIllegalCharacters( ResolvedTest.this.methodPattern );
-                    fetchCache();
-                }
-                catch ( IllegalArgumentException e )
-                {
-                    throwSanityError( e );
-                }
-            }
-        }
-
-        private void fetchCache()
-        {
-            if ( cache == null )
-            {
-                int from = REGEX_HANDLER_PREFIX.length();
-                int to = ResolvedTest.this.methodPattern.length() - PATTERN_HANDLER_SUFFIX.length();
-                String pattern = ResolvedTest.this.methodPattern.substring( from, to );
-                cache = compile( pattern );
-            }
-        }
-    }
-
-    private static void checkIllegalCharacters( String... expressions )
-    {
-        for ( String expression : expressions )
-        {
-            if ( expression.contains( "#" ) )
-            {
-                throw new IllegalArgumentException( "Extra '#' in regex: " + expression );
-            }
-        }
-    }
-
-    private static void throwSanityError( IllegalArgumentException e )
-    {
-        throw new IllegalArgumentException( "%regex[] usage rule violation, valid regex rules:\n"
-                                                    + " * <classNameRegex>#<methodNameRegex> - "
-                                                    + "where both regex can be individually evaluated as a regex\n"
-                                                    + " * you may use at most 1 '#' to in one regex filter. "
-                                                    + e.getLocalizedMessage(), e );
     }
 }

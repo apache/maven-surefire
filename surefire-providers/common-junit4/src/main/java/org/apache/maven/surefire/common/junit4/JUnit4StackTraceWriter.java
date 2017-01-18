@@ -22,11 +22,8 @@ package org.apache.maven.surefire.common.junit4;
 import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.report.SmartStackTraceParser;
 import org.apache.maven.surefire.report.StackTraceWriter;
-import org.junit.runner.notification.Failure;
 
-import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractClassName;
-import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractMethodName;
-import static org.apache.maven.surefire.report.SmartStackTraceParser.stackTraceWithFocusOnClassAsString;
+import org.junit.runner.notification.Failure;
 
 /**
  * Writes out a specific {@link org.junit.runner.notification.Failure} for
@@ -77,14 +74,15 @@ public class JUnit4StackTraceWriter
         return "";
     }
 
+
     protected String getTestClassName()
     {
-        return extractClassName( junitFailure.getDescription().getDisplayName() );
+        return JUnit4RunListener.extractClassName( junitFailure.getDescription() );
     }
 
     protected String getTestMethodName()
     {
-        return extractMethodName( junitFailure.getDescription().getDisplayName() );
+        return JUnit4RunListener.extractMethodName( junitFailure.getDescription() );
     }
 
     @SuppressWarnings( "ThrowableResultOfMethodCallIgnored" )
@@ -107,11 +105,11 @@ public class JUnit4StackTraceWriter
         try
         {
             Throwable e = junitFailure.getException();
-            return stackTraceWithFocusOnClassAsString( e, testClass );
+            return SmartStackTraceParser.stackTraceWithFocusOnClassAsString( e, testClass );
         }
         catch ( Throwable t )
         {
-            return stackTraceWithFocusOnClassAsString( t, testClass );
+            return SmartStackTraceParser.stackTraceWithFocusOnClassAsString( t, testClass );
         }
     }
 

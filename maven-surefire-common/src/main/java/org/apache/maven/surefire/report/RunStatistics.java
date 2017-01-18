@@ -37,6 +37,10 @@ public class RunStatistics
 
     private int flakes;
 
+    public RunStatistics()
+    {
+    }
+
     public synchronized boolean hadFailures()
     {
         return failures > 0;

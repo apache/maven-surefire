@@ -22,16 +22,16 @@ package org.apache.maven.surefire.booter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.Properties;
-
-import static org.apache.maven.surefire.util.ReflectionUtils.loadClass;
+import org.apache.maven.surefire.util.ReflectionUtils;
 
 /**
  * @author Kristian Rosenvold
  */
 public class TypeEncodedValue
 {
-    private final String type;
-    private final String value;
+    String type;
+
+    String value;
 
     public TypeEncodedValue( String type, String value )
     {
@@ -51,7 +51,6 @@ public class TypeEncodedValue
 
     public Object getDecodedValue( ClassLoader classLoader )
     {
-        // todo: use jdk6 switch case
         if ( type.trim().length() == 0 )
         {
             return null;
@@ -62,7 +61,7 @@ public class TypeEncodedValue
         }
         else if ( isTypeClass() )
         {
-            return loadClass( classLoader, value );
+            return ReflectionUtils.loadClass( classLoader, value );
         }
         else if ( type.equals( File.class.getName() ) )
         {
@@ -78,17 +77,17 @@ public class TypeEncodedValue
         }
         else if ( type.equals( Properties.class.getName() ) )
         {
-            Properties result = new Properties();
-            // todo: use jdk7 Closable
+            final Properties result = new Properties();
             try
             {
-                result.load( new ByteArrayInputStream( value.getBytes( "8859_1" ) ) );
-                return result;
+                ByteArrayInputStream bais = new ByteArrayInputStream( value.getBytes( "8859_1" ) );
+                result.load( bais );
             }
             catch ( Exception e )
             {
-                throw new IllegalStateException( "bug in property conversion", e );
+                throw new RuntimeException( "bug in property conversion", e );
             }
+            return result;
         }
         else
         {
@@ -96,6 +95,7 @@ public class TypeEncodedValue
         }
     }
 
+    @SuppressWarnings( "SimplifiableIfStatement" )
     public boolean equals( Object o )
     {
         if ( this == o )
@@ -109,7 +109,11 @@ public class TypeEncodedValue
 
         TypeEncodedValue that = (TypeEncodedValue) o;
 
-        return equalsType( that ) && equalsValue( that );
+        if ( type != null ? !type.equals( that.type ) : that.type != null )
+        {
+            return false;
+        }
+        return !( value != null ? !value.equals( that.value ) : that.value != null );
 
     }
 
@@ -118,15 +122,5 @@ public class TypeEncodedValue
         int result = type != null ? type.hashCode() : 0;
         result = 31 * result + ( value != null ? value.hashCode() : 0 );
         return result;
-    }
-
-    private boolean equalsType( TypeEncodedValue that )
-    {
-        return type == null ? that.type == null : type.equals( that.type );
-    }
-
-    private boolean equalsValue( TypeEncodedValue that )
-    {
-        return value == null ? that.value == null : value.equals( that.value );
     }
 }

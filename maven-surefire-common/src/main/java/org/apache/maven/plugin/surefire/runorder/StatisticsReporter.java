@@ -20,10 +20,8 @@ package org.apache.maven.plugin.surefire.runorder;
  */
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import org.apache.maven.surefire.report.ReportEntry;
-
-import static org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMap.fromFile;
 
 /**
  * @author Kristian Rosenvold
@@ -38,23 +36,18 @@ public class StatisticsReporter
 
     public StatisticsReporter( File dataFile )
     {
-        this( dataFile, fromFile( dataFile ), new RunEntryStatisticsMap() );
-    }
-
-    protected StatisticsReporter( File dataFile, RunEntryStatisticsMap existing, RunEntryStatisticsMap newResults )
-    {
         this.dataFile = dataFile;
-        this.existing = existing;
-        this.newResults = newResults;
+        this.existing = RunEntryStatisticsMap.fromFile( this.dataFile );
+        this.newResults = new RunEntryStatisticsMap();
     }
 
-    public synchronized void testSetCompleted()
+    public void testSetCompleted()
     {
         try
         {
             newResults.serialize( dataFile );
         }
-        catch ( IOException e )
+        catch ( FileNotFoundException e )
         {
             throw new RuntimeException( e );
         }

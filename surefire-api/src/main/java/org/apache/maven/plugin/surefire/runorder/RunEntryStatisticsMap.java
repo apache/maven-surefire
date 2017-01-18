@@ -20,15 +20,18 @@ package org.apache.maven.plugin.surefire.runorder;
  */
 
 
+import org.apache.maven.surefire.report.ReportEntry;
+
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -36,22 +39,17 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import static java.util.Collections.sort;
-import org.apache.maven.shared.utils.io.IOUtil;
-import org.apache.maven.surefire.report.ReportEntry;
-import static org.apache.maven.plugin.surefire.runorder.RunEntryStatistics.fromReportEntry;
-import static org.apache.maven.plugin.surefire.runorder.RunEntryStatistics.fromString;
 
 /**
  * @author Kristian Rosenvold
  */
-public final class RunEntryStatisticsMap
+public class RunEntryStatisticsMap
 {
     private final Map<String, RunEntryStatistics> runEntryStatistics;
 
     public RunEntryStatisticsMap( Map<String, RunEntryStatistics> runEntryStatistics )
     {
-        this.runEntryStatistics = new ConcurrentHashMap<String, RunEntryStatistics>( runEntryStatistics );
+        this.runEntryStatistics = Collections.synchronizedMap( runEntryStatistics );
     }
 
     public RunEntryStatisticsMap()
@@ -63,22 +61,17 @@ public final class RunEntryStatisticsMap
     {
         if ( file.exists() )
         {
-            Reader reader = null;
             try
             {
-                reader = new FileReader( file );
-                final RunEntryStatisticsMap result = fromReader( reader );
-                reader.close();
-                reader = null;
-                return result;
+                return fromReader( new FileReader( file ) );
             }
-            catch ( IOException e )
+            catch ( FileNotFoundException e )
             {
                 throw new RuntimeException( e );
             }
-            finally
+            catch ( IOException e1 )
             {
-                IOUtil.close( reader );
+                throw new RuntimeException( e1 );
             }
         }
         else
@@ -90,57 +83,45 @@ public final class RunEntryStatisticsMap
     static RunEntryStatisticsMap fromReader( Reader fileReader )
         throws IOException
     {
-        BufferedReader reader = null;
         Map<String, RunEntryStatistics> result = new HashMap<String, RunEntryStatistics>();
-        try
+        BufferedReader bufferedReader = new BufferedReader( fileReader );
+        String line = bufferedReader.readLine();
+        while ( line != null )
         {
-            reader = new BufferedReader( fileReader );
-            for ( String line = reader.readLine(); line != null; line = reader.readLine() )
+            if ( !line.startsWith( "#" ) )
             {
-                if ( !line.startsWith( "#" ) )
-                {
-                    RunEntryStatistics stats = fromString( line );
-                    result.put( stats.getTestName(), stats );
-                }
+                final RunEntryStatistics stats = RunEntryStatistics.fromString( line );
+                result.put( stats.getTestName(), stats );
             }
-            reader.close();
-            reader = null;
-            return new RunEntryStatisticsMap( result );
+            line = bufferedReader.readLine();
         }
-        finally
-        {
-            IOUtil.close( reader );
-        }
+        return new RunEntryStatisticsMap( result );
     }
 
     public void serialize( File file )
-        throws IOException
+        throws FileNotFoundException
     {
-        BufferedWriter writer = null;
+        FileOutputStream fos = new FileOutputStream( file );
+        PrintWriter printWriter = new PrintWriter( fos );
         try
         {
-            writer = new BufferedWriter( new OutputStreamWriter( new FileOutputStream( file ) ) );
             List<RunEntryStatistics> items = new ArrayList<RunEntryStatistics>( runEntryStatistics.values() );
-            sort( items, new RunCountComparator() );
+            Collections.sort( items, new RunCountComparator() );
             for ( RunEntryStatistics item : items )
             {
-                writer.append( item.toString() );
-                writer.newLine();
+                printWriter.println( item.toString() );
             }
-
-            writer.close();
-            writer = null;
         }
         finally
         {
-            IOUtil.close( writer );
+            printWriter.close();
         }
     }
 
     public RunEntryStatistics findOrCreate( ReportEntry reportEntry )
     {
         final RunEntryStatistics item = runEntryStatistics.get( reportEntry.getName() );
-        return item != null ? item : fromReportEntry( reportEntry );
+        return item != null ? item : RunEntryStatistics.fromReportEntry( reportEntry );
     }
 
     public RunEntryStatistics createNextGeneration( ReportEntry reportEntry )
@@ -162,7 +143,7 @@ public final class RunEntryStatisticsMap
         runEntryStatistics.put( item.getTestName(), item );
     }
 
-    static final class RunCountComparator
+    class RunCountComparator
         implements Comparator<RunEntryStatistics>
     {
         public int compare( RunEntryStatistics o, RunEntryStatistics o1 )
@@ -206,7 +187,7 @@ public final class RunEntryStatisticsMap
             PrioritizedTest prioritizedTest = new PrioritizedTest( clazz, pri );
             tests.add( prioritizedTest );
         }
-        sort( tests, new PrioritizedTestComparator() );
+        Collections.sort( tests, new PrioritizedTestComparator() );
         return tests;
     }
 
@@ -220,7 +201,7 @@ public final class RunEntryStatisticsMap
         return result;
     }
 
-    private Map getPriorities( Comparator<Priority> priorityComparator )
+    public Map getPriorities( Comparator<Priority> priorityComparator )
     {
         Map<String, Priority> priorities = new HashMap<String, Priority>();
         for ( Object o : runEntryStatistics.keySet() )
@@ -239,7 +220,7 @@ public final class RunEntryStatisticsMap
         }
 
         List<Priority> items = new ArrayList<Priority>( priorities.values() );
-        sort( items, priorityComparator );
+        Collections.sort( items, priorityComparator );
         Map<String, Priority> result = new HashMap<String, Priority>();
         int i = 0;
         for ( Priority pri : items )
@@ -250,7 +231,7 @@ public final class RunEntryStatisticsMap
         return result;
     }
 
-    static final class PrioritizedTestComparator
+    class PrioritizedTestComparator
         implements Comparator<PrioritizedTest>
     {
         public int compare( PrioritizedTest o, PrioritizedTest o1 )
@@ -259,7 +240,7 @@ public final class RunEntryStatisticsMap
         }
     }
 
-    static final class TestRuntimeComparator
+    class TestRuntimeComparator
         implements Comparator<Priority>
     {
         public int compare( Priority o, Priority o1 )
@@ -268,7 +249,7 @@ public final class RunEntryStatisticsMap
         }
     }
 
-    static final class LeastFailureComparator
+    class LeastFailureComparator
         implements Comparator<Priority>
     {
         public int compare( Priority o, Priority o1 )

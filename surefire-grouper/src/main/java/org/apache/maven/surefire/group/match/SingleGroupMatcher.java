@@ -114,7 +114,7 @@ public class SingleGroupMatcher
                 continue;
             }
 
-            if ( cat.equals( enabled ) )
+            if ( cat.endsWith( enabled ) )
             {
                 return true;
             }

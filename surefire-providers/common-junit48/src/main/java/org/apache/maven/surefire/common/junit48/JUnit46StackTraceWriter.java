@@ -19,7 +19,9 @@ package org.apache.maven.surefire.common.junit48;
  * under the License.
  */
 
+import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4StackTraceWriter;
+
 import org.junit.runner.notification.Failure;
 
 /**
@@ -48,11 +50,6 @@ public class JUnit46StackTraceWriter
 
     protected final String getTestClassName()
     {
-        return junitFailure.getDescription().getClassName();
-    }
-
-    protected String getTestMethodName()
-    {
-        return junitFailure.getDescription().getMethodName();
+        return JUnit4RunListener.extractClassName( junitFailure.getDescription() );
     }
 }

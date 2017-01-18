@@ -87,17 +87,17 @@ public class JUnitCoreRunListener
             }
             else
             {
-                if ( extractDescriptionMethodName( item ) != null )
+                if ( item.getMethodName() != null )
                 {
                     testSet.incrementTestMethodCount();
                     if ( itemTestClassName == null )
                     {
-                        itemTestClassName = extractDescriptionClassName( item );
+                        itemTestClassName = item.getClassName();
                     }
                 }
                 else
                 {
-                    classMethodCounts.put( extractDescriptionClassName( item ), new TestSet( item ) );
+                    classMethodCounts.put( item.getClassName(), new TestSet( item ) );
                 }
             }
         }
@@ -111,17 +111,5 @@ public class JUnitCoreRunListener
     protected StackTraceWriter createStackTraceWriter( Failure failure )
     {
         return new JUnit46StackTraceWriter( failure );
-    }
-
-    @Override
-    protected String extractDescriptionClassName( Description description )
-    {
-        return description.getClassName();
-    }
-
-    @Override
-    protected String extractDescriptionMethodName( Description description )
-    {
-        return description.getMethodName();
     }
 }

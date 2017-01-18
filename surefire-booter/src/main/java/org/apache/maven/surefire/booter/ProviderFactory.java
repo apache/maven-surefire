@@ -109,16 +109,13 @@ public class ProviderFactory
         surefireReflector.setMainCliOptions( o, providerConfiguration.getMainCliOptions() );
         surefireReflector.setSkipAfterFailureCount( o, providerConfiguration.getSkipAfterFailureCount() );
         surefireReflector.setShutdown( o, providerConfiguration.getShutdown() );
-        if ( isInsideFork )
-        {
-            surefireReflector.setSystemExitTimeout( o, providerConfiguration.getSystemExitTimeout() );
-        }
 
         Object provider = surefireReflector.instantiateProvider( startupConfiguration.getActualClassName(), o );
         currentThread.setContextClassLoader( systemClassLoader );
 
         return new ProviderProxy( provider, classLoader );
     }
+
 
     private final class ProviderProxy
         implements SurefireProvider

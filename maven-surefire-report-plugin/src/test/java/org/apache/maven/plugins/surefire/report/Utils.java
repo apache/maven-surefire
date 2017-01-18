@@ -23,7 +23,6 @@ public final class Utils
 {
     private Utils()
     {
-        throw new IllegalStateException( "no instantiable constructor" );
     }
 
     public static String toSystemNewLine( String s )

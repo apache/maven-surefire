@@ -22,7 +22,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
@@ -147,36 +147,10 @@ public class MockReporter
         testIgnored.incrementAndGet();
     }
 
-    public void debug( String message )
-    {
-        events.add( CONSOLE_OUTPUT );
-        data.add( message );
-    }
-
     public void info( String message )
     {
         events.add( CONSOLE_OUTPUT );
         data.add( message );
-    }
-
-    public void warning( String message )
-    {
-        events.add( CONSOLE_OUTPUT );
-        data.add( message );
-    }
-
-    public void error( String message )
-    {
-        events.add( CONSOLE_OUTPUT );
-        data.add( message );
-    }
-
-    public void error( String message, Throwable t )
-    {
-    }
-
-    public void error( Throwable t )
-    {
     }
 
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )

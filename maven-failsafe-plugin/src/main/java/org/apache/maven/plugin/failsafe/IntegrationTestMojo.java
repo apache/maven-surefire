@@ -19,6 +19,13 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
@@ -27,20 +34,9 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.shared.utils.ReaderFactory;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.suite.RunResult;
-
-import javax.xml.bind.JAXBException;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-
-import static org.apache.maven.plugin.failsafe.xmlsummary.FailsafeSummaryXmlUtils.writeSummary;
-import static org.apache.maven.shared.utils.ReaderFactory.FILE_ENCODING;
 
 /**
  * Run integration tests using Surefire.
@@ -50,9 +46,9 @@ import static org.apache.maven.shared.utils.ReaderFactory.FILE_ENCODING;
  * @noinspection JavaDoc,
  */
 @Mojo( name = "integration-test", requiresProject = true, requiresDependencyResolution = ResolutionScope.TEST,
-             defaultPhase = LifecyclePhase.INTEGRATION_TEST, threadSafe = true )
+       defaultPhase = LifecyclePhase.INTEGRATION_TEST, threadSafe = true )
 public class IntegrationTestMojo
-        extends AbstractSurefireMojo
+    extends AbstractSurefireMojo
 {
 
     private static final String FAILSAFE_IN_PROGRESS_CONTEXT_KEY = "failsafe-in-progress";
@@ -60,13 +56,9 @@ public class IntegrationTestMojo
     /**
      * The path representing project <em>JAR</em> file, if exists; Otherwise the directory containing generated
      * classes of the project being tested. This will be included after the test classes in the test classpath.
-     * Defaults to built artifact <em>JAR</em> file or ${project.build.outputDirectory}.
      */
-    @Parameter
+    @Parameter( defaultValue = "${project.build.outputDirectory}" )
     private File classesDirectory;
-
-    @Parameter( readonly = true, defaultValue = "${project.build.outputDirectory}" )
-    private File defaultClassesDirectory;
 
     /**
      * Set this to "true" to skip running integration tests, but still compile them. Its use is NOT RECOMMENDED, but
@@ -161,18 +153,6 @@ public class IntegrationTestMojo
     private int forkedProcessTimeoutInSeconds;
 
     /**
-     * Forked process is normally terminated without any significant delay after given tests have completed.
-     * If the particular tests started non-daemon Thread(s), the process hangs instead of been properly terminated
-     * by <em>System.exit()</em>. Use this parameter in order to determine the timeout of terminating the process.
-     * <a href="http://maven.apache.org/surefire/maven-failsafe-plugin/examples/shutdown.html">see the documentation:
-     * http://maven.apache.org/surefire/maven-failsafe-plugin/examples/shutdown.html</a>
-     *
-     * @since 2.19.2
-     */
-    @Parameter( property = "failsafe.exitTimeout", defaultValue = "30" )
-    private int forkedProcessExitTimeoutInSeconds;
-
-    /**
      * Stop executing queued parallel JUnit tests after a certain number of seconds.
      * <br/>
      * Example values: "3.5", "4"<br/>
@@ -239,7 +219,7 @@ public class IntegrationTestMojo
      * By default, Surefire forks your tests using a manifest-only JAR; set this parameter to "false" to force it to
      * launch your tests with a plain old Java classpath. (See the
      * <a href="http://maven.apache.org/plugins/maven-failsafe-plugin/examples/class-loading.html">
-     * http://maven.apache.org/plugins/maven-failsafe-plugin/examples/class-loading.html</a>
+     *     http://maven.apache.org/plugins/maven-failsafe-plugin/examples/class-loading.html</a>
      * for a more detailed explanation of manifest-only JARs and their benefits.)
      * <br/>
      * Beware, setting this to "false" may cause your tests to fail on Windows if your classpath is too long.
@@ -330,7 +310,7 @@ public class IntegrationTestMojo
      * Defaults to "0".<br/>
      * See the prerequisites and limitations in documentation:<br/>
      * <a href="http://maven.apache.org/plugins/maven-failsafe-plugin/examples/skip-after-failure.html">
-     * http://maven.apache.org/plugins/maven-failsafe-plugin/examples/skip-after-failure.html</a>
+     *     http://maven.apache.org/plugins/maven-failsafe-plugin/examples/skip-after-failure.html</a>
      *
      * @since 2.19
      */
@@ -357,7 +337,7 @@ public class IntegrationTestMojo
 
     @SuppressWarnings( "unchecked" )
     protected void handleSummary( RunResult summary, Exception firstForkException )
-            throws MojoExecutionException, MojoFailureException
+        throws MojoExecutionException, MojoFailureException
     {
         File summaryFile = getSummaryFile();
         if ( !summaryFile.getParentFile().isDirectory() )
@@ -369,13 +349,9 @@ public class IntegrationTestMojo
         try
         {
             Object token = getPluginContext().get( FAILSAFE_IN_PROGRESS_CONTEXT_KEY );
-            writeSummary( summary, summaryFile, token != null, toCharset( getEncodingOrDefault() ) );
+            summary.writeSummary( summaryFile, token != null, getEncodingOrDefault() );
         }
         catch ( IOException e )
-        {
-            throw new MojoExecutionException( e.getMessage(), e );
-        }
-        catch ( JAXBException e )
         {
             throw new MojoExecutionException( e.getMessage(), e );
         }
@@ -387,34 +363,14 @@ public class IntegrationTestMojo
     {
         if ( StringUtils.isEmpty( encoding ) )
         {
-            getConsoleLogger()
-                    .warning( "File encoding has not been set, using platform encoding "
-                                      + FILE_ENCODING
-                                      + ", i.e. build is platform dependent! The file encoding for reports output files"
-                                      + " should be provided by the POM property ${project.reporting.outputEncoding}."
-            );
-            return FILE_ENCODING;
+            getLog().warn( "File encoding has not been set, using platform encoding " + ReaderFactory.FILE_ENCODING
+                           + ", i.e. build is platform dependent! The file encoding for reports output files "
+                               + "should be provided by the POM property ${project.reporting.outputEncoding}." );
+            return ReaderFactory.FILE_ENCODING;
         }
         else
         {
             return encoding;
-        }
-    }
-
-    private boolean isJarArtifact( File artifactFile )
-    {
-        return artifactFile != null && artifactFile.isFile() && artifactFile.getName().toLowerCase().endsWith( ".jar" );
-    }
-
-    private static File toAbsoluteCanonical( File f )
-    {
-        try
-        {
-            return f == null ? null : f.getAbsoluteFile().getCanonicalFile();
-        }
-        catch ( IOException e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage(), e );
         }
     }
 
@@ -432,12 +388,6 @@ public class IntegrationTestMojo
     protected String[] getDefaultIncludes()
     {
         return new String[]{ "**/IT*.java", "**/*IT.java", "**/*ITCase.java" };
-    }
-
-    @Override
-    protected String getReportSchemaLocation()
-    {
-        return "https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report.xsd";
     }
 
     public boolean isSkipTests()
@@ -511,19 +461,18 @@ public class IntegrationTestMojo
      */
     public File getClassesDirectory()
     {
-        File artifact = getProject().getArtifact().getFile();
-        boolean isDefaultClsDir = classesDirectory == null;
-        return isDefaultClsDir ? ( isJarArtifact( artifact ) ? artifact : defaultClassesDirectory ) : classesDirectory;
+        Artifact artifact = getProject().getArtifact();
+        File artifactFile = artifact.getFile();
+
+        boolean useArtifactFile = artifactFile != null && artifactFile.isFile()
+            && artifactFile.getName().toLowerCase().endsWith( ".jar" );
+
+        return useArtifactFile ? artifactFile : classesDirectory;
     }
 
     public void setClassesDirectory( File classesDirectory )
     {
-        this.classesDirectory = toAbsoluteCanonical( classesDirectory );
-    }
-
-    public void setDefaultClassesDirectory( File defaultClassesDirectory )
-    {
-        this.defaultClassesDirectory = toAbsoluteCanonical( defaultClassesDirectory );
+        this.classesDirectory = classesDirectory;
     }
 
     public File getReportsDirectory()
@@ -604,16 +553,6 @@ public class IntegrationTestMojo
     public void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds )
     {
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
-    }
-
-    public int getForkedProcessExitTimeoutInSeconds()
-    {
-        return forkedProcessExitTimeoutInSeconds;
-    }
-
-    public void setForkedProcessExitTimeoutInSeconds( int forkedProcessExitTimeoutInSeconds )
-    {
-        this.forkedProcessExitTimeoutInSeconds = forkedProcessExitTimeoutInSeconds;
     }
 
     public double getParallelTestsTimeoutInSeconds()
@@ -750,10 +689,5 @@ public class IntegrationTestMojo
     protected final boolean hasSuiteXmlFiles()
     {
         return suiteXmlFiles != null && suiteXmlFiles.length != 0;
-    }
-
-    static Charset toCharset( String encoding )
-    {
-        return Charset.forName( Charset.isSupported( encoding ) ? encoding : encoding.toUpperCase( Locale.ROOT ) );
     }
 }

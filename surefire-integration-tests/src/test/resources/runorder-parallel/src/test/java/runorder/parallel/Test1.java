@@ -49,27 +49,27 @@ public class Test1
     }
 
     @Test
-    public void testSleep2000()
+    public void testSleep200()
     {
         System.out.println(
-            Thread.currentThread().getName() + " Test1.sleep2000 started @ " + System.currentTimeMillis() );
-        sleep( 2000 );
+            Thread.currentThread().getName() + " Test1.sleep200 started @ " + System.currentTimeMillis() );
+        sleep( 200 );
     }
 
     @Test
-    public void testSleep4000()
+    public void testSleep400()
     {
         System.out.println(
-            Thread.currentThread().getName() + " Test1.sleep4000 started @ " + System.currentTimeMillis() );
-        sleep( 4000 );
+            Thread.currentThread().getName() + " Test1.sleep400 started @ " + System.currentTimeMillis() );
+        sleep( 400 );
     }
 
     @Test
-    public void testSleep6000()
+    public void testSleep600()
     {
         System.out.println(
-            Thread.currentThread().getName() + " Test1.sleep6000 started @ " + System.currentTimeMillis() );
-        sleep( 6000 );
+            Thread.currentThread().getName() + " Test1.sleep600 started @ " + System.currentTimeMillis() );
+        sleep( 600 );
     }
 
     @BeforeClass

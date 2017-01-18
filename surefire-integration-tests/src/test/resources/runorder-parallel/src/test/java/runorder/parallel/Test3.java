@@ -42,24 +42,24 @@ public class Test3
     }
 
     @Test
-    public void testSleep100()
+    public void testSleep10()
     {
-        System.out.println( "Test3.sleep100 started @ " + System.currentTimeMillis() );
-        Test1.sleep( 100 );
+        System.out.println( "Test3.sleep10 started @ " + System.currentTimeMillis() );
+        Test1.sleep( 10 );
     }
 
     @Test
-    public void testSleep300()
+    public void testSleep30()
     {
-        System.out.println( "Test3.sleep300 started @ " + System.currentTimeMillis() );
-        Test1.sleep( 300 );
+        System.out.println( "Test3.sleep30 started @ " + System.currentTimeMillis() );
+        Test1.sleep( 30 );
     }
 
     @Test
-    public void testSleep500()
+    public void testSleep50()
     {
-        System.out.println( "Test3.sleep500 started @ " + System.currentTimeMillis() );
-        Test1.sleep( 500 );
+        System.out.println( "Test3.sleep50 started @ " + System.currentTimeMillis() );
+        Test1.sleep( 50 );
     }
 
     @BeforeClass

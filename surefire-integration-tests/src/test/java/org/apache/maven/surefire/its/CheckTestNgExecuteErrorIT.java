@@ -23,11 +23,6 @@ import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FilenameFilter;
-
-import static org.fest.assertions.Assertions.assertThat;
-
 
 /**
  * Test for checking that the output from a forked suite is properly captured even if the suite encounters a severe error.
@@ -42,26 +37,7 @@ public class CheckTestNgExecuteErrorIT
     public void executionError()
         throws Exception
     {
-        OutputValidator outputValidator = unpack( "/testng-execute-error" )
-                                                  .maven()
-                                                  .showErrorStackTraces()
-                                                  .withFailure()
-                                                  .executeTest();
-
-        File reportDir = outputValidator.getSurefireReportsDirectory();
-        String[] dumpFiles = reportDir.list( new FilenameFilter()
-                                             {
-                                                 @Override
-                                                 public boolean accept( File dir, String name )
-                                                 {
-                                                     return name.endsWith( ".dump" );
-                                                 }
-                                             });
-        assertThat( dumpFiles ).isNotEmpty();
-        for ( String dump : dumpFiles )
-        {
-            outputValidator.getSurefireReportsFile( dump )
-                    .assertContainsText( "at org.apache.maven.surefire.testng.TestNGExecutor.run" );
-        }
+        OutputValidator outputValidator = unpack( "/testng-execute-error" ).maven().withFailure().executeTest();
+        outputValidator.verifyTextInLog( "at org.apache.maven.surefire.testng.TestNGExecutor.run" );
     }
 }

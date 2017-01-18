@@ -27,15 +27,14 @@ import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import static java.util.Collections.addAll;
-import static org.junit.runner.Description.createSuiteDescription;
 
 final class GroupMatcherCategoryFilter
     extends Filter
 {
+
     private final AndGroupMatcher matcher;
 
     GroupMatcherCategoryFilter( GroupMatcher included, GroupMatcher excluded )
@@ -69,8 +68,8 @@ final class GroupMatcherCategoryFilter
         }
         else
         {
-            Class<?> testClass = description.getTestClass();
-            return shouldRun( description, createSuiteDescription( testClass ), testClass );
+            return shouldRun( description, Description.createSuiteDescription( description.getTestClass() ),
+                              description.getTestClass() );
         }
     }
 
@@ -81,7 +80,7 @@ final class GroupMatcherCategoryFilter
             Category cat = clazz.getSuperclass().getAnnotation( Category.class );
             if ( cat != null )
             {
-                addAll( cats, cat.value() );
+                Collections.addAll( cats, cat.value() );
             }
             else
             {
@@ -102,7 +101,7 @@ final class GroupMatcherCategoryFilter
             Category cat = description.getAnnotation( Category.class );
             if ( cat != null )
             {
-                addAll( cats, cat.value() );
+                Collections.addAll( cats, cat.value() );
             }
 
             if ( parent != null )
@@ -110,7 +109,7 @@ final class GroupMatcherCategoryFilter
                 cat = parent.getAnnotation( Category.class );
                 if ( cat != null )
                 {
-                    addAll( cats, cat.value() );
+                    Collections.addAll( cats, cat.value() );
                 }
             }
 
@@ -125,7 +124,7 @@ final class GroupMatcherCategoryFilter
                 cat = testClass.getAnnotation( Category.class );
                 if ( cat != null )
                 {
-                    addAll( cats, cat.value() );
+                    Collections.addAll( cats, cat.value() );
                 }
             }
 

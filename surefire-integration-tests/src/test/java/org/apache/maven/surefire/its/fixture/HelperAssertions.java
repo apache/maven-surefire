@@ -23,20 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.lang3.JavaVersion;
-import org.apache.commons.lang3.SystemUtils;
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.plugin.surefire.log.api.PrintStreamLogger;
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.plugins.surefire.report.SurefireReportParser;
 
-import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-import static org.apache.commons.lang3.SystemUtils.JAVA_SPECIFICATION_VERSION;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assume.assumeThat;
-import static org.junit.Assume.assumeTrue;
+import static junit.framework.Assert.assertEquals;
 
 @SuppressWarnings( { "JavaDoc" } )
 public class HelperAssertions
@@ -138,8 +129,7 @@ public class HelperAssertions
             assertTrue( "Reports directory is missing: " + reportsDir.getAbsolutePath(), reportsDir.exists() );
             reportsDirs.add( reportsDir );
         }
-        ConsoleLogger logger = new PrintStreamLogger( System.out );
-        SurefireReportParser parser = new SurefireReportParser( reportsDirs, Locale.getDefault(), logger );
+        SurefireReportParser parser = new SurefireReportParser( reportsDirs, Locale.getDefault() );
         try
         {
             return parser.parseXMLReportFiles();
@@ -159,8 +149,7 @@ public class HelperAssertions
             assertTrue( "Reports directory is missing: " + reportsDir.getAbsolutePath(), reportsDir.exists() );
             reportsDirs.add( reportsDir );
         }
-        ConsoleLogger logger = new PrintStreamLogger( System.out );
-        SurefireReportParser parser = new SurefireReportParser( reportsDirs, Locale.getDefault(), logger );
+        SurefireReportParser parser = new SurefireReportParser( reportsDirs, Locale.getDefault() );
         try
         {
             return parser.parseXMLReportFiles();
@@ -169,11 +158,5 @@ public class HelperAssertions
         {
             throw new RuntimeException( "Couldn't parse XML reports", e );
         }
-    }
-
-    public static void assumeJavaVersion( JavaVersion version )
-    {
-        assumeTrue( "java.specification.version: " + JAVA_SPECIFICATION_VERSION,
-                SystemUtils.isJavaVersionAtLeast( version ) );
     }
 }

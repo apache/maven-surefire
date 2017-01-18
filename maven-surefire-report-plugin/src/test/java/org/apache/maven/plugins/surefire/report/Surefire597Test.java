@@ -20,8 +20,6 @@ package org.apache.maven.plugins.surefire.report;
  */
 
 import org.apache.maven.doxia.module.xhtml.XhtmlSink;
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.junit.Test;
 
 import java.io.File;
@@ -45,8 +43,7 @@ public class Surefire597Test
     {
         File basedir = new File( "." ).getCanonicalFile();
         File report = new File( basedir, "target/test-classes/surefire-597" );
-        ConsoleLogger log = new NullConsoleLogger();
-        SurefireReportGenerator gen = new SurefireReportGenerator( singletonList( report ), ENGLISH, true, null, log );
+        SurefireReportGenerator gen = new SurefireReportGenerator( singletonList( report ), ENGLISH, true, null );
         ResourceBundle resourceBundle = ResourceBundle.getBundle( "surefire-report", ENGLISH );
         StringWriter writer = new StringWriter();
         gen.doGenerateReport( resourceBundle, new XhtmlSink( writer ) {} );

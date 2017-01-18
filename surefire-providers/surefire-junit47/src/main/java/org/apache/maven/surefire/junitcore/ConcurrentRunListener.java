@@ -20,15 +20,12 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import java.util.Map;
+import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.ConsoleStream;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-
-import static org.apache.maven.surefire.junitcore.TestMethod.getThreadTestMethod;
 
 /**
  * Handles responses from concurrent junit
@@ -50,21 +47,25 @@ public abstract class ConcurrentRunListener
 
     private final boolean reportImmediately;
 
-    private final ConsoleStream consoleStream;
+    private final ReporterFactory reporterFactory;
 
-    ConcurrentRunListener( final ReporterFactory reporterFactory, ConsoleStream consoleStream,
-                           boolean reportImmediately, Map<String, TestSet> classMethodCounts )
+    private final ConsoleLogger consoleLogger;
+
+    ConcurrentRunListener( ReporterFactory reporterFactory, ConsoleLogger consoleLogger, boolean reportImmediately,
+                           Map<String, TestSet> classMethodCounts )
         throws TestSetFailedException
     {
         this.reportImmediately = reportImmediately;
+        this.reporterFactory = reporterFactory;
         this.classMethodCounts = classMethodCounts;
-        this.consoleStream = consoleStream;
-        reporterManagerThreadLocal = new ThreadLocal<RunListener>()
+        this.consoleLogger = consoleLogger;
+
+        this.reporterManagerThreadLocal = new ThreadLocal<RunListener>()
         {
             @Override
             protected RunListener initialValue()
             {
-                return reporterFactory.createReporter();
+                return ConcurrentRunListener.this.reporterFactory.createReporter();
             }
         };
     }
@@ -139,8 +140,8 @@ public abstract class ConcurrentRunListener
 
     public void testSucceeded( ReportEntry report )
     {
-        TestMethod testMethod = getThreadTestMethod();
-        if ( testMethod != null )
+        TestMethod testMethod = getTestMethod();
+        if ( null != testMethod )
         {
             testMethod.testFinished();
             testMethod.getTestSet().incrementFinishedTests( getRunListener(), reportImmediately );
@@ -150,7 +151,7 @@ public abstract class ConcurrentRunListener
 
     private TestMethod getOrCreateThreadAttachedTestMethod( ReportEntry description )
     {
-        TestMethod threadTestMethod = getThreadTestMethod();
+        TestMethod threadTestMethod = TestMethod.getThreadTestMethod();
         if ( threadTestMethod != null )
         {
             return threadTestMethod;
@@ -158,12 +159,8 @@ public abstract class ConcurrentRunListener
         TestSet testSet = getTestSet( description );
         if ( testSet == null )
         {
-            consoleStream.println( description.getName() );
-            StackTraceWriter writer = description.getStackTraceWriter();
-            if ( writer != null )
-            {
-                consoleStream.println( writer.writeTraceToString() );
-            }
+            consoleLogger.info( description.getName() );
+            consoleLogger.info( description.getStackTraceWriter().writeTraceToString() );
             return null;
         }
         else
@@ -173,6 +170,11 @@ public abstract class ConcurrentRunListener
     }
 
     protected abstract void checkIfTestSetCanBeReported( TestSet testSetForTest );
+
+    TestMethod getTestMethod()
+    {
+        return TestMethod.getThreadTestMethod();
+    }
 
     TestSet getTestSet( ReportEntry description )
     {
@@ -187,27 +189,27 @@ public abstract class ConcurrentRunListener
     public static ConcurrentRunListener createInstance( Map<String, TestSet> classMethodCounts,
                                                             ReporterFactory reporterFactory,
                                                             boolean parallelClasses, boolean parallelBoth,
-                                                            ConsoleStream consoleStream )
+                                                            ConsoleLogger consoleLogger )
         throws TestSetFailedException
     {
         return parallelClasses
-            ? new ClassesParallelRunListener( classMethodCounts, reporterFactory, consoleStream )
-            : new MethodsParallelRunListener( classMethodCounts, reporterFactory, !parallelBoth, consoleStream );
+            ? new ClassesParallelRunListener( classMethodCounts, reporterFactory, consoleLogger )
+            : new MethodsParallelRunListener( classMethodCounts, reporterFactory, !parallelBoth, consoleLogger );
     }
 
 
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
-        TestMethod threadTestMethod = getThreadTestMethod();
+        TestMethod threadTestMethod = TestMethod.getThreadTestMethod();
         if ( threadTestMethod != null )
         {
-            LogicalStream logicalStream = threadTestMethod.getLogicalStream();
+            final LogicalStream logicalStream = threadTestMethod.getLogicalStream();
             logicalStream.write( stdout, buf, off, len );
         }
         else
         {
-            // Not able to associate output with any thread. Just dump to console
-            consoleStream.println( buf, off, len );
+            // Not able to assocaite output with any thread. Just dump to console
+            consoleLogger.info( new String( buf, off, len ) );
         }
     }
 }

@@ -41,6 +41,11 @@ import org.apache.maven.surefire.testset.TestRequest;
  */
 public class ProviderConfiguration
 {
+    /**
+     * @noinspection UnusedDeclaration
+     */
+    public static final int TESTS_SUCCEEDED_EXIT_CODE = 0;
+
     private final DirectoryScannerParameters dirScannerParams;
 
     private final ReporterConfiguration reporterConfiguration;
@@ -61,11 +66,9 @@ public class ProviderConfiguration
 
     private final List<CommandLineOption> mainCliOptions;
 
-    private final int skipAfterFailureCount;
+    private int skipAfterFailureCount;
 
-    private final Shutdown shutdown;
-
-    private final Integer systemExitTimeout;
+    private Shutdown shutdown;
 
     @SuppressWarnings( "checkstyle:parameternumber" )
     public ProviderConfiguration( DirectoryScannerParameters directoryScannerParameters,
@@ -74,7 +77,7 @@ public class ProviderConfiguration
                                   TestRequest testSuiteDefinition, Map<String, String> providerProperties,
                                   TypeEncodedValue typeEncodedTestSet, boolean readTestsFromInStream,
                                   List<CommandLineOption> mainCliOptions, int skipAfterFailureCount,
-                                  Shutdown shutdown, Integer systemExitTimeout )
+                                  Shutdown shutdown )
     {
         this.runOrderParameters = runOrderParameters;
         this.providerProperties = providerProperties;
@@ -88,7 +91,6 @@ public class ProviderConfiguration
         this.mainCliOptions = mainCliOptions;
         this.skipAfterFailureCount = skipAfterFailureCount;
         this.shutdown = shutdown;
-        this.systemExitTimeout = systemExitTimeout;
     }
 
     public ReporterConfiguration getReporterConfiguration()
@@ -113,13 +115,11 @@ public class ProviderConfiguration
         return dirScannerParams;
     }
 
-    @Deprecated
     public List getIncludes()
     {
         return dirScannerParams.getIncludes();
     }
 
-    @Deprecated
     public List getExcludes()
     {
         return dirScannerParams.getExcludes();
@@ -168,15 +168,5 @@ public class ProviderConfiguration
     public Shutdown getShutdown()
     {
         return shutdown;
-    }
-
-    public Integer getSystemExitTimeout()
-    {
-        return systemExitTimeout;
-    }
-
-    public long systemExitTimeout( long fallback )
-    {
-        return systemExitTimeout == null || systemExitTimeout < 0 ? fallback : systemExitTimeout;
     }
 }
