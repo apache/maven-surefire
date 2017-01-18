@@ -22,9 +22,8 @@ package org.apache.maven.plugin.surefire.report;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import org.apache.maven.shared.utils.io.IOUtil;
+
 import org.apache.maven.surefire.report.ReportEntry;
-import static org.apache.maven.plugin.surefire.report.FileReporter.getReportFile;
 
 /**
  * Surefire output consumer proxy that writes test output to a {@link java.io.File} for each test suite.
@@ -64,20 +63,17 @@ public class ConsoleOutputFileReporter
     @SuppressWarnings( "checkstyle:emptyblock" )
     public void close()
     {
-        try
+        if ( fileOutputStream != null )
         {
-            if ( this.fileOutputStream != null )
+            try
             {
-                this.fileOutputStream.close();
+                fileOutputStream.flush();
+                fileOutputStream.close();
             }
-        }
-        catch ( final IOException e )
-        {
-            throw new RuntimeException( "Failure closing reporter.", e );
-        }
-        finally
-        {
-            this.fileOutputStream = null;
+            catch ( IOException e )
+            {
+            }
+            fileOutputStream = null;
         }
     }
 
@@ -92,14 +88,14 @@ public class ConsoleOutputFileReporter
                     //noinspection ResultOfMethodCallIgnored
                     reportsDirectory.mkdirs();
                 }
-                File file = getReportFile( reportsDirectory, reportEntryName, reportNameSuffix, "-output.txt" );
+                File file =
+                    FileReporter.getReportFile( reportsDirectory, reportEntryName, reportNameSuffix, "-output.txt" );
                 fileOutputStream = new FileOutputStream( file );
             }
             fileOutputStream.write( buf, off, len );
         }
         catch ( IOException e )
         {
-            IOUtil.close( fileOutputStream );
             throw new RuntimeException( e );
         }
     }

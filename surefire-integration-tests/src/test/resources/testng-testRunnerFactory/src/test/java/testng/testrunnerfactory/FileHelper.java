@@ -3,39 +3,23 @@ package testng.testrunnerfactory;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 
 public class FileHelper
 {
     public static void writeFile( String fileName, String content )
     {
-        Writer writer = null;
         try
         {
-            writer = new FileWriter( new File( new File( System.getProperty( "user.dir" ),
-                                                         "target" ).getCanonicalFile(), fileName ), true );
-
-            writer.write( content );
-            writer.close();
-            writer = null;
+            File target = new File( System.getProperty("user.dir"), "target" ).getCanonicalFile();
+            File listenerOutput = new File( target, fileName );
+            FileWriter out = new FileWriter( listenerOutput, true );
+            out.write( content );
+            out.flush();
+            out.close();
         }
-        catch ( IOException e )
+        catch ( IOException exception )
         {
-            throw new RuntimeException( e );
-        }
-        finally
-        {
-            if ( writer != null )
-            {
-                try
-                {
-                    writer.close();
-                }
-                catch ( IOException e )
-                {
-                    // Suppressed, so that the exception thrown in the try block will be propagated.
-                }
-            }
+            throw new RuntimeException( exception );
         }
     }
 }

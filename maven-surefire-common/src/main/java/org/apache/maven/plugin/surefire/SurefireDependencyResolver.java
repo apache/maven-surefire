@@ -37,8 +37,8 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.surefire.booter.Classpath;
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -56,7 +56,7 @@ public class SurefireDependencyResolver
 
     private final ArtifactFactory artifactFactory;
 
-    private final ConsoleLogger log;
+    private final org.apache.maven.plugin.logging.Log log;
 
     private final ArtifactRepository localRepository;
 
@@ -66,8 +66,7 @@ public class SurefireDependencyResolver
 
     private final String pluginName;
 
-    protected SurefireDependencyResolver( ArtifactResolver artifactResolver, ArtifactFactory artifactFactory,
-                                          ConsoleLogger log,
+    protected SurefireDependencyResolver( ArtifactResolver artifactResolver, ArtifactFactory artifactFactory, Log log,
                                           ArtifactRepository localRepository,
                                           List<ArtifactRepository> remoteRepositories,
                                           ArtifactMetadataSource artifactMetadataSource, String pluginName )

@@ -20,11 +20,9 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.apache.commons.lang3.JavaVersion.JAVA_1_6;
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 
 /**
  * Tests the JUnit 47 provider with the cucumber runner. At the moment, they don't play along that perfectly (minor
@@ -34,14 +32,14 @@ import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaV
  * 
  * @author agudian
  */
-public class JUnit47WithCucumberIT
+public class Junit47WithCucumberIT
     extends SurefireJUnit4IntegrationTestCase
 {
 
     @Before
     public void assumeJdk16()
     {
-        assumeJavaVersion( JAVA_1_6 );
+        Assume.assumeTrue( System.getProperty( "java.version" ).compareTo( "1.6" ) > 0 );
     }
 
     @Test

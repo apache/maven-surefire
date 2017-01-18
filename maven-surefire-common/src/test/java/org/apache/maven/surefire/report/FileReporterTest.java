@@ -20,13 +20,13 @@ package org.apache.maven.surefire.report;
  */
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import junit.framework.TestCase;
 import org.apache.maven.plugin.surefire.report.FileReporter;
 import org.apache.maven.plugin.surefire.report.ReportEntryType;
 import org.apache.maven.plugin.surefire.report.TestSetStats;
 import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
+
+import junit.framework.TestCase;
 
 public class FileReporterTest
     extends TestCase
@@ -38,7 +38,7 @@ public class FileReporterTest
 
     private static final String testName = "org.apache.maven.surefire.report.FileReporterTest";
 
-    public void testFileNameWithoutSuffix() throws IOException
+    public void testFileNameWithoutSuffix()
     {
         File reportDir = new File( "target" );
         reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
@@ -58,7 +58,7 @@ public class FileReporterTest
         return new TestSetStats( true, true );
     }
 
-    public void testFileNameWithSuffix() throws IOException
+    public void testFileNameWithSuffix()
     {
         File reportDir = new File( "target" );
         String suffixText = "sampleSuffixText";

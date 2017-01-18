@@ -34,7 +34,6 @@ import java.util.Set;
  * @author Karl M. Davis
  * @author Kristian Rosenvold
  */
-@Deprecated
 public class DefaultDirectoryScanner
     implements DirectoryScanner
 {

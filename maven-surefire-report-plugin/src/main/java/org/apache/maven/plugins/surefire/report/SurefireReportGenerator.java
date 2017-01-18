@@ -30,36 +30,35 @@ import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.sink.SinkEventAttributeSet;
 import org.apache.maven.doxia.sink.SinkEventAttributes;
 import org.apache.maven.doxia.util.DoxiaUtils;
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.reporting.MavenReportException;
-
-import static org.apache.maven.doxia.sink.Sink.JUSTIFY_LEFT;
 
 /**
  *
  */
 public final class SurefireReportGenerator
 {
-    private static final int LEFT = JUSTIFY_LEFT;
+    private static final Object[] TAG_TYPE_START = new Object[]{ HtmlMarkup.TAG_TYPE_START };
 
-    private static final Object[] TAG_TYPE_START = { HtmlMarkup.TAG_TYPE_START };
-
-    private static final Object[] TAG_TYPE_END = { HtmlMarkup.TAG_TYPE_END };
+    private static final Object[] TAG_TYPE_END = new Object[]{ HtmlMarkup.TAG_TYPE_END };
 
     private final SurefireReportParser report;
+
+    private List<ReportTestSuite> testSuites;
 
     private final boolean showSuccess;
 
     private final String xrefLocation;
-
-    private List<ReportTestSuite> testSuites;
+    
+    private static final int LEFT = Sink.JUSTIFY_LEFT;
 
     public SurefireReportGenerator( List<File> reportsDirectories, Locale locale, boolean showSuccess,
-                                    String xrefLocation, ConsoleLogger consoleLogger )
+                                    String xrefLocation )
     {
-        report = new SurefireReportParser( reportsDirectories, locale, consoleLogger );
-        this.showSuccess = showSuccess;
+        report = new SurefireReportParser( reportsDirectories, locale );
+
         this.xrefLocation = xrefLocation;
+
+        this.showSuccess = showSuccess;
     }
 
     public void doGenerateReport( ResourceBundle bundle, Sink sink )
@@ -471,32 +470,6 @@ public final class SurefireReportGenerator
 
             sinkLink( sink, testCase.getName(), "#" + toHtmlId( testCase.getFullName() ) );
 
-            SinkEventAttributeSet atts = new SinkEventAttributeSet();
-            atts.addAttribute( SinkEventAttributes.CLASS, "detailToggle" );
-            atts.addAttribute( SinkEventAttributes.STYLE, "display:inline" );
-            sink.unknown( "div", TAG_TYPE_START, atts );
-
-            sink.link( "javascript:toggleDisplay('" + toHtmlId( testCase.getFullName() ) + "');" );
-
-            atts = new SinkEventAttributeSet();
-            atts.addAttribute( SinkEventAttributes.STYLE, "display:inline;" );
-            atts.addAttribute( SinkEventAttributes.ID, toHtmlId( testCase.getFullName() ) + "off" );
-            sink.unknown( "span", TAG_TYPE_START, atts );
-            sink.text( " + " );
-            sink.unknown( "span", TAG_TYPE_END, null );
-
-            atts = new SinkEventAttributeSet();
-            atts.addAttribute( SinkEventAttributes.STYLE, "display:none;" );
-            atts.addAttribute( SinkEventAttributes.ID, toHtmlId( testCase.getFullName() ) + "on" );
-            sink.unknown( "span", TAG_TYPE_START, atts );
-            sink.text( " - " );
-            sink.unknown( "span", TAG_TYPE_END, null );
-
-            sink.text( "[ Detail ]" );
-            sink.link_();
-
-            sink.unknown( "div", TAG_TYPE_END, null );
-
             sink.tableCell_();
         }
         else
@@ -507,40 +480,6 @@ public final class SurefireReportGenerator
         sinkCell( sink, numberFormat.format( testCase.getTime() ) );
 
         sink.tableRow_();
-
-        if ( testCase.hasFailure() )
-        {
-            sink.tableRow();
-
-            sinkCell( sink, "" );
-            sinkCell( sink, testCase.getFailureMessage() );
-            sinkCell( sink, "" );
-            sink.tableRow_();
-
-            String detail = testCase.getFailureDetail();
-            if ( detail != null )
-            {
-                sink.tableRow();
-                sinkCell( sink, "" );
-
-                sink.tableCell();
-                SinkEventAttributeSet atts = new SinkEventAttributeSet();
-                atts.addAttribute( SinkEventAttributes.ID, toHtmlId( testCase.getFullName() ) + "error" );
-                atts.addAttribute( SinkEventAttributes.STYLE, "display:none;" );
-                sink.unknown( "div", TAG_TYPE_START, atts );
-
-                sink.verbatim( null );
-                sink.text( detail );
-                sink.verbatim_();
-
-                sink.unknown( "div", TAG_TYPE_END, null );
-                sink.tableCell_();
-
-                sinkCell( sink, "" );
-
-                sink.tableRow_();
-            }
-        }
     }
 
     private String toHtmlId( String id )
@@ -577,21 +516,86 @@ public final class SurefireReportGenerator
 
             sink.tableCell_();
 
-            sinkCellAnchor( sink, tCase.getName(), toHtmlId( tCase.getFullName() ) );
+            sink.tableCell();
+
+            SinkEventAttributeSet atts = new SinkEventAttributeSet();
+            atts.addAttribute( SinkEventAttributes.NAME, toHtmlId( tCase.getFullName() ) );
+            sink.unknown( "a", TAG_TYPE_START, atts );
+            sink.unknown( "a", TAG_TYPE_END, null );
+
+            sink.text( toHtmlId( tCase.getFullName() ) );
+
+            atts = new SinkEventAttributeSet();
+            atts.addAttribute( SinkEventAttributes.CLASS, "detailToggle" );
+            atts.addAttribute( SinkEventAttributes.STYLE, "display:inline" );
+            sink.unknown( "div", TAG_TYPE_START, atts );
+
+            sink.link( "javascript:toggleDisplay('" + toHtmlId( tCase.getFullName() ) + "');" );
+
+            atts = new SinkEventAttributeSet();
+            atts.addAttribute( SinkEventAttributes.STYLE, "display:inline;" );
+            atts.addAttribute( SinkEventAttributes.ID, toHtmlId( tCase.getFullName() ) + "off" );
+            sink.unknown( "span", TAG_TYPE_START, atts );
+            sink.text( " + " );
+            sink.unknown( "span", TAG_TYPE_END, null );
+
+            atts = new SinkEventAttributeSet();
+            atts.addAttribute( SinkEventAttributes.STYLE, "display:none;" );
+            atts.addAttribute( SinkEventAttributes.ID, toHtmlId( tCase.getFullName() ) + "on" );
+            sink.unknown( "span", TAG_TYPE_START, atts );
+            sink.text( " - " );
+            sink.unknown( "span", TAG_TYPE_END, null );
+
+            sink.text( "[ Detail ]" );
+            sink.link_();
+
+            sink.unknown( "div", TAG_TYPE_END, null );
+
+            sink.tableCell_();
 
             sink.tableRow_();
 
-            String message = tCase.getFailureMessage();
-
             sink.tableRow();
-
             sinkCell( sink, "" );
 
-            sinkCell( sink, message == null ? type : type + ": " + message );
+            sink.tableCell();
+            atts = new SinkEventAttributeSet();
+            atts.addAttribute( SinkEventAttributes.ID, toHtmlId( tCase.getFullName() ) + "message" );
+            sink.unknown( "div", TAG_TYPE_START, atts );
+
+            sink.verbatim( null );
+            sink.text( tCase.getFailureMessage() );
+            sink.verbatim_();
+
+            sink.unknown( "div", TAG_TYPE_END, null );
+            sink.tableCell_();
+
+            sinkCell( sink, "" );
 
             sink.tableRow_();
 
             String detail = tCase.getFailureDetail();
+
+            sink.tableRow();
+            sinkCell( sink, "" );
+
+            sink.tableCell();
+            atts = new SinkEventAttributeSet();
+            atts.addAttribute( SinkEventAttributes.ID, toHtmlId( tCase.getFullName() ) + "detail" );
+            atts.addAttribute( SinkEventAttributes.STYLE, "display:none;" );
+            sink.unknown( "div", TAG_TYPE_START, atts );
+
+            sink.verbatim( null );
+            sink.text( detail );
+            sink.verbatim_();
+
+            sink.unknown( "div", TAG_TYPE_END, null );
+            sink.tableCell_();
+
+            sinkCell( sink, "" );
+
+            sink.tableRow_();
+
             if ( detail != null )
             {
                 sink.tableRow();
@@ -599,7 +603,7 @@ public final class SurefireReportGenerator
                 sinkCell( sink, "" );
 
                 sink.tableCell();
-                SinkEventAttributeSet atts = new SinkEventAttributeSet();
+                atts = new SinkEventAttributeSet();
                 atts.addAttribute( SinkEventAttributes.ID, tCase.getName() + "error" );
                 sink.unknown( "div", TAG_TYPE_START, atts );
 
@@ -729,7 +733,7 @@ public final class SurefireReportGenerator
         // so we have to start with a newline and comment the CDATA closing in the end
 
         return "\n" + "function toggleDisplay(elementId) {\n"
-                + " var elm = document.getElementById(elementId + 'error');\n"
+                + " var elm = document.getElementById(elementId + 'detail');\n"
                 + " if (elm && typeof elm.style != \"undefined\") {\n"
                 + " if (elm.style.display == \"none\") {\n"
                 + " elm.style.display = \"\";\n"

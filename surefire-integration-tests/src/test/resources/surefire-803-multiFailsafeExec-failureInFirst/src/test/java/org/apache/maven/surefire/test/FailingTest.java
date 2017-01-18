@@ -61,12 +61,11 @@ public class FailingTest
         f.getParentFile().mkdirs();
 
         FileWriter w = null;
+
         try
         {
             w = new FileWriter( f, true );
             w.write( name.getMethodName() );
-            w.close();
-            w = null;
         }
         finally
         {
@@ -78,7 +77,6 @@ public class FailingTest
                 }
                 catch ( final IOException e )
                 {
-                    // Suppressed.
                 }
             }
         }

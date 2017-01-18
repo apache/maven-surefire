@@ -67,7 +67,17 @@ public class CategorizedReportEntry
     @Override
     public String getNameWithGroup()
     {
-        return isNameWithGroup() ? getName() + GROUP_PREFIX + getGroup() + GROUP_SUFIX : getName();
+        StringBuilder result = new StringBuilder();
+        result.append( getName() );
+
+        if ( getGroup() != null && !getName().equals( getGroup() ) )
+        {
+            result.append( GROUP_PREFIX );
+            result.append( getGroup() );
+            result.append( GROUP_SUFIX );
+        }
+
+        return result.toString();
     }
 
     public boolean equals( Object o )
@@ -96,10 +106,5 @@ public class CategorizedReportEntry
         int result = super.hashCode();
         result = 31 * result + ( group != null ? group.hashCode() : 0 );
         return result;
-    }
-
-    private boolean isNameWithGroup()
-    {
-        return getGroup() != null && !getGroup().equals( getName() );
     }
 }

@@ -24,8 +24,8 @@ import java.io.PrintStream;
 /**
  * @author <a href="mailto:kristian@zenior.no">Kristian Rosenvold</a>
  */
-public final class DefaultDirectConsoleReporter
-    implements ConsoleStream
+public class DefaultDirectConsoleReporter
+    implements ConsoleLogger
 {
     private final PrintStream systemOut;
 
@@ -34,13 +34,8 @@ public final class DefaultDirectConsoleReporter
         this.systemOut = systemOut;
     }
 
-    public void println( String message )
+    public void info( String message )
     {
         systemOut.println( message );
-    }
-
-    public void println( byte[] buf, int off, int len )
-    {
-        println( new String( buf, off, len ) );
     }
 }

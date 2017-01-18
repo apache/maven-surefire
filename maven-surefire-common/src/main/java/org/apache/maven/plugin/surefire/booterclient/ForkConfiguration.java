@@ -19,6 +19,16 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
+import org.apache.maven.plugin.surefire.util.Relocator;
+import org.apache.maven.shared.utils.StringUtils;
+import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.booter.ForkedBooter;
+import org.apache.maven.surefire.booter.StartupConfiguration;
+import org.apache.maven.surefire.booter.SurefireBooterForkException;
+import org.apache.maven.surefire.util.UrlUtils;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -29,15 +39,6 @@ import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
-import org.apache.maven.plugin.surefire.util.Relocator;
-import org.apache.maven.shared.utils.StringUtils;
-import org.apache.maven.shared.utils.io.IOUtil;
-import org.apache.maven.surefire.booter.Classpath;
-import org.apache.maven.surefire.booter.ForkedBooter;
-import org.apache.maven.surefire.booter.StartupConfiguration;
-import org.apache.maven.surefire.booter.SurefireBooterForkException;
 
 /**
  * Configuration for forking tests.
@@ -270,10 +271,10 @@ public class ForkConfiguration
         {
             file.deleteOnExit();
         }
-        JarOutputStream jos = null;
+        FileOutputStream fos = new FileOutputStream( file );
+        JarOutputStream jos = new JarOutputStream( fos );
         try
         {
-            jos = new JarOutputStream( new FileOutputStream( file ) );
             jos.setLevel( JarOutputStream.STORED );
             JarEntry je = new JarEntry( "META-INF/MANIFEST.MF" );
             jos.putNextEntry( je );
@@ -285,10 +286,8 @@ public class ForkConfiguration
             StringBuilder cp = new StringBuilder();
             for ( String el : classPath )
             {
-                File file1 = new File( el );
-                String pathEnd = file1.isDirectory() ? "/" : "";
-                cp.append( file1.toURI().toASCIIString() )
-                        .append( pathEnd )
+                // NOTE: if File points to a directory, this entry MUST end in '/'.
+                cp.append( UrlUtils.getURL( new File( el ) ).toExternalForm() )
                         .append( " " );
             }
 
@@ -297,13 +296,10 @@ public class ForkConfiguration
             man.getMainAttributes().putValue( "Main-Class", startClassName );
 
             man.write( jos );
-
-            jos.close();
-            jos = null;
         }
         finally
         {
-            IOUtil.close( jos );
+            jos.close();
         }
 
         return file;

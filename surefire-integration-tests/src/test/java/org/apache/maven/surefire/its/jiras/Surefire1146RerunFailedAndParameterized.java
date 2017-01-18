@@ -39,7 +39,7 @@ public class Surefire1146RerunFailedAndParameterized
 
     private void verify( OutputValidator outputValidator, int run, int failures, int errors, int skipped, int flakes )
     {
-        outputValidator.verifyTextInLog( "Flakes:" );
+        outputValidator.verifyTextInLog( "Flaked tests:" );
         outputValidator.verifyTextInLog( "jiras.surefire1146.CustomDescriptionParameterizedTest.flakyTest[0: (Test11); Test12; Test13;](jiras.surefire1146.CustomDescriptionParameterizedTest)" );
         outputValidator.verifyTextInLog( "Run 1: CustomDescriptionParameterizedTest.flakyTest:" );
         outputValidator.verifyTextInLog( "Run 2: CustomDescriptionParameterizedTest.flakyTest:" );

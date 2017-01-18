@@ -20,6 +20,7 @@ package org.apache.maven.surefire.booter;
  */
 
 import java.io.File;
+import java.io.PrintStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -28,8 +29,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.plugin.surefire.log.api.ConsoleLoggerDecorator;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
@@ -42,8 +41,6 @@ import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.surefire.util.SurefireReflectionException;
-
-import javax.annotation.Nonnull;
 
 import static java.util.Collections.checkedList;
 
@@ -104,6 +101,7 @@ public class SurefireReflector
     private final Class<?> shutdownAwareClass;
 
     private final Class<Enum> shutdownClass;
+
 
     @SuppressWarnings( "unchecked" )
     public SurefireReflector( ClassLoader surefireClassLoader )
@@ -235,10 +233,11 @@ public class SurefireReflector
             return null;
         }
         //Can't use the constructor with the RunOrder parameter. Using it causes some integration tests to fail.
-        Class<?>[] arguments = { String.class, File.class };
+        Class<?>[] arguments = { String.class, String.class };
         Constructor constructor = getConstructor( this.runOrderParameters, arguments );
         File runStatisticsFile = runOrderParameters.getRunStatisticsFile();
-        return newInstance( constructor, RunOrder.asString( runOrderParameters.getRunOrder() ), runStatisticsFile );
+        return newInstance( constructor, RunOrder.asString( runOrderParameters.getRunOrder() ),
+                            runStatisticsFile == null ? null : runStatisticsFile.getAbsolutePath() );
     }
 
     Object createTestArtifactInfo( TestArtifactInfo testArtifactInfo )
@@ -252,10 +251,17 @@ public class SurefireReflector
         return newInstance( constructor, testArtifactInfo.getVersion(), testArtifactInfo.getClassifier() );
     }
 
+
     Object createReporterConfiguration( ReporterConfiguration reporterConfig )
     {
         Constructor constructor = getConstructor( reporterConfiguration, File.class, boolean.class );
         return newInstance( constructor, reporterConfig.getReportsDirectory(), reporterConfig.isTrimStackTrace() );
+    }
+
+    public static ReporterFactory createForkingReporterFactoryInCurrentClassLoader( boolean trimStackTrace,
+                                                                                    PrintStream originalSystemOut )
+    {
+        return new ForkingReporterFactory( trimStackTrace, originalSystemOut );
     }
 
     public Object createBooterConfiguration( ClassLoader surefireClassLoader, Object factoryInstance,
@@ -313,11 +319,6 @@ public class SurefireReflector
                 }
             }
         }
-    }
-
-    public void setSystemExitTimeout( Object o, Integer systemExitTimeout )
-    {
-        invokeSetter( o, "setSystemExitTimeout", Integer.class, systemExitTimeout );
     }
 
     public void setDirectoryScannerParameters( Object o, DirectoryScannerParameters dirScannerParams )
@@ -407,11 +408,6 @@ public class SurefireReflector
         return runResult.isAssignableFrom( o.getClass() );
     }
 
-    public Object createConsoleLogger( @Nonnull ConsoleLogger consoleLogger )
-    {
-        return createConsoleLogger( consoleLogger, surefireClassLoader );
-    }
-
     private static Collection<Integer> toOrdinals( Collection<? extends Enum> enums )
     {
         Collection<Integer> ordinals = new ArrayList<Integer>( enums.size() );
@@ -420,19 +416,6 @@ public class SurefireReflector
             ordinals.add( e.ordinal() );
         }
         return ordinals;
-    }
-
-    public static Object createConsoleLogger( ConsoleLogger consoleLogger, ClassLoader cl )
-    {
-        try
-        {
-            Class<?> decoratorClass = cl.loadClass( ConsoleLoggerDecorator.class.getName() );
-            return getConstructor( decoratorClass, Object.class ).newInstance( consoleLogger );
-        }
-        catch ( Exception e )
-        {
-            throw new SurefireReflectionException( e );
-        }
     }
 
 }

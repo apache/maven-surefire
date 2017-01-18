@@ -19,15 +19,14 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ConsoleStream;
-import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
+import org.apache.maven.surefire.junitcore.Logger;
+import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -47,14 +46,13 @@ import static org.junit.Assert.assertTrue;
  */
 public class SchedulingStrategiesTest
 {
-    private static final ThreadFactory DAEMON_THREAD_FACTORY = newDaemonThreadFactory();
-    private final ConsoleStream logger = new DefaultDirectConsoleReporter( System.out );
+    private static final ThreadFactory DAEMON_THREAD_FACTORY = DaemonThreadFactory.newDaemonThreadFactory();
 
     @Test
     public void invokerStrategy()
         throws InterruptedException
     {
-        SchedulingStrategy strategy = SchedulingStrategies.createInvokerStrategy( logger );
+        SchedulingStrategy strategy = SchedulingStrategies.createInvokerStrategy( new Logger() );
         assertFalse( strategy.hasSharedThreadPool() );
         assertTrue( strategy.canSchedule() );
 
@@ -74,7 +72,7 @@ public class SchedulingStrategiesTest
     public void nonSharedPoolStrategy()
         throws InterruptedException
     {
-        SchedulingStrategy strategy = SchedulingStrategies.createParallelStrategy( logger,  2 );
+        SchedulingStrategy strategy = SchedulingStrategies.createParallelStrategy( new Logger(),  2 );
         assertFalse( strategy.hasSharedThreadPool() );
         assertTrue( strategy.canSchedule() );
 
@@ -96,7 +94,7 @@ public class SchedulingStrategiesTest
     @Test(expected = NullPointerException.class)
     public void sharedPoolStrategyNullPool()
     {
-        SchedulingStrategies.createParallelSharedStrategy( logger, null );
+        SchedulingStrategies.createParallelSharedStrategy( new Logger(), null );
     }
 
     @Test
@@ -105,11 +103,11 @@ public class SchedulingStrategiesTest
     {
         ExecutorService sharedPool = Executors.newCachedThreadPool( DAEMON_THREAD_FACTORY );
 
-        SchedulingStrategy strategy1 = SchedulingStrategies.createParallelSharedStrategy( logger, sharedPool );
+        SchedulingStrategy strategy1 = SchedulingStrategies.createParallelSharedStrategy( new Logger(), sharedPool );
         assertTrue( strategy1.hasSharedThreadPool() );
         assertTrue( strategy1.canSchedule() );
 
-        SchedulingStrategy strategy2 = SchedulingStrategies.createParallelSharedStrategy( logger, sharedPool );
+        SchedulingStrategy strategy2 = SchedulingStrategies.createParallelSharedStrategy( new Logger(), sharedPool );
         assertTrue( strategy2.hasSharedThreadPool() );
         assertTrue( strategy2.canSchedule() );
 
@@ -142,7 +140,7 @@ public class SchedulingStrategiesTest
     public void infinitePoolStrategy()
         throws InterruptedException
     {
-        SchedulingStrategy strategy = SchedulingStrategies.createParallelStrategyUnbounded( logger );
+        SchedulingStrategy strategy = SchedulingStrategies.createParallelStrategyUnbounded( new Logger() );
         assertFalse( strategy.hasSharedThreadPool() );
         assertTrue( strategy.canSchedule() );
 

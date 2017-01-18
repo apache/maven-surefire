@@ -40,6 +40,7 @@ import org.apache.maven.surefire.util.TestsToRun;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -206,19 +207,11 @@ public class TestNGProvider
                                        reporterConfiguration.getReportsDirectory(), getSkipAfterFailureCount() );
     }
 
-    @SuppressWarnings( "unchecked" )
     public Iterable<Class<?>> getSuites()
     {
         if ( isTestNGXmlTestSuite( testRequest ) )
         {
-            try
-            {
-                return newXmlSuite().locateTestSets();
-            }
-            catch ( TestSetFailedException e )
-            {
-                throw new RuntimeException( e );
-            }
+            return Collections.emptySet();
         }
         else
         {

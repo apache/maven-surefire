@@ -19,28 +19,29 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.Collection;
+
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.failsafe.xmlsummary.FailsafeSummaryXmlUtils;
 import org.apache.maven.plugin.surefire.SurefireHelper;
 import org.apache.maven.plugin.surefire.SurefireReportParameters;
-import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.shared.utils.ReaderFactory;
+import org.apache.maven.shared.utils.StringUtils;
+import org.apache.maven.shared.utils.io.IOUtil;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.suite.RunResult;
-
-import javax.xml.bind.JAXBException;
-import java.io.File;
-import java.util.Collection;
-
-import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
-import static org.apache.maven.shared.utils.StringUtils.capitalizeFirstLetter;
-import static org.apache.maven.surefire.suite.RunResult.noTestsRun;
 
 /**
  * Verify integration tests ran using Surefire.
@@ -48,11 +49,10 @@ import static org.apache.maven.surefire.suite.RunResult.noTestsRun;
  * @author Stephen Connolly
  * @author Jason van Zyl
  */
-@SuppressWarnings( "unused" )
 @Mojo( name = "verify", defaultPhase = LifecyclePhase.VERIFY, requiresProject = true, threadSafe = true )
 public class VerifyMojo
-        extends AbstractMojo
-        implements SurefireReportParameters
+    extends AbstractMojo
+    implements SurefireReportParameters
 {
 
     /**
@@ -79,7 +79,6 @@ public class VerifyMojo
      * @since 2.3
      * @deprecated Use -DskipTests instead.
      */
-    @Deprecated
     @Parameter( property = "maven.test.skip.exec" )
     private boolean skipExec;
 
@@ -159,65 +158,78 @@ public class VerifyMojo
 
     private Collection<CommandLineOption> cli;
 
-    private volatile PluginConsoleLogger consoleLogger;
-
     public void execute()
-            throws MojoExecutionException, MojoFailureException
+        throws MojoExecutionException, MojoFailureException
     {
         cli = commandLineOptions();
         if ( verifyParameters() )
         {
-            logDebugOrCliShowErrors( capitalizeFirstLetter( getPluginName() )
-                                             + " report directory: " + getReportsDirectory() );
+            logDebugOrCliShowErrors(
+                StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
 
             RunResult summary;
             try
             {
-                summary = existsSummaryFile() ? readSummary( summaryFile ) : noTestsRun();
+                final String encoding;
+                if ( StringUtils.isEmpty( this.encoding ) )
+                {
+                    getLog().warn( "File encoding has not been set, using platform encoding "
+                            + ReaderFactory.FILE_ENCODING
+                            + ", i.e. build is platform dependent! The file encoding for reports output files "
+                            + "should be provided by the POM property ${project.reporting.outputEncoding}." );
+                    encoding = ReaderFactory.FILE_ENCODING;
+                }
+                else
+                {
+                    encoding = this.encoding;
+                }
+
+                summary = existsSummaryFile() ? readSummary( encoding, summaryFile ) : RunResult.noTestsRun();
 
                 if ( existsSummaryFiles() )
                 {
                     for ( final File summaryFile : summaryFiles )
                     {
-                        summary = summary.aggregate( readSummary( summaryFile ) );
+                        summary = summary.aggregate( readSummary( encoding, summaryFile ) );
                     }
                 }
             }
-            catch ( JAXBException e )
+            catch ( IOException e )
             {
                 throw new MojoExecutionException( e.getMessage(), e );
             }
 
-            reportExecution( this, summary, getConsoleLogger(), null );
+            SurefireHelper.reportExecution( this, summary, getLog() );
         }
     }
 
-    private PluginConsoleLogger getConsoleLogger()
+    private RunResult readSummary( String encoding, File summaryFile )
+        throws IOException
     {
-        if ( consoleLogger == null )
+        FileInputStream fileInputStream = null;
+        BufferedInputStream bufferedInputStream = null;
+        Reader reader = null;
+        try
         {
-            synchronized ( this )
-            {
-                if ( consoleLogger == null )
-                {
-                    consoleLogger = new PluginConsoleLogger( getLog() );
-                }
-            }
+            fileInputStream = new FileInputStream( summaryFile );
+            bufferedInputStream = new BufferedInputStream( fileInputStream );
+            reader = new InputStreamReader( bufferedInputStream, encoding );
+            return RunResult.fromInputStream( bufferedInputStream, encoding );
         }
-        return consoleLogger;
-    }
-
-    private RunResult readSummary( File summaryFile ) throws JAXBException
-    {
-        return FailsafeSummaryXmlUtils.toRunResult( summaryFile );
+        finally
+        {
+            IOUtil.close( reader );
+            IOUtil.close( bufferedInputStream );
+            IOUtil.close( fileInputStream );
+        }
     }
 
     protected boolean verifyParameters()
-            throws MojoFailureException
+        throws MojoFailureException
     {
         if ( isSkip() || isSkipTests() || isSkipITs() || isSkipExec() )
         {
-            getConsoleLogger().info( "Tests are skipped." );
+            getLog().info( "Tests are skipped." );
             return false;
         }
 
@@ -231,7 +243,7 @@ public class VerifyMojo
 
         if ( !existsSummary() )
         {
-            getConsoleLogger().info( "No tests to run." );
+            getLog().info( "No tests to run." );
             return false;
         }
 
@@ -357,12 +369,12 @@ public class VerifyMojo
 
     private Collection<CommandLineOption> commandLineOptions()
     {
-        return SurefireHelper.commandLineOptions( session, getConsoleLogger() );
+        return SurefireHelper.commandLineOptions( session, getLog() );
     }
 
-    private void logDebugOrCliShowErrors( String s )
+    private void logDebugOrCliShowErrors( CharSequence s )
     {
-        SurefireHelper.logDebugOrCliShowErrors( s, getConsoleLogger(), cli );
+        SurefireHelper.logDebugOrCliShowErrors( s, getLog(), cli );
     }
 
 }

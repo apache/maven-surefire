@@ -19,22 +19,6 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
-import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
-import org.apache.maven.surefire.booter.ForkingRunListener;
-import org.apache.maven.surefire.report.CategorizedReportEntry;
-import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.SimpleReportEntry;
-import org.apache.maven.surefire.report.StackTraceWriter;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -43,9 +27,24 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
+import org.apache.maven.surefire.booter.ForkingRunListener;
+import org.apache.maven.surefire.report.CategorizedReportEntry;
+import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.ReporterException;
+import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.SimpleReportEntry;
+import org.apache.maven.surefire.report.StackTraceWriter;
+
+import junit.framework.Assert;
+import junit.framework.TestCase;
+
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Kristian Rosenvold
@@ -53,9 +52,10 @@ import static org.hamcrest.Matchers.is;
 public class ForkingRunListenerTest
     extends TestCase
 {
-    private final ByteArrayOutputStream content, anotherContent;
 
-    private final PrintStream printStream, anotherPrintStream;
+    private final ByteArrayOutputStream content;
+
+    private final PrintStream printStream;
 
     final int defaultChannel = 17;
 
@@ -63,11 +63,8 @@ public class ForkingRunListenerTest
 
     public ForkingRunListenerTest()
     {
-        content = new ByteArrayOutputStream();
+        this.content = new ByteArrayOutputStream();
         printStream = new PrintStream( content );
-
-        anotherContent = new ByteArrayOutputStream();
-        anotherPrintStream = new PrintStream( anotherContent );
     }
 
     private void reset()
@@ -75,6 +72,7 @@ public class ForkingRunListenerTest
         printStream.flush();
         content.reset();
     }
+
 
     public void testHeaderCreation()
     {
@@ -222,9 +220,8 @@ public class ForkingRunListenerTest
 
         TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
         final Properties testVmSystemProperties = new Properties();
-        NullConsoleLogger log = new NullConsoleLogger();
         ForkClient forkStreamClient = new ForkClient( providerReporterFactory, testVmSystemProperties,
-                                                      new MockNotifiableTestStream(), log );
+                                                      new MockNotifiableTestStream() );
 
         forkStreamClient.consumeMultiLineContent( content.toString( "utf-8" ) );
 
@@ -248,13 +245,12 @@ public class ForkingRunListenerTest
         forkingReporter.testSetCompleted( reportEntry );
 
         TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
-        NullConsoleLogger log = new NullConsoleLogger();
         ForkClient forkStreamClient = new ForkClient( providerReporterFactory, new Properties(),
-                                                      new MockNotifiableTestStream(), log );
+                                                      new MockNotifiableTestStream() );
 
         forkStreamClient.consumeMultiLineContent( content.toString( "utf-8" ) );
 
-        final MockReporter reporter = (MockReporter) forkStreamClient.getReporter();
+        final MockReporter reporter = (MockReporter) forkStreamClient.getReporter( defaultChannel );
         final List<String> events = reporter.getEvents();
         assertEquals( MockReporter.SET_STARTING, events.get( 0 ) );
         assertEquals( MockReporter.TEST_STARTING, events.get( 1 ) );
@@ -269,28 +265,20 @@ public class ForkingRunListenerTest
         ReportEntry expected = createDefaultReportEntry();
         final SimpleReportEntry secondExpected = createAnotherDefaultReportEntry();
 
-        new ForkingRunListener( printStream, defaultChannel, false )
-                .testStarting( expected );
-
-        new ForkingRunListener( anotherPrintStream, anotherChannel, false )
-                .testSkipped( secondExpected );
+        new ForkingRunListener( printStream, defaultChannel, false ).testStarting( expected );
+        new ForkingRunListener( printStream, anotherChannel, false ).testSkipped( secondExpected );
 
         TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
-        Properties vmProps = new Properties();
-        NotifiableTestStream notifiableTestStream = new MockNotifiableTestStream();
-        NullConsoleLogger log = new NullConsoleLogger();
-
-        ForkClient forkStreamClient = new ForkClient( providerReporterFactory, vmProps, notifiableTestStream, log );
+        final ForkClient forkStreamClient = new ForkClient( providerReporterFactory, new Properties(),
+                                                            new MockNotifiableTestStream() );
         forkStreamClient.consumeMultiLineContent( content.toString( "utf-8" ) );
 
-        MockReporter reporter = (MockReporter) forkStreamClient.getReporter();
+        MockReporter reporter = (MockReporter) forkStreamClient.getReporter( defaultChannel );
         Assert.assertEquals( MockReporter.TEST_STARTING, reporter.getFirstEvent() );
         Assert.assertEquals( expected, reporter.getFirstData() );
         Assert.assertEquals( 1, reporter.getEvents().size() );
 
-        forkStreamClient = new ForkClient( providerReporterFactory, vmProps, notifiableTestStream, log );
-        forkStreamClient.consumeMultiLineContent( anotherContent.toString( "utf-8" ) );
-        MockReporter reporter2 = (MockReporter) forkStreamClient.getReporter();
+        MockReporter reporter2 = (MockReporter) forkStreamClient.getReporter( anotherChannel );
         Assert.assertEquals( MockReporter.TEST_SKIPPED, reporter2.getFirstEvent() );
         Assert.assertEquals( secondExpected, reporter2.getFirstData() );
         Assert.assertEquals( 1, reporter2.getEvents().size() );
@@ -336,9 +324,9 @@ public class ForkingRunListenerTest
         }
     }
 
-    private RunListener createForkingRunListener( Integer testSetChannel )
+    private RunListener createForkingRunListener( Integer testSetCHannel )
     {
-        return new ForkingRunListener( printStream, testSetChannel, false );
+        return new ForkingRunListener( printStream, testSetCHannel, false );
     }
 
     private class StandardTestRun
@@ -356,11 +344,10 @@ public class ForkingRunListenerTest
             throws ReporterException, IOException
         {
             TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
-            NullConsoleLogger log = new NullConsoleLogger();
             final ForkClient forkStreamClient = new ForkClient( providerReporterFactory, new Properties(),
-                                                                new MockNotifiableTestStream(), log );
+                                                                new MockNotifiableTestStream() );
             forkStreamClient.consumeMultiLineContent( content.toString( ) );
-            reporter = (MockReporter) forkStreamClient.getReporter();
+            reporter = (MockReporter) forkStreamClient.getReporter( defaultChannel );
         }
 
         public String getFirstEvent()

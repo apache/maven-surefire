@@ -21,6 +21,7 @@ package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.*;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ import static org.junit.Assert.assertTrue;
  * 
  * @author Andreas Gudian
  */
+@Category( Not2xCompatible.class )
 public class ForkModeMultiModuleIT
     extends SurefireJUnit4IntegrationTestCase
 {

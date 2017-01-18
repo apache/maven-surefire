@@ -23,10 +23,9 @@ import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
 
 import org.apache.maven.surefire.report.ReportEntry;
-
-import static java.nio.charset.Charset.defaultCharset;
 
 /**
  * Outputs test system out/system err directly to the console
@@ -52,10 +51,11 @@ public class DirectConsoleOutput
 
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
-        final PrintStream stream = stdout ? sout : serr;
+        PrintStream stream = stdout ? sout : serr;
+
         try
         {
-            CharBuffer decode = defaultCharset().newDecoder().decode( ByteBuffer.wrap( buf, off, len ) );
+            CharBuffer decode = Charset.defaultCharset().newDecoder().decode( ByteBuffer.wrap( buf, off, len ) );
             stream.append( decode );
         }
         catch ( CharacterCodingException e )
@@ -74,5 +74,6 @@ public class DirectConsoleOutput
 
     public void close()
     {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 }

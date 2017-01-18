@@ -30,8 +30,7 @@ import org.apache.maven.project.MavenProject;
 /**
  * Creates a nicely formatted Failsafe Test Report in html format.
  * This goal does not run the tests, it only builds the reports.
- * See <a href="https://issues.apache.org/jira/browse/SUREFIRE-257">
- *     https://issues.apache.org/jira/browse/SUREFIRE-257</a>
+ * See <a href="http://jira.codehaus.org/browse/SUREFIRE-257">http://jira.codehaus.org/browse/SUREFIRE-257</a>
  *
  * @author Stephen Connolly
  * @since 2.10
@@ -112,6 +111,6 @@ public class FailsafeReportMojo
     */
     private ResourceBundle getBundle( Locale locale )
     {
-        return ResourceBundle.getBundle( "surefire-report", locale, getClass().getClassLoader() );
+        return ResourceBundle.getBundle( "surefire-report", locale, this.getClass().getClassLoader() );
     }
 }

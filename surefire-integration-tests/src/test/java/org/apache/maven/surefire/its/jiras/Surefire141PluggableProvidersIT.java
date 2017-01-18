@@ -20,15 +20,10 @@ package org.apache.maven.surefire.its.jiras;
  */
 
 import org.apache.maven.it.VerificationException;
-import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.File;
-import java.io.FilenameFilter;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * SUREFIRE-613 Asserts proper test counts when running in parallel
@@ -88,28 +83,12 @@ public class Surefire141PluggableProvidersIT
     public void constructorRuntimeException()
         throws Exception
     {
-        OutputValidator validator = unpack( "surefire-141-pluggableproviders" )
-                                            .sysProp( "constructorCrash", "runtimeException" )
-                                            .maven()
-                                            .withFailure()
-                                            .executeTest()
-                                            .verifyTextInLog( "Let's fail with a runtimeException" );
-
-        File reportDir = validator.getSurefireReportsDirectory();
-        String[] dumpFiles = reportDir.list( new FilenameFilter()
-                        {
-                            @Override
-                            public boolean accept( File dir, String name )
-                            {
-                                return name.endsWith( ".dump" );
-                            }
-                        });
-        assertThat( dumpFiles ).isNotEmpty();
-        for ( String dump : dumpFiles )
-        {
-            validator.getSurefireReportsFile( dump )
-                    .assertContainsText( "Let's fail with a runtimeException" );
-        }
+        unpack( "surefire-141-pluggableproviders" )
+            .sysProp( "constructorCrash", "runtimeException" )
+            .maven()
+            .withFailure()
+            .executeTest()
+            .verifyTextInLog( "Let's fail with a runtimeException" );
     }
 
 }

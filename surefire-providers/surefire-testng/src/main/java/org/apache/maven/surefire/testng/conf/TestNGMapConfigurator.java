@@ -24,14 +24,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.testng.TestNG;
 import org.testng.xml.XmlSuite;
-
-import static java.lang.Integer.parseInt;
-import static org.apache.maven.surefire.booter.ProviderParameterNames.PARALLEL_PROP;
-import static org.apache.maven.surefire.booter.ProviderParameterNames.THREADCOUNT_PROP;
-import static org.apache.maven.surefire.testng.conf.AbstractDirectConfigurator.loadListenerClasses;
 
 /**
  * TestNG configurator for 5.3+ versions. TestNG exposes a {@link org.testng.TestNG#configure(java.util.Map)} method.
@@ -59,11 +55,11 @@ public class TestNGMapConfigurator
     public void configure( XmlSuite suite, Map<String, String> options )
         throws TestSetFailedException
     {
-        String threadCountAsString = options.get( THREADCOUNT_PROP );
-        int threadCount = threadCountAsString == null ? 1 : parseInt( threadCountAsString );
+        String threadCountString = options.get( ProviderParameterNames.THREADCOUNT_PROP );
+        int threadCount = ( null != threadCountString ) ? Integer.parseInt( threadCountString ) : 1;
         suite.setThreadCount( threadCount );
 
-        String parallel = options.get( PARALLEL_PROP );
+        String parallel = options.get( ProviderParameterNames.PARALLEL_PROP );
         if ( parallel != null )
         {
             suite.setParallel( parallel );
@@ -79,7 +75,6 @@ public class TestNGMapConfigurator
         {
             String key = entry.getKey();
             Object val = entry.getValue();
-            // todo: use switch-case of jdk7
             if ( "listener".equals( key ) )
             {
                 val = convertListeners( entry.getValue() );
@@ -119,7 +114,7 @@ public class TestNGMapConfigurator
             {
                 val = convert( val, Boolean.class );
             }
-            else if ( THREADCOUNT_PROP.equals( key ) )
+            else if ( ProviderParameterNames.THREADCOUNT_PROP.equals( key ) )
             {
                 val = convert ( val, String.class );
             }
@@ -149,9 +144,10 @@ public class TestNGMapConfigurator
     // ReporterConfig only became available in later versions of TestNG
     protected Object convertReporterConfig( Object val )
     {
+        final String reporterConfigClassName = "org.testng.ReporterConfig";
         try
         {
-            Class<?> reporterConfig = Class.forName( "org.testng.ReporterConfig" );
+            Class<?> reporterConfig = Class.forName( reporterConfigClassName );
             Method deserialize = reporterConfig.getMethod( "deserialize", String.class );
             Object rc = deserialize.invoke( null, val );
             ArrayList<Object> reportersList = new ArrayList<Object>();
@@ -166,7 +162,7 @@ public class TestNGMapConfigurator
 
     protected Object convertListeners( String listenerClasses ) throws TestSetFailedException
     {
-        return loadListenerClasses( listenerClasses );
+        return AbstractDirectConfigurator.loadListenerClasses( listenerClasses );
     }
 
     protected Object convert( Object val, Class<?> type )
@@ -175,25 +171,26 @@ public class TestNGMapConfigurator
         {
             return null;
         }
-        else if ( type.isAssignableFrom( val.getClass() ) )
+        if ( type.isAssignableFrom( val.getClass() ) )
         {
             return val;
         }
-        else if ( ( type == Boolean.class || type == boolean.class ) && val.getClass() == String.class )
+
+        if ( ( type == Boolean.class || type == boolean.class ) && val.getClass() == String.class )
         {
             return Boolean.valueOf( (String) val );
         }
-        else if ( ( type == Integer.class || type == int.class ) && val.getClass() == String.class )
+
+        if ( ( type == Integer.class || type == int.class ) && val.getClass() == String.class )
         {
             return Integer.valueOf( (String) val );
         }
-        else if ( type == String.class )
+
+        if ( type == String.class )
         {
             return val.toString();
         }
-        else
-        {
-            return val;
-        }
+
+        return val;
     }
 }

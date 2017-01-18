@@ -55,11 +55,6 @@ public class SimpleReportEntry
         this( source, name, null, elapsed );
     }
 
-    public SimpleReportEntry( String source, String name, String message )
-    {
-        this( source, name, null, null, message );
-    }
-
     protected SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed,
                                  String message )
     {
@@ -90,14 +85,9 @@ public class SimpleReportEntry
         this( source, name, stackTraceWriter, elapsed, safeGetMessage( stackTraceWriter ) );
     }
 
-    public static SimpleReportEntry assumption( String source, String name, String message )
-    {
-        return new SimpleReportEntry( source, name, message );
-    }
-
     public static SimpleReportEntry ignored( String source, String name, String message )
     {
-        return new SimpleReportEntry( source, name, message );
+        return new SimpleReportEntry( source, name, null, null, message );
     }
 
     public static SimpleReportEntry withException( String source, String name, StackTraceWriter stackTraceWriter )

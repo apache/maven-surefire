@@ -30,8 +30,8 @@ import javax.annotation.Nullable;
  */
 public class Relocator
 {
-    @Nullable
-    private final String relocation;
+    @SuppressWarnings( "checkstyle:modifierorder" )
+    private final @Nullable String relocation;
 
     private static final String RELOCATION_BASE = "org.apache.maven.surefire.";
 
@@ -46,12 +46,14 @@ public class Relocator
         relocation = "shadefire";
     }
 
-    @Nullable private String getRelocation()
+    @SuppressWarnings( "checkstyle:modifierorder" )
+    private @Nullable String getRelocation()
     {
         return relocation;
     }
 
-    @Nonnull public String relocate( @Nonnull String className )
+    @SuppressWarnings( "checkstyle:modifierorder" )
+    public @Nonnull String relocate( @Nonnull String className )
     {
         if ( relocation == null )
         {

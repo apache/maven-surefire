@@ -20,14 +20,10 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  */
 
 import org.apache.maven.shared.utils.cli.StreamConsumer;
+import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThread;
 
 /**
  * Knows how to reconstruct *all* the state transmitted over stdout by the forked process.
@@ -35,9 +31,11 @@ import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDae
  * @author Kristian Rosenvold
  */
 public final class ThreadedStreamConsumer
-    implements StreamConsumer, Closeable
+    implements StreamConsumer
 {
     private static final String POISON = "Pioson";
+
+    private static final int ITEM_LIMIT_BEFORE_SLEEP = 10000;
 
     private final BlockingQueue<String> items = new LinkedBlockingQueue<String>();
 
@@ -45,47 +43,40 @@ public final class ThreadedStreamConsumer
 
     private final Pumper pumper;
 
-    final class Pumper
+    static class Pumper
         implements Runnable
     {
+        private final BlockingQueue<String> queue;
+
         private final StreamConsumer target;
 
         private volatile Throwable throwable;
 
-        Pumper( StreamConsumer target )
+
+        Pumper( BlockingQueue<String> queue, StreamConsumer target )
         {
+            this.queue = queue;
             this.target = target;
         }
 
-        /**
-         * Calls {@link ForkClient#consumeLine(String)} throwing {@link RuntimeException}. Even if {@link ForkClient}
-         * is not fault-tolerant, this method MUST be fault-tolerant except for {@link InterruptedException}.<p/>
-         * This Thread is interrupted by {@link #close() closing the consumer}.<p/>
-         * If {@link org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter#writeTestOutput} throws
-         * {@link java.io.IOException} this method MUST NOT interrupt reading the events from forked JVM; otherwise
-         * we can simply loose events like acquire-next-test which means that {@link ForkClient} hangs on waiting
-         * for old test to complete and therefore the plugin permanently in progress.
-         */
-        @SuppressWarnings( "checkstyle:stringliteralequalitycheck" )
         public void run()
         {
-            String item = null;
-            do
+            try
             {
-                try
+                String item = queue.take();
+                //noinspection StringEquality
+                while ( item != POISON )
                 {
-                    item = items.take();
                     target.consumeLine( item );
+                    item = queue.take();
                 }
-                catch ( InterruptedException e )
-                {
-                    break;
-                }
-                catch ( Throwable t )
-                {
-                    throwable = t;
-                }
-            } while ( item != POISON );
+            }
+            catch ( Throwable t )
+            {
+                // Think about what happens if the producer overruns us and creates an OOME. Not nice.
+                // Maybe limit length of blocking queue
+                this.throwable = t;
+            }
         }
 
         public Throwable getThrowable()
@@ -96,8 +87,8 @@ public final class ThreadedStreamConsumer
 
     public ThreadedStreamConsumer( StreamConsumer target )
     {
-        pumper = new Pumper( target );
-        thread = newDaemonThread( pumper, ThreadedStreamConsumer.class.getSimpleName() );
+        pumper = new Pumper( items, target );
+        thread = DaemonThreadFactory.newDaemonThread( pumper, "ThreadedStreamConsumer" );
         thread.start();
     }
 
@@ -105,29 +96,35 @@ public final class ThreadedStreamConsumer
     public void consumeLine( String s )
     {
         items.add( s );
+        if ( items.size() > ITEM_LIMIT_BEFORE_SLEEP )
+        {
+            try
+            {
+                Thread.sleep( 100 );
+            }
+            catch ( InterruptedException ignore )
+            {
+            }
+        }
     }
 
-    public void close() throws IOException
+
+    public void close()
     {
         try
         {
             items.add( POISON );
-            if ( thread.isAlive() )
-            {
-                thread.join( SECONDS.toMillis( 10L ) );
-                thread.interrupt();
-            }
+            thread.join();
         }
         catch ( InterruptedException e )
         {
-            throw new IOException( e );
+            throw new RuntimeException( e );
         }
 
         //noinspection ThrowableResultOfMethodCallIgnored
-        Throwable e = pumper.getThrowable();
-        if ( e != null )
+        if ( pumper.getThrowable() != null )
         {
-            throw new IOException( e );
+            throw new RuntimeException( pumper.getThrowable() );
         }
     }
 }
