@@ -66,10 +66,7 @@ public class ConsoleOutputFileReporter
     {
         try
         {
-            if ( this.fileOutputStream != null )
-            {
-                this.fileOutputStream.close();
-            }
+            this.fileOutputStream.close();
         }
         catch ( final IOException e )
         {
