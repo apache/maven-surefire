@@ -125,12 +125,10 @@ public class StatelessXmlReporter
             getAddMethodEntryList( methodRunHistoryMap, methodEntry );
         }
 
-        FileOutputStream outputStream = null;
-        OutputStreamWriter fw = null;
+        FileOutputStream outputStream = getOutputStream( testSetReportEntry );
+        OutputStreamWriter fw = getWriter( outputStream );
         try
         {
-            outputStream = getOutputStream( testSetReportEntry );
-            fw = getWriter( outputStream );
             XMLWriter ppw = new PrettyPrintXMLWriter( fw );
             ppw.setEncoding( ENCODING );
 
@@ -241,19 +239,10 @@ public class StatelessXmlReporter
                 }
             }
             ppw.endElement(); // TestSuite
-
-            fw.close();
-            fw = null;
-            outputStream = null;
-        }
-        catch ( final IOException e )
-        {
-            throw new RuntimeException( "Failure creating report.", e );
         }
         finally
         {
             IOUtil.close( fw );
-            IOUtil.close( outputStream );
         }
     }
 
@@ -337,7 +326,7 @@ public class StatelessXmlReporter
     }
 
     private static void startTestElement( XMLWriter ppw, WrappedReportEntry report, String reportNameSuffix,
-                                          String timeAsString ) throws IOException
+                                          String timeAsString )
     {
         ppw.startElement( "testcase" );
         ppw.addAttribute( "name", report.getReportName() );
@@ -360,7 +349,7 @@ public class StatelessXmlReporter
     }
 
     private void createTestSuiteElement( XMLWriter ppw, WrappedReportEntry report, TestSetStats testSetStats,
-                                         String timeAsString ) throws IOException
+                                         String timeAsString )
     {
         ppw.startElement( "testsuite" );
 
@@ -387,7 +376,7 @@ public class StatelessXmlReporter
 
     private static void getTestProblems( OutputStreamWriter outputStreamWriter, XMLWriter ppw,
                                          WrappedReportEntry report, boolean trimStackTrace, FileOutputStream fw,
-                                         String testErrorType, boolean createOutErrElementsInside ) throws IOException
+                                         String testErrorType, boolean createOutErrElementsInside )
     {
         ppw.startElement( testErrorType );
 
@@ -432,7 +421,7 @@ public class StatelessXmlReporter
 
     // Create system-out and system-err elements
     private static void createOutErrElements( OutputStreamWriter outputStreamWriter, XMLWriter ppw,
-                                              WrappedReportEntry report, FileOutputStream fw ) throws IOException
+                                              WrappedReportEntry report, FileOutputStream fw )
     {
         EncodingOutputStream eos = new EncodingOutputStream( fw );
         addOutputStreamElement( outputStreamWriter, eos, ppw, report.getStdout(), "system-out" );
@@ -442,7 +431,7 @@ public class StatelessXmlReporter
     private static void addOutputStreamElement( OutputStreamWriter outputStreamWriter,
                                          EncodingOutputStream eos, XMLWriter xmlWriter,
                                          Utf8RecodingDeferredFileOutputStream utf8RecodingDeferredFileOutputStream,
-                                         String name ) throws IOException
+                                         String name )
     {
         if ( utf8RecodingDeferredFileOutputStream != null && utf8RecodingDeferredFileOutputStream.getByteCount() > 0 )
         {
@@ -472,7 +461,7 @@ public class StatelessXmlReporter
      *
      * @param xmlWriter The test suite to report to
      */
-    private static void showProperties( XMLWriter xmlWriter ) throws IOException
+    private static void showProperties( XMLWriter xmlWriter )
     {
         xmlWriter.startElement( "properties" );
 
