@@ -20,14 +20,11 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  */
 
 import org.apache.maven.shared.utils.cli.StreamConsumer;
+import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
+import java.io.Closeable;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThread;
 
 /**
  * Knows how to reconstruct *all* the state transmitted over stdout by the forked process.
@@ -39,21 +36,27 @@ public final class ThreadedStreamConsumer
 {
     private static final String POISON = "Pioson";
 
+    private static final int ITEM_LIMIT_BEFORE_SLEEP = 10000;
+
     private final BlockingQueue<String> items = new LinkedBlockingQueue<String>();
 
     private final Thread thread;
 
     private final Pumper pumper;
 
-    final class Pumper
+    static class Pumper
         implements Runnable
     {
+        private final BlockingQueue<String> queue;
+
         private final StreamConsumer target;
 
         private volatile Throwable throwable;
 
-        Pumper( StreamConsumer target )
+
+        Pumper( BlockingQueue<String> queue, StreamConsumer target )
         {
+            this.queue = queue;
             this.target = target;
         }
 
@@ -74,7 +77,7 @@ public final class ThreadedStreamConsumer
             {
                 try
                 {
-                    item = items.take();
+                    item = queue.take();
                     target.consumeLine( item );
                 }
                 catch ( InterruptedException e )
@@ -96,8 +99,8 @@ public final class ThreadedStreamConsumer
 
     public ThreadedStreamConsumer( StreamConsumer target )
     {
-        pumper = new Pumper( target );
-        thread = newDaemonThread( pumper, ThreadedStreamConsumer.class.getSimpleName() );
+        pumper = new Pumper( items, target );
+        thread = DaemonThreadFactory.newDaemonThread( pumper, "ThreadedStreamConsumer" );
         thread.start();
     }
 
@@ -105,29 +108,35 @@ public final class ThreadedStreamConsumer
     public void consumeLine( String s )
     {
         items.add( s );
+        if ( items.size() > ITEM_LIMIT_BEFORE_SLEEP )
+        {
+            try
+            {
+                Thread.sleep( 100 );
+            }
+            catch ( InterruptedException ignore )
+            {
+            }
+        }
     }
 
-    public void close() throws IOException
+
+    public void close()
     {
         try
         {
             items.add( POISON );
-            if ( thread.isAlive() )
-            {
-                thread.join( SECONDS.toMillis( 10L ) );
-                thread.interrupt();
-            }
+            thread.join();
         }
         catch ( InterruptedException e )
         {
-            throw new IOException( e );
+            throw new RuntimeException( e );
         }
 
         //noinspection ThrowableResultOfMethodCallIgnored
-        Throwable e = pumper.getThrowable();
-        if ( e != null )
+        if ( pumper.getThrowable() != null )
         {
-            throw new IOException( e );
+            throw new RuntimeException( pumper.getThrowable() );
         }
     }
 }

@@ -83,7 +83,7 @@ public class StatelessXmlReporterTest
     public void testFileNameWithoutSuffix()
     {
         StatelessXmlReporter reporter =
-            new StatelessXmlReporter( reportDir, null, false, false,
+            new StatelessXmlReporter( reportDir, null, false, 0,
                                       new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>(), XSD );
         reporter.cleanTestHistoryMap();
 
@@ -136,7 +136,7 @@ public class StatelessXmlReporterTest
                                     ReportEntryType.ERROR, 13, stdOut, stdErr );
 
         stats.testSucceeded( t2 );
-        StatelessXmlReporter reporter = new StatelessXmlReporter( reportDir, null, false, false,
+        StatelessXmlReporter reporter = new StatelessXmlReporter( reportDir, null, false, 0,
                         new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>(), XSD );
         reporter.testSetCompleted( testSetReportEntry, stats );
 
@@ -216,7 +216,7 @@ public class StatelessXmlReporterTest
         rerunStats.testSucceeded( testThreeSecondRun );
 
         StatelessXmlReporter reporter =
-            new StatelessXmlReporter( reportDir, null, false, true,
+            new StatelessXmlReporter( reportDir, null, false, 1,
                                       new HashMap<String, Map<String, List<WrappedReportEntry>>>(), XSD );
 
         reporter.testSetCompleted( testSetReportEntry, stats );

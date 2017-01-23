@@ -42,11 +42,11 @@ public class StatisticsReporter
         this( dataFile, fromFile( dataFile ), new RunEntryStatisticsMap() );
     }
 
-    protected StatisticsReporter( File dataFile, RunEntryStatisticsMap existing, RunEntryStatisticsMap newResults )
+    protected StatisticsReporter( File dataFile, RunEntryStatisticsMap existing, RunEntryStatisticsMap newRestuls )
     {
         this.dataFile = dataFile;
         this.existing = existing;
-        this.newResults = newResults;
+        this.newResults = newRestuls;
     }
 
     public synchronized void testSetCompleted()

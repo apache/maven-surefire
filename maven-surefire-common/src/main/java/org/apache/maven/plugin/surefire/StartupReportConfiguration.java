@@ -171,16 +171,11 @@ public final class StartupReportConfiguration
         return rerunFailingTestsCount;
     }
 
-    public boolean hasRerunFailingTestsCount()
-    {
-        return getRerunFailingTestsCount() > 0;
-    }
-
     public StatelessXmlReporter instantiateStatelessXmlReporter()
     {
         return isDisableXmlReport()
             ? null
-            : new StatelessXmlReporter( reportsDirectory, reportNameSuffix, trimStackTrace, hasRerunFailingTestsCount(),
+            : new StatelessXmlReporter( reportsDirectory, reportNameSuffix, trimStackTrace, rerunFailingTestsCount,
                                         testClassMethodRunHistory, xsdSchemaLocation );
     }
 

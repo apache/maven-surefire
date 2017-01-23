@@ -57,7 +57,7 @@ import java.util.StringTokenizer;
  */
 public final class StringUtils
 {
-    public static final String NL = System.getProperty( "line.separator", "\n" );
+    public static final String NL = System.getProperty( "line.separator" );
 
     private static final byte[] HEX_CHARS = {
                     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
@@ -343,6 +343,32 @@ public final class StringUtils
         }
 
         return ByteBuffer.wrap( out, 0, outPos );
+    }
+
+    public static String decode( byte[] toDecode, Charset charset )
+    {
+        try
+        {
+            // @todo use new JDK 1.6 constructor String(byte bytes[], Charset charset)
+            return new String( toDecode, charset.name() );
+        }
+        catch ( UnsupportedEncodingException e )
+        {
+            throw new RuntimeException( "The JVM must support Charset " + charset, e );
+        }
+    }
+
+    public static byte[] encode( String toEncode, Charset charset )
+    {
+        try
+        {
+            // @todo use new JDK 1.6 method getBytes(Charset charset)
+            return toEncode.getBytes( charset.name() );
+        }
+        catch ( UnsupportedEncodingException e )
+        {
+            throw new RuntimeException( "The JVM must support Charset " + charset, e );
+        }
     }
 
     public static byte[] encodeStringForForkCommunication( String string )

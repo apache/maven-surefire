@@ -141,7 +141,6 @@
         </executions>
       </plugin>
       <plugin>
-        <!-- Remove in 3.0 -->
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
