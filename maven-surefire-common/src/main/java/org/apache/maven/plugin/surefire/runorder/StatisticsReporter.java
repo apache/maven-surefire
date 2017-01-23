@@ -19,10 +19,9 @@ package org.apache.maven.plugin.surefire.runorder;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReportEntry;
-
 import java.io.File;
 import java.io.FileNotFoundException;
+import org.apache.maven.surefire.report.ReportEntry;
 
 import static org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMap.fromFile;
 

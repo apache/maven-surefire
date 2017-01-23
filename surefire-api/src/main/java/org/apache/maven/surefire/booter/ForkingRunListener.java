@@ -19,6 +19,10 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import java.io.PrintStream;
+import java.util.Enumeration;
+import java.util.Properties;
+
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLoggerUtils;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
@@ -28,10 +32,6 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
-
-import java.io.PrintStream;
-import java.util.Enumeration;
-import java.util.Properties;
 
 import static java.lang.Integer.toHexString;
 import static java.nio.charset.Charset.defaultCharset;
@@ -206,13 +206,6 @@ public class ForkingRunListener
         synchronized ( target ) // See notes about synchronization/thread safety in class javadoc
         {
             target.write( encodeBytes, 0, encodeBytes.length );
-            if ( target.checkError() )
-            {
-                // We MUST NOT throw any exception from this method; otherwise we are in loop and CPU goes up:
-                // ForkingRunListener -> Exception -> JUnit Notifier and RunListener -> ForkingRunListener -> Exception
-                DumpErrorSingleton.getSingleton()
-                        .dumpStreamText( "Unexpected IOException with stream: " + new String( buf, off, len ) );
-            }
         }
     }
 
@@ -275,12 +268,6 @@ public class ForkingRunListener
         synchronized ( target ) // See notes about synchronization/thread safety in class javadoc
         {
             target.write( encodeBytes, 0, encodeBytes.length );
-            if ( target.checkError() )
-            {
-                // We MUST NOT throw any exception from this method; otherwise we are in loop and CPU goes up:
-                // ForkingRunListener -> Exception -> JUnit Notifier and RunListener -> ForkingRunListener -> Exception
-                DumpErrorSingleton.getSingleton().dumpStreamText( "Unexpected IOException: " + string );
-            }
         }
     }
 

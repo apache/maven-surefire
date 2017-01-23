@@ -23,7 +23,6 @@ import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
 import org.apache.maven.plugin.surefire.util.Relocator;
 import org.apache.maven.shared.utils.StringUtils;
-import org.apache.maven.shared.utils.io.IOUtil;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ForkedBooter;
 import org.apache.maven.surefire.booter.StartupConfiguration;
@@ -271,10 +270,10 @@ public class ForkConfiguration
         {
             file.deleteOnExit();
         }
-        JarOutputStream jos = null;
+        FileOutputStream fos = new FileOutputStream( file );
+        JarOutputStream jos = new JarOutputStream( fos );
         try
         {
-            jos = new JarOutputStream( new FileOutputStream( file ) );
             jos.setLevel( JarOutputStream.STORED );
             JarEntry je = new JarEntry( "META-INF/MANIFEST.MF" );
             jos.putNextEntry( je );
@@ -301,7 +300,7 @@ public class ForkConfiguration
         }
         finally
         {
-            IOUtil.close( jos );
+            jos.close();
         }
 
         return file;

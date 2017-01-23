@@ -19,10 +19,6 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.Classpath;
-import org.apache.maven.surefire.booter.KeyValueSource;
-import org.apache.maven.surefire.util.internal.StringUtils;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -37,8 +33,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.booter.KeyValueSource;
+import org.apache.maven.surefire.util.internal.StringUtils;
+
 import static java.util.Arrays.asList;
-import static org.apache.maven.shared.utils.io.IOUtil.close;
 
 /**
  * A properties implementation that preserves insertion order.
@@ -47,7 +46,6 @@ public class SurefireProperties
     extends Properties
     implements KeyValueSource
 {
-
     private static final Collection<String> KEYS_THAT_CANNOT_BE_USED_AS_SYSTEM_PROPERTIES =
             asList( "java.library.path", "file.encoding", "jdk.map.althashing.threshold", "line.separator" );
 
@@ -155,6 +153,7 @@ public class SurefireProperties
         // user specified properties for SUREFIRE-121, causing SUREFIRE-491.
         // Not gonna do THAT any more... instead, we only propagate those system properties
         // that have been explicitly specified by the user via -Dkey=value on the CLI
+
         result.copyPropertiesFrom( userProperties );
         return result;
     }
@@ -225,18 +224,18 @@ public class SurefireProperties
         }
     }
 
-    private static SurefireProperties loadProperties( final InputStream inStream )
+    private static SurefireProperties loadProperties( InputStream inStream )
         throws IOException
     {
         try
         {
-            final Properties p = new Properties();
+            Properties p = new Properties();
             p.load( inStream );
             return new SurefireProperties( p );
         }
         finally
         {
-            close( inStream ); // @todo use try-with-resources JDK7, search in all code
+            close( inStream );
         }
     }
 
@@ -246,6 +245,18 @@ public class SurefireProperties
         return file == null ? new SurefireProperties() : loadProperties( new FileInputStream( file ) );
     }
 
+    private static void close( InputStream inputStream )
+    {
+        try
+        {
+            inputStream.close();
+        }
+        catch ( IOException ex )
+        {
+            // ignore
+        }
+    }
+
     public void setNullableProperty( String key, String value )
     {
         if ( value != null )
@@ -253,5 +264,4 @@ public class SurefireProperties
             super.setProperty( key, value );
         }
     }
-
 }

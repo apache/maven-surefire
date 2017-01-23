@@ -20,12 +20,12 @@ package org.apache.maven.plugin.surefire.runorder;
  */
 
 
-import org.apache.maven.shared.utils.io.IOUtil;
 import org.apache.maven.surefire.report.ReportEntry;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -64,19 +64,17 @@ public final class RunEntryStatisticsMap
     {
         if ( file.exists() )
         {
-            Reader reader = null;
             try
             {
-                reader = new FileReader( file );
-                return fromReader( reader );
+                return fromReader( new FileReader( file ) );
+            }
+            catch ( FileNotFoundException e )
+            {
+                throw new RuntimeException( e );
             }
             catch ( IOException e )
             {
                 throw new RuntimeException( e );
-            }
-            finally
-            {
-                IOUtil.close( reader );
             }
         }
         else
@@ -89,11 +87,16 @@ public final class RunEntryStatisticsMap
         throws IOException
     {
         Map<String, RunEntryStatistics> result = new HashMap<String, RunEntryStatistics>();
-        BufferedReader reader = new BufferedReader( fileReader );
-        for ( String line = reader.readLine(); line != null && !line.startsWith( "#" ); line = reader.readLine() )
+        BufferedReader bufferedReader = new BufferedReader( fileReader );
+        String line = bufferedReader.readLine();
+        while ( line != null )
         {
-            RunEntryStatistics stats = fromString( line );
-            result.put( stats.getTestName(), stats );
+            if ( !line.startsWith( "#" ) )
+            {
+                final RunEntryStatistics stats = fromString( line );
+                result.put( stats.getTestName(), stats );
+            }
+            line = bufferedReader.readLine();
         }
         return new RunEntryStatisticsMap( result );
     }
@@ -101,13 +104,8 @@ public final class RunEntryStatisticsMap
     public void serialize( File file )
         throws FileNotFoundException
     {
-        /**
-         * The implementation of constructor {@link PrintWriter(File)}
-         * uses {@link java.io.BufferedWriter}
-         * which is guaranteed by Java 1.5 Javadoc of the constructor:
-         * "The output will be written to the file and is buffered."
-         */
-        PrintWriter printWriter = new PrintWriter( file );
+        FileOutputStream fos = new FileOutputStream( file );
+        PrintWriter printWriter = new PrintWriter( fos );
         try
         {
             List<RunEntryStatistics> items = new ArrayList<RunEntryStatistics>( runEntryStatistics.values() );

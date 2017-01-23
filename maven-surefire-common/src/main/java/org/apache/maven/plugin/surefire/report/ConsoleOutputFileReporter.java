@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.apache.maven.shared.utils.io.IOUtil;
 import org.apache.maven.surefire.report.ReportEntry;
 
 import static org.apache.maven.plugin.surefire.report.FileReporter.getReportFile;
@@ -75,12 +74,8 @@ public class ConsoleOutputFileReporter
             }
             catch ( IOException e )
             {
-                // do nothing
             }
-            finally
-            {
-                fileOutputStream = null;
-            }
+            fileOutputStream = null;
         }
     }
 
@@ -102,7 +97,6 @@ public class ConsoleOutputFileReporter
         }
         catch ( IOException e )
         {
-            IOUtil.close( fileOutputStream );
             throw new RuntimeException( e );
         }
     }

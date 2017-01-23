@@ -23,6 +23,7 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
@@ -59,13 +60,7 @@ public class FileReporter
 
         try
         {
-            /**
-             * The implementation of constructor {@link PrintWriter(File)}
-             * uses {@link java.io.BufferedWriter}
-             * which is guaranteed by Java 1.5 Javadoc of the constructor:
-             * "The output will be written to the file and is buffered."
-             */
-            PrintWriter writer = new PrintWriter( reportFile );
+            PrintWriter writer = new PrintWriter( new FileWriter( reportFile ) );
 
             writer.println( "-------------------------------------------------------------------------------" );
 
@@ -91,9 +86,6 @@ public class FileReporter
 
     public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
     {
-        /**
-         * Using buffered stream internally.
-         */
         PrintWriter writer = testSetStarting( report );
         try
         {

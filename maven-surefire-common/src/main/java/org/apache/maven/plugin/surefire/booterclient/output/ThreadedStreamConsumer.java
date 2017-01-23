@@ -60,35 +60,24 @@ public final class ThreadedStreamConsumer
             this.target = target;
         }
 
-        /**
-         * Calls {@link ForkClient#consumeLine(String)} throwing {@link RuntimeException}. Even if {@link ForkClient}
-         * is not fault-tolerant, this method MUST be fault-tolerant except for {@link InterruptedException}.<p/>
-         * This Thread is interrupted by {@link #close() closing the consumer}.<p/>
-         * If {@link org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter#writeTestOutput} throws
-         * {@link java.io.IOException} this method MUST NOT interrupt reading the events from forked JVM; otherwise
-         * we can simply loose events like acquire-next-test which means that {@link ForkClient} hangs on waiting
-         * for old test to complete and therefore the plugin permanently in progress.
-         */
-        @SuppressWarnings( "checkstyle:stringliteralequalitycheck" )
         public void run()
         {
-            String item = null;
-            do
+            try
             {
-                try
+                String item = queue.take();
+                //noinspection StringEquality
+                while ( item != POISON )
                 {
-                    item = queue.take();
                     target.consumeLine( item );
+                    item = queue.take();
                 }
-                catch ( InterruptedException e )
-                {
-                    break;
-                }
-                catch ( Throwable t )
-                {
-                    throwable = t;
-                }
-            } while ( item != POISON );
+            }
+            catch ( Throwable t )
+            {
+                // Think about what happens if the producer overruns us and creates an OOME. Not nice.
+                // Maybe limit length of blocking queue
+                this.throwable = t;
+            }
         }
 
         public Throwable getThrowable()
