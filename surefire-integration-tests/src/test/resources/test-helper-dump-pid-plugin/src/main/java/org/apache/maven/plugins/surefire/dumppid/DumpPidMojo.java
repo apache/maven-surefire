@@ -51,12 +51,11 @@ public class DumpPidMojo
             {
                 targetDir.mkdirs();
             }
-
             fw = new FileWriter( target );
-            final String pid = ManagementFactory.getRuntimeMXBean().getName();
+            String pid = ManagementFactory.getRuntimeMXBean().getName();
             fw.write( pid );
-            fw.close();
-            fw = null;
+            fw.flush();
+
             getLog().info( "Wrote " + pid + " to " + target );
         }
         catch ( IOException e )

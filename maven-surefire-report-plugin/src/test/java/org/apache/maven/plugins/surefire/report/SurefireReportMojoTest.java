@@ -640,8 +640,6 @@ public class SurefireReportMojoTest
             writer = WriterFactory.newXmlWriter( outputHtml );
             // renderer doxia 1.6 already closed the writer
             renderer.generateDocument( writer, (SiteRendererSink) mojo.getSink(), context );
-            writer.close();
-            writer = null;
         }
         finally
         {

@@ -23,8 +23,8 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+
 import static java.lang.String.format;
-import org.apache.maven.surefire.util.internal.StringUtils;
 import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
 import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;

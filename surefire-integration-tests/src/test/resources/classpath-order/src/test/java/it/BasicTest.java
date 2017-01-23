@@ -44,17 +44,14 @@ public class BasicTest
     }
 
     private Properties getProperties( String resource )
-        throws IOException
+            throws IOException
     {
-        InputStream in = null;
+        InputStream in = getClass().getResourceAsStream( resource );
+        assertNotNull( in );
         try
         {
-            in = getClass().getResourceAsStream( resource );
-            assertNotNull( in );
             Properties props = new Properties();
             props.load( in );
-            in.close();
-            in = null;
             return props;
         }
         catch ( IOException e )
@@ -64,16 +61,9 @@ public class BasicTest
         }
         finally
         {
-            try
+            if ( in != null )
             {
-                if ( in != null )
-                {
-                    in.close();
-                }
-            }
-            catch ( final IOException e )
-            {
-                // Suppressed.
+                in.close();
             }
         }
     }

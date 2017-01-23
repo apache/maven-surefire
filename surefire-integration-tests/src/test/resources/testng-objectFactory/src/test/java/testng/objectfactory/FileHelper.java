@@ -16,8 +16,7 @@ public class FileHelper
                                                          "target" ).getCanonicalFile(), fileName ), true );
 
             writer.write( content );
-            writer.close();
-            writer = null;
+            writer.flush();
         }
         catch ( IOException exception )
         {

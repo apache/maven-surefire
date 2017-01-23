@@ -19,6 +19,14 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.providerapi.ProviderParameters;
+import org.apache.maven.surefire.providerapi.SurefireProvider;
+import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
+import org.apache.maven.surefire.report.ReporterFactory;
+import org.apache.maven.surefire.report.StackTraceWriter;
+import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.testset.TestSetFailedException;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -30,19 +38,13 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import static java.lang.System.err;
 import static java.lang.System.out;
 import static java.lang.System.setErr;
 import static java.lang.System.setOut;
 import static java.lang.Thread.currentThread;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.providerapi.SurefireProvider;
-import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
-import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.testset.TestSetFailedException;
 import static org.apache.maven.surefire.booter.CommandReader.getReader;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_BYE;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_ERROR;

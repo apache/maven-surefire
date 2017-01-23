@@ -24,7 +24,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,8 +48,6 @@ public class SystemPropertyManager
         {
             Properties p = new Properties();
             p.load( inStream );
-            inStream.close();
-            inStream = null;
             Map<String, String> map = new ConcurrentHashMap<String, String>( p.size() );
             // @todo use .stringPropertyNames() JDK6 instead of .keySet()
             for ( Map.Entry<?, ?> entry : p.entrySet() )
@@ -61,18 +58,7 @@ public class SystemPropertyManager
         }
         finally
         {
-            // @todo use try-with-resources JDK7, search in all code
-            try
-            {
-                if ( inStream != null )
-                {
-                    inStream.close();
-                }
-            }
-            catch ( final IOException e1 )
-            {
-                // Suppressed, so that the exception thrown in the try block will be propagated.
-            }
+            close( inStream ); // @todo use try-with-resources JDK7, search in all code
         }
     }
 
@@ -107,34 +93,21 @@ public class SystemPropertyManager
     public static void writePropertiesFile( File file, String name, Properties properties )
         throws IOException
     {
-        OutputStream out = null;
+        FileOutputStream out = new FileOutputStream( file );
+
         try
         {
-            out = new FileOutputStream( file );
+            /**
+             * See {@link Properties#store(java.io.OutputStream, String)} Javadoc - stream is flushed.
+             */
             properties.store( out, name );
-            out.close();
-            out = null;
         }
         finally
         {
-            try
-            {
-                if ( out != null )
-                {
-                    out.close();
-                }
-            }
-            catch ( final IOException e1 )
-            {
-                // Suppressed.
-            }
+            out.close();
         }
     }
 
-    /**
-     * @deprecated As of Java 7, please use the try-with-resources statement.
-     */
-    @Deprecated
     public static void close( InputStream inputStream )
     {
         if ( inputStream == null )

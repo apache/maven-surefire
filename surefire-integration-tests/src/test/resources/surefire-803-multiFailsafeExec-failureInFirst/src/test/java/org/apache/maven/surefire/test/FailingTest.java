@@ -60,27 +60,14 @@ public class FailingTest
         final File f = new File( "target/tests-run", getClass().getName() + ".txt" );
         f.getParentFile().mkdirs();
 
-        FileWriter w = null;
+        FileWriter w = new FileWriter( f, true );
         try
         {
-            w = new FileWriter( f, true );
             w.write( name.getMethodName() );
-            w.close();
-            w = null;
         }
         finally
         {
-            if ( w != null )
-            {
-                try
-                {
-                    w.close();
-                }
-                catch ( final IOException e )
-                {
-                    // Suppressed.
-                }
-            }
+            w.close();
         }
     }
 }

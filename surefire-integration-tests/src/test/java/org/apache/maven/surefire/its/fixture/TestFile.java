@@ -28,8 +28,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.List;
-import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
+
+import junit.framework.Assert;
+
 import static junit.framework.Assert.assertTrue;
 
 /**
@@ -101,8 +103,6 @@ public class TestFile
             {
                 sb.append( line );
             }
-            reader.close();
-            reader = null;
             return sb.toString();
         }
         catch ( IOException e )

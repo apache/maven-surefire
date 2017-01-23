@@ -33,8 +33,7 @@ public class FileHelper
         {
             writer = new FileWriter( new File( new File( "target" ).getAbsoluteFile(), fileName ) );
             writer.write( content );
-            writer.close();
-            writer = null;
+            writer.flush();
         }
         catch ( IOException e )
         {
@@ -51,7 +50,7 @@ public class FileHelper
             }
             catch ( final IOException e )
             {
-                // Suppressed, so that the exception thrown in the try block will be propagated.
+                // Suppressed.
             }
         }
     }
