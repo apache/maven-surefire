@@ -43,8 +43,6 @@
       <artifactId>junit-platform-launcher</artifactId>
       <version>${junit-platform.version}</version>
     </dependency>
-    <!-- FIXME: dependency is currenlty needed in scope compile because the initial implementation uses the internal
-         Preconditions class -->
     <dependency>
       <groupId>org.junit.platform</groupId>
       <artifactId>junit-platform-engine</artifactId>
