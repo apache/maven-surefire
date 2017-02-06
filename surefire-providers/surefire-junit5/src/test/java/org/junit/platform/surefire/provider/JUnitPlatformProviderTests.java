@@ -1,3 +1,5 @@
+package org.junit.platform.surefire.provider;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -16,8 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package org.junit.platform.surefire.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -54,76 +54,88 @@ import org.junit.platform.launcher.listeners.TestExecutionSummary;
  *
  * @since 1.0
  */
-class JUnitPlatformProviderTests {
+class JUnitPlatformProviderTests
+{
 
     @Test
-    void getSuitesReturnsScannedClasses() throws Exception {
-        ProviderParameters providerParameters = providerParametersMock(TestClass1.class, TestClass2.class);
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
+    void getSuitesReturnsScannedClasses()
+        throws Exception
+    {
+        ProviderParameters providerParameters = providerParametersMock( TestClass1.class, TestClass2.class );
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
 
-        assertThat(provider.getSuites()).containsOnly(TestClass1.class, TestClass2.class);
+        assertThat( provider.getSuites() ).containsOnly( TestClass1.class, TestClass2.class );
     }
 
     @Test
-    void invokeThrowsForWrongForkTestSet() throws Exception {
-        ProviderParameters providerParameters = providerParametersMock(Integer.class);
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
+    void invokeThrowsForWrongForkTestSet()
+        throws Exception
+    {
+        ProviderParameters providerParameters = providerParametersMock( Integer.class );
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
 
-        assertThrows(IllegalArgumentException.class, () -> provider.invoke("wrong forkTestSet"));
+        assertThrows( IllegalArgumentException.class, () -> provider.invoke( "wrong forkTestSet" ) );
     }
 
     @Test
-    void allGivenTestsToRunAreInvoked() throws Exception {
+    void allGivenTestsToRunAreInvoked()
+        throws Exception
+    {
         Launcher launcher = LauncherFactory.create();
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParametersMock(), launcher);
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParametersMock(), launcher );
 
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
-        launcher.registerTestExecutionListeners(executionListener);
+        launcher.registerTestExecutionListeners( executionListener );
 
-        TestsToRun testsToRun = newTestsToRun(TestClass1.class, TestClass2.class);
-        provider.invoke(testsToRun);
+        TestsToRun testsToRun = newTestsToRun( TestClass1.class, TestClass2.class );
+        provider.invoke( testsToRun );
 
-        assertThat(executionListener.summaries).hasSize(2);
-        TestClass1.verifyExecutionSummary(executionListener.summaries.get(0));
-        TestClass2.verifyExecutionSummary(executionListener.summaries.get(1));
+        assertThat( executionListener.summaries ).hasSize( 2 );
+        TestClass1.verifyExecutionSummary( executionListener.summaries.get( 0 ) );
+        TestClass2.verifyExecutionSummary( executionListener.summaries.get( 1 ) );
     }
 
     @Test
-    void singleTestClassIsInvoked() throws Exception {
+    void singleTestClassIsInvoked()
+        throws Exception
+    {
         Launcher launcher = LauncherFactory.create();
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParametersMock(), launcher);
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParametersMock(), launcher );
 
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
-        launcher.registerTestExecutionListeners(executionListener);
+        launcher.registerTestExecutionListeners( executionListener );
 
-        provider.invoke(TestClass1.class);
+        provider.invoke( TestClass1.class );
 
-        assertThat(executionListener.summaries).hasSize(1);
-        TestClass1.verifyExecutionSummary(executionListener.summaries.get(0));
+        assertThat( executionListener.summaries ).hasSize( 1 );
+        TestClass1.verifyExecutionSummary( executionListener.summaries.get( 0 ) );
     }
 
     @Test
-    void allDiscoveredTestsAreInvokedForNullArgument() throws Exception {
-        ProviderParameters providerParameters = providerParametersMock(TestClass1.class, TestClass2.class);
+    void allDiscoveredTestsAreInvokedForNullArgument()
+        throws Exception
+    {
+        ProviderParameters providerParameters = providerParametersMock( TestClass1.class, TestClass2.class );
         Launcher launcher = LauncherFactory.create();
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters, launcher);
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters, launcher );
 
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
-        launcher.registerTestExecutionListeners(executionListener);
+        launcher.registerTestExecutionListeners( executionListener );
 
-        provider.invoke(null);
+        provider.invoke( null );
 
-        assertThat(executionListener.summaries).hasSize(2);
-        TestClass1.verifyExecutionSummary(executionListener.summaries.get(0));
-        TestClass2.verifyExecutionSummary(executionListener.summaries.get(1));
+        assertThat( executionListener.summaries ).hasSize( 2 );
+        TestClass1.verifyExecutionSummary( executionListener.summaries.get( 0 ) );
+        TestClass2.verifyExecutionSummary( executionListener.summaries.get( 1 ) );
     }
 
     @Test
-    void bothGroupsAndIncludeTagsThrowsException() {
+    void bothGroupsAndIncludeTagsThrowsException()
+    {
         Map<String, String> properties = new HashMap<>();
-        properties.put(JUnitPlatformProvider.INCLUDE_GROUPS, "groupOne, groupTwo");
-        properties.put(JUnitPlatformProvider.INCLUDE_TAGS, "tagOne, tagTwo");
-        verifyPreconditionViolationException(properties);
+        properties.put( JUnitPlatformProvider.INCLUDE_GROUPS, "groupOne, groupTwo" );
+        properties.put( JUnitPlatformProvider.INCLUDE_TAGS, "tagOne, tagTwo" );
+        verifyPreconditionViolationException( properties );
     }
 
     @Test
@@ -135,155 +147,179 @@ class JUnitPlatformProviderTests {
     }
 
     @Test
-    void onlyGroupsIsDeclared() throws Exception {
+    void onlyGroupsIsDeclared()
+        throws Exception
+    {
         Map<String, String> properties = new HashMap<>();
-        properties.put(JUnitPlatformProvider.INCLUDE_GROUPS, "groupOne, groupTwo");
+        properties.put( JUnitPlatformProvider.INCLUDE_GROUPS, "groupOne, groupTwo" );
 
-        ProviderParameters providerParameters = providerParametersMock(TestClass1.class);
-        when(providerParameters.getProviderProperties()).thenReturn(properties);
+        ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
+        when( providerParameters.getProviderProperties() ).thenReturn( properties );
 
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
 
-        assertEquals(1, provider.includeAndExcludeFilters.length);
+        assertEquals( 1, provider.includeAndExcludeFilters.length );
     }
 
     @Test
-    void onlyExcludeTagsIsDeclared() throws Exception {
+    void onlyExcludeTagsIsDeclared()
+        throws Exception
+    {
         Map<String, String> properties = new HashMap<>();
-        properties.put(JUnitPlatformProvider.EXCLUDE_TAGS, "tagOne, tagTwo");
+        properties.put( JUnitPlatformProvider.EXCLUDE_TAGS, "tagOne, tagTwo" );
 
-        ProviderParameters providerParameters = providerParametersMock(TestClass1.class);
-        when(providerParameters.getProviderProperties()).thenReturn(properties);
+        ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
+        when( providerParameters.getProviderProperties() ).thenReturn( properties );
 
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
 
-        assertEquals(1, provider.includeAndExcludeFilters.length);
+        assertEquals( 1, provider.includeAndExcludeFilters.length );
     }
 
     @Test
-    void bothIncludeAndExcludeAreAllowed() throws Exception {
+    void bothIncludeAndExcludeAreAllowed()
+        throws Exception
+    {
         Map<String, String> properties = new HashMap<>();
-        properties.put(JUnitPlatformProvider.INCLUDE_TAGS, "tagOne, tagTwo");
-        properties.put(JUnitPlatformProvider.EXCLUDE_TAGS, "tagThree, tagFour");
+        properties.put( JUnitPlatformProvider.INCLUDE_TAGS, "tagOne, tagTwo" );
+        properties.put( JUnitPlatformProvider.EXCLUDE_TAGS, "tagThree, tagFour" );
 
-        ProviderParameters providerParameters = providerParametersMock(TestClass1.class);
-        when(providerParameters.getProviderProperties()).thenReturn(properties);
+        ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
+        when( providerParameters.getProviderProperties() ).thenReturn( properties );
 
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
 
-        assertEquals(2, provider.includeAndExcludeFilters.length);
+        assertEquals( 2, provider.includeAndExcludeFilters.length );
     }
 
     @Test
-    void noFiltersAreCreatedIfNoPropertiesAreDeclared() throws Exception {
-        ProviderParameters providerParameters = providerParametersMock(TestClass1.class);
+    void noFiltersAreCreatedIfNoPropertiesAreDeclared()
+        throws Exception
+    {
+        ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
 
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
 
-        assertEquals(0, provider.includeAndExcludeFilters.length);
+        assertEquals( 0, provider.includeAndExcludeFilters.length );
     }
 
-    private void verifyPreconditionViolationException(Map<String, String> properties) {
-        ProviderParameters providerParameters = providerParametersMock(TestClass1.class);
-        when(providerParameters.getProviderProperties()).thenReturn(properties);
+    private void verifyPreconditionViolationException( Map<String, String> properties )
+    {
+        ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
+        when( providerParameters.getProviderProperties() ).thenReturn( properties );
 
-        Throwable throwable = assertThrows(PreconditionViolationException.class, () -> {
-            new JUnitPlatformProvider(providerParameters);
-        });
+        Throwable throwable = assertThrows( PreconditionViolationException.class, () ->
+                new JUnitPlatformProvider(providerParameters) );
 
-        assertEquals(JUnitPlatformProvider.EXCEPTION_MESSAGE_BOTH_NOT_ALLOWED, throwable.getMessage());
+        assertEquals( JUnitPlatformProvider.EXCEPTION_MESSAGE_BOTH_NOT_ALLOWED, throwable.getMessage() );
     }
 
-    private static ProviderParameters providerParametersMock(Class<?>... testClasses) {
-        TestsToRun testsToRun = newTestsToRun(testClasses);
+    private static ProviderParameters providerParametersMock( Class<?>... testClasses )
+    {
+        TestsToRun testsToRun = newTestsToRun( testClasses );
 
-        ScanResult scanResult = mock(ScanResult.class);
-        when(scanResult.applyFilter(any(), any())).thenReturn(testsToRun);
+        ScanResult scanResult = mock( ScanResult.class );
+        when( scanResult.applyFilter( any(), any() ) ).thenReturn( testsToRun );
 
-        RunOrderCalculator runOrderCalculator = mock(RunOrderCalculator.class);
-        when(runOrderCalculator.orderTestClasses(any())).thenReturn(testsToRun);
+        RunOrderCalculator runOrderCalculator = mock( RunOrderCalculator.class );
+        when( runOrderCalculator.orderTestClasses( any() ) ).thenReturn( testsToRun );
 
-        ReporterFactory reporterFactory = mock(ReporterFactory.class);
-        RunListener runListener = mock(RunListener.class);
-        when(reporterFactory.createReporter()).thenReturn(runListener);
+        ReporterFactory reporterFactory = mock( ReporterFactory.class );
+        RunListener runListener = mock( RunListener.class );
+        when( reporterFactory.createReporter() ).thenReturn( runListener );
 
-        ProviderParameters providerParameters = mock(ProviderParameters.class);
-        when(providerParameters.getScanResult()).thenReturn(scanResult);
-        when(providerParameters.getRunOrderCalculator()).thenReturn(runOrderCalculator);
-        when(providerParameters.getReporterFactory()).thenReturn(reporterFactory);
+        ProviderParameters providerParameters = mock( ProviderParameters.class );
+        when( providerParameters.getScanResult() ).thenReturn( scanResult );
+        when( providerParameters.getRunOrderCalculator() ).thenReturn( runOrderCalculator );
+        when( providerParameters.getReporterFactory() ).thenReturn( reporterFactory );
 
         return providerParameters;
     }
 
-    private static TestsToRun newTestsToRun(Class<?>... testClasses) {
-        List<Class<?>> classesList = Arrays.asList(testClasses);
-        return new TestsToRun(new LinkedHashSet<>(classesList));
+    private static TestsToRun newTestsToRun( Class<?>... testClasses )
+    {
+        List<Class<?>> classesList = Arrays.asList( testClasses );
+        return new TestsToRun( new LinkedHashSet<>( classesList ) );
     }
 
-    private class TestPlanSummaryListener extends SummaryGeneratingListener {
+    private class TestPlanSummaryListener
+        extends SummaryGeneratingListener
+    {
 
         final List<TestExecutionSummary> summaries = new ArrayList<>();
 
         @Override
-        public void testPlanExecutionFinished(TestPlan testPlan) {
-            super.testPlanExecutionFinished(testPlan);
-            summaries.add(getSummary());
+        public void testPlanExecutionFinished( TestPlan testPlan )
+        {
+            super.testPlanExecutionFinished( testPlan );
+            summaries.add( getSummary() );
         }
     }
 
-    private static class TestClass1 {
+    private static class TestClass1
+    {
 
         @Test
-        void test1() {
+        void test1()
+        {
         }
 
         @Test
-        void test2() {
+        void test2()
+        {
         }
 
         @Disabled
         @Test
-        void test3() {
+        void test3()
+        {
         }
 
         @Test
-        void test4() {
+        void test4()
+        {
             throw new RuntimeException();
         }
 
-        static void verifyExecutionSummary(TestExecutionSummary summary) {
-            assertEquals(4, summary.getTestsFoundCount());
-            assertEquals(3, summary.getTestsStartedCount());
-            assertEquals(2, summary.getTestsSucceededCount());
-            assertEquals(1, summary.getTestsSkippedCount());
-            assertEquals(0, summary.getTestsAbortedCount());
-            assertEquals(1, summary.getTestsFailedCount());
+        static void verifyExecutionSummary( TestExecutionSummary summary )
+        {
+            assertEquals( 4, summary.getTestsFoundCount() );
+            assertEquals( 3, summary.getTestsStartedCount() );
+            assertEquals( 2, summary.getTestsSucceededCount() );
+            assertEquals( 1, summary.getTestsSkippedCount() );
+            assertEquals( 0, summary.getTestsAbortedCount() );
+            assertEquals( 1, summary.getTestsFailedCount() );
         }
     }
 
-    private static class TestClass2 {
+    private static class TestClass2
+    {
 
         @Test
-        void test1() {
+        void test1()
+        {
         }
 
         @Test
-        void test2() {
+        void test2()
+        {
             throw new RuntimeException();
         }
 
         @Test
-        void test3() {
-            assumeTrue(false);
+        void test3()
+        {
+            assumeTrue( false );
         }
 
-        static void verifyExecutionSummary(TestExecutionSummary summary) {
-            assertEquals(3, summary.getTestsFoundCount());
-            assertEquals(3, summary.getTestsStartedCount());
-            assertEquals(1, summary.getTestsSucceededCount());
-            assertEquals(0, summary.getTestsSkippedCount());
-            assertEquals(1, summary.getTestsAbortedCount());
-            assertEquals(1, summary.getTestsFailedCount());
+        static void verifyExecutionSummary( TestExecutionSummary summary )
+        {
+            assertEquals( 3, summary.getTestsFoundCount() );
+            assertEquals( 3, summary.getTestsStartedCount() );
+            assertEquals( 1, summary.getTestsSucceededCount() );
+            assertEquals( 0, summary.getTestsSkippedCount() );
+            assertEquals( 1, summary.getTestsAbortedCount() );
+            assertEquals( 1, summary.getTestsFailedCount() );
         }
     }
 }

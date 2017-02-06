@@ -1,3 +1,5 @@
+package org.junit.platform.surefire.provider;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -16,8 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package org.junit.platform.surefire.provider;
 
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
@@ -49,12 +49,17 @@ import org.junit.platform.launcher.core.LauncherFactory;
 /**
  * @since 1.0
  */
-public class JUnitPlatformProvider extends AbstractProvider {
+public class JUnitPlatformProvider
+    extends AbstractProvider
+{
 
     // Parameter names processed to determine which @Tags should be executed.
     static final String EXCLUDE_GROUPS = "excludedGroups";
+
     static final String EXCLUDE_TAGS = "excludeTags";
+
     static final String INCLUDE_GROUPS = "groups";
+
     static final String INCLUDE_TAGS = "includeTags";
 
     static final String EXCEPTION_MESSAGE_BOTH_NOT_ALLOWED = "The " + INCLUDE_GROUPS + " and " + INCLUDE_TAGS
@@ -62,108 +67,130 @@ public class JUnitPlatformProvider extends AbstractProvider {
             + "only one of each is allowed (though neither is required).";
 
     private final ProviderParameters parameters;
+
     private final Launcher launcher;
+
     final Filter<?>[] includeAndExcludeFilters;
 
-    public JUnitPlatformProvider(ProviderParameters parameters) {
-        this(parameters, LauncherFactory.create());
+    public JUnitPlatformProvider( ProviderParameters parameters )
+    {
+        this( parameters, LauncherFactory.create() );
     }
 
-    JUnitPlatformProvider(ProviderParameters parameters, Launcher launcher) {
+    JUnitPlatformProvider( ProviderParameters parameters, Launcher launcher )
+    {
         this.parameters = parameters;
         this.launcher = launcher;
         this.includeAndExcludeFilters = getIncludeAndExcludeFilters();
-        Logger.getLogger("org.junit").setLevel(Level.WARNING);
+        Logger.getLogger( "org.junit" ).setLevel( Level.WARNING );
     }
 
     @Override
-    public Iterable<Class<?>> getSuites() {
+    public Iterable<Class<?>> getSuites()
+    {
         return scanClasspath();
     }
 
     @Override
-    public RunResult invoke(Object forkTestSet)
-            throws TestSetFailedException, ReporterException, InvocationTargetException {
-        if (forkTestSet instanceof TestsToRun) {
-            return invokeAllTests((TestsToRun) forkTestSet);
+    public RunResult invoke( Object forkTestSet )
+            throws TestSetFailedException, ReporterException, InvocationTargetException
+    {
+        if ( forkTestSet instanceof TestsToRun )
+        {
+            return invokeAllTests( (TestsToRun) forkTestSet );
         }
-        else if (forkTestSet instanceof Class) {
-            return invokeAllTests(TestsToRun.fromClass((Class<?>) forkTestSet));
+        else if ( forkTestSet instanceof Class )
+        {
+            return invokeAllTests( TestsToRun.fromClass( (Class<?>) forkTestSet ) );
         }
-        else if (forkTestSet == null) {
-            return invokeAllTests(scanClasspath());
+        else if ( forkTestSet == null )
+        {
+            return invokeAllTests( scanClasspath() );
         }
-        else {
-            throw new IllegalArgumentException("Unexpected value of forkTestSet: " + forkTestSet);
+        else
+        {
+            throw new IllegalArgumentException( "Unexpected value of forkTestSet: " + forkTestSet );
         }
     }
 
-    private TestsToRun scanClasspath() {
+    private TestsToRun scanClasspath()
+    {
         TestsToRun scannedClasses = parameters.getScanResult().applyFilter(
-            new TestPlanScannerFilter(launcher, includeAndExcludeFilters), parameters.getTestClassLoader());
-        return parameters.getRunOrderCalculator().orderTestClasses(scannedClasses);
+            new TestPlanScannerFilter( launcher, includeAndExcludeFilters ), parameters.getTestClassLoader() );
+        return parameters.getRunOrderCalculator().orderTestClasses( scannedClasses );
     }
 
-    private RunResult invokeAllTests(TestsToRun testsToRun) {
+    private RunResult invokeAllTests( TestsToRun testsToRun )
+    {
         RunResult runResult;
         ReporterFactory reporterFactory = parameters.getReporterFactory();
-        try {
+        try
+        {
             RunListener runListener = reporterFactory.createReporter();
-            launcher.registerTestExecutionListeners(new RunListenerAdapter(runListener));
+            launcher.registerTestExecutionListeners( new RunListenerAdapter( runListener ) );
 
-            for (Class<?> testClass : testsToRun) {
-                invokeSingleClass(testClass, runListener);
+            for ( Class<?> testClass : testsToRun )
+            {
+                invokeSingleClass( testClass, runListener );
             }
         }
-        finally {
+        finally
+        {
             runResult = reporterFactory.close();
         }
         return runResult;
     }
 
-    private void invokeSingleClass(Class<?> testClass, RunListener runListener) {
-        SimpleReportEntry classEntry = new SimpleReportEntry(getClass().getName(), testClass.getName());
-        runListener.testSetStarting(classEntry);
+    private void invokeSingleClass( Class<?> testClass, RunListener runListener )
+    {
+        SimpleReportEntry classEntry = new SimpleReportEntry( getClass().getName(), testClass.getName() );
+        runListener.testSetStarting( classEntry );
 
-        LauncherDiscoveryRequest discoveryRequest = request().selectors(selectClass(testClass)).filters(
-            includeAndExcludeFilters).build();
-        launcher.execute(discoveryRequest);
+        LauncherDiscoveryRequest discoveryRequest = request().selectors( selectClass( testClass ) ).filters(
+            includeAndExcludeFilters ).build();
+        launcher.execute( discoveryRequest );
 
-        runListener.testSetCompleted(classEntry);
+        runListener.testSetCompleted( classEntry );
     }
 
-    private Filter<?>[] getIncludeAndExcludeFilters() {
+    private Filter<?>[] getIncludeAndExcludeFilters()
+    {
         List<Filter<?>> filters = new ArrayList<>();
 
-        Optional<List<String>> includes = getGroupsOrTags(getPropertiesList(INCLUDE_GROUPS),
-            getPropertiesList(INCLUDE_TAGS));
-        includes.map(TagFilter::includeTags).ifPresent(filters::add);
+        Optional<List<String>> includes = getGroupsOrTags( getPropertiesList( INCLUDE_GROUPS ),
+            getPropertiesList( INCLUDE_TAGS ) );
+        includes.map( TagFilter::includeTags ).ifPresent( filters::add );
 
-        Optional<List<String>> excludes = getGroupsOrTags(getPropertiesList(EXCLUDE_GROUPS),
-            getPropertiesList(EXCLUDE_TAGS));
-        excludes.map(TagFilter::excludeTags).ifPresent(filters::add);
+        Optional<List<String>> excludes = getGroupsOrTags( getPropertiesList( EXCLUDE_GROUPS ),
+            getPropertiesList( EXCLUDE_TAGS ) );
+        excludes.map( TagFilter::excludeTags ).ifPresent( filters::add );
 
-        return filters.toArray(new Filter<?>[filters.size()]);
+        return filters.toArray( new Filter<?>[filters.size()] );
     }
 
-    private Optional<List<String>> getPropertiesList(String key) {
+    private Optional<List<String>> getPropertiesList( String key )
+    {
         List<String> compoundProperties = null;
-        String property = parameters.getProviderProperties().get(key);
-        if (property != null) {
-            compoundProperties = Arrays.asList(property.split("[, ]+"));
+        String property = parameters.getProviderProperties().get( key );
+        if ( property != null )
+        {
+            compoundProperties = Arrays.asList( property.split( "[, ]+" ) );
         }
-        return Optional.ofNullable(compoundProperties);
+        return Optional.ofNullable( compoundProperties );
     }
 
-    private Optional<List<String>> getGroupsOrTags(Optional<List<String>> groups, Optional<List<String>> tags) {
+    private Optional<List<String>> getGroupsOrTags( Optional<List<String>> groups, Optional<List<String>> tags )
+    {
         Optional<List<String>> elements = Optional.empty();
 
-        Preconditions.condition(!groups.isPresent() || !tags.isPresent(), EXCEPTION_MESSAGE_BOTH_NOT_ALLOWED);
+        Preconditions.condition( !groups.isPresent() || !tags.isPresent(), EXCEPTION_MESSAGE_BOTH_NOT_ALLOWED );
 
-        if (groups.isPresent()) {
+        if ( groups.isPresent() )
+        {
             elements = groups;
         }
-        else if (tags.isPresent()) {
+        else if ( tags.isPresent() )
+        {
             elements = tags;
         }
 

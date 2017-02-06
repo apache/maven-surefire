@@ -1,3 +1,5 @@
+package org.junit.platform.surefire.provider;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,8 +19,6 @@
  * under the License.
  */
 
-package org.junit.platform.surefire.provider;
-
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
 
@@ -34,26 +34,31 @@ import org.junit.platform.launcher.TestPlan;
 /**
  * @since 1.0
  */
-final class TestPlanScannerFilter implements ScannerFilter {
+final class TestPlanScannerFilter
+    implements ScannerFilter
+{
 
-    private static final Predicate<TestIdentifier> hasTests = testIdentifier -> testIdentifier.isTest()
+    private static final Predicate<TestIdentifier> HAS_TESTS = testIdentifier -> testIdentifier.isTest()
             || testIdentifier.isContainer();
 
     private final Launcher launcher;
+
     private final Filter<?>[] includeAndExcludeFilters;
 
-    public TestPlanScannerFilter(Launcher launcher, Filter<?>[] includeAndExcludeFilters) {
+    public TestPlanScannerFilter( Launcher launcher, Filter<?>[] includeAndExcludeFilters )
+    {
         this.launcher = launcher;
         this.includeAndExcludeFilters = includeAndExcludeFilters;
     }
 
     @Override
-    @SuppressWarnings("rawtypes")
-    public boolean accept(Class testClass) {
-        LauncherDiscoveryRequest discoveryRequest = request().selectors(selectClass(testClass)).filters(
-            includeAndExcludeFilters).build();
-        TestPlan testPlan = launcher.discover(discoveryRequest);
-        return testPlan.countTestIdentifiers(hasTests) > 0;
+    @SuppressWarnings( "rawtypes" )
+    public boolean accept( Class testClass )
+    {
+        LauncherDiscoveryRequest discoveryRequest = request().selectors( selectClass( testClass ) ).filters(
+            includeAndExcludeFilters ).build();
+        TestPlan testPlan = launcher.discover( discoveryRequest );
+        return testPlan.countTestIdentifiers( HAS_TESTS ) > 0;
     }
 
 }

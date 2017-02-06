@@ -1,3 +1,5 @@
+package org.junit.platform.surefire.provider;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -16,8 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package org.junit.platform.surefire.provider;
 
 import org.junit.platform.runner.IncludeClassNamePatterns;
 import org.junit.platform.runner.IncludeEngines;
@@ -40,9 +40,10 @@ import org.junit.runner.RunWith;
  *
  * @since 1.0
  */
-@RunWith(JUnitPlatform.class)
-@SelectPackages("org.junit.platform.surefire.provider")
-@IncludeClassNamePatterns(".*Tests?")
-@IncludeEngines("junit-jupiter")
-public class SurefireProviderTestSuite {
+@RunWith( JUnitPlatform.class )
+@SelectPackages( "org.junit.platform.surefire.provider" )
+@IncludeClassNamePatterns( ".*Tests?" )
+@IncludeEngines( "junit-jupiter" )
+public class SurefireProviderTestSuite
+{
 }

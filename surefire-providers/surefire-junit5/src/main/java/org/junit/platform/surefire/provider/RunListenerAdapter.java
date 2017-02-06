@@ -1,3 +1,5 @@
+package org.junit.platform.surefire.provider;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -16,8 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package org.junit.platform.surefire.provider;
 
 import static org.apache.maven.surefire.report.SimpleReportEntry.ignored;
 import static org.junit.platform.engine.TestExecutionResult.Status.ABORTED;
@@ -40,88 +40,109 @@ import org.junit.platform.launcher.TestPlan;
 /**
  * @since 1.0
  */
-final class RunListenerAdapter implements TestExecutionListener {
+final class RunListenerAdapter
+    implements TestExecutionListener
+{
 
     private final RunListener runListener;
+
     private Optional<TestPlan> testPlan = Optional.empty();
 
-    public RunListenerAdapter(RunListener runListener) {
+    public RunListenerAdapter( RunListener runListener )
+    {
         this.runListener = runListener;
     }
 
     @Override
-    public void testPlanExecutionStarted(TestPlan testPlan) {
-        this.testPlan = Optional.of(testPlan);
+    public void testPlanExecutionStarted( TestPlan testPlan )
+    {
+        this.testPlan = Optional.of( testPlan );
     }
 
     @Override
-    public void testPlanExecutionFinished(TestPlan testPlan) {
+    public void testPlanExecutionFinished( TestPlan testPlan )
+    {
         this.testPlan = Optional.empty();
     }
 
     @Override
-    public void executionStarted(TestIdentifier testIdentifier) {
-        if (testIdentifier.isTest()) {
-            runListener.testStarting(createReportEntry(testIdentifier, Optional.empty()));
+    public void executionStarted( TestIdentifier testIdentifier )
+    {
+        if ( testIdentifier.isTest() )
+        {
+            runListener.testStarting( createReportEntry( testIdentifier, Optional.empty() ) );
         }
     }
 
     @Override
-    public void executionSkipped(TestIdentifier testIdentifier, String reason) {
-        String source = getClassName(testIdentifier).orElseGet(() -> parentDisplayName(testIdentifier));
-        runListener.testSkipped(ignored(source, testIdentifier.getDisplayName(), reason));
+    public void executionSkipped( TestIdentifier testIdentifier, String reason )
+    {
+        String source = getClassName( testIdentifier ).orElseGet( () -> parentDisplayName( testIdentifier ) );
+        runListener.testSkipped( ignored( source, testIdentifier.getDisplayName(), reason ) );
     }
 
     @Override
-    public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
-        if (testExecutionResult.getStatus() == ABORTED) {
-            runListener.testAssumptionFailure(createReportEntry(testIdentifier, testExecutionResult.getThrowable()));
+    public void executionFinished( TestIdentifier testIdentifier, TestExecutionResult testExecutionResult )
+    {
+        if ( testExecutionResult.getStatus() == ABORTED )
+        {
+            runListener.testAssumptionFailure( createReportEntry( testIdentifier,
+                    testExecutionResult.getThrowable() ) );
         }
-        else if (testExecutionResult.getStatus() == FAILED) {
-            runListener.testFailed(createReportEntry(testIdentifier, testExecutionResult.getThrowable()));
+        else if ( testExecutionResult.getStatus() == FAILED )
+        {
+            runListener.testFailed( createReportEntry( testIdentifier, testExecutionResult.getThrowable() ) );
         }
-        else if (testIdentifier.isTest()) {
-            runListener.testSucceeded(createReportEntry(testIdentifier, Optional.empty()));
-        }
-    }
-
-    private SimpleReportEntry createReportEntry(TestIdentifier testIdentifier, Optional<Throwable> throwable) {
-        Optional<String> className = getClassName(testIdentifier);
-        if (className.isPresent()) {
-            StackTraceWriter traceWriter = new PojoStackTraceWriter(className.get(),
-                getMethodName(testIdentifier).orElse(""), throwable.orElse(null));
-            return new SimpleReportEntry(className.get(), testIdentifier.getDisplayName(), traceWriter, null);
-        }
-        else {
-            return new SimpleReportEntry(parentDisplayName(testIdentifier), testIdentifier.getDisplayName(), null);
+        else if ( testIdentifier.isTest() )
+        {
+            runListener.testSucceeded( createReportEntry( testIdentifier, Optional.empty() ) );
         }
     }
 
-    private Optional<String> getClassName(TestIdentifier testIdentifier) {
-        TestSource testSource = testIdentifier.getSource().orElse(null);
-        if (testSource instanceof ClassSource) {
-            return Optional.of(((ClassSource) testSource).getJavaClass().getName());
+    private SimpleReportEntry createReportEntry( TestIdentifier testIdentifier, Optional<Throwable> throwable )
+    {
+        Optional<String> className = getClassName( testIdentifier );
+        if ( className.isPresent() )
+        {
+            StackTraceWriter traceWriter = new PojoStackTraceWriter( className.get(),
+                getMethodName( testIdentifier ).orElse( "" ), throwable.orElse( null ) );
+            return new SimpleReportEntry( className.get(), testIdentifier.getDisplayName(), traceWriter, null );
         }
-        if (testSource instanceof MethodSource) {
-            return Optional.of(((MethodSource) testSource).getClassName());
+        else
+        {
+            return new SimpleReportEntry( parentDisplayName( testIdentifier ), testIdentifier.getDisplayName(), null );
+        }
+    }
+
+    private Optional<String> getClassName( TestIdentifier testIdentifier )
+    {
+        TestSource testSource = testIdentifier.getSource().orElse( null );
+        if ( testSource instanceof ClassSource )
+        {
+            return Optional.of( ( (ClassSource) testSource ).getJavaClass().getName() );
+        }
+        if ( testSource instanceof MethodSource )
+        {
+            return Optional.of( ( (MethodSource) testSource ).getClassName() );
         }
         return Optional.empty();
     }
 
-    private Optional<String> getMethodName(TestIdentifier testIdentifier) {
-        TestSource testSource = testIdentifier.getSource().orElse(null);
-        if (testSource instanceof MethodSource) {
-            return Optional.of(((MethodSource) testSource).getMethodName());
+    private Optional<String> getMethodName( TestIdentifier testIdentifier )
+    {
+        TestSource testSource = testIdentifier.getSource().orElse( null );
+        if ( testSource instanceof MethodSource )
+        {
+            return Optional.of( ( (MethodSource) testSource ).getMethodName() );
         }
         return Optional.empty();
     }
 
-    private String parentDisplayName(TestIdentifier testIdentifier) {
-        // @formatter:off
+    private String parentDisplayName( TestIdentifier testIdentifier )
+    {
         return testPlan
-            .flatMap(plan -> plan.getParent(testIdentifier))
-            .map(TestIdentifier::getDisplayName)
-            .orElseGet(testIdentifier::getUniqueId);
-        // @formatter:on
+            .flatMap( plan -> plan.getParent( testIdentifier ) )
+            .map( TestIdentifier::getDisplayName )
+            .orElseGet( testIdentifier::getUniqueId );
     }
 }
