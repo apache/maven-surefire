@@ -106,11 +106,13 @@ final class RunListenerAdapter
         {
             StackTraceWriter traceWriter = new PojoStackTraceWriter( className.get(),
                 getMethodName( testIdentifier ).orElse( "" ), throwable.orElse( null ) );
-            return new SimpleReportEntry( className.get(), testIdentifier.getDisplayName(), traceWriter, (Integer) null );
+            return new SimpleReportEntry( className.get(), testIdentifier.getDisplayName(), traceWriter,
+                    (Integer) null );
         }
         else
         {
-            return new SimpleReportEntry( parentDisplayName( testIdentifier ), testIdentifier.getDisplayName(), (Integer) null );
+            return new SimpleReportEntry( parentDisplayName( testIdentifier ), testIdentifier.getDisplayName(),
+                    (Integer) null );
         }
     }
 
