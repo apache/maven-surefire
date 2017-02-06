@@ -19,17 +19,6 @@ package org.junit.platform.surefire.provider;
  * under the License.
  */
 
-import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
-import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterException;
@@ -39,12 +28,22 @@ import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
-import org.junit.platform.commons.util.Preconditions;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TagFilter;
 import org.junit.platform.launcher.core.LauncherFactory;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
+import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
 
 /**
  * @since 1.0
@@ -183,7 +182,10 @@ public class JUnitPlatformProvider
     {
         Optional<List<String>> elements = Optional.empty();
 
-        Preconditions.condition( !groups.isPresent() || !tags.isPresent(), EXCEPTION_MESSAGE_BOTH_NOT_ALLOWED );
+        if ( groups.isPresent() && tags.isPresent() )
+        {
+            throw new IllegalStateException( EXCEPTION_MESSAGE_BOTH_NOT_ALLOWED );
+        }
 
         if ( groups.isPresent() )
         {
