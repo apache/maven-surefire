@@ -1,1 +1,1 @@
-org.junit.platform.surefire.provider.JUnitPlatformProvider
+org.apache.maven.surefire.junit5.JUnitPlatformProvider
