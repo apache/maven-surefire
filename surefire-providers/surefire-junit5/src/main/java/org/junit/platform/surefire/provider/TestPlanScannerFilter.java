@@ -33,24 +33,24 @@ import org.junit.platform.launcher.TestPlan;
  */
 final class TestPlanScannerFilter implements ScannerFilter {
 
-	private static final Predicate<TestIdentifier> hasTests = testIdentifier -> testIdentifier.isTest()
-			|| testIdentifier.isContainer();
+    private static final Predicate<TestIdentifier> hasTests = testIdentifier -> testIdentifier.isTest()
+            || testIdentifier.isContainer();
 
-	private final Launcher launcher;
-	private final Filter<?>[] includeAndExcludeFilters;
+    private final Launcher launcher;
+    private final Filter<?>[] includeAndExcludeFilters;
 
-	public TestPlanScannerFilter(Launcher launcher, Filter<?>[] includeAndExcludeFilters) {
-		this.launcher = launcher;
-		this.includeAndExcludeFilters = includeAndExcludeFilters;
-	}
+    public TestPlanScannerFilter(Launcher launcher, Filter<?>[] includeAndExcludeFilters) {
+        this.launcher = launcher;
+        this.includeAndExcludeFilters = includeAndExcludeFilters;
+    }
 
-	@Override
-	@SuppressWarnings("rawtypes")
-	public boolean accept(Class testClass) {
-		LauncherDiscoveryRequest discoveryRequest = request().selectors(selectClass(testClass)).filters(
-			includeAndExcludeFilters).build();
-		TestPlan testPlan = launcher.discover(discoveryRequest);
-		return testPlan.countTestIdentifiers(hasTests) > 0;
-	}
+    @Override
+    @SuppressWarnings("rawtypes")
+    public boolean accept(Class testClass) {
+        LauncherDiscoveryRequest discoveryRequest = request().selectors(selectClass(testClass)).filters(
+            includeAndExcludeFilters).build();
+        TestPlan testPlan = launcher.discover(discoveryRequest);
+        return testPlan.countTestIdentifiers(hasTests) > 0;
+    }
 
 }

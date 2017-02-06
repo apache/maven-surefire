@@ -36,122 +36,122 @@ import org.junit.platform.launcher.core.LauncherFactory;
  */
 public class TestPlanScannerFilterTests {
 
-	@Test
-	void emptyClassAccepted() {
-		assertTrue(newFilter().accept(EmptyClass.class), "accepts empty class because it is a container");
-	}
+    @Test
+    void emptyClassAccepted() {
+        assertTrue(newFilter().accept(EmptyClass.class), "accepts empty class because it is a container");
+    }
 
-	@Test
-	void classWithNoTestMethodsIsAccepted() {
-		assertTrue(newFilter().accept(ClassWithMethods.class),
-			"accepts class with no @Test methods because it is a container");
-	}
+    @Test
+    void classWithNoTestMethodsIsAccepted() {
+        assertTrue(newFilter().accept(ClassWithMethods.class),
+            "accepts class with no @Test methods because it is a container");
+    }
 
-	@Test
-	void classWithTestMethodsIsAccepted() {
-		assertTrue(newFilter().accept(ClassWithTestMethods.class));
-	}
+    @Test
+    void classWithTestMethodsIsAccepted() {
+        assertTrue(newFilter().accept(ClassWithTestMethods.class));
+    }
 
-	@Test
-	void classWithNestedTestClassIsAccepted() {
-		assertTrue(newFilter().accept(ClassWithNestedTestClass.class));
-	}
+    @Test
+    void classWithNestedTestClassIsAccepted() {
+        assertTrue(newFilter().accept(ClassWithNestedTestClass.class));
+    }
 
-	@Test
-	void classWithDeeplyNestedTestClassIsAccepted() {
-		assertTrue(newFilter().accept(ClassWithDeeplyNestedTestClass.class));
-	}
+    @Test
+    void classWithDeeplyNestedTestClassIsAccepted() {
+        assertTrue(newFilter().accept(ClassWithDeeplyNestedTestClass.class));
+    }
 
-	@Test
-	void classWithTestFactoryIsAccepted() {
-		assertTrue(newFilter().accept(ClassWithTestFactory.class));
-	}
+    @Test
+    void classWithTestFactoryIsAccepted() {
+        assertTrue(newFilter().accept(ClassWithTestFactory.class));
+    }
 
-	@Test
-	void classWithNestedTestFactoryIsAccepted() {
-		assertTrue(newFilter().accept(ClassWithNestedTestFactory.class));
-	}
+    @Test
+    void classWithNestedTestFactoryIsAccepted() {
+        assertTrue(newFilter().accept(ClassWithNestedTestFactory.class));
+    }
 
-	private TestPlanScannerFilter newFilter() {
-		return new TestPlanScannerFilter(LauncherFactory.create(), new Filter<?>[0]);
-	}
+    private TestPlanScannerFilter newFilter() {
+        return new TestPlanScannerFilter(LauncherFactory.create(), new Filter<?>[0]);
+    }
 
-	private static class EmptyClass {
-	}
+    private static class EmptyClass {
+    }
 
-	@SuppressWarnings("unused")
-	private static class ClassWithMethods {
+    @SuppressWarnings("unused")
+    private static class ClassWithMethods {
 
-		void method1() {
-		}
+        void method1() {
+        }
 
-		void method2() {
-		}
-	}
+        void method2() {
+        }
+    }
 
-	private static class ClassWithTestMethods {
+    private static class ClassWithTestMethods {
 
-		@Test
-		void test1() {
-		}
+        @Test
+        void test1() {
+        }
 
-		@Test
-		public void test2() {
-		}
-	}
+        @Test
+        public void test2() {
+        }
+    }
 
-	private static class ClassWithNestedTestClass {
+    private static class ClassWithNestedTestClass {
 
-		@SuppressWarnings("unused")
-		void method() {
-		}
+        @SuppressWarnings("unused")
+        void method() {
+        }
 
-		@Nested
-		class TestClass {
+        @Nested
+        class TestClass {
 
-			@Test
-			void test1() {
-			}
-		}
-	}
+            @Test
+            void test1() {
+            }
+        }
+    }
 
-	private static class ClassWithDeeplyNestedTestClass {
+    private static class ClassWithDeeplyNestedTestClass {
 
-		@Nested
-		class Level1 {
+        @Nested
+        class Level1 {
 
-			@Nested
-			class Level2 {
+            @Nested
+            class Level2 {
 
-				@Nested
-				class TestClass {
+                @Nested
+                class TestClass {
 
-					@Test
-					void test1() {
-					}
-				}
-			}
-		}
-	}
+                    @Test
+                    void test1() {
+                    }
+                }
+            }
+        }
+    }
 
-	private static class ClassWithTestFactory {
+    private static class ClassWithTestFactory {
 
-		@TestFactory
-		Stream<DynamicTest> tests() {
-			return Stream.empty();
-		}
-	}
+        @TestFactory
+        Stream<DynamicTest> tests() {
+            return Stream.empty();
+        }
+    }
 
-	private static class ClassWithNestedTestFactory {
+    private static class ClassWithNestedTestFactory {
 
-		@Nested
-		class TestClass {
+        @Nested
+        class TestClass {
 
-			@TestFactory
-			List<DynamicTest> tests() {
-				return emptyList();
-			}
-		}
-	}
+            @TestFactory
+            List<DynamicTest> tests() {
+                return emptyList();
+            }
+        }
+    }
 
 }
