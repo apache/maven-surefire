@@ -1,4 +1,4 @@
-package org.junit.platform.surefire.provider;
+package org.apache.maven.surefire.junit5;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
