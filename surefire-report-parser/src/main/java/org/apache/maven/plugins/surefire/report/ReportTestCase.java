@@ -158,11 +158,13 @@ public final class ReportTestCase
         return hasFailure;
     }
 
-    public boolean isError() {
+    public boolean isError()
+    {
         return isError;
     }
 
-    public ReportTestCase setError(boolean error) {
+    public ReportTestCase setError( boolean error )
+    {
         this.isError = error;
         return this;
     }
