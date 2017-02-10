@@ -26,10 +26,10 @@
     <version>2.19.2-SNAPSHOT</version>
   </parent>
 
-  <artifactId>surefire-junit5</artifactId>
+  <artifactId>surefire-junit-platform</artifactId>
 
-  <name>SureFire JUnit5 Runner</name>
-  <description>SureFire JUnit 5.0+ Runner</description>
+  <name>SureFire JUnit Platform Runner</name>
+  <description>SureFire JUnit Platform Runner</description>
 
   <properties>
     <javaVersion>8</javaVersion>
