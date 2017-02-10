@@ -139,4 +139,49 @@
       </plugin>
     </plugins>
   </build>
+
+  <contributors>
+    <contributor>
+      <name>Konstantin Lutovich</name>
+      <roles>
+        <role>Contributed to the original provider implementation</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Shintaro Katafuchi</name>
+      <roles>
+        <role>Contributed to the original provider implementation</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Sam Brannen</name>
+      <roles>
+        <role>Contributed to the original provider implementation</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Stefan Bechtold</name>
+      <roles>
+        <role>Contributed to the original provider implementation</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Marc Philipp</name>
+      <roles>
+        <role>Contributed to the original provider implementation</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Matthias Merdes</name>
+      <roles>
+        <role>Contributed to the original provider implementation</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Johannes Link</name>
+      <roles>
+        <role>Contributed to the original provider implementation</role>
+      </roles>
+    </contributor>
+  </contributors>
 </project>
