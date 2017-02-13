@@ -22,11 +22,9 @@ package org.apache.maven.surefire.booter;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.internal.DumpFileUtils;
 
 import java.io.DataInputStream;
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Iterator;
@@ -87,8 +85,6 @@ public final class CommandReader
 
     private volatile ConsoleLogger logger = new NullConsoleLogger();
 
-    private volatile File dumpFile;
-
     private CommandReader()
     {
     }
@@ -101,11 +97,6 @@ public final class CommandReader
             reader.commandThread.start();
         }
         return reader;
-    }
-
-    public void setDumpFile( File dumpFile )
-    {
-        this.dumpFile = dumpFile;
     }
 
     public CommandReader setShutdown( Shutdown shutdown )
@@ -132,7 +123,7 @@ public final class CommandReader
             }
             catch ( InterruptedException e )
             {
-                DumpFileUtils.dumpException( e, dumpFile );
+                DumpErrorSingleton.getSingleton().dumpException( e );
                 throw new TestSetFailedException( e.getLocalizedMessage() );
             }
         }
@@ -386,7 +377,7 @@ public final class CommandReader
                     if ( command == null )
                     {
                         String errorMessage = "[SUREFIRE] std/in stream corrupted: first sequence not recognized";
-                        DumpFileUtils.dumpText( errorMessage, dumpFile );
+                        DumpErrorSingleton.getSingleton().dumpStreamText( errorMessage );
                         logger.error( errorMessage );
                         break;
                     }
@@ -423,24 +414,27 @@ public final class CommandReader
             }
             catch ( EOFException e )
             {
-                DumpFileUtils.dumpException( e, dumpFile );
-
                 CommandReader.this.state.set( TERMINATED );
                 if ( !isTestSetFinished )
                 {
+                    String msg = "TestSet has not finished before stream error has appeared >> "
+                                         + "initializing exit by non-null configuration: "
+                                         + CommandReader.this.shutdown;
+                    DumpErrorSingleton.getSingleton().dumpStreamException( e, msg );
+
                     exitByConfiguration();
                     // does not go to finally
                 }
             }
             catch ( IOException e )
             {
-                DumpFileUtils.dumpException( e, dumpFile );
-
                 CommandReader.this.state.set( TERMINATED );
                 // If #stop() method is called, reader thread is interrupted and cause is InterruptedException.
                 if ( !( e.getCause() instanceof InterruptedException ) )
                 {
-                    logger.error( "[SUREFIRE] std/in stream corrupted", e );
+                    String msg = "[SUREFIRE] std/in stream corrupted";
+                    DumpErrorSingleton.getSingleton().dumpStreamException( e, msg );
+                    logger.error( msg, e );
                 }
             }
             finally

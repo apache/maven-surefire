@@ -28,6 +28,7 @@ import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStre
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStream;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
+import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.plugin.surefire.booterclient.output.NativeStdErrStreamConsumer;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
@@ -158,7 +159,7 @@ public class ForkStarter
     /**
      * Closes stuff, with a shutdown hook to make sure things really get closed.
      */
-    private static class CloseableCloser
+    private final class CloseableCloser
         implements Runnable, Closeable
     {
         private final Queue<Closeable> testProvidingInputStream;
@@ -191,7 +192,15 @@ public class ForkStarter
                 }
                 catch ( IOException e )
                 {
-                    // ignore
+                    // This error does not fail a test and does not necessarily mean that the forked JVM std/out stream
+                    // was not closed, see ThreadedStreamConsumer. This error means that JVM wrote messages to a native
+                    // stream which could not be parsed or report failed. The tests may still correctly run nevertheless
+                    // this exception happened => warning on console. The user would see hint to check dump file only
+                    // if tests failed, but if this does not happen then printing warning to console is the only way to
+                    // inform the users.
+                    String msg = "ForkStarter IOException: " + e.getLocalizedMessage();
+                    log.warning( msg );
+                    InPluginProcessDumpSingleton.getSingleton().dumpException( e, msg, defaultReporterFactory );
                 }
             }
         }

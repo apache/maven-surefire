@@ -41,6 +41,6 @@ public final class NativeStdErrStreamConsumer
 
     public void consumeLine( String line )
     {
-        LostCommandsDumpSingleton.getSingleton().dumpText( line, defaultReporterFactory );
+        InPluginProcessDumpSingleton.getSingleton().dumpText( line, defaultReporterFactory );
     }
 }

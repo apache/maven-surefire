@@ -22,6 +22,7 @@ package org.apache.maven.surefire.its.jiras;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -64,51 +65,95 @@ public class Surefire141PluggableProvidersIT
     public void invokeRuntimeException()
         throws Exception
     {
-        unpack( "surefire-141-pluggableproviders" )
+        final String errorText = "Let's fail with a runtimeException";
+
+        OutputValidator validator = unpack( "surefire-141-pluggableproviders" )
             .sysProp( "invokeCrash", "runtimeException" )
             .maven()
             .withFailure()
             .executeTest()
-            .verifyTextInLog( "Let's fail with a runtimeException" );
+            .verifyTextInLog( errorText );
+
+        assertErrorMessage( validator, errorText );
     }
 
     @Test
     public void invokeReporterException()
         throws Exception
     {
-        unpack( "surefire-141-pluggableproviders" )
+        final String errorText = "Let's fail with a reporterexception";
+
+        OutputValidator validator = unpack( "surefire-141-pluggableproviders" )
             .sysProp( "invokeCrash", "reporterException" )
             .maven()
             .withFailure()
             .executeTest()
-            .verifyTextInLog( "Let's fail with a reporterexception" );
+            .verifyTextInLog( errorText );
+
+        assertErrorMessage( validator, errorText );
     }
 
     @Test
     public void constructorRuntimeException()
         throws Exception
     {
+        final String errorText = "Let's fail with a runtimeException";
+
         OutputValidator validator = unpack( "surefire-141-pluggableproviders" )
                                             .sysProp( "constructorCrash", "runtimeException" )
                                             .maven()
                                             .withFailure()
-                                            .executeTest()
-                                            .verifyTextInLog( "Let's fail with a runtimeException" );
+                                            .executeTest();
 
+        boolean verifiedInLog = verifiedErrorInLog( validator, errorText );
+        boolean verifiedInDump = verifiedErrorInDump( validator, errorText );
+        assertThat( verifiedInLog || verifiedInDump )
+                .describedAs( "'" + errorText + "' could not be verified in log.txt nor *.dump file." )
+                .isTrue();
+    }
+
+    private static void assertErrorMessage( OutputValidator validator, String message )
+    {
         File reportDir = validator.getSurefireReportsDirectory();
         String[] dumpFiles = reportDir.list( new FilenameFilter()
-                        {
-                            @Override
-                            public boolean accept( File dir, String name )
-                            {
-                                return name.endsWith( ".dump" );
-                            }
-                        });
+                                             {
+                                                 @Override
+                                                 public boolean accept( File dir, String name )
+                                                 {
+                                                     return name.endsWith( ".dump" );
+                                                 }
+                                             });
         assertThat( dumpFiles ).isNotEmpty();
         for ( String dump : dumpFiles )
         {
             validator.getSurefireReportsFile( dump )
-                    .assertContainsText( "Let's fail with a runtimeException" );
+                    .assertContainsText( message );
+        }
+    }
+
+    private static boolean verifiedErrorInLog( OutputValidator validator, String errorText )
+    {
+        try
+        {
+            validator.verifyTextInLog( errorText );
+            return  true;
+        }
+        catch ( SurefireVerifierException e )
+        {
+            return false;
+        }
+    }
+
+    private static boolean verifiedErrorInDump( OutputValidator validator, String errorText )
+    {
+        try
+        {
+            assertErrorMessage( validator, errorText );
+            return true;
+        }
+        catch ( AssertionError e )
+        {
+            return false;
         }
     }
 

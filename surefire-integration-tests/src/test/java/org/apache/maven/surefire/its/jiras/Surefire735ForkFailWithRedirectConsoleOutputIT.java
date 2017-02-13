@@ -41,7 +41,24 @@ public class Surefire735ForkFailWithRedirectConsoleOutputIT
             throws Exception
     {
         OutputValidator outputValidator = unpack().failNever().executeTest();
+        assertJvmCrashed( outputValidator );
+    }
 
+    @Test
+    public void vmStartFailShouldFailBuildk()
+            throws Exception
+    {
+        OutputValidator outputValidator = unpack().maven().withFailure().executeTest();
+        assertJvmCrashed( outputValidator );
+    }
+
+    private SurefireLauncher unpack()
+    {
+        return unpack( "fork-fail" );
+    }
+
+    private static void assertJvmCrashed( OutputValidator outputValidator )
+    {
         File reportDir = outputValidator.getSurefireReportsDirectory();
         String[] dumpFiles = reportDir.list( new FilenameFilter()
                                              {
@@ -58,18 +75,6 @@ public class Surefire735ForkFailWithRedirectConsoleOutputIT
             outputValidator.getSurefireReportsFile( dump )
                     .assertContainsText( "Invalid maximum heap size: -Xmxxxx712743m" );
         }
-    }
-
-    @Test
-    public void vmStartFailShouldFailBuildk()
-            throws Exception
-    {
-        unpack().maven().withFailure().executeTest();
-    }
-
-    public SurefireLauncher unpack()
-    {
-        return unpack( "fork-fail" );
     }
 
 }

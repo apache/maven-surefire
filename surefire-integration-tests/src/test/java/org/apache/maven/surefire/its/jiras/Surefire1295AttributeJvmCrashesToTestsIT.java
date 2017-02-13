@@ -27,10 +27,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Iterator;
+import java.util.Locale;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * https://issues.apache.org/jira/browse/SUREFIRE-1295
@@ -45,7 +46,8 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
     @Before
     public void skipWindows()
     {
-        assumeFalse( System.getProperty( "os.name" ).startsWith( "Windows" ) );
+        String os = System.getProperty( "os.name" ).toLowerCase( Locale.ROOT );
+        assumeTrue( os.equals( "mac os x" ) || os.equals( "linux" ) /*||  os.contains( "windows" )*/ );
     }
 
     @Test

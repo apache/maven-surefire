@@ -206,6 +206,13 @@ public class ForkingRunListener
         synchronized ( target ) // See notes about synchronization/thread safety in class javadoc
         {
             target.write( encodeBytes, 0, encodeBytes.length );
+            if ( target.checkError() )
+            {
+                // We MUST NOT throw any exception from this method; otherwise we are in loop and CPU goes up:
+                // ForkingRunListener -> Exception -> JUnit Notifier and RunListener -> ForkingRunListener -> Exception
+                DumpErrorSingleton.getSingleton()
+                        .dumpStreamText( "Unexpected IOException with stream: " + new String( buf, off, len ) );
+            }
         }
     }
 
@@ -268,6 +275,12 @@ public class ForkingRunListener
         synchronized ( target ) // See notes about synchronization/thread safety in class javadoc
         {
             target.write( encodeBytes, 0, encodeBytes.length );
+            if ( target.checkError() )
+            {
+                // We MUST NOT throw any exception from this method; otherwise we are in loop and CPU goes up:
+                // ForkingRunListener -> Exception -> JUnit Notifier and RunListener -> ForkingRunListener -> Exception
+                DumpErrorSingleton.getSingleton().dumpStreamText( "Unexpected IOException: " + string );
+            }
         }
     }
 

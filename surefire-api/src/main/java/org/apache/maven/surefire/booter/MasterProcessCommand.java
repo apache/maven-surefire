@@ -22,7 +22,6 @@ package org.apache.maven.surefire.booter;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
 import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -124,31 +123,13 @@ public enum MasterProcessCommand
             int dataLength = is.readInt();
             if ( dataLength > 0 )
             {
-                byte[] buffer = new byte[dataLength];
-                int read = 0;
-                int total = 0;
-                do
-                {
-                    total += read;
-                    read = is.read( buffer, total, dataLength - total );
-                } while ( read > 0 );
+                byte[] buffer = new byte[ dataLength ];
+                is.readFully( buffer );
 
                 if ( command.getDataType() == Void.class )
                 {
-                    // must read entire sequence to get to the next command; cannot be above the loop
                     throw new IOException( format( "Command %s unexpectedly read Void data with length %d.",
                                                    command, dataLength ) );
-                }
-
-                if ( total != dataLength )
-                {
-                    if ( read == -1 )
-                    {
-                        throw new EOFException( "stream closed" );
-                    }
-
-                    throw new IOException( format( "%s read %d out of %d bytes",
-                                                    MasterProcessCommand.class, total, dataLength ) );
                 }
 
                 String data = command.toDataTypeAsString( buffer );
