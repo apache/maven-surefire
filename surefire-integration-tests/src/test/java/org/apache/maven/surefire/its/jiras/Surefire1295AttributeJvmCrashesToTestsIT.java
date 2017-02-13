@@ -70,7 +70,8 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
     public void crashInReusableFork() throws VerificationException
     {
         SurefireLauncher launcher = unpack( "crash-during-test" )
-                                            .forkOncePerThread()
+                                            .forkPerThread()
+                                            .reuseForks( true )
                                             .threadCount( 1 );
 
         checkCrashTypes( launcher );

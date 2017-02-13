@@ -264,12 +264,7 @@ public class SurefireLauncher
 
     public SurefireLauncher forkPerThread()
     {
-        return forkMode( "perthread" ).reuseForks( false );
-    }
-
-    public SurefireLauncher forkOncePerThread()
-    {
-        return forkPerThread().reuseForks( true );
+        return forkMode( "perthread" );
     }
 
     public SurefireLauncher threadCount( int threadCount )

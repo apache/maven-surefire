@@ -34,7 +34,12 @@ public class Surefire839TestWithoutCategoriesIT
     @Test
     public void classWithoutCategoryForked()
     {
-        unpack( "junit48-categories" ).setJUnitVersion( "4.11" ).forkOncePerThread().threadCount(
-            2 ).executeTest().verifyErrorFree( 3 );
+        unpack( "junit48-categories" )
+                .setJUnitVersion( "4.11" )
+                .forkPerThread()
+                .reuseForks( true )
+                .threadCount( 2 )
+                .executeTest()
+                .verifyErrorFree( 3 );
     }
 }
