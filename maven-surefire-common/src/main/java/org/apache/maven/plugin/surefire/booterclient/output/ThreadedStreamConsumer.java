@@ -39,7 +39,9 @@ public final class ThreadedStreamConsumer
 {
     private static final String END_ITEM = "";
 
-    private static final int ITEM_LIMIT_BEFORE_SLEEP = 10000;
+    private static final int ITEM_LIMIT_BEFORE_SLEEP = 10 * 1000;
+
+    private static final long CLOSE_TIMEOUT_MILLIS = 5 * 60 * 1000L;
 
     private final BlockingQueue<String> items = new ArrayBlockingQueue<String>( ITEM_LIMIT_BEFORE_SLEEP );
 
@@ -47,7 +49,7 @@ public final class ThreadedStreamConsumer
 
     private final Pumper pumper;
 
-    private volatile boolean closed;
+    private volatile boolean stop;
 
     final class Pumper
             implements Runnable
@@ -74,7 +76,7 @@ public final class ThreadedStreamConsumer
          */
         public void run()
         {
-            while ( !ThreadedStreamConsumer.this.closed )
+            while ( !ThreadedStreamConsumer.this.stop )
             {
                 try
                 {
@@ -112,7 +114,7 @@ public final class ThreadedStreamConsumer
 
     public void consumeLine( String s )
     {
-        if ( closed && !thread.isAlive() )
+        if ( stop && !thread.isAlive() )
         {
             items.clear();
             return;
@@ -132,16 +134,24 @@ public final class ThreadedStreamConsumer
     public void close()
             throws IOException
     {
+        if ( stop )
+        {
+            return;
+        }
+
         try
         {
-            closed = true;
             items.put( END_ITEM );
-            thread.join();
+            thread.join( CLOSE_TIMEOUT_MILLIS );
         }
         catch ( InterruptedException e )
         {
             currentThread().interrupt();
             throw new IOException( e );
+        }
+        finally
+        {
+            stop = true;
         }
 
         if ( pumper.hasErrors() )
@@ -150,8 +160,14 @@ public final class ThreadedStreamConsumer
         }
     }
 
+    /**
+     * Compared item with {@link #END_ITEM} by identity.
+     *
+     * @param item    element from <code>items</code>
+     * @return <tt>true</tt> if tail of the queue
+     */
     private boolean shouldStopQueueing( String item )
     {
-        return closed && item == END_ITEM;
+        return item == END_ITEM;
     }
 }
