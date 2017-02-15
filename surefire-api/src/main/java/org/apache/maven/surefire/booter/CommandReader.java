@@ -336,7 +336,11 @@ public final class CommandReader
         private void requestNextTest()
         {
             byte[] encoded = encodeStringForForkCommunication( ( (char) BOOTERCODE_NEXT_TEST ) + ",0,want more!\n" );
-            originalOutStream.write( encoded, 0, encoded.length );
+            synchronized ( originalOutStream )
+            {
+                originalOutStream.write( encoded, 0, encoded.length );
+                originalOutStream.flush();
+            }
         }
 
         private boolean shouldFinish()
