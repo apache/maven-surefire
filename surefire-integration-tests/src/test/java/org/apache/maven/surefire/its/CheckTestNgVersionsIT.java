@@ -25,6 +25,7 @@ import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.surefire.its.fixture.HelperAssertions;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -46,73 +47,73 @@ public class CheckTestNgVersionsIT
     @Test public void test47()
         throws Exception
     {
-        runTestNgTest( "4.7" );
+        runTestNgTest( "4.7", "jdk15" );
     }
 
     @Test @Ignore( "5.0 and 5.0.1 jars on central are malformed SUREFIRE-375 + MAVENUPLOAD-1024" ) public void XXXtest50()
         throws Exception
     {
-        runTestNgTest( "5.0" );
+        runTestNgTest( "5.0", "jdk15" );
     }
 
     @Test @Ignore( "5.0 and 5.0.1 jars on central are malformed SUREFIRE-375 + MAVENUPLOAD-1024" ) public void XXXtest501()
         throws Exception
     {
-        runTestNgTest( "5.0.1" );
+        runTestNgTest( "5.0.1", "jdk15" );
     }
 
     @Test public void test502()
         throws Exception
     {
-        runTestNgTest( "5.0.2" );
+        runTestNgTest( "5.0.2", "jdk15" );
     }
 
     @Test public void test51()
         throws Exception
     {
-        runTestNgTest( "5.1" );
+        runTestNgTest( "5.1", "jdk15" );
     }
 
     @Test public void test55()
         throws Exception
     {
-        runTestNgTest( "5.5" );
+        runTestNgTest( "5.5", "jdk15" );
     }
 
     @Test public void test56()
         throws Exception
     {
-        runTestNgTest( "5.6" );
+        runTestNgTest( "5.6", "jdk15" );
     }
 
     @Test public void test57()
         throws Exception
     {
-        runTestNgTest( "5.7" );
+        runTestNgTest( "5.7", "jdk15" );
     }
 
     @Test public void test58()
         throws Exception
     {
-        runTestNgTest( "5.8" );
+        runTestNgTest( "5.8", "jdk15" );
     }
 
     @Test public void test59()
         throws Exception
     {
-        runTestNgTest( "5.9" );
+        runTestNgTest( "5.9", "jdk15" );
     }
 
     @Test public void test510()
         throws Exception
     {
-        runTestNgTest( "5.10" );
+        runTestNgTest( "5.10", "jdk15" );
     }
 
     @Test public void test511()
         throws Exception
     {
-        runTestNgTest( "5.11" );
+        runTestNgTest( "5.11", "jdk15" );
     }
 
     @Test public void test512()
@@ -154,7 +155,7 @@ public class CheckTestNgVersionsIT
     @Test public void test60()
         throws Exception
     {
-        runTestNgTest( "6.0", false );
+        runTestNgTest( "6.0" );
     }
 
     @Test public void test685()
@@ -166,20 +167,40 @@ public class CheckTestNgVersionsIT
     private void runTestNgTestWithRunOrder( String version )
         throws Exception
     {
-        runTestNgTest( version, true );
+        runTestNgTest( version, null, true );
     }
 
     private void runTestNgTest( String version )
-        throws Exception
+            throws Exception
     {
-        runTestNgTest( version, false );
+        runTestNgTest( version, null, false );
     }
 
     private void runTestNgTest( String version, boolean validateRunOrder )
+            throws Exception
+    {
+        runTestNgTest( version, null, validateRunOrder );
+    }
+
+    private void runTestNgTest( String version, String classifier )
         throws Exception
     {
+        runTestNgTest( version, classifier, false );
+    }
 
-        final OutputValidator outputValidator = unpack( "testng-simple" ).resetInitialGoals( version ).executeTest();
+    private void runTestNgTest( String version, String classifier, boolean validateRunOrder )
+        throws Exception
+    {
+        final SurefireLauncher launcher = unpack( "testng-simple" )
+                                            .sysProp( "testNgVersion", version );
+
+        if ( classifier != null )
+        {
+            launcher.sysProp( "testNgClassifier", classifier );
+        }
+
+        final OutputValidator outputValidator = launcher.executeTest();
+
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0, 0 );
 
         if ( validateRunOrder )

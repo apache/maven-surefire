@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.its;
+package org.apache.maven.surefire.its.fixture;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,29 +19,29 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
-/**
- * Test failures in @BeforeMethod annotation on TestNg suite
- *
- * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
- * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
- */
-public class CheckTestNgBeforeMethodFailureIT
-    extends SurefireJUnit4IntegrationTestCase
-{
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.hasItems;
 
+/**
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 2.19.2
+ */
+public class MavenLauncherTest
+{
     @Test
-    public void TestNgBeforeMethodFailure()
-        throws Exception
+    public void shouldNotDuplicateSystemProperties()
     {
-        unpack( "/testng-beforeMethodFailure" )
-                .maven()
-                .sysProp( "testNgVersion", "5.7" )
-                .sysProp( "testNgClassifier", "jdk15" )
-                .withFailure()
-                .executeTest()
-                .assertTestSuiteResults( 2, 0, 1, 1 );
+        MavenLauncher launcher = new MavenLauncher( getClass(), "", "" )
+                                         .addGoal( "-DskipTests" )
+                                         .addGoal( "-Dx=a" )
+                                         .addGoal( "-DskipTests" )
+                                         .addGoal( "-Dx=b" );
+
+        assertThat( launcher.getGoals(), hasItems( "-Dx=b", "-DskipTests" ) );
+
+        assertThat( launcher.getGoals().size(), is( 2 ) );
     }
 }

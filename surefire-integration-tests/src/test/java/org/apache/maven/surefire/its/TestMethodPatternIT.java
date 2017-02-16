@@ -24,6 +24,11 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
 /**
  * Test project using -Dtest=mtClass#myMethod
  *
@@ -34,9 +39,13 @@ public class TestMethodPatternIT
 {
     private static final String RUNNING_WITH_PROVIDER47 = "parallel='none', perCoreThreadCount=true, threadCount=0";
 
-    public OutputValidator runMethodPattern( String projectName, String... goals )
+    public OutputValidator runMethodPattern( String projectName, Map<String, String> props, String... goals )
     {
         SurefireLauncher launcher = unpack( projectName );
+        for ( Entry<String, String> entry : props.entrySet() )
+        {
+            launcher.sysProp( entry.getKey(), entry.getValue() );
+        }
         for ( String goal : goals )
         {
             launcher.addGoal( goal );
@@ -49,19 +58,19 @@ public class TestMethodPatternIT
     @Test
     public void testJUnit44()
     {
-        runMethodPattern( "junit44-method-pattern" );
+        runMethodPattern( "junit44-method-pattern", Collections.<String, String>emptyMap() );
     }
 
     @Test
     public void testJUnit48Provider4()
     {
-        runMethodPattern( "junit48-method-pattern", "-P surefire-junit4" );
+        runMethodPattern( "junit48-method-pattern", Collections.<String, String>emptyMap(), "-P surefire-junit4" );
     }
 
     @Test
     public void testJUnit48Provider47()
     {
-        runMethodPattern( "junit48-method-pattern", "-P surefire-junit47" )
+        runMethodPattern( "junit48-method-pattern", Collections.<String, String>emptyMap(), "-P surefire-junit47" )
             .verifyTextInLog( RUNNING_WITH_PROVIDER47 );
     }
 
@@ -71,28 +80,36 @@ public class TestMethodPatternIT
         unpack( "junit48-method-pattern" )
             .addGoal( "-Dgroups=junit4.SampleCategory" )
             .executeTest()
-            .assertTestSuiteResults( 1, 0, 0, 0 );;
+            .assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
     @Test
     public void testTestNgMethodBefore()
     {
-        runMethodPattern( "testng-method-pattern-before" );
+        Map<String, String> props = new HashMap<String, String>();
+        props.put( "testNgVersion", "5.7" );
+        props.put( "testNgClassifier", "jdk15" );
+        runMethodPattern( "testng-method-pattern-before", props );
     }
 
     @Test
     public void testTestNGMethodPattern()
     {
-        runMethodPattern( "/testng-method-pattern" );
+        Map<String, String> props = new HashMap<String, String>();
+        props.put( "testNgVersion", "5.7" );
+        props.put( "testNgClassifier", "jdk15" );
+        runMethodPattern( "/testng-method-pattern", props );
     }
 
     @Test
     public void testMethodPatternAfter()
     {
         unpack( "testng-method-pattern-after" )
-            .executeTest()
-            .verifyErrorFree( 2 )
-            .verifyTextInLog( "Called tearDown" );
+                .sysProp( "testNgVersion", "5.7" )
+                .sysProp( "testNgClassifier", "jdk15" )
+                .executeTest()
+                .verifyErrorFree( 2 )
+                .verifyTextInLog( "Called tearDown" );
     }
 
 }

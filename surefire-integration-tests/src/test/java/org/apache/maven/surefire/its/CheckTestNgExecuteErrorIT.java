@@ -44,6 +44,8 @@ public class CheckTestNgExecuteErrorIT
     {
         OutputValidator outputValidator = unpack( "/testng-execute-error" )
                                                   .maven()
+                                                  .sysProp( "testNgVersion", "5.7" )
+                                                  .sysProp( "testNgClassifier", "jdk15" )
                                                   .showErrorStackTraces()
                                                   .withFailure()
                                                   .executeTest();

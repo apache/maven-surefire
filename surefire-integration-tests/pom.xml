@@ -35,7 +35,6 @@
   <properties>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <it.settings.showPasswords>false</it.settings.showPasswords>
-    <testng.version>5.7</testng.version>
     <surefire.threadcount>5</surefire.threadcount>
     <useInterpolatedSettings>false</useInterpolatedSettings>
   </properties>
@@ -105,7 +104,6 @@
           <!-- can forward to all integration test projects. SUREFIRE-513 -->
           <systemPropertyVariables>
             <surefire.version>${project.version}</surefire.version>
-            <testng.version>${testng.version}</testng.version>
             <maven.home>${maven.home}</maven.home>
             <maven.settings.file>${project.basedir}/../surefire-setup-integration-tests/target/private/it-settings.xml
             </maven.settings.file>

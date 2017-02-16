@@ -34,6 +34,10 @@ public class CheckTestNgGroupThreadParallelIT
     @Test
     public void TestNgGroupThreadParallel()
     {
-        unpack( "testng-group-thread-parallel" ).executeTest().verifyErrorFree( 3 );
+        unpack( "testng-group-thread-parallel" )
+                .sysProp( "testNgVersion", "5.7" )
+                .sysProp( "testNgClassifier", "jdk15" )
+                .executeTest()
+                .verifyErrorFree( 3 );
     }
 }

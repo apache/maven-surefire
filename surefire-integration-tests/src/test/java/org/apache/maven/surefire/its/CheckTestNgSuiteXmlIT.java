@@ -53,6 +53,8 @@ public class CheckTestNgSuiteXmlIT
 
     private SurefireLauncher unpack()
     {
-        return unpack( "testng-suite-xml" );
+        return unpack( "testng-suite-xml" )
+                       .sysProp( "testNgVersion", "5.7" )
+                       .sysProp( "testNgClassifier", "jdk15" );
     }
 }

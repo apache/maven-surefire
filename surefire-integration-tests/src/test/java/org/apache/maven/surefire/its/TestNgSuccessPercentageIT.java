@@ -34,7 +34,11 @@ public class TestNgSuccessPercentageIT extends SurefireJUnit4IntegrationTestCase
     @Test
     public void testPassesWhenFailuresLessThanSuccessPercentage()
     {
-        OutputValidator validator = unpack("/testng-succes-percentage").mavenTestFailureIgnore( true ).executeTest();
+        OutputValidator validator = unpack("/testng-succes-percentage")
+                                            .sysProp( "testNgVersion", "5.7" )
+                                            .sysProp( "testNgClassifier", "jdk15" )
+                                            .mavenTestFailureIgnore( true )
+                                            .executeTest();
         validator.assertTestSuiteResults(8, 0, 1, 0);
     }
 

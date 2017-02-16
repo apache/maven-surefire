@@ -33,7 +33,12 @@ public class CheckTestNgSuiteXmlSingleIT
     @Test
     public void TestNgSuite()
     {
-        unpack( "/testng-twoTestCaseSuite" ).setTestToRun( "TestNGTestTwo" ).executeTest().verifyErrorFree( 1 );
+        unpack( "/testng-twoTestCaseSuite" )
+                .sysProp( "testNgVersion", "5.7" )
+                .sysProp( "testNgClassifier", "jdk15" )
+                .setTestToRun( "TestNGTestTwo" )
+                .executeTest()
+                .verifyErrorFree( 1 );
     }
 
 }

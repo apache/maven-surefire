@@ -73,7 +73,6 @@
   </profiles>
 
   <properties>
-     <testNgVersion>5.7</testNgVersion>
     <surefire.testng.verbose>0</surefire.testng.verbose>
   </properties>
 
