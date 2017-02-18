@@ -69,8 +69,8 @@ public class ConsoleOutputFileReporter
         {
             try
             {
-                fileOutputStream.flush();
-                fileOutputStream.close();
+                // fileOutputStream.flush(); Will not call close on exception!
+                fileOutputStream.close(); // Will implicitly flush.
             }
             catch ( IOException e )
             {
