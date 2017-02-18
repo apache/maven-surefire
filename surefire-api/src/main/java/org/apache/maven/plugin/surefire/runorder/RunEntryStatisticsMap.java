@@ -64,9 +64,14 @@ public final class RunEntryStatisticsMap
     {
         if ( file.exists() )
         {
+            Reader reader = null;
             try
             {
-                return fromReader( new FileReader( file ) );
+                reader = new FileReader( file );
+                final RunEntryStatisticsMap map = fromReader( reader );
+                reader.close();
+                reader = null;
+                return map;
             }
             catch ( FileNotFoundException e )
             {
@@ -75,6 +80,20 @@ public final class RunEntryStatisticsMap
             catch ( IOException e )
             {
                 throw new RuntimeException( e );
+            }
+            finally
+            {
+                try
+                {
+                    if ( reader != null )
+                    {
+                        reader.close();
+                    }
+                }
+                catch ( final IOException e )
+                {
+                    // Suppressed.
+                }
             }
         }
         else
