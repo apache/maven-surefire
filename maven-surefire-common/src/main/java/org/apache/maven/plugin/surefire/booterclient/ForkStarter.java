@@ -645,6 +645,14 @@ public class ForkStarter
         finally
         {
             closer.close();
+            try
+            {
+                Thread.sleep( 1000 );
+            }
+            catch ( InterruptedException e )
+            {
+                e.printStackTrace();
+            }
             if ( runResult == null )
             {
                 runResult = forkClient.getDefaultReporterFactory().getGlobalRunStatistics().getRunResult();
