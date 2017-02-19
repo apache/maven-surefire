@@ -387,6 +387,7 @@ public final class CommandReader
                     }
                     else
                     {
+                        System.out.println( System.currentTimeMillis() + " CommandReader " + command.getCommandType() );
                         switch ( command.getCommandType() )
                         {
                             case RUN_CLASS:

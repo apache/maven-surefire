@@ -204,6 +204,7 @@ public final class ForkedBooter
         {
             public void update( Command command )
             {
+                System.out.println( System.currentTimeMillis() + " ForkedBooter exit handler" );
                 exit( 1, command.toShutdownData(), reader, true );
             }
         };
@@ -215,9 +216,12 @@ public final class ForkedBooter
         {
             public void run()
             {
+                System.out.println( System.currentTimeMillis() + " ForkedBooter NOOP timer" );
                 boolean hasPing = pingDone.getAndSet( false );
                 if ( !hasPing )
                 {
+                    System.out.println( System.currentTimeMillis()
+                                        + " ForkedBooter PING timer: plugin did not send me NOOP signal > exit" );
                     exit( 1, KILL, reader, true );
                 }
             }
@@ -246,6 +250,17 @@ public final class ForkedBooter
                     reader.stop();
                 }
                 launchLastDitchDaemonShutdownThread( returnCode );
+                try
+                {
+                    // on FreeBSD the std/out is FileOutputStream.
+                    // it looks like the ThreadedStreamConsumer has not time to read out all data because process
+                    // was closed faster. No shared memory between processes.
+                    Thread.sleep( 1000 );
+                }
+                catch ( InterruptedException e )
+                {
+                    e.printStackTrace();
+                }
                 System.exit( returnCode );
             case DEFAULT:
                 // refers to shutdown=testset, but not used now, keeping reader open
@@ -278,7 +293,7 @@ public final class ForkedBooter
                                                             + systemExitTimeoutInSeconds
                                                             + "s" );
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor( 1, threadFactory );
-        executor.setMaximumPoolSize( 1 );
+        executor.setMaximumPoolSize( 2 );
         executor.prestartCoreThread();
         return executor;
     }

@@ -38,7 +38,7 @@ public class OutputStreamFlushableCommandline
     /**
      * Wraps an output stream in order to delegate a flush.
      */
-    private final class OutputStreamFlushReceiver
+    private static final class OutputStreamFlushReceiver
         implements FlushReceiver
     {
         private final OutputStream outputStream;
@@ -51,6 +51,7 @@ public class OutputStreamFlushableCommandline
         public void flush()
             throws IOException
         {
+            System.out.println( getClass().getSimpleName() + " flush OutputStream " );
             outputStream.flush();
         }
     }

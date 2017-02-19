@@ -19,18 +19,22 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
+import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.maven.it.VerificationException;
+import org.apache.maven.it.Verifier;
+import org.apache.maven.it.util.ResourceExtractor;
+import org.apache.maven.shared.utils.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
-import org.apache.commons.lang.text.StrSubstitutor;
-import org.apache.maven.it.VerificationException;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.shared.utils.io.FileUtils;
+
+import static java.util.Collections.unmodifiableList;
 
 /**
  * Encapsulate all needed features to start a maven run
@@ -203,13 +207,13 @@ public class MavenLauncher
 
     public MavenLauncher skipClean()
     {
-        goals.add( "-Dclean.skip=true" );
+        writeGoal( "-Dclean.skip=true" );
         return this;
     }
 
     public MavenLauncher addGoal( String goal )
     {
-        goals.add( goal );
+        writeGoal( goal );
         return this;
     }
 
@@ -221,6 +225,33 @@ public class MavenLauncher
     public OutputValidator executeTest()
     {
         return conditionalExec( "test" );
+    }
+
+    List<String> getGoals()
+    {
+        return unmodifiableList( goals );
+    }
+
+    private void writeGoal( String newGoal )
+    {
+        if ( newGoal != null && newGoal.startsWith( "-D" ) )
+        {
+            final String sysPropKey =
+                    newGoal.contains( "=" ) ? newGoal.substring( 0, newGoal.indexOf( '=' ) ) : newGoal;
+
+            final String sysPropStarter = sysPropKey + "=";
+
+            for ( ListIterator<String> it = goals.listIterator(); it.hasNext(); )
+            {
+                String goal = it.next();
+                if ( goal.equals( sysPropKey ) || goal.startsWith( sysPropStarter ) )
+                {
+                    it.set( newGoal );
+                    return;
+                }
+            }
+        }
+        goals.add( newGoal );
     }
 
     private OutputValidator conditionalExec(String goal)

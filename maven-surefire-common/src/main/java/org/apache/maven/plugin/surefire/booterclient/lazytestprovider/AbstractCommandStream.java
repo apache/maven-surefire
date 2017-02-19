@@ -28,11 +28,11 @@ import java.io.IOException;
  * Reader stream sends commands to forked jvm std-{@link java.io.InputStream input-stream}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19
  * @see org.apache.maven.surefire.booter.Command
+ * @since 2.19
  */
 public abstract class AbstractCommandStream
-    extends AbstractForkInputStream
+        extends AbstractForkInputStream
 {
     private byte[] currentBuffer;
     private int currentPos;
@@ -51,7 +51,7 @@ public abstract class AbstractCommandStream
      * closed (see {@link #isClosed()} returns {@code true}) before this method has returned.
      */
     protected void beforeNextCommand()
-        throws IOException
+            throws IOException
     {
     }
 
@@ -80,7 +80,7 @@ public abstract class AbstractCommandStream
     @SuppressWarnings( "checkstyle:magicnumber" )
     @Override
     public int read()
-        throws IOException
+            throws IOException
     {
         if ( isClosed() )
         {
@@ -106,17 +106,48 @@ public abstract class AbstractCommandStream
             }
 
             Command cmd = nextCommand();
+            System.out.println( getClass().getSimpleName() + " will send " + cmd.getCommandType() );
             lastCommand = cmd.getCommandType();
             buffer = lastCommand.hasDataType() ? lastCommand.encode( cmd.getData() ) : lastCommand.encode();
         }
 
-        int b =  buffer[currentPos++] & 0xff;
+        int b = buffer[currentPos++] & 0xff;
         if ( currentPos == buffer.length )
         {
+            Integer cmd = null;
+            Integer len = null;
+            int offset = 0;
+            if ( currentBuffer.length >= 4 )
+            {
+                offset = 4;
+                cmd = toInt( currentBuffer, 0 );
+            }
+            if ( currentBuffer.length >= 8 )
+            {
+                offset = 8;
+                len = toInt( currentBuffer, 4 );
+            }
+            System.out.println( getClass().getSimpleName()
+                                        + " last byte sent of cmd "
+                                        + lastCommand
+                                        + cmd
+                                        + " "
+                                        + len
+                                        + " "
+                                        + new String( buffer, offset, currentBuffer.length - offset ) );
             buffer = null;
             currentPos = 0;
         }
         currentBuffer = buffer;
         return b;
+    }
+
+    @SuppressWarnings( "checkstyle:magicnumber" )
+    private static int toInt( byte[] array, int offset )
+    {
+        return ( array[ offset ] << 24 ) & 0xff000000
+                        | ( array[ offset + 1 ] << 16 ) & 0x00ff0000
+                        | ( array[ offset + 2 ] << 8 ) & 0x0000ff00
+                        | array[ offset + 3 ] & 0x000000ff;
     }
 }

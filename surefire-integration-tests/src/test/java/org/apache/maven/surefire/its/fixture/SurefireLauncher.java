@@ -42,7 +42,7 @@ public class SurefireLauncher
 
     private final MavenLauncher mavenLauncher;
 
-    private final String testNgVersion = System.getProperty( "testng.version" );
+    private final String testNgVersion = System.getProperty( "testng.version" );//todo
 
     private final String surefireVersion = System.getProperty( "surefire.version" );
 
@@ -129,14 +129,14 @@ public class SurefireLauncher
 
         if ( this.testNgVersion != null )
         {
-            goals1.add( "-DtestNgVersion=" + testNgVersion );
+            goals1.add( "-DtestNgVersion=" + testNgVersion );//todo
 
             ArtifactVersion v = new DefaultArtifactVersion( testNgVersion );
             try
             {
                 if ( VersionRange.createFromVersionSpec( "(,5.12.1)" ).containsVersion( v ) )
                 {
-                    goals1.add( "-DtestNgClassifier=jdk15" );
+                    goals1.add( "-DtestNgClassifier=jdk15" );//todo
                 }
             }
             catch ( InvalidVersionSpecificationException e )

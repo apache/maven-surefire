@@ -769,6 +769,7 @@ public class ForkStarter
         {
             public void run()
             {
+                System.out.println( System.currentTimeMillis() + " ForkStarter NOOP sent" );
                 builder.getImmediateCommands().noop();
             }
         }, 0, PING_IN_SECONDS, SECONDS );
@@ -780,8 +781,10 @@ public class ForkStarter
         {
             public void run()
             {
+                System.out.println( System.currentTimeMillis() + " ForkStarter NOOP before a loop" );
                 for ( TestProvidingInputStream stream : streams )
                 {
+                    System.out.println( System.currentTimeMillis() + " ForkStarter NOOP sent in a loop" );
                     stream.noop();
                 }
             }

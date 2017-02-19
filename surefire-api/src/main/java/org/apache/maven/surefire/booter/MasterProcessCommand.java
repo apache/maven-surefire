@@ -116,6 +116,8 @@ public enum MasterProcessCommand
         MasterProcessCommand command = resolve( is.readInt() );
         if ( command == null )
         {
+            System.out.println( MasterProcessCommand.class.getSimpleName()
+                                        + " Stream is corrupted. command == null" );
             return null;
         }
         else
@@ -128,6 +130,8 @@ public enum MasterProcessCommand
 
                 if ( command.getDataType() == Void.class )
                 {
+                    System.out.println( format( "Command %s unexpectedly read Void data with length %d.",
+                                                      command, dataLength ) );
                     throw new IOException( format( "Command %s unexpectedly read Void data with length %d.",
                                                    command, dataLength ) );
                 }
@@ -184,6 +188,9 @@ public enum MasterProcessCommand
                 return command;
             }
         }
+
+        System.out.println( MasterProcessCommand.class.getSimpleName()
+                                    + " Stream is corrupted. id=" + id );
         return null;
     }
 

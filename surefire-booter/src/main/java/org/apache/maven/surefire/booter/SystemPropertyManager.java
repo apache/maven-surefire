@@ -105,7 +105,7 @@ public class SystemPropertyManager
         }
     }
 
-    public static void close( InputStream inputStream )
+    private static void close( InputStream inputStream )
     {
         if ( inputStream == null )
         {
