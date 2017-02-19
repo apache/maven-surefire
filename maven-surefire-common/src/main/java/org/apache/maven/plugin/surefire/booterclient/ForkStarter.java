@@ -644,7 +644,6 @@ public class ForkStarter
         }
         finally
         {
-            closer.close();
             try
             {
                 Thread.sleep( 1000 );
@@ -653,6 +652,7 @@ public class ForkStarter
             {
                 e.printStackTrace();
             }
+            closer.close();
             if ( runResult == null )
             {
                 runResult = forkClient.getDefaultReporterFactory().getGlobalRunStatistics().getRunResult();
