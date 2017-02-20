@@ -130,6 +130,7 @@ public abstract class AbstractCommandStream
             System.out.println( getClass().getSimpleName()
                                         + " last byte sent of cmd "
                                         + lastCommand
+                                        + " "
                                         + cmd
                                         + " "
                                         + len

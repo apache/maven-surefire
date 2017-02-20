@@ -19,6 +19,9 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -112,8 +115,6 @@ public class ForkingRunListener
     public static final byte BOOTERCODE_WARNING = (byte) 'W';
 
 
-    private final PrintStream target;
-
     private final int testSetChannelId;
 
     private final boolean trimStackTraces;
@@ -124,7 +125,6 @@ public class ForkingRunListener
 
     public ForkingRunListener( PrintStream target, int testSetChannelId, boolean trimStackTraces )
     {
-        this.target = target;
         this.testSetChannelId = testSetChannelId;
         this.trimStackTraces = trimStackTraces;
         stdOutHeader = createHeader( BOOTERCODE_STDOUT, testSetChannelId );
@@ -203,11 +203,15 @@ public class ForkingRunListener
         System.arraycopy( header, 0, encodeBytes, 0, header.length );
         System.arraycopy( content, 0, encodeBytes, header.length, i );
 
-        synchronized ( target ) // See notes about synchronization/thread safety in class javadoc
+        synchronized ( FileDescriptor.out ) // See notes about synchronization/thread safety in class javadoc
         {
-            target.write( encodeBytes, 0, encodeBytes.length );
-            target.flush();
-            if ( target.checkError() )
+            FileOutputStream out = new FileOutputStream( FileDescriptor.out );
+            try
+            {
+                out.write( encodeBytes, 0, encodeBytes.length );
+                out.getFD().sync();
+            }
+            catch ( IOException e )
             {
                 // We MUST NOT throw any exception from this method; otherwise we are in loop and CPU goes up:
                 // ForkingRunListener -> Exception -> JUnit Notifier and RunListener -> ForkingRunListener -> Exception
@@ -273,15 +277,20 @@ public class ForkingRunListener
     private void encodeAndWriteToTarget( String string )
     {
         byte[] encodeBytes = encodeStringForForkCommunication( string );
-        synchronized ( target ) // See notes about synchronization/thread safety in class javadoc
+        synchronized ( FileDescriptor.out ) // See notes about synchronization/thread safety in class javadoc
         {
-            target.write( encodeBytes, 0, encodeBytes.length );
-            target.flush();
-            if ( target.checkError() )
+            FileOutputStream out = new FileOutputStream( FileDescriptor.out );
+            try
+            {
+                out.write( encodeBytes, 0, encodeBytes.length );
+                out.getFD().sync();
+            }
+            catch ( IOException e )
             {
                 // We MUST NOT throw any exception from this method; otherwise we are in loop and CPU goes up:
                 // ForkingRunListener -> Exception -> JUnit Notifier and RunListener -> ForkingRunListener -> Exception
-                DumpErrorSingleton.getSingleton().dumpStreamText( "Unexpected IOException: " + string );
+                DumpErrorSingleton.getSingleton()
+                        .dumpStreamText( "Unexpected IOException with stream: " + string );
             }
         }
     }

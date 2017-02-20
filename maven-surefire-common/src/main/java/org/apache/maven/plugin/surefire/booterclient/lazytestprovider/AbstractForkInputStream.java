@@ -41,6 +41,8 @@ public abstract class AbstractForkInputStream
      */
     public void setFlushReceiverProvider( FlushReceiverProvider flushReceiverProvider )
     {
+        System.out.println( getClass().getSimpleName() + "#" + hashCode()
+                                    + " :: setFlushReceiverProvider() :: " + flushReceiverProvider );
         this.flushReceiverProvider = requireNonNull( flushReceiverProvider );
     }
 
@@ -52,6 +54,8 @@ public abstract class AbstractForkInputStream
             FlushReceiver flushReceiver = flushReceiverProvider.getFlushReceiver();
             if ( flushReceiver != null )
             {
+                System.out.println( getClass().getSimpleName() + "#" + hashCode()
+                                            + " :: tryFlush() :: flushReceiver.flush();" );
                 flushReceiver.flush();
                 return true;
             }

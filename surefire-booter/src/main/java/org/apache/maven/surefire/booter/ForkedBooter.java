@@ -28,8 +28,11 @@ import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
@@ -228,13 +231,21 @@ public final class ForkedBooter
         };
     }
 
-    private static void encodeAndWriteToOutput( String string, PrintStream out )
+    private static void encodeAndWriteToOutput( String string, PrintStream out1 )
     {
         byte[] encodeBytes = encodeStringForForkCommunication( string );
-        synchronized ( out )
+        synchronized ( FileDescriptor.out )
         {
-            out.write( encodeBytes, 0, encodeBytes.length );
-            out.flush();
+            FileOutputStream out = new FileOutputStream( FileDescriptor.out );
+            try
+            {
+                out.write( encodeBytes, 0, encodeBytes.length );
+                out.getFD().sync();
+            }
+            catch ( IOException e )
+            {
+                //
+            }
         }
     }
 

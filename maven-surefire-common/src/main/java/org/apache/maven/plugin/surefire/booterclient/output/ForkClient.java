@@ -177,6 +177,7 @@ public class ForkClient
 
     private void processLine( String s )
     {
+        System.out.println( getClass().getSimpleName() + "#" + hashCode() + " :: processLine() :: " + s );
         try
         {
             final byte operationId = (byte) s.charAt( 0 );

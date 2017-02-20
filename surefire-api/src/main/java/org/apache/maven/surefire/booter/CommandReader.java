@@ -25,6 +25,8 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.io.DataInputStream;
 import java.io.EOFException;
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Iterator;
@@ -336,10 +338,18 @@ public final class CommandReader
         private void requestNextTest()
         {
             byte[] encoded = encodeStringForForkCommunication( ( (char) BOOTERCODE_NEXT_TEST ) + ",0,want more!\n" );
-            synchronized ( originalOutStream )
+            synchronized ( FileDescriptor.out )
             {
-                originalOutStream.write( encoded, 0, encoded.length );
-                originalOutStream.flush();
+                FileOutputStream out = new FileOutputStream( FileDescriptor.out );
+                try
+                {
+                    out.write( encoded, 0, encoded.length );
+                    out.getFD().sync();
+                }
+                catch ( IOException e )
+                {
+                    //
+                }
             }
         }
 
