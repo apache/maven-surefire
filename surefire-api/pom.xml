@@ -31,6 +31,10 @@
   <name>SureFire API</name>
   <description>API used in Surefire and Failsafe MOJO, Booter, Common and test framework providers.</description>
 
+  <properties>
+    <skipTests>true</skipTests>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>

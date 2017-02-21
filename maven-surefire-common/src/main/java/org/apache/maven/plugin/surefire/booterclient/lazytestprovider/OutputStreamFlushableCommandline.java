@@ -51,7 +51,7 @@ public class OutputStreamFlushableCommandline
         public void flush()
             throws IOException
         {
-            System.out.println( getClass().getSimpleName() + "#" + hashCode()
+            System.out.println(  System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
                                         + " :: flush() :: flush OutputStream" );
             outputStream.flush();
         }
@@ -63,11 +63,15 @@ public class OutputStreamFlushableCommandline
     public Process execute()
         throws CommandLineException
     {
+        System.out.println(  System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
+                                     + " :: before super.execute()" );
         Process process = super.execute();
+        System.out.println(  System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
+                                     + " :: after super.execute()" );
 
         if ( process.getOutputStream() != null )
         {
-            System.out.println( getClass().getSimpleName() + "#" + hashCode()
+            System.out.println( System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
                                         + " :: execute() :: flushReceiver is set!!!" );
             flushReceiver = new OutputStreamFlushReceiver( process.getOutputStream() );
         }
