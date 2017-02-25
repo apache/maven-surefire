@@ -236,6 +236,8 @@ public final class ForkedBooter
         switch ( shutdownType )
         {
             case KILL:
+                System.out.close();
+                System.err.close();
                 Runtime.getRuntime().halt( returnCode );
             case EXIT:
                 if ( stopReaderOnExit )
@@ -243,6 +245,8 @@ public final class ForkedBooter
                     reader.stop();
                 }
                 launchLastDitchDaemonShutdownThread( returnCode );
+                System.out.close();
+                System.err.close();
                 System.exit( returnCode );
             case DEFAULT:
                 // refers to shutdown=testset, but not used now, keeping reader open
