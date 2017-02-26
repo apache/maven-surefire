@@ -40,6 +40,10 @@
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-shared-utils</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
@@ -74,6 +78,7 @@
               <artifactSet>
                 <includes>
                   <include>org.apache.maven.shared:maven-shared-utils</include>
+                  <include>commons-io:commons-io</include>
                   <include>commons-lang:commons-lang</include>
                 </includes>
               </artifactSet>

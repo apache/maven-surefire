@@ -78,6 +78,7 @@
                   <include>org.apache.maven.surefire:common-junit4</include>
                   <include>org.apache.maven.surefire:common-java5</include>
                   <include>org.apache.maven.shared:maven-shared-utils</include>
+                  <include>commons-io:commons-io</include>
                 </includes>
               </artifactSet>
               <relocations>

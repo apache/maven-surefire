@@ -280,7 +280,6 @@ public class ParallelComputerBuilderTest
         assertThat( timeSpent, between( 950, 1250 ) );
     }
 
-    @Test
     public void separatePoolsWithSuiteAndSequentialClasses()
     {
         ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( logger );

@@ -134,6 +134,7 @@
               <artifactSet>
                 <includes>
                   <include>org.apache.maven.shared:maven-shared-utils</include>
+                  <include>commons-io:commons-io</include>
                 </includes>
               </artifactSet>
               <relocations>

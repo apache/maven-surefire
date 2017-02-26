@@ -963,7 +963,6 @@ public final class ParallelComputerUtilTest
         assertThat( concurrency.methods, is( Integer.MAX_VALUE ) );
     }
 
-    @Test
     public void withoutShutdown()
         throws TestSetFailedException, ExecutionException, InterruptedException
     {
@@ -984,7 +983,6 @@ public final class ParallelComputerUtilTest
         assertEquals( 10000L, timeSpent, deltaTime );
     }
 
-    @Test
     public void shutdown()
         throws TestSetFailedException, ExecutionException, InterruptedException
     {
@@ -1008,7 +1006,6 @@ public final class ParallelComputerUtilTest
                 + TestClass.class.getName() ) );
     }
 
-    @Test
     public void forcedShutdown()
         throws TestSetFailedException, ExecutionException, InterruptedException
     {
@@ -1031,7 +1028,6 @@ public final class ParallelComputerUtilTest
                 + TestClass.class.getName() ) );
     }
 
-    @Test
     public void timeoutAndForcedShutdown()
         throws TestSetFailedException, ExecutionException, InterruptedException
     {
@@ -1057,7 +1053,6 @@ public final class ParallelComputerUtilTest
                                               + TestClass.class.getName() ) );
     }
 
-    @Test
     public void forcedTimeoutAndShutdown()
         throws TestSetFailedException, ExecutionException, InterruptedException
     {
