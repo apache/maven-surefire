@@ -116,10 +116,15 @@ public final class TestProvidingInputStream
         if ( cmd == null )
         {
             String cmdData = testClassNames.poll();
-            return cmdData == null ? Command.TEST_SET_FINISHED : toRunClass( cmdData );
+            Command c = cmdData == null ? Command.TEST_SET_FINISHED : toRunClass( cmdData );
+            System.out.println( System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
+                                        + " :: nextCommand() :: " + c.getCommandType() + " " + c.getData() );
+            return c;
         }
         else
         {
+            System.out.println( System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
+                                        + " :: nextCommand() :: " + cmd.getCommandType() + " " + cmd.getData() );
             return cmd;
         }
     }
@@ -148,10 +153,12 @@ public final class TestProvidingInputStream
      */
     public void provideNewTest()
     {
-        System.out.println( getClass().getSimpleName() + "#" + hashCode() + " :: provideNewTest() :: before if" );
+        System.out.println( System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
+                                    + " :: provideNewTest() :: before if" );
         if ( canContinue() )
         {
-            System.out.println( getClass().getSimpleName() + "#" + hashCode() + " :: provideNewTest() :: after if" );
+            System.out.println( System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
+                                        + " :: provideNewTest() :: after if" );
             barrier.release();
         }
     }
@@ -161,7 +168,8 @@ public final class TestProvidingInputStream
     {
         if ( closed.compareAndSet( false, true ) )
         {
-            System.out.println( getClass().getSimpleName() + "#" + hashCode() + " :: close()" );
+            System.out.println( System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
+                                        + " :: close()" );
             invalidateInternalBuffer();
             barrier.drainPermits();
             barrier.release();
@@ -173,10 +181,10 @@ public final class TestProvidingInputStream
     {
         try
         {
-            System.out.println( getClass().getSimpleName() + "#" + hashCode()
+            System.out.println( System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
                                         + " :: awaitNextTest() :: before acquire" );
             barrier.acquire();
-            System.out.println( getClass().getSimpleName() + "#" + hashCode()
+            System.out.println( System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
                                         + " :: awaitNextTest() :: after acquire" );
         }
         catch ( InterruptedException e )

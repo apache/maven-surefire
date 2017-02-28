@@ -106,7 +106,8 @@ public abstract class AbstractCommandStream
             }
 
             Command cmd = nextCommand();
-            System.out.println( getClass().getSimpleName() + " will send " + cmd.getCommandType() );
+            System.out.println( System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
+                                        + " will send " + cmd.getCommandType() );
             lastCommand = cmd.getCommandType();
             buffer = lastCommand.hasDataType() ? lastCommand.encode( cmd.getData() ) : lastCommand.encode();
         }
@@ -127,7 +128,7 @@ public abstract class AbstractCommandStream
                 offset = 8;
                 len = toInt( currentBuffer, 4 );
             }
-            System.out.println( getClass().getSimpleName()
+            System.out.println( System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
                                         + " last byte sent of cmd "
                                         + lastCommand
                                         + " "

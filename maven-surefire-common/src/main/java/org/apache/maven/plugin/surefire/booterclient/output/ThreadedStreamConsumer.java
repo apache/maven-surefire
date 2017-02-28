@@ -120,7 +120,7 @@ public final class ThreadedStreamConsumer
     {
         if ( stop && !thread.isAlive() )
         {
-            System.out.println( getClass().getSimpleName() + "#" + hashCode()
+            System.out.println( System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
                                         + " consumeLine() :: items.clear()." );
             items.clear();
             return;
@@ -128,7 +128,7 @@ public final class ThreadedStreamConsumer
 
         try
         {
-            System.out.println( getClass().getSimpleName() + "#" + hashCode()
+            System.out.println( System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
                                         + " consumeLine() :: items.put( s ) :: " + s );
             items.put( s );
         }
@@ -142,7 +142,7 @@ public final class ThreadedStreamConsumer
     public void close()
             throws IOException
     {
-        System.out.println( getClass().getSimpleName() + "#" + hashCode()
+        System.out.println( System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
                                     + " close()" );
         if ( stop )
         {
@@ -151,7 +151,7 @@ public final class ThreadedStreamConsumer
 
         try
         {
-            System.out.println( getClass().getSimpleName() + "#" + hashCode()
+            System.out.println( System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
                                         + " close() :: END_ITEM" );
             items.put( END_ITEM );
             thread.join( CLOSE_TIMEOUT_MILLIS );
