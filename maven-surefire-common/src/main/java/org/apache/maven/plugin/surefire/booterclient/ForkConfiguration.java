@@ -200,6 +200,9 @@ public class ForkConfiguration
 
         cli.setWorkingDirectory( getWorkingDirectory( threadNumber ).getAbsolutePath() );
 
+        System.out.println( System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
+                                    + "createCommandLine() returned" );
+
         return cli;
     }
 
@@ -297,6 +300,9 @@ public class ForkConfiguration
             man.getMainAttributes().putValue( "Main-Class", startClassName );
 
             man.write( jos );
+
+            jos.closeEntry();
+            jos.flush();
         }
         finally
         {

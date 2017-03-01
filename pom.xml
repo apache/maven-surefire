@@ -86,8 +86,8 @@
   </distributionManagement>
 
   <properties>
-    <maven.compiler.source>1.6</maven.compiler.source>
-    <maven.compiler.target>1.6</maven.compiler.target>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
     <mavenVersion>2.2.1</mavenVersion>
     <!-- <shadedVersion>2.12.4</shadedVersion> commented out due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
     <mavenPluginPluginVersion>3.3</mavenPluginPluginVersion>
@@ -355,7 +355,7 @@
             <configuration>
               <rules>
                 <requireJavaVersion>
-                  <version>[1.6.0, 1.9.0)</version>
+                  <version>[1.7.0, 1.9.0)</version>
                 </requireJavaVersion>
               </rules>
             </configuration>
