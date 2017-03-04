@@ -41,8 +41,13 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import static java.lang.System.err;
+import static java.lang.System.getProperty;
+import static java.lang.System.nanoTime;
 import static java.lang.System.out;
 import static java.lang.System.setErr;
 import static java.lang.System.setOut;
@@ -76,6 +81,18 @@ public final class ForkedBooter
     private static final ScheduledExecutorService JVM_TERMINATOR = createJvmTerminator();
 
     private static volatile long systemExitTimeoutInSeconds = DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS;
+    private static final Logger LOG = Logger.getLogger(ForkedBooter.class.getName());
+
+    static {
+        try {
+            File log = new File(getProperty("user.dir"), nanoTime() + ".log");
+            FileHandler fh = new FileHandler(log.getCanonicalPath());
+            LOG.addHandler(fh);
+            fh.setFormatter(new SimpleFormatter());
+        } catch (IOException e) {
+            throw new IllegalStateException(e.getLocalizedMessage(), e);
+        }
+    }
 
     /**
      * This method is invoked when Surefire is forked - this method parses and organizes the arguments passed to it and
@@ -83,9 +100,11 @@ public final class ForkedBooter
      *
      * @param args Commandline arguments
      */
-    public static void main( String... args )
+    public static void main( String... args ) throws Exception
     {
-        final CommandReader reader = startupMasterProcessReader();
+        LOG.info( "ForkedBooter.main() :: Forked JVM started." );
+        Thread.sleep( 3000L );
+        /*final CommandReader reader = startupMasterProcessReader();
         final ScheduledFuture<?> pingScheduler = listenToShutdownCommands( reader );
         final PrintStream originalOut = out;
         try
@@ -173,7 +192,8 @@ public final class ForkedBooter
         finally
         {
             pingScheduler.cancel( true );
-        }
+        }*/
+        LOG.info( "ForkedBooter.main() :: Forked JVM finished." );
     }
 
     private static CommandReader startupMasterProcessReader()
