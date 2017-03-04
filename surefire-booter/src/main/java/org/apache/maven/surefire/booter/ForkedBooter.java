@@ -104,10 +104,10 @@ public final class ForkedBooter
     {
         LOG.info( "ForkedBooter.main() :: Forked JVM started." );
         Thread.sleep( 3000L );
-        /*final CommandReader reader = startupMasterProcessReader();
+        final CommandReader reader = startupMasterProcessReader();
         final ScheduledFuture<?> pingScheduler = listenToShutdownCommands( reader );
         final PrintStream originalOut = out;
-        try
+        /*try
         {
             final String tmpDir = args[0];
             final String dumpFileName = args[1];
