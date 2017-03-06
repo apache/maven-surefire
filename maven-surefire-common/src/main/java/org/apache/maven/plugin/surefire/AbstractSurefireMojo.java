@@ -1116,7 +1116,7 @@ public abstract class AbstractSurefireMojo
         if ( !getConsoleLogger().isDebugEnabled() && forkConfiguration != null )
         {
             File tempDirectory = forkConfiguration.getTempDirectory();
-            try
+            /*try
             {
                 FileUtils.deleteDirectory( tempDirectory );
             }
@@ -1124,7 +1124,7 @@ public abstract class AbstractSurefireMojo
             {
                 getConsoleLogger()
                         .warning( "Could not delete temp directory " + tempDirectory + " because " + e.getMessage() );
-            }
+            }*/
         }
     }
 
