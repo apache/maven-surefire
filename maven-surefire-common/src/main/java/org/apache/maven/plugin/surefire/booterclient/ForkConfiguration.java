@@ -153,6 +153,8 @@ public class ForkConfiguration
 
         if ( argLine != null )
         {
+            System.out.printf( "%d %s :: [ARG LINE] %s\n", System.currentTimeMillis(), getClass().getSimpleName(),
+                                     argLine );
             cli.createArg().setLine(
                    replaceThreadNumberPlaceholder( stripNewLines( replacePropertyExpressions( argLine ) ),
                                                    threadNumber ) );
@@ -160,11 +162,15 @@ public class ForkConfiguration
 
         if ( environmentVariables != null )
         {
+            System.out.printf( "%d %s :: [ENV] START\n", System.currentTimeMillis(), getClass().getSimpleName() );
             for ( Map.Entry<String, String> entry : environmentVariables.entrySet() )
             {
                 String value = entry.getValue();
-                cli.addEnvironment( entry.getKey(), value == null ? "" : value );
+                //cli.addEnvironment( entry.getKey(), value == null ? "" : value );
+                System.out.printf( "%d %s :: [ENV] %s=%s\n", System.currentTimeMillis(), getClass().getSimpleName(),
+                                         entry.getKey(), value );
             }
+            System.out.printf( "%d %s :: [ENV] END\n", System.currentTimeMillis(), getClass().getSimpleName() );
         }
 
         if ( getDebugLine() != null && !"".equals( getDebugLine() ) )
