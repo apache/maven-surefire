@@ -81,7 +81,7 @@ public final class ForkedBooter
     private static final ScheduledExecutorService JVM_TERMINATOR = createJvmTerminator();
 
     private static volatile long systemExitTimeoutInSeconds = DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS;
-    private static final Logger LOG = Logger.getLogger(ForkedBooter.class.getName());
+    /*private static final Logger LOG = Logger.getLogger(ForkedBooter.class.getName());
 
     static {
         try {
@@ -92,7 +92,7 @@ public final class ForkedBooter
         } catch (IOException e) {
             throw new IllegalStateException(e.getLocalizedMessage(), e);
         }
-    }
+    }*/
 
     /**
      * This method is invoked when Surefire is forked - this method parses and organizes the arguments passed to it and
@@ -102,12 +102,12 @@ public final class ForkedBooter
      */
     public static void main( String... args ) throws Exception
     {
-        LOG.info( "ForkedBooter.main() :: Forked JVM started." );
+        //LOG.info( "ForkedBooter.main() :: Forked JVM started." );
         Thread.sleep( 3000L );
         final CommandReader reader = startupMasterProcessReader();
         final ScheduledFuture<?> pingScheduler = listenToShutdownCommands( reader );
         final PrintStream originalOut = out;
-        /*try
+        try
         {
             final String tmpDir = args[0];
             final String dumpFileName = args[1];
@@ -192,8 +192,8 @@ public final class ForkedBooter
         finally
         {
             pingScheduler.cancel( true );
-        }*/
-        LOG.info( "ForkedBooter.main() :: Forked JVM finished." );
+        }
+        //LOG.info( "ForkedBooter.main() :: Forked JVM finished." );
     }
 
     private static CommandReader startupMasterProcessReader()
