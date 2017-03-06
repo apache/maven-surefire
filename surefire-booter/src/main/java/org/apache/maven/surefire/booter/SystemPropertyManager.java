@@ -80,10 +80,10 @@ public class SystemPropertyManager
         throws IOException
     {
         File file = File.createTempFile( name, "tmp", tempDirectory );
-        if ( !keepForkFiles )
+        /*if ( !keepForkFiles )
         {
             file.deleteOnExit();
-        }
+        }*/
 
         writePropertiesFile( file, name, properties );
 

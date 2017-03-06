@@ -275,10 +275,10 @@ public class ForkConfiguration
         throws IOException
     {
         File file = File.createTempFile( "surefirebooter", ".jar", tempDirectory );
-        if ( !debug )
+        /*if ( !debug )
         {
             file.deleteOnExit();
-        }
+        }*/
         FileOutputStream fos = new FileOutputStream( file );
         JarOutputStream jos = new JarOutputStream( fos );
         try
