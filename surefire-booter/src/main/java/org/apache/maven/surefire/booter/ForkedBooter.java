@@ -251,21 +251,13 @@ public final class ForkedBooter
         };
     }
 
-    private static void encodeAndWriteToOutput( String string, PrintStream out1 )
+    private static void encodeAndWriteToOutput( String string, PrintStream out )
     {
         byte[] encodeBytes = encodeStringForForkCommunication( string );
-        synchronized ( FileDescriptor.out )
+        synchronized ( out )
         {
-            FileOutputStream out = new FileOutputStream( FileDescriptor.out );
-            try
-            {
-                out.write( encodeBytes, 0, encodeBytes.length );
-                out.getFD().sync();
-            }
-            catch ( IOException e )
-            {
-                //
-            }
+            out.write( encodeBytes, 0, encodeBytes.length );
+            out.flush();
         }
     }
 
