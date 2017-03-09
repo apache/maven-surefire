@@ -69,12 +69,12 @@ public class OutputStreamFlushableCommandline
         System.out.println(  System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
                                      + " :: after super.execute()" );
 
-        /*if ( process.getOutputStream() != null )
+        if ( process.getOutputStream() != null )
         {
             System.out.println( System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
                                         + " :: execute() :: flushReceiver is set!!!" );
             flushReceiver = new OutputStreamFlushReceiver( process.getOutputStream() );
-        }*/
+        }
 
         return process;
     }
