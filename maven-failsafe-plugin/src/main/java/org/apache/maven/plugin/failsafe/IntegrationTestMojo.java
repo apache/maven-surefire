@@ -86,13 +86,13 @@ public class IntegrationTestMojo
     /**
      * Specify this parameter to run individual tests by file name, overriding the <code>includes/excludes</code>
      * parameters. Each pattern you specify here will be used to create an include pattern formatted like
-     * <code>**&#47;${test}.java</code>, so you can just type "-Dit.test=MyTest" to run a single test called
-     * "foo/MyTest.java".<br/>
+     * <code>**&#47;${it.test}.java</code>, so you can just type "-Dit.test=MyIT" to run a single test called
+     * "foo/MyIT.java".<br/>
      * This parameter overrides the <code>includes/excludes</code> parameters, and the TestNG <code>suiteXmlFiles</code>
      * parameter.
      * <p/>
      * Since 2.7.3 You can execute a limited number of methods in the test with adding #myMethod or #my*ethod. E.g. type
-     * "-Dit.test=MyTest#myMethod" <b>supported for junit 4.x and testNg</b>
+     * "-Dit.test=MyIT#myMethod" <b>supported for junit 4.x and testNg</b>
      * <br/>
      * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):<br/>
      * "-Dit.test=???IT, !Unstable*, pkg&#47;**&#47;Ci*leIT.java, *IT#test*One+testTwo?????, #fast*+slowTest"<br/>
@@ -306,9 +306,9 @@ public class IntegrationTestMojo
     /**
      * A file containing include patterns. Blank lines, or lines starting with # are ignored. If {@code includes} are
      * also specified, these patterns are appended. Example with path, simple and regex includes:<br/>
-     * &#042;&#047;test/*<br/>
+     * &#042;&#047;it/*<br/>
      * &#042;&#042;&#047;NotIncludedByDefault.java<br/>
-     * %regex[.*Test.*|.*Not.*]<br/>
+     * %regex[.*IT.*|.*Not.*]<br/>
      */
     @Parameter( property = "failsafe.includesFile" )
     private File includesFile;
@@ -316,9 +316,9 @@ public class IntegrationTestMojo
     /**
      * A file containing exclude patterns. Blank lines, or lines starting with # are ignored. If {@code excludes} are
      * also specified, these patterns are appended. Example with path, simple and regex excludes:<br/>
-     * &#042;&#047;test/*<br/>
-     * &#042;&#042;&#047;DontRunTest.*<br/>
-     * %regex[.*Test.*|.*Not.*]<br/>
+     * &#042;&#047;it/*<br/>
+     * &#042;&#042;&#047;DontRunIT.*<br/>
+     * %regex[.*IT.*|.*Not.*]<br/>
      */
     @Parameter( property = "failsafe.excludesFile" )
     private File excludesFile;
