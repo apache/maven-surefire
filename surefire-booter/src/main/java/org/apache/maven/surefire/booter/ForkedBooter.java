@@ -103,7 +103,6 @@ public final class ForkedBooter
     public static void main( String... args ) throws Exception
     {
         //LOG.info( "ForkedBooter.main() :: Forked JVM started." );
-        Thread.sleep( 3000L );
         final CommandReader reader = startupMasterProcessReader();
         final ScheduledFuture<?> pingScheduler = listenToShutdownCommands( reader );
         final PrintStream originalOut = out;
@@ -273,17 +272,6 @@ public final class ForkedBooter
                     reader.stop();
                 }
                 launchLastDitchDaemonShutdownThread( returnCode );
-                try
-                {
-                    // on FreeBSD the std/out is FileOutputStream.
-                    // it looks like the ThreadedStreamConsumer has not time to read out all data because process
-                    // was closed faster. No shared memory between processes.
-                    Thread.sleep( 1000 );
-                }
-                catch ( InterruptedException e )
-                {
-                    e.printStackTrace();
-                }
                 System.exit( returnCode );
             case DEFAULT:
                 // refers to shutdown=testset, but not used now, keeping reader open

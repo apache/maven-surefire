@@ -644,14 +644,6 @@ public class ForkStarter
         }
         finally
         {
-            try
-            {
-                Thread.sleep( 1000 );
-            }
-            catch ( InterruptedException e )
-            {
-                e.printStackTrace();
-            }
             closer.close();
             if ( runResult == null )
             {
