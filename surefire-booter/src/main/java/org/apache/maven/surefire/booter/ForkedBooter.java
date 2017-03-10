@@ -104,7 +104,7 @@ public final class ForkedBooter
     {
         //LOG.info( "ForkedBooter.main() :: Forked JVM started." );
         final CommandReader reader = startupMasterProcessReader();
-        final ScheduledFuture<?> pingScheduler = listenToShutdownCommands( reader );
+        //final ScheduledFuture<?> pingScheduler = listenToShutdownCommands( reader );
         final PrintStream originalOut = out;
         try
         {
@@ -188,10 +188,10 @@ public final class ForkedBooter
             // noinspection ProhibitedExceptionThrown,CallToSystemExit
             exit( 1, EXIT, reader, false );
         }
-        finally
+        /*finally
         {
             pingScheduler.cancel( true );
-        }
+        }*/
         //LOG.info( "ForkedBooter.main() :: Forked JVM finished." );
     }
 
