@@ -391,6 +391,7 @@
               </goals>
               <configuration>
                 <excludes combine.children="append">
+                  <exclude>Jenkinsfile</exclude>
                   <exclude>README.md</exclude>
                   <exclude>.gitignore</exclude>
                   <exclude>.git/**/*</exclude>
