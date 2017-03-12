@@ -9,7 +9,12 @@ pipeline {
                 jdk 'JDK 1.8.0_102'
             }
             steps {
-                sh 'mvn -v'
+                sh 'clean install jacoco:report -B -U -e -fae -V -Prun-its,embedded,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084'
+            }
+            post {
+                success {
+                    junit '**/target/surefire-reports/**/*.xml' 
+                }
             }
         }
         stage('Windows Build') {
@@ -21,7 +26,12 @@ pipeline {
                 jdk 'JDK 1.8_121 (Windows Only)'
             }
             steps {
-                bat 'mvn -v'
+                bat 'clean install jacoco:report -B -U -e -fae -V -Prun-its,embedded,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084'
+            }
+            post {
+                success {
+                    junit '**/target/surefire-reports/**/*.xml' 
+                }
             }
         }
     }
