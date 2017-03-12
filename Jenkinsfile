@@ -9,7 +9,7 @@ pipeline {
                 jdk 'JDK 1.8.0_102'
             }
             steps {
-                sh 'clean install jacoco:report -B -U -e -fae -V -Prun-its,embedded,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084'
+                sh 'mvn clean install jacoco:report -B -U -e -fae -V -Prun-its,embedded,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084'
             }
             post {
                 success {
@@ -26,7 +26,7 @@ pipeline {
                 jdk 'JDK 1.8_121 (Windows Only)'
             }
             steps {
-                bat 'clean install jacoco:report -B -U -e -fae -V -Prun-its,embedded,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084'
+                bat 'mvn clean install jacoco:report -B -U -e -fae -V -Prun-its,embedded,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084'
             }
             post {
                 success {
