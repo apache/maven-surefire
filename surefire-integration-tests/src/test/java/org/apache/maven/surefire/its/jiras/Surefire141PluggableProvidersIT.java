@@ -52,6 +52,7 @@ public class Surefire141PluggableProvidersIT
         throws Exception
     {
         unpack( "surefire-141-pluggableproviders" )
+            .setForkJvm()
             .maven()
             .showExceptionMessages()
             .debugLogging()
@@ -68,13 +69,20 @@ public class Surefire141PluggableProvidersIT
         final String errorText = "Let's fail with a runtimeException";
 
         OutputValidator validator = unpack( "surefire-141-pluggableproviders" )
+            .setForkJvm()
             .sysProp( "invokeCrash", "runtimeException" )
             .maven()
             .withFailure()
-            .executeTest()
-            .verifyTextInLog( errorText );
+            .executeTest();
 
         assertErrorMessage( validator, errorText );
+
+        boolean hasErrorInLog = verifiedErrorInLog( validator, "There was an error in the forked process" );
+        boolean verifiedInLog = verifiedErrorInLog( validator, errorText );
+        assertThat( hasErrorInLog && verifiedInLog )
+                .describedAs( "'" + errorText + "' could not be verified in log.txt nor *.dump file. ("
+                                      + hasErrorInLog + ", " + verifiedInLog + ")" )
+                .isTrue();
     }
 
     @Test
@@ -84,13 +92,20 @@ public class Surefire141PluggableProvidersIT
         final String errorText = "Let's fail with a reporterexception";
 
         OutputValidator validator = unpack( "surefire-141-pluggableproviders" )
+            .setForkJvm()
             .sysProp( "invokeCrash", "reporterException" )
             .maven()
             .withFailure()
-            .executeTest()
-            .verifyTextInLog( errorText );
+            .executeTest();
 
         assertErrorMessage( validator, errorText );
+
+        boolean hasErrorInLog = verifiedErrorInLog( validator, "There was an error in the forked process" );
+        boolean verifiedInLog = verifiedErrorInLog( validator, errorText );
+        assertThat( hasErrorInLog && verifiedInLog )
+                .describedAs( "'" + errorText + "' could not be verified in log.txt nor *.dump file. ("
+                                      + hasErrorInLog + ", " + verifiedInLog + ")" )
+                .isTrue();
     }
 
     @Test
@@ -100,15 +115,19 @@ public class Surefire141PluggableProvidersIT
         final String errorText = "Let's fail with a runtimeException";
 
         OutputValidator validator = unpack( "surefire-141-pluggableproviders" )
+                                            .setForkJvm()
                                             .sysProp( "constructorCrash", "runtimeException" )
                                             .maven()
                                             .withFailure()
                                             .executeTest();
 
+        assertErrorMessage( validator, errorText );
+
+        boolean hasErrorInLog = verifiedErrorInLog( validator, "There was an error in the forked process" );
         boolean verifiedInLog = verifiedErrorInLog( validator, errorText );
-        boolean verifiedInDump = verifiedErrorInDump( validator, errorText );
-        assertThat( verifiedInLog || verifiedInDump )
-                .describedAs( "'" + errorText + "' could not be verified in log.txt nor *.dump file." )
+        assertThat( hasErrorInLog && verifiedInLog )
+                .describedAs( "'" + errorText + "' could not be verified in log.txt nor *.dump file. ("
+                                      + hasErrorInLog + ", " + verifiedInLog + ")" )
                 .isTrue();
     }
 

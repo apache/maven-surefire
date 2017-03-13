@@ -265,6 +265,7 @@ public class ForkClient
                     break;
                 case BOOTERCODE_BYE:
                     saidGoodBye = true;
+                    notifiableTestStream.acknowledgeByeEventReceived();
                     break;
                 case BOOTERCODE_STOP_ON_NEXT_TEST:
                     stopOnNextTest();

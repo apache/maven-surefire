@@ -42,6 +42,7 @@ import static java.lang.Thread.State.TERMINATED;
 import static java.lang.StrictMath.max;
 import static org.apache.maven.surefire.booter.Command.toShutdown;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_NEXT_TEST;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.BYE_ACK;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.NOOP;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.RUN_CLASS;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.SHUTDOWN;
@@ -164,6 +165,11 @@ public final class CommandReader
     public void addNoopListener( CommandListener listener )
     {
         addListener( NOOP, listener );
+    }
+
+    public void addByeAckListener( CommandListener listener )
+    {
+        addListener( BYE_ACK, listener );
     }
 
     private void addListener( MasterProcessCommand cmd, CommandListener listener )
@@ -470,17 +476,15 @@ public final class CommandReader
                 CommandReader.this.makeQueueFull();
                 CommandReader.this.wakeupIterator();
                 insertToListeners( toShutdown( shutdown ) );
-                switch ( shutdown )
+                if ( shutdown.isExit() )
                 {
-                    case EXIT:
-                        System.exit( 1 );
-                    case KILL:
-                        Runtime.getRuntime().halt( 1 );
-                    case DEFAULT:
-                    default:
-                        // should not happen; otherwise you missed enum case
-                        break;
+                    System.exit( 1 );
                 }
+                else if ( shutdown.isKill() )
+                {
+                    Runtime.getRuntime().halt( 1 );
+                }
+                // else is default: should not happen; otherwise you missed enum case
             }
         }
     }

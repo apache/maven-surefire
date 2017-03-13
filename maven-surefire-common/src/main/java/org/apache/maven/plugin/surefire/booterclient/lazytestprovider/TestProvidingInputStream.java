@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.maven.surefire.booter.MasterProcessCommand.TEST_SET_FINISHED;
+import static org.apache.maven.surefire.booter.Command.BYE_ACK;
 import static org.apache.maven.surefire.booter.Command.NOOP;
 import static org.apache.maven.surefire.booter.Command.SKIP_SINCE_NEXT_TEST;
 import static org.apache.maven.surefire.booter.Command.toRunClass;
@@ -110,6 +110,16 @@ public final class TestProvidingInputStream
     }
 
     @Override
+    public void acknowledgeByeEventReceived()
+    {
+        if ( canContinue() )
+        {
+            commands.add( BYE_ACK );
+            barrier.release();
+        }
+    }
+
+    @Override
     protected Command nextCommand()
     {
         Command cmd = commands.poll();
@@ -135,12 +145,6 @@ public final class TestProvidingInputStream
     protected boolean isClosed()
     {
         return closed.get();
-    }
-
-    @Override
-    protected boolean canContinue()
-    {
-        return getLastCommand() != TEST_SET_FINISHED && !isClosed();
     }
 
     /**

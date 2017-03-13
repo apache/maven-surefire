@@ -644,6 +644,7 @@ public class ForkStarter
         }
         finally
         {
+            currentForkClients.remove( forkClient );
             closer.close();
             if ( runResult == null )
             {
