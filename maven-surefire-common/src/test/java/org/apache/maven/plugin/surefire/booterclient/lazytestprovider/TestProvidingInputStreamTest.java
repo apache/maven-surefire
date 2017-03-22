@@ -95,6 +95,7 @@ public class TestProvidingInputStreamTest
         assertThat( is.read(), is( 0 ) );
         assertThat( is.read(), is( 0 ) );
         assertThat( is.read(), is( 0 ) );
+        is.close();
         assertThat( is.read(), is( -1 ) );
     }
 

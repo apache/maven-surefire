@@ -117,6 +117,13 @@ public class MasterProcessCommandTest
                     decoded = command.toDataTypeAsString( encoded );
                     assertNull( decoded );
                     break;
+                case  BYE_ACK:
+                    assertEquals( Void.class, command.getDataType() );
+                    encoded = command.fromDataType( dummyData );
+                    assertThat( encoded.length, is( 0 ) );
+                    decoded = command.toDataTypeAsString( encoded );
+                    assertNull( decoded );
+                    break;
                 default:
                     fail();
             }

@@ -46,7 +46,8 @@ public enum MasterProcessCommand
     SHUTDOWN( 3, String.class ),
 
     /** To tell a forked process that the master process is still alive. Repeated after 10 seconds. */
-    NOOP( 4, Void.class );
+    NOOP( 4, Void.class ),
+    BYE_ACK( 5, Void.class );
 
     private static final Charset ASCII = Charset.forName( "ASCII" );
 

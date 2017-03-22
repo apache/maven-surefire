@@ -28,37 +28,30 @@ import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.FileHandler;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
+import static java.lang.Math.max;
 import static java.lang.System.err;
-import static java.lang.System.getProperty;
-import static java.lang.System.nanoTime;
 import static java.lang.System.out;
 import static java.lang.System.setErr;
 import static java.lang.System.setOut;
 import static java.lang.Thread.currentThread;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.surefire.booter.CommandReader.getReader;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_BYE;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_ERROR;
 import static org.apache.maven.surefire.booter.ForkingRunListener.encode;
-import static org.apache.maven.surefire.booter.Shutdown.EXIT;
-import static org.apache.maven.surefire.booter.Shutdown.KILL;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.setSystemProperties;
 import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
@@ -78,8 +71,10 @@ public final class ForkedBooter
 {
     private static final long DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS = 30;
     private static final long PING_TIMEOUT_IN_SECONDS = 20;
-    private static final ScheduledExecutorService JVM_TERMINATOR = createJvmTerminator();
+    private static final long ONE_SECOND_IN_MILLIS = 1000;
+    private static final ScheduledExecutorService JVM_PING = createPingScheduler();
 
+    private static volatile ScheduledThreadPoolExecutor jvmTerminator;
     private static volatile long systemExitTimeoutInSeconds = DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS;
     /*private static final Logger LOG = Logger.getLogger(ForkedBooter.class.getName());
 
@@ -104,7 +99,7 @@ public final class ForkedBooter
     {
         //LOG.info( "ForkedBooter.main() :: Forked JVM started." );
         final CommandReader reader = startupMasterProcessReader();
-        //final ScheduledFuture<?> pingScheduler = listenToShutdownCommands( reader );
+        final ScheduledFuture<?> pingScheduler = listenToShutdownCommands( reader );
         final PrintStream originalOut = out;
         try
         {
@@ -177,7 +172,7 @@ public final class ForkedBooter
             // Say bye.
             encodeAndWriteToOutput( ( (char) BOOTERCODE_BYE ) + ",0,BYE!\n", originalOut );
             // noinspection CallToSystemExit
-            exit( 0, EXIT, reader, false );
+            exit( 0, reader );
         }
         catch ( Throwable t )
         {
@@ -186,12 +181,12 @@ public final class ForkedBooter
             // noinspection UseOfSystemOutOrSystemErr
             t.printStackTrace( err );
             // noinspection ProhibitedExceptionThrown,CallToSystemExit
-            exit( 1, EXIT, reader, false );
+            exit( 1 );
         }
-        /*finally
+        finally
         {
             pingScheduler.cancel( true );
-        }*/
+        }
         //LOG.info( "ForkedBooter.main() :: Forked JVM finished." );
     }
 
@@ -202,11 +197,11 @@ public final class ForkedBooter
 
     private static ScheduledFuture<?> listenToShutdownCommands( CommandReader reader )
     {
-        reader.addShutdownListener( createExitHandler( reader ) );
+        reader.addShutdownListener( createExitHandler() );
         AtomicBoolean pingDone = new AtomicBoolean( true );
         reader.addNoopListener( createPingHandler( pingDone ) );
-        return JVM_TERMINATOR.scheduleAtFixedRate( createPingJob( pingDone, reader ),
-                                                   0, PING_TIMEOUT_IN_SECONDS, SECONDS );
+        Runnable pingJob = createPingJob( pingDone );
+        return JVM_PING.scheduleAtFixedRate( pingJob, 0, PING_TIMEOUT_IN_SECONDS, SECONDS );
     }
 
     private static CommandListener createPingHandler( final AtomicBoolean pingDone )
@@ -220,19 +215,28 @@ public final class ForkedBooter
         };
     }
 
-    private static CommandListener createExitHandler( final CommandReader reader )
+    private static CommandListener createExitHandler()
     {
         return new CommandListener()
         {
             public void update( Command command )
             {
                 System.out.println( System.currentTimeMillis() + " ForkedBooter exit handler" );
-                exit( 1, command.toShutdownData(), reader, true );
+                Shutdown shutdown = command.toShutdownData();
+                if ( shutdown.isKill() )
+                {
+                    kill();
+                }
+                else if ( shutdown.isExit() )
+                {
+                    exit( 1 );
+                }
+                // else refers to shutdown=testset, but not used now, keeping reader open
             }
         };
     }
 
-    private static Runnable createPingJob( final AtomicBoolean pingDone, final CommandReader reader  )
+    private static Runnable createPingJob( final AtomicBoolean pingDone  )
     {
         return new Runnable()
         {
@@ -244,7 +248,7 @@ public final class ForkedBooter
                 {
                     System.out.println( System.currentTimeMillis()
                                         + " ForkedBooter PING timer: plugin did not send me NOOP signal > exit" );
-                    exit( 1, KILL, reader, true );
+                    kill();
                 }
             }
         };
@@ -260,23 +264,44 @@ public final class ForkedBooter
         }
     }
 
-    private static void exit( int returnCode, Shutdown shutdownType, CommandReader reader, boolean stopReaderOnExit )
+    private static void kill()
     {
-        switch ( shutdownType )
+        Runtime.getRuntime().halt( 1 );
+    }
+
+    private static void exit( int returnCode )
+    {
+        launchLastDitchDaemonShutdownThread( returnCode );
+        System.exit( returnCode );
+    }
+
+    private static void exit( int returnCode, final CommandReader reader )
+    {
+        final Semaphore barrier = new Semaphore( 0 );
+        reader.addByeAckListener( new CommandListener()
+                                  {
+                                      @Override
+                                      public void update( Command command )
+                                      {
+                                          barrier.release();
+                                      }
+                                  }
+        );
+        launchLastDitchDaemonShutdownThread( returnCode );
+        final long timeoutMillis = max( systemExitTimeoutInSeconds * ONE_SECOND_IN_MILLIS, ONE_SECOND_IN_MILLIS );
+        acquireOnePermit( barrier, timeoutMillis );
+        System.exit( returnCode );
+    }
+
+    private static boolean acquireOnePermit( Semaphore barrier, long timeoutMillis )
+    {
+        try
         {
-            case KILL:
-                Runtime.getRuntime().halt( returnCode );
-            case EXIT:
-                if ( stopReaderOnExit )
-                {
-                    reader.stop();
-                }
-                launchLastDitchDaemonShutdownThread( returnCode );
-                System.exit( returnCode );
-            case DEFAULT:
-                // refers to shutdown=testset, but not used now, keeping reader open
-            default:
-                break;
+            return barrier.tryAcquire( timeoutMillis, MILLISECONDS );
+        }
+        catch ( InterruptedException e )
+        {
+            return true;
         }
     }
 
@@ -298,11 +323,25 @@ public final class ForkedBooter
         return new ForkingReporterFactory( trimStackTrace, originalSystemOut );
     }
 
-    private static ScheduledExecutorService createJvmTerminator()
+    private static synchronized ScheduledThreadPoolExecutor getJvmTerminator()
     {
-        ThreadFactory threadFactory = newDaemonThreadFactory( "last-ditch-daemon-shutdown-thread-"
-                                                            + systemExitTimeoutInSeconds
-                                                            + "s" );
+        if ( jvmTerminator == null )
+        {
+            ThreadFactory threadFactory =
+                    newDaemonThreadFactory( "last-ditch-daemon-shutdown-thread-" + systemExitTimeoutInSeconds + "s" );
+            jvmTerminator = new ScheduledThreadPoolExecutor( 1, threadFactory );
+            jvmTerminator.setMaximumPoolSize( 1 );
+            return jvmTerminator;
+        }
+        else
+        {
+            return jvmTerminator;
+        }
+    }
+
+    private static ScheduledExecutorService createPingScheduler()
+    {
+        ThreadFactory threadFactory = newDaemonThreadFactory( "ping-" + PING_TIMEOUT_IN_SECONDS + "s" );
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor( 1, threadFactory );
         executor.setMaximumPoolSize( 2 );
         executor.prestartCoreThread();
@@ -312,13 +351,14 @@ public final class ForkedBooter
     @SuppressWarnings( "checkstyle:emptyblock" )
     private static void launchLastDitchDaemonShutdownThread( final int returnCode )
     {
-        JVM_TERMINATOR.schedule( new Runnable()
-        {
-            public void run()
-            {
-                Runtime.getRuntime().halt( returnCode );
-            }
-        }, systemExitTimeoutInSeconds, SECONDS );
+        getJvmTerminator().schedule( new Runnable()
+                                        {
+                                            public void run()
+                                            {
+                                                Runtime.getRuntime().halt( returnCode );
+                                            }
+                                        }, systemExitTimeoutInSeconds, SECONDS
+        );
     }
 
     private static RunResult invokeProviderInSameClassLoader( Object testSet, Object factory,

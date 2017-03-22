@@ -26,6 +26,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.Thread.currentThread;
 
@@ -41,15 +42,13 @@ public final class ThreadedStreamConsumer
 
     private static final int ITEM_LIMIT_BEFORE_SLEEP = 10 * 1000;
 
-    private static final long CLOSE_TIMEOUT_MILLIS = 5 * 60 * 1000L;
-
     private final BlockingQueue<String> items = new ArrayBlockingQueue<String>( ITEM_LIMIT_BEFORE_SLEEP );
+
+    private final AtomicBoolean stop = new AtomicBoolean();
 
     private final Thread thread;
 
     private final Pumper pumper;
-
-    private volatile boolean stop;
 
     final class Pumper
             implements Runnable
@@ -76,7 +75,7 @@ public final class ThreadedStreamConsumer
          */
         public void run()
         {
-            while ( !ThreadedStreamConsumer.this.stop )
+            while ( !ThreadedStreamConsumer.this.stop.get() )
             {
                 try
                 {
@@ -87,7 +86,7 @@ public final class ThreadedStreamConsumer
                                                 + item );
                     if ( shouldStopQueueing( item ) )
                     {
-                        break;
+                        return;
                     }
                     target.consumeLine( item );
                 }
@@ -118,7 +117,7 @@ public final class ThreadedStreamConsumer
 
     public void consumeLine( String s )
     {
-        if ( stop && !thread.isAlive() )
+        if ( stop.get() && !thread.isAlive() )
         {
             System.out.println( System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
                                         + " consumeLine() :: items.clear()." );
@@ -144,26 +143,17 @@ public final class ThreadedStreamConsumer
     {
         System.out.println( System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
                                     + " close()" );
-        if ( stop )
+        if ( stop.compareAndSet( false, true ) )
         {
-            return;
-        }
-
-        try
-        {
-            System.out.println( System.currentTimeMillis() + " " + getClass().getSimpleName() + "#" + hashCode()
-                                        + " close() :: END_ITEM" );
-            items.put( END_ITEM );
-            thread.join( CLOSE_TIMEOUT_MILLIS );
-        }
-        catch ( InterruptedException e )
-        {
-            currentThread().interrupt();
-            throw new IOException( e );
-        }
-        finally
-        {
-            stop = true;
+            items.clear();
+            try
+            {
+                items.put( END_ITEM );
+            }
+            catch ( InterruptedException e )
+            {
+                currentThread().interrupt();
+            }
         }
 
         if ( pumper.hasErrors() )

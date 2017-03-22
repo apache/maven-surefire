@@ -46,4 +46,9 @@ final class MockNotifiableTestStream
     public void noop()
     {
     }
+
+    @Override
+    public void acknowledgeByeEventReceived()
+    {
+    }
 }

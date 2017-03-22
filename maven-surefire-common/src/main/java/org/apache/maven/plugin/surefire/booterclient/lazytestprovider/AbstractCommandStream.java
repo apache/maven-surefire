@@ -41,10 +41,12 @@ public abstract class AbstractCommandStream
     protected abstract boolean isClosed();
 
     /**
-     * Unnecessarily opposite to {@link #isClosed()} however may respect
-     * {@link #getLastCommand() last command} and {@link #isClosed()}.
+     * Opposite to {@link #isClosed()}.
      */
-    protected abstract boolean canContinue();
+    protected boolean canContinue()
+    {
+        return !isClosed();
+    }
 
     /**
      * Possibly waiting for next command (see {@link #nextCommand()}) unless the stream is atomically

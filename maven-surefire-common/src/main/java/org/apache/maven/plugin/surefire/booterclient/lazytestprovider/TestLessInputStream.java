@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import static org.apache.maven.surefire.booter.Command.BYE_ACK;
 import static org.apache.maven.surefire.booter.Command.NOOP;
 import static org.apache.maven.surefire.booter.Command.SKIP_SINCE_NEXT_TEST;
 import static org.apache.maven.surefire.booter.Command.toShutdown;
@@ -93,15 +94,19 @@ public final class TestLessInputStream
     }
 
     @Override
-    protected boolean isClosed()
+    public void acknowledgeByeEventReceived()
     {
-        return closed.get();
+        if ( canContinue() )
+        {
+            immediateCommands.add( BYE_ACK );
+            barrier.release();
+        }
     }
 
     @Override
-    protected boolean canContinue()
+    protected boolean isClosed()
     {
-        return !isClosed();
+        return closed.get();
     }
 
     @Override
@@ -356,6 +361,24 @@ public final class TestLessInputStream
                     lock.unlock();
                 }
             }
+
+            @Override
+            public void acknowledgeByeEventReceived()
+            {
+                Lock lock = rwLock.readLock();
+                lock.lock();
+                try
+                {
+                    for ( TestLessInputStream aliveStream : TestLessInputStreamBuilder.this.aliveStreams )
+                    {
+                        aliveStream.acknowledgeByeEventReceived();
+                    }
+                }
+                finally
+                {
+                    lock.unlock();
+                }
+            }
         }
 
         /**
@@ -409,6 +432,24 @@ public final class TestLessInputStream
                 try
                 {
                     if ( TestLessInputStreamBuilder.this.addTailNodeIfAbsent( NOOP ) )
+                    {
+                        release();
+                    }
+                }
+                finally
+                {
+                    lock.unlock();
+                }
+            }
+
+            @Override
+            public void acknowledgeByeEventReceived()
+            {
+                Lock lock = rwLock.readLock();
+                lock.lock();
+                try
+                {
+                    if ( TestLessInputStreamBuilder.this.addTailNodeIfAbsent( BYE_ACK ) )
                     {
                         release();
                     }
