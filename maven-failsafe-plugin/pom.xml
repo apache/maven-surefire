@@ -291,7 +291,7 @@
                   <pomIncludes>
                     <pomInclude>*/pom.xml</pomInclude>
                   </pomIncludes>
-                  <postBuildHookScript>verify.bsh</postBuildHookScript>
+                  <postBuildHookScript>verify</postBuildHookScript>
                   <settingsFile>src/it/settings.xml</settingsFile>
                   <skipInvocation>${skipTests}</skipInvocation>
                   <streamLogs>false</streamLogs>
