@@ -132,8 +132,6 @@ public class ForkStarter
 
     private static final String DUMP_FILE_PREFIX = DumpFileUtils.newFormattedDateFileName() + "-jvmRun";
 
-    private static final AtomicInteger DUMP_FILE_POSTFIX_COUNTER = new AtomicInteger();
-
     private final ScheduledExecutorService pingThreadScheduler = createPingScheduler();
 
     private final ScheduledExecutorService timeoutCheckScheduler;
@@ -594,7 +592,7 @@ public class ForkStarter
         }
 
         cli.createArg().setValue( tempDir );
-        cli.createArg().setValue( DUMP_FILE_PREFIX + DUMP_FILE_POSTFIX_COUNTER.incrementAndGet() );
+        cli.createArg().setValue( DUMP_FILE_PREFIX + forkNumber );
         cli.createArg().setValue( surefireProperties.getName() );
         if ( systPropsFile != null )
         {
