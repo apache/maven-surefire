@@ -19,9 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
 
 /**
@@ -32,16 +30,18 @@ import org.junit.Test;
  * @author Kristian Rosenvold
  */
 public class ForkConsoleOutputWithErrorsIT
-    extends SurefireJUnit4IntegrationTestCase
+        extends SurefireJUnit4IntegrationTestCase
 {
     @Test
     public void xmlFileContainsConsoleOutput()
     {
-        final OutputValidator outputValidator = unpack( "/fork-consoleOutputWithErrors" ).
-            failNever().redirectToFile( true ).executeTest();
-        final TestFile surefireReportsFile =
-            outputValidator.getSurefireReportsXmlFile( "TEST-forkConsoleOutput.Test2.xml" );
-        surefireReportsFile.assertContainsText( "sout: Will Fail soon" );
-        surefireReportsFile.assertContainsText( "serr: Will Fail now" );
+        unpack( "/fork-consoleOutputWithErrors" )
+                .setForkJvm()
+                .failNever()
+                .redirectToFile( true )
+                .executeTest()
+                .getSurefireReportsXmlFile( "TEST-forkConsoleOutput.Test2.xml" )
+                .assertContainsText( "sout: Will Fail soon" )
+                .assertContainsText( "serr: Will Fail now" );
     }
 }

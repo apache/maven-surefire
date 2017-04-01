@@ -144,7 +144,7 @@ public class ForkModeIT
     public void testForkCountTwoNoReuse()
     {
         String[] pids =
-            doTest( unpack( getProject() ).forkCount( 2 ).reuseForks( false ).addGoal( "-DsleepLength=1200" ) );
+            doTest( unpack( getProject() ).setForkJvm().forkCount( 2 ).reuseForks( false ).addGoal( "-DsleepLength=1200" ) );
         assertDifferentPids( pids );
         assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
     }
