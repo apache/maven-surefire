@@ -91,8 +91,7 @@ public class ParallelComputerBuilderTest
     }
 
     @Before
-    public void beforeTest()
-    {
+    public void beforeTest() throws InterruptedException {
         Class1.maxConcurrentMethods = 0;
         Class1.concurrentMethods = 0;
         shutdownTask = null;
@@ -101,6 +100,8 @@ public class ParallelComputerBuilderTest
         NotThreadSafeTest3.t = null;
         NormalTest1.t = null;
         NormalTest2.t = null;
+        System.gc();
+        Thread.sleep( 50L );
     }
 
     @Test
