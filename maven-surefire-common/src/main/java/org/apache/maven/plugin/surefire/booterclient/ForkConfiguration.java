@@ -297,13 +297,16 @@ public class ForkConfiguration
             man.getMainAttributes().putValue( "Main-Class", startClassName );
 
             man.write( jos );
+
+            jos.closeEntry();
+            jos.flush();
+
+            return file;
         }
         finally
         {
             jos.close();
         }
-
-        return file;
     }
 
     public boolean isDebug()

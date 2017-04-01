@@ -158,7 +158,6 @@ public final class ForkedBooter
             }
             // Say bye.
             encodeAndWriteToOutput( ( (char) BOOTERCODE_BYE ) + ",0,BYE!\n", originalOut );
-            originalOut.flush();
             // noinspection CallToSystemExit
             exit( 0, reader );
         }
@@ -240,7 +239,11 @@ public final class ForkedBooter
     private static void encodeAndWriteToOutput( String string, PrintStream out )
     {
         byte[] encodeBytes = encodeStringForForkCommunication( string );
-        out.write( encodeBytes, 0, encodeBytes.length );
+        synchronized ( out )
+        {
+            out.write( encodeBytes, 0, encodeBytes.length );
+            out.flush();
+        }
     }
 
     private static void kill()
