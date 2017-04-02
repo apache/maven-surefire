@@ -101,8 +101,8 @@ under the License.
           plugin is run. So Surefire would never see the place-holders in its argLine property.
         </p>
         <p>
-          Using an alternate syntax for these properties, <pre>@{...}</pre> allows late replacement
-          of properties when the plugin is executed, so properties that have been modified by other
+          Since the Version 2.17 using an alternate syntax for these properties, <pre>@{...}</pre> allows late
+          replacement of properties when the plugin is executed, so properties that have been modified by other
           plugins will be picked up correctly.
         </p>
       </answer>

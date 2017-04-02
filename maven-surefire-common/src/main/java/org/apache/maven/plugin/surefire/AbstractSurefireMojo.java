@@ -355,8 +355,9 @@ public abstract class AbstractSurefireMojo
      * Arbitrary JVM options to set on the command line.
      * <br/>
      * <br/>
-     * Using an alternate syntax for <em>argLine</em>, <pre>@{...}</pre> allows late replacement of properties when the
-     * plugin is executed, so properties that have been modified by other plugins will be picked up correctly.
+     * Since the Version 2.17 using an alternate syntax for <em>argLine</em>, <pre>@{...}</pre> allows late replacement
+     * of properties when the plugin is executed, so properties that have been modified by other plugins will be picked
+     * up correctly.
      * See the Frequently Asked Questions page with more details:<br/>
      * <a href="http://maven.apache.org/surefire/maven-surefire-plugin/faq.html">
      *     http://maven.apache.org/surefire/maven-surefire-plugin/faq.html</a>
