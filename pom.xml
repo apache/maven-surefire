@@ -302,7 +302,7 @@
           <configuration>
             <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
             <useSystemClassLoader>false</useSystemClassLoader>
-            <argLine>${jacoco.agent}</argLine>
+            <argLine>-Xms128m -Xmx128m ${jacoco.agent}</argLine>
           </configuration>
         </plugin>
         <plugin>
