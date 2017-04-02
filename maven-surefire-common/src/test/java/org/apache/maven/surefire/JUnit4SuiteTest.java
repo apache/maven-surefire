@@ -35,6 +35,7 @@ import org.apache.maven.plugin.surefire.report.WrappedReportEntryTest;
 import org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMapTest;
 import org.apache.maven.plugin.surefire.util.DependenciesScannerTest;
 import org.apache.maven.plugin.surefire.util.DirectoryScannerTest;
+import org.apache.maven.plugin.surefire.util.ImmutableMapTest;
 import org.apache.maven.plugin.surefire.util.SpecificFileFilterTest;
 import org.apache.maven.surefire.report.ConsoleOutputFileReporterTest;
 import org.apache.maven.surefire.report.FileReporterTest;
@@ -70,7 +71,8 @@ import org.junit.runners.Suite;
     TestProvidingInputStreamTest.class,
     TestLessInputStreamBuilderTest.class,
     SPITest.class,
-    SurefireReflectorTest.class
+    SurefireReflectorTest.class,
+    ImmutableMapTest.class
 } )
 @RunWith( Suite.class )
 public class JUnit4SuiteTest

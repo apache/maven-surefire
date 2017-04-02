@@ -42,7 +42,7 @@ public class TestNG513Configurator
 
     static String convertListenersString( String listenerClasses )
     {
-        if ( listenerClasses == null || "".equals( listenerClasses.trim() ) )
+        if ( listenerClasses == null || listenerClasses.trim().isEmpty() )
         {
             return listenerClasses;
         }

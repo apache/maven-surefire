@@ -20,7 +20,6 @@ package org.apache.maven.surefire.booter;
  */
 
 import java.io.PrintStream;
-import java.util.Enumeration;
 import java.util.Properties;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
@@ -183,9 +182,8 @@ public class ForkingRunListener
 
         if ( systemProperties != null )
         {
-            for ( Enumeration<?> propertyKeys = systemProperties.propertyNames(); propertyKeys.hasMoreElements(); )
+            for ( final String key : systemProperties.stringPropertyNames() )
             {
-                String key = (String) propertyKeys.nextElement();
                 String value = systemProperties.getProperty( key );
                 encodeAndWriteToTarget( toPropertyString( key, value == null ? "null" : value ) );
             }

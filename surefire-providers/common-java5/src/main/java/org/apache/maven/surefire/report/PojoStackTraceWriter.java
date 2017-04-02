@@ -20,6 +20,8 @@ package org.apache.maven.surefire.report;
  */
 
 
+import org.apache.maven.surefire.util.internal.StringUtils;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -64,7 +66,7 @@ public class PojoStackTraceWriter
             {
                 // SUREFIRE-986
                 String exc = t.getClass().getName() + ": ";
-                if ( builder.toString().startsWith( exc ) )
+                if ( StringUtils.startsWith( builder, exc ) )
                 {
                     builder.insert( exc.length(), '\n' );
                 }

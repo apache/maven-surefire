@@ -234,6 +234,7 @@ public abstract class AbstractSurefireMojo
      * unless overridden.
      */
     @Parameter
+    // TODO use regex for fully qualified class names in 3.0 and change the filtering abilities
     private List<String> excludes;
 
     /**
@@ -2173,7 +2174,7 @@ public abstract class AbstractSurefireMojo
 
         @SuppressWarnings( "unchecked" ) Set<Artifact> classpathArtifacts = getProject().getArtifacts();
 
-        if ( getClasspathDependencyScopeExclude() != null && !getClasspathDependencyScopeExclude().equals( "" ) )
+        if ( getClasspathDependencyScopeExclude() != null && !getClasspathDependencyScopeExclude().isEmpty() )
         {
             ArtifactFilter dependencyFilter = new ScopeArtifactFilter( getClasspathDependencyScopeExclude() );
             classpathArtifacts = this.filterArtifacts( classpathArtifacts, dependencyFilter );

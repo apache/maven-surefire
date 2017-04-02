@@ -112,7 +112,7 @@ public abstract class AbstractDirectConfigurator
     static List<Class> loadListenerClasses( String listenerClasses )
         throws TestSetFailedException
     {
-        if ( listenerClasses == null || "".equals( listenerClasses.trim() ) )
+        if ( listenerClasses == null || listenerClasses.trim().isEmpty() )
         {
             return new ArrayList<Class>();
         }

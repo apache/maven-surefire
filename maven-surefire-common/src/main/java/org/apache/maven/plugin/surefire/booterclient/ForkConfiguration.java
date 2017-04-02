@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
+import org.apache.maven.plugin.surefire.util.ImmutableMap;
 import org.apache.maven.plugin.surefire.util.Relocator;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.booter.Classpath;
@@ -31,7 +32,7 @@ import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Enumeration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -64,7 +65,7 @@ public class ForkConfiguration
 
     private final String jvmExecutable;
 
-    private Properties modelProperties;
+    private final Properties modelProperties;
 
     private final String argLine;
 
@@ -91,7 +92,7 @@ public class ForkConfiguration
         this.workingDirectory = workingDirectory;
         this.modelProperties = modelProperties;
         this.argLine = argLine;
-        this.environmentVariables = environmentVariables;
+        this.environmentVariables = toImmutable( environmentVariables );
         this.debug = debugEnabled;
         this.forkCount = forkCount;
         this.reuseForks = reuseForks;
@@ -158,16 +159,13 @@ public class ForkConfiguration
                                                    threadNumber ) );
         }
 
-        if ( environmentVariables != null )
+        for ( Map.Entry<String, String> entry : environmentVariables.entrySet() )
         {
-            for ( Map.Entry<String, String> entry : environmentVariables.entrySet() )
-            {
-                String value = entry.getValue();
-                cli.addEnvironment( entry.getKey(), value == null ? "" : value );
-            }
+            String value = entry.getValue();
+            cli.addEnvironment( entry.getKey(), value == null ? "" : value );
         }
 
-        if ( getDebugLine() != null && !"".equals( getDebugLine() ) )
+        if ( getDebugLine() != null && !getDebugLine().isEmpty() )
         {
             cli.createArg().setLine( getDebugLine() );
         }
@@ -240,9 +238,8 @@ public class ForkConfiguration
             return null;
         }
 
-        for ( Enumeration<?> e = modelProperties.propertyNames(); e.hasMoreElements(); )
+        for ( final String key : modelProperties.stringPropertyNames() )
         {
-            String key = e.nextElement().toString();
             String field = "@{" + key + "}";
             if ( argLine.contains( field ) )
             {
@@ -314,11 +311,6 @@ public class ForkConfiguration
         return debug;
     }
 
-    public String stripNewLines( String argline )
-    {
-        return argline.replace( "\n", " " ).replace( "\r", " " );
-    }
-
     public String getDebugLine()
     {
         return debugLine;
@@ -334,9 +326,26 @@ public class ForkConfiguration
         return forkCount;
     }
 
-
     public boolean isReuseForks()
     {
         return reuseForks;
+    }
+
+    private static String stripNewLines( String argLine )
+    {
+        return argLine.replace( "\n", " " ).replace( "\r", " " );
+    }
+
+    /**
+     * Immutable map.
+     *
+     * @param map    immutable map copies elements from <code>map</code>
+     * @param <K>    key type
+     * @param <V>    value type
+     * @return never returns null
+     */
+    private static <K, V> Map<K, V> toImmutable( Map<K, V> map )
+    {
+        return map == null ? Collections.<K, V>emptyMap() : new ImmutableMap<K, V>( map );
     }
 }

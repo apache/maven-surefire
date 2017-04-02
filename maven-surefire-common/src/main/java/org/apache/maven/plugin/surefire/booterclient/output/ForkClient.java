@@ -67,6 +67,8 @@ import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
 import static org.apache.maven.surefire.util.internal.StringUtils.unescapeBytes;
 import static org.apache.maven.surefire.util.internal.StringUtils.unescapeString;
 
+// todo move to the same package with ForkStarter
+
 /**
  * Knows how to reconstruct *all* the state transmitted over stdout by the forked process.
  *

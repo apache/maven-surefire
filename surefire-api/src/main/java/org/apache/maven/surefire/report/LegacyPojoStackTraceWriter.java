@@ -69,7 +69,7 @@ public class LegacyPojoStackTraceWriter
             {
                 // SUREFIRE-986
                 String exc = t.getClass().getName() + ": ";
-                if ( builder.toString().startsWith( exc ) )
+                if ( StringUtils.startsWith( builder, exc ) )
                 {
                     builder.insert( exc.length(), '\n' );
                 }

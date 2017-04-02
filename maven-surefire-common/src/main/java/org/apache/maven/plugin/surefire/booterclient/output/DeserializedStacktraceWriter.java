@@ -64,6 +64,6 @@ public class DeserializedStacktraceWriter
 
     public SafeThrowable getThrowable()
     {
-        return new SafeThrowable( new Throwable( message ) );
+        return new SafeThrowable( message );
     }
 }

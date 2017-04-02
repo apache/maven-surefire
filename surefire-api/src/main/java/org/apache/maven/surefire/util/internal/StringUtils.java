@@ -345,32 +345,6 @@ public final class StringUtils
         return ByteBuffer.wrap( out, 0, outPos );
     }
 
-    public static String decode( byte[] toDecode, Charset charset )
-    {
-        try
-        {
-            // @todo use new JDK 1.6 constructor String(byte bytes[], Charset charset)
-            return new String( toDecode, charset.name() );
-        }
-        catch ( UnsupportedEncodingException e )
-        {
-            throw new RuntimeException( "The JVM must support Charset " + charset, e );
-        }
-    }
-
-    public static byte[] encode( String toEncode, Charset charset )
-    {
-        try
-        {
-            // @todo use new JDK 1.6 method getBytes(Charset charset)
-            return toEncode.getBytes( charset.name() );
-        }
-        catch ( UnsupportedEncodingException e )
-        {
-            throw new RuntimeException( "The JVM must support Charset " + charset, e );
-        }
-    }
-
     public static byte[] encodeStringForForkCommunication( String string )
     {
         try
@@ -380,6 +354,31 @@ public final class StringUtils
         catch ( UnsupportedEncodingException e )
         {
            throw new RuntimeException( "The JVM must support Charset " + FORK_STREAM_CHARSET_NAME, e );
+        }
+    }
+
+    /**
+     *
+     * @param buffer     Examined StringBuffer
+     * @param pattern    a pattern which should start in <code>buffer</code>
+     * @return <tt>true</tt> if buffer's literal starts with given pattern
+     */
+    public static boolean startsWith( StringBuffer buffer, String pattern )
+    {
+        if ( buffer.length() < pattern.length() )
+        {
+            return false;
+        }
+        else
+        {
+            for ( int i = 0, len = pattern.length(); i < len; i++ )
+            {
+                if ( buffer.charAt( i ) != pattern.charAt( i ) )
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

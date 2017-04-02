@@ -30,11 +30,10 @@ import javax.annotation.Nullable;
  */
 public class Relocator
 {
-    @Nullable
-    private final String relocation;
-
     private static final String RELOCATION_BASE = "org.apache.maven.surefire.";
 
+    @Nullable
+    private final String relocation;
 
     public Relocator( @Nullable String relocation )
     {
@@ -61,7 +60,7 @@ public class Relocator
         {
             return className;
         }
-        String rest = className.substring( "org.apache.maven.surefire.".length() );
+        String rest = className.substring( RELOCATION_BASE.length() );
         final String s = RELOCATION_BASE + getRelocation() + ".";
         return s + rest;
     }

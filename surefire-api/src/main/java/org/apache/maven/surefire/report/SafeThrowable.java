@@ -31,6 +31,11 @@ public class SafeThrowable
         this.target = target;
     }
 
+    public SafeThrowable( String message )
+    {
+        this( new Throwable( message ) );
+    }
+
     public String getLocalizedMessage()
     {
         try

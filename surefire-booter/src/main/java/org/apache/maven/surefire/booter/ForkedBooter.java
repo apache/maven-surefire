@@ -239,6 +239,7 @@ public final class ForkedBooter
     private static void encodeAndWriteToOutput( String string, PrintStream out )
     {
         byte[] encodeBytes = encodeStringForForkCommunication( string );
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
         synchronized ( out )
         {
             out.write( encodeBytes, 0, encodeBytes.length );
@@ -352,7 +353,7 @@ public final class ForkedBooter
     {
         final PrintStream orgSystemOut = out;
         final PrintStream orgSystemErr = err;
-        // Note that System.out/System.err are also read in the "ReporterConfiguration" instatiation
+        // Note that System.out/System.err are also read in the "ReporterConfiguration" instantiation
         // in createProvider below. These are the same values as here.
 
         try
