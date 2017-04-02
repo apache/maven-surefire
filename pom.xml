@@ -314,7 +314,7 @@
           <configuration>
             <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
             <useSystemClassLoader>false</useSystemClassLoader>
-            <argLine>-Xms128m -Xmx128m ${jacoco.agent}</argLine>
+            <argLine>-Xms128m -Xmx128m</argLine>
           </configuration>
         </plugin>
         <plugin>
@@ -565,6 +565,12 @@
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <argLine>-Xms128m -Xmx144m ${jacoco.agent}</argLine>
+            </configuration>
           </plugin>
         </plugins>
       </build>
