@@ -167,7 +167,7 @@ public class IntegrationTestMojo
      * <a href="http://maven.apache.org/surefire/maven-failsafe-plugin/examples/shutdown.html">see the documentation:
      * http://maven.apache.org/surefire/maven-failsafe-plugin/examples/shutdown.html</a>
      *
-     * @since 2.19.2
+     * @since 2.20
      */
     @Parameter( property = "failsafe.exitTimeout", defaultValue = "30" )
     private int forkedProcessExitTimeoutInSeconds;

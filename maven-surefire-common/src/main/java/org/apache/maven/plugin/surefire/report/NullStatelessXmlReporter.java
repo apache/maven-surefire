@@ -23,7 +23,7 @@ package org.apache.maven.plugin.surefire.report;
  * FileReporter doing nothing rather than using null.
  *
  * @author <a href="mailto:britter@apache.org">Benedikt Ritter</a>
- * @since 2.19.2
+ * @since 2.20
  */
 class NullStatelessXmlReporter
     extends StatelessXmlReporter

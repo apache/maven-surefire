@@ -145,7 +145,7 @@ public class SurefirePlugin
      * http://maven.apache.org/surefire/maven-surefire-plugin/examples/shutdown.html</a>
      * Turns to default fallback value of 30 seconds if negative integer.
      *
-     * @since 2.19.2
+     * @since 2.20
      */
     @Parameter( property = "surefire.exitTimeout", defaultValue = "30" )
     private int forkedProcessExitTimeoutInSeconds;

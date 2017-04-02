@@ -336,7 +336,7 @@ public abstract class AbstractSurefireMojo
      * Relative path to <i>project.build.directory</i> containing internal Surefire temporary files.
      * It is deleted after the test set has completed.
      *
-     * @since 2.19.2
+     * @since 2.20
      */
     @Parameter( property = "tempDir", defaultValue = "surefire" )
     private String tempDir;
@@ -664,7 +664,7 @@ public abstract class AbstractSurefireMojo
 
     /**
      * Read-only parameter with value of Maven property <i>project.build.directory</i>.
-     * @since 2.19.2
+     * @since 2.20
      */
     @Parameter( defaultValue = "${project.build.directory}", readonly = true )
     private File projectBuildDirectory;

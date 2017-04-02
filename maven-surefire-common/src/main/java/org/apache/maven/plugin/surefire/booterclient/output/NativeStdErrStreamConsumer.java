@@ -26,7 +26,7 @@ import org.apache.maven.shared.utils.cli.StreamConsumer;
  * Used by forked JMV, see {@link org.apache.maven.plugin.surefire.booterclient.ForkStarter}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19.2
+ * @since 2.20
  * @see org.apache.maven.plugin.surefire.booterclient.ForkStarter
  */
 public final class NativeStdErrStreamConsumer

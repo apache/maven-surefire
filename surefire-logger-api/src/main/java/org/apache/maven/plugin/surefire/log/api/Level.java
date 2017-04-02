@@ -24,7 +24,7 @@ package org.apache.maven.plugin.surefire.log.api;
  * Writing to console without color via {@link #NO_COLOR}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19.2
+ * @since 2.20
  */
 public enum Level
 {

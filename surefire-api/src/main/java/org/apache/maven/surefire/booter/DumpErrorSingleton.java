@@ -31,7 +31,7 @@ import static org.apache.maven.surefire.util.internal.DumpFileUtils.newDumpFile;
  * Fail-safe.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19.2
+ * @since 2.20
  */
 public final class DumpErrorSingleton
 {

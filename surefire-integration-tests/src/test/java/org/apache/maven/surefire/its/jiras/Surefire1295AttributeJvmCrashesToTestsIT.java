@@ -38,7 +38,7 @@ import static org.junit.Assume.assumeTrue;
  * https://github.com/apache/maven-surefire/pull/136
  *
  * @author michaeltandy
- * @since 2.19.2
+ * @since 2.20
  */
 public class Surefire1295AttributeJvmCrashesToTestsIT
         extends SurefireJUnit4IntegrationTestCase

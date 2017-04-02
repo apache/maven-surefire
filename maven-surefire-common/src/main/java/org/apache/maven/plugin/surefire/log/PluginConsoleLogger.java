@@ -27,7 +27,7 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
  * Calling {@link Log#isInfoEnabled()} before {@link Log#info(CharSequence)} due to Maven 2.2.1.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19.2
+ * @since 2.20
  * @see ConsoleLogger
  */
 public final class PluginConsoleLogger

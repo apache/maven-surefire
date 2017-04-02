@@ -25,7 +25,7 @@ import java.util.List;
  * FileReporter doing nothing rather than using null.
  *
  * @author <a href="mailto:britter@apache.org">Benedikt Ritter</a>
- * @since 2.19.2
+ * @since 2.20
  */
 class NullFileReporter
     extends FileReporter

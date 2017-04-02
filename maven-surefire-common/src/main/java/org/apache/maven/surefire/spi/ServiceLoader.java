@@ -38,7 +38,7 @@ import static org.apache.maven.surefire.util.ReflectionUtils.getConstructor;
 /**
  * SPI loader for Java 1.5.
  *
- * @since 2.19.2
+ * @since 2.20
  */
 public class ServiceLoader
 {
