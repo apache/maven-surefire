@@ -281,7 +281,8 @@ mvn verify
             <reports>
               <report>failsafe-report-only</report>
             </reports>
-        </reportSet>
+          </reportSet>
+        </reportSets>
       </plugin>
     </plugins>
   </reporting>
