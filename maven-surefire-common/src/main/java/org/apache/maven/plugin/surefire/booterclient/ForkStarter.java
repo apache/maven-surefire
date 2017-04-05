@@ -50,7 +50,6 @@ import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DefaultScanResult;
-import org.apache.maven.surefire.util.internal.DumpFileUtils;
 
 import java.io.Closeable;
 import java.io.File;
@@ -82,6 +81,7 @@ import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.createCopyAndReplaceForkNumPlaceholder;
+import static org.apache.maven.plugin.surefire.SurefireHelper.DUMP_FILE_PREFIX;
 import static org.apache.maven.plugin.surefire.booterclient.ForkNumberBucket.drawNumber;
 import static org.apache.maven.plugin.surefire.booterclient.ForkNumberBucket.returnNumber;
 import static org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream
@@ -130,8 +130,6 @@ public class ForkStarter
 
     private static final AtomicInteger SYSTEM_PROPERTIES_FILE_COUNTER = new AtomicInteger();
 
-    private static final String DUMP_FILE_PREFIX = DumpFileUtils.newFormattedDateFileName() + "-jvmRun";
-
     private final ScheduledExecutorService pingThreadScheduler = createPingScheduler();
 
     private final ScheduledExecutorService timeoutCheckScheduler;
@@ -160,12 +158,15 @@ public class ForkStarter
     private final class CloseableCloser
         implements Runnable, Closeable
     {
+        private final int jvmRun;
+
         private final Queue<Closeable> testProvidingInputStream;
 
         private final Thread inputStreamCloserHook;
 
-        public CloseableCloser( Closeable... testProvidingInputStream )
+        public CloseableCloser( int jvmRun, Closeable... testProvidingInputStream )
         {
+            this.jvmRun = jvmRun;
             this.testProvidingInputStream = new ConcurrentLinkedQueue<Closeable>();
             addAll( this.testProvidingInputStream, testProvidingInputStream );
             if ( this.testProvidingInputStream.isEmpty() )
@@ -196,9 +197,10 @@ public class ForkStarter
                     // this exception happened => warning on console. The user would see hint to check dump file only
                     // if tests failed, but if this does not happen then printing warning to console is the only way to
                     // inform the users.
-                    String msg = "ForkStarter IOException: " + e.getLocalizedMessage();
-                    log.warning( msg );
-                    InPluginProcessDumpSingleton.getSingleton().dumpException( e, msg, defaultReporterFactory );
+                    String msg = "ForkStarter IOException: " + e.getLocalizedMessage() + ".";
+                    File dump = InPluginProcessDumpSingleton.getSingleton()
+                                        .dumpException( e, msg, defaultReporterFactory, jvmRun );
+                    log.warning( msg + " See the dump file " + dump.getAbsolutePath() );
                 }
             }
         }
@@ -525,6 +527,7 @@ public class ForkStarter
         throws SurefireBooterForkException
     {
         int forkNumber = drawNumber();
+        forkClient.setForkNumber( forkNumber );
         try
         {
             return fork( testSet, providerProperties, forkClient, effectiveSystemProperties, forkNumber,
@@ -600,8 +603,8 @@ public class ForkStarter
         }
 
         final ThreadedStreamConsumer threadedStreamConsumer = new ThreadedStreamConsumer( forkClient );
-        final CloseableCloser closer =
-                new CloseableCloser( threadedStreamConsumer, requireNonNull( testProvidingInputStream, "null param" ) );
+        final CloseableCloser closer = new CloseableCloser( forkNumber, threadedStreamConsumer,
+                                                            requireNonNull( testProvidingInputStream, "null param" ) );
 
         log.debug( "Forking command line: " + cli );
 

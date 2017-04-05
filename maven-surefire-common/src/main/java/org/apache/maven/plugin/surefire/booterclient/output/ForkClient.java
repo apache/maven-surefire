@@ -29,10 +29,10 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.StackTraceWriter;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.ByteBuffer;
-import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
@@ -101,6 +101,11 @@ public class ForkClient
     private volatile boolean saidGoodBye;
 
     private volatile StackTraceWriter errorInFork;
+
+    private volatile int forkNumber;
+
+    // prevents from printing same warning
+    private boolean printedErrorStream;
 
     public ForkClient( DefaultReporterFactory defaultReporterFactory, Properties testVmSystemProperties,
                        NotifiableTestStream notifiableTestStream, ConsoleLogger log )
@@ -177,134 +182,130 @@ public class ForkClient
         return testSetReporter;
     }
 
-    private void processLine( String s )
+    private void processLine( String event )
     {
+        final OperationalData op;
         try
         {
-            final byte operationId = (byte) s.charAt( 0 );
-            int comma = s.indexOf( ",", 3 );
-            if ( comma < 0 )
-            {
-                log.warning( s );
-                return;
-            }
-            int rest = s.indexOf( ",", comma );
-            final String remaining = s.substring( rest + 1 );
-
-            switch ( operationId )
-            {
-                case BOOTERCODE_TESTSET_STARTING:
-                    getTestSetReporter().testSetStarting( createReportEntry( remaining ) );
-                    setCurrentStartTime();
-                    break;
-                case BOOTERCODE_TESTSET_COMPLETED:
-                    testsInProgress.clear();
-                    
-                    getTestSetReporter().testSetCompleted( createReportEntry( remaining ) );
-                    break;
-                case BOOTERCODE_TEST_STARTING:
-                    ReportEntry reportEntry = createReportEntry( remaining );
-                    testsInProgress.offer( reportEntry.getSourceName() );
-                    
-                    getTestSetReporter().testStarting( createReportEntry( remaining ) );
-                    break;
-                case BOOTERCODE_TEST_SUCCEEDED:
-                    reportEntry = createReportEntry( remaining );
-                    testsInProgress.remove( reportEntry.getSourceName() );
-                    
-                    getTestSetReporter().testSucceeded( createReportEntry( remaining ) );
-                    break;
-                case BOOTERCODE_TEST_FAILED:
-                    reportEntry = createReportEntry( remaining );
-                    testsInProgress.remove( reportEntry.getSourceName() );
-                    
-                    getTestSetReporter().testFailed( createReportEntry( remaining ) );
-                    break;
-                case BOOTERCODE_TEST_SKIPPED:
-                    reportEntry = createReportEntry( remaining );
-                    testsInProgress.remove( reportEntry.getSourceName() );
-                    
-                    getTestSetReporter().testSkipped( createReportEntry( remaining ) );
-                    break;
-                case BOOTERCODE_TEST_ERROR:
-                    reportEntry = createReportEntry( remaining );
-                    testsInProgress.remove( reportEntry.getSourceName() );
-                    
-                    getTestSetReporter().testError( createReportEntry( remaining ) );
-                    break;
-                case BOOTERCODE_TEST_ASSUMPTIONFAILURE:
-                    reportEntry = createReportEntry( remaining );
-                    testsInProgress.remove( reportEntry.getSourceName() );
-                    
-                    getTestSetReporter().testAssumptionFailure( createReportEntry( remaining ) );
-                    break;
-                case BOOTERCODE_SYSPROPS:
-                    int keyEnd = remaining.indexOf( "," );
-                    StringBuilder key = new StringBuilder();
-                    StringBuilder value = new StringBuilder();
-                    unescapeString( key, remaining.substring( 0, keyEnd ) );
-                    unescapeString( value, remaining.substring( keyEnd + 1 ) );
-                    synchronized ( testVmSystemProperties )
-                    {
-                        testVmSystemProperties.put( key.toString(), value.toString() );
-                    }
-                    break;
-                case BOOTERCODE_STDOUT:
-                    writeTestOutput( remaining, true );
-                    break;
-                case BOOTERCODE_STDERR:
-                    writeTestOutput( remaining, false );
-                    break;
-                case BOOTERCODE_CONSOLE:
-                    getOrCreateConsoleLogger()
-                            .info( createConsoleMessage( remaining ) );
-                    break;
-                case BOOTERCODE_NEXT_TEST:
-                    notifiableTestStream.provideNewTest();
-                    break;
-                case BOOTERCODE_ERROR:
-                    errorInFork = deserializeStackTraceWriter( new StringTokenizer( remaining, "," ) );
-                    break;
-                case BOOTERCODE_BYE:
-                    saidGoodBye = true;
-                    notifiableTestStream.acknowledgeByeEventReceived();
-                    break;
-                case BOOTERCODE_STOP_ON_NEXT_TEST:
-                    stopOnNextTest();
-                    break;
-                case BOOTERCODE_DEBUG:
-                    getOrCreateConsoleLogger()
-                            .debug( createConsoleMessage( remaining ) );
-                    break;
-                case BOOTERCODE_WARNING:
-                    getOrCreateConsoleLogger()
-                            .warning( createConsoleMessage( remaining ) );
-                    break;
-                default:
-                    InPluginProcessDumpSingleton.getSingleton().dumpText( s, defaultReporterFactory );
-            }
-        }
-        catch ( NumberFormatException e )
-        {
-            // SUREFIRE-859
-            InPluginProcessDumpSingleton.getSingleton().dumpException( e, s, defaultReporterFactory );
-        }
-        catch ( NoSuchElementException e )
-        {
-            // SUREFIRE-859
-            InPluginProcessDumpSingleton.getSingleton().dumpException( e, s, defaultReporterFactory );
-        }
-        catch ( IndexOutOfBoundsException e )
-        {
-            // native stream sent a text e.g. GC verbose
-            InPluginProcessDumpSingleton.getSingleton().dumpException( e, s, defaultReporterFactory );
-            throw e;
+            op = new OperationalData( event );
         }
         catch ( RuntimeException e )
         {
-            // e.g. ReporterException
-            InPluginProcessDumpSingleton.getSingleton().dumpException( e, s, defaultReporterFactory );
-            throw e;
+            logStreamWarning( e, event );
+            return;
+        }
+        final String remaining = op.getData();
+        switch ( op.getOperationId() )
+        {
+            case BOOTERCODE_TESTSET_STARTING:
+                getTestSetReporter().testSetStarting( createReportEntry( remaining ) );
+                setCurrentStartTime();
+                break;
+            case BOOTERCODE_TESTSET_COMPLETED:
+                testsInProgress.clear();
+
+                getTestSetReporter().testSetCompleted( createReportEntry( remaining ) );
+                break;
+            case BOOTERCODE_TEST_STARTING:
+                ReportEntry reportEntry = createReportEntry( remaining );
+                testsInProgress.offer( reportEntry.getSourceName() );
+
+                getTestSetReporter().testStarting( createReportEntry( remaining ) );
+                break;
+            case BOOTERCODE_TEST_SUCCEEDED:
+                reportEntry = createReportEntry( remaining );
+                testsInProgress.remove( reportEntry.getSourceName() );
+
+                getTestSetReporter().testSucceeded( createReportEntry( remaining ) );
+                break;
+            case BOOTERCODE_TEST_FAILED:
+                reportEntry = createReportEntry( remaining );
+                testsInProgress.remove( reportEntry.getSourceName() );
+
+                getTestSetReporter().testFailed( createReportEntry( remaining ) );
+                break;
+            case BOOTERCODE_TEST_SKIPPED:
+                reportEntry = createReportEntry( remaining );
+                testsInProgress.remove( reportEntry.getSourceName() );
+
+                getTestSetReporter().testSkipped( createReportEntry( remaining ) );
+                break;
+            case BOOTERCODE_TEST_ERROR:
+                reportEntry = createReportEntry( remaining );
+                testsInProgress.remove( reportEntry.getSourceName() );
+
+                getTestSetReporter().testError( createReportEntry( remaining ) );
+                break;
+            case BOOTERCODE_TEST_ASSUMPTIONFAILURE:
+                reportEntry = createReportEntry( remaining );
+                testsInProgress.remove( reportEntry.getSourceName() );
+
+                getTestSetReporter().testAssumptionFailure( createReportEntry( remaining ) );
+                break;
+            case BOOTERCODE_SYSPROPS:
+                int keyEnd = remaining.indexOf( "," );
+                StringBuilder key = new StringBuilder();
+                StringBuilder value = new StringBuilder();
+                unescapeString( key, remaining.substring( 0, keyEnd ) );
+                unescapeString( value, remaining.substring( keyEnd + 1 ) );
+                synchronized ( testVmSystemProperties )
+                {
+                    testVmSystemProperties.put( key.toString(), value.toString() );
+                }
+                break;
+            case BOOTERCODE_STDOUT:
+                writeTestOutput( remaining, true );
+                break;
+            case BOOTERCODE_STDERR:
+                writeTestOutput( remaining, false );
+                break;
+            case BOOTERCODE_CONSOLE:
+                getOrCreateConsoleLogger()
+                        .info( createConsoleMessage( remaining ) );
+                break;
+            case BOOTERCODE_NEXT_TEST:
+                notifiableTestStream.provideNewTest();
+                break;
+            case BOOTERCODE_ERROR:
+                errorInFork = deserializeStackTraceWriter( new StringTokenizer( remaining, "," ) );
+                break;
+            case BOOTERCODE_BYE:
+                saidGoodBye = true;
+                notifiableTestStream.acknowledgeByeEventReceived();
+                break;
+            case BOOTERCODE_STOP_ON_NEXT_TEST:
+                stopOnNextTest();
+                break;
+            case BOOTERCODE_DEBUG:
+                getOrCreateConsoleLogger()
+                        .debug( createConsoleMessage( remaining ) );
+                break;
+            case BOOTERCODE_WARNING:
+                getOrCreateConsoleLogger()
+                        .warning( createConsoleMessage( remaining ) );
+                break;
+            default:
+                logStreamWarning( event );
+        }
+    }
+
+    private void logStreamWarning( String event )
+    {
+        logStreamWarning( null, event );
+    }
+
+    private void logStreamWarning( Throwable e, String event )
+    {
+        final String msg = "Corrupted stdin stream in forked JVM " + forkNumber + ".";
+        final InPluginProcessDumpSingleton util = InPluginProcessDumpSingleton.getSingleton();
+        final File dump =
+                e == null ? util.dumpText( msg + " Stream '" + event + "'.", defaultReporterFactory, forkNumber )
+                        : util.dumpException( e, msg + " Stream '" + event + "'.", defaultReporterFactory, forkNumber );
+
+        if ( !printedErrorStream )
+        {
+            printedErrorStream = true;
+            log.warning( msg + " See the dump file " + dump.getAbsolutePath() );
         }
     }
 
@@ -437,5 +438,40 @@ public class ForkClient
     public boolean hasTestsInProgress()
     {
         return !testsInProgress.isEmpty();
+    }
+
+    public void setForkNumber( int forkNumber )
+    {
+        assert this.forkNumber == 0;
+        this.forkNumber = forkNumber;
+    }
+
+    private static final class OperationalData
+    {
+        private final byte operationId;
+        private final String data;
+
+        OperationalData( String event )
+        {
+            operationId = (byte) event.charAt( 0 );
+            int comma = event.indexOf( ",", 3 );
+            if ( comma < 0 )
+            {
+                throw new IllegalArgumentException( "Stream stdin corrupted. Expected comma after third character "
+                                                            + "in command '" + event + "'." );
+            }
+            int rest = event.indexOf( ",", comma );
+            data = event.substring( rest + 1 );
+        }
+
+        byte getOperationId()
+        {
+            return operationId;
+        }
+
+        String getData()
+        {
+            return data;
+        }
     }
 }

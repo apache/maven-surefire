@@ -21,7 +21,12 @@ package org.apache.maven.plugin.surefire.booterclient.output;
 
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.util.internal.DumpFileUtils;
+
 import java.io.File;
+
+import static java.lang.String.format;
+import static org.apache.maven.plugin.surefire.SurefireHelper.DUMPSTREAM_FILENAME_FORMATTER;
+import static org.apache.maven.surefire.booter.DumpErrorSingleton.DUMPSTREAM_FILE_EXT;
 
 /**
  * Reports errors to dump file.
@@ -42,6 +47,14 @@ public final class InPluginProcessDumpSingleton
         return SINGLETON;
     }
 
+    public synchronized File dumpException( Throwable t, String msg, DefaultReporterFactory defaultReporterFactory,
+                                            int jvmRun )
+    {
+        File dump = newDumpFile( defaultReporterFactory, jvmRun );
+        DumpFileUtils.dumpException( t, msg == null ? "null" : msg, dump );
+        return dump;
+    }
+
     public synchronized void dumpException( Throwable t, String msg, DefaultReporterFactory defaultReporterFactory )
     {
         DumpFileUtils.dumpException( t, msg == null ? "null" : msg, newDumpFile( defaultReporterFactory ) );
@@ -52,6 +65,13 @@ public final class InPluginProcessDumpSingleton
         DumpFileUtils.dumpException( t, newDumpFile( defaultReporterFactory ) );
     }
 
+    public synchronized File dumpText( String msg, DefaultReporterFactory defaultReporterFactory, int jvmRun )
+    {
+        File dump = newDumpFile( defaultReporterFactory, jvmRun );
+        DumpFileUtils.dumpText( msg == null ? "null" : msg, dump );
+        return dump;
+    }
+
     public synchronized void dumpText( String msg, DefaultReporterFactory defaultReporterFactory )
     {
         DumpFileUtils.dumpText( msg == null ? "null" : msg, newDumpFile( defaultReporterFactory ) );
@@ -60,6 +80,12 @@ public final class InPluginProcessDumpSingleton
     private File newDumpFile( DefaultReporterFactory defaultReporterFactory )
     {
         File reportsDirectory = defaultReporterFactory.getReportsDirectory();
-        return new File( reportsDirectory, creationDate + ".dumpstream" );
+        return new File( reportsDirectory, creationDate + DUMPSTREAM_FILE_EXT );
+    }
+
+    private static File newDumpFile( DefaultReporterFactory defaultReporterFactory, int jvmRun )
+    {
+        File reportsDirectory = defaultReporterFactory.getReportsDirectory();
+        return new File( reportsDirectory, format( DUMPSTREAM_FILENAME_FORMATTER, jvmRun ) );
     }
 }

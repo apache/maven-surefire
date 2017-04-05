@@ -35,8 +35,8 @@ import static org.apache.maven.surefire.util.internal.DumpFileUtils.newDumpFile;
  */
 public final class DumpErrorSingleton
 {
-    private static final String DUMP_FILE_EXT = ".dump";
-    private static final String DUMPSTREAM_FILE_EXT = ".dumpstream";
+    public static final String DUMP_FILE_EXT = ".dump";
+    public static final String DUMPSTREAM_FILE_EXT = ".dumpstream";
     private static final DumpErrorSingleton SINGLETON = new DumpErrorSingleton();
 
     private File dumpFile;

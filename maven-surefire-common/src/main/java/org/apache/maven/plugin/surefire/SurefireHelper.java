@@ -27,6 +27,7 @@ import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.internal.DumpFileUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -35,6 +36,8 @@ import java.util.Collection;
 import java.util.List;
 
 import static java.util.Collections.unmodifiableList;
+import static org.apache.maven.surefire.booter.DumpErrorSingleton.DUMPSTREAM_FILE_EXT;
+import static org.apache.maven.surefire.booter.DumpErrorSingleton.DUMP_FILE_EXT;
 import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
 import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_ERROR;
 import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_INFO;
@@ -46,6 +49,18 @@ import static org.apache.maven.surefire.cli.CommandLineOption.SHOW_ERRORS;
  */
 public final class SurefireHelper
 {
+    private static final String DUMP_FILE_DATE = DumpFileUtils.newFormattedDateFileName();
+
+    public static final String DUMP_FILE_PREFIX = DUMP_FILE_DATE + "-jvmRun";
+
+    public static final String DUMPSTREAM_FILENAME_FORMATTER = DUMP_FILE_PREFIX + "%d" + DUMPSTREAM_FILE_EXT;
+
+    private static final String[] DUMP_FILES_PRINT =
+            {
+                    "[date]-jvmRun[N]" + DUMP_FILE_EXT,
+                    "[date]" + DUMPSTREAM_FILE_EXT,
+                    "[date]-jvmRun[N]" + DUMPSTREAM_FILE_EXT
+            };
 
     /**
      * Do not instantiate.
@@ -53,6 +68,11 @@ public final class SurefireHelper
     private SurefireHelper()
     {
         throw new IllegalAccessError( "Utility class" );
+    }
+
+    public static String[] getDumpFilesToPrint()
+    {
+        return DUMP_FILES_PRINT.clone();
     }
 
     public static void reportExecution( SurefireReportParameters reportParameters, RunResult result,
@@ -201,8 +221,13 @@ public final class SurefireHelper
                     .append( reportParameters.getReportsDirectory() )
                     .append( " for the individual test results." )
                     .append( '\n' )
-                    .append( "Please refer to dump files (if any exist) "
-                                     + "[date]-jvmRun[N].dump, [date].dumpstream and [date]-jvmRun[N].dumpstream" );
+                    .append( "Please refer to dump files (if any exist) " )
+                    .append( DUMP_FILES_PRINT[0] )
+                    .append( ", " )
+                    .append( DUMP_FILES_PRINT[1] )
+                    .append( " and " )
+                    .append( DUMP_FILES_PRINT[2] )
+                    .append( "." );
         }
 
         if ( firstForkException != null && firstForkException.getLocalizedMessage() != null )
