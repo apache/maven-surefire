@@ -156,10 +156,7 @@ public final class ForkedBooter
                 encode( stringBuilder, stackTraceWriter, false );
                 encodeAndWriteToOutput( ( (char) BOOTERCODE_ERROR ) + ",0," + stringBuilder + "\n", originalOut );
             }
-            // Say bye.
-            encodeAndWriteToOutput( ( (char) BOOTERCODE_BYE ) + ",0,BYE!\n", originalOut );
-            // noinspection CallToSystemExit
-            exit( 0, reader );
+            acknowledgedExit( reader, originalOut );
         }
         catch ( Throwable t )
         {
@@ -258,7 +255,7 @@ public final class ForkedBooter
         System.exit( returnCode );
     }
 
-    private static void exit( int returnCode, final CommandReader reader )
+    private static void acknowledgedExit( CommandReader reader, PrintStream originalOut )
     {
         final Semaphore barrier = new Semaphore( 0 );
         reader.addByeAckListener( new CommandListener()
@@ -270,10 +267,11 @@ public final class ForkedBooter
                                       }
                                   }
         );
-        launchLastDitchDaemonShutdownThread( returnCode );
-        final long timeoutMillis = max( systemExitTimeoutInSeconds * ONE_SECOND_IN_MILLIS, ONE_SECOND_IN_MILLIS );
+        encodeAndWriteToOutput( ( (char) BOOTERCODE_BYE ) + ",0,BYE!\n", originalOut );
+        launchLastDitchDaemonShutdownThread( 0 );
+        long timeoutMillis = max( systemExitTimeoutInSeconds * ONE_SECOND_IN_MILLIS, ONE_SECOND_IN_MILLIS );
         acquireOnePermit( barrier, timeoutMillis );
-        System.exit( returnCode );
+        System.exit( 0 );
     }
 
     private static boolean acquireOnePermit( Semaphore barrier, long timeoutMillis )
