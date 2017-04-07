@@ -34,6 +34,9 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationTargetException;
+import java.security.AccessControlException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -170,11 +173,27 @@ public final class ForkedBooter
         }
     }
 
-    private static void cancelPingScheduler( ExecutorService pingScheduler )
+    private static void cancelPingScheduler( final ExecutorService pingScheduler )
     {
         if ( pingScheduler != null )
         {
-            pingScheduler.shutdown();
+            try
+            {
+                AccessController.doPrivileged( new PrivilegedAction<Object>()
+                                               {
+                                                   @Override
+                                                   public Object run()
+                                                   {
+                                                       pingScheduler.shutdown();
+                                                       return null;
+                                                   }
+                                               }
+                );
+            }
+            catch ( AccessControlException e )
+            {
+                // ignore
+            }
         }
     }
 
