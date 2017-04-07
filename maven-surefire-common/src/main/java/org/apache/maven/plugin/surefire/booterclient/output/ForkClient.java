@@ -77,6 +77,7 @@ import static org.apache.maven.surefire.util.internal.StringUtils.unescapeString
 public class ForkClient
      implements StreamConsumer
 {
+    private static final String PRINTABLE_JVM_NATIVE_STREAM = "Listening for transport dt_socket at address:";
     private static final long START_TIME_ZERO = 0L;
     private static final long START_TIME_NEGATIVE_TIMEOUT = -1L;
 
@@ -296,16 +297,24 @@ public class ForkClient
 
     private void logStreamWarning( Throwable e, String event )
     {
-        final String msg = "Corrupted stdin stream in forked JVM " + forkNumber + ".";
-        final InPluginProcessDumpSingleton util = InPluginProcessDumpSingleton.getSingleton();
-        final File dump =
-                e == null ? util.dumpText( msg + " Stream '" + event + "'.", defaultReporterFactory, forkNumber )
-                        : util.dumpException( e, msg + " Stream '" + event + "'.", defaultReporterFactory, forkNumber );
-
-        if ( !printedErrorStream )
+        if ( event == null || !event.contains( PRINTABLE_JVM_NATIVE_STREAM ) )
         {
-            printedErrorStream = true;
-            log.warning( msg + " See the dump file " + dump.getAbsolutePath() );
+            final String msg = "Corrupted stdin stream in forked JVM " + forkNumber + ".";
+            final InPluginProcessDumpSingleton util = InPluginProcessDumpSingleton.getSingleton();
+            final File dump =
+                    e == null
+                    ? util.dumpText( msg + " Stream '" + event + "'.", defaultReporterFactory, forkNumber )
+                    : util.dumpException( e, msg + " Stream '" + event + "'.", defaultReporterFactory, forkNumber );
+
+            if ( !printedErrorStream )
+            {
+                printedErrorStream = true;
+                log.warning( msg + " See the dump file " + dump.getAbsolutePath() );
+            }
+        }
+        else
+        {
+            log.info( event );
         }
     }
 

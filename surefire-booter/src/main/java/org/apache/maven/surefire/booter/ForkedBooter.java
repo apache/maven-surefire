@@ -32,9 +32,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
@@ -72,7 +73,6 @@ public final class ForkedBooter
     private static final long DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS = 30;
     private static final long PING_TIMEOUT_IN_SECONDS = 20;
     private static final long ONE_SECOND_IN_MILLIS = 1000;
-    private static final ScheduledExecutorService JVM_PING = createPingScheduler();
 
     private static volatile ScheduledThreadPoolExecutor jvmTerminator;
     private static volatile long systemExitTimeoutInSeconds = DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS;
@@ -86,7 +86,7 @@ public final class ForkedBooter
     public static void main( String... args )
     {
         final CommandReader reader = startupMasterProcessReader();
-        final ScheduledFuture<?> pingScheduler = listenToShutdownCommands( reader );
+        final ExecutorService pingScheduler = isDebugging() ? null : listenToShutdownCommands( reader );
         final PrintStream originalOut = out;
         try
         {
@@ -156,7 +156,7 @@ public final class ForkedBooter
                 encode( stringBuilder, stackTraceWriter, false );
                 encodeAndWriteToOutput( ( (char) BOOTERCODE_ERROR ) + ",0," + stringBuilder + "\n", originalOut );
             }
-            acknowledgedExit( reader, originalOut );
+            acknowledgedExit( reader, originalOut, pingScheduler );
         }
         catch ( Throwable t )
         {
@@ -164,12 +164,17 @@ public final class ForkedBooter
             // Just throwing does getMessage() and a local trace - we want to call printStackTrace for a full trace
             // noinspection UseOfSystemOutOrSystemErr
             t.printStackTrace( err );
+            cancelPingScheduler( pingScheduler );
             // noinspection ProhibitedExceptionThrown,CallToSystemExit
             exit( 1 );
         }
-        finally
+    }
+
+    private static void cancelPingScheduler( ExecutorService pingScheduler )
+    {
+        if ( pingScheduler != null )
         {
-            pingScheduler.cancel( true );
+            pingScheduler.shutdown();
         }
     }
 
@@ -178,13 +183,15 @@ public final class ForkedBooter
         return getReader();
     }
 
-    private static ScheduledFuture<?> listenToShutdownCommands( CommandReader reader )
+    private static ExecutorService listenToShutdownCommands( CommandReader reader )
     {
         reader.addShutdownListener( createExitHandler() );
         AtomicBoolean pingDone = new AtomicBoolean( true );
         reader.addNoopListener( createPingHandler( pingDone ) );
         Runnable pingJob = createPingJob( pingDone );
-        return JVM_PING.scheduleAtFixedRate( pingJob, 0, PING_TIMEOUT_IN_SECONDS, SECONDS );
+        ScheduledExecutorService pingScheduler = createPingScheduler();
+        pingScheduler.scheduleAtFixedRate( pingJob, 0, PING_TIMEOUT_IN_SECONDS, SECONDS );
+        return pingScheduler;
     }
 
     private static CommandListener createPingHandler( final AtomicBoolean pingDone )
@@ -255,7 +262,7 @@ public final class ForkedBooter
         System.exit( returnCode );
     }
 
-    private static void acknowledgedExit( CommandReader reader, PrintStream originalOut )
+    private static void acknowledgedExit( CommandReader reader, PrintStream originalOut, ExecutorService pingScheduler )
     {
         final Semaphore barrier = new Semaphore( 0 );
         reader.addByeAckListener( new CommandListener()
@@ -271,6 +278,7 @@ public final class ForkedBooter
         launchLastDitchDaemonShutdownThread( 0 );
         long timeoutMillis = max( systemExitTimeoutInSeconds * ONE_SECOND_IN_MILLIS, ONE_SECOND_IN_MILLIS );
         acquireOnePermit( barrier, timeoutMillis );
+        cancelPingScheduler( pingScheduler );
         System.exit( 0 );
     }
 
@@ -396,5 +404,17 @@ public final class ForkedBooter
     {
         File surefirePropertiesFile = new File( tmpDir, propFileName );
         return surefirePropertiesFile.exists() ? new FileInputStream( surefirePropertiesFile ) : null;
+    }
+
+    private static boolean isDebugging()
+    {
+        for ( String argument : ManagementFactory.getRuntimeMXBean().getInputArguments() )
+        {
+            if ( "-Xdebug".equals( argument ) || argument.startsWith( "-agentlib:jdwp" ) )
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
