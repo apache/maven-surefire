@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -280,13 +281,20 @@ public class ForkConfiguration
             // we can't use StringUtils.join here since we need to add a '/' to
             // the end of directory entries - otherwise the jvm will ignore them.
             StringBuilder cp = new StringBuilder();
-            for ( String el : classPath )
+            for ( Iterator<String> it = classPath.iterator(); it.hasNext(); )
             {
-                File file1 = new File( el );
-                String pathEnd = file1.isDirectory() ? "/" : "";
-                cp.append( file1.toURI().toASCIIString() )
-                        .append( pathEnd )
-                        .append( " " );
+                File file1 = new File( it.next() );
+                String uri = file1.toURI().toASCIIString();
+                cp.append( uri );
+                if ( file1.isDirectory() && !uri.endsWith( "/" ) )
+                {
+                    cp.append( '/' );
+                }
+
+                if ( it.hasNext() )
+                {
+                    cp.append( ' ' );
+                }
             }
 
             man.getMainAttributes().putValue( "Manifest-Version", "1.0" );
