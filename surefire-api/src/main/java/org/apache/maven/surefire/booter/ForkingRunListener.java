@@ -131,46 +131,55 @@ public class ForkingRunListener
         sendProps();
     }
 
+    @Override
     public void testSetStarting( ReportEntry report )
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_TESTSET_STARTING, report, testSetChannelId ) );
     }
 
+    @Override
     public void testSetCompleted( ReportEntry report )
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_TESTSET_COMPLETED, report, testSetChannelId ) );
     }
 
+    @Override
     public void testStarting( ReportEntry report )
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_TEST_STARTING, report, testSetChannelId ) );
     }
 
+    @Override
     public void testSucceeded( ReportEntry report )
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_TEST_SUCCEEDED, report, testSetChannelId ) );
     }
 
+    @Override
     public void testAssumptionFailure( ReportEntry report )
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_TEST_ASSUMPTIONFAILURE, report, testSetChannelId ) );
     }
 
+    @Override
     public void testError( ReportEntry report )
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_TEST_ERROR, report, testSetChannelId ) );
     }
 
+    @Override
     public void testFailed( ReportEntry report )
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_TEST_FAILED, report, testSetChannelId ) );
     }
 
+    @Override
     public void testSkipped( ReportEntry report )
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_TEST_SKIPPED, report, testSetChannelId ) );
     }
 
+    @Override
     public void testExecutionSkippedByUser()
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_STOP_ON_NEXT_TEST, new SimpleReportEntry(), testSetChannelId ) );
@@ -190,6 +199,7 @@ public class ForkingRunListener
         }
     }
 
+    @Override
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         byte[] header = stdout ? stdOutHeader : stdErrHeader;
@@ -238,31 +248,37 @@ public class ForkingRunListener
         }
     }
 
+    @Override
     public void debug( String message )
     {
         log( BOOTERCODE_DEBUG, message );
     }
 
+    @Override
     public void info( String message )
     {
         log( BOOTERCODE_CONSOLE, message );
     }
 
+    @Override
     public void warning( String message )
     {
         log( BOOTERCODE_WARNING, message );
     }
 
+    @Override
     public void error( String message )
     {
         log( BOOTERCODE_ERROR, message );
     }
 
+    @Override
     public void error( String message, Throwable t )
     {
         error( ConsoleLoggerUtils.toString( message, t ) );
     }
 
+    @Override
     public void error( Throwable t )
     {
         error( null, t );
@@ -391,12 +407,14 @@ public class ForkingRunListener
         }
     }
 
+    @Override
     public void println( String message )
     {
         byte[] buf = message.getBytes();
         println( buf, 0, buf.length );
     }
 
+    @Override
     public void println( byte[] buf, int off, int len )
     {
         writeTestOutput( buf, off, len, true );

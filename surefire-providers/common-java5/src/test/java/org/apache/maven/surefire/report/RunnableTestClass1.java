@@ -27,6 +27,7 @@ import java.util.concurrent.FutureTask;
 class RunnableTestClass1
     implements Callable<Object>
 {
+    @Override
     public Object call()
         throws Exception
     {

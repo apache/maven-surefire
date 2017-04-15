@@ -38,10 +38,12 @@ public class MethodSelector
 {
     private static volatile TestListResolver testListResolver = null;
 
+    @Override
     public void setTestMethods( List arg0 )
     {
     }
 
+    @Override
     public boolean includeMethod( IMethodSelectorContext context, ITestNGMethod testngMethod, boolean isTestMethod )
     {
         return testngMethod.isBeforeClassConfiguration() || testngMethod.isBeforeGroupsConfiguration()

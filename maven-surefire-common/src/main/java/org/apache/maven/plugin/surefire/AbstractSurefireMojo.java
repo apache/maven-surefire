@@ -710,10 +710,12 @@ public abstract class AbstractSurefireMojo
 
     protected abstract int getRerunFailingTestsCount();
 
+    @Override
     public abstract List<String> getIncludes();
 
     public abstract File getIncludesFile();
 
+    @Override
     public abstract void setIncludes( List<String> includes );
 
     public abstract File getExcludesFile();
@@ -761,6 +763,7 @@ public abstract class AbstractSurefireMojo
 
     private volatile PluginConsoleLogger consoleLogger;
 
+    @Override
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
@@ -2544,21 +2547,25 @@ public abstract class AbstractSurefireMojo
             this.testNgArtifact = testNgArtifact;
         }
 
+        @Override
         @Nonnull public String getProviderName()
         {
             return "org.apache.maven.surefire.testng.TestNGProvider";
         }
 
+        @Override
         public boolean isApplicable()
         {
             return testNgArtifact != null;
         }
 
+        @Override
         public void addProviderProperties() throws MojoExecutionException
         {
             convertTestNGParameters();
         }
 
+        @Override
         public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
@@ -2571,20 +2578,24 @@ public abstract class AbstractSurefireMojo
     final class JUnit3ProviderInfo
         implements ProviderInfo
     {
+        @Override
         @Nonnull public String getProviderName()
         {
             return "org.apache.maven.surefire.junit.JUnit3Provider";
         }
 
+        @Override
         public boolean isApplicable()
         {
             return true;
         }
 
+        @Override
         public void addProviderProperties() throws MojoExecutionException
         {
         }
 
+        @Override
         public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
@@ -2609,20 +2620,24 @@ public abstract class AbstractSurefireMojo
             this.junitDepArtifact = junitDepArtifact;
         }
 
+        @Override
         @Nonnull public String getProviderName()
         {
             return "org.apache.maven.surefire.junit4.JUnit4Provider";
         }
 
+        @Override
         public boolean isApplicable()
         {
             return junitDepArtifact != null || isAnyJunit4( junitArtifact );
         }
 
+        @Override
         public void addProviderProperties() throws MojoExecutionException
         {
         }
 
+        @Override
         public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
@@ -2645,6 +2660,7 @@ public abstract class AbstractSurefireMojo
             this.junitDepArtifact = junitDepArtifact;
         }
 
+        @Override
         @Nonnull public String getProviderName()
         {
             return "org.apache.maven.surefire.junitcore.JUnitCoreProvider";
@@ -2655,6 +2671,7 @@ public abstract class AbstractSurefireMojo
             return junitDepArtifact != null && isJunit47Compatible( junitDepArtifact );
         }
 
+        @Override
         public boolean isApplicable()
         {
             final boolean isJunitArtifact47 = isAnyJunit4( junitArtifact ) && isJunit47Compatible( junitArtifact );
@@ -2662,12 +2679,14 @@ public abstract class AbstractSurefireMojo
             return isAny47ProvidersForcers && ( isJunitArtifact47 || is47CompatibleJunitDep() );
         }
 
+        @Override
         public void addProviderProperties() throws MojoExecutionException
         {
             convertJunitCoreParameters();
             convertGroupParameters();
         }
 
+        @Override
         public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
@@ -2689,22 +2708,26 @@ public abstract class AbstractSurefireMojo
             this.providerName = providerName;
         }
 
+        @Override
         public ProviderInfo instantiate( String providerName )
         {
             return new DynamicProviderInfo( providerName );
         }
 
+        @Override
         @Nonnull
         public String getProviderName()
         {
             return providerName;
         }
 
+        @Override
         public boolean isApplicable()
         {
             return true;
         }
 
+        @Override
         public void addProviderProperties() throws MojoExecutionException
         {
             // Ok this is a bit lazy.
@@ -2712,6 +2735,7 @@ public abstract class AbstractSurefireMojo
             convertTestNGParameters();
         }
 
+        @Override
         public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
@@ -2790,21 +2814,25 @@ public abstract class AbstractSurefireMojo
         }
     }
 
+    @Override
     public List<String> getExcludes()
     {
         return excludes;
     }
 
+    @Override
     public void setExcludes( List<String> excludes )
     {
         this.excludes = excludes;
     }
 
+    @Override
     public ArtifactRepository getLocalRepository()
     {
         return localRepository;
     }
 
+    @Override
     public void setLocalRepository( ArtifactRepository localRepository )
     {
         this.localRepository = localRepository;
@@ -3259,11 +3287,13 @@ public abstract class AbstractSurefireMojo
         this.project = project;
     }
 
+    @Override
     public File getTestSourceDirectory()
     {
         return testSourceDirectory;
     }
 
+    @Override
     public void setTestSourceDirectory( File testSourceDirectory )
     {
         this.testSourceDirectory = testSourceDirectory;

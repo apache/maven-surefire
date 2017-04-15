@@ -217,6 +217,7 @@ public final class ForkedBooter
     {
         return new CommandListener()
         {
+            @Override
             public void update( Command command )
             {
                 pingDone.set( true );
@@ -228,6 +229,7 @@ public final class ForkedBooter
     {
         return new CommandListener()
         {
+            @Override
             public void update( Command command )
             {
                 Shutdown shutdown = command.toShutdownData();
@@ -248,6 +250,7 @@ public final class ForkedBooter
     {
         return new Runnable()
         {
+            @Override
             public void run()
             {
                 boolean hasPing = pingDone.getAndSet( false );
@@ -361,6 +364,7 @@ public final class ForkedBooter
     {
         getJvmTerminator().schedule( new Runnable()
                                         {
+                                            @Override
                                             public void run()
                                             {
                                                 Runtime.getRuntime().halt( returnCode );

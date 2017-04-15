@@ -40,7 +40,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
+import static org.apache.maven.surefire.util.internal.StringUtils.ISO_8859_1;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -160,6 +160,7 @@ public class CommandReaderTest
     {
         Runnable runnable = new Runnable()
         {
+            @Override
             public void run()
             {
                 Iterator<String> it = reader.getIterableClasses( nul() ).iterator();
@@ -187,6 +188,7 @@ public class CommandReaderTest
         final CountDownLatch counter = new CountDownLatch( 1 );
         Runnable runnable = new Runnable()
         {
+            @Override
             public void run()
             {
                 Iterator<String> it = reader.getIterableClasses( nul() ).iterator();
@@ -240,7 +242,7 @@ public class CommandReaderTest
     private void addTestToPipeline( String cls )
         throws UnsupportedEncodingException
     {
-        byte[] clazz = cls.getBytes( FORK_STREAM_CHARSET_NAME );
+        byte[] clazz = cls.getBytes( ISO_8859_1 );
         ByteBuffer buffer = ByteBuffer.allocate( 8 + clazz.length )
             .putInt( MasterProcessCommand.RUN_CLASS.getId() )
             .putInt( clazz.length )

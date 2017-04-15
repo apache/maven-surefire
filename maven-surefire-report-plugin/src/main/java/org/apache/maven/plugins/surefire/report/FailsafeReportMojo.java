@@ -68,22 +68,26 @@ public class FailsafeReportMojo
     @Parameter( defaultValue = "false", property = "skipFailsafeReport" )
     private boolean skipFailsafeReport;
 
+    @Override
     protected File getSurefireReportsDirectory( MavenProject subProject )
     {
         String buildDir = subProject.getBuild().getDirectory();
         return new File( buildDir + "/failsafe-reports" );
     }
 
+    @Override
     public String getOutputName()
     {
         return outputName;
     }
 
+    @Override
     protected boolean isSkipped()
     {
         return skipFailsafeReport;
     }
 
+    @Override
     protected boolean isGeneratedWhenNoResults()
     {
         return alwaysGenerateFailsafeReport;
@@ -92,6 +96,7 @@ public class FailsafeReportMojo
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getName( Locale locale )
     {
         return getBundle( locale ).getString( "report.failsafe.name" );
@@ -100,6 +105,7 @@ public class FailsafeReportMojo
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getDescription( Locale locale )
     {
         return getBundle( locale ).getString( "report.failsafe.description" );

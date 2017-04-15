@@ -46,22 +46,26 @@ public class DeserializedStacktraceWriter
         this.stackTrace = stackTrace;
     }
 
+    @Override
     public String smartTrimmedStackTrace()
     {
         return smartTrimmed;
     }
 
     // Trimming or not is decided on the forking side
+    @Override
     public String writeTraceToString()
     {
         return stackTrace;
     }
 
+    @Override
     public String writeTrimmedTraceToString()
     {
         return stackTrace;
     }
 
+    @Override
     public SafeThrowable getThrowable()
     {
         return new SafeThrowable( message );

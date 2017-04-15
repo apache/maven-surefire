@@ -34,11 +34,13 @@ public final class DefaultDirectConsoleReporter
         this.systemOut = systemOut;
     }
 
+    @Override
     public void println( String message )
     {
         systemOut.println( message );
     }
 
+    @Override
     public void println( byte[] buf, int off, int len )
     {
         println( new String( buf, off, len ) );

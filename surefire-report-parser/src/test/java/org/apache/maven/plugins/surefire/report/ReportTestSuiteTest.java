@@ -35,6 +35,7 @@ public class ReportTestSuiteTest
     /**
      * {@inheritDoc}
      */
+    @Override
     protected void setUp()
         throws Exception
     {

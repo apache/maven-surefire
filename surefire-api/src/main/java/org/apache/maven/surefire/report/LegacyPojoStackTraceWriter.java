@@ -49,6 +49,7 @@ public class LegacyPojoStackTraceWriter
         this.t = t;
     }
 
+    @Override
     public String writeTraceToString()
     {
         if ( t != null )
@@ -79,6 +80,7 @@ public class LegacyPojoStackTraceWriter
         return "";
     }
 
+    @Override
     public String smartTrimmedStackTrace()
     {
         StringBuilder result = new StringBuilder();
@@ -147,6 +149,7 @@ public class LegacyPojoStackTraceWriter
     }
 
 
+    @Override
     public String writeTrimmedTraceToString()
     {
         String text = writeTraceToString();
@@ -189,6 +192,7 @@ public class LegacyPojoStackTraceWriter
         return trace.toString();
     }
 
+    @Override
     public SafeThrowable getThrowable()
     {
         return new SafeThrowable( t );

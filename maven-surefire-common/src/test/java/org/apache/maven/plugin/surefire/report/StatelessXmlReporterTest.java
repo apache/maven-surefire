@@ -20,7 +20,6 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import junit.framework.TestCase;
-
 import org.apache.maven.plugin.surefire.booterclient.output.DeserializedStacktraceWriter;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.xml.Xpp3Dom;
@@ -38,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
 
 @SuppressWarnings( "ResultOfMethodCallIgnored" )
 public class StatelessXmlReporterTest
@@ -142,7 +143,7 @@ public class StatelessXmlReporterTest
 
         FileInputStream fileInputStream = new FileInputStream( expectedReportFile );
 
-        Xpp3Dom testSuite = Xpp3DomBuilder.build( new InputStreamReader( fileInputStream, "UTF-8") );
+        Xpp3Dom testSuite = Xpp3DomBuilder.build( new InputStreamReader( fileInputStream, UTF_8) );
         assertEquals( "testsuite", testSuite.getName() );
         Xpp3Dom properties = testSuite.getChild( "properties" );
         assertEquals( System.getProperties().size(), properties.getChildCount() );
@@ -224,7 +225,7 @@ public class StatelessXmlReporterTest
 
         FileInputStream fileInputStream = new FileInputStream( expectedReportFile );
 
-        Xpp3Dom testSuite = Xpp3DomBuilder.build( new InputStreamReader( fileInputStream, "UTF-8" ) );
+        Xpp3Dom testSuite = Xpp3DomBuilder.build( new InputStreamReader( fileInputStream, UTF_8 ) );
         assertEquals( "testsuite", testSuite.getName() );
         assertEquals( "0.012", testSuite.getAttribute( "time" ) );
         Xpp3Dom properties = testSuite.getChild( "properties" );

@@ -47,12 +47,14 @@ public class NonConcurrentRunListener
         super( reporter );
     }
 
+    @Override
     public synchronized void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         // We can write immediately: no parallelism and a single class.
         ( (ConsoleOutputReceiver) reporter ).writeTestOutput( buf, off, len, stdout );
     }
 
+    @Override
     protected SimpleReportEntry createReportEntry( Description description )
     {
         return new SimpleReportEntry( extractDescriptionClassName( description ), description.getDisplayName() );

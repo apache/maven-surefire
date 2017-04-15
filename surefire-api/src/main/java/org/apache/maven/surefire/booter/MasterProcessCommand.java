@@ -21,13 +21,12 @@ package org.apache.maven.surefire.booter;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 
-import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
-import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
-import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
 import static java.lang.String.format;
+import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
+import static org.apache.maven.surefire.util.internal.StringUtils.ISO_8859_1;
+import static org.apache.maven.surefire.util.internal.StringUtils.US_ASCII;
+import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 
 /**
  * Commands which are sent from plugin to the forked jvm.
@@ -46,8 +45,6 @@ public enum MasterProcessCommand
     /** To tell a forked process that the master process is still alive. Repeated after 10 seconds. */
     NOOP( 4, Void.class ),
     BYE_ACK( 5, Void.class );
-
-    private static final Charset ASCII = Charset.forName( "US-ASCII" );
 
     private final int id;
 
@@ -143,21 +140,14 @@ public enum MasterProcessCommand
 
     String toDataTypeAsString( byte... data )
     {
-        try
+        switch ( this )
         {
-            switch ( this )
-            {
-                case RUN_CLASS:
-                    return new String( data, FORK_STREAM_CHARSET_NAME );
-                case SHUTDOWN:
-                    return new String( data, ASCII );
-                default:
-                    return null;
-            }
-        }
-        catch ( UnsupportedEncodingException e )
-        {
-            throw new IllegalStateException( e );
+            case RUN_CLASS:
+                return new String( data, ISO_8859_1 );
+            case SHUTDOWN:
+                return new String( data, US_ASCII );
+            default:
+                return null;
         }
     }
 
@@ -168,7 +158,7 @@ public enum MasterProcessCommand
             case RUN_CLASS:
                 return encodeStringForForkCommunication( data );
             case SHUTDOWN:
-                return data.getBytes( ASCII );
+                return data.getBytes( US_ASCII );
             default:
                 return new byte[0];
         }

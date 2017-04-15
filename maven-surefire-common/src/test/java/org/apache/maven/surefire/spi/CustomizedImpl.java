@@ -26,6 +26,7 @@ package org.apache.maven.surefire.spi;
 public class CustomizedImpl
     implements IDefault
 {
+    @Override
     public boolean isDefault()
     {
         return false;

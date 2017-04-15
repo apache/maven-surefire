@@ -58,6 +58,7 @@ public class TestProvidingInputStreamTest
         final Thread streamThread = Thread.currentThread();
         FutureTask<Thread.State> futureTask = new FutureTask<Thread.State>( new Callable<Thread.State>()
         {
+            @Override
             public Thread.State call()
             {
                 sleep( 1000 );
@@ -82,6 +83,7 @@ public class TestProvidingInputStreamTest
         is.testSetFinished();
         new Thread( new Runnable()
         {
+            @Override
             public void run()
             {
                 is.provideNewTest();
@@ -108,6 +110,7 @@ public class TestProvidingInputStreamTest
         final TestProvidingInputStream is = new TestProvidingInputStream( commands );
         new Thread( new Runnable()
         {
+            @Override
             public void run()
             {
                 is.provideNewTest();

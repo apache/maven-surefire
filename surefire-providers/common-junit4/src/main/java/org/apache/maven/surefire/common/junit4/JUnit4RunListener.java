@@ -68,6 +68,7 @@ public class JUnit4RunListener
      *
      * @see org.junit.runner.notification.RunListener#testIgnored(org.junit.runner.Description)
      */
+    @Override
     public void testIgnored( Description description )
         throws Exception
     {
@@ -80,6 +81,7 @@ public class JUnit4RunListener
      *
      * @see org.junit.runner.notification.RunListener#testStarted(org.junit.runner.Description)
      */
+    @Override
     public void testStarted( Description description )
         throws Exception
     {
@@ -92,6 +94,7 @@ public class JUnit4RunListener
      *
      * @see org.junit.runner.notification.RunListener#testFailure(org.junit.runner.notification.Failure)
      */
+    @Override
     @SuppressWarnings( { "ThrowableResultOfMethodCallIgnored" } )
     public void testFailure( Failure failure )
         throws Exception
@@ -131,6 +134,7 @@ public class JUnit4RunListener
      *
      * @see org.junit.runner.notification.RunListener#testFinished(org.junit.runner.Description)
      */
+    @Override
     public void testFinished( Description description )
         throws Exception
     {

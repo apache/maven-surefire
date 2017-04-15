@@ -25,6 +25,7 @@ import org.apache.maven.shared.utils.xml.XMLWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.SafeThrowable;
+import org.apache.maven.surefire.util.internal.StringUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,8 +33,6 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -44,6 +43,7 @@ import java.util.StringTokenizer;
 
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType;
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
+import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
 import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 
 // CHECKSTYLE_OFF: LineLength
@@ -81,10 +81,6 @@ import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
  */
 public class StatelessXmlReporter
 {
-    private static final String ENCODING = "UTF-8";
-
-    private static final Charset ENCODING_CS = Charset.forName( ENCODING );
-
     private final File reportsDirectory;
 
     private final String reportNameSuffix;
@@ -129,7 +125,7 @@ public class StatelessXmlReporter
         try
         {
             XMLWriter ppw = new PrettyPrintXMLWriter( fw );
-            ppw.setEncoding( ENCODING );
+            ppw.setEncoding( StringUtils.UTF_8.name() );
 
             createTestSuiteElement( ppw, testSetReportEntry, testSetStats, testSetReportEntry.elapsedTimeAsString() );
 
@@ -302,7 +298,7 @@ public class StatelessXmlReporter
 
     private static OutputStreamWriter getWriter( FileOutputStream fos )
     {
-        return new OutputStreamWriter( fos, ENCODING_CS );
+        return new OutputStreamWriter( fos, UTF_8 );
     }
 
     private static void getAddMethodEntryList( Map<String, List<WrappedReportEntry>> methodRunHistoryMap,
@@ -540,7 +536,7 @@ public class StatelessXmlReporter
                 // there's nothing better we can do! :-(
                 // SUREFIRE-456
                 out.write( ByteConstantsHolder.AMP_BYTES );
-                out.write( String.valueOf( b ).getBytes( ENCODING ) );
+                out.write( String.valueOf( b ).getBytes( UTF_8 ) );
                 out.write( ';' ); // & Will be encoded to amp inside xml encodingSHO
             }
             else
@@ -612,17 +608,10 @@ public class StatelessXmlReporter
 
         static
         {
-            try
-            {
-                CDATA_START_BYTES = "<![CDATA[".getBytes( ENCODING );
-                CDATA_END_BYTES = "]]>".getBytes( ENCODING );
-                CDATA_ESCAPE_STRING_BYTES = "]]><![CDATA[>".getBytes( ENCODING );
-                AMP_BYTES = "&amp#".getBytes( ENCODING );
-            }
-            catch ( UnsupportedEncodingException e )
-            {
-                throw new RuntimeException( e );
-            }
+            CDATA_START_BYTES = "<![CDATA[".getBytes( UTF_8 );
+            CDATA_END_BYTES = "]]>".getBytes( UTF_8 );
+            CDATA_ESCAPE_STRING_BYTES = "]]><![CDATA[>".getBytes( UTF_8 );
+            AMP_BYTES = "&amp#".getBytes( UTF_8 );
         }
     }
 }

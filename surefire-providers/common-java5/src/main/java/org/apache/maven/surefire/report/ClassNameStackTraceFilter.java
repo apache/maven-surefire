@@ -32,6 +32,7 @@ final class ClassNameStackTraceFilter
         this.className = className;
     }
 
+    @Override
     public boolean matches( StackTraceElement element )
     {
         return className.equals( element.getClassName() );

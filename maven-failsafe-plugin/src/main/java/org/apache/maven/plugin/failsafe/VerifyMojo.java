@@ -161,6 +161,7 @@ public class VerifyMojo
 
     private volatile PluginConsoleLogger consoleLogger;
 
+    @Override
     public void execute()
             throws MojoExecutionException, MojoFailureException
     {
@@ -248,11 +249,13 @@ public class VerifyMojo
         return null;
     }
 
+    @Override
     public boolean isSkipTests()
     {
         return skipTests;
     }
 
+    @Override
     public void setSkipTests( boolean skipTests )
     {
         this.skipTests = skipTests;
@@ -268,73 +271,87 @@ public class VerifyMojo
         this.skipITs = skipITs;
     }
 
+    @Override
     @Deprecated
     public boolean isSkipExec()
     {
         return skipExec;
     }
 
+    @Override
     @Deprecated
     public void setSkipExec( boolean skipExec )
     {
         this.skipExec = skipExec;
     }
 
+    @Override
     public boolean isSkip()
     {
         return skip;
     }
 
+    @Override
     public void setSkip( boolean skip )
     {
         this.skip = skip;
     }
 
+    @Override
     public boolean isTestFailureIgnore()
     {
         return testFailureIgnore;
     }
 
+    @Override
     public void setTestFailureIgnore( boolean testFailureIgnore )
     {
         this.testFailureIgnore = testFailureIgnore;
     }
 
+    @Override
     public File getBasedir()
     {
         return basedir;
     }
 
+    @Override
     public void setBasedir( File basedir )
     {
         this.basedir = basedir;
     }
 
+    @Override
     public File getTestClassesDirectory()
     {
         return testClassesDirectory;
     }
 
+    @Override
     public void setTestClassesDirectory( File testClassesDirectory )
     {
         this.testClassesDirectory = testClassesDirectory;
     }
 
+    @Override
     public File getReportsDirectory()
     {
         return reportsDirectory;
     }
 
+    @Override
     public void setReportsDirectory( File reportsDirectory )
     {
         this.reportsDirectory = reportsDirectory;
     }
 
+    @Override
     public Boolean getFailIfNoTests()
     {
         return failIfNoTests;
     }
 
+    @Override
     public void setFailIfNoTests( boolean failIfNoTests )
     {
         this.failIfNoTests = failIfNoTests;

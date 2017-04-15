@@ -202,6 +202,7 @@ public class RunResult
         return new RunResult( 0, 0, 0, 0 );
     }
 
+    @Override
     @SuppressWarnings( "RedundantIfStatement" )
     public boolean equals( Object o )
     {
@@ -244,6 +245,7 @@ public class RunResult
         return true;
     }
 
+    @Override
     public int hashCode()
     {
         int result = completedCount;

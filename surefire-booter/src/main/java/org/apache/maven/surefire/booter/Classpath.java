@@ -139,6 +139,7 @@ public class Classpath implements Iterable<String>
         System.setProperty( propertyName, sb.toString() );
     }
 
+    @Override
     public boolean equals( Object o )
     {
         if ( this == o )
@@ -179,6 +180,7 @@ public class Classpath implements Iterable<String>
         }
     }
 
+    @Override
     public int hashCode()
     {
         return unmodifiableElements.hashCode();
@@ -223,6 +225,7 @@ public class Classpath implements Iterable<String>
         return result.toString();
     }
 
+    @Override
     public Iterator<String> iterator()
     {
         return unmodifiableElements.iterator();

@@ -91,6 +91,7 @@ final class InvokerStrategy
         return disable();
     }
 
+    @Override
     public boolean destroy()
     {
         return stop();

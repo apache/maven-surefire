@@ -46,11 +46,13 @@ public class JUnit46StackTraceWriter
     }
 
 
+    @Override
     protected final String getTestClassName()
     {
         return junitFailure.getDescription().getClassName();
     }
 
+    @Override
     protected String getTestMethodName()
     {
         return junitFailure.getDescription().getMethodName();

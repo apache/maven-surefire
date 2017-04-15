@@ -90,6 +90,7 @@ public class TestNGProvider
         mainCliOptions = bootParams.getMainCliOptions();
     }
 
+    @Override
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException
     {
@@ -173,6 +174,7 @@ public class TestNGProvider
     {
         commandsReader.addShutdownListener( new CommandListener()
         {
+            @Override
             public void update( Command command )
             {
                 testsToRun.markTestSetFinished();
@@ -184,6 +186,7 @@ public class TestNGProvider
     {
         commandsReader.addSkipNextTestsListener( new CommandListener()
         {
+            @Override
             public void update( Command command )
             {
                 FailFastEventsSingleton.getInstance().setSkipOnNextTest();
@@ -206,6 +209,7 @@ public class TestNGProvider
                                        reporterConfiguration.getReportsDirectory(), getSkipAfterFailureCount() );
     }
 
+    @Override
     @SuppressWarnings( "unchecked" )
     public Iterable<Class<?>> getSuites()
     {

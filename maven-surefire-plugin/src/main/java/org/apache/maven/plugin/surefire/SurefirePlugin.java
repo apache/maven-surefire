@@ -323,27 +323,32 @@ public class SurefirePlugin
     @Parameter( property = "surefire.shutdown", defaultValue = "testset" )
     private String shutdown;
 
+    @Override
     protected int getRerunFailingTestsCount()
     {
         return rerunFailingTestsCount;
     }
 
+    @Override
     protected void handleSummary( RunResult summary, Exception firstForkException )
         throws MojoExecutionException, MojoFailureException
     {
         reportExecution( this, summary, getConsoleLogger(), firstForkException );
     }
 
+    @Override
     protected boolean isSkipExecution()
     {
         return isSkip() || isSkipTests() || isSkipExec();
     }
 
+    @Override
     protected String getPluginName()
     {
         return "surefire";
     }
 
+    @Override
     protected String[] getDefaultIncludes()
     {
         return new String[]{ "**/Test*.java", "**/*Test.java", "**/*Tests.java", "**/*TestCase.java" };
@@ -357,11 +362,13 @@ public class SurefirePlugin
 
     // now for the implementation of the field accessors
 
+    @Override
     public boolean isSkipTests()
     {
         return skipTests;
     }
 
+    @Override
     public void setSkipTests( boolean skipTests )
     {
         this.skipTests = skipTests;
@@ -370,6 +377,7 @@ public class SurefirePlugin
     /**
      * @noinspection deprecation
      */
+    @Override
     public boolean isSkipExec()
     {
         return skipExec;
@@ -378,196 +386,235 @@ public class SurefirePlugin
     /**
      * @noinspection deprecation
      */
+    @Override
     public void setSkipExec( boolean skipExec )
     {
         this.skipExec = skipExec;
     }
 
+    @Override
     public boolean isSkip()
     {
         return skip;
     }
 
+    @Override
     public void setSkip( boolean skip )
     {
         this.skip = skip;
     }
 
+    @Override
     public boolean isTestFailureIgnore()
     {
         return testFailureIgnore;
     }
 
+    @Override
     public void setTestFailureIgnore( boolean testFailureIgnore )
     {
         this.testFailureIgnore = testFailureIgnore;
     }
 
+    @Override
     public File getBasedir()
     {
         return basedir;
     }
 
+    @Override
     public void setBasedir( File basedir )
     {
         this.basedir = basedir;
     }
 
+    @Override
     public File getTestClassesDirectory()
     {
         return testClassesDirectory;
     }
 
+    @Override
     public void setTestClassesDirectory( File testClassesDirectory )
     {
         this.testClassesDirectory = testClassesDirectory;
     }
 
+    @Override
     public File getClassesDirectory()
     {
         return classesDirectory;
     }
 
+    @Override
     public void setClassesDirectory( File classesDirectory )
     {
         this.classesDirectory = classesDirectory;
     }
 
+    @Override
     public File getReportsDirectory()
     {
         return reportsDirectory;
     }
 
+    @Override
     public void setReportsDirectory( File reportsDirectory )
     {
         this.reportsDirectory = reportsDirectory;
     }
 
+    @Override
     public String getTest()
     {
         return test;
     }
 
+    @Override
     public boolean isUseSystemClassLoader()
     {
         return useSystemClassLoader;
     }
 
+    @Override
     public void setUseSystemClassLoader( boolean useSystemClassLoader )
     {
         this.useSystemClassLoader = useSystemClassLoader;
     }
 
+    @Override
     public boolean isUseManifestOnlyJar()
     {
         return useManifestOnlyJar;
     }
 
+    @Override
     public void setUseManifestOnlyJar( boolean useManifestOnlyJar )
     {
         this.useManifestOnlyJar = useManifestOnlyJar;
     }
 
+    @Override
     public Boolean getFailIfNoSpecifiedTests()
     {
         return failIfNoSpecifiedTests;
     }
 
+    @Override
     public void setFailIfNoSpecifiedTests( boolean failIfNoSpecifiedTests )
     {
         this.failIfNoSpecifiedTests = failIfNoSpecifiedTests;
     }
 
+    @Override
     public int getSkipAfterFailureCount()
     {
         return skipAfterFailureCount;
     }
 
+    @Override
     public String getShutdown()
     {
         return shutdown;
     }
 
+    @Override
     public boolean isPrintSummary()
     {
         return printSummary;
     }
 
+    @Override
     public void setPrintSummary( boolean printSummary )
     {
         this.printSummary = printSummary;
     }
 
+    @Override
     public String getReportFormat()
     {
         return reportFormat;
     }
 
+    @Override
     public void setReportFormat( String reportFormat )
     {
         this.reportFormat = reportFormat;
     }
 
+    @Override
     public boolean isUseFile()
     {
         return useFile;
     }
 
+    @Override
     public void setUseFile( boolean useFile )
     {
         this.useFile = useFile;
     }
 
+    @Override
     public String getDebugForkedProcess()
     {
         return debugForkedProcess;
     }
 
+    @Override
     public void setDebugForkedProcess( String debugForkedProcess )
     {
         this.debugForkedProcess = debugForkedProcess;
     }
 
+    @Override
     public int getForkedProcessTimeoutInSeconds()
     {
         return forkedProcessTimeoutInSeconds;
     }
 
+    @Override
     public void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds )
     {
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
     }
 
+    @Override
     public int getForkedProcessExitTimeoutInSeconds()
     {
         return forkedProcessExitTimeoutInSeconds;
     }
 
+    @Override
     public void setForkedProcessExitTimeoutInSeconds( int forkedProcessExitTimeoutInSeconds )
     {
         this.forkedProcessExitTimeoutInSeconds = forkedProcessExitTimeoutInSeconds;
     }
 
+    @Override
     public double getParallelTestsTimeoutInSeconds()
     {
         return parallelTestsTimeoutInSeconds;
     }
 
+    @Override
     public void setParallelTestsTimeoutInSeconds( double parallelTestsTimeoutInSeconds )
     {
         this.parallelTestsTimeoutInSeconds = parallelTestsTimeoutInSeconds;
     }
 
+    @Override
     public double getParallelTestsTimeoutForcedInSeconds()
     {
         return parallelTestsTimeoutForcedInSeconds;
     }
 
+    @Override
     public void setParallelTestsTimeoutForcedInSeconds( double parallelTestsTimeoutForcedInSeconds )
     {
         this.parallelTestsTimeoutForcedInSeconds = parallelTestsTimeoutForcedInSeconds;
     }
 
+    @Override
     public void setTest( String test )
     {
         this.test = test;
@@ -585,22 +632,26 @@ public class SurefirePlugin
         this.includes = includes;
     }
 
+    @Override
     public File[] getSuiteXmlFiles()
     {
         return suiteXmlFiles.clone();
     }
 
+    @Override
     @SuppressWarnings( "UnusedDeclaration" )
     public void setSuiteXmlFiles( File[] suiteXmlFiles )
     {
         this.suiteXmlFiles = suiteXmlFiles.clone();
     }
 
+    @Override
     public String getRunOrder()
     {
         return runOrder;
     }
 
+    @Override
     @SuppressWarnings( "UnusedDeclaration" )
     public void setRunOrder( String runOrder )
     {

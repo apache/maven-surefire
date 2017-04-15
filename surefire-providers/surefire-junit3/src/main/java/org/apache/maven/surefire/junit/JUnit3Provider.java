@@ -69,6 +69,7 @@ public class JUnit3Provider
         testChecker = new PojoAndJUnit3Checker( jUnit3TestChecker ); // Todo; use reflector
     }
 
+    @Override
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException
     {
@@ -143,6 +144,7 @@ public class JUnit3Provider
         return runOrderCalculator.orderTestClasses( testsToRun );
     }
 
+    @Override
     public Iterable<Class<?>> getSuites()
     {
         testsToRun = scanClassPath();

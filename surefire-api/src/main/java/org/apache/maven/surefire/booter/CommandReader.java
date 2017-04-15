@@ -261,6 +261,7 @@ public final class CommandReader
             this.originalOutStream = originalOutStream;
         }
 
+        @Override
         public Iterator<String> iterator()
         {
             return new ClassesIterator( originalOutStream );
@@ -281,12 +282,14 @@ public final class CommandReader
             this.originalOutStream = originalOutStream;
         }
 
+        @Override
         public boolean hasNext()
         {
             popUnread();
             return isNotBlank( clazz );
         }
 
+        @Override
         public String next()
         {
             popUnread();
@@ -307,6 +310,7 @@ public final class CommandReader
             }
         }
 
+        @Override
         public void remove()
         {
             throw new UnsupportedOperationException();
@@ -374,6 +378,7 @@ public final class CommandReader
     private final class CommandRunnable
         implements Runnable
     {
+        @Override
         public void run()
         {
             CommandReader.this.startMonitor.countDown();

@@ -86,36 +86,43 @@ public class TestSetRunListener
         testMethodStats = new ArrayList<TestMethodStats>();
     }
 
+    @Override
     public void debug( String message )
     {
         consoleReporter.getConsoleLogger().debug( trimTrailingNewLine( message ) );
     }
 
+    @Override
     public void info( String message )
     {
         consoleReporter.getConsoleLogger().info( trimTrailingNewLine( message ) );
     }
 
+    @Override
     public void warning( String message )
     {
         consoleReporter.getConsoleLogger().warning( trimTrailingNewLine( message ) );
     }
 
+    @Override
     public void error( String message )
     {
         consoleReporter.getConsoleLogger().error( trimTrailingNewLine( message ) );
     }
 
+    @Override
     public void error( String message, Throwable t )
     {
         consoleReporter.getConsoleLogger().error( message, t );
     }
 
+    @Override
     public void error( Throwable t )
     {
         consoleReporter.getConsoleLogger().error( t );
     }
 
+    @Override
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         try
@@ -136,6 +143,7 @@ public class TestSetRunListener
         consoleOutputReceiver.writeTestOutput( buf, off, len, stdout );
     }
 
+    @Override
     public void testSetStarting( ReportEntry report )
     {
         detailsForThis.testSetStart();
@@ -149,6 +157,7 @@ public class TestSetRunListener
         testStdErr = initDeferred( "stderr" );
     }
 
+    @Override
     public void testSetCompleted( ReportEntry report )
     {
         final WrappedReportEntry wrap = wrapTestSet( report );
@@ -173,11 +182,13 @@ public class TestSetRunListener
     // Test
     // ----------------------------------------------------------------------
 
+    @Override
     public void testStarting( ReportEntry report )
     {
         detailsForThis.testStart();
     }
 
+    @Override
     public void testSucceeded( ReportEntry reportEntry )
     {
         WrappedReportEntry wrapped = wrap( reportEntry, SUCCESS );
@@ -186,6 +197,7 @@ public class TestSetRunListener
         clearCapture();
     }
 
+    @Override
     public void testError( ReportEntry reportEntry )
     {
         WrappedReportEntry wrapped = wrap( reportEntry, ERROR );
@@ -194,6 +206,7 @@ public class TestSetRunListener
         clearCapture();
     }
 
+    @Override
     public void testFailed( ReportEntry reportEntry )
     {
         WrappedReportEntry wrapped = wrap( reportEntry, FAILURE );
@@ -206,6 +219,7 @@ public class TestSetRunListener
     // Counters
     // ----------------------------------------------------------------------
 
+    @Override
     public void testSkipped( ReportEntry reportEntry )
     {
         WrappedReportEntry wrapped = wrap( reportEntry, SKIPPED );
@@ -215,10 +229,12 @@ public class TestSetRunListener
         clearCapture();
     }
 
+    @Override
     public void testExecutionSkippedByUser()
     {
     }
 
+    @Override
     public void testAssumptionFailure( ReportEntry report )
     {
         testSkipped( report );

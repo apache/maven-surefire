@@ -68,6 +68,7 @@ final class ThreadResourcesBalancer
      * @return <code>true</code> if current thread is <em>NOT</em> interrupted
      *         while waiting for a permit.
      */
+    @Override
     public boolean acquirePermit()
     {
         try
@@ -84,11 +85,13 @@ final class ThreadResourcesBalancer
     /**
      * Releases a permit, returning it to the balancer.
      */
+    @Override
     public void releasePermit()
     {
         balancer.release();
     }
 
+    @Override
     public void releaseAllPermits()
     {
         balancer.release( numPermits );

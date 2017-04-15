@@ -55,21 +55,25 @@ public class MockReporter
     {
     }
 
+    @Override
     public void testSetStarting( ReportEntry report )
     {
         events.add( SET_STARTED );
     }
 
+    @Override
     public void testSetCompleted( ReportEntry report )
     {
         events.add( SET_COMPLETED );
     }
 
+    @Override
     public void testStarting( ReportEntry report )
     {
         events.add( TEST_STARTED );
     }
 
+    @Override
     public void testSucceeded( ReportEntry report )
     {
         events.add( TEST_COMPLETED );
@@ -77,12 +81,14 @@ public class MockReporter
 
     }
 
+    @Override
     public void testSkipped( ReportEntry report )
     {
         events.add( TEST_SKIPPED );
         testIgnored.incrementAndGet();
     }
 
+    @Override
     public void testExecutionSkippedByUser()
     {
     }
@@ -102,16 +108,19 @@ public class MockReporter
         return testFailed.get();
     }
 
+    @Override
     public void testError( ReportEntry report )
     {
         testError.incrementAndGet();
     }
 
+    @Override
     public void testFailed( ReportEntry report )
     {
         testFailed.incrementAndGet();
     }
 
+    @Override
     public void testAssumptionFailure( ReportEntry report )
     {
     }

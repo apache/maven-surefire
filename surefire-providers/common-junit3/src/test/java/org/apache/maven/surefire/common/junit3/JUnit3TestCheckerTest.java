@@ -106,11 +106,13 @@ public class JUnit3TestCheckerTest
     public static class MySuite2
         implements junit.framework.Test
     {
+        @Override
         public int countTestCases()
         {
             return 0;
         }
 
+        @Override
         public void run( TestResult testResult )
         {
         }

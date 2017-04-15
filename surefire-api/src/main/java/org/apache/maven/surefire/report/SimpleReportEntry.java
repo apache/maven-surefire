@@ -118,37 +118,44 @@ public class SimpleReportEntry
         }
     }
 
+    @Override
     public String getSourceName()
     {
         return source;
     }
 
+    @Override
     public String getName()
     {
         return name;
     }
 
+    @Override
     public String getGroup()
     {
         return null;
     }
 
+    @Override
     public StackTraceWriter getStackTraceWriter()
     {
         return stackTraceWriter;
     }
 
+    @Override
     public Integer getElapsed()
     {
         return elapsed;
     }
 
+    @Override
     public String toString()
     {
         return "ReportEntry{" + "source='" + source + '\'' + ", name='" + name + '\'' + ", stackTraceWriter="
             + stackTraceWriter + ", elapsed=" + elapsed + ",message=" + message + '}';
     }
 
+    @Override
     public String getMessage()
     {
         return message;
@@ -157,6 +164,7 @@ public class SimpleReportEntry
     /**
      * @noinspection RedundantIfStatement
      */
+    @Override
     public boolean equals( Object o )
     {
         if ( this == o )
@@ -192,6 +200,7 @@ public class SimpleReportEntry
         return true;
     }
 
+    @Override
     public int hashCode()
     {
         int result = source != null ? source.hashCode() : 0;
@@ -201,6 +210,7 @@ public class SimpleReportEntry
         return result;
     }
 
+    @Override
     public String getNameWithGroup()
     {
         return getName();

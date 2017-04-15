@@ -117,16 +117,19 @@ public class TestListResolver
                                      includedPatterns, excludedPatterns );
     }
 
+    @Override
     public boolean hasIncludedMethodPatterns()
     {
         return hasIncludedMethodPatterns;
     }
 
+    @Override
     public boolean hasExcludedMethodPatterns()
     {
         return hasExcludedMethodPatterns;
     }
 
+    @Override
     public boolean hasMethodPatterns()
     {
         return hasIncludedMethodPatterns() || hasExcludedMethodPatterns();
@@ -162,6 +165,7 @@ public class TestListResolver
     {
         return new TestFilter<String, String>()
         {
+            @Override
             public boolean shouldRun( String testClass, String methodName )
             {
                 return TestListResolver.this.shouldRun( testClass, methodName )
@@ -174,6 +178,7 @@ public class TestListResolver
     {
         return new TestFilter<String, String>()
         {
+            @Override
             public boolean shouldRun( String testClass, String methodName )
             {
                 return TestListResolver.this.shouldRun( testClass, methodName )
@@ -193,6 +198,7 @@ public class TestListResolver
      * @param testClassFile format must be e.g. "my/package/MyTest.class" including class extension; or null
      * @param methodName real test-method name; or null
      */
+    @Override
     public boolean shouldRun( String testClassFile, String methodName )
     {
         if ( isEmpty() || isBlank( testClassFile ) && isBlank( methodName ) )
@@ -234,11 +240,13 @@ public class TestListResolver
         }
     }
 
+    @Override
     public boolean isEmpty()
     {
         return equals( EMPTY );
     }
 
+    @Override
     public String getPluginParameterTest()
     {
         String aggregatedTest = aggregatedTest( "", getIncludedPatterns() );
@@ -252,11 +260,13 @@ public class TestListResolver
         return aggregatedTest.length() == 0 ? "" : aggregatedTest;
     }
 
+    @Override
     public Set<ResolvedTest> getIncludedPatterns()
     {
         return includedPatterns;
     }
 
+    @Override
     public Set<ResolvedTest> getExcludedPatterns()
     {
         return excludedPatterns;

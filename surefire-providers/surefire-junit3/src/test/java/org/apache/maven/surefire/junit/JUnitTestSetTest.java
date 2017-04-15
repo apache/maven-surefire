@@ -63,43 +63,52 @@ public class JUnitTestSetTest
 
         private List<ReportEntry> succeededTests = new ArrayList<ReportEntry>();
 
+        @Override
         public void testSetStarting( ReportEntry report )
         {
         }
 
+        @Override
         public void testSetCompleted( ReportEntry report )
         {
         }
 
+        @Override
         public void testStarting( ReportEntry report )
         {
         }
 
+        @Override
         public void testSucceeded( ReportEntry report )
         {
             this.succeededTests.add( report );
         }
 
+        @Override
         public void testAssumptionFailure( ReportEntry report )
         {
             throw new IllegalStateException();
         }
 
+        @Override
         public void testError( ReportEntry report )
         {
             throw new IllegalStateException();
         }
 
+        @Override
         public void testFailed( ReportEntry report )
         {
             throw new IllegalStateException();
         }
 
+        @Override
         public void testSkipped( ReportEntry report )
         {
             throw new IllegalStateException();
         }
 
+        @Override
         public void testExecutionSkippedByUser()
         {
         }

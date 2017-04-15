@@ -69,10 +69,12 @@ public abstract class ConcurrentRunListener
         };
     }
 
+    @Override
     public void testSetStarting( ReportEntry description )
     {
     }
 
+    @Override
     public void testSetCompleted( ReportEntry result )
     {
         final RunListener reporterManager = getRunListener();
@@ -83,6 +85,7 @@ public abstract class ConcurrentRunListener
         reporterManagerThreadLocal.remove();
     }
 
+    @Override
     public void testFailed( ReportEntry failure )
     {
         final TestMethod testMethod = getOrCreateThreadAttachedTestMethod( failure );
@@ -93,6 +96,7 @@ public abstract class ConcurrentRunListener
         }
     }
 
+    @Override
     public void testError( ReportEntry failure )
     {
         final TestMethod testMethod = getOrCreateThreadAttachedTestMethod( failure );
@@ -103,6 +107,7 @@ public abstract class ConcurrentRunListener
         }
     }
 
+    @Override
     public void testSkipped( ReportEntry description )
     {
         TestSet testSet = getTestSet( description );
@@ -112,12 +117,14 @@ public abstract class ConcurrentRunListener
         testMethod.detachFromCurrentThread();
     }
 
+    @Override
     public void testExecutionSkippedByUser()
     {
         // cannot guarantee proper call to all listeners
         reporterManagerThreadLocal.get().testExecutionSkippedByUser();
     }
 
+    @Override
     public void testAssumptionFailure( ReportEntry failure )
     {
         final TestMethod testMethod = getOrCreateThreadAttachedTestMethod( failure );
@@ -128,6 +135,7 @@ public abstract class ConcurrentRunListener
         }
     }
 
+    @Override
     public void testStarting( ReportEntry description )
     {
         TestSet testSet = getTestSet( description );
@@ -137,6 +145,7 @@ public abstract class ConcurrentRunListener
         testSet.attachToThread();
     }
 
+    @Override
     public void testSucceeded( ReportEntry report )
     {
         TestMethod testMethod = getThreadTestMethod();
@@ -196,6 +205,7 @@ public abstract class ConcurrentRunListener
     }
 
 
+    @Override
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         TestMethod threadTestMethod = getThreadTestMethod();

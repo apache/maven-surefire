@@ -103,6 +103,7 @@ public class JUnitCoreProvider
         jUnit48Reflector = new JUnit48Reflector( testClassLoader );
     }
 
+    @Override
     public Iterable<Class<?>> getSuites()
     {
         testsToRun = scanClassPath();
@@ -114,6 +115,7 @@ public class JUnitCoreProvider
         return jUnitCoreParameters.isNoThreading();
     }
 
+    @Override
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException
     {
@@ -219,6 +221,7 @@ public class JUnitCoreProvider
     {
         commandsReader.addShutdownListener( new CommandListener()
         {
+            @Override
             public void update( Command command )
             {
                 testsToRun.markTestSetFinished();
@@ -230,6 +233,7 @@ public class JUnitCoreProvider
     {
         commandsReader.addSkipNextTestsListener( new CommandListener()
         {
+            @Override
             public void update( Command command )
             {
                 stoppable.pleaseStop();

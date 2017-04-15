@@ -19,15 +19,17 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.ArtifactRepository;
+
+import static org.apache.maven.surefire.util.internal.StringUtils.ISO_8859_1;
 
 /**
  * @author Kristian Rosenvold
@@ -153,15 +155,11 @@ public class ChecksumCalculator
         {
             MessageDigest md = MessageDigest.getInstance( "SHA-1" );
             String configValue = getConfig();
-            md.update( configValue.getBytes( "iso-8859-1" ), 0, configValue.length() );
+            md.update( configValue.getBytes( ISO_8859_1 ), 0, configValue.length() );
             byte[] sha1hash = md.digest();
             return asHexString( sha1hash );
         }
         catch ( NoSuchAlgorithmException e )
-        {
-            throw new RuntimeException( e );
-        }
-        catch ( UnsupportedEncodingException e )
         {
             throw new RuntimeException( e );
         }

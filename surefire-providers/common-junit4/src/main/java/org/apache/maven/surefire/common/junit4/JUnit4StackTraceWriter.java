@@ -55,6 +55,7 @@ public class JUnit4StackTraceWriter
       *
       * @see org.apache.maven.surefire.report.StackTraceWriter#writeTraceToString()
       */
+    @Override
     public String writeTraceToString()
     {
         Throwable t = junitFailure.getException();
@@ -87,6 +88,7 @@ public class JUnit4StackTraceWriter
         return extractMethodName( junitFailure.getDescription().getDisplayName() );
     }
 
+    @Override
     @SuppressWarnings( "ThrowableResultOfMethodCallIgnored" )
     public String smartTrimmedStackTrace()
     {
@@ -101,6 +103,7 @@ public class JUnit4StackTraceWriter
      *
      * @see org.apache.maven.surefire.report.StackTraceWriter#writeTrimmedTraceToString()
      */
+    @Override
     public String writeTrimmedTraceToString()
     {
         String testClass = getTestClassName();
@@ -120,6 +123,7 @@ public class JUnit4StackTraceWriter
      *
      * @see org.apache.maven.surefire.report.StackTraceWriter#getThrowable()
      */
+    @Override
     public SafeThrowable getThrowable()
     {
         return new SafeThrowable( junitFailure.getException() );

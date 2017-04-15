@@ -102,11 +102,13 @@ public class SurefirePluginTest
     private class MyToolChain
         implements Toolchain
     {
+        @Override
         public String getType()
         {
             return null;
         }
 
+        @Override
         public String findTool( String s )
         {
             return null;

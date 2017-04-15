@@ -191,7 +191,7 @@ public class OutputValidator
     public TestFile getSurefireReportsXmlFile( String fileName )
     {
         File targetDir = getSurefireReportsDirectory();
-        return new TestFile( new File( targetDir, fileName ), Charset.forName("UTF-8"), this );
+        return new TestFile( new File( targetDir, fileName ), Charset.forName( "UTF-8" ), this );
     }
 
     public File getSurefireReportsDirectory()

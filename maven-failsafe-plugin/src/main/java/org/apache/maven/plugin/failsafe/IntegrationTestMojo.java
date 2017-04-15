@@ -350,11 +350,13 @@ public class IntegrationTestMojo
     @Parameter( property = "failsafe.shutdown", defaultValue = "testset" )
     private String shutdown;
 
+    @Override
     protected int getRerunFailingTestsCount()
     {
         return rerunFailingTestsCount;
     }
 
+    @Override
     @SuppressWarnings( "unchecked" )
     protected void handleSummary( RunResult summary, Exception firstForkException )
             throws MojoExecutionException, MojoFailureException
@@ -418,17 +420,20 @@ public class IntegrationTestMojo
         }
     }
 
+    @Override
     @SuppressWarnings( "deprecation" )
     protected boolean isSkipExecution()
     {
         return isSkip() || isSkipTests() || isSkipITs() || isSkipExec();
     }
 
+    @Override
     protected String getPluginName()
     {
         return "failsafe";
     }
 
+    @Override
     protected String[] getDefaultIncludes()
     {
         return new String[]{ "**/IT*.java", "**/*IT.java", "**/*ITCase.java" };
@@ -440,11 +445,13 @@ public class IntegrationTestMojo
         return "https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report.xsd";
     }
 
+    @Override
     public boolean isSkipTests()
     {
         return skipTests;
     }
 
+    @Override
     public void setSkipTests( boolean skipTests )
     {
         this.skipTests = skipTests;
@@ -460,6 +467,7 @@ public class IntegrationTestMojo
         this.skipITs = skipITs;
     }
 
+    @Override
     @SuppressWarnings( "deprecation" )
     @Deprecated
     public boolean isSkipExec()
@@ -467,6 +475,7 @@ public class IntegrationTestMojo
         return skipExec;
     }
 
+    @Override
     @SuppressWarnings( "deprecation" )
     @Deprecated
     public void setSkipExec( boolean skipExec )
@@ -474,31 +483,37 @@ public class IntegrationTestMojo
         this.skipExec = skipExec;
     }
 
+    @Override
     public boolean isSkip()
     {
         return skip;
     }
 
+    @Override
     public void setSkip( boolean skip )
     {
         this.skip = skip;
     }
 
+    @Override
     public File getBasedir()
     {
         return basedir;
     }
 
+    @Override
     public void setBasedir( File basedir )
     {
         this.basedir = basedir;
     }
 
+    @Override
     public File getTestClassesDirectory()
     {
         return testClassesDirectory;
     }
 
+    @Override
     public void setTestClassesDirectory( File testClassesDirectory )
     {
         this.testClassesDirectory = testClassesDirectory;
@@ -509,6 +524,7 @@ public class IntegrationTestMojo
      * {@link #useSystemClassLoader} is ignored and the {@link org.apache.maven.surefire.booter.IsolatedClassLoader} is
      * used instead. See the resolution of {@link #getClassLoaderConfiguration() ClassLoaderConfiguration}.
      */
+    @Override
     public File getClassesDirectory()
     {
         File artifact = getProject().getArtifact().getFile();
@@ -516,6 +532,7 @@ public class IntegrationTestMojo
         return isDefaultClsDir ? ( isJarArtifact( artifact ) ? artifact : defaultClassesDirectory ) : classesDirectory;
     }
 
+    @Override
     public void setClassesDirectory( File classesDirectory )
     {
         this.classesDirectory = toAbsoluteCanonical( classesDirectory );
@@ -526,21 +543,25 @@ public class IntegrationTestMojo
         this.defaultClassesDirectory = toAbsoluteCanonical( defaultClassesDirectory );
     }
 
+    @Override
     public File getReportsDirectory()
     {
         return reportsDirectory;
     }
 
+    @Override
     public void setReportsDirectory( File reportsDirectory )
     {
         this.reportsDirectory = reportsDirectory;
     }
 
+    @Override
     public String getTest()
     {
         return test;
     }
 
+    @Override
     public void setTest( String test )
     {
         this.test = test;
@@ -556,101 +577,121 @@ public class IntegrationTestMojo
         this.summaryFile = summaryFile;
     }
 
+    @Override
     public boolean isPrintSummary()
     {
         return printSummary;
     }
 
+    @Override
     public void setPrintSummary( boolean printSummary )
     {
         this.printSummary = printSummary;
     }
 
+    @Override
     public String getReportFormat()
     {
         return reportFormat;
     }
 
+    @Override
     public void setReportFormat( String reportFormat )
     {
         this.reportFormat = reportFormat;
     }
 
+    @Override
     public boolean isUseFile()
     {
         return useFile;
     }
 
+    @Override
     public void setUseFile( boolean useFile )
     {
         this.useFile = useFile;
     }
 
+    @Override
     public String getDebugForkedProcess()
     {
         return debugForkedProcess;
     }
 
+    @Override
     public void setDebugForkedProcess( String debugForkedProcess )
     {
         this.debugForkedProcess = debugForkedProcess;
     }
 
+    @Override
     public int getForkedProcessTimeoutInSeconds()
     {
         return forkedProcessTimeoutInSeconds;
     }
 
+    @Override
     public void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds )
     {
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
     }
 
+    @Override
     public int getForkedProcessExitTimeoutInSeconds()
     {
         return forkedProcessExitTimeoutInSeconds;
     }
 
+    @Override
     public void setForkedProcessExitTimeoutInSeconds( int forkedProcessExitTimeoutInSeconds )
     {
         this.forkedProcessExitTimeoutInSeconds = forkedProcessExitTimeoutInSeconds;
     }
 
+    @Override
     public double getParallelTestsTimeoutInSeconds()
     {
         return parallelTestsTimeoutInSeconds;
     }
 
+    @Override
     public void setParallelTestsTimeoutInSeconds( double parallelTestsTimeoutInSeconds )
     {
         this.parallelTestsTimeoutInSeconds = parallelTestsTimeoutInSeconds;
     }
 
+    @Override
     public double getParallelTestsTimeoutForcedInSeconds()
     {
         return parallelTestsTimeoutForcedInSeconds;
     }
 
+    @Override
     public void setParallelTestsTimeoutForcedInSeconds( double parallelTestsTimeoutForcedInSeconds )
     {
         this.parallelTestsTimeoutForcedInSeconds = parallelTestsTimeoutForcedInSeconds;
     }
 
+    @Override
     public boolean isUseSystemClassLoader()
     {
         return useSystemClassLoader;
     }
 
+    @Override
     public void setUseSystemClassLoader( boolean useSystemClassLoader )
     {
         this.useSystemClassLoader = useSystemClassLoader;
     }
 
+    @Override
     public boolean isUseManifestOnlyJar()
     {
         return useManifestOnlyJar;
     }
 
+    @Override
     public void setUseManifestOnlyJar( boolean useManifestOnlyJar )
     {
         this.useManifestOnlyJar = useManifestOnlyJar;
@@ -668,27 +709,32 @@ public class IntegrationTestMojo
         // ignore
     }
 
+    @Override
     protected void addPluginSpecificChecksumItems( ChecksumCalculator checksum )
     {
         checksum.add( skipITs );
         checksum.add( summaryFile );
     }
 
+    @Override
     public Boolean getFailIfNoSpecifiedTests()
     {
         return failIfNoSpecifiedTests;
     }
 
+    @Override
     public void setFailIfNoSpecifiedTests( boolean failIfNoSpecifiedTests )
     {
         this.failIfNoSpecifiedTests = failIfNoSpecifiedTests;
     }
 
+    @Override
     public int getSkipAfterFailureCount()
     {
         return skipAfterFailureCount;
     }
 
+    @Override
     public String getShutdown()
     {
         return shutdown;
@@ -706,22 +752,26 @@ public class IntegrationTestMojo
         this.includes = includes;
     }
 
+    @Override
     public File[] getSuiteXmlFiles()
     {
         return suiteXmlFiles.clone();
     }
 
+    @Override
     @SuppressWarnings( "UnusedDeclaration" )
     public void setSuiteXmlFiles( File[] suiteXmlFiles )
     {
         this.suiteXmlFiles = suiteXmlFiles.clone();
     }
 
+    @Override
     public String getRunOrder()
     {
         return runOrder;
     }
 
+    @Override
     @SuppressWarnings( "UnusedDeclaration" )
     public void setRunOrder( String runOrder )
     {

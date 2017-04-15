@@ -46,6 +46,7 @@ public class PojoStackTraceWriter
         this.t = t;
     }
 
+    @Override
     public String writeTraceToString()
     {
         if ( t != null )
@@ -76,16 +77,19 @@ public class PojoStackTraceWriter
         return "";
     }
 
+    @Override
     public String smartTrimmedStackTrace()
     {
         return t == null ? "" : new SmartStackTraceParser( testClass, t, testMethod ).getString();
     }
 
+    @Override
     public String writeTrimmedTraceToString()
     {
         return t == null ? "" : SmartStackTraceParser.stackTraceWithFocusOnClassAsString( t, testClass );
     }
 
+    @Override
     public SafeThrowable getThrowable()
     {
         return t == null ? null : new SafeThrowable( t );

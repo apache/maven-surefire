@@ -134,6 +134,7 @@ public class ProviderFactory
             this.testsClassLoader = testsClassLoader;
         }
 
+        @Override
         @SuppressWarnings( "unchecked" )
         public Iterable<Class<?>> getSuites()
         {
@@ -148,6 +149,7 @@ public class ProviderFactory
             }
         }
 
+        @Override
         public RunResult invoke( Object forkTestSet )
             throws TestSetFailedException, InvocationTargetException
         {
@@ -175,6 +177,7 @@ public class ProviderFactory
             return current;
         }
 
+        @Override
         public void cancel()
         {
             Class<?> providerType = providerInOtherClassLoader.getClass();

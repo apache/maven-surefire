@@ -30,6 +30,8 @@ import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
+
 /**
  * Dumps a text or exception in dump file.
  * Each call logs a date when it was written to the dump file.
@@ -111,7 +113,7 @@ public final class DumpFileUtils
 
     private static Writer createWriter( File dumpFile ) throws IOException
     {
-        return new OutputStreamWriter( new FileOutputStream( dumpFile, true ), "UTF-8" )
+        return new OutputStreamWriter( new FileOutputStream( dumpFile, true ), UTF_8 )
                        .append( "# Created on " )
                        .append( new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSS" ).format( new Date() ) )
                        .append( StringUtils.NL );

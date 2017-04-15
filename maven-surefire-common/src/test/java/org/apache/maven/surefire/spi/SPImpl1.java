@@ -25,6 +25,7 @@ package org.apache.maven.surefire.spi;
  */
 public class SPImpl1 implements ExistingServiceInterface
 {
+    @Override
     public String whoAmI()
     {
         return SPImpl1.class.getSimpleName();

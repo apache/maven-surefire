@@ -142,31 +142,37 @@ public class DefaultReporterFactoryTest
     {
         private final List<String> messages = new ArrayList<String>();
 
+        @Override
         public void debug( String message )
         {
             messages.add( message );
         }
 
+        @Override
         public void info( String message )
         {
             messages.add( message );
         }
 
+        @Override
         public void warning( String message )
         {
             messages.add( message );
         }
 
+        @Override
         public void error( String message )
         {
             messages.add( message );
         }
 
+        @Override
         public void error( String message, Throwable t )
         {
             messages.add( message );
         }
 
+        @Override
         public void error( Throwable t )
         {
         }
@@ -233,21 +239,25 @@ public class DefaultReporterFactoryTest
             this.stackTrace = stackTrace;
         }
 
+        @Override
         public String writeTraceToString()
         {
             return "";
         }
 
+        @Override
         public String writeTrimmedTraceToString()
         {
             return "";
         }
 
+        @Override
         public String smartTrimmedStackTrace()
         {
             return stackTrace;
         }
 
+        @Override
         public SafeThrowable getThrowable()
         {
             return null;

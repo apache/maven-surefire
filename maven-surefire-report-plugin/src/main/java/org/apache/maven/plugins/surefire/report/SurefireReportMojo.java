@@ -65,22 +65,26 @@ public class SurefireReportMojo
     @Parameter( defaultValue = "false", property = "skipSurefireReport" )
     private boolean skipSurefireReport;
 
+    @Override
     protected File getSurefireReportsDirectory( MavenProject subProject )
     {
         String buildDir = subProject.getBuild().getDirectory();
         return new File( buildDir + "/surefire-reports" );
     }
 
+    @Override
     public String getOutputName()
     {
         return outputName;
     }
 
+    @Override
     protected boolean isSkipped()
     {
         return skipSurefireReport;
     }
 
+    @Override
     protected boolean isGeneratedWhenNoResults()
     {
         return alwaysGenerateSurefireReport;

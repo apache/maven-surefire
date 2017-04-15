@@ -51,6 +51,7 @@ public class WrappedReportEntry
         this.stdErr = stdErr;
     }
 
+    @Override
     public Integer getElapsed()
     {
         return elapsed;
@@ -71,11 +72,13 @@ public class WrappedReportEntry
         return stdErr;
     }
 
+    @Override
     public String getSourceName()
     {
         return original.getSourceName();
     }
 
+    @Override
     public String getName()
     {
         return original.getName();
@@ -86,16 +89,19 @@ public class WrappedReportEntry
         return getSourceName() + "." + getName();
     }
 
+    @Override
     public String getGroup()
     {
         return original.getGroup();
     }
 
+    @Override
     public StackTraceWriter getStackTraceWriter()
     {
         return original.getStackTraceWriter();
     }
 
+    @Override
     public String getMessage()
     {
         return original.getMessage();
@@ -160,6 +166,7 @@ public class WrappedReportEntry
         return ReportEntryType.SUCCESS == getReportEntryType();
     }
 
+    @Override
     public String getNameWithGroup()
     {
         return original.getNameWithGroup();

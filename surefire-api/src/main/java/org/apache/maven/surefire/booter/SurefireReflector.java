@@ -169,6 +169,7 @@ public class SurefireReflector
             this.target = delegate;
         }
 
+        @Override
         public Object invoke( Object proxy, Method method, Object[] args )
             throws Throwable
         {

@@ -31,18 +31,22 @@ import org.apache.maven.surefire.booter.*;
 final class MockNotifiableTestStream
     implements NotifiableTestStream
 {
+    @Override
     public void provideNewTest()
     {
     }
 
+    @Override
     public void skipSinceNextTest()
     {
     }
 
+    @Override
     public void shutdown( Shutdown shutdownType )
     {
     }
 
+    @Override
     public void noop()
     {
     }

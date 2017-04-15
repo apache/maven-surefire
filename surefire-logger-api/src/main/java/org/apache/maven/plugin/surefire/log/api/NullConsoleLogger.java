@@ -27,26 +27,32 @@ package org.apache.maven.plugin.surefire.log.api;
  */
 public final class NullConsoleLogger implements ConsoleLogger
 {
+    @Override
     public void debug( String message )
     {
     }
 
+    @Override
     public void info( String message )
     {
     }
 
+    @Override
     public void warning( String message )
     {
     }
 
+    @Override
     public void error( String message )
     {
     }
 
+    @Override
     public void error( String message, Throwable t )
     {
     }
 
+    @Override
     public void error( Throwable t )
     {
     }

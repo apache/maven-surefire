@@ -92,6 +92,7 @@ public class SurefireProperties
         super.clear();
     }
 
+    @Override
     public synchronized Enumeration<Object> keys()
     {
         return Collections.enumeration( items );
@@ -170,6 +171,7 @@ public class SurefireProperties
         }
     }
 
+    @Override
     public void copyTo( Map<Object, Object> target )
     {
         target.putAll( this );

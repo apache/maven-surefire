@@ -151,6 +151,7 @@ public class ForkClient
         return defaultReporterFactory;
     }
 
+    @Override
     public final void consumeLine( String s )
     {
         if ( isNotBlank( s ) )

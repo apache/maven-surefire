@@ -166,6 +166,7 @@ public class SchedulingStrategiesTest
     {
         volatile boolean result = false;
 
+        @Override
         public void run()
         {
             result = true;

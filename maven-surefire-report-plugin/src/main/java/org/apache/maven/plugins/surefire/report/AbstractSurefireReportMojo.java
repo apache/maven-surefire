@@ -131,6 +131,7 @@ public abstract class AbstractSurefireReportMojo
     /**
      * {@inheritDoc}
      */
+    @Override
     public void executeReport( Locale locale )
         throws MavenReportException
     {
@@ -312,6 +313,7 @@ public abstract class AbstractSurefireReportMojo
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getName( Locale locale )
     {
         return getBundle( locale ).getString( "report.surefire.name" );
@@ -320,6 +322,7 @@ public abstract class AbstractSurefireReportMojo
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getDescription( Locale locale )
     {
         return getBundle( locale ).getString( "report.surefire.description" );
@@ -328,6 +331,7 @@ public abstract class AbstractSurefireReportMojo
     /**
      * {@inheritDoc}
      */
+    @Override
     public abstract String getOutputName();
 
     private ResourceBundle getBundle( Locale locale )

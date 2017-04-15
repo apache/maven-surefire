@@ -75,6 +75,7 @@ public class PojoTestSet
         }
     }
 
+    @Override
     public void execute( RunListener reportManager, ClassLoader loader )
         throws TestSetFailedException
     {
@@ -289,6 +290,7 @@ public class PojoTestSet
         return isInstanceMethod && returnsVoid && hasNoParams;
     }
 
+    @Override
     public String getName()
     {
         return testClass.getName();

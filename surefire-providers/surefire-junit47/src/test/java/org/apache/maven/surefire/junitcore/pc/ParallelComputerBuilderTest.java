@@ -556,6 +556,7 @@ public class ParallelComputerBuilderTest
         appThreads.removeAll( Collections.singleton( (Thread) null ) );
         Collections.sort( appThreads, new Comparator<Thread>()
         {
+            @Override
             public int compare( Thread t1, Thread t2 )
             {
                 return (int) Math.signum( t1.getId() - t2.getId() );
@@ -580,6 +581,7 @@ public class ParallelComputerBuilderTest
                 (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
             shutdownTask = new Runnable()
             {
+                @Override
                 public void run()
                 {
                     Collection<Description> startedTests = computer.describeStopped( useInterrupt ).getTriggeredTests();

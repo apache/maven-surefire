@@ -167,6 +167,7 @@ public class PropertiesWrapper
         }
     }
 
+    @Override
     public void copyTo( Map<Object, Object> target )
     {
         target.putAll( properties );

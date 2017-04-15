@@ -112,6 +112,7 @@ public class JUnit4Provider
         rerunFailingTestsCount = testRequest.getRerunFailingTestsCount();
     }
 
+    @Override
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException
     {
@@ -209,6 +210,7 @@ public class JUnit4Provider
     {
         commandsReader.addShutdownListener( new CommandListener()
         {
+            @Override
             public void update( Command command )
             {
                 testsToRun.markTestSetFinished();
@@ -220,6 +222,7 @@ public class JUnit4Provider
     {
         commandsReader.addSkipNextTestsListener( new CommandListener()
         {
+            @Override
             public void update( Command command )
             {
                 notifier.pleaseStop();
@@ -298,6 +301,7 @@ public class JUnit4Provider
         }
     }
 
+    @Override
     public Iterable<Class<?>> getSuites()
     {
         testsToRun = scanClassPath();

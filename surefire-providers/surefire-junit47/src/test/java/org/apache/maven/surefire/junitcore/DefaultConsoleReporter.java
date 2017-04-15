@@ -36,31 +36,37 @@ public class DefaultConsoleReporter
         this.systemOut = systemOut;
     }
 
+    @Override
     public void debug( String message )
     {
 
     }
 
+    @Override
     public void info( String message )
     {
         systemOut.println( message );
     }
 
+    @Override
     public void warning( String message )
     {
 
     }
 
+    @Override
     public void error( String message )
     {
 
     }
 
+    @Override
     public void error( String message, Throwable t )
     {
 
     }
 
+    @Override
     public void error( Throwable t )
     {
 

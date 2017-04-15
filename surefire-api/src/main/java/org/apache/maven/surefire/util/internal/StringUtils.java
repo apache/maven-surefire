@@ -19,7 +19,6 @@ package org.apache.maven.surefire.util.internal;
  * under the License.
  */
 
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -64,8 +63,16 @@ public final class StringUtils
 
     private static final Charset DEFAULT_CHARSET = Charset.defaultCharset();
 
+    /**
+     * TODO
+     * Use JDK7 StandardCharsets
+     */
+    public static final Charset US_ASCII = Charset.forName( "US-ASCII" );
+
     // 8-bit charset Latin-1
-    public static final String FORK_STREAM_CHARSET_NAME = "ISO-8859-1";
+    public static final Charset ISO_8859_1 = Charset.forName( "ISO-8859-1" );
+
+    public static final Charset UTF_8 = Charset.forName( "UTF-8" );
 
     private StringUtils()
     {
@@ -347,14 +354,7 @@ public final class StringUtils
 
     public static byte[] encodeStringForForkCommunication( String string )
     {
-        try
-        {
-            return string.getBytes( FORK_STREAM_CHARSET_NAME );
-        }
-        catch ( UnsupportedEncodingException e )
-        {
-           throw new RuntimeException( "The JVM must support Charset " + FORK_STREAM_CHARSET_NAME, e );
-        }
+        return string.getBytes( ISO_8859_1 );
     }
 
     /**

@@ -59,6 +59,7 @@ public class CategorizedReportEntry
             : new SimpleReportEntry( source, name, stackTraceWriter, elapsed, message );
     }
 
+    @Override
     public String getGroup()
     {
         return group;
@@ -70,6 +71,7 @@ public class CategorizedReportEntry
         return isNameWithGroup() ? getName() + GROUP_PREFIX + getGroup() + GROUP_SUFIX : getName();
     }
 
+    @Override
     public boolean equals( Object o )
     {
         if ( this == o )
@@ -91,6 +93,7 @@ public class CategorizedReportEntry
 
     }
 
+    @Override
     public int hashCode()
     {
         int result = super.hashCode();

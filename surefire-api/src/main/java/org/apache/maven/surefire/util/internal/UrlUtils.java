@@ -20,10 +20,11 @@ package org.apache.maven.surefire.util.internal;
  */
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.BitSet;
+
+import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
 
 /**
  * Utility for dealing with URLs in pre-JDK 1.4.
@@ -41,22 +42,12 @@ public final class UrlUtils
         throw new IllegalStateException( "no instantiable constructor" );
     }
 
-    private static final String ENCODING = "UTF-8";
-
     static
     {
-        try
+        byte[] bytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.!~*'():/".getBytes( UTF_8 );
+        for ( byte aByte : bytes )
         {
-            byte[] bytes =
-                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.!~*'():/".getBytes( ENCODING );
-            for ( byte aByte : bytes )
-            {
-                UNRESERVED.set( aByte );
-            }
-        }
-        catch ( UnsupportedEncodingException e )
-        {
-            // can't happen as UTF-8 must be present
+            UNRESERVED.set( aByte );
         }
     }
 
@@ -68,29 +59,21 @@ public final class UrlUtils
         URL url = file.toURL();
         // encode any characters that do not comply with RFC 2396
         // this is primarily to handle Windows where the user's home directory contains spaces
-        try
+        byte[] bytes = url.toString().getBytes( UTF_8 );
+        StringBuilder buf = new StringBuilder( bytes.length );
+        for ( byte b : bytes )
         {
-            byte[] bytes = url.toString().getBytes( ENCODING );
-            StringBuilder buf = new StringBuilder( bytes.length );
-            for ( byte b : bytes )
+            if ( b > 0 && UNRESERVED.get( b ) )
             {
-                if ( b > 0 && UNRESERVED.get( b ) )
-                {
-                    buf.append( (char) b );
-                }
-                else
-                {
-                    buf.append( '%' );
-                    buf.append( Character.forDigit( b >>> 4 & MASK, RADIX ) );
-                    buf.append( Character.forDigit( b & MASK, RADIX ) );
-                }
+                buf.append( (char) b );
             }
-            return new URL( buf.toString() );
+            else
+            {
+                buf.append( '%' );
+                buf.append( Character.forDigit( b >>> 4 & MASK, RADIX ) );
+                buf.append( Character.forDigit( b & MASK, RADIX ) );
+            }
         }
-        catch ( UnsupportedEncodingException e )
-        {
-            // should not happen as UTF-8 must be present
-            throw new RuntimeException( e );
-        }
+        return new URL( buf.toString() );
     }
 }

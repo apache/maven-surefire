@@ -82,6 +82,7 @@ public final class TestProvidingInputStream
         }
     }
 
+    @Override
     public void skipSinceNextTest()
     {
         if ( canContinue() )
@@ -91,6 +92,7 @@ public final class TestProvidingInputStream
         }
     }
 
+    @Override
     public void shutdown( Shutdown shutdownType )
     {
         if ( canContinue() )
@@ -100,6 +102,7 @@ public final class TestProvidingInputStream
         }
     }
 
+    @Override
     public void noop()
     {
         if ( canContinue() )
@@ -150,6 +153,7 @@ public final class TestProvidingInputStream
     /**
      * Signal that a new test is to be provided.
      */
+    @Override
     public void provideNewTest()
     {
         if ( canContinue() )

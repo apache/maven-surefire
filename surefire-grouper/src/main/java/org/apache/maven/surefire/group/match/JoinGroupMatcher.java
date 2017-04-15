@@ -42,6 +42,7 @@ public abstract class JoinGroupMatcher
         return matchers;
     }
 
+    @Override
     public void loadGroupClasses( ClassLoader cloader )
     {
         for ( GroupMatcher matcher : matchers )

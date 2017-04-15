@@ -38,6 +38,7 @@ public class PojoAndJUnit3Checker
         this.jUnit3TestChecker = jUnit3TestChecker;
     }
 
+    @Override
     public boolean accept( Class testClass )
     {
         return jUnit3TestChecker.accept( testClass )

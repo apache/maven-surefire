@@ -335,6 +335,7 @@ public class Scheduler
     {
     }
 
+    @Override
     public void schedule( Runnable childStatement )
     {
         if ( childStatement == null )
@@ -365,6 +366,7 @@ public class Scheduler
         }
     }
 
+    @Override
     public void finished()
     {
         try
@@ -385,6 +387,7 @@ public class Scheduler
     {
         return new Runnable()
         {
+            @Override
             public void run()
             {
                 try
@@ -482,6 +485,7 @@ public class Scheduler
             this.poolHandler = poolHandler;
         }
 
+        @Override
         public void rejectedExecution( Runnable r, ThreadPoolExecutor executor )
         {
             if ( executor.isShutdown() )

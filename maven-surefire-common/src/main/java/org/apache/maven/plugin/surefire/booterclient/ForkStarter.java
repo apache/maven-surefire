@@ -54,7 +54,6 @@ import org.apache.maven.surefire.util.DefaultScanResult;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -98,7 +97,7 @@ import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDown
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThread;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
 import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
-import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
+import static org.apache.maven.surefire.util.internal.StringUtils.ISO_8859_1;
 
 /**
  * Starts the fork or runs in-process.
@@ -180,6 +179,7 @@ public class ForkStarter
             }
         }
 
+        @Override
         @SuppressWarnings( "checkstyle:innerassignment" )
         public void run()
         {
@@ -205,6 +205,7 @@ public class ForkStarter
             }
         }
 
+        @Override
         public void close()
         {
             run();
@@ -340,6 +341,7 @@ public class ForkStarter
             {
                 Callable<RunResult> pf = new Callable<RunResult>()
                 {
+                    @Override
                     public RunResult call()
                         throws Exception
                     {
@@ -404,6 +406,7 @@ public class ForkStarter
             {
                 Callable<RunResult> pf = new Callable<RunResult>()
                 {
+                    @Override
                     public RunResult call()
                         throws Exception
                     {
@@ -618,8 +621,7 @@ public class ForkStarter
 
             CommandLineCallable future =
                     executeCommandLineAsCallable( cli, testProvidingInputStream, threadedStreamConsumer,
-                                                        stdErrConsumer, 0, closer,
-                                                        Charset.forName( FORK_STREAM_CHARSET_NAME ) );
+                                                        stdErrConsumer, 0, closer, ISO_8859_1 );
 
             currentForkClients.add( forkClient );
 
@@ -719,6 +721,7 @@ public class ForkStarter
     {
         return SHUTDOWN_HOOK_THREAD_FACTORY.newThread( new Runnable()
         {
+            @Override
             public void run()
             {
                 builder.getImmediateCommands().shutdown( shutdownType );
@@ -731,6 +734,7 @@ public class ForkStarter
     {
         return SHUTDOWN_HOOK_THREAD_FACTORY.newThread( new Runnable()
         {
+            @Override
             public void run()
             {
                 builder.getCachableCommands().shutdown( shutdownType );
@@ -743,6 +747,7 @@ public class ForkStarter
     {
         return SHUTDOWN_HOOK_THREAD_FACTORY.newThread( new Runnable()
         {
+            @Override
             public void run()
             {
                 for ( TestProvidingInputStream stream : streams )
@@ -769,6 +774,7 @@ public class ForkStarter
     {
         return pingThreadScheduler.scheduleAtFixedRate( new Runnable()
         {
+            @Override
             public void run()
             {
                 builder.getImmediateCommands().noop();
@@ -780,6 +786,7 @@ public class ForkStarter
     {
         return pingThreadScheduler.scheduleAtFixedRate( new Runnable()
         {
+            @Override
             public void run()
             {
                 for ( TestProvidingInputStream stream : streams )
@@ -794,6 +801,7 @@ public class ForkStarter
     {
         return timeoutCheckScheduler.scheduleAtFixedRate( new Runnable()
         {
+            @Override
             public void run()
             {
                 long systemTime = currentTimeMillis();

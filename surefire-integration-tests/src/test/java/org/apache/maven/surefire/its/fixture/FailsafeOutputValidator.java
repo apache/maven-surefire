@@ -29,6 +29,7 @@ public class FailsafeOutputValidator
         super( source.verifier );
     }
 
+    @Override
     public OutputValidator verifyErrorFree( int total )
     {
         try

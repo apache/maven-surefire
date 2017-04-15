@@ -86,6 +86,7 @@ public class DefaultReporterFactory
         listeners = new ConcurrentLinkedQueue<TestSetRunListener>();
     }
 
+    @Override
     public RunListener createReporter()
     {
         TestSetRunListener testSetRunListener =
@@ -159,6 +160,7 @@ public class DefaultReporterFactory
         listeners.add( listener );
     }
 
+    @Override
     public RunResult close()
     {
         mergeTestHistoryResult();

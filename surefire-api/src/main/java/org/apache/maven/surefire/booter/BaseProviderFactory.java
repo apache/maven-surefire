@@ -85,6 +85,7 @@ public class BaseProviderFactory
         this.insideFork = insideFork;
     }
 
+    @Override
     @Deprecated
     public DirectoryScanner getDirectoryScanner()
     {
@@ -95,6 +96,7 @@ public class BaseProviderFactory
                                             directoryScannerParameters.getSpecificTests() );
     }
 
+    @Override
     public ScanResult getScanResult()
     {
         return DefaultScanResult.from( providerProperties );
@@ -106,32 +108,38 @@ public class BaseProviderFactory
         return threadcount == null ? 1 : Math.max( Integer.parseInt( threadcount ), 1 );
     }
 
+    @Override
     public RunOrderCalculator getRunOrderCalculator()
     {
         return directoryScannerParameters == null
                 ? null : new DefaultRunOrderCalculator( runOrderParameters, getThreadCount() );
     }
 
+    @Override
     public ReporterFactory getReporterFactory()
     {
         return reporterFactory;
     }
 
+    @Override
     public void setDirectoryScannerParameters( DirectoryScannerParameters directoryScannerParameters )
     {
         this.directoryScannerParameters = directoryScannerParameters;
     }
 
+    @Override
     public void setReporterConfiguration( ReporterConfiguration reporterConfiguration )
     {
         this.reporterConfiguration = reporterConfiguration;
     }
 
+    @Override
     public void setClassLoaders( ClassLoader testClassLoader )
     {
         this.testClassLoader = testClassLoader;
     }
 
+    @Override
     public ConsoleStream getConsoleLogger()
     {
         boolean trim = reporterConfiguration.isTrimStackTrace();
@@ -139,91 +147,109 @@ public class BaseProviderFactory
         return insideFork ? new ForkingRunListener( out, ROOT_CHANNEL, trim ) : new DefaultDirectConsoleReporter( out );
     }
 
+    @Override
     public void setTestRequest( TestRequest testRequest )
     {
         this.testRequest = testRequest;
     }
 
+    @Override
     public DirectoryScannerParameters getDirectoryScannerParameters()
     {
         return directoryScannerParameters;
     }
 
+    @Override
     public ReporterConfiguration getReporterConfiguration()
     {
         return reporterConfiguration;
     }
 
+    @Override
     public TestRequest getTestRequest()
     {
         return testRequest;
     }
 
+    @Override
     public ClassLoader getTestClassLoader()
     {
         return testClassLoader;
     }
 
+    @Override
     public void setProviderProperties( Map<String, String> providerProperties )
     {
         this.providerProperties = providerProperties;
     }
 
+    @Override
     public Map<String, String> getProviderProperties()
     {
         return providerProperties;
     }
 
+    @Override
     public TestArtifactInfo getTestArtifactInfo()
     {
         return testArtifactInfo;
     }
 
+    @Override
     public void setTestArtifactInfo( TestArtifactInfo testArtifactInfo )
     {
         this.testArtifactInfo = testArtifactInfo;
     }
 
+    @Override
     public void setRunOrderParameters( RunOrderParameters runOrderParameters )
     {
         this.runOrderParameters = runOrderParameters;
     }
 
+    @Override
     public List<CommandLineOption> getMainCliOptions()
     {
         return mainCliOptions;
     }
 
+    @Override
     public void setMainCliOptions( List<CommandLineOption> mainCliOptions )
     {
         this.mainCliOptions = mainCliOptions == null ? Collections.<CommandLineOption>emptyList() : mainCliOptions;
     }
 
+    @Override
     public int getSkipAfterFailureCount()
     {
         return skipAfterFailureCount;
     }
 
+    @Override
     public void setSkipAfterFailureCount( int skipAfterFailureCount )
     {
         this.skipAfterFailureCount = skipAfterFailureCount;
     }
 
+    @Override
     public boolean isInsideFork()
     {
         return insideFork;
     }
 
+    @Override
     public Shutdown getShutdown()
     {
         return shutdown;
     }
 
+    @Override
     public void setShutdown( Shutdown shutdown )
     {
         this.shutdown = shutdown;
     }
 
+    @Override
     public Integer getSystemExitTimeout()
     {
         return systemExitTimeout;

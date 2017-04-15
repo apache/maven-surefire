@@ -49,6 +49,7 @@ import static org.apache.maven.surefire.testng.conf.AbstractDirectConfigurator.l
 public class TestNGMapConfigurator
     implements Configurator
 {
+    @Override
     public void configure( TestNG testng, Map<String, String> options )
         throws TestSetFailedException
     {
@@ -56,6 +57,7 @@ public class TestNGMapConfigurator
         testng.configure( convertedOptions );
     }
 
+    @Override
     public void configure( XmlSuite suite, Map<String, String> options )
         throws TestSetFailedException
     {

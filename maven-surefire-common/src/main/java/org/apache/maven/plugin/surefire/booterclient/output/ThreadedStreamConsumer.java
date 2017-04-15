@@ -73,6 +73,7 @@ public final class ThreadedStreamConsumer
          * e.g. acquire-next-test which means that {@link ForkClient} could hang on waiting for old test to complete
          * and therefore the plugin could be permanently in progress.
          */
+        @Override
         public void run()
         {
             while ( !ThreadedStreamConsumer.this.stop.get() )
@@ -111,6 +112,7 @@ public final class ThreadedStreamConsumer
         thread.start();
     }
 
+    @Override
     public void consumeLine( String s )
     {
         if ( stop.get() && !thread.isAlive() )
@@ -130,6 +132,7 @@ public final class ThreadedStreamConsumer
         }
     }
 
+    @Override
     public void close()
             throws IOException
     {

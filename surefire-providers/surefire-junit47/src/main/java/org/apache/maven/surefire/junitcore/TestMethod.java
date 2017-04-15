@@ -172,6 +172,7 @@ class TestMethod
         return ls;
     }
 
+    @Override
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         getLogicalStream().write( stdout, buf, off, len );

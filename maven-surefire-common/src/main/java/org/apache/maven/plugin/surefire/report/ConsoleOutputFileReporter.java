@@ -52,16 +52,19 @@ public class ConsoleOutputFileReporter
         this.reportNameSuffix = reportNameSuffix;
     }
 
+    @Override
     public void testSetStarting( ReportEntry reportEntry )
     {
         close();
         reportEntryName = reportEntry.getName();
     }
 
+    @Override
     public void testSetCompleted( ReportEntry report )
     {
     }
 
+    @Override
     @SuppressWarnings( "checkstyle:emptyblock" )
     public void close()
     {
@@ -79,6 +82,7 @@ public class ConsoleOutputFileReporter
         }
     }
 
+    @Override
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         try

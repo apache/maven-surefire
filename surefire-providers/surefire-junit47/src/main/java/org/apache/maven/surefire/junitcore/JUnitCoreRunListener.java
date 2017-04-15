@@ -59,6 +59,7 @@ public class JUnitCoreRunListener
      *
      * @see org.junit.runner.notification.RunListener#testRunStarted(org.junit.runner.Description)
      */
+    @Override
     public void testRunStarted( Description description )
         throws Exception
     {

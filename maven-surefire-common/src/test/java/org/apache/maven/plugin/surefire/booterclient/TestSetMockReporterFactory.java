@@ -38,6 +38,7 @@ public class TestSetMockReporterFactory
         super( defaultValue(), new NullConsoleLogger() );
     }
 
+    @Override
     public RunListener createReporter()
     {
         return new MockReporter();

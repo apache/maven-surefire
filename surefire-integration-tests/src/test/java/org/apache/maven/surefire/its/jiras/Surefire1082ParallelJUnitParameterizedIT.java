@@ -105,6 +105,7 @@ public class Surefire1082ParallelJUnitParameterizedIT
             this.expectedRegex = expectedRegex;
         }
 
+        @Override
         public boolean matches( Object o )
         {
             if ( o != null && o instanceof Set )
@@ -127,6 +128,7 @@ public class Surefire1082ParallelJUnitParameterizedIT
             }
         }
 
+        @Override
         public void describeTo( Description description )
         {
             description.appendValue( expectedRegex );

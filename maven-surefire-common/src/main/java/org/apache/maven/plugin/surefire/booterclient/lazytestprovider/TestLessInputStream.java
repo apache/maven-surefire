@@ -62,10 +62,12 @@ public final class TestLessInputStream
         this.builder = builder;
     }
 
+    @Override
     public void provideNewTest()
     {
     }
 
+    @Override
     public void skipSinceNextTest()
     {
         if ( canContinue() )
@@ -75,6 +77,7 @@ public final class TestLessInputStream
         }
     }
 
+    @Override
     public void shutdown( Shutdown shutdownType )
     {
         if ( canContinue() )
@@ -84,6 +87,7 @@ public final class TestLessInputStream
         }
     }
 
+    @Override
     public void noop()
     {
         if ( canContinue() )
@@ -186,6 +190,7 @@ public final class TestLessInputStream
         {
             iterableCachable = new Iterable<Command>()
             {
+                @Override
                 public Iterator<Command> iterator()
                 {
                     return new CIt();
@@ -270,11 +275,13 @@ public final class TestLessInputStream
         {
             private Node node = TestLessInputStreamBuilder.this.head;
 
+            @Override
             public boolean hasNext()
             {
                 return examineNext( false ) != null;
             }
 
+            @Override
             public Command next()
             {
                 Command command = examineNext( true );
@@ -285,6 +292,7 @@ public final class TestLessInputStream
                 return command;
             }
 
+            @Override
             public void remove()
             {
                 throw new UnsupportedOperationException();
@@ -307,10 +315,12 @@ public final class TestLessInputStream
         private final class ImmediateCommands
             implements NotifiableTestStream
         {
+            @Override
             public void provideNewTest()
             {
             }
 
+            @Override
             public void skipSinceNextTest()
             {
                 Lock lock = rwLock.readLock();
@@ -328,6 +338,7 @@ public final class TestLessInputStream
                 }
             }
 
+            @Override
             public void shutdown( Shutdown shutdownType )
             {
                 Lock lock = rwLock.readLock();
@@ -345,6 +356,7 @@ public final class TestLessInputStream
                 }
             }
 
+            @Override
             public void noop()
             {
                 Lock lock = rwLock.readLock();
@@ -387,10 +399,12 @@ public final class TestLessInputStream
         private final class CachableCommands
             implements NotifiableTestStream
         {
+            @Override
             public void provideNewTest()
             {
             }
 
+            @Override
             public void skipSinceNextTest()
             {
                 Lock lock = rwLock.readLock();
@@ -408,6 +422,7 @@ public final class TestLessInputStream
                 }
             }
 
+            @Override
             public void shutdown( Shutdown shutdownType )
             {
                 Lock lock = rwLock.readLock();
@@ -425,6 +440,7 @@ public final class TestLessInputStream
                 }
             }
 
+            @Override
             public void noop()
             {
                 Lock lock = rwLock.readLock();

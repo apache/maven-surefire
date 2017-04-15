@@ -29,10 +29,12 @@ public class SurefireReflectorTest
     public void testShouldCreateFactoryWithoutException()
     {
         ReporterFactory factory = new ReporterFactory() {
+            @Override
             public RunListener createReporter() {
                 return null;
             }
 
+            @Override
             public RunResult close() {
                 return null;
             }
