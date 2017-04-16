@@ -19,9 +19,11 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import org.apache.maven.surefire.report.ReportEntry;
 
@@ -44,7 +46,7 @@ public class ConsoleOutputFileReporter
 
     private String reportEntryName;
 
-    private FileOutputStream fileOutputStream;
+    private OutputStream fileOutputStream;
 
     public ConsoleOutputFileReporter( File reportsDirectory, String reportNameSuffix )
     {
@@ -73,10 +75,18 @@ public class ConsoleOutputFileReporter
             try
             {
                 fileOutputStream.flush();
-                fileOutputStream.close();
             }
             catch ( IOException e )
             {
+            }
+            finally
+            {
+                try
+                {
+                    fileOutputStream.close();
+                } catch (IOException e)
+                {
+                }
             }
             fileOutputStream = null;
         }
@@ -95,7 +105,7 @@ public class ConsoleOutputFileReporter
                     reportsDirectory.mkdirs();
                 }
                 File file = getReportFile( reportsDirectory, reportEntryName, reportNameSuffix, "-output.txt" );
-                fileOutputStream = new FileOutputStream( file );
+                fileOutputStream = new BufferedOutputStream( new FileOutputStream( file ), 16 * 1024 );
             }
             fileOutputStream.write( buf, off, len );
         }

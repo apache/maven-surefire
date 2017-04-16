@@ -27,6 +27,7 @@ import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.util.internal.StringUtils;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
@@ -120,7 +121,7 @@ public class StatelessXmlReporter
             getAddMethodEntryList( methodRunHistoryMap, methodEntry );
         }
 
-        FileOutputStream outputStream = getOutputStream( testSetReportEntry );
+        OutputStream outputStream = getOutputStream( testSetReportEntry );
         OutputStreamWriter fw = getWriter( outputStream );
         try
         {
@@ -277,7 +278,7 @@ public class StatelessXmlReporter
         return methodRunHistoryMap;
     }
 
-    private FileOutputStream getOutputStream( WrappedReportEntry testSetReportEntry )
+    private OutputStream getOutputStream( WrappedReportEntry testSetReportEntry )
     {
         File reportFile = getReportFile( testSetReportEntry, reportsDirectory, reportNameSuffix );
 
@@ -288,7 +289,7 @@ public class StatelessXmlReporter
 
         try
         {
-            return new FileOutputStream( reportFile );
+            return new BufferedOutputStream( new FileOutputStream( reportFile ), 16 * 1024 );
         }
         catch ( Exception e )
         {
@@ -296,7 +297,7 @@ public class StatelessXmlReporter
         }
     }
 
-    private static OutputStreamWriter getWriter( FileOutputStream fos )
+    private static OutputStreamWriter getWriter( OutputStream fos )
     {
         return new OutputStreamWriter( fos, UTF_8 );
     }
@@ -370,7 +371,7 @@ public class StatelessXmlReporter
     }
 
     private static void getTestProblems( OutputStreamWriter outputStreamWriter, XMLWriter ppw,
-                                         WrappedReportEntry report, boolean trimStackTrace, FileOutputStream fw,
+                                         WrappedReportEntry report, boolean trimStackTrace, OutputStream fw,
                                          String testErrorType, boolean createOutErrElementsInside )
     {
         ppw.startElement( testErrorType );
@@ -416,7 +417,7 @@ public class StatelessXmlReporter
 
     // Create system-out and system-err elements
     private static void createOutErrElements( OutputStreamWriter outputStreamWriter, XMLWriter ppw,
-                                              WrappedReportEntry report, FileOutputStream fw )
+                                              WrappedReportEntry report, OutputStream fw )
     {
         EncodingOutputStream eos = new EncodingOutputStream( fw );
         addOutputStreamElement( outputStreamWriter, eos, ppw, report.getStdout(), "system-out" );
