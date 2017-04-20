@@ -19,6 +19,8 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.util.internal.SystemUtils;
+
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -156,12 +158,12 @@ public class Classpath implements Iterable<String>
         return unmodifiableElements.equals( classpath.unmodifiableElements );
     }
 
-    public ClassLoader createClassLoader( ClassLoader parent, boolean childDelegation, boolean enableAssertions,
-                                          String roleName )
+    public ClassLoader createClassLoader( boolean childDelegation, boolean enableAssertions, String roleName )
         throws SurefireExecutionException
     {
         try
         {
+            ClassLoader parent = SystemUtils.platformClassLoader();
             IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation, roleName );
             for ( String classPathElement : unmodifiableElements )
             {

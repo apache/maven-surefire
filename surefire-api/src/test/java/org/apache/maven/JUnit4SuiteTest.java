@@ -40,6 +40,7 @@ import org.apache.maven.surefire.util.UrlUtilsTest;
 import org.apache.maven.surefire.util.internal.ByteBufferTest;
 import org.apache.maven.surefire.util.internal.ConcurrencyUtilsTest;
 import org.apache.maven.surefire.util.internal.StringUtilsTest;
+import org.apache.maven.surefire.util.internal.SystemUtilsTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -68,7 +69,8 @@ import org.junit.runners.Suite;
     TestsToRunTest.class,
     UrlUtilsTest.class,
     SpecificTestClassFilterTest.class,
-    FundamentalFilterTest.class
+    FundamentalFilterTest.class,
+    SystemUtilsTest.class
 } )
 @RunWith( Suite.class )
 public class JUnit4SuiteTest
