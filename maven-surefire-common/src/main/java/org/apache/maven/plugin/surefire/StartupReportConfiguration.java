@@ -41,7 +41,7 @@ import static org.apache.maven.plugin.surefire.report.ConsoleReporter.PLAIN;
 
 /**
  * All the parameters used to construct reporters
- * <p/>
+ * <br>
  *
  * @author Kristian Rosenvold
  */
@@ -111,6 +111,8 @@ public final class StartupReportConfiguration
 
     /**
      * For testing purposes only.
+     *
+     * @return StartupReportConfiguration fo testing purposes
      */
     public static StartupReportConfiguration defaultValue()
     {
@@ -122,6 +124,8 @@ public final class StartupReportConfiguration
 
     /**
      * For testing purposes only.
+     *
+     * @return StartupReportConfiguration fo testing purposes
      */
     public static StartupReportConfiguration defaultNoXml()
     {

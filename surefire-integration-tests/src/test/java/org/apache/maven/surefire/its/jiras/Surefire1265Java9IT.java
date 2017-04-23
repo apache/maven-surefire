@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import static org.junit.Assume.assumeTrue;
 
+@SuppressWarnings( { "javadoc", "checkstyle:javadoctype" } )
 /**
  * IsolatedClassLoader should take platform ClassLoader as a parent ClassLoader if running on the top of JDK9.
  * The IsolatedClassLoader should not fail like this:
@@ -35,7 +36,7 @@ import static org.junit.Assume.assumeTrue;
  * java.lang.NoClassDefFoundError: java/sql/SQLException: java.sql.SQLException -> [Help 1]
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @see {@linkplain https://issues.apache.org/jira/browse/SUREFIRE-1265}
+ * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1265">SUREFIRE-1265</a>
  * @since 2.20.1
  */
 public class Surefire1265Java9IT

@@ -24,7 +24,7 @@ import org.junit.runner.notification.Failure;
 
 /**
  * A stacktrace writer that requires at least junit 4.6 to run. Note that we only use this for 4.8 and higher
- * <p/>
+ * <br>
  * Writes out a specific {@link org.junit.runner.notification.Failure} for
  * surefire as a stacktrace.
  *

@@ -33,13 +33,13 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the factories in SchedulingStrategy.
- * <p/>
+ * <br>
  * Th point of these tests is to check {@link Task#result} if changed
- * from <code>false</code> to <code>true</code> after all scheduled tasks
+ * from {@code false} to {@code true} after all scheduled tasks
  * have finished.
  * The call {@link SchedulingStrategy#finished()} is waiting until the
  * strategy has finished.
- * Then {@link Task#result} should be asserted that is <code>true</code>.
+ * Then {@link Task#result} should be asserted that is {@code true}.
  *
  * @author Tibor Digana (tibor17)
  * @see SchedulingStrategy

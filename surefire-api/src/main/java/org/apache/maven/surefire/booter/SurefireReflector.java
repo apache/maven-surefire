@@ -58,7 +58,7 @@ import static org.apache.maven.surefire.util.ReflectionUtils.newInstance;
 
 /**
  * Does reflection based invocation of the surefire methods.
- * <p/>
+ * <br>
  * This is to avoid complications with linkage issues
  *
  * @author Kristian Rosenvold

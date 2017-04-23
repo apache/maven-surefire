@@ -21,7 +21,7 @@ package org.apache.maven.surefire.booter;
 
 /**
  * Represents the classpaths for the BooterConfiguration.
- * <p/>
+ * <br>
  *
  * @author Jason van Zyl
  * @author Emmanuel Venisse

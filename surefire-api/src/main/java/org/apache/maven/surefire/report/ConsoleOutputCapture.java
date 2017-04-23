@@ -29,7 +29,7 @@ import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 
 /**
  * Deals with system.out/err.
- * <p/>
+ * <br>
  */
 public class ConsoleOutputCapture
 {

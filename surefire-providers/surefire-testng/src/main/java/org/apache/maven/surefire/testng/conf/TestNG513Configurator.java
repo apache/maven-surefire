@@ -22,7 +22,7 @@ package org.apache.maven.surefire.testng.conf;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
- * TestNG 5.13 configurator. Changed: "reporterslist" need String instead of List<ReporterConfig>.
+ * TestNG 5.13 configurator. Changed: "reporterslist" need String instead of List&lt;ReporterConfig&gt;.
  */
 public class TestNG513Configurator
     extends TestNG510Configurator

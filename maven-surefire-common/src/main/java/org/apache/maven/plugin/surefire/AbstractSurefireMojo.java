@@ -135,7 +135,7 @@ public abstract class AbstractSurefireMojo
     protected boolean skipTests;
 
     /**
-     * This old parameter is just like <code>skipTests</code>, but bound to the old property "maven.test.skip.exec".
+     * This old parameter is just like {@code skipTests}, but bound to the old property "maven.test.skip.exec".
      *
      * @since 2.3
      * @deprecated Use skipTests instead.
@@ -147,7 +147,7 @@ public abstract class AbstractSurefireMojo
     /**
      * Set this to "true" to bypass unit tests entirely. Its use is NOT RECOMMENDED, especially if you enable it using
      * the "maven.test.skip" property, because maven.test.skip disables both running the tests and compiling the tests.
-     * Consider using the <code>skipTests</code> parameter instead.
+     * Consider using the {@code skipTests} parameter instead.
      */
     @Parameter( property = "maven.test.skip", defaultValue = "false" )
     protected boolean skip;
@@ -184,7 +184,7 @@ public abstract class AbstractSurefireMojo
     /**
      * A dependency scope to exclude from the test classpath. The scope should be one of the scopes defined by
      * org.apache.maven.artifact.Artifact. This includes the following:
-     * <p/>
+     * <br>
      * <ul>
      * <li><i>compile</i> - system, provided, compile
      * <li><i>runtime</i> - compile, runtime
@@ -215,23 +215,28 @@ public abstract class AbstractSurefireMojo
     private File testSourceDirectory;
 
     /**
-     * A list of &lt;exclude> elements specifying the tests (by pattern) that should be excluded in testing. When not
-     * specified and when the <code>test</code> parameter is not specified, the default excludes will be <code><br/>
-     * &lt;excludes><br/>
-     * &nbsp;&lt;exclude>**&#47;*$*&lt;/exclude><br/>
-     * &lt;/excludes><br/>
-     * </code> (which excludes all inner classes).<br>
-     * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.
-     * <p/>
-     * Each exclude item may also contain a comma-separated sublist of items, which will be treated as multiple
-     * &nbsp;&lt;exclude> entries.<br/>
-     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):<br/>
-     * <exclude>%regex[pkg.*Slow.*.class], Unstable*</exclude><br/>
-     * <br/>
-     * <em>Notice that</em> these values are relative to the directory containing generated test classes of the project
-     * being tested. This directory is declared by the parameter <code>testClassesDirectory</code> which defaults
-     * to the POM property <code>${project.build.testOutputDirectory}</code>, typically <em>src/test/java</em>
-     * unless overridden.
+     * A list of &lt;exclude&gt; elements specifying the tests (by pattern) that should be excluded in testing. When not
+     * specified and when the {@code test} parameter is not specified, the default excludes will be <br>
+     * <pre><code>
+     * {@literal <excludes>}
+     *     {@literal <exclude>}**{@literal /}*$*{@literal </exclude>}
+     * {@literal </excludes>}
+     * </code></pre>
+     * (which excludes all inner classes).
+     * <br>
+     * This parameter is ignored if the TestNG {@code suiteXmlFiles} parameter is specified.
+     * <br>
+     * Each exclude item may also contain a comma-separated sub-list of items, which will be treated as multiple
+     * &nbsp;&lt;exclude&gt; entries.<br>
+     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):
+     * <pre><code>
+     * {@literal <exclude>}%regex[pkg.*Slow.*.class], Unstable*{@literal </exclude>}
+     * </code></pre>
+     * <br>
+     * <b>Notice that</b> these values are relative to the directory containing generated test classes of the project
+     * being tested. This directory is declared by the parameter {@code testClassesDirectory} which defaults
+     * to the POM property <code>${project.build.testOutputDirectory}</code>, typically
+     * <code>{@literal src/test/java}</code> unless overridden.
      */
     @Parameter
     // TODO use regex for fully qualified class names in 3.0 and change the filtering abilities
@@ -319,13 +324,14 @@ public abstract class AbstractSurefireMojo
     private Boolean failIfNoTests;
 
     /**
-     * <strong>DEPRECATED</strong> since version 2.14. Use <code>forkCount</code> and <code>reuseForks</code> instead.
-     * <br/>
-     * <br/>
-     * Option to specify the forking mode. Can be "never", "once", "always", "perthread". "none" and "pertest" are also
-     * accepted for backwards compatibility. "always" forks for each test-class. "perthread" will create
-     * <code>threadCount</code> parallel forks, each executing one test-class. See also parameter
-     * <code>reuseForks</code>.<br/>
+     * <strong>DEPRECATED</strong> since version 2.14. Use {@code forkCount} and {@code reuseForks} instead.
+     * <br>
+     * <br>
+     * Option to specify the forking mode. Can be {@code never}, {@code once}, {@code always}, {@code perthread}.<br>
+     * The {@code none} and {@code pertest} are also accepted for backwards compatibility.<br>
+     * The {@code always} forks for each test-class.<br>
+     * The {@code perthread} creates the number of parallel forks specified by {@code threadCount}, where each forked
+     * JVM is executing one test-class. See also the parameter {@code reuseForks} for the lifetime of JVM.
      *
      * @since 2.1
      */
@@ -353,15 +359,15 @@ public abstract class AbstractSurefireMojo
 
     /**
      * Arbitrary JVM options to set on the command line.
-     * <br/>
-     * <br/>
-     * Since the Version 2.17 using an alternate syntax for <em>argLine</em>, <pre>@{...}</pre> allows late replacement
+     * <br>
+     * <br>
+     * Since the Version 2.17 using an alternate syntax for {@code argLine}, <b>@{...}</b> allows late replacement
      * of properties when the plugin is executed, so properties that have been modified by other plugins will be picked
      * up correctly.
-     * See the Frequently Asked Questions page with more details:<br/>
+     * See the Frequently Asked Questions page with more details:<br>
      * <a href="http://maven.apache.org/surefire/maven-surefire-plugin/faq.html">
      *     http://maven.apache.org/surefire/maven-surefire-plugin/faq.html</a>
-     * <br/>
+     * <br>
      * <a href="http://maven.apache.org/surefire/maven-failsafe-plugin/faq.html">
      *     http://maven.apache.org/surefire/maven-failsafe-plugin/faq.html</a>
      *
@@ -388,7 +394,7 @@ public abstract class AbstractSurefireMojo
 
     /**
      * When false it makes tests run using the standard classloader delegation instead of the default Maven isolated
-     * classloader. Only used when forking (forkMode is not "none").<br/>
+     * classloader. Only used when forking ({@code forkMode} is not {@code none}).<br>
      * Setting it to false helps with some problems caused by conflicts between xml parsers in the classpath and the
      * Java 5 provider parser.
      *
@@ -399,12 +405,12 @@ public abstract class AbstractSurefireMojo
 
     /**
      * (TestNG/JUnit47 provider with JUnit4.8+ only) Groups for this test. Only classes/methods/etc decorated with one
-     * of the groups specified here will be included in test run, if specified.<br/>
-     * For JUnit, this parameter forces the use of the 4.7 provider<br/>
-     * This parameter is ignored if the <code>suiteXmlFiles</code> parameter is specified.<br/>
-     * Since version 2.18.1 and JUnit 4.12, the <em>@Category<em> annotation type is automatically inherited from
-     * superclasses, see <em>@java.lang.annotation.Inherited</em>. Make sure that test class inheritance still makes
-     * sense together with <em>@Category<em> annotation of the JUnit 4.12 or higher appeared in superclass.
+     * of the groups specified here will be included in test run, if specified.<br>
+     * For JUnit, this parameter forces the use of the 4.7 provider<br>
+     * This parameter is ignored if the {@code suiteXmlFiles} parameter is specified.<br>
+     * Since version 2.18.1 and JUnit 4.12, the {@code @Category} annotation type is automatically inherited from
+     * superclasses, see {@code @java.lang.annotation.Inherited}. Make sure that test class inheritance still makes
+     * sense together with {@code @Category} annotation of the JUnit 4.12 or higher appeared in superclass.
      *
      * @since 2.2
      */
@@ -413,12 +419,12 @@ public abstract class AbstractSurefireMojo
 
     /**
      * (TestNG/JUnit47 provider with JUnit4.8+ only) Excluded groups. Any methods/classes/etc with one of the groups
-     * specified in this list will specifically not be run.<br/>
-     * For JUnit, this parameter forces the use of the 4.7 provider<br/>
-     * This parameter is ignored if the <code>suiteXmlFiles</code> parameter is specified.<br/>
-     * Since version 2.18.1 and JUnit 4.12, the <em>@Category<em> annotation type is automatically inherited from
-     * superclasses, see <em>@java.lang.annotation.Inherited</em>. Make sure that test class inheritance still makes
-     * sense together with <em>@Category<em> annotation of the JUnit 4.12 or higher appeared in superclass.
+     * specified in this list will specifically not be run.<br>
+     * For JUnit, this parameter forces the use of the 4.7 provider.<br>
+     * This parameter is ignored if the {@code suiteXmlFiles} parameter is specified.<br>
+     * Since version 2.18.1 and JUnit 4.12, the {@code @Category} annotation type is automatically inherited from
+     * superclasses, see {@code @java.lang.annotation.Inherited}. Make sure that test class inheritance still makes
+     * sense together with {@code @Category} annotation of the JUnit 4.12 or higher appeared in superclass.
      *
      * @since 2.2
      */
@@ -426,7 +432,7 @@ public abstract class AbstractSurefireMojo
     private String excludedGroups;
 
     /**
-     * Allows you to specify the name of the JUnit artifact. If not set, <code>junit:junit</code> will be used.
+     * Allows you to specify the name of the JUnit artifact. If not set, {@code junit:junit} will be used.
      *
      * @since 2.3.1
      */
@@ -434,7 +440,7 @@ public abstract class AbstractSurefireMojo
     private String junitArtifactName;
 
     /**
-     * Allows you to specify the name of the TestNG artifact. If not set, <code>org.testng:testng</code> will be used.
+     * Allows you to specify the name of the TestNG artifact. If not set, {@code org.testng:testng} will be used.
      *
      * @since 2.3.1
      */
@@ -443,7 +449,7 @@ public abstract class AbstractSurefireMojo
 
     /**
      * (TestNG/JUnit 4.7 provider) The attribute thread-count allows you to specify how many threads should be
-     * allocated for this execution. Only makes sense to use in conjunction with the <code>parallel</code> parameter.
+     * allocated for this execution. Only makes sense to use in conjunction with the {@code parallel} parameter.
      *
      * @since 2.2
      */
@@ -453,14 +459,14 @@ public abstract class AbstractSurefireMojo
     /**
      * Option to specify the number of VMs to fork in parallel in order to execute the tests. When terminated with "C",
      * the number part is multiplied with the number of CPU cores. Floating point value are only accepted together with
-     * "C". If set to "0", no VM is forked and all tests are executed within the main process.<br/>
-     * <br/>
-     * Example values: "1.5C", "4"<br/>
-     * <br/>
-     * The system properties and the <code>argLine</code> of the forked processes may contain the place holder string
+     * "C". If set to "0", no VM is forked and all tests are executed within the main process.<br>
+     * <br>
+     * Example values: "1.5C", "4"<br>
+     * <br>
+     * The system properties and the {@code argLine} of the forked processes may contain the place holder string
      * <code>${surefire.forkNumber}</code>, which is replaced with a fixed number for each of the parallel forks,
-     * ranging from <code>1</code> to the effective value of <code>forkCount</code> times the maximum number of parallel
-     * Surefire executions in maven parallel builds, i.e. the effective value of the <code>-T</code> command line
+     * ranging from <b>1</b> to the effective value of {@code forkCount} times the maximum number of parallel
+     * Surefire executions in maven parallel builds, i.e. the effective value of the <b>-T</b> command line
      * argument of maven core.
      *
      * @since 2.14
@@ -470,7 +476,7 @@ public abstract class AbstractSurefireMojo
 
     /**
      * Indicates if forked VMs can be reused. If set to "false", a new VM is forked for each test class to be executed.
-     * If set to "true", up to <code>forkCount</code> VMs will be forked and then reused to execute all tests.
+     * If set to "true", up to {@code forkCount} VMs will be forked and then reused to execute all tests.
      *
      * @since 2.13
      */
@@ -488,9 +494,9 @@ public abstract class AbstractSurefireMojo
     private boolean perCoreThreadCount;
 
     /**
-     * (JUnit 4.7 provider) Indicates that the thread pool will be unlimited. The <code>parallel</code> parameter and
+     * (JUnit 4.7 provider) Indicates that the thread pool will be unlimited. The {@code parallel} parameter and
      * the actual number of classes/methods will decide. Setting this to "true" effectively disables
-     * <code>perCoreThreadCount</code> and <code>threadCount</code>. Defaults to "false".
+     * {@code perCoreThreadCount} and {@code threadCount}. Defaults to "false".
      *
      * @since 2.5
      */
@@ -498,18 +504,21 @@ public abstract class AbstractSurefireMojo
     private boolean useUnlimitedThreads;
 
     /**
-     * (TestNG provider) When you use the <code>parallel</code> attribute, TestNG will try to run all your test methods
+     * (TestNG provider) When you use the parameter {@code parallel}, TestNG will try to run all your test methods
      * in separate threads, except for methods that depend on each other, which will be run in the same thread in order
      * to respect their order of execution.
-     * <p/>
-     * (JUnit 4.7 provider) Supports values "classes"/"methods"/"both" to run in separate threads, as controlled by
-     * <code>threadCount</code>.<br/>
-     * <br/>
-     * Since version 2.16 (JUnit 4.7 provider), the value "both" is <strong>DEPRECATED</strong>.
-     * Use <strong>"classesAndMethods"</strong> instead.<br/>
-     * <br/>
-     * Since version 2.16 (JUnit 4.7 provider), additional vales are available
-     * "suites"/"suitesAndClasses"/"suitesAndMethods"/"classesAndMethods"/"all".
+     * <br>
+     * (JUnit 4.7 provider) Supports values {@code classes}, {@code methods}, {@code both} to run
+     * in separate threads been controlled by {@code threadCount}.
+     * <br>
+     * <br>
+     * Since version 2.16 (JUnit 4.7 provider), the value {@code both} is <strong>DEPRECATED</strong>.
+     * Use {@code classesAndMethods} instead.
+     * <br>
+     * <br>
+     * Since version 2.16 (JUnit 4.7 provider), additional vales are available:
+     * <br>
+     * {@code suites}, {@code suitesAndClasses}, {@code suitesAndMethods}, {@code classesAndMethods}, {@code all}.
      *
      * @since 2.2
      */
@@ -519,7 +528,7 @@ public abstract class AbstractSurefireMojo
     /**
      * (JUnit 4.7 / provider only) The thread counts do not exceed the number of parallel suite, class runners and
      * average number of methods per class if set to <strong>true</strong>.
-     * <p/>
+     * <br>
      * True by default.
      *
      * @since 2.17
@@ -530,16 +539,16 @@ public abstract class AbstractSurefireMojo
     /**
      * (JUnit 4.7 provider) This attribute allows you to specify the concurrency in test suites, i.e.:
      * <ul>
-     *  <li>number of concurrent suites if <code>threadCount</code> is 0 or unspecified</li>
-     *  <li>limited suites concurrency if <code>useUnlimitedThreads</code> is set to <strong>true</strong></li>
-     *  <li>if <code>threadCount</code> and certain thread-count parameters are &gt; 0 for <code>parallel</code>, the
-     *  concurrency is computed from ratio. For instance parallel=all and the ratio between
-     *      <em>threadCountSuites</em>:<code>threadCountClasses</code>:<code>threadCountMethods</code> is
-     *      <em>2</em>:3:5, there is 20% of <code>threadCount</code> in concurrent suites.</li>
+     *  <li>number of concurrent suites if {@code threadCount} is 0 or unspecified</li>
+     *  <li>limited suites concurrency if {@code useUnlimitedThreads} is set to <strong>true</strong></li>
+     *  <li>if {@code threadCount} and certain thread-count parameters are &gt; 0 for {@code parallel}, the
+     *  concurrency is computed from ratio. For instance {@code parallel=all} and the ratio between
+     *      {@code threadCountSuites}:{@code threadCountClasses}:{@code threadCountMethods} is
+     *      <b>2</b>:3:5, there is 20% of {@code threadCount} which appeared in concurrent suites.</li>
      * </ul>
      *
-     * Only makes sense to use in conjunction with the <code>parallel</code> parameter.
-     * The default value <code>0</code> behaves same as unspecified one.
+     * Only makes sense to use in conjunction with the {@code parallel} parameter.
+     * The default value <b>0</b> behaves same as unspecified one.
      *
      * @since 2.16
      */
@@ -549,20 +558,20 @@ public abstract class AbstractSurefireMojo
     /**
      * (JUnit 4.7 provider) This attribute allows you to specify the concurrency in test classes, i.e.:
      * <ul>
-     *  <li>number of concurrent classes if <code>threadCount</code> is 0 or unspecified</li>
-     *  <li>limited classes concurrency if <code>useUnlimitedThreads</code> is set to <strong>true</strong></li>
-     *  <li>if <code>threadCount</code> and certain thread-count parameters are &gt; 0 for <code>parallel</code>, the
-     *  concurrency is computed from ratio. For instance parallel=all and the ratio between
-     *      <code>threadCountSuites</code>:<em>threadCountClasses</em>:<code>threadCountMethods</code> is
-     *      2:<em>3</em>:5, there is 30% of <code>threadCount</code> in concurrent classes.</li>
-     *  <li>as in the previous case but without this leaf thread-count. Example: parallel=suitesAndClasses,
-     *  threadCount=16, threadCountSuites=5, threadCountClasses is unspecified leaf, the number of concurrent classes
-     *  is varying from &gt;= 11 to 14 or 15. The threadCountSuites become number of threads.
-     *  </li>
+     *  <li>number of concurrent classes if {@code threadCount} is 0 or unspecified</li>
+     *  <li>limited classes concurrency if {@code useUnlimitedThreads} is set to <strong>true</strong></li>
+     *  <li>if {@code threadCount} and certain thread-count parameters are &gt; 0 for {@code parallel}, the
+     *  concurrency is computed from ratio. For instance {@code parallel=all} and the ratio between
+     *      {@code threadCountSuites}:{@code threadCountClasses}:{@code threadCountMethods} is
+     *      2:<b>3</b>:5, there is 30% of {@code threadCount} in concurrent classes.</li>
+     *  <li>as in the previous case but without this leaf thread-count. Example: {@code parallel=suitesAndClasses},
+     *  {@code threadCount=16}, {@code threadCountSuites=5}, {@code threadCountClasses} is unspecified leaf, the number
+     *  of concurrent classes is varying from &gt;= 11 to 14 or 15. The {@code threadCountSuites} become
+     *  given number of threads.</li>
      * </ul>
      *
-     * Only makes sense to use in conjunction with the <code>parallel</code> parameter.
-     * The default value <code>0</code> behaves same as unspecified one.
+     * Only makes sense to use in conjunction with the {@code parallel} parameter.
+     * The default value <b>0</b> behaves same as unspecified one.
      *
      * @since 2.16
      */
@@ -572,18 +581,18 @@ public abstract class AbstractSurefireMojo
     /**
      * (JUnit 4.7 provider) This attribute allows you to specify the concurrency in test methods, i.e.:
      * <ul>
-     * <li>number of concurrent methods if <code>threadCount</code> is 0 or unspecified</li>
-     * <li>limited concurrency of methods if <code>useUnlimitedThreads</code> is set to <strong>true</strong></li>
-     * <li>if <code>threadCount</code> and certain thread-count parameters are &gt; 0 for <code>parallel</code>, the
+     * <li>number of concurrent methods if {@code threadCount} is 0 or unspecified</li>
+     * <li>limited concurrency of methods if {@code useUnlimitedThreads} is set to <strong>true</strong></li>
+     * <li>if {@code threadCount} and certain thread-count parameters are &gt; 0 for {@code parallel}, the
      * concurrency is computed from ratio. For instance parallel=all and the ratio between
-     * <code>threadCountSuites</code>:<code>threadCountClasses</code>:<em>threadCountMethods</em> is 2:3:<em>5</em>,
-     * there is 50% of <code>threadCount</code> in concurrent methods.</li>
-     * <li>as in the previous case but without this leaf thread-count. Example: parallel=all, threadCount=16,
-     * threadCountSuites=2, threadCountClasses=3, but threadCountMethods is unspecified leaf, the number of concurrent
-     * methods is varying from &gt;= 11 to 14 or 15. The threadCountSuites and threadCountClasses become number of
-     * threads.</li>
+     * {@code threadCountSuites}:{@code threadCountClasses}:{@code threadCountMethods} is 2:3:<b>5</b>,
+     * there is 50% of {@code threadCount} which appears in concurrent methods.</li>
+     * <li>as in the previous case but without this leaf thread-count. Example: {@code parallel=all},
+     * {@code threadCount=16}, {@code threadCountSuites=2}, {@code threadCountClasses=3}, but {@code threadCountMethods}
+     * is unspecified leaf, the number of concurrent methods is varying from &gt;= 11 to 14 or 15.
+     * The {@code threadCountSuites} and {@code threadCountClasses} become given number of threads.</li>
      * </ul>
-     * Only makes sense to use in conjunction with the <code>parallel</code> parameter. The default value <code>0</code>
+     * Only makes sense to use in conjunction with the {@code parallel} parameter. The default value <b>0</b>
      * behaves same as unspecified one.
      *
      * @since 2.16
@@ -723,11 +732,13 @@ public abstract class AbstractSurefireMojo
     /**
      * Calls {@link #getSuiteXmlFiles()} as {@link List list}.
      * Never returns <tt>null</tt>.
+     *
+     * @return list of TestNG suite XML files provided by MOJO
      */
     protected abstract List<File> suiteXmlFiles();
 
     /**
-     * @return <tt>true</tt> if {@link #getSuiteXmlFiles() suite-xml files array} is not empty.
+     * @return {@code true} if {@link #getSuiteXmlFiles() suite-xml files array} is not empty.
      */
     protected abstract boolean hasSuiteXmlFiles();
 
@@ -2838,9 +2849,6 @@ public abstract class AbstractSurefireMojo
         this.localRepository = localRepository;
     }
 
-    /**
-     * @noinspection deprecation
-     */
     public Properties getSystemProperties()
     {
         return systemProperties;

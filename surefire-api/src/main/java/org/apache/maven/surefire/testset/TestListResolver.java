@@ -38,9 +38,9 @@ import static org.apache.maven.surefire.testset.ResolvedTest.Type.METHOD;
 // TODO In Surefire 3.0 see SUREFIRE-1309 and use normal fully qualified class name regex instead.
 /**
  * Resolved multi pattern filter e.g. -Dtest=MyTest#test,!AnotherTest#otherTest into an object model
- * composed of included and excluded tests.<br/>
+ * composed of included and excluded tests.<br>
  * The methods {@link #shouldRun(String, String)} are filters easily used in JUnit filter or TestNG.
- * This class is independent of JUnit and TestNG API.<br/>
+ * This class is independent of JUnit and TestNG API.<br>
  * It is accessed by Java Reflection API in {@link org.apache.maven.surefire.booter.SurefireReflector}
  * using specific ClassLoader.
  */
@@ -139,7 +139,7 @@ public class TestListResolver
      *
      * @param resolver    filter possibly having method patterns
      * @return {@code resolver} if {@link TestListResolver#hasMethodPatterns() resolver.hasMethodPatterns()}
-     * returns <tt>true</tt>; Otherwise wildcard filter <em>*.class</em> is returned.
+     * returns {@code true}; Otherwise wildcard filter {@code *.class} is returned.
      */
     public static TestListResolver optionallyWildcardFilter( TestListResolver resolver )
     {
@@ -456,7 +456,7 @@ public class TestListResolver
     }
 
     /**
-     * Requires trimmed <code>request</code> been not equal to "!".
+     * Requires trimmed {@code request} been not equal to "!".
      */
     static void resolveTestRequest( String request, IncludedExcludedPatterns patterns,
                                     Collection<ResolvedTest> includedFilters, Collection<ResolvedTest> excludedFilters )

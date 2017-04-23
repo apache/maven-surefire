@@ -19,7 +19,7 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
-import org.apache.maven.plugin.failsafe.xmlsummary.FailsafeSummaryXmlUtils;
+import org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils;
 import org.apache.maven.surefire.suite.RunResult;
 import org.junit.Test;
 

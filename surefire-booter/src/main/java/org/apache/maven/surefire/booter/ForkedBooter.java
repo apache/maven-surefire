@@ -63,9 +63,9 @@ import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringFo
 
 /**
  * The part of the booter that is unique to a forked vm.
- * <p/>
+ * <br>
  * Deals with deserialization of the booter wire-level protocol
- * <p/>
+ * <br>
  *
  * @author Jason van Zyl
  * @author Emmanuel Venisse
@@ -82,7 +82,7 @@ public final class ForkedBooter
 
     /**
      * This method is invoked when Surefire is forked - this method parses and organizes the arguments passed to it and
-     * then calls the Surefire class' run method. <p/> The system exit code will be 1 if an exception is thrown.
+     * then calls the Surefire class' run method. <br> The system exit code will be 1 if an exception is thrown.
      *
      * @param args Commandline arguments
      */

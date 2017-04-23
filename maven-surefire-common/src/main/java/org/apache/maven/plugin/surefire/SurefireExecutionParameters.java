@@ -27,7 +27,6 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
  * This interface contains all the common parameters that have different implementations in Surefire vs IntegrationTest
  *
  * @author Stephen Connolly
- * @noinspection UnusedDeclaration, UnusedDeclaration
  */
 public interface SurefireExecutionParameters
 {

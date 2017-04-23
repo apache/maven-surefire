@@ -27,7 +27,7 @@ import java.io.File;
 import static org.apache.maven.surefire.util.internal.DumpFileUtils.newDumpFile;
 
 /**
- * Dumps lost commands and caused exceptions in forked JVM. <p/>
+ * Dumps lost commands and caused exceptions in forked JVM. <br>
  * Fail-safe.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>

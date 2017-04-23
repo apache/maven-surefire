@@ -33,7 +33,7 @@ import org.apache.maven.surefire.testset.TestRequest;
 /**
  * Represents the surefire configuration that passes all the way into the provider
  * classloader and the provider.
- * <p/>
+ * <br>
  *
  * @author Jason van Zyl
  * @author Emmanuel Venisse

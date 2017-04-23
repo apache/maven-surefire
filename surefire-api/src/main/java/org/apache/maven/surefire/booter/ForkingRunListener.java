@@ -40,14 +40,14 @@ import static org.apache.maven.surefire.util.internal.StringUtils.escapeToPrinta
 
 /**
  * Encodes the full output of the test run to the stdout stream.
- * <p/>
+ * <br>
  * This class and the ForkClient contain the full definition of the
  * "wire-level" protocol used by the forked process. The protocol
  * is *not* part of any public api and may change without further
  * notice.
- * <p/>
+ * <br>
  * This class is threadsafe.
- * <p/>
+ * <br>
  * The synchronization in the underlying PrintStream (target instance)
  * is used to preserve thread safety of the output stream. To perform
  * multiple writes/prints for a single request, they must

@@ -19,13 +19,11 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
+import org.apache.maven.plugin.failsafe.util.JAXB;
 import org.apache.maven.plugin.failsafe.xmlsummary.FailsafeSummary;
-import org.apache.maven.plugin.failsafe.xmlsummary.JAXB;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.util.List;
 
 import static org.apache.maven.plugin.failsafe.xmlsummary.ErrorType.FAILURE;
 import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
@@ -62,32 +60,6 @@ public class MarshallerUnmarshallerTest
                                    + "\n\tat org.apache.maven.plugin.surefire.booterclient.ForkStarter"
                                    + ".awaitResultsDone(ForkStarter.java:489)"
                 );
-
-        List<String> exceptionMessages = summary.extractExceptionMessageLines();
-
-        assertThat( exceptionMessages )
-                .hasSize( 1 );
-
-        assertThat( exceptionMessages.get( 0 ) )
-                .isEqualTo( "ExecutionException There was an error in the forked processtest "
-                                    + "subsystem#no method RuntimeException Hi There!"
-                );
-
-        summary.setFailureMessage( null );
-
-        assertThat( summary.extractExceptionMessageLines() )
-                .isEmpty();
-    }
-
-    @Test
-    public void shouldEqualTwoSameXml() throws Exception
-    {
-        File xml = new File( "target/test-classes/org/apache/maven/plugin/failsafe/failsafe-summary.xml" );
-        FailsafeSummary summary1 = JAXB.unmarshal( xml, FailsafeSummary.class );
-        FailsafeSummary summary2 = JAXB.unmarshal( xml, FailsafeSummary.class );
-
-        assertThat( summary1 )
-                .isEqualTo( summary2 );
     }
 
     @Test
@@ -107,25 +79,29 @@ public class MarshallerUnmarshallerTest
         );
 
         File xml = File.createTempFile( "failsafe-summary", ".xml" );
-        String xmlText = JAXB.marshal( expected, UTF_8 );
-        FileWriter fileWriter = new FileWriter( xml );
-        fileWriter.write( xmlText );
-        fileWriter.flush();
-        fileWriter.close();
+        JAXB.marshal( expected, UTF_8, xml );
 
         FailsafeSummary actual = JAXB.unmarshal( xml, FailsafeSummary.class );
 
-        assertThat( actual )
-                .isEqualTo( expected );
+        assertThat( actual.getFailures() )
+                .isEqualTo( expected.getFailures() );
 
-        List<String> exceptionMessages = actual.extractExceptionMessageLines();
+        assertThat( actual.isTimeout() )
+                .isEqualTo( expected.isTimeout() );
 
-        assertThat( exceptionMessages )
-                .hasSize( 1 );
+        assertThat( actual.getCompleted() )
+                .isEqualTo( expected.getCompleted() );
 
-        assertThat( exceptionMessages.get( 0 ) )
-                .isEqualTo( "There was an error in the forked processtest "
-                                    + "subsystem#no method RuntimeException Hi There!"
-                );
+        assertThat( actual.getErrors() )
+                .isEqualTo( expected.getErrors() );
+
+        assertThat( actual.getFailures() )
+                .isEqualTo( expected.getFailures() );
+
+        assertThat( actual.getSkipped() )
+                .isEqualTo( expected.getSkipped() );
+
+        assertThat( actual.getFailureMessage() )
+                .isEqualTo( expected.getFailureMessage() );
     }
 }

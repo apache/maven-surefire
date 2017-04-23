@@ -30,7 +30,7 @@ import static java.nio.charset.Charset.defaultCharset;
 
 /**
  * Outputs test system out/system err directly to the console
- * <p/>
+ * <br>
  * Just a step on the road to getting the separation of reporting concerns
  * operating properly.
  *

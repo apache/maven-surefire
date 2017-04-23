@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * @noinspection CustomClassloader
+ * Loads classes from jar files added via {@link #addURL(URL)}.
  */
 public class IsolatedClassLoader
     extends URLClassLoader

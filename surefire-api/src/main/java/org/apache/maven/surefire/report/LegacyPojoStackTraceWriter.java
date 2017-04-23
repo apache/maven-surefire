@@ -29,7 +29,6 @@ import java.io.StringWriter;
  * Write the trace out for a POJO test. Java 1.5 compatible.
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
- * @noinspection ThrowableResultOfMethodCallIgnored
  */
 public class LegacyPojoStackTraceWriter
     implements StackTraceWriter

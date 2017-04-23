@@ -25,20 +25,20 @@ import org.junit.Test;
 
 /**
  * Plugin Configuration: parallel=classes
- * <p/>
+ * <br>
  * With Surefire 2.15
  * {@code $ mvn test -Dtest=MyTest#testFoo}
  * Results:
  * Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
- * <p/>
+ * <br>
  * With Surefire 2.16
  * {@code $ mvn test -Dtest=MyTest#testFoo}
- * <p/>
+ * <br>
  * Results:
  * Tests run: 0, Failures: 0, Errors: 0, Skipped: 0
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-1028}
+ * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1028">SUREFIRE-1028</a>
  * @since 2.18
  */
 public class Surefire1028UnableToRunSingleIT

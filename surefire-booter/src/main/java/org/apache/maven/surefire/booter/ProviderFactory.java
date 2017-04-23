@@ -34,7 +34,7 @@ import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArr
 
 /**
  * Creates the surefire provider.
- * <p/>
+ * <br>
  *
  * @author Kristian Rosenvold
  */

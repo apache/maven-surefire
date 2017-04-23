@@ -30,7 +30,6 @@ import org.testng.ITestNGMethod;
  * For internal use only
  *
  * @author Olivier Lamy
- * @noinspection UnusedDeclaration
  * @since 2.7.3
  */
 public class MethodSelector

@@ -46,8 +46,9 @@ public class JUnit4RunListener
     protected final RunListener reporter;
 
     /**
-     * This flag is set after a failure has occurred so that a <code>testSucceeded</code> event is not fired.
-     * This is necessary because JUnit4 always fires a <code>testRunFinished</code> event-- even if there was a failure.
+     * This flag is set after a failure has occurred so that a {@link RunListener#testSucceeded} event is not fired.
+     * This is necessary because JUnit4 always fires a {@link org.junit.runner.notification.RunListener#testRunFinished}
+     * event-- even if there was a failure.
      */
     private final ThreadLocal<Boolean> failureFlag = new InheritableThreadLocal<Boolean>();
 

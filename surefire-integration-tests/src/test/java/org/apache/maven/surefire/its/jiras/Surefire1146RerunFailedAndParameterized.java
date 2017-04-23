@@ -24,7 +24,7 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
 /**
- * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-1146}
+ * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1146">SUREFIRE-1146</a>
  */
 public class Surefire1146RerunFailedAndParameterized
     extends SurefireJUnit4IntegrationTestCase

@@ -24,7 +24,7 @@ import java.io.PrintWriter;
 
 /**
  * Represents a test-run-result; this may be from a single test run or an aggregated result.
- * <p/>
+ * <br>
  * In the case of timeout==true, the run-counts reflect the state of the test-run at the time
  * of the timeout.
  *

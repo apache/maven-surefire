@@ -135,7 +135,7 @@ public final class CommandReader
     }
 
     /**
-     * @param listener listener called with <em>Any</em> {@link MasterProcessCommand command type}
+     * @param listener listener called with <b>Any</b> {@link MasterProcessCommand command type}
      */
     public void addListener( CommandListener listener )
     {
@@ -225,7 +225,7 @@ public final class CommandReader
     }
 
     /**
-     * @return <tt>true</tt> if {@link #LAST_TEST_SYMBOL} found at the last index in {@link #testClasses}.
+     * @return {@code true} if {@link #LAST_TEST_SYMBOL} found at the last index in {@link #testClasses}.
      */
     private boolean isQueueFull()
     {

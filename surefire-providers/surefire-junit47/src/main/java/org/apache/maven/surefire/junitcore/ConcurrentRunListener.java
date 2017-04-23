@@ -32,7 +32,7 @@ import static org.apache.maven.surefire.junitcore.TestMethod.getThreadTestMethod
 
 /**
  * Handles responses from concurrent junit
- * <p/>
+ * <br>
  * Stuff to remember about JUnit threading:
  * parallel=classes; beforeClass/afterClass, constructor and all tests method run on same thread
  * parallel=methods; beforeClass/afterClass run on main thread, constructor + each test method run on same thread

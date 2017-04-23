@@ -83,6 +83,29 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.cxf</groupId>
+        <artifactId>cxf-xjc-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>generate-failsafe-summary</id>
+            <goals>
+              <goal>xsdtojava</goal>
+            </goals>
+            <configuration>
+              <sourceRoot>${project.build.directory}/generated-sources/jaxb</sourceRoot>
+              <xsdOptions>
+                <xsdOption>
+                  <xsd>../maven-surefire-plugin/src/site/resources/xsd/failsafe-summary.xsd</xsd>
+                  <bindingFile>../maven-surefire-plugin/src/site/resources/xsd/failsafe-summary.xjb</bindingFile>
+                  <packagename>org.apache.maven.plugin.failsafe.xmlsummary</packagename>
+                </xsdOption>
+              </xsdOptions>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
         <configuration>

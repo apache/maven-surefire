@@ -90,7 +90,7 @@ public class ForkClient
     private final Queue<String> testsInProgress = new ConcurrentLinkedQueue<String>();
 
     /**
-     * <t>testSetStartedAt</t> is set to non-zero after received
+     * {@code testSetStartedAt} is set to non-zero after received
      * {@link org.apache.maven.surefire.booter.ForkingRunListener#BOOTERCODE_TESTSET_STARTING test-set}.
      */
     private final AtomicLong testSetStartedAt = new AtomicLong( START_TIME_ZERO );
@@ -131,6 +131,10 @@ public class ForkClient
 
     /**
      * Called in concurrent Thread.
+     * Will shutdown if timeout was reached.
+     *
+     * @param currentTimeMillis    current time in millis seconds
+     * @param forkedProcessTimeoutInSeconds timeout in seconds given by MOJO
      */
     public final void tryToTimeout( long currentTimeMillis, int forkedProcessTimeoutInSeconds )
     {

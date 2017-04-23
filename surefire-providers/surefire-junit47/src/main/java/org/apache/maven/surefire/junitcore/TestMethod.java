@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Represents the test-state of a single test method that is run.
- * <p/>
+ * <br>
  * Notes about thread safety: This instance is serially confined to 1-3 threads (construction, test-run, reporting),
  * without any actual parallel access
  */

@@ -35,17 +35,17 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.AnyOf.anyOf;
 
 /**
- * The purpose of this IT is to assert that the run order of test classes is according to the settings:<p/>
+ * The purpose of this IT is to assert that the run order of test classes is according to the settings:<br>
  *
- * runOrder=balanced<p/>
- * parallel=classes<p/>
- * threadCount=2<p/>
- * perCoreThreadCount=false<p/>
- * <p/>
+ * runOrder=balanced<br>
+ * parallel=classes<br>
+ * threadCount=2<br>
+ * perCoreThreadCount=false<br>
+ * <br>
  * The list of tests should be reordered to (DTest, CTest, BTest, ATest) in the second run.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-1098}
+ * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1098">SUREFIRE-1098</a>
  * @since 2.18
  */
 public class Surefire1098BalancedRunOrderIT

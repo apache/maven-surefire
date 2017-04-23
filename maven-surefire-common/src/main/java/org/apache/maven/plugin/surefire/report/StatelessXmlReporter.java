@@ -47,13 +47,14 @@ import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIll
 import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
 import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 
+@SuppressWarnings( { "javadoc", "checkstyle:javadoctype" } )
 // CHECKSTYLE_OFF: LineLength
 /**
  * XML format reporter writing to <code>TEST-<i>reportName</i>[-<i>suffix</i>].xml</code> file like written and read
  * by Ant's <a href="http://ant.apache.org/manual/Tasks/junit.html"><code>&lt;junit&gt;</code></a> and
  * <a href="http://ant.apache.org/manual/Tasks/junitreport.html"><code>&lt;junitreport&gt;</code></a> tasks,
  * then supported by many tools like CI servers.
- * <p/>
+ * <br>
  * <pre>&lt;?xml version="1.0" encoding="UTF-8"?>
  * &lt;testsuite name="<i>suite name</i>" [group="<i>group</i>"] tests="<i>0</i>" failures="<i>0</i>" errors="<i>0</i>" skipped="<i>0</i>" time="<i>0,###.###</i>">
  *  &lt;properties>
@@ -453,7 +454,7 @@ public class StatelessXmlReporter
 
     /**
      * Adds system properties to the XML report.
-     * <p/>
+     * <br>
      *
      * @param xmlWriter The test suite to report to
      */

@@ -28,7 +28,6 @@ import java.util.Set;
 /**
  * @author Stephen Conolly
  * @author Kristian Rosenvold
- * @noinspection UnusedDeclaration
  */
 public final class ProviderDetector
 {

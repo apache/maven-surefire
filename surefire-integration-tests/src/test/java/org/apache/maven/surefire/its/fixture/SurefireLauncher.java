@@ -29,7 +29,7 @@ import static java.util.Collections.singletonList;
 
 /**
  * Encapsulate all needed features to start a surefire run
- * <p/>
+ * <br>
  * Also includes thread-safe access to the extracted resource
  * files
  *

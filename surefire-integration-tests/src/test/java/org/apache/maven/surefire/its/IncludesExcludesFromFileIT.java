@@ -26,7 +26,7 @@ import org.junit.Test;
 
 /**
  * Test include/exclude from files.
- * <p/>
+ * <br>
  * Based on {@link IncludesExcludesIT}.
  */
 public class IncludesExcludesFromFileIT

@@ -39,7 +39,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-import static org.apache.maven.plugin.failsafe.xmlsummary.FailsafeSummaryXmlUtils.writeSummary;
+import static org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils.writeSummary;
 import static org.apache.maven.shared.utils.ReaderFactory.FILE_ENCODING;
 
 /**
@@ -47,7 +47,6 @@ import static org.apache.maven.shared.utils.ReaderFactory.FILE_ENCODING;
  *
  * @author Jason van Zyl
  * @author Stephen Connolly
- * @noinspection JavaDoc,
  */
 @Mojo( name = "integration-test", requiresProject = true, requiresDependencyResolution = ResolutionScope.TEST,
              defaultPhase = LifecyclePhase.INTEGRATION_TEST, threadSafe = true )
@@ -60,7 +59,7 @@ public class IntegrationTestMojo
     /**
      * The path representing project <em>JAR</em> file, if exists; Otherwise the directory containing generated
      * classes of the project being tested. This will be included after the test classes in the test classpath.
-     * Defaults to built artifact <em>JAR</em> file or ${project.build.outputDirectory}.
+     * Defaults to built artifact <em>JAR</em> file or <code>${project.build.outputDirectory}</code>.
      */
     @Parameter
     private File classesDirectory;
@@ -83,25 +82,28 @@ public class IntegrationTestMojo
     @Parameter( defaultValue = "${project.build.directory}/failsafe-reports" )
     private File reportsDirectory;
 
+    @SuppressWarnings( "checkstyle:linelength" )
     /**
-     * Specify this parameter to run individual tests by file name, overriding the <code>includes/excludes</code>
-     * parameters. Each pattern you specify here will be used to create an include pattern formatted like
-     * <code>**&#47;${it.test}.java</code>, so you can just type "-Dit.test=MyIT" to run a single test called
-     * "foo/MyIT.java".<br/>
-     * This parameter overrides the <code>includes/excludes</code> parameters, and the TestNG <code>suiteXmlFiles</code>
-     * parameter.
-     * <p/>
-     * Since 2.7.3 You can execute a limited number of methods in the test with adding #myMethod or #my*ethod. E.g. type
-     * "-Dit.test=MyIT#myMethod" <b>supported for junit 4.x and testNg</b>
-     * <br/>
-     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):<br/>
-     * "-Dit.test=???IT, !Unstable*, pkg&#47;**&#47;Ci*leIT.java, *IT#test*One+testTwo?????, #fast*+slowTest"<br/>
-     * "-Dit.test=Basic*, !%regex[.*.Unstable.*], !%regex[.*.MyIT.class#one.*|two.*], %regex[#fast.*|slow.*]"<br/>
-     * <br/>
-     * The Parameterized JUnit runner <em>describes</em> test methods using an index in brackets, so the non-regex
-     * method pattern would become: <em>#testMethod[*]</em>. If using <em>@Parameters(name="{index}: fib({0})={1}")</em>
-     * and selecting the index e.g. 5 in pattern, the non-regex method pattern would become <em>#testMethod[5:*]</em>.
-     * <br/>
+     * Specify this parameter to run individual tests by file name, overriding parameter {@code includes} and
+     * {@code excludes}. Each pattern you specify here will be used to create an include pattern formatted like
+     * <code>**{@literal /}${it.test}.java</code>, so you can just type {@code -Dit.test=MyIT} to run
+     * a single test file called "foo/MyIT.java". The test patterns prefixed with a <em>!</em> will be excluded.
+     * <br>
+     * This parameter overrides the parameter {@code includes} and {@code excludes}, and the TestNG parameter
+     * {@code suiteXmlFiles}.
+     * <br>
+     * Since 2.7.3 You can execute a limited number of methods in the test with adding <i>#myMethod</i> or
+     * <i>#my*ethod</i>. E.g. type {@code -Dit.test=MyIT#myMethod} <b>supported for junit 4.x and TestNg.</b>
+     * <br>
+     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):
+     * <pre><code>"-Dit.test=???IT, !Unstable*, pkg{@literal /}**{@literal /}Ci*leIT.java, *IT#test*One+testTwo?????, #fast*+slowTest"</code></pre>
+     * or e.g.
+     * <br>
+     * <pre><code>"-Dit.test=Basic*, !%regex[.*.Unstable.*], !%regex[.*.MyIT.class#one.*|two.*], %regex[#fast.*|slow.*]"</code></pre>
+     * <br>
+     * The Parameterized JUnit runner {@code describes} test methods using an index in brackets, so the non-regex
+     * method pattern would become: {@code #testMethod[*]}. If using <code>@Parameters(name="{index}: fib({0})={1}")</code>
+     * and selecting the index e.g. 5 in pattern, the non-regex method pattern would become {@code #testMethod[5:*]}.
      */
     @Parameter( property = "it.test" )
     private String test;
@@ -143,7 +145,7 @@ public class IntegrationTestMojo
     /**
      * Attach a debugger to the forked JVM. If set to "true", the process will suspend and wait for a debugger to attach
      * on port 5005. If set to some other string, that string will be appended to the argLine, allowing you to configure
-     * arbitrary debuggability options (without overwriting the other options specified through the <code>argLine</code>
+     * arbitrary debugging ability options (without overwriting the other options specified through the {@code argLine}
      * parameter).
      *
      * @since 2.4
@@ -163,7 +165,7 @@ public class IntegrationTestMojo
     /**
      * Forked process is normally terminated without any significant delay after given tests have completed.
      * If the particular tests started non-daemon Thread(s), the process hangs instead of been properly terminated
-     * by <em>System.exit()</em>. Use this parameter in order to determine the timeout of terminating the process.
+     * by {@code System.exit()}. Use this parameter in order to determine the timeout of terminating the process.
      * <a href="http://maven.apache.org/surefire/maven-failsafe-plugin/examples/shutdown.html">see the documentation:
      * http://maven.apache.org/surefire/maven-failsafe-plugin/examples/shutdown.html</a>
      *
@@ -174,11 +176,11 @@ public class IntegrationTestMojo
 
     /**
      * Stop executing queued parallel JUnit tests after a certain number of seconds.
-     * <br/>
-     * Example values: "3.5", "4"<br/>
-     * <br/>
+     * <br>
+     * Example values: "3.5", "4"<br>
+     * <br>
      * If set to 0, wait forever, never timing out.
-     * Makes sense with specified <code>parallel</code> different from "none".
+     * Makes sense with specified {@code parallel} different from "none".
      *
      * @since 2.16
      */
@@ -187,40 +189,45 @@ public class IntegrationTestMojo
 
     /**
      * Stop executing queued parallel JUnit tests
-     * and <em>interrupt</em> currently running tests after a certain number of seconds.
-     * <br/>
-     * Example values: "3.5", "4"<br/>
-     * <br/>
+     * and <i>interrupt</i> currently running tests after a certain number of seconds.
+     * <br>
+     * Example values: "3.5", "4"<br>
+     * <br>
      * If set to 0, wait forever, never timing out.
-     * Makes sense with specified <code>parallel</code> different from "none".
+     * Makes sense with specified {@code parallel} different from "none".
      *
      * @since 2.16
      */
     @Parameter( property = "failsafe.parallel.forcedTimeout" )
     private double parallelTestsTimeoutForcedInSeconds;
 
+    @SuppressWarnings( "checkstyle:linelength" )
     /**
-     * A list of &lt;include> elements specifying the tests (by pattern) that should be included in testing. When not
-     * specified and when the <code>test</code> parameter is not specified, the default includes will be <code><br/>
-     * &lt;includes><br/>
-     * &nbsp;&lt;include>**&#47;IT*.java&lt;/include><br/>
-     * &nbsp;&lt;include>**&#47;*IT.java&lt;/include><br/>
-     * &nbsp;&lt;include>**&#47;*ITCase.java&lt;/include><br/>
-     * &lt;/includes><br/>
-     * </code>
-     * <p/>
+     * A list of {@literal <include>} elements specifying the test filter (by pattern) of tests which should be
+     * included in testing. If it is not specified and the {@code test} parameter is unspecified as well, the default
+     * includes is
+     * <pre><code>
+     * {@literal <includes>}
+     *     {@literal <include>}**{@literal /}IT*.java{@literal </include>}
+     *     {@literal <include>}**{@literal /}*IT.java{@literal </include>}
+     *     {@literal <include>}**{@literal /}*ITCase.java{@literal </include>}
+     * {@literal </includes>}
+     * </code></pre>
+     * <br>
      * Each include item may also contain a comma-separated sublist of items, which will be treated as multiple
-     * &nbsp;&lt;include> entries.<br/>
-     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):<br/>
-     * &nbsp;&lt;include>%regex[.*[Cat|Dog].*], Basic????, !Unstable*&lt;/include><br/>
-     * &nbsp;&lt;include>%regex[.*[Cat|Dog].*], !%regex[pkg.*Slow.*.class], pkg&#47;**&#47;*Fast*.java&lt;/include><br/>
-     * <p/>
-     * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.<br/>
-     * <br/>
-     * <em>Notice that</em> these values are relative to the directory containing generated test classes of the project
-     * being tested. This directory is declared by the parameter <code>testClassesDirectory</code> which defaults
-     * to the POM property <code>${project.build.testOutputDirectory}</code>, typically <em>src/test/java</em>
-     * unless overridden.
+     * {@literal <include>} entries.<br>
+     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):
+     * <pre><code>
+     * {@literal <include>}%regex[.*[Cat|Dog].*], Basic????, !Unstable*{@literal </include>}
+     * {@literal <include>}%regex[.*[Cat|Dog].*], !%regex[pkg.*Slow.*.class], pkg{@literal /}**{@literal /}*Fast*.java{@literal </include>}
+     * </code></pre>
+     * <br>
+     * This parameter is ignored if the TestNG {@code suiteXmlFiles} parameter is specified.<br>
+     * <br>
+     * <b>Notice that</b> these values are relative to the directory containing generated test classes of the project
+     * being tested. This directory is declared by the parameter {@code testClassesDirectory} which defaults
+     * to the POM property <code>${project.build.testOutputDirectory}</code>, typically
+     * <code>{@literal src/test/java}</code> unless overridden.
      */
     @Parameter
     private List<String> includes;
@@ -241,7 +248,7 @@ public class IntegrationTestMojo
      * <a href="http://maven.apache.org/plugins/maven-failsafe-plugin/examples/class-loading.html">
      * http://maven.apache.org/plugins/maven-failsafe-plugin/examples/class-loading.html</a>
      * for a more detailed explanation of manifest-only JARs and their benefits.)
-     * <br/>
+     * <br>
      * Beware, setting this to "false" may cause your tests to fail on Windows if your classpath is too long.
      *
      * @since 2.4.3
@@ -265,10 +272,10 @@ public class IntegrationTestMojo
     private int rerunFailingTestsCount;
 
     /**
-     * (TestNG) List of &lt;suiteXmlFile> elements specifying TestNG suite xml file locations. Note that
-     * <code>suiteXmlFiles</code> is incompatible with several other parameters of this plugin, like
-     * <code>includes/excludes</code>.<br/>
-     * This parameter is ignored if the <code>test</code> parameter is specified (allowing you to run a single test
+     * (TestNG) List of &lt;suiteXmlFile&gt; elements specifying TestNG suite xml file locations. Note that
+     * {@code suiteXmlFiles} is incompatible with several other parameters of this plugin, like
+     * {@code includes} and {@code excludes}.<br>
+     * This parameter is ignored if the {@code test} parameter is specified (allowing you to run a single test
      * instead of an entire suite).
      *
      * @since 2.2
@@ -277,26 +284,26 @@ public class IntegrationTestMojo
     private File[] suiteXmlFiles;
 
     /**
-     * Defines the order the tests will be run in. Supported values are "alphabetical", "reversealphabetical", "random",
-     * "hourly" (alphabetical on even hours, reverse alphabetical on odd hours), "failedfirst", "balanced" and
-     * "filesystem".
-     * <br/>
-     * <br/>
+     * Defines the order the tests will be run in. Supported values are {@code alphabetical},
+     * {@code reversealphabetical}, {@code random}, {@code hourly} (alphabetical on even hours, reverse alphabetical
+     * on odd hours), {@code failedfirst}, {@code balanced} and {@code filesystem}.
+     * <br>
+     * <br>
      * Odd/Even for hourly is determined at the time the of scanning the classpath, meaning it could change during a
      * multi-module build.
-     * <br/>
-     * <br/>
+     * <br>
+     * <br>
      * Failed first will run tests that failed on previous run first, as well as new tests for this run.
-     * <br/>
-     * <br/>
+     * <br>
+     * <br>
      * Balanced is only relevant with parallel=classes, and will try to optimize the run-order of the tests reducing the
      * overall execution time. Initially a statistics file is created and every next test run will reorder classes.
-     * <br/>
-     * <br/>
-     * Note that the statistics are stored in a file named .surefire-XXXXXXXXX beside pom.xml, and should not be checked
-     * into version control. The "XXXXX" is the SHA1 checksum of the entire surefire configuration, so different
-     * configurations will have different statistics files, meaning if you change any config settings you will re-run
-     * once before new statistics data can be established.
+     * <br>
+     * <br>
+     * Note that the statistics are stored in a file named <b>.surefire-XXXXXXXXX</b> beside <i>pom.xml</i> and
+     * should not be checked into version control. The "XXXXX" is the SHA1 checksum of the entire surefire
+     * configuration, so different configurations will have different statistics files, meaning if you change any
+     * configuration settings you will re-run once before new statistics data can be established.
      *
      * @since 2.7
      */
@@ -304,31 +311,37 @@ public class IntegrationTestMojo
     private String runOrder;
 
     /**
-     * A file containing include patterns. Blank lines, or lines starting with # are ignored. If {@code includes} are
-     * also specified, these patterns are appended. Example with path, simple and regex includes:<br/>
-     * &#042;&#047;it/*<br/>
-     * &#042;&#042;&#047;NotIncludedByDefault.java<br/>
-     * %regex[.*IT.*|.*Not.*]<br/>
+     * A file containing include patterns, each in a next line. Blank lines, or lines starting with # are ignored.
+     * If {@code includes} are also specified, these patterns are appended. Example with path, simple and regex
+     * includes:
+     * <pre><code>
+     * *{@literal /}it{@literal /}*
+     * **{@literal /}NotIncludedByDefault.java
+     * %regex[.*IT.*|.*Not.*]
+     * </code></pre>
      */
     @Parameter( property = "failsafe.includesFile" )
     private File includesFile;
 
     /**
-     * A file containing exclude patterns. Blank lines, or lines starting with # are ignored. If {@code excludes} are
-     * also specified, these patterns are appended. Example with path, simple and regex excludes:<br/>
-     * &#042;&#047;it/*<br/>
-     * &#042;&#042;&#047;DontRunIT.*<br/>
-     * %regex[.*IT.*|.*Not.*]<br/>
+     * A file containing exclude patterns, each in a next line. Blank lines, or lines starting with # are ignored.
+     * If {@code excludes} are also specified, these patterns are appended.
+     * Example with path, simple and regex excludes:
+     * <pre><code>
+     * *{@literal /}it{@literal /}*
+     * **{@literal /}DontRunIT.*
+     * %regex[.*IT.*|.*Not.*]
+     * </code></pre>
      */
     @Parameter( property = "failsafe.excludesFile" )
     private File excludesFile;
 
     /**
      * Set to error/failure count in order to skip remaining tests.
-     * Due to race conditions in parallel/forked execution this may not be fully guaranteed.<br/>
-     * Enable with system property -Dfailsafe.skipAfterFailureCount=1 or any number greater than zero.
-     * Defaults to "0".<br/>
-     * See the prerequisites and limitations in documentation:<br/>
+     * Due to race conditions in parallel/forked execution this may not be fully guaranteed.<br>
+     * Enable with system property {@code -Dfailsafe.skipAfterFailureCount=1} or any number greater than zero.
+     * Defaults to "0".<br>
+     * See the prerequisites and limitations in documentation:<br>
      * <a href="http://maven.apache.org/plugins/maven-failsafe-plugin/examples/skip-after-failure.html">
      * http://maven.apache.org/plugins/maven-failsafe-plugin/examples/skip-after-failure.html</a>
      *
@@ -338,12 +351,18 @@ public class IntegrationTestMojo
     private int skipAfterFailureCount;
 
     /**
-     * After the plugin process is shutdown by sending SIGTERM signal (CTRL+C), SHUTDOWN command is received by every
-     * forked JVM. By default (shutdown=testset) forked JVM would not continue with new test which means that
-     * the current test may still continue to run.<br/>
-     * The parameter can be configured with other two values "exit" and "kill".<br/>
-     * Using "exit" forked JVM executes System.exit(1) after the plugin process has received SIGTERM signal.<br/>
-     * Using "kill" the JVM executes Runtime.halt(1) and kills itself.
+     * After the plugin process is shutdown by sending <i>SIGTERM signal (CTRL+C)</i>, <i>SHUTDOWN command</i> is
+     * received by every forked JVM.
+     * <br>
+     * By default ({@code shutdown=testset}) forked JVM would not continue with new test which means that
+     * the current test may still continue to run.
+     * <br>
+     * The parameter can be configured with other two values {@code exit} and {@code kill}.
+     * <br>
+     * Using {@code exit} forked JVM executes {@code System.exit(1)} after the plugin process has received
+     * <i>SIGTERM signal</i>.
+     * <br>
+     * Using {@code kill} the JVM executes {@code Runtime.halt(1)} and kills itself.
      *
      * @since 2.19
      */

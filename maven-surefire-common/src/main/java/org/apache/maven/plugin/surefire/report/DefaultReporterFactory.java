@@ -56,7 +56,7 @@ import static org.apache.maven.surefire.util.internal.ObjectUtils.useNonNull;
 
 /**
  * Provides reporting modules on the plugin side.
- * <p/>
+ * <br>
  * Keeps a centralized count of test run results.
  *
  * @author Kristian Rosenvold
@@ -209,6 +209,8 @@ public class DefaultReporterFactory
 
     /**
      * For testing purposes only.
+     *
+     * @return DefaultReporterFactory for testing purposes
      */
     public static DefaultReporterFactory defaultNoXml()
     {

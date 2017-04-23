@@ -63,12 +63,12 @@ public final class ThreadedStreamConsumer
         }
 
         /**
-         * Calls {@link ForkClient#consumeLine(String)} which may throw any {@link RuntimeException}.<p/>
+         * Calls {@link ForkClient#consumeLine(String)} which may throw any {@link RuntimeException}.<br>
          * Even if {@link ForkClient} is not fault-tolerant, this method MUST be fault-tolerant and thus the
          * try-catch block must be inside of the loop which prevents from loosing events from {@link StreamConsumer}.
-         * <p/>
+         * <br>
          * If {@link org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter#writeTestOutput} throws
-         * {@link java.io.IOException} and then <em>target.consumeLine()</em> throws any RuntimeException, this method
+         * {@link java.io.IOException} and then {@code target.consumeLine()} throws any RuntimeException, this method
          * MUST NOT skip reading the events from the forked JVM; otherwise we could simply lost events
          * e.g. acquire-next-test which means that {@link ForkClient} could hang on waiting for old test to complete
          * and therefore the plugin could be permanently in progress.
@@ -159,7 +159,7 @@ public final class ThreadedStreamConsumer
      * Compared item with {@link #END_ITEM} by identity.
      *
      * @param item    element from <code>items</code>
-     * @return <tt>true</tt> if tail of the queue
+     * @return {@code true} if tail of the queue
      */
     private boolean shouldStopQueueing( String item )
     {

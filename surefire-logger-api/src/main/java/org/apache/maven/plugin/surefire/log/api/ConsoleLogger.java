@@ -21,16 +21,13 @@ package org.apache.maven.plugin.surefire.log.api;
 
 /**
  * Allows providers to write console messages on the running maven process.
- * <p/>
+ * <br>
  * This output is associated with the entire test run and not a specific
  * test, which means it just goes "straight" to the console "immediately".
- * <p/>
- * s* <p/>
- * <p/>
+ * <br>
  * This interface is used in org.apache.maven.plugin.surefire.CommonReflector and reflected
  * via IsolatedClassLoader which can see classes from JRE only. This interface MUST use
  * JRE types in method signatures, e.g. {@link String} or {@link Throwable}, etc.
- * <p/>
  */
 public interface ConsoleLogger
 {

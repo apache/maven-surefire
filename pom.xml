@@ -284,8 +284,59 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>1.12</version>
+        </plugin>
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.6.1</version>
+          <executions>
+            <execution>
+              <id>compile-generated</id>
+              <phase>process-sources</phase>
+              <goals>
+                <goal>compile</goal>
+              </goals>
+              <configuration>
+                <includes>
+                  <include>org/apache/maven/shared/utils/logging/*.java</include>
+                  <include>HelpMojo.java</include>
+                  <include>**/HelpMojo.java</include>
+                  <include>org/apache/maven/plugin/failsafe/xmlsummary/*.java</include>
+                </includes>
+                <compilerArgs>
+                  <!-- FIXME: maven-plugin-plugin therefore used -syntax or none due to HelpMojo -->
+                  <arg>-Xdoclint:none</arg>
+                </compilerArgs>
+              </configuration>
+            </execution>
+            <execution>
+              <id>default-compile</id>
+              <phase>compile</phase>
+              <goals>
+                <goal>compile</goal>
+              </goals>
+              <configuration>
+                <excludes>
+                  <exclude>org/apache/maven/shared/utils/logging/*.java</exclude>
+                  <exclude>HelpMojo.java</exclude>
+                  <exclude>**/HelpMojo.java</exclude>
+                  <exclude>org/apache/maven/plugin/failsafe/xmlsummary/*.java</exclude>
+                </excludes>
+                <compilerArgs>
+                  <arg>-Xdoclint:all</arg>
+                </compilerArgs>
+              </configuration>
+            </execution>
+          </executions>
+          <configuration>
+            <fork>true</fork>
+            <compilerArgs>
+              <arg>-Xdoclint:all</arg>
+            </compilerArgs>
+          </configuration>
         </plugin>
         <!-- NOTE: animal sniffer does not check test classes: https://jira.codehaus.org/browse/MANIMALSNIFFER-40 -->
         <plugin>
@@ -367,7 +418,7 @@
             <configuration>
               <rules>
                 <requireJavaVersion>
-                  <version>[1.6.0, 1.9.0)</version>
+                  <version>[1.8.0,)</version>
                 </requireJavaVersion>
               </rules>
             </configuration>

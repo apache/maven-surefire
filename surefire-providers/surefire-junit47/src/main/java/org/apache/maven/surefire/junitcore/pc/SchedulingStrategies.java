@@ -67,7 +67,7 @@ public class SchedulingStrategies
 
     /**
      * The <tt>threadPool</tt> passed to this strategy can be shared in other strategies.
-     * <p/>
+     * <br>
      * The call {@link SchedulingStrategy#finished()} is waiting until own tasks have finished.
      * New tasks will not be scheduled by this call in this strategy. This strategy is not
      * waiting for other strategies to finish. The {@link org.junit.runners.model.RunnerScheduler#finished()} may

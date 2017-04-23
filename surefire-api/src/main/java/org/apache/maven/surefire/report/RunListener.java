@@ -22,7 +22,7 @@ package org.apache.maven.surefire.report;
 /**
  * Used by providers to report results.
  * Using this interface integrates the providers together into a common reporting infrastructure.
- * <p/>
+ * <br>
  * An instance of a reporter is not guaranteed to be thread-safe and concurrent test frameworks
  * must request an instance of a reporter per-thread from the ReporterFactory.
  */

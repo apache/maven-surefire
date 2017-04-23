@@ -31,9 +31,7 @@ import org.apache.maven.surefire.suite.RunResult;
  * This factory is only used inside forks.
  *
  * @author Kristian Rosenvold
- * @noinspection UnusedDeclaration
  */
-
 public class ForkingReporterFactory
     implements ReporterFactory
 {

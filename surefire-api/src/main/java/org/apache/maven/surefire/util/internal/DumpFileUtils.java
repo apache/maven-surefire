@@ -48,6 +48,9 @@ public final class DumpFileUtils
 
     /**
      * New dump file. Synchronized object appears in main memory and perfectly visible in other threads.
+     *
+     * @param dumpFileName    dump file name
+     * @param configuration    only report directory
      */
     public static synchronized File newDumpFile( String dumpFileName, ReporterConfiguration configuration )
     {

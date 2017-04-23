@@ -129,6 +129,7 @@ public class ForkConfiguration
      * @param classPath            cla the classpath arguments
      * @param startupConfiguration The startup configuration
      * @param threadNumber         the thread number, to be the replacement in the argLine   @return A commandline
+     * @return CommandLine able to flush entire command going to be sent to forked JVM
      * @throws org.apache.maven.surefire.booter.SurefireBooterForkException
      *          when unable to perform the fork
      */
@@ -255,7 +256,7 @@ public class ForkConfiguration
      * Create a jar with just a manifest containing a Main-Class entry for BooterConfiguration and a Class-Path entry
      * for all classpath elements.
      *
-     * @param classPath      List&lt;String> of all classpath elements.
+     * @param classPath      List&lt;String&gt; of all classpath elements.
      * @param startClassName  The classname to start (main-class)
      * @return The file pointint to the jar
      * @throws java.io.IOException When a file operation fails.

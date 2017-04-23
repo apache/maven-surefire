@@ -35,7 +35,7 @@ import static org.apache.maven.surefire.booter.ProviderFactory.invokeProvider;
 
 /**
  * Starts the provider in the same VM as the surefire plugin.
- * <p/>
+ * <br>
  * This part of the booter is always guaranteed to be in the
  * same vm as the tests will be run in.
  *

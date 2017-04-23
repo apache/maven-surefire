@@ -36,10 +36,10 @@ import java.util.Map;
 
 /**
  * Injected into the providers upon provider construction. Allows the provider to request services and data it needs.
- * <p/>
+ * <br>
  * NOTE: This class is part of the proposed public api for surefire providers from 2.7 and up. It may
  * still be subject to changes, even for minor revisions.
- * <p/>
+ * <br>
  * The api covers this interface and all the types reachable from it. And nothing else.
  *
  * @author Kristian Rosenvold
@@ -80,7 +80,7 @@ public interface ProviderParameters
 
     /**
      * Gets a logger intended for console output.
-     * <p/>
+     * <br>
      * This output is intended for provider-oriented messages that are not attached to a single test-set
      * and will normally be written to something console-like immediately.
      *
@@ -136,7 +136,7 @@ public interface ProviderParameters
     List<CommandLineOption> getMainCliOptions();
 
     /**
-     * Defaults to 0. Configured with parameter <em>skipAfterFailureCount</em> in POM.
+     * @return Defaults to 0. Configured with parameter {@code skipAfterFailureCount} in POM.
      */
     int getSkipAfterFailureCount();
 

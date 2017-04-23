@@ -36,13 +36,13 @@ import static org.apache.maven.surefire.booter.Command.toShutdown;
 
 /**
  * An {@link java.io.InputStream} that, when read, provides test class names out of a queue.
- * <p/>
+ * <br>
  * The Stream provides only one test at a time, but only after {@link #provideNewTest()} has been invoked.
- * <p/>
+ * <br>
  * After providing each test class name, followed by a newline character, a flush is performed on the
  * {@link FlushReceiver} provided by the {@link FlushReceiverProvider} that can be set using
  * {@link #setFlushReceiverProvider(FlushReceiverProvider)}.
- * <p/>
+ * <br>
  * The instance is used only in reusable forks in {@link org.apache.maven.plugin.surefire.booterclient.ForkStarter}
  * by one Thread.
  *

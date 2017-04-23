@@ -25,7 +25,7 @@ import org.apache.maven.surefire.report.StackTraceWriter;
 /**
  * Represents a deserialize stacktracewriter that has been
  * marshalled across to the plugin from the fork.
- * <p/>
+ * <br>
  * Might be better to represent this whole thing differently
  *
  * @author Kristian Rosenvold

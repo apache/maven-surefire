@@ -51,7 +51,7 @@ public class FailsafeReportMojo
 
     /**
      * If set to true the failsafe report will be generated even when there are no failsafe result files.
-     * Defaults to <code>false</code> to preserve legacy behaviour pre 2.10
+     * Defaults to {@code false} to preserve legacy behaviour pre 2.10
      *
      * @noinspection UnusedDeclaration
      * @since 2.11

@@ -161,9 +161,6 @@ public class SimpleReportEntry
         return message;
     }
 
-    /**
-     * @noinspection RedundantIfStatement
-     */
     @Override
     public boolean equals( Object o )
     {
@@ -177,27 +174,7 @@ public class SimpleReportEntry
         }
 
         SimpleReportEntry that = (SimpleReportEntry) o;
-
-        if ( elapsed != null ? !elapsed.equals( that.elapsed ) : that.elapsed != null )
-        {
-            return false;
-        }
-        if ( name != null ? !name.equals( that.name ) : that.name != null )
-        {
-            return false;
-        }
-        if ( source != null ? !source.equals( that.source ) : that.source != null )
-        {
-            return false;
-        }
-        if ( stackTraceWriter != null
-            ? !stackTraceWriter.equals( that.stackTraceWriter )
-            : that.stackTraceWriter != null )
-        {
-            return false;
-        }
-
-        return true;
+        return isElapsedTimeEqual( that ) && isNameEqual( that ) && isSourceEqual( that ) && isStackEqual( that );
     }
 
     @Override
@@ -214,5 +191,25 @@ public class SimpleReportEntry
     public String getNameWithGroup()
     {
         return getName();
+    }
+
+    private boolean isElapsedTimeEqual( SimpleReportEntry en )
+    {
+        return elapsed != null ? elapsed.equals( en.elapsed ) : en.elapsed == null;
+    }
+
+    private boolean isNameEqual( SimpleReportEntry en )
+    {
+        return name != null ? name.equals( en.name ) : en.name == null;
+    }
+
+    private boolean isSourceEqual( SimpleReportEntry en )
+    {
+        return source != null ? source.equals( en.source ) : en.source == null;
+    }
+
+    private boolean isStackEqual( SimpleReportEntry en )
+    {
+        return stackTraceWriter != null ? stackTraceWriter.equals( en.stackTraceWriter ) : en.stackTraceWriter == null;
     }
 }

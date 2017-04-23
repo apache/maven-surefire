@@ -26,8 +26,8 @@ package org.apache.maven.surefire.spi;
 public interface IDefault
 {
     /**
-     * @return <tt>true</tt> if SPI implementation vendor is maven-surefire-plugin or maven-failsafe-plugin.
-     * <tt>false</tt> if customized by users.
+     * @return {@code true} if SPI implementation vendor is maven-surefire-plugin or maven-failsafe-plugin.
+     * {@code false} if customized by users.
      */
     boolean isDefault();
 }

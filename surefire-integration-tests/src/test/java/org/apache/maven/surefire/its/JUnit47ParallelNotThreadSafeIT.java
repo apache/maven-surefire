@@ -24,7 +24,7 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
 /**
- * Testing <code>@net.jcip.annotations.NotThreadSafe</code> with ParallelComputerBuilder.
+ * Testing {@code @net.jcip.annotations.NotThreadSafe} with ParallelComputerBuilder.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19

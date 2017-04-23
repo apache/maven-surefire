@@ -37,7 +37,7 @@ import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
 
 /**
  * Reports data for a single test set.
- * <p/>
+ * <br>
  *
  * @author Kristian Rosenvold
  */

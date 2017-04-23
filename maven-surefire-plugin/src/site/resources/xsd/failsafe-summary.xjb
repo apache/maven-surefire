@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <!--
 ~ Licensed to the Apache Software Foundation (ASF) under one
 ~ or more contributor license agreements.  See the NOTICE file
@@ -17,20 +17,15 @@
 ~ specific language governing permissions and limitations
 ~ under the License.
 -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
-    <parent>
-        <groupId>org.apache.maven.plugins.surefire</groupId>
-        <artifactId>fork-mode-multimodule</artifactId>
-        <version>1.0-SNAPSHOT</version>
-    </parent>
-
-    <groupId>org.apache.maven.plugins.surefire</groupId>
-    <artifactId>fork-mode-multimodule.module-b</artifactId>
-    <name>Test for forkMode Module B</name>
-
-</project>
+<jxb:bindings xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+        version="2.0">
+    <jxb:bindings schemaLocation="failsafe-summary.xsd">
+        <jxb:bindings node="//xsd:simpleType[@name='errorType']/xsd:restriction/xsd:enumeration[@id='FAILURE']">
+            <jxb:typesafeEnumMember name="FAILURE"/>
+        </jxb:bindings>
+        <jxb:bindings node="//xsd:simpleType[@name='errorType']/xsd:restriction/xsd:enumeration[@id='NO_TESTS']">
+            <jxb:typesafeEnumMember name="NO_TESTS"/>
+        </jxb:bindings>
+    </jxb:bindings>
+</jxb:bindings>

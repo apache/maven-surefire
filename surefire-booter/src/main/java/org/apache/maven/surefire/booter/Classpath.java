@@ -116,6 +116,9 @@ public class Classpath implements Iterable<String>
     /**
      * @deprecated this should be package private method which returns List of Files. It will be
      * removed in the next major version.
+     *
+     * @return list of {@link URL jar files paths} with {@code file} protocol in URL.
+     * @throws MalformedURLException if {@link URL} could not be created upon given class-path element(s)
      */
     @Deprecated
     public List<URL> getAsUrlList()

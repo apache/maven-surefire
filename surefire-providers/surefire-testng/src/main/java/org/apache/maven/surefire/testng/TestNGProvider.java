@@ -51,7 +51,6 @@ import static org.apache.maven.surefire.util.TestsToRun.fromClass;
 
 /**
  * @author Kristian Rosenvold
- * @noinspection UnusedDeclaration
  */
 public class TestNGProvider
     extends AbstractProvider

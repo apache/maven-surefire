@@ -38,7 +38,7 @@ import static java.util.Collections.unmodifiableList;
 
 /**
  * Encapsulate all needed features to start a maven run
- * <p/>
+ * <br>
  *
  * @author Kristian Rosenvold
  */

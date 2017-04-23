@@ -32,7 +32,7 @@ import org.junit.runner.notification.Failure;
 
 /**
  * Noteworthy things about JUnit4 listening:
- * <p/>
+ * <br>
  * A class that is annotated with @Ignore will have one invocation of "testSkipped" with source==name
  * A method that is annotated with @Ignore will have a invocation of testSkipped with source and name distinct
  * Methods annotated with @Ignore trigger no further events.

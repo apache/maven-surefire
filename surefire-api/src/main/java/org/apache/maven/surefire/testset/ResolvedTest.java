@@ -73,12 +73,12 @@ public final class ResolvedTest
     /**
      * '*' means zero or more characters<br>
      * '?' means one and only one character
-     * The pattern %regex[] prefix and suffix does not appear. The regex <code>pattern</code> is always
+     * The pattern %regex[] prefix and suffix does not appear. The regex <i>pattern</i> is always
      * unwrapped by the caller.
      *
      * @param classPattern     test class file pattern
      * @param methodPattern    test method
-     * @param isRegex          {@code true} if regex
+     * @param isRegex          {@code true} if pattern is regex
      */
     public ResolvedTest( String classPattern, String methodPattern, boolean isRegex )
     {
@@ -104,7 +104,11 @@ public final class ResolvedTest
     }
 
     /**
-     * The regex <code>pattern</code> is always unwrapped.
+     * The regex {@code pattern} is always unwrapped.
+     *
+     * @param type class or method
+     * @param pattern pattern or regex
+     * @param isRegex {@code true} if pattern is regex
      */
     public ResolvedTest( Type type, String pattern, boolean isRegex )
     {
@@ -123,12 +127,14 @@ public final class ResolvedTest
     }
 
     /**
-     * Test class file pattern, e.g. org&#47;**&#47;Cat*.class<br/>, or null if not any
+     * Test class file pattern, e.g. org&#47;**&#47;Cat*.class<br>, or null if not any
      * and {@link #hasTestClassPattern()} returns false.
-     * Other examples: org&#47;animals&#47;Cat*, org&#47;animals&#47;Ca?.class, %regex[Cat.class|Dog.*]<br/>
-     * <br/>
+     * Other examples: org&#47;animals&#47;Cat*, org&#47;animals&#47;Ca?.class, %regex[Cat.class|Dog.*]<br>
+     * <br>
      * '*' means zero or more characters<br>
      * '?' means one and only one character
+     *
+     * @return class pattern or regex
      */
     public String getTestClassPattern()
     {
@@ -141,11 +147,13 @@ public final class ResolvedTest
     }
 
     /**
-     * Test method, e.g. "realTestMethod".<br/>, or null if not any and {@link #hasTestMethodPattern()} returns false.
-     * Other examples: test* or testSomethin? or %regex[testOne|testTwo] or %ant[testOne|testTwo]<br/>
-     * <br/>
+     * Test method, e.g. "realTestMethod".<br>, or null if not any and {@link #hasTestMethodPattern()} returns false.
+     * Other examples: test* or testSomethin? or %regex[testOne|testTwo] or %ant[testOne|testTwo]<br>
+     * <br>
      * '*' means zero or more characters<br>
      * '?' means one and only one character
+     *
+     * @return method pattern or regex
      */
     public String getTestMethodPattern()
     {
@@ -266,6 +274,9 @@ public final class ResolvedTest
 
     /**
      * Prevents {@link #match(String, String)} from throwing NPE in situations when inclusive returns true.
+     *
+     * @param testClassFile    path to class file
+     * @return {@code true} if examined class in null and class pattern exists
      */
     private boolean alwaysInclusiveQuietly( String testClassFile )
     {

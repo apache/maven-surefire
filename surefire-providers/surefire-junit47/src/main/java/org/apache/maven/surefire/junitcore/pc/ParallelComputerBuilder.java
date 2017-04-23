@@ -56,6 +56,7 @@ import static org.apache.maven.surefire.junitcore.pc.Type.CLASSES;
 import static org.apache.maven.surefire.junitcore.pc.Type.METHODS;
 import static org.apache.maven.surefire.junitcore.pc.Type.SUITES;
 
+@SuppressWarnings( { "javadoc", "checkstyle:javadoctype" } )
 /**
  * Executing suites, classes and methods with defined concurrency. In this example the threads which completed
  * the suites and classes can be reused in parallel methods.
@@ -70,9 +71,9 @@ import static org.apache.maven.surefire.junitcore.pc.Type.SUITES;
  * Note that the type has always at least one thread even if unspecified. The capacity in
  * {@link ParallelComputerBuilder#useOnePool(int)} must be greater than the number of concurrent suites and classes
  * altogether.
- * <p/>
+ * <br>
  * The Computer can be stopped in a separate thread. Pending tests will be interrupted if the argument is
- * <tt>true</tt>.
+ * {@code true}.
  * <pre>
  * computer.describeStopped(true);
  * </pre>

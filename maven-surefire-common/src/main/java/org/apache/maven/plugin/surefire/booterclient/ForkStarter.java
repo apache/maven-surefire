@@ -101,9 +101,9 @@ import static org.apache.maven.surefire.util.internal.StringUtils.ISO_8859_1;
 
 /**
  * Starts the fork or runs in-process.
- * <p/>
+ * <br>
  * Lives only on the plugin-side (not present in remote vms)
- * <p/>
+ * <br>
  * Knows how to fork new vms and also how to delegate non-forking invocation to SurefireStarter directly
  *
  * @author Jason van Zyl

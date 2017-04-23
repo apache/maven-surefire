@@ -40,7 +40,6 @@ import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
  * {@link org.apache.maven.surefire.report.RunListener}.
  *
  * @author jkuhnert
- * @noinspection ThrowableResultOfMethodCallIgnored
  */
 public class TestNGReporter
     implements ITestListener, ISuiteListener
@@ -50,8 +49,8 @@ public class TestNGReporter
     /**
      * Constructs a new instance that will listen to
      * test updates from a {@link org.testng.TestNG} class instance.
-     * <p/>
-     * <p/>It is assumed that the requisite {@link org.testng.TestNG#addListener(ITestListener)}
+     * <br>
+     * <br>It is assumed that the requisite {@link org.testng.TestNG#addListener(ITestListener)}
      * method call has already associated with this instance <i>before</i> the test
      * suite is run.
      *

@@ -22,7 +22,7 @@ package org.apache.maven.surefire.junitcore.pc;
 /**
  * The Balancer controls the maximum of concurrent threads in the current Scheduler(s) and prevents
  * from own thread resources exhaustion if other group of schedulers share the same pool of threads.
- * <p/>
+ * <br>
  * If a permit is available, {@link #acquirePermit()} simply returns and a new test is scheduled
  * by {@link Scheduler#schedule(Runnable)} in the current runner. Otherwise waiting for a release.
  * One permit is released as soon as the child thread has finished.
@@ -36,7 +36,7 @@ public interface Balancer
     /**
      * Acquires a permit from this balancer, blocking until one is available.
      *
-     * @return <code>true</code> if current thread is <em>NOT</em> interrupted
+     * @return {@code true} if current thread is <b>NOT</b> interrupted
      *         while waiting for a permit.
      */
     boolean acquirePermit();

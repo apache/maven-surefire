@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.failsafe.xmlsummary;
+package org.apache.maven.plugin.failsafe.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,13 +19,13 @@ package org.apache.maven.plugin.failsafe.xmlsummary;
  * under the License.
  */
 
+import org.apache.maven.plugin.failsafe.xmlsummary.ErrorType;
+import org.apache.maven.plugin.failsafe.xmlsummary.FailsafeSummary;
 import org.apache.maven.surefire.suite.RunResult;
 
 import javax.xml.bind.JAXBException;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 
 import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
@@ -67,20 +67,10 @@ public final class FailsafeSummaryXmlUtils
         summary.setFailures( fromRunResult.getFailures() );
         summary.setSkipped( fromRunResult.getSkipped() );
         summary.setTimeout( fromRunResult.isTimeout() );
-        summary.setResult( ErrorType.fromValue( fromRunResult.getFailsafeCode() ) );
+        Integer errorCode = fromRunResult.getFailsafeCode();
+        summary.setResult( errorCode == null ? null : ErrorType.fromValue( String.valueOf( errorCode ) ) );
 
-        String unmarshalled = JAXB.marshal( summary, encoding );
-
-        OutputStreamWriter os = new OutputStreamWriter( new FileOutputStream( toFailsafeSummaryXml ), encoding );
-        try
-        {
-            os.write( unmarshalled );
-            os.flush();
-        }
-        finally
-        {
-            os.close();
-        }
+        JAXB.marshal( summary, encoding, toFailsafeSummaryXml );
     }
 
     public static void writeSummary( RunResult mergedSummary, File mergedSummaryFile, boolean inProgress,

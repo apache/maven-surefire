@@ -42,6 +42,7 @@ public abstract class AbstractCommandStream
 
     /**
      * Opposite to {@link #isClosed()}.
+     * @return {@code true} if not closed
      */
     protected boolean canContinue()
     {
@@ -51,6 +52,8 @@ public abstract class AbstractCommandStream
     /**
      * Possibly waiting for next command (see {@link #nextCommand()}) unless the stream is atomically
      * closed (see {@link #isClosed()} returns {@code true}) before this method has returned.
+     *
+     * @throws IOException stream error while waiting for notification regarding next test required by forked jvm
      */
     protected void beforeNextCommand()
         throws IOException
@@ -68,6 +71,7 @@ public abstract class AbstractCommandStream
         currentPos = 0;
     }
 
+    @Deprecated
     protected final MasterProcessCommand getLastCommand()
     {
         return lastCommand;

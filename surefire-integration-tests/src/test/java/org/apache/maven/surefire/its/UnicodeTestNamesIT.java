@@ -31,7 +31,7 @@ import org.junit.Test;
 
 /**
  * Verifies unicode filenames pass through correctly.
- * <p/>
+ * <br>
  * If the underlying file system turns out not to support unicode, we just fail an assumption.s
  */
 public class UnicodeTestNamesIT

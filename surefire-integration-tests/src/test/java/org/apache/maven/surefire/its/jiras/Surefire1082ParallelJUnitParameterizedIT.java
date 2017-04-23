@@ -38,7 +38,7 @@ import static org.junit.Assert.assertThat;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-1082}
+ * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1082">SUREFIRE-1082</a>
  * @since 2.18
  */
 public class Surefire1082ParallelJUnitParameterizedIT

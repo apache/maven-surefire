@@ -48,7 +48,7 @@ public class SurefireReportMojo
 
     /**
      * If set to true the surefire report will be generated even when there are no surefire result files.
-     * Defaults to <code>true</code> to preserve legacy behaviour pre 2.10.
+     * Defaults to {@code true} to preserve legacy behaviour pre 2.10.
      *
      * @noinspection UnusedDeclaration
      * @since 2.11
