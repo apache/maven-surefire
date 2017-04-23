@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/davidgreens/TrelloSlack/tree/master.svg?style=svg)](https://circleci.com/gh/davidgreens/TrelloSlack/tree/master)
+
 [![Built with Maven](http://maven.apache.org/images/logos/maven-feather.png)](https://maven.apache.org/surefire/) [![CI](https://img.shields.io/badge/CI-Jenkins-red.svg?style=flat-square)](https://jenkins-ci.org/)
 
 [![chat](https://www.irccloud.com/invite-svg?channel=maven&amp;hostname=irc.freenode.net&amp;port=6697&amp;ssl=1)](https://maven.apache.org/community.html) [Join us @ irc://freenode/maven] or [Webchat with us @channel maven]
