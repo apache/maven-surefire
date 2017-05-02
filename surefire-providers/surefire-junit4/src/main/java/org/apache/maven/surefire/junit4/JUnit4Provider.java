@@ -31,7 +31,6 @@ import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
-import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
@@ -66,6 +65,7 @@ import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture
 import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
 import static org.apache.maven.surefire.testset.TestListResolver.optionallyWildcardFilter;
 import static org.apache.maven.surefire.util.TestsToRun.fromClass;
+import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
 import static org.junit.runner.Request.aClass;
 import static org.junit.runner.Request.method;
 
@@ -232,7 +232,7 @@ public class JUnit4Provider
 
     private void executeTestSet( Class<?> clazz, RunListener reporter, Notifier notifier )
     {
-        final ReportEntry report = new SimpleReportEntry( getClass().getName(), clazz.getName() );
+        final SimpleReportEntry report = new SimpleReportEntry( getClass().getName(), clazz.getName(), systemProps() );
         reporter.testSetStarting( report );
         try
         {

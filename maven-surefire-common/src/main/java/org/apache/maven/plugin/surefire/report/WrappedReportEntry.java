@@ -21,14 +21,19 @@ package org.apache.maven.plugin.surefire.report;
 
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 
+import java.util.Collections;
+import java.util.Map;
+
+import static java.util.Collections.unmodifiableMap;
 import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 
 /**
  * @author Kristian Rosenvold
  */
 public class WrappedReportEntry
-    implements ReportEntry
+    implements TestSetReportEntry
 {
     private final ReportEntry original;
 
@@ -40,15 +45,26 @@ public class WrappedReportEntry
 
     private final Utf8RecodingDeferredFileOutputStream stdErr;
 
+    private final Map<String, String> systemProperties;
+
     public WrappedReportEntry( ReportEntry original, ReportEntryType reportEntryType, Integer estimatedElapsed,
                                Utf8RecodingDeferredFileOutputStream stdout,
-                               Utf8RecodingDeferredFileOutputStream stdErr )
+                               Utf8RecodingDeferredFileOutputStream stdErr,
+                               Map<String, String> systemProperties )
     {
         this.original = original;
         this.reportEntryType = reportEntryType;
         this.elapsed = estimatedElapsed;
         this.stdout = stdout;
         this.stdErr = stdErr;
+        this.systemProperties = unmodifiableMap( systemProperties );
+    }
+
+    public WrappedReportEntry( ReportEntry original, ReportEntryType reportEntryType, Integer estimatedElapsed,
+                               Utf8RecodingDeferredFileOutputStream stdout,
+                               Utf8RecodingDeferredFileOutputStream stdErr )
+    {
+        this( original, reportEntryType, estimatedElapsed, stdout, stdErr, Collections.<String, String>emptyMap() );
     }
 
     @Override
@@ -170,5 +186,11 @@ public class WrappedReportEntry
     public String getNameWithGroup()
     {
         return original.getNameWithGroup();
+    }
+
+    @Override
+    public Map<String, String> getSystemProperties()
+    {
+        return systemProperties;
     }
 }

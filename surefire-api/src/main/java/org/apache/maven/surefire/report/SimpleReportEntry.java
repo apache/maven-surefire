@@ -19,12 +19,19 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.surefire.util.internal.ImmutableMap;
+
+import java.util.Collections;
+import java.util.Map;
+
 /**
  * @author Kristian Rosenvold
  */
 public class SimpleReportEntry
-    implements ReportEntry
+    implements TestSetReportEntry
 {
+    private final Map<String, String> systemProperties;
+
     private final String source;
 
     private final String name;
@@ -45,6 +52,11 @@ public class SimpleReportEntry
         this( source, name, null, null );
     }
 
+    public SimpleReportEntry( String source, String name, Map<String, String> systemProperties )
+    {
+        this( source, name, null, null, systemProperties );
+    }
+
     private SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter )
     {
         this( source, name, stackTraceWriter, null );
@@ -57,11 +69,11 @@ public class SimpleReportEntry
 
     public SimpleReportEntry( String source, String name, String message )
     {
-        this( source, name, null, null, message );
+        this( source, name, null, null, message, Collections.<String, String>emptyMap() );
     }
 
     protected SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed,
-                                 String message )
+                                 String message, Map<String, String> systemProperties )
     {
         if ( source == null )
         {
@@ -81,13 +93,19 @@ public class SimpleReportEntry
         this.message = message;
 
         this.elapsed = elapsed;
-    }
 
+        this.systemProperties = new ImmutableMap<String, String>( systemProperties );
+    }
 
     public SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed )
     {
-        //noinspection ThrowableResultOfMethodCallIgnored
-        this( source, name, stackTraceWriter, elapsed, safeGetMessage( stackTraceWriter ) );
+        this( source, name, stackTraceWriter, elapsed, Collections.<String, String>emptyMap() );
+    }
+
+    public SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed,
+                              Map<String, String> systemProperties )
+    {
+        this( source, name, stackTraceWriter, elapsed, safeGetMessage( stackTraceWriter ), systemProperties );
     }
 
     public static SimpleReportEntry assumption( String source, String name, String message )
@@ -191,6 +209,12 @@ public class SimpleReportEntry
     public String getNameWithGroup()
     {
         return getName();
+    }
+
+    @Override
+    public Map<String, String> getSystemProperties()
+    {
+        return systemProperties;
     }
 
     private boolean isElapsedTimeEqual( SimpleReportEntry en )

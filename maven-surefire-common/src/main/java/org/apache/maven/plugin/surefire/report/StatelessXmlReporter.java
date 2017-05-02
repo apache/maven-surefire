@@ -39,7 +39,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType;
@@ -131,10 +131,10 @@ public class StatelessXmlReporter
 
             createTestSuiteElement( ppw, testSetReportEntry, testSetStats, testSetReportEntry.elapsedTimeAsString() );
 
-            showProperties( ppw );
+            showProperties( ppw, testSetReportEntry.getSystemProperties() );
 
             // Iterate through all the test methods in the test class
-            for ( Map.Entry<String, List<WrappedReportEntry>> entry : methodRunHistoryMap.entrySet() )
+            for ( Entry<String, List<WrappedReportEntry>> entry : methodRunHistoryMap.entrySet() )
             {
                 List<WrappedReportEntry> methodEntryList = entry.getValue();
                 if ( methodEntryList == null )
@@ -458,31 +458,26 @@ public class StatelessXmlReporter
      *
      * @param xmlWriter The test suite to report to
      */
-    private static void showProperties( XMLWriter xmlWriter )
+    private static void showProperties( XMLWriter xmlWriter, Map<String, String> systemProperties )
     {
         xmlWriter.startElement( "properties" );
-
-        Properties systemProperties = System.getProperties();
-
-        if ( systemProperties != null )
+        for ( final Entry<String, String> entry : systemProperties.entrySet() )
         {
-            for ( final String key : systemProperties.stringPropertyNames() )
+            final String key = entry.getKey();
+            String value = entry.getValue();
+
+            if ( value == null )
             {
-                String value = systemProperties.getProperty( key );
-
-                if ( value == null )
-                {
-                    value = "null";
-                }
-
-                xmlWriter.startElement( "property" );
-
-                xmlWriter.addAttribute( "name", key );
-
-                xmlWriter.addAttribute( "value", extraEscape( value, true ) );
-
-                xmlWriter.endElement();
+                value = "null";
             }
+
+            xmlWriter.startElement( "property" );
+
+            xmlWriter.addAttribute( "name", key );
+
+            xmlWriter.addAttribute( "value", extraEscape( value, true ) );
+
+            xmlWriter.endElement();
         }
         xmlWriter.endElement();
     }

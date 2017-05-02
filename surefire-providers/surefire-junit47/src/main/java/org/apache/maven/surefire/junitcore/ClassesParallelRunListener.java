@@ -40,7 +40,7 @@ public class ClassesParallelRunListener
     }
 
     @Override
-    public void checkIfTestSetCanBeReported( TestSet testSetForTest )
+    protected void checkIfTestSetCanBeReported( TestSet testSetForTest )
     {
         TestSet currentlyAttached = TestSet.getThreadTestSet();
         if ( currentlyAttached != null && currentlyAttached != testSetForTest )

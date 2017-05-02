@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
 import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
 
 @SuppressWarnings( "ResultOfMethodCallIgnored" )
@@ -90,7 +91,7 @@ public class StatelessXmlReporterTest
 
         ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), getClass().getName(), 12 );
         WrappedReportEntry testSetReportEntry =
-            new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null );
+            new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null, systemProps() );
         stats.testSucceeded( testSetReportEntry );
         reporter.testSetCompleted( testSetReportEntry, stats );
 
@@ -105,7 +106,7 @@ public class StatelessXmlReporterTest
     {
         ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), TEST_ONE, 12 );
         WrappedReportEntry testSetReportEntry =
-            new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null );
+            new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null, systemProps() );
         expectedReportFile = new File( reportDir, "TEST-" + TEST_ONE + ".xml" );
 
         stats.testSucceeded( testSetReportEntry );
@@ -177,7 +178,7 @@ public class StatelessXmlReporterTest
         ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), TEST_ONE, 12 );
 
         WrappedReportEntry testSetReportEntry =
-            new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null );
+            new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null, systemProps() );
         expectedReportFile = new File( reportDir, "TEST-" + TEST_ONE + ".xml" );
 
         stats.testSucceeded( testSetReportEntry );
@@ -294,5 +295,4 @@ public class StatelessXmlReporterTest
     {
 
     }
-
 }

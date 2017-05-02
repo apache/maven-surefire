@@ -21,7 +21,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
-import org.apache.maven.plugin.surefire.util.ImmutableMap;
+import org.apache.maven.surefire.util.internal.ImmutableMap;
 import org.apache.maven.plugin.surefire.util.Relocator;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.booter.Classpath;

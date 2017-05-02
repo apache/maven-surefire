@@ -19,12 +19,14 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 
 import java.util.Map;
+
+import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
 
 /**
  * Abstract class which implements common functions.
@@ -41,7 +43,7 @@ abstract class TestSuite
 
     final void startTestSuite( RunListener reporterManager )
     {
-        ReportEntry report = new SimpleReportEntry( getClass().getName(), getSuiteName() );
+        TestSetReportEntry report = new SimpleReportEntry( getClass().getName(), getSuiteName(), systemProps() );
 
         try
         {
@@ -55,7 +57,7 @@ abstract class TestSuite
 
     final void finishTestSuite( RunListener reporterManager )
     {
-        ReportEntry report = new SimpleReportEntry( getClass().getName(), getSuiteName() );
+        SimpleReportEntry report = new SimpleReportEntry( getClass().getName(), getSuiteName(), systemProps() );
         reporterManager.testSetCompleted( report );
     }
 }

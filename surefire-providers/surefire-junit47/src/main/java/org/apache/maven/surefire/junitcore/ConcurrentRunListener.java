@@ -26,6 +26,7 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.StackTraceWriter;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import static org.apache.maven.surefire.junitcore.TestMethod.getThreadTestMethod;
@@ -70,12 +71,12 @@ public abstract class ConcurrentRunListener
     }
 
     @Override
-    public void testSetStarting( ReportEntry description )
+    public void testSetStarting( TestSetReportEntry description )
     {
     }
 
     @Override
-    public void testSetCompleted( ReportEntry result )
+    public void testSetCompleted( TestSetReportEntry result )
     {
         final RunListener reporterManager = getRunListener();
         for ( TestSet testSet : classMethodCounts.values() )

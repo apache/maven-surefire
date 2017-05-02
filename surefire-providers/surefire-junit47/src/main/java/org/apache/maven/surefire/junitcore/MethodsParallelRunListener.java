@@ -44,7 +44,7 @@ public class MethodsParallelRunListener
     }
 
     @Override
-    public void checkIfTestSetCanBeReported( TestSet testSetForTest )
+    protected void checkIfTestSetCanBeReported( TestSet testSetForTest )
     {
         synchronized ( lock )
         {

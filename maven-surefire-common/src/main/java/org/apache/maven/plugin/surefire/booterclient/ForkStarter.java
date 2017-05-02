@@ -57,7 +57,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
@@ -270,8 +269,7 @@ public class ForkStarter
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
         PropertiesWrapper props = new PropertiesWrapper( providerProperties );
         TestLessInputStream stream = builder.build();
-        Properties sysProps = startupReportConfiguration.getTestVmSystemProperties();
-        ForkClient forkClient = new ForkClient( forkedReporterFactory, sysProps, stream, log );
+        ForkClient forkClient = new ForkClient( forkedReporterFactory, stream, log );
         Thread shutdown = createImmediateShutdownHookThread( builder, providerConfiguration.getShutdown() );
         ScheduledFuture<?> ping = triggerPingTimerForShutdown( builder );
         try
@@ -347,10 +345,7 @@ public class ForkStarter
                     {
                         DefaultReporterFactory reporter = new DefaultReporterFactory( startupReportConfiguration, log );
                         defaultReporterFactories.add( reporter );
-
-                        Properties vmProps = startupReportConfiguration.getTestVmSystemProperties();
-
-                        ForkClient forkClient = new ForkClient( reporter, vmProps, testProvidingInputStream, log )
+                        ForkClient forkClient = new ForkClient( reporter, testProvidingInputStream, log )
                         {
                             @Override
                             protected void stopOnNextTest()
@@ -413,9 +408,8 @@ public class ForkStarter
                         DefaultReporterFactory forkedReporterFactory =
                             new DefaultReporterFactory( startupReportConfiguration, log );
                         defaultReporterFactories.add( forkedReporterFactory );
-                        Properties vmProps = startupReportConfiguration.getTestVmSystemProperties();
-                        ForkClient forkClient = new ForkClient( forkedReporterFactory, vmProps,
-                                                                      builder.getImmediateCommands(), log )
+                        ForkClient forkClient =
+                                new ForkClient( forkedReporterFactory, builder.getImmediateCommands(), log )
                         {
                             @Override
                             protected void stopOnNextTest()

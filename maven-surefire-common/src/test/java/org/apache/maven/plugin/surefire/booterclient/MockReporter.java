@@ -19,13 +19,15 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.TestSetReportEntry;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Internal tests use only.
@@ -66,14 +68,14 @@ public class MockReporter
     private final AtomicInteger testFailed = new AtomicInteger();
 
     @Override
-    public void testSetStarting( ReportEntry report )
+    public void testSetStarting( TestSetReportEntry report )
     {
         events.add( SET_STARTING );
         data.add( report );
     }
 
     @Override
-    public void testSetCompleted( ReportEntry report )
+    public void testSetCompleted( TestSetReportEntry report )
     {
         events.add( SET_COMPLETED );
         data.add( report );

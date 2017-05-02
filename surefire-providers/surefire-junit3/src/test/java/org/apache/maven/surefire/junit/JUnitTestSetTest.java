@@ -19,16 +19,17 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.TestSetReportEntry;
+import org.apache.maven.surefire.testset.TestSetFailedException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class JUnitTestSetTest
     extends TestCase
@@ -64,12 +65,12 @@ public class JUnitTestSetTest
         private List<ReportEntry> succeededTests = new ArrayList<ReportEntry>();
 
         @Override
-        public void testSetStarting( ReportEntry report )
+        public void testSetStarting( TestSetReportEntry report )
         {
         }
 
         @Override
-        public void testSetCompleted( ReportEntry report )
+        public void testSetCompleted( TestSetReportEntry report )
         {
         }
 

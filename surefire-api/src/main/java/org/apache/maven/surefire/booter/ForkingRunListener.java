@@ -19,9 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.io.PrintStream;
-import java.util.Properties;
-
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLoggerUtils;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
@@ -31,9 +28,15 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
+import org.apache.maven.surefire.report.TestSetReportEntry;
+
+import java.io.PrintStream;
+import java.util.Map.Entry;
 
 import static java.lang.Integer.toHexString;
 import static java.nio.charset.Charset.defaultCharset;
+import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
+import static org.apache.maven.surefire.util.internal.ObjectUtils.useNonNull;
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 import static org.apache.maven.surefire.util.internal.StringUtils.escapeBytesToPrintable;
 import static org.apache.maven.surefire.util.internal.StringUtils.escapeToPrintable;
@@ -132,13 +135,13 @@ public class ForkingRunListener
     }
 
     @Override
-    public void testSetStarting( ReportEntry report )
+    public void testSetStarting( TestSetReportEntry report )
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_TESTSET_STARTING, report, testSetChannelId ) );
     }
 
     @Override
-    public void testSetCompleted( ReportEntry report )
+    public void testSetCompleted( TestSetReportEntry report )
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_TESTSET_COMPLETED, report, testSetChannelId ) );
     }
@@ -187,15 +190,10 @@ public class ForkingRunListener
 
     void sendProps()
     {
-        Properties systemProperties = System.getProperties();
-
-        if ( systemProperties != null )
+        for ( Entry<String, String> entry : systemProps().entrySet() )
         {
-            for ( final String key : systemProperties.stringPropertyNames() )
-            {
-                String value = systemProperties.getProperty( key );
-                encodeAndWriteToTarget( toPropertyString( key, value == null ? "null" : value ) );
-            }
+            String value = entry.getValue();
+            encodeAndWriteToTarget( toPropertyString( entry.getKey(), useNonNull( value, "null" ) ) );
         }
     }
 

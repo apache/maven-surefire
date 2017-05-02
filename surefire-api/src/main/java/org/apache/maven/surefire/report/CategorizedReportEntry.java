@@ -19,6 +19,9 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+import java.util.Collections;
+import java.util.Map;
+
 /**
  * @author Kristian Rosenvold
  */
@@ -47,16 +50,23 @@ public class CategorizedReportEntry
     public CategorizedReportEntry( String source, String name, String group, StackTraceWriter stackTraceWriter,
                                    Integer elapsed, String message )
     {
-        super( source, name, stackTraceWriter, elapsed, message );
+        this( source, name, group, stackTraceWriter, elapsed, message, Collections.<String, String>emptyMap() );
+    }
+
+    public CategorizedReportEntry( String source, String name, String group, StackTraceWriter stackTraceWriter,
+                                   Integer elapsed, String message, Map<String, String> systemProperties )
+    {
+        super( source, name, stackTraceWriter, elapsed, message, systemProperties );
         this.group = group;
     }
 
-    public static ReportEntry reportEntry( String source, String name, String group, StackTraceWriter stackTraceWriter,
-                                           Integer elapsed, String message )
+    public static TestSetReportEntry reportEntry( String source, String name, String group,
+                                                  StackTraceWriter stackTraceWriter, Integer elapsed, String message,
+                                                  Map<String, String> systemProperties )
     {
         return group != null
-            ? new CategorizedReportEntry( source, name, group, stackTraceWriter, elapsed, message )
-            : new SimpleReportEntry( source, name, stackTraceWriter, elapsed, message );
+            ? new CategorizedReportEntry( source, name, group, stackTraceWriter, elapsed, message, systemProperties )
+            : new SimpleReportEntry( source, name, stackTraceWriter, elapsed, message, systemProperties );
     }
 
     @Override

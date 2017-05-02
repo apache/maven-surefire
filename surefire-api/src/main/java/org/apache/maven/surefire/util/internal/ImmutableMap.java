@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.util;
+package org.apache.maven.surefire.util.internal;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,14 +20,15 @@ package org.apache.maven.plugin.surefire.util;
  */
 
 import java.util.AbstractMap;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static java.util.Collections.unmodifiableSet;
+
 /**
  * Copies input map in {@link #ImmutableMap(Map) constructor}, and Entries are linked and thread-safe.
- * The map is immutable.
+ * The map is immutable with linear list of entries.
  *
  * @param <K> key
  * @param <V> value
@@ -68,7 +69,7 @@ public final class ImmutableMap<K, V>
             entries.add( node );
             node = node.next;
         }
-        return Collections.<Entry<K, V>>unmodifiableSet( entries );
+        return unmodifiableSet( entries );
     }
 
     static final class Node<K, V>

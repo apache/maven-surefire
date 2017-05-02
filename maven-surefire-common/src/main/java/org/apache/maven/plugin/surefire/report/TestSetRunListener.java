@@ -29,6 +29,7 @@ import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
@@ -144,7 +145,7 @@ public class TestSetRunListener
     }
 
     @Override
-    public void testSetStarting( ReportEntry report )
+    public void testSetStarting( TestSetReportEntry report )
     {
         detailsForThis.testSetStart();
         consoleReporter.testSetStarting( report );
@@ -158,7 +159,7 @@ public class TestSetRunListener
     }
 
     @Override
-    public void testSetCompleted( ReportEntry report )
+    public void testSetCompleted( TestSetReportEntry report )
     {
         final WrappedReportEntry wrap = wrapTestSet( report );
         final List<String> testResults =
@@ -262,11 +263,11 @@ public class TestSetRunListener
         return new WrappedReportEntry( other, reportEntryType, estimatedElapsed, testStdOut, testStdErr );
     }
 
-    private WrappedReportEntry wrapTestSet( ReportEntry other )
+    private WrappedReportEntry wrapTestSet( TestSetReportEntry other )
     {
         return new WrappedReportEntry( other, null, other.getElapsed() != null
             ? other.getElapsed()
-            : detailsForThis.getElapsedSinceTestSetStart(), testStdOut, testStdErr );
+            : detailsForThis.getElapsedSinceTestSetStart(), testStdOut, testStdErr, other.getSystemProperties() );
     }
 
     public void close()

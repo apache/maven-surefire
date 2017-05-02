@@ -25,7 +25,6 @@ import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
@@ -35,6 +34,10 @@ import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
+
+import java.util.Map;
+
+import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
 
 /**
  * @author Kristian Rosenvold
@@ -95,8 +98,8 @@ public class JUnit3Provider
         {
             final RunListener reporter = reporterFactory.createReporter();
             ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
-
-            final String smClassName = System.getProperty( "surefire.security.manager" );
+            final Map<String, String> systemProperties = systemProps();
+            final String smClassName = systemProperties.get( "surefire.security.manager" );
             if ( smClassName != null )
             {
                 SecurityManager securityManager =
@@ -107,7 +110,7 @@ public class JUnit3Provider
             for ( Class<?> clazz : testsToRun )
             {
                 SurefireTestSet surefireTestSet = createTestSet( clazz );
-                executeTestSet( surefireTestSet, reporter, testClassLoader );
+                executeTestSet( surefireTestSet, reporter, testClassLoader, systemProperties );
             }
 
         }
@@ -126,10 +129,11 @@ public class JUnit3Provider
             : new PojoTestSet( clazz );
     }
 
-    private void executeTestSet( SurefireTestSet testSet, RunListener reporter, ClassLoader classLoader )
+    private void executeTestSet( SurefireTestSet testSet, RunListener reporter, ClassLoader classLoader,
+                                 Map<String, String> systemProperties )
         throws TestSetFailedException
     {
-        ReportEntry report = new SimpleReportEntry( this.getClass().getName(), testSet.getName() );
+        SimpleReportEntry report = new SimpleReportEntry( getClass().getName(), testSet.getName(), systemProperties );
 
         reporter.testSetStarting( report );
 

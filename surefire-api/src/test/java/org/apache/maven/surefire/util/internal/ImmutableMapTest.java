@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.util;
+package org.apache.maven.surefire.util.internal;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.util;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.util.ImmutableMap.Node;
+import org.apache.maven.surefire.util.internal.ImmutableMap.Node;
 import org.junit.Before;
 import org.junit.Test;
 

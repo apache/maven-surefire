@@ -27,22 +27,26 @@ import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.StackTraceWriter;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.ByteBuffer;
-import java.util.Properties;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.lang.Integer.decode;
 import static java.lang.System.currentTimeMillis;
+import static java.util.Collections.unmodifiableMap;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_BYE;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_CONSOLE;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_DEBUG;
@@ -83,7 +87,7 @@ public class ForkClient
 
     private final DefaultReporterFactory defaultReporterFactory;
 
-    private final Properties testVmSystemProperties;
+    private final Map<String, String> testVmSystemProperties = new ConcurrentHashMap<String, String>();
 
     private final NotifiableTestStream notifiableTestStream;
 
@@ -108,11 +112,10 @@ public class ForkClient
     // prevents from printing same warning
     private boolean printedErrorStream;
 
-    public ForkClient( DefaultReporterFactory defaultReporterFactory, Properties testVmSystemProperties,
+    public ForkClient( DefaultReporterFactory defaultReporterFactory,
                        NotifiableTestStream notifiableTestStream, ConsoleLogger log )
     {
         this.defaultReporterFactory = defaultReporterFactory;
-        this.testVmSystemProperties = testVmSystemProperties;
         this.notifiableTestStream = notifiableTestStream;
         this.log = log;
     }
@@ -210,7 +213,7 @@ public class ForkClient
             case BOOTERCODE_TESTSET_COMPLETED:
                 testsInProgress.clear();
 
-                getTestSetReporter().testSetCompleted( createReportEntry( remaining ) );
+                getTestSetReporter().testSetCompleted( createReportEntry( remaining, testVmSystemProperties ) );
                 break;
             case BOOTERCODE_TEST_STARTING:
                 ReportEntry reportEntry = createReportEntry( remaining );
@@ -254,10 +257,7 @@ public class ForkClient
                 StringBuilder value = new StringBuilder();
                 unescapeString( key, remaining.substring( 0, keyEnd ) );
                 unescapeString( value, remaining.substring( keyEnd + 1 ) );
-                synchronized ( testVmSystemProperties )
-                {
-                    testVmSystemProperties.put( key.toString(), value.toString() );
-                }
+                testVmSystemProperties.put( key.toString(), value.toString() );
                 break;
             case BOOTERCODE_STDOUT:
                 writeTestOutput( remaining, true );
@@ -360,7 +360,12 @@ public class ForkClient
         return unescape( remaining );
     }
 
-    private ReportEntry createReportEntry( String untokenized )
+    private TestSetReportEntry createReportEntry( String untokenized )
+    {
+        return createReportEntry( untokenized, Collections.<String, String>emptyMap() );
+    }
+
+    private TestSetReportEntry createReportEntry( String untokenized, Map<String, String> systemProperties )
     {
         StringTokenizer tokens = new StringTokenizer( untokenized, "," );
         try
@@ -374,7 +379,7 @@ public class ForkClient
             final StackTraceWriter stackTraceWriter =
                     tokens.hasMoreTokens() ? deserializeStackTraceWriter( tokens ) : null;
 
-            return reportEntry( source, name, group, stackTraceWriter, elapsed, message );
+            return reportEntry( source, name, group, stackTraceWriter, elapsed, message, systemProperties );
         }
         catch ( RuntimeException e )
         {
@@ -401,6 +406,11 @@ public class ForkClient
         StringBuilder stringBuffer = new StringBuilder( source.length() );
         unescapeString( stringBuffer, source );
         return stringBuffer.toString();
+    }
+
+    public final Map<String, String> getTestVmSystemProperties()
+    {
+        return unmodifiableMap( testVmSystemProperties );
     }
 
     /**
