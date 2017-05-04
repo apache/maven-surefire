@@ -131,7 +131,7 @@ public abstract class ConcurrentRunListener
         final TestMethod testMethod = getOrCreateThreadAttachedTestMethod( failure );
         if ( testMethod != null )
         {
-            testMethod.testIgnored( failure );
+            testMethod.testAssumption( failure );
             testMethod.detachFromCurrentThread();
         }
     }

@@ -52,7 +52,9 @@ class TestMethod
 
     private volatile ReportEntry testError;
 
-    private volatile ReportEntry ignored;
+    private volatile ReportEntry testIgnored;
+
+    private volatile ReportEntry testAssumption;
 
     TestMethod( ReportEntry description, TestSet testSet )
     {
@@ -68,7 +70,7 @@ class TestMethod
 
     void testIgnored( ReportEntry description )
     {
-        ignored = description;
+        testIgnored = description;
         setEndTime();
     }
 
@@ -81,6 +83,12 @@ class TestMethod
     void testError( ReportEntry failure )
     {
         this.testError = failure;
+        setEndTime();
+    }
+
+    void testAssumption( ReportEntry failure )
+    {
+        this.testAssumption = failure;
         setEndTime();
     }
 
@@ -106,9 +114,9 @@ class TestMethod
 
     void replay( RunListener reporter )
     {
-        if ( ignored != null )
+        if ( testIgnored != null )
         {
-            reporter.testSkipped( createReportEntry( ignored ) );
+            reporter.testSkipped( createReportEntry( testIgnored ) );
         }
         else
         {
@@ -127,6 +135,10 @@ class TestMethod
             else if ( testError != null )
             {
                 reporter.testError( createReportEntry( testError ) );
+            }
+            else if ( testAssumption != null )
+            {
+                reporter.testAssumptionFailure( createReportEntry( testAssumption ) );
             }
             else
             {
