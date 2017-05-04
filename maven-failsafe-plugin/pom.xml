@@ -96,6 +96,12 @@
               <sourceRoot>${project.build.directory}/generated-sources/jaxb</sourceRoot>
               <xsdOptions>
                 <xsdOption>
+                  <!--
+                  Due to historical reasons and due to both Surefire and Failsafe Plugin have very similar project
+                  pages (mvn site), the Maven Site for both projects is generated upon one common location in
+                  maven-surefire-plugin. The XSD files are located in maven-surefire-plugin project. Do NOT duplicate
+                  the XSD in to maven-failsafe-plugin.
+                  -->
                   <xsd>../maven-surefire-plugin/src/site/resources/xsd/failsafe-summary.xsd</xsd>
                   <bindingFile>../maven-surefire-plugin/src/site/resources/xsd/failsafe-summary.xjb</bindingFile>
                   <packagename>org.apache.maven.plugin.failsafe.xmlsummary</packagename>
