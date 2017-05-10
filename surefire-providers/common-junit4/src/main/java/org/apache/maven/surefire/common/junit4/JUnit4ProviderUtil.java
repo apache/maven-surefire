@@ -19,19 +19,14 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.apache.maven.surefire.testset.TestSetFailedException;
-
 import org.junit.runner.Description;
+import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.Failure;
 
-import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createRequest;
 import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 import static org.junit.runner.Description.TEST_MECHANISM;
 
@@ -44,74 +39,30 @@ import static org.junit.runner.Description.TEST_MECHANISM;
  */
 public final class JUnit4ProviderUtil
 {
-
     private JUnit4ProviderUtil()
     {
         throw new IllegalStateException( "Cannot instantiate." );
     }
 
     /**
-     * Organize all the failures in previous run into a map between test classes and corresponding failing test methods
-     *
-     * @param allFailures all the failures in previous run
-     * @param testClassLoader ClassLoader used for test classes
-     * @return a map between failing test classes and their corresponding failing test methods
-     */
-    public static Map<Class<?>, Set<String>> generateFailingTests( List<Failure> allFailures,
-                                                                   ClassLoader testClassLoader )
-        throws TestSetFailedException
-    {
-        Map<Class<?>, Set<String>> testClassMethods = new HashMap<Class<?>, Set<String>>();
-        Set<ClassMethod> failingTests = generateFailingTests( allFailures );
-        for ( ClassMethod classMethod: failingTests )
-        {
-            try
-            {
-                Class testClassObj = Class.forName( classMethod.getClazz(), false, testClassLoader );
-                Set<String> failingMethods = testClassMethods.get( testClassObj );
-                if ( failingMethods == null )
-                {
-                    failingMethods = new HashSet<String>();
-                    testClassMethods.put( testClassObj, failingMethods );
-                }
-                failingMethods.add( classMethod.getMethod() );
-            }
-            catch ( ClassNotFoundException e )
-            {
-                throw new TestSetFailedException( "Unable to create test class '" + classMethod.getClazz() + "'", e );
-            }
-        }
-        return testClassMethods;
-    }
-
-    /**
-     * Get all test methods from a list of Failures
+     * Get all descriptions from a list of Failures
      *
      * @param allFailures the list of failures for a given test class
-     * @return the list of test methods
+     * @return the list of descriptions
      */
-    public static Set<ClassMethod> generateFailingTests( List<Failure> allFailures )
+    public static Set<Description> generateFailingTestDescriptions( List<Failure> allFailures )
     {
-        Set<ClassMethod> failingMethods = new HashSet<ClassMethod>();
+        Set<Description> failingTestDescriptions = new HashSet<Description>();
 
         for ( Failure failure : allFailures )
         {
             Description description = failure.getDescription();
             if ( description.isTest() && !isFailureInsideJUnitItself( description ) )
             {
-                ClassMethod classMethod = cutTestClassAndMethod( description );
-                if ( classMethod.isValid() )
-                {
-                    failingMethods.add( classMethod );
-                }
+                failingTestDescriptions.add( description );
             }
         }
-        return failingMethods;
-    }
-
-    public static Description createSuiteDescription( Collection<Class<?>> classes )
-    {
-        return createRequest( classes.toArray( new Class[classes.size()] ) ).getRunner().getDescription();
+        return failingTestDescriptions;
     }
 
     public static boolean isFailureInsideJUnitItself( Description failure )
@@ -153,4 +104,8 @@ public final class JUnit4ProviderUtil
         return isBlank( s ) ? null : s;
     }
 
+    public static Filter createMatchAnyDescriptionFilter( Iterable<Description> descriptions )
+    {
+        return new MatchDescriptions( descriptions );
+    }
 }

@@ -39,16 +39,15 @@ import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.ScannerFilter;
 import org.apache.maven.surefire.util.TestsToRun;
+import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
-import org.junit.runner.notification.Failure;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.maven.surefire.booter.CommandReader.getReader;
-import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTests;
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTestDescriptions;
 import static org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory.createCustomListeners;
 import static org.apache.maven.surefire.common.junit4.Notifier.pureNotifier;
 import static org.apache.maven.surefire.junitcore.ConcurrentRunListener.createInstance;
@@ -167,12 +166,11 @@ public class JUnitCoreProvider
                 JUnitCoreWrapper rerunCore = new JUnitCoreWrapper( rerunNotifier, jUnitCoreParameters, consoleStream );
                 for ( int i = 0; i < rerunFailingTestsCount && !testFailureListener.getAllFailures().isEmpty(); i++ )
                 {
-                    List<Failure> failures = testFailureListener.getAllFailures();
-                    Map<Class<?>, Set<String>> failingTests = generateFailingTests( failures, testClassLoader );
+                    Set<Description> failures = generateFailingTestDescriptions( testFailureListener.getAllFailures() );
                     testFailureListener.reset();
                     FilterFactory filterFactory = new FilterFactory( testClassLoader );
-                    Filter failingMethodsFilter = filterFactory.createFailingMethodFilter( failingTests );
-                    rerunCore.execute( testsToRun, failingMethodsFilter );
+                    Filter failureDescriptionFilter = filterFactory.createMatchAnyDescriptionFilter( failures );
+                    rerunCore.execute( testsToRun, failureDescriptionFilter );
                 }
             }
         }

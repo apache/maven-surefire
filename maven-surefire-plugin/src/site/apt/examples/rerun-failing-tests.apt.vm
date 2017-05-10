@@ -140,6 +140,11 @@ mvn -D${thisPlugin.toLowerCase()}.rerunFailingTestsCount=2 test
   The provider <<<surefire-junit4>>> executes individual test class and consequently re-runs failed tests.
   The provider <<<surefire-junit47>>> executes all test classes and re-runs failed tests afterwards.
 
+* Re-run execution in Cucumber JVM
+
+  Since of 2.21.0 the provider <<<surefire-junit47>>> can rerun scenarios created by <<cucumber-jvm>>
+  2.0.0 and higher.
+
 * Re-run and skip execution
 
   Since of 2.19.1 you can use parameters <<<skipAfterFailureCount>>> and <<<rerunFailingTestsCount>>> together.

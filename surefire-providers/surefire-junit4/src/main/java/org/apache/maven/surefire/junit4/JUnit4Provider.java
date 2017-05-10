@@ -22,7 +22,6 @@ package org.apache.maven.surefire.junit4;
 import org.apache.maven.surefire.booter.Command;
 import org.apache.maven.surefire.booter.CommandListener;
 import org.apache.maven.surefire.booter.CommandReader;
-import org.apache.maven.surefire.common.junit4.ClassMethod;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.common.junit4.JUnitTestFailureListener;
@@ -46,7 +45,6 @@ import org.junit.runner.Request;
 import org.junit.runner.Result;
 import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
-import org.junit.runner.notification.RunNotifier;
 import org.junit.runner.notification.StoppedByUserException;
 
 import java.util.Collection;
@@ -55,7 +53,9 @@ import java.util.Set;
 import static java.lang.reflect.Modifier.isAbstract;
 import static java.lang.reflect.Modifier.isInterface;
 import static org.apache.maven.surefire.booter.CommandReader.getReader;
-import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTests;
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.createMatchAnyDescriptionFilter;
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTestDescriptions;
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.isFailureInsideJUnitItself;
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createDescription;
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createIgnored;
 import static org.apache.maven.surefire.common.junit4.JUnit4RunListener.rethrowAnyTestMechanismFailures;
@@ -67,7 +67,6 @@ import static org.apache.maven.surefire.testset.TestListResolver.optionallyWildc
 import static org.apache.maven.surefire.util.TestsToRun.fromClass;
 import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
 import static org.junit.runner.Request.aClass;
-import static org.junit.runner.Request.method;
 
 /**
  * @author Kristian Rosenvold
@@ -261,7 +260,6 @@ public class JUnit4Provider
     }
 
     private void executeWithRerun( Class<?> clazz, Notifier notifier )
-        throws TestSetFailedException
     {
         JUnitTestFailureListener failureListener = new JUnitTestFailureListener();
         notifier.addListener( failureListener );
@@ -286,12 +284,10 @@ public class JUnit4Provider
                 notifier.copyListenersTo( rerunNotifier );
                 for ( int i = 0; i < rerunFailingTestsCount && !failureListener.getAllFailures().isEmpty(); i++ )
                 {
-                    Set<ClassMethod> failedTests = generateFailingTests( failureListener.getAllFailures() );
+                    Set<Description> failures = generateFailingTestDescriptions( failureListener.getAllFailures() );
                     failureListener.reset();
-                    if ( !failedTests.isEmpty() )
-                    {
-                        executeFailedMethod( rerunNotifier, failedTests );
-                    }
+                    Filter failureDescriptionFilter = createMatchAnyDescriptionFilter( failures );
+                    execute( clazz, rerunNotifier, failureDescriptionFilter );
                 }
             }
         }
@@ -371,24 +367,6 @@ public class JUnit4Provider
         }
     }
 
-    private void executeFailedMethod( RunNotifier notifier, Set<ClassMethod> failedMethods )
-        throws TestSetFailedException
-    {
-        for ( ClassMethod failedMethod : failedMethods )
-        {
-            try
-            {
-                Class<?> methodClass = Class.forName( failedMethod.getClazz(), true, testClassLoader );
-                String methodName = failedMethod.getMethod();
-                method( methodClass, methodName ).getRunner().run( notifier );
-            }
-            catch ( ClassNotFoundException e )
-            {
-                throw new TestSetFailedException( "Unable to create test class '" + failedMethod.getClazz() + "'", e );
-            }
-        }
-    }
-
     /**
      * JUnit error: test count includes one test-class as a suite which has filtered out all children.
      * Then the child test has a description "initializationError0(org.junit.runner.manipulation.Filter)"
@@ -422,6 +400,10 @@ public class JUnit4Provider
 
     private static boolean hasFilteredOutAllChildren( Description description )
     {
+        if ( isFailureInsideJUnitItself( description ) )
+        {
+            return true;
+        }
         String name = description.getDisplayName();
         // JUnit 4.0: initializationError0; JUnit 4.12: initializationError.
         if ( name == null )

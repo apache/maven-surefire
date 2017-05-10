@@ -20,14 +20,11 @@ package org.apache.maven.surefire.common.junit4;
  */
 
 import junit.framework.TestCase;
-import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.*;
@@ -38,9 +35,9 @@ import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.*;
 public class JUnit4ProviderUtilTest
     extends TestCase
 {
-    public void testGenerateFailingTests() throws TestSetFailedException
+    public void testGenerateFailingTestDescriptions()
     {
-        List<Failure> failures = new ArrayList<Failure>(  );
+        List<Failure> failures = new ArrayList<Failure>();
 
         Description test1Description = Description.createTestDescription( T1.class, "testOne" );
         Description test2Description = Description.createTestDescription( T1.class, "testTwo" );
@@ -54,21 +51,14 @@ public class JUnit4ProviderUtilTest
         failures.add( new Failure( test4Description, new AssertionError() ) );
         failures.add( new Failure( test5Description, new RuntimeException() ) );
 
-        Map<Class<?>, Set<String>> result =  generateFailingTests( failures, getClass().getClassLoader() );
+        Set<Description> result = generateFailingTestDescriptions( failures );
 
-        assertEquals( 2, result.size() );
-        Set<String> resultForT1 = result.get( T1.class );
-        Set<String> resultForT2 = result.get( T2.class );
+        assertEquals( 4, result.size() );
 
-        Set<String> expectedResultForT1 = new HashSet<String>();
-        expectedResultForT1.add( "testOne" );
-        expectedResultForT1.add( "testTwo" );
-        Set<String> expectedResultForT2 = new HashSet<String>();
-        expectedResultForT2.add( "testThree" );
-        expectedResultForT2.add( "testFour" );
-
-        assertEquals( expectedResultForT1, resultForT1 );
-        assertEquals( expectedResultForT2, resultForT2 );
+        assertTrue( result.contains( test1Description) );
+        assertTrue( result.contains( test2Description) );
+        assertTrue( result.contains( test3Description) );
+        assertTrue( result.contains( test4Description) );
     }
 
     public void testIllegalTestDescription$NegativeTest()
@@ -97,12 +87,12 @@ public class JUnit4ProviderUtilTest
         assertEquals( T1.class.getName(), classMethod.getClazz() );
     }
 
-    class T1
+    private static class T1
     {
 
     }
 
-    class T2
+    private static class T2
     {
 
     }

@@ -1,0 +1,115 @@
+ ------
+ Using Cucumber
+ ------
+ M.P. Korstanje <rien.korstanje@gmail.com>
+ ------
+ 2010-10-10
+ ------
+ 
+ ~~ Licensed to the Apache Software Foundation (ASF) under one
+ ~~ or more contributor license agreements.  See the NOTICE file
+ ~~ distributed with this work for additional information
+ ~~ regarding copyright ownership.  The ASF licenses this file
+ ~~ to you under the Apache License, Version 2.0 (the
+ ~~ "License"); you may not use this file except in compliance
+ ~~ with the License.  You may obtain a copy of the License at
+ ~~
+ ~~   http://www.apache.org/licenses/LICENSE-2.0
+ ~~
+ ~~ Unless required by applicable law or agreed to in writing,
+ ~~ software distributed under the License is distributed on an
+ ~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~~ KIND, either express or implied.  See the License for the
+ ~~ specific language governing permissions and limitations
+ ~~ under the License.
+
+ ~~ NOTE: For help with the syntax of this file, see:
+ ~~ http://maven.apache.org/doxia/references/apt-format.html 
+
+Using Cucumber with JUnit
+
+* Configuring Cucumber JUnit
+
+  To get started with Cucumber, you need to add the required version of Cucumber JUnit to your project:
+
++---+
+ <dependencies>
+   [...]
+     <dependency>
+         <groupId>io.cucumber</groupId>
+         <artifactId>cucumber-junit</artifactId>
+         <version>${cucumber.version}</version>
+         <scope>test</scope>
+     </dependency>
+   [...]
+ </dependencies>
++---+
+
+ Then create an empty class that uses the Cucumber JUnit runner.
+
+#{if}(${project.artifactId}=="maven-surefire-plugin")
+
++---+
+package org.sample.cucumber;
+
+import org.junit.runner.RunWith;
+
+import cucumber.api.CucumberOptions;
+import cucumber.api.junit.Cucumber;
+
+@RunWith( Cucumber.class )
+public class RunCucumberTest
+{
+  [...]
+}
++---+
+
+#{else}
+
++---+
+package org.sample.cucumber;
+
+import org.junit.runner.RunWith;
+
+import cucumber.api.CucumberOptions;
+import cucumber.api.junit.Cucumber;
+
+@RunWith( Cucumber.class )
+public class RunCucumberIT
+{
+  [...]
+}
++---+
+
+#{end}
+
+  This will execute all scenarios in the package of the runner. By default a glue code is assumed to be in the same
+  package. The <<<@CucumberOptions>>> annotation can be used to provide additional configuration of Cucumber.
+
+#{if}(${project.artifactId}=="maven-surefire-plugin")
+  Note that in this example the BDD scenarios are executed by the ${thisPlugin} Plugin in the <<<test>>> phase of the
+  build lifecycle.
+
++---+
+mvn test
++---+
+
+#{else}
+  Note that in this example the BDD scenarios are executed by the ${thisPlugin} Plugin in the <<<integration-test>>>
+  phase of the build lifecycle. The ${thisPlugin} Plugin can be invoked by calling the <<<verify>>> phase.
+
++---+
+mvn verify
++---+
+#{end}
+
+* Using JUnit Rules
+
+  The Cucumber supports JUnit annotations <<<@ClassRule>>>, <<<@BeforeClass>>> and <<<@AfterClass>>>. These are
+  invoked around the suite of features. Using these is not recommended as it limits the portability between different
+  runners. Instead it is recommended to use Cucumbers `Before` and `After` hooks to setup scaffolding.
+
+* Using other JUnit features
+
+  The Cucumber runner acts like a suite of a JUnit tests. As such other JUnit features such as Categories, Custom JUnit
+  Listeners and Reporters and re-running failed tests can all be expected to work.
