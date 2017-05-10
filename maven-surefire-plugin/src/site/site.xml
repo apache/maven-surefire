@@ -41,6 +41,7 @@
       <item name="Using TestNG" href="examples/testng.html"/>
       <item name="Using JUnit" href="examples/junit.html"/>
       <item name="Using POJO Tests" href="examples/pojo-test.html"/>
+      <item name="Using Cucumber" href="examples/cucumber.html"/>
       <item name="Skipping Tests" href="examples/skipping-tests.html"/>
       <item name="Skip After Failure" href="examples/skip-after-failure.html"/>
       <item name="Inclusions and Exclusions of Tests" href="examples/inclusion-exclusion.html"/>

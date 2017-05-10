@@ -19,7 +19,6 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,7 +30,6 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 
-import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createRequest;
 import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 import static org.junit.runner.Description.TEST_MECHANISM;
 
@@ -109,9 +107,26 @@ public final class JUnit4ProviderUtil
         return failingMethods;
     }
 
-    public static Description createSuiteDescription( Collection<Class<?>> classes )
+    /**
+     * Get all descriptions from a list of Failures
+     *
+     * @param allFailures the list of failures for a given test class
+     * @return the list of descriptions
+     */
+    public static Set<Description> generateFailingTestDescriptions( List<Failure> allFailures )
     {
-        return createRequest( classes.toArray( new Class[classes.size()] ) ).getRunner().getDescription();
+        Set<Description> failingTestDescriptions = new HashSet<Description>();
+
+        for ( Failure failure : allFailures )
+        {
+            Description description = failure.getDescription();
+            if ( description.isTest() && !isFailureInsideJUnitItself( description ) )
+            {
+
+                failingTestDescriptions.add( description );
+            }
+        }
+        return failingTestDescriptions;
     }
 
     public static boolean isFailureInsideJUnitItself( Description failure )
