@@ -128,6 +128,7 @@ public class StatelessXmlReporter
         {
             XMLWriter ppw = new PrettyPrintXMLWriter( fw );
             ppw.setEncoding( StringUtils.UTF_8.name() );
+            ppw.setsetDocType( "testsuite" );
 
             createTestSuiteElement( ppw, testSetReportEntry, testSetStats, testSetReportEntry.elapsedTimeAsString() );
 
