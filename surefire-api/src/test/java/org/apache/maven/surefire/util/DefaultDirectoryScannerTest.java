@@ -37,7 +37,6 @@ public class DefaultDirectoryScannerTest
     public void testLocateTestClasses()
         throws IOException, TestSetFailedException
     {
-        System.out.println( "jdk9path=" + System.getProperty( "jdk9path" ) );
         // use target as people can configure ide to compile in an other place than maven
         File baseDir = new File( new File( "target" ).getCanonicalPath() );
         List<String> include = new ArrayList<String>();
