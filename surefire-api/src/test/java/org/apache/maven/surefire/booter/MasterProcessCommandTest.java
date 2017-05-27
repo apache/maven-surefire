@@ -157,4 +157,20 @@ public class MasterProcessCommandTest
         assertThat( command.getCommandType(), is( RUN_CLASS ) );
         assertThat( command.getData(), is( "pkg.Test" ) );
     }
+
+    public void testShouldDecodeTwoCommands() throws IOException
+    {
+        byte[] cmd1 = BYE_ACK.encode();
+        byte[] cmd2 = NOOP.encode();
+        byte[] stream = new byte[cmd1.length + cmd2.length];
+        System.arraycopy( cmd1, 0, stream, 0, cmd1.length );
+        System.arraycopy( cmd2, 0, stream, cmd1.length, cmd2.length );
+        DataInputStream is = new DataInputStream( new ByteArrayInputStream( stream ) );
+        Command bye = decode( is );
+        assertNotNull( bye );
+        assertThat( bye.getCommandType(), is( BYE_ACK ) );
+        Command noop = decode( is );
+        assertNotNull( noop );
+        assertThat( noop.getCommandType(), is( NOOP ) );
+    }
 }
