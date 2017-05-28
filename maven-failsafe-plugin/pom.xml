@@ -105,6 +105,10 @@
                   <xsd>../maven-surefire-plugin/src/site/resources/xsd/failsafe-summary.xsd</xsd>
                   <bindingFile>../maven-surefire-plugin/src/site/resources/xsd/failsafe-summary.xjb</bindingFile>
                   <packagename>org.apache.maven.plugin.failsafe.xmlsummary</packagename>
+                  <extensionArgs>
+                    <arg>-encoding</arg>
+                    <arg>${project.build.sourceEncoding}</arg>
+                  </extensionArgs>
                 </xsdOption>
               </xsdOptions>
             </configuration>
