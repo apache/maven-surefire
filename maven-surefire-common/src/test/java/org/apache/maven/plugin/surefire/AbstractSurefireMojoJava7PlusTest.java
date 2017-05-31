@@ -636,5 +636,17 @@ public class AbstractSurefireMojoJava7PlusTest
         {
             return null;
         }
+
+        @Override
+        public File getSystemPropertiesFile()
+        {
+            return null;
+        }
+
+        @Override
+        public void setSystemPropertiesFile( File systemPropertiesFile )
+        {
+
+        }
     }
 }

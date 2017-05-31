@@ -2126,6 +2126,18 @@ public class AbstractSurefireMojoTest
             return new DefaultArtifact( "org.apache.maven.surefire", "maven-surefire-plugin", createFromVersion( "1" ),
                     null, "jar", null, mock( ArtifactHandler.class ) );
         }
+
+        @Override
+        public File getSystemPropertiesFile()
+        {
+            return null;
+        }
+
+        @Override
+        public void setSystemPropertiesFile( File systemPropertiesFile )
+        {
+
+        }
     }
 
     private static File mockFile( String absolutePath )
@@ -2167,5 +2179,6 @@ public class AbstractSurefireMojoTest
             }
         }
         return new AR();
+
     }
 }

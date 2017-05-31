@@ -767,5 +767,17 @@ public class MojoMocklessTest
         {
             return projectTestArtifacts;
         }
+
+        @Override
+        public File getSystemPropertiesFile()
+        {
+            return null;
+        }
+
+        @Override
+        public void setSystemPropertiesFile( File systemPropertiesFile )
+        {
+
+        }
     }
 }

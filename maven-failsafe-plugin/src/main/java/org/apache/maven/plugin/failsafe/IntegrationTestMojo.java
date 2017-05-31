@@ -441,6 +441,9 @@ public class IntegrationTestMojo
     @Parameter( property = "failsafe.enableProcessChecker" )
     private String enableProcessChecker;
 
+    @Parameter( property = "failsafe.systemPropertiesFile" )
+    private File systemPropertiesFile;
+
     @Override
     protected int getRerunFailingTestsCount()
     {
@@ -796,6 +799,18 @@ public class IntegrationTestMojo
     {
         checksum.add( skipITs );
         checksum.add( summaryFile );
+    }
+
+    @Override
+    public File getSystemPropertiesFile()
+    {
+        return systemPropertiesFile;
+    }
+
+    @Override
+    public void setSystemPropertiesFile( File systemPropertiesFile )
+    {
+        this.systemPropertiesFile = systemPropertiesFile;
     }
 
     @Override

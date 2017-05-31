@@ -23,6 +23,8 @@ import junit.framework.TestCase;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.surefire.suite.RunResult;
 
+import java.io.File;
+
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
@@ -103,5 +105,13 @@ public class SurefirePluginTest extends TestCase
         assertThat( plugin.getExcludedEnvironmentVariables() )
                 .hasSize( 2 )
                 .contains( "ABC", "KLM" );
+    }
+
+    public void testShouldGetPropertyFile()
+    {
+        SurefirePlugin plugin = new SurefirePlugin();
+        plugin.setSystemPropertiesFile( new File( "testShouldGetPropertyFile" ) );
+        assertThat( plugin.getSystemPropertiesFile() )
+                .isEqualTo( new File( "testShouldGetPropertyFile" ) );
     }
 }
