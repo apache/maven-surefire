@@ -422,6 +422,9 @@ public class SurefirePlugin
     @Parameter( property = "surefire.enableProcessChecker" )
     private String enableProcessChecker;
 
+    @Parameter( property = "surefire.systemPropertiesFile" )
+    private File systemPropertiesFile;
+
     @Override
     protected int getRerunFailingTestsCount()
     {
@@ -459,6 +462,19 @@ public class SurefirePlugin
         return "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd";
     }
     
+
+    public File getSystemPropertiesFile()
+    {
+        return systemPropertiesFile;
+    }
+
+
+    public void setSystemPropertiesFile( File systemPropertiesFile )
+    {
+        this.systemPropertiesFile = systemPropertiesFile;
+    }
+
+
     // now for the implementation of the field accessors
 
     @Override

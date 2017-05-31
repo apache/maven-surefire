@@ -327,14 +327,6 @@ public abstract class AbstractSurefireMojo
     private Map<String, String> systemPropertyVariables;
 
     /**
-     * List of System properties, loaded from a file, to pass to the JUnit tests.
-     *
-     * @since 2.8.2
-     */
-    @Parameter
-    private File systemPropertiesFile;
-
-    /**
      * List of properties for configuring all TestNG related configurations. This is the new preferred method of
      * configuring TestNG.
      *
@@ -1097,11 +1089,11 @@ public abstract class AbstractSurefireMojo
         SurefireProperties sysProps = null;
         try
         {
-            sysProps = SurefireProperties.loadProperties( systemPropertiesFile );
+            sysProps = SurefireProperties.loadProperties( getSystemPropertiesFile() );
         }
         catch ( IOException e )
         {
-            String msg = "The system property file '" + systemPropertiesFile.getAbsolutePath() + "' can't be read.";
+            String msg = "The file '" + getSystemPropertiesFile().getAbsolutePath() + "' can't be read.";
             if ( getConsoleLogger().isDebugEnabled() )
             {
                 getConsoleLogger().debug( msg, e );
@@ -3370,16 +3362,15 @@ public abstract class AbstractSurefireMojo
         this.systemPropertyVariables = systemPropertyVariables;
     }
 
-    public File getSystemPropertiesFile()
-    {
-        return systemPropertiesFile;
-    }
+    /**
+     * List of System properties, loaded from a file, to pass to the JUnit tests.
+     *
+     * @since 2.8.2
+     */
+    public abstract File getSystemPropertiesFile();
 
     @SuppressWarnings( "UnusedDeclaration" )
-    public void setSystemPropertiesFile( File systemPropertiesFile )
-    {
-        this.systemPropertiesFile = systemPropertiesFile;
-    }
+    public abstract void setSystemPropertiesFile( File systemPropertiesFile );
 
     private Properties getProperties()
     {
