@@ -90,6 +90,7 @@ public abstract class AbstractCommandStream
     {
         if ( isClosed() )
         {
+            tryFlush();
             return -1;
         }
 
