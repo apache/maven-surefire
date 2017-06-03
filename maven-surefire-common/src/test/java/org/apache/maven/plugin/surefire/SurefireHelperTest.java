@@ -26,7 +26,10 @@ import java.util.List;
 
 import static java.util.Collections.addAll;
 import static java.util.Collections.singleton;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
+import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
 import static org.fest.assertions.Assertions.assertThat;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Test of {@link SurefireHelper}.
@@ -61,5 +64,26 @@ public class SurefireHelperTest
 
         assertThat( String.format( SurefireHelper.DUMPSTREAM_FILENAME_FORMATTER, 5) )
                 .endsWith( "-jvmRun5.dumpstream" );
+    }
+
+    @Test
+    public void shouldEscapeWindowsPath()
+    {
+        assumeTrue( IS_OS_WINDOWS );
+        String root = "X:\\path\\to\\project\\";
+        String pathToJar = "target\\surefire\\surefirebooter4942721306300108667.jar";
+        int projectNameLength = 247 - root.length() - pathToJar.length();
+        StringBuilder projectFolder = new StringBuilder();
+        for ( int i = 0; i < projectNameLength; i++ )
+        {
+            projectFolder.append( 'x' );
+        }
+        String path = root + projectFolder + "\\" + pathToJar;
+        String escaped = escapeToPlatformPath( path );
+        assertThat( escaped ).isEqualTo( "\\\\?\\" + path );
+
+        path = root + "\\" + pathToJar;
+        escaped = escapeToPlatformPath( path );
+        assertThat( escaped ).isEqualTo( root + "\\" + pathToJar );
     }
 }

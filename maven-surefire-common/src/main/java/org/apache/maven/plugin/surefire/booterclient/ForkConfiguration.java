@@ -21,13 +21,13 @@ package org.apache.maven.plugin.surefire.booterclient;
 
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
-import org.apache.maven.surefire.util.internal.ImmutableMap;
 import org.apache.maven.plugin.surefire.util.Relocator;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ForkedBooter;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
+import org.apache.maven.surefire.util.internal.ImmutableMap;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -40,6 +40,8 @@ import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+
+import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
 
 /**
  * Configuration for forking tests.
@@ -174,19 +176,16 @@ public class ForkConfiguration
 
         if ( useJar )
         {
-            File jarFile;
             try
             {
-                jarFile = createJar( classPath, providerThatHasMainMethod );
+                File jarFile = createJar( classPath, providerThatHasMainMethod );
+                cli.createArg().setValue( "-jar" );
+                cli.createArg().setValue( escapeToPlatformPath( jarFile.getAbsolutePath() ) );
             }
             catch ( IOException e )
             {
                 throw new SurefireBooterForkException( "Error creating archive file", e );
             }
-
-            cli.createArg().setValue( "-jar" );
-
-            cli.createArg().setValue( jarFile.getAbsolutePath() );
         }
         else
         {

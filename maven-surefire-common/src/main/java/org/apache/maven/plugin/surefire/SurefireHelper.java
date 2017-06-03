@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static java.util.Collections.unmodifiableList;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.surefire.booter.DumpErrorSingleton.DUMPSTREAM_FILE_EXT;
 import static org.apache.maven.surefire.booter.DumpErrorSingleton.DUMP_FILE_EXT;
 import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
@@ -54,6 +55,19 @@ public final class SurefireHelper
     public static final String DUMP_FILE_PREFIX = DUMP_FILE_DATE + "-jvmRun";
 
     public static final String DUMPSTREAM_FILENAME_FORMATTER = DUMP_FILE_PREFIX + "%d" + DUMPSTREAM_FILE_EXT;
+
+    /**
+     * see sun/nio/fs/WindowsPath <br>
+     * http://hg.openjdk.java.net/jdk8/jdk8/jdk/file/7534523b4174/src/windows/classes/sun/nio/fs/WindowsPath.java#l46
+     * https://msdn.microsoft.com/en-us/library/aa365247(VS.85).aspx#maxpath
+     * <br>
+     * <br>
+     * The maximum path that does not require long path prefix. On Windows <br>
+     * the maximum path is 260 minus 1 (NUL) but for directories it is 260 <br>
+     * minus 12 minus 1 (to allow for the creation of a 8.3 file in the <br>
+     * directory).
+     */
+    private static final int MAX_PATH_LENGTH_WINDOWS = 247;
 
     private static final String[] DUMP_FILES_PRINT =
             {
@@ -163,6 +177,25 @@ public final class SurefireHelper
                 log.info( s );
             }
         }
+    }
+
+    /**
+     * Normalized file path for Windows; otherwise returns {@code path}.
+     * <br>
+     * http://hg.openjdk.java.net/jdk8/jdk8/jdk/file/7534523b4174/src/windows/classes/sun/nio/fs/WindowsPath.java#l46
+     * <br>
+     * https://msdn.microsoft.com/en-us/library/aa365247(VS.85).aspx#maxpath
+     *
+     * @param path    source path
+     * @return escaped to platform path
+     */
+    public static String escapeToPlatformPath( String path )
+    {
+        if ( IS_OS_WINDOWS && path.length() > MAX_PATH_LENGTH_WINDOWS )
+        {
+            path = path.startsWith( "\\\\" ) ? "\\\\?\\UNC\\" + path.substring( 2 ) : "\\\\?\\" + path;
+        }
+        return path;
     }
 
     private static String getFailureBehavior( MavenExecutionRequest request )
