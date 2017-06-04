@@ -84,12 +84,15 @@ public enum MasterProcessCommand
             throw new IllegalArgumentException( "Data type can be only " + String.class );
         }
 
-        byte[] dataBytes = fromDataType( data );
-        byte[] encoded = new byte[8 + dataBytes.length];
-        int command = getId();
-        int len = dataBytes.length;
+        final byte[] dataBytes = fromDataType( data );
+        final int len = dataBytes.length;
+
+        final byte[] encoded = new byte[8 + len];
+
+        final int command = getId();
         setCommandAndDataLength( command, len, encoded );
-        System.arraycopy( dataBytes, 0, encoded, 8, dataBytes.length );
+        System.arraycopy( dataBytes, 0, encoded, 8, len );
+
         return encoded;
     }
 

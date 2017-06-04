@@ -36,7 +36,6 @@ public abstract class AbstractCommandStream
 {
     private byte[] currentBuffer;
     private int currentPos;
-    private volatile MasterProcessCommand lastCommand;
 
     protected abstract boolean isClosed();
 
@@ -71,12 +70,6 @@ public abstract class AbstractCommandStream
         currentPos = 0;
     }
 
-    @Deprecated
-    protected final MasterProcessCommand getLastCommand()
-    {
-        return lastCommand;
-    }
-
     /**
      * Used by single thread in StreamFeeder class.
      *
@@ -94,8 +87,7 @@ public abstract class AbstractCommandStream
             return -1;
         }
 
-        byte[] buffer = currentBuffer;
-        if ( buffer == null )
+        if ( currentBuffer == null )
         {
             tryFlush();
 
@@ -113,17 +105,16 @@ public abstract class AbstractCommandStream
             }
 
             Command cmd = nextCommand();
-            lastCommand = cmd.getCommandType();
-            buffer = lastCommand.hasDataType() ? lastCommand.encode( cmd.getData() ) : lastCommand.encode();
+            MasterProcessCommand cmdType = cmd.getCommandType();
+            currentBuffer = cmdType.hasDataType() ? cmdType.encode( cmd.getData() ) : cmdType.encode();
         }
 
-        int b =  buffer[currentPos++] & 0xff;
-        if ( currentPos == buffer.length )
+        int b =  currentBuffer[currentPos++] & 0xff;
+        if ( currentPos == currentBuffer.length )
         {
-            buffer = null;
+            currentBuffer = null;
             currentPos = 0;
         }
-        currentBuffer = buffer;
         return b;
     }
 }
