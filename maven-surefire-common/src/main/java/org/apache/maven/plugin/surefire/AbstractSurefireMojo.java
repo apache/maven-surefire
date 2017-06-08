@@ -933,6 +933,7 @@ public abstract class AbstractSurefireMojo
                               new TestNgProviderInfo( getTestNgArtifact() ),
                               new JUnitCoreProviderInfo( getJunitArtifact(), junitDepArtifact ),
                               new JUnit4ProviderInfo( getJunitArtifact(), junitDepArtifact ),
+                              new JUnitPlattformProviderInfo( getJunitArtifact() ),
                               new JUnit3ProviderInfo() )
             .resolve();
     }
@@ -1430,12 +1431,22 @@ public abstract class AbstractSurefireMojo
 
     private boolean isJunit47Compatible( Artifact artifact )
     {
-        return dependencyResolver.isWithinVersionSpec( artifact, "[4.7,)" );
+        return dependencyResolver.isWithinVersionSpec( artifact, "[4.7,4.12.0)" );
     }
 
     private boolean isAnyJunit4( Artifact artifact )
     {
-        return dependencyResolver.isWithinVersionSpec( artifact, "[4.0,)" );
+        return dependencyResolver.isWithinVersionSpec( artifact, "[4.0,4.12.0)" );
+    }
+
+    private boolean isJunitJupiter( Artifact artifact )
+    {
+        return dependencyResolver.isWithinVersionSpec( artifact, "[5.0.0,)" );
+    }
+
+    private boolean isJunitVintage( Artifact artifact )
+    {
+        return dependencyResolver.isWithinVersionSpec( artifact, "[4.12.0,5.0.0)" );
     }
 
     static boolean isForkModeNever( String forkMode )
@@ -2598,6 +2609,39 @@ public abstract class AbstractSurefireMojo
         {
             return dependencyResolver.getProviderClasspath( "surefire-junit4", surefireBooterArtifact.getBaseVersion(),
                                                             null );
+        }
+
+    }
+
+    final class JUnitPlattformProviderInfo
+        implements ProviderInfo
+    {
+        private final Artifact junitArtifact;
+
+        JUnitPlattformProviderInfo( Artifact junitArtifact )
+        {
+            this.junitArtifact = junitArtifact;
+        }
+
+        @Nonnull public String getProviderName()
+        {
+            return "org.apache.maven.surefire.junitplatform.JUnitPlatformProvider";
+        }
+
+        public boolean isApplicable()
+        {
+            return isJunitJupiter( junitArtifact ) || isJunitVintage( junitArtifact );
+        }
+
+        public void addProviderProperties() throws MojoExecutionException
+        {
+        }
+
+        public Classpath getProviderClasspath()
+            throws ArtifactResolutionException, ArtifactNotFoundException, ArtifactResolverException
+        {
+            return dependencyResolver.getProviderClasspath( "surefire-junit-platform",
+                                                            surefireBooterArtifact.getBaseVersion() );
         }
 
     }
