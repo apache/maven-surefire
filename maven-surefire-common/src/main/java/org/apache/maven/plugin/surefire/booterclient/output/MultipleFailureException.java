@@ -42,7 +42,7 @@ final class MultipleFailureException
     public String getLocalizedMessage()
     {
         StringBuilder messages = new StringBuilder();
-        for ( Throwable exception = exceptions.peek(); exception != null; exception = exceptions.peek() )
+        for ( Throwable exception : exceptions )
         {
             if ( messages.length() != 0 )
             {
@@ -58,7 +58,7 @@ final class MultipleFailureException
     public String getMessage()
     {
         StringBuilder messages = new StringBuilder();
-        for ( Throwable exception = exceptions.peek(); exception != null; exception = exceptions.peek() )
+        for ( Throwable exception : exceptions )
         {
             if ( messages.length() != 0 )
             {
