@@ -143,19 +143,22 @@ public class SurefireProperties
                                                             Properties userProperties, SurefireProperties props )
     {
         SurefireProperties result = new SurefireProperties();
+
+        // SUREFIRE-1385: Make sure user properties are set first, so that system properties
+        // configured in the POM or properties file take precedence
+        
+        // We used to take all of our system properties and dump them in with the
+        // user specified properties for SUREFIRE-121, causing SUREFIRE-491.
+        // Not gonna do THAT any more... instead, we only propagate those system properties
+        // that have been explicitly specified by the user via -Dkey=value on the CLI.
+        result.copyPropertiesFrom( userProperties );
+
         result.copyPropertiesFrom( systemProperties );
 
         result.copyPropertiesFrom( props );
 
         copyProperties( result, systemPropertyVariables );
-        copyProperties( result, systemPropertyVariables );
 
-        // We used to take all of our system properties and dump them in with the
-        // user specified properties for SUREFIRE-121, causing SUREFIRE-491.
-        // Not gonna do THAT any more... instead, we only propagate those system properties
-        // that have been explicitly specified by the user via -Dkey=value on the CLI
-
-        result.copyPropertiesFrom( userProperties );
         return result;
     }
 

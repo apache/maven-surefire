@@ -19,6 +19,8 @@ package org.apache.maven.plugin.surefire;
  */
 
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import junit.framework.TestCase;
@@ -73,6 +75,25 @@ public class SurefirePropertiesTest
         assertEquals( 2, orderedProperties.size() );
 
 
+    }
+
+    public void testCalculateEffectiveProperties_SystemPropertyVariablesOverrideUserProperties()
+    {
+        Properties userProperties = new Properties();
+        userProperties.setProperty( "prop2", "user-property-2" );
+        userProperties.setProperty( "prop3", "user-property-3" );
+
+        Map<String, String> systemPropertyVariables = new HashMap<String, String>( 2 );
+        systemPropertyVariables.put( "prop1", "system-property-variable-1" );
+        systemPropertyVariables.put( "prop2", "system-property-variable-2" );
+
+        SurefireProperties surefireProperties =
+            SurefireProperties.calculateEffectiveProperties( null, systemPropertyVariables, userProperties, null );
+
+        assertEquals( 3, surefireProperties.size() );
+        assertEquals( "system-property-variable-1", surefireProperties.get( "prop1" ) );
+        assertEquals( "system-property-variable-2", surefireProperties.get( "prop2" ) );
+        assertEquals( "user-property-3", surefireProperties.get( "prop3" ) );
     }
 
 }
