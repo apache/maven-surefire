@@ -111,7 +111,7 @@ public class SurefirePlugin
     private boolean useFile;
 
     /**
-     * Set this to "true" to cause a failure if the none of the tests specified in -Dtest=... are run. Defaults to
+     * Set this to "true" to cause a failure if none of the tests specified in -Dtest=... are run. Defaults to
      * "true".
      *
      * @since 2.12
