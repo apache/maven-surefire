@@ -148,7 +148,6 @@ public class SurefireProperties
         result.copyPropertiesFrom( props );
 
         copyProperties( result, systemPropertyVariables );
-        copyProperties( result, systemPropertyVariables );
 
         // We used to take all of our system properties and dump them in with the
         // user specified properties for SUREFIRE-121, causing SUREFIRE-491.
