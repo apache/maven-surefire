@@ -20,14 +20,14 @@ package org.apache.maven.surefire.junitcore;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.booter.BaseProviderFactory;
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.Notifier;
 import org.apache.maven.surefire.junit4.MockReporter;
-import org.apache.maven.surefire.report.ConsoleLogger;
-import org.apache.maven.surefire.report.DefaultConsoleReporter;
+import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
@@ -54,7 +54,7 @@ import static junit.framework.Assert.assertEquals;
  * <version>4.8.1</version>
  * <scope>test</scope>
  * </dependency>
- * <p/>
+ * <br>
  * <dependency>
  * <groupId>org.apache.maven.surefire</groupId>
  * <artifactId>surefire-booter</artifactId>
@@ -89,7 +89,6 @@ public class Surefire746Test
     {
         ReporterFactory reporterFactory = DefaultReporterFactory.defaultNoXml();
         BaseProviderFactory providerParameters = new BaseProviderFactory( reporterFactory, true );
-        ConsoleLogger consoleLogger = new DefaultConsoleReporter( System.out );
 
         providerParameters.setReporterConfiguration( new ReporterConfiguration( new File( "" ), false ) );
         Map<String, String> junitProps = new HashMap<String, String>();
@@ -100,7 +99,8 @@ public class Surefire746Test
         final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
 
         RunListener listener =
-            ConcurrentRunListener.createInstance( testSetMap, reporterFactory, false, false, consoleLogger );
+            ConcurrentRunListener.createInstance( testSetMap, reporterFactory, false, false,
+                                                        new DefaultDirectConsoleReporter( System.out ) );
 
         TestsToRun testsToRun = new TestsToRun( Collections.<Class<?>>singleton( TestClassTest.class ) );
 
@@ -116,7 +116,8 @@ public class Surefire746Test
             // and rethrows a failure which happened in listener
             exception.expect( TestSetFailedException.class );
             JUnit4RunListener dummy = new JUnit4RunListener( new MockReporter() );
-            new JUnitCoreWrapper( new Notifier( dummy, 0 ), jUnitCoreParameters, new Logger() )
+            new JUnitCoreWrapper( new Notifier( dummy, 0 ), jUnitCoreParameters,
+                                        new DefaultDirectConsoleReporter( System.out ) )
                 .execute( testsToRun, customRunListeners, null );
         }
         finally

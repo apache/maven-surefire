@@ -184,14 +184,19 @@ public class OutputValidator
 
     public TestFile getSurefireReportsFile( String fileName )
     {
-        File targetDir = getSubFile( "target/surefire-reports" );
+        File targetDir = getSurefireReportsDirectory();
         return new TestFile( new File( targetDir, fileName ), this );
     }
 
     public TestFile getSurefireReportsXmlFile( String fileName )
     {
-        File targetDir = getSubFile( "target/surefire-reports" );
-        return new TestFile( new File( targetDir, fileName ), Charset.forName("UTF-8"), this );
+        File targetDir = getSurefireReportsDirectory();
+        return new TestFile( new File( targetDir, fileName ), Charset.forName( "UTF-8" ), this );
+    }
+
+    public File getSurefireReportsDirectory()
+    {
+        return getSubFile( "target/surefire-reports" );
     }
 
     public TestFile getSiteFile( String fileName )

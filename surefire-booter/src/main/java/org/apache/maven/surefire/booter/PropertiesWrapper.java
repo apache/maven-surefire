@@ -119,7 +119,6 @@ public class PropertiesWrapper
         }
     }
 
-
     Classpath getClasspath( String prefix )
     {
         List<String> elements = getStringList( prefix );
@@ -168,6 +167,7 @@ public class PropertiesWrapper
         }
     }
 
+    @Override
     public void copyTo( Map<Object, Object> target )
     {
         target.putAll( properties );

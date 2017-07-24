@@ -25,6 +25,7 @@ class RunnableTestClass2
 
 {
 
+    @Override
     public Object call()
         throws Exception
     {

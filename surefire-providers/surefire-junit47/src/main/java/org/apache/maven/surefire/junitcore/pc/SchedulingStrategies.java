@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.report.ConsoleStream;
 import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 
 import java.util.concurrent.ExecutorService;
@@ -40,7 +40,7 @@ public class SchedulingStrategies
      * @param logger current error logger
      * @return sequentially executing strategy
      */
-    public static SchedulingStrategy createInvokerStrategy( ConsoleLogger logger )
+    public static SchedulingStrategy createInvokerStrategy( ConsoleStream logger )
     {
         return new InvokerStrategy( logger );
     }
@@ -50,7 +50,7 @@ public class SchedulingStrategies
      * @param nThreads fixed pool capacity
      * @return parallel scheduling strategy
      */
-    public static SchedulingStrategy createParallelStrategy( ConsoleLogger logger, int nThreads )
+    public static SchedulingStrategy createParallelStrategy( ConsoleStream logger, int nThreads )
     {
         return new NonSharedThreadPoolStrategy( logger,
                                                 Executors.newFixedThreadPool( nThreads, DAEMON_THREAD_FACTORY ) );
@@ -60,14 +60,14 @@ public class SchedulingStrategies
      * @param logger current error logger
      * @return parallel scheduling strategy with unbounded capacity
      */
-    public static SchedulingStrategy createParallelStrategyUnbounded( ConsoleLogger logger )
+    public static SchedulingStrategy createParallelStrategyUnbounded( ConsoleStream logger )
     {
         return new NonSharedThreadPoolStrategy( logger, Executors.newCachedThreadPool( DAEMON_THREAD_FACTORY ) );
     }
 
     /**
      * The <tt>threadPool</tt> passed to this strategy can be shared in other strategies.
-     * <p/>
+     * <br>
      * The call {@link SchedulingStrategy#finished()} is waiting until own tasks have finished.
      * New tasks will not be scheduled by this call in this strategy. This strategy is not
      * waiting for other strategies to finish. The {@link org.junit.runners.model.RunnerScheduler#finished()} may
@@ -78,7 +78,7 @@ public class SchedulingStrategies
      * @return parallel strategy with shared thread pool
      * @throws NullPointerException if <tt>threadPool</tt> is null
      */
-    public static SchedulingStrategy createParallelSharedStrategy( ConsoleLogger logger, ExecutorService threadPool )
+    public static SchedulingStrategy createParallelSharedStrategy( ConsoleStream logger, ExecutorService threadPool )
     {
         if ( threadPool == null )
         {

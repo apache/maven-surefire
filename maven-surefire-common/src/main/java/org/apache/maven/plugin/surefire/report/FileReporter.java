@@ -22,6 +22,7 @@ package org.apache.maven.plugin.surefire.report;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -29,6 +30,7 @@ import java.io.PrintWriter;
 import java.util.List;
 
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
+import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
 
 /**
  * Base class for file reporters.
@@ -40,14 +42,11 @@ public class FileReporter
 {
     private final File reportsDirectory;
 
-    private final boolean deleteOnStarting;
-
     private final String reportNameSuffix;
 
     public FileReporter( File reportsDirectory, String reportNameSuffix )
     {
         this.reportsDirectory = reportsDirectory;
-        this.deleteOnStarting = false;
         this.reportNameSuffix = reportNameSuffix;
     }
 
@@ -60,15 +59,9 @@ public class FileReporter
         // noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
 
-        if ( deleteOnStarting && reportFile.exists() )
-        {
-            // noinspection ResultOfMethodCallIgnored
-            reportFile.delete();
-        }
-
         try
         {
-            PrintWriter writer = new PrintWriter( new FileWriter( reportFile ) );
+            PrintWriter writer = new PrintWriter( new BufferedWriter( new FileWriter( reportFile ), 16 * 1024 ) );
 
             writer.println( "-------------------------------------------------------------------------------" );
 
@@ -87,41 +80,30 @@ public class FileReporter
     public static File getReportFile( File reportsDirectory, String reportEntryName, String reportNameSuffix,
                                       String fileExtension )
     {
-        File reportFile;
-
-        if ( reportNameSuffix != null && reportNameSuffix.length() > 0 )
-        {
-            reportFile =
-                new File( reportsDirectory, stripIllegalFilenameChars( reportEntryName + "-" + reportNameSuffix
-                    + fileExtension ) );
-        }
-        else
-        {
-            reportFile = new File( reportsDirectory, stripIllegalFilenameChars( reportEntryName + fileExtension ) );
-        }
-        return reportFile;
+        String fileName =
+                reportEntryName + ( isNotBlank( reportNameSuffix ) ? "-" + reportNameSuffix : "" ) + fileExtension;
+        return new File( reportsDirectory, stripIllegalFilenameChars( fileName ) );
     }
 
     public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
     {
-        PrintWriter writer = testSetStarting( report );
+        PrintWriter writer = null;
         try
         {
-            writer.print( testSetStats.getTestSetSummary( report ) );
-
-            if ( testResults != null )
+            writer = testSetStarting( report );
+            writer.println( testSetStats.getTestSetSummary( report ) );
+            for ( String testResult : testResults )
             {
-                for ( String testResult : testResults )
-                {
-                    writer.println( testResult );
-                }
+                writer.println( testResult );
             }
-
             writer.flush();
         }
         finally
         {
-            writer.close();
+            if ( writer != null )
+            {
+                writer.close();
+            }
         }
     }
 }

@@ -30,7 +30,8 @@ import org.apache.maven.project.MavenProject;
 /**
  * Creates a nicely formatted Failsafe Test Report in html format.
  * This goal does not run the tests, it only builds the reports.
- * See <a href="http://jira.codehaus.org/browse/SUREFIRE-257">http://jira.codehaus.org/browse/SUREFIRE-257</a>
+ * See <a href="https://issues.apache.org/jira/browse/SUREFIRE-257">
+ *     https://issues.apache.org/jira/browse/SUREFIRE-257</a>
  *
  * @author Stephen Connolly
  * @since 2.10
@@ -50,7 +51,7 @@ public class FailsafeReportMojo
 
     /**
      * If set to true the failsafe report will be generated even when there are no failsafe result files.
-     * Defaults to <code>false</code> to preserve legacy behaviour pre 2.10
+     * Defaults to {@code false} to preserve legacy behaviour pre 2.10
      *
      * @noinspection UnusedDeclaration
      * @since 2.11
@@ -67,22 +68,26 @@ public class FailsafeReportMojo
     @Parameter( defaultValue = "false", property = "skipFailsafeReport" )
     private boolean skipFailsafeReport;
 
+    @Override
     protected File getSurefireReportsDirectory( MavenProject subProject )
     {
         String buildDir = subProject.getBuild().getDirectory();
         return new File( buildDir + "/failsafe-reports" );
     }
 
+    @Override
     public String getOutputName()
     {
         return outputName;
     }
 
+    @Override
     protected boolean isSkipped()
     {
         return skipFailsafeReport;
     }
 
+    @Override
     protected boolean isGeneratedWhenNoResults()
     {
         return alwaysGenerateFailsafeReport;
@@ -91,6 +96,7 @@ public class FailsafeReportMojo
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getName( Locale locale )
     {
         return getBundle( locale ).getString( "report.failsafe.name" );
@@ -99,6 +105,7 @@ public class FailsafeReportMojo
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getDescription( Locale locale )
     {
         return getBundle( locale ).getString( "report.failsafe.description" );
@@ -111,6 +118,6 @@ public class FailsafeReportMojo
     */
     private ResourceBundle getBundle( Locale locale )
     {
-        return ResourceBundle.getBundle( "surefire-report", locale, this.getClass().getClassLoader() );
+        return ResourceBundle.getBundle( "surefire-report", locale, getClass().getClassLoader() );
     }
 }

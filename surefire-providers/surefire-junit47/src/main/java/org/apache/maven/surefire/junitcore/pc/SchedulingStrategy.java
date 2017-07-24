@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.report.ConsoleStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -27,10 +27,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Specifies the strategy of scheduling whether sequential, or parallel.
- * The strategy may use a thread pool <em>shared</em> with other strategies.
- * <p/>
+ * The strategy may use a thread pool <b>shared</b> with other strategies.
+ * <br>
  * One instance of strategy can be used just by one {@link Scheduler}.
- * <p/>
+ * <br>
  * The strategy is scheduling tasks in {@link #schedule(Runnable)} and awaiting them
  * completed in {@link #finished()}. Both methods should be used in one thread.
  *
@@ -43,9 +43,9 @@ public abstract class SchedulingStrategy
 
     private final AtomicBoolean canSchedule = new AtomicBoolean( true );
 
-    private final ConsoleLogger logger;
+    private final ConsoleStream logger;
 
-    protected SchedulingStrategy( ConsoleLogger logger )
+    protected SchedulingStrategy( ConsoleStream logger )
     {
         this.logger = logger;
     }
@@ -66,8 +66,8 @@ public abstract class SchedulingStrategy
      * Waiting for scheduled tasks to finish.
      * New tasks will not be scheduled by calling this method.
      *
-     * @return <tt>true</tt> if successfully stopped the scheduler, else
-     *         <tt>false</tt> if already stopped (a <em>shared</em> thread
+     * @return {@code true} if successfully stopped the scheduler, else
+     *         {@code false} if already stopped (a <b>shared</b> thread
      *         pool was shutdown externally).
      * @throws InterruptedException if interrupted while waiting
      *                              for scheduled tasks to finish
@@ -78,24 +78,24 @@ public abstract class SchedulingStrategy
 
     /**
      * Stops scheduling new tasks (e.g. by {@link java.util.concurrent.ExecutorService#shutdown()}
-     * on a private thread pool which cannot be <em>shared</em> with other strategy).
+     * on a private thread pool which cannot be <b>shared</b> with other strategy).
      *
-     * @return <tt>true</tt> if successfully stopped the scheduler, else
-     *         <tt>false</tt> if already stopped (a <em>shared</em> thread
+     * @return {@code true} if successfully stopped the scheduler, else
+     *         {@code false} if already stopped (a <b>shared</b> thread
      *         pool was shutdown externally).
      * @see java.util.concurrent.ExecutorService#shutdown()
      */
     protected abstract boolean stop();
 
     /**
-     * Stops scheduling new tasks and <em>interrupts</em> running tasks
+     * Stops scheduling new tasks and {@code interrupts} running tasks
      * (e.g. by {@link java.util.concurrent.ExecutorService#shutdownNow()} on a private thread pool
-     * which cannot be <em>shared</em> with other strategy).
-     * <p/>
+     * which cannot be <b>shared</b> with other strategy).
+     * <br>
      * This method calls {@link #stop()} by default.
      *
-     * @return <tt>true</tt> if successfully stopped the scheduler, else
-     *         <tt>false</tt> if already stopped (a <em>shared</em> thread
+     * @return {@code true} if successfully stopped the scheduler, else
+     *         {@code false} if already stopped (a <b>shared</b> thread
      *         pool was shutdown externally).
      * @see java.util.concurrent.ExecutorService#shutdownNow()
      */
@@ -105,7 +105,7 @@ public abstract class SchedulingStrategy
     }
 
     /**
-     * Persistently disables this strategy. Atomically ignores {@link Balancer} to acquire a new permit.<p/>
+     * Persistently disables this strategy. Atomically ignores {@link Balancer} to acquire a new permit.<br>
      * The method {@link #canSchedule()} atomically returns {@code false}.
      * @return {@code true} if {@link #canSchedule()} has return {@code true} on the beginning of this method call.
      */
@@ -119,13 +119,13 @@ public abstract class SchedulingStrategy
     }
 
     /**
-     * @return <tt>true</tt> if a thread pool associated with this strategy
+     * @return {@code true} if a thread pool associated with this strategy
      *         can be shared with other strategies.
      */
     protected abstract boolean hasSharedThreadPool();
 
     /**
-     * @return <tt>true</tt> unless stopped, finished or disabled.
+     * @return {@code true} unless stopped, finished or disabled.
      */
     protected boolean canSchedule()
     {
@@ -139,11 +139,12 @@ public abstract class SchedulingStrategy
         try
         {
             t.printStackTrace( stream );
+            stream.flush();
         }
         finally
         {
             stream.close();
         }
-        logger.info( out.toString() );
+        logger.println( out.toString() );
     }
 }

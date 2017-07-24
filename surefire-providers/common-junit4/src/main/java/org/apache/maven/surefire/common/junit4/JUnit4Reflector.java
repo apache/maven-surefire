@@ -124,11 +124,13 @@ public final class JUnit4Reflector
             this( "" );
         }
 
+        @Override
         public String value()
         {
             return value;
         }
 
+        @Override
         public Class<? extends Annotation> annotationType()
         {
             return Ignore.class;

@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.report.ConsoleStream;
 import org.junit.runner.Description;
 import org.junit.runners.model.RunnerScheduler;
 
@@ -36,10 +36,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 /**
  * Schedules tests, controls thread resources, awaiting tests and other schedulers finished, and
  * a master scheduler can shutdown slaves.
- * <p/>
+ * <br>
  * The scheduler objects should be first created (and wired) and set in runners
  * {@link org.junit.runners.ParentRunner#setScheduler(org.junit.runners.model.RunnerScheduler)}.
- * <p/>
+ * <br>
  * A new instance of scheduling strategy should be passed to the constructor of this scheduler.
  *
  * @author Tibor Digana (tibor17)
@@ -56,7 +56,7 @@ public class Scheduler
 
     private final Description description;
 
-    private final ConsoleLogger logger;
+    private final ConsoleStream logger;
 
     private volatile boolean shutdown = false;
 
@@ -68,21 +68,25 @@ public class Scheduler
 
     /**
      * Use e.g. parallel classes have own non-shared thread pool, and methods another pool.
-     * <p/>
+     * <br>
      * You can use it with one infinite thread pool shared in strategies across all
      * suites, class runners, etc.
+     *
+     * @param logger          console logger
+     * @param description     JUnit description of class
+     * @param strategy        scheduling strategy
      */
-    public Scheduler( ConsoleLogger logger, Description description, SchedulingStrategy strategy )
+    public Scheduler( ConsoleStream logger, Description description, SchedulingStrategy strategy )
     {
         this( logger, description, strategy, -1 );
     }
 
     /**
      * Should be used if schedulers in parallel children and parent use one instance of bounded thread pool.
-     * <p/>
+     * <br>
      * Set this scheduler in a e.g. one suite of classes, then every individual class runner should reference
-     * {@link Scheduler(ConsoleLogger, org.junit.runner.Description, Scheduler, SchedulingStrategy)}
-     * or {@link Scheduler(ConsoleLogger, org.junit.runner.Description, Scheduler, SchedulingStrategy, int)}.
+     * {@link #Scheduler(ConsoleStream, org.junit.runner.Description, Scheduler, SchedulingStrategy)}
+     * or {@link #Scheduler(ConsoleStream, org.junit.runner.Description, Scheduler, SchedulingStrategy, int)}.
      *
      * @param logger current logger implementation
      * @param description description of current runner
@@ -90,7 +94,7 @@ public class Scheduler
      * @param concurrency determines maximum concurrent children scheduled a time via {@link #schedule(Runnable)}
      * @throws NullPointerException if null <tt>strategy</tt>
      */
-    public Scheduler( ConsoleLogger logger, Description description, SchedulingStrategy strategy, int concurrency )
+    public Scheduler( ConsoleStream logger, Description description, SchedulingStrategy strategy, int concurrency )
     {
         this( logger, description, strategy, BalancerFactory.createBalancer( concurrency ) );
     }
@@ -98,9 +102,9 @@ public class Scheduler
     /**
      * New instances should be used by schedulers with limited concurrency by <tt>balancer</tt>
      * against other groups of schedulers. The schedulers share one pool.
-     * <p/>
-     * Unlike in {@link Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy, int)} which was
-     * limiting the <tt>concurrency</tt> of children of a runner where this scheduler was set, <em>this</em>
+     * <br>
+     * Unlike in {@link #Scheduler(ConsoleStream, org.junit.runner.Description, SchedulingStrategy, int)} which was
+     * limiting the <tt>concurrency</tt> of children of a runner where this scheduler was set, {@code this}
      * <tt>balancer</tt> is limiting the concurrency of all children in runners having schedulers created by this
      * constructor.
      *
@@ -110,7 +114,7 @@ public class Scheduler
      * @param balancer    determines maximum concurrent children scheduled a time via {@link #schedule(Runnable)}
      * @throws NullPointerException if null <tt>strategy</tt> or <tt>balancer</tt>
      */
-    public Scheduler( ConsoleLogger logger, Description description, SchedulingStrategy strategy, Balancer balancer )
+    public Scheduler( ConsoleStream logger, Description description, SchedulingStrategy strategy, Balancer balancer )
     {
         strategy.setDefaultShutdownHandler( newShutdownHandler() );
         this.logger = logger;
@@ -131,7 +135,7 @@ public class Scheduler
      * @param balancer        determines maximum concurrent children scheduled a time via {@link #schedule(Runnable)}
      * @throws NullPointerException if null <tt>masterScheduler</tt>, <tt>strategy</tt> or <tt>balancer</tt>
      */
-    public Scheduler( ConsoleLogger logger, Description description, Scheduler masterScheduler,
+    public Scheduler( ConsoleStream logger, Description description, Scheduler masterScheduler,
                       SchedulingStrategy strategy, Balancer balancer )
     {
         this( logger, description, strategy, balancer );
@@ -140,13 +144,18 @@ public class Scheduler
     }
 
     /**
+     * @param logger          console logger
+     * @param description     JUnit description of class
      * @param masterScheduler a reference to
-     * {@link Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy, int)}
-     *                        or {@link Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy)}
-     * @see Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy)
-     * @see Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy, int)
+     * {@link #Scheduler(ConsoleStream, org.junit.runner.Description, SchedulingStrategy, int)}
+     *                        or {@link #Scheduler(ConsoleStream, org.junit.runner.Description, SchedulingStrategy)}
+     * @param strategy        scheduling strategy
+     * @param concurrency     determines maximum concurrent children scheduled a time via {@link #schedule(Runnable)}
+     *
+     * @see #Scheduler(ConsoleStream, org.junit.runner.Description, SchedulingStrategy)
+     * @see #Scheduler(ConsoleStream, org.junit.runner.Description, SchedulingStrategy, int)
      */
-    public Scheduler( ConsoleLogger logger, Description description, Scheduler masterScheduler,
+    public Scheduler( ConsoleStream logger, Description description, Scheduler masterScheduler,
                       SchedulingStrategy strategy, int concurrency )
     {
         this( logger, description, strategy, concurrency );
@@ -157,10 +166,15 @@ public class Scheduler
     /**
      * Should be used with individual pools on suites, classes and methods, see
      * {@link org.apache.maven.surefire.junitcore.pc.ParallelComputerBuilder#useSeparatePools()}.
-     * <p/>
+     * <br>
      * Cached thread pool is infinite and can be always shared.
+     *
+     * @param logger          console logger
+     * @param description     JUnit description of class
+     * @param masterScheduler parent scheduler
+     * @param strategy        scheduling strategy
      */
-    public Scheduler( ConsoleLogger logger, Description description, Scheduler masterScheduler,
+    public Scheduler( ConsoleStream logger, Description description, Scheduler masterScheduler,
                       SchedulingStrategy strategy )
     {
         this( logger, description, masterScheduler, strategy, 0 );
@@ -177,7 +191,7 @@ public class Scheduler
 
     /**
      * @param slave a slave scheduler to register
-     * @return <tt>true</tt> if successfully registered the <tt>slave</tt>.
+     * @return {@code true} if successfully registered the <tt>slave</tt>.
      */
     private boolean register( Scheduler slave )
     {
@@ -196,7 +210,7 @@ public class Scheduler
     }
 
     /**
-     * @return <tt>true</tt> if new tasks can be scheduled.
+     * @return {@code true} if new tasks can be scheduled.
      */
     private boolean canSchedule()
     {
@@ -215,22 +229,22 @@ public class Scheduler
         {
             stream.close();
         }
-        logger.info( out.toString() );
+        logger.println( out.toString() );
     }
 
     protected void logQuietly( String msg )
     {
-        logger.info( msg );
+        logger.println( msg );
     }
 
     /**
      * Attempts to stop all actively executing tasks and immediately returns a collection
      * of descriptions of those tasks which have started prior to this call.
-     * <p/>
+     * <br>
      * This scheduler and other registered schedulers will stop, see {@link #register(Scheduler)}.
      * If <tt>shutdownNow</tt> is set, waiting methods will be interrupted via {@link Thread#interrupt}.
      *
-     * @param stopNow if <tt>true</tt> interrupts waiting test methods
+     * @param stopNow if {@code true} interrupts waiting test methods
      * @return collection of descriptions started before shutting down
      */
     protected ShutdownResult describeStopped( boolean stopNow )
@@ -252,7 +266,7 @@ public class Scheduler
      *                            is finished in
      *                            {@link org.junit.runners.Suite#run(org.junit.runner.notification.RunNotifier)}
      *                            all the thread-pools created by {@link ParallelComputerBuilder.PC} are already dead.
-     *                            See the unit test <em>ParallelComputerBuilder#timeoutAndForcedShutdown()</em>.
+     *                            See the unit test {@code ParallelComputerBuilder#timeoutAndForcedShutdown()}.
      * @param stopNow             Interrupting tests by {@link java.util.concurrent.ExecutorService#shutdownNow()} or
      *                            {@link java.util.concurrent.Future#cancel(boolean) Future#cancel(true)} or
      *                            {@link Thread#interrupt()}.
@@ -335,6 +349,7 @@ public class Scheduler
     {
     }
 
+    @Override
     public void schedule( Runnable childStatement )
     {
         if ( childStatement == null )
@@ -365,6 +380,7 @@ public class Scheduler
         }
     }
 
+    @Override
     public void finished()
     {
         try
@@ -385,6 +401,7 @@ public class Scheduler
     {
         return new Runnable()
         {
+            @Override
             public void run()
             {
                 try
@@ -425,7 +442,7 @@ public class Scheduler
         }
 
         /**
-         * @return <tt>true</tt> if new children can be scheduled.
+         * @return {@code true} if new children can be scheduled.
          */
         boolean canSchedule()
         {
@@ -482,6 +499,7 @@ public class Scheduler
             this.poolHandler = poolHandler;
         }
 
+        @Override
         public void rejectedExecution( Runnable r, ThreadPoolExecutor executor )
         {
             if ( executor.isShutdown() )

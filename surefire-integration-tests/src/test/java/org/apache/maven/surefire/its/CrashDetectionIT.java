@@ -37,12 +37,25 @@ public class CrashDetectionIT
     @Test
     public void crashInReusableFork()
     {
-        unpack( "crash-detection" ).forkOncePerThread().threadCount( 1 ).maven().withFailure().executeTest();
+        unpack( "crash-detection" )
+                .forkPerThread()
+                .reuseForks( true )
+                .threadCount( 1 )
+                .maven()
+                .withFailure()
+                .executeTest();
     }
 
     @Test
     public void hardCrashInReusableFork()
     {
-        unpack( "crash-detection" ).forkOncePerThread().threadCount( 1 ).addGoal( "-DkillHard=true" ).maven().withFailure().executeTest();
+        unpack( "crash-detection" )
+                .forkPerThread()
+                .reuseForks( true )
+                .threadCount( 1 )
+                .addGoal( "-DkillHard=true" )
+                .maven()
+                .withFailure()
+                .executeTest();
     }
 }

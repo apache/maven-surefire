@@ -19,26 +19,27 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.apache.maven.surefire.junitcore.Logger;
-import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
+import org.apache.maven.surefire.report.ConsoleStream;
+import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
+import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the factories in SchedulingStrategy.
- * <p/>
+ * <br>
  * Th point of these tests is to check {@link Task#result} if changed
- * from <code>false</code> to <code>true</code> after all scheduled tasks
+ * from {@code false} to {@code true} after all scheduled tasks
  * have finished.
  * The call {@link SchedulingStrategy#finished()} is waiting until the
  * strategy has finished.
- * Then {@link Task#result} should be asserted that is <code>true</code>.
+ * Then {@link Task#result} should be asserted that is {@code true}.
  *
  * @author Tibor Digana (tibor17)
  * @see SchedulingStrategy
@@ -46,13 +47,14 @@ import static org.junit.Assert.assertTrue;
  */
 public class SchedulingStrategiesTest
 {
-    private static final ThreadFactory DAEMON_THREAD_FACTORY = DaemonThreadFactory.newDaemonThreadFactory();
+    private static final ThreadFactory DAEMON_THREAD_FACTORY = newDaemonThreadFactory();
+    private final ConsoleStream logger = new DefaultDirectConsoleReporter( System.out );
 
     @Test
     public void invokerStrategy()
         throws InterruptedException
     {
-        SchedulingStrategy strategy = SchedulingStrategies.createInvokerStrategy( new Logger() );
+        SchedulingStrategy strategy = SchedulingStrategies.createInvokerStrategy( logger );
         assertFalse( strategy.hasSharedThreadPool() );
         assertTrue( strategy.canSchedule() );
 
@@ -72,7 +74,7 @@ public class SchedulingStrategiesTest
     public void nonSharedPoolStrategy()
         throws InterruptedException
     {
-        SchedulingStrategy strategy = SchedulingStrategies.createParallelStrategy( new Logger(),  2 );
+        SchedulingStrategy strategy = SchedulingStrategies.createParallelStrategy( logger,  2 );
         assertFalse( strategy.hasSharedThreadPool() );
         assertTrue( strategy.canSchedule() );
 
@@ -94,7 +96,7 @@ public class SchedulingStrategiesTest
     @Test(expected = NullPointerException.class)
     public void sharedPoolStrategyNullPool()
     {
-        SchedulingStrategies.createParallelSharedStrategy( new Logger(), null );
+        SchedulingStrategies.createParallelSharedStrategy( logger, null );
     }
 
     @Test
@@ -103,11 +105,11 @@ public class SchedulingStrategiesTest
     {
         ExecutorService sharedPool = Executors.newCachedThreadPool( DAEMON_THREAD_FACTORY );
 
-        SchedulingStrategy strategy1 = SchedulingStrategies.createParallelSharedStrategy( new Logger(), sharedPool );
+        SchedulingStrategy strategy1 = SchedulingStrategies.createParallelSharedStrategy( logger, sharedPool );
         assertTrue( strategy1.hasSharedThreadPool() );
         assertTrue( strategy1.canSchedule() );
 
-        SchedulingStrategy strategy2 = SchedulingStrategies.createParallelSharedStrategy( new Logger(), sharedPool );
+        SchedulingStrategy strategy2 = SchedulingStrategies.createParallelSharedStrategy( logger, sharedPool );
         assertTrue( strategy2.hasSharedThreadPool() );
         assertTrue( strategy2.canSchedule() );
 
@@ -140,7 +142,7 @@ public class SchedulingStrategiesTest
     public void infinitePoolStrategy()
         throws InterruptedException
     {
-        SchedulingStrategy strategy = SchedulingStrategies.createParallelStrategyUnbounded( new Logger() );
+        SchedulingStrategy strategy = SchedulingStrategies.createParallelStrategyUnbounded( logger );
         assertFalse( strategy.hasSharedThreadPool() );
         assertTrue( strategy.canSchedule() );
 
@@ -164,6 +166,7 @@ public class SchedulingStrategiesTest
     {
         volatile boolean result = false;
 
+        @Override
         public void run()
         {
             result = true;

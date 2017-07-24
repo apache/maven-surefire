@@ -18,14 +18,11 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.Not2xCompatible;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-@Category( Not2xCompatible.class )
 public class Surefire806SpecifiedTestControlsIT
     extends SurefireJUnit4IntegrationTestCase
 {

@@ -26,11 +26,14 @@ import java.net.URLDecoder;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+
+import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.reporting.MavenReportException;
 
 import junit.framework.TestCase;
+
+import static java.util.Locale.ENGLISH;
 
 /**
  *
@@ -43,11 +46,12 @@ public class SurefireReportParserTest
     /**
      * {@inheritDoc}
      */
+    @Override
     protected void setUp()
         throws Exception
     {
         super.setUp();
-        report = new SurefireReportParser( null, Locale.ENGLISH );
+        report = new SurefireReportParser( null, ENGLISH, new NullConsoleLogger() );
     }
 
     public void testParseXMLReportFiles()

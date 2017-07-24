@@ -51,7 +51,7 @@ java -classpath foo.jar:bar.jar MyApp
 * Update for Maven Surefire 2.8.2
 
  It turns out setting the <<<CLASSPATH>>> as an environment variable may remove most of the
- practical length limitations, as documented in {{{http://jira.codehaus.org/browse/SUREFIRE-727}SUREFIRE-727}}.
+ practical length limitations, as documented in {{{https://issues.apache.org/jira/browse/SUREFIRE-727}SUREFIRE-727}}.
  This means most of the length-related problems in this article may be outdated.
 
 * Generic Solutions

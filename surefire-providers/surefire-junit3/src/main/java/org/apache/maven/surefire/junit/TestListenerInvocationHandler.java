@@ -76,6 +76,7 @@ public class TestListenerInvocationHandler
             this.threadOnWhichTestFailed = threadOnWhichTestFailed;
         }
 
+        @Override
         public boolean equals( Object obj )
         {
             boolean retVal = true;
@@ -101,6 +102,7 @@ public class TestListenerInvocationHandler
             return retVal;
         }
 
+        @Override
         public int hashCode()
         {
             return threadOnWhichTestFailed.hashCode();
@@ -117,6 +119,7 @@ public class TestListenerInvocationHandler
         this.reporter = reporter;
     }
 
+    @Override
     public Object invoke( Object proxy, Method method, Object[] args )
         throws Throwable
     {

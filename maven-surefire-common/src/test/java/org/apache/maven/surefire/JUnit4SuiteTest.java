@@ -21,6 +21,8 @@ package org.apache.maven.surefire;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
+import org.apache.maven.plugin.surefire.SurefireHelperTest;
+import org.apache.maven.plugin.surefire.SurefireReflectorTest;
 import org.apache.maven.plugin.surefire.SurefirePropertiesTest;
 import org.apache.maven.plugin.surefire.booterclient.BooterDeserializerProviderConfigurationTest;
 import org.apache.maven.plugin.surefire.booterclient.BooterDeserializerStartupConfigurationTest;
@@ -38,6 +40,7 @@ import org.apache.maven.plugin.surefire.util.SpecificFileFilterTest;
 import org.apache.maven.surefire.report.ConsoleOutputFileReporterTest;
 import org.apache.maven.surefire.report.FileReporterTest;
 import org.apache.maven.surefire.report.RunStatisticsTest;
+import org.apache.maven.surefire.spi.SPITest;
 import org.apache.maven.surefire.util.RelocatorTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -66,7 +69,10 @@ import org.junit.runners.Suite;
     BooterDeserializerStartupConfigurationTest.class,
     BooterDeserializerProviderConfigurationTest.class,
     TestProvidingInputStreamTest.class,
-    TestLessInputStreamBuilderTest.class
+    TestLessInputStreamBuilderTest.class,
+    SPITest.class,
+    SurefireReflectorTest.class,
+    SurefireHelperTest.class
 } )
 @RunWith( Suite.class )
 public class JUnit4SuiteTest

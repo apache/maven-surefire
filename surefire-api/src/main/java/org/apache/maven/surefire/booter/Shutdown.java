@@ -44,6 +44,21 @@ public enum Shutdown
         return param;
     }
 
+    public boolean isKill()
+    {
+        return this == KILL;
+    }
+
+    public boolean isExit()
+    {
+        return this == EXIT;
+    }
+
+    public boolean isDefaultShutdown()
+    {
+        return this == DEFAULT;
+    }
+
     public static boolean isKnown( String param )
     {
         for ( Shutdown shutdown : values() )

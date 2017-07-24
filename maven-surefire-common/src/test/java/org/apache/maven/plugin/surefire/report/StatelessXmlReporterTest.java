@@ -20,7 +20,6 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import junit.framework.TestCase;
-
 import org.apache.maven.plugin.surefire.booterclient.output.DeserializedStacktraceWriter;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.xml.Xpp3Dom;
@@ -37,24 +36,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
+import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
 
 @SuppressWarnings( "ResultOfMethodCallIgnored" )
 public class StatelessXmlReporterTest
     extends TestCase
 {
-    private TestSetStats stats;
-
-    private TestSetStats rerunStats;
-
-    private File expectedReportFile;
-
-    private File reportDir;
-
+    private static final String XSD =
+            "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd";
     private final static String TEST_ONE = "aTestMethod";
     private final static String TEST_TWO = "bTestMethod";
     private final static String TEST_THREE = "cTestMethod";
+    private static final AtomicInteger FOLDER_POSTFIX = new AtomicInteger();
 
-    private static volatile int folderPostfix;
+    private TestSetStats stats;
+    private TestSetStats rerunStats;
+    private File expectedReportFile;
+    private File reportDir;
 
     @Override
     protected void setUp()
@@ -66,7 +67,7 @@ public class StatelessXmlReporterTest
         File basedir = new File( "." );
         File target = new File( basedir.getCanonicalFile(), "target" );
         target.mkdir();
-        String reportRelDir = getClass().getSimpleName() + "-" + ++folderPostfix;
+        String reportRelDir = getClass().getSimpleName() + "-" + FOLDER_POSTFIX.incrementAndGet();
         reportDir = new File( target, reportRelDir );
         reportDir.mkdir();
     }
@@ -85,12 +86,12 @@ public class StatelessXmlReporterTest
     {
         StatelessXmlReporter reporter =
             new StatelessXmlReporter( reportDir, null, false, 0,
-                                      new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>() );
+                                      new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>(), XSD );
         reporter.cleanTestHistoryMap();
 
         ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), getClass().getName(), 12 );
         WrappedReportEntry testSetReportEntry =
-            new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null );
+            new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null, systemProps() );
         stats.testSucceeded( testSetReportEntry );
         reporter.testSetCompleted( testSetReportEntry, stats );
 
@@ -105,7 +106,7 @@ public class StatelessXmlReporterTest
     {
         ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), TEST_ONE, 12 );
         WrappedReportEntry testSetReportEntry =
-            new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null );
+            new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null, systemProps() );
         expectedReportFile = new File( reportDir, "TEST-" + TEST_ONE + ".xml" );
 
         stats.testSucceeded( testSetReportEntry );
@@ -138,12 +139,12 @@ public class StatelessXmlReporterTest
 
         stats.testSucceeded( t2 );
         StatelessXmlReporter reporter = new StatelessXmlReporter( reportDir, null, false, 0,
-                        new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>() );
+                        new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>(), XSD );
         reporter.testSetCompleted( testSetReportEntry, stats );
 
         FileInputStream fileInputStream = new FileInputStream( expectedReportFile );
 
-        Xpp3Dom testSuite = Xpp3DomBuilder.build( new InputStreamReader( fileInputStream, "UTF-8") );
+        Xpp3Dom testSuite = Xpp3DomBuilder.build( new InputStreamReader( fileInputStream, UTF_8) );
         assertEquals( "testsuite", testSuite.getName() );
         Xpp3Dom properties = testSuite.getChild( "properties" );
         assertEquals( System.getProperties().size(), properties.getChildCount() );
@@ -177,7 +178,7 @@ public class StatelessXmlReporterTest
         ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), TEST_ONE, 12 );
 
         WrappedReportEntry testSetReportEntry =
-            new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null );
+            new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null, systemProps() );
         expectedReportFile = new File( reportDir, "TEST-" + TEST_ONE + ".xml" );
 
         stats.testSucceeded( testSetReportEntry );
@@ -217,18 +218,15 @@ public class StatelessXmlReporterTest
         rerunStats.testSucceeded( testThreeSecondRun );
 
         StatelessXmlReporter reporter =
-            new StatelessXmlReporter( reportDir,
-                                      null,
-                                      false,
-                                      1,
-                                      new HashMap<String, Map<String, List<WrappedReportEntry>>>() );
+            new StatelessXmlReporter( reportDir, null, false, 1,
+                                      new HashMap<String, Map<String, List<WrappedReportEntry>>>(), XSD );
 
         reporter.testSetCompleted( testSetReportEntry, stats );
         reporter.testSetCompleted( testSetReportEntry, rerunStats );
 
         FileInputStream fileInputStream = new FileInputStream( expectedReportFile );
 
-        Xpp3Dom testSuite = Xpp3DomBuilder.build( new InputStreamReader( fileInputStream, "UTF-8" ) );
+        Xpp3Dom testSuite = Xpp3DomBuilder.build( new InputStreamReader( fileInputStream, UTF_8 ) );
         assertEquals( "testsuite", testSuite.getName() );
         assertEquals( "0.012", testSuite.getAttribute( "time" ) );
         Xpp3Dom properties = testSuite.getChild( "properties" );
@@ -299,5 +297,4 @@ public class StatelessXmlReporterTest
     {
 
     }
-
 }

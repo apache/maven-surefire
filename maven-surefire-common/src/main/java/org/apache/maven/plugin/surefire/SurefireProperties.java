@@ -47,7 +47,7 @@ public class SurefireProperties
     implements KeyValueSource
 {
     private static final Collection<String> KEYS_THAT_CANNOT_BE_USED_AS_SYSTEM_PROPERTIES =
-            asList( "java.library.path", "file.encoding", "jdk.map.althashing.threshold" );
+            asList( "java.library.path", "file.encoding", "jdk.map.althashing.threshold", "line.separator" );
 
     private final LinkedHashSet<Object> items = new LinkedHashSet<Object>();
 
@@ -92,6 +92,7 @@ public class SurefireProperties
         super.clear();
     }
 
+    @Override
     public synchronized Enumeration<Object> keys()
     {
         return Collections.enumeration( items );
@@ -170,6 +171,7 @@ public class SurefireProperties
         }
     }
 
+    @Override
     public void copyTo( Map<Object, Object> target )
     {
         target.putAll( this );

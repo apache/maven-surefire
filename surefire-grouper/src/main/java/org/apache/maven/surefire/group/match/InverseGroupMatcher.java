@@ -35,11 +35,13 @@ public class InverseGroupMatcher
         this.matcher = matcher;
     }
 
+    @Override
     public boolean enabled( Class<?>... cats )
     {
         return cats == null || !matcher.enabled( cats );
     }
 
+    @Override
     public boolean enabled( String... cats )
     {
         return cats == null || !matcher.enabled( cats );
@@ -87,6 +89,7 @@ public class InverseGroupMatcher
         return true;
     }
 
+    @Override
     public void loadGroupClasses( ClassLoader cloader )
     {
         matcher.loadGroupClasses( cloader );

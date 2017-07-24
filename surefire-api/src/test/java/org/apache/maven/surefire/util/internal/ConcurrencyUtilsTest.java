@@ -81,6 +81,7 @@ public class ConcurrencyUtilsTest
 
         FutureTask<Boolean> task = new FutureTask<Boolean>( new Callable<Boolean>()
         {
+            @Override
             public Boolean call()
                 throws Exception
             {

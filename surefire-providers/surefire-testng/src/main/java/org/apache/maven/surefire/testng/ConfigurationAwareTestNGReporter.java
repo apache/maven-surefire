@@ -28,7 +28,6 @@ import org.testng.internal.IResultListener;
  * Just like TestNGReporter, but explicitly implements IResultListener; this interface is new in TestNG 5.5
  *
  * @author Dan Fabulich
- * @noinspection UnusedDeclaration
  */
 public class ConfigurationAwareTestNGReporter
     extends TestNGReporter

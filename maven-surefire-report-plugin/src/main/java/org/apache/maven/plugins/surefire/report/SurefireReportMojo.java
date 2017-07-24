@@ -48,7 +48,7 @@ public class SurefireReportMojo
 
     /**
      * If set to true the surefire report will be generated even when there are no surefire result files.
-     * Defaults to <code>true</code> to preserve legacy behaviour pre 2.10.
+     * Defaults to {@code true} to preserve legacy behaviour pre 2.10.
      *
      * @noinspection UnusedDeclaration
      * @since 2.11
@@ -65,22 +65,26 @@ public class SurefireReportMojo
     @Parameter( defaultValue = "false", property = "skipSurefireReport" )
     private boolean skipSurefireReport;
 
+    @Override
     protected File getSurefireReportsDirectory( MavenProject subProject )
     {
         String buildDir = subProject.getBuild().getDirectory();
         return new File( buildDir + "/surefire-reports" );
     }
 
+    @Override
     public String getOutputName()
     {
         return outputName;
     }
 
+    @Override
     protected boolean isSkipped()
     {
         return skipSurefireReport;
     }
 
+    @Override
     protected boolean isGeneratedWhenNoResults()
     {
         return alwaysGenerateSurefireReport;

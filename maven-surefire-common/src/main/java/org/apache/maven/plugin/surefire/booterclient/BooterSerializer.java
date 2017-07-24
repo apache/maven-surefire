@@ -44,12 +44,12 @@ import static org.apache.maven.surefire.booter.BooterConstants.*;
 
 /**
  * Knows how to serialize and deserialize the booter configuration.
- * <p/>
+ * <br>
  * The internal serialization format is through a properties file. The long-term goal of this
  * class is not to expose this implementation information to its clients. This still leaks somewhat,
  * and there are some cases where properties are being accessed as "Properties" instead of
  * more representative domain objects.
- * <p/>
+ * <br>
  *
  * @author Jason van Zyl
  * @author Emmanuel Venisse
@@ -61,7 +61,7 @@ class BooterSerializer
 {
     private final ForkConfiguration forkConfiguration;
 
-    public BooterSerializer( ForkConfiguration forkConfiguration )
+    BooterSerializer( ForkConfiguration forkConfiguration )
     {
         this.forkConfiguration = forkConfiguration;
     }
@@ -69,7 +69,7 @@ class BooterSerializer
     /**
      * Does not modify sourceProperties
      */
-    public File serialize( KeyValueSource sourceProperties, ProviderConfiguration booterConfiguration,
+    File serialize( KeyValueSource sourceProperties, ProviderConfiguration booterConfiguration,
                            StartupConfiguration providerConfiguration, Object testSet, boolean readTestsFromInStream )
         throws IOException
     {
@@ -139,10 +139,12 @@ class BooterSerializer
             properties.addList( mainCliOptions, MAIN_CLI_OPTIONS );
         }
 
+        properties.setNullableProperty( SYSTEM_EXIT_TIMEOUT,
+                                              String.valueOf( booterConfiguration.getSystemExitTimeout() ) );
+
         return SystemPropertyManager.writePropertiesFile( properties, forkConfiguration.getTempDirectory(),
                                                           "surefire", forkConfiguration.isDebug() );
     }
-
 
     private String getTypeEncoded( Object value )
     {

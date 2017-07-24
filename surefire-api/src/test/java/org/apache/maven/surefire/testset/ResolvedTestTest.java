@@ -20,12 +20,16 @@ package org.apache.maven.surefire.testset;
 
 import junit.framework.TestCase;
 
+import static org.apache.maven.surefire.testset.ResolvedTest.Type.CLASS;
+import static org.apache.maven.surefire.testset.ResolvedTest.Type.METHOD;
+import static org.apache.maven.surefire.testset.ResolvedTest.fromFullyQualifiedClass;
+
 public class ResolvedTestTest
     extends TestCase
 {
     public void testEmptyClassRegex()
     {
-        ResolvedTest test = new ResolvedTest( ResolvedTest.Type.CLASS, "  ", true );
+        ResolvedTest test = new ResolvedTest( CLASS, "  ", true );
         assertNull( test.getTestClassPattern() );
         assertNull( test.getTestMethodPattern() );
         assertFalse( test.hasTestClassPattern() );
@@ -37,7 +41,7 @@ public class ResolvedTestTest
 
     public void testEmptyMethodRegex()
     {
-        ResolvedTest test = new ResolvedTest( ResolvedTest.Type.METHOD, "  ", true );
+        ResolvedTest test = new ResolvedTest( METHOD, "  ", true );
         assertNull( test.getTestClassPattern() );
         assertNull( test.getTestMethodPattern() );
         assertFalse( test.hasTestClassPattern() );
@@ -49,13 +53,19 @@ public class ResolvedTestTest
 
     public void testFromFullyQualifiedClass()
     {
-        String classFileName = ResolvedTest.fromFullyQualifiedClass( "my.package.MyTest" );
+        String classFileName = fromFullyQualifiedClass("my.package.MyTest");
         assertEquals( "my/package/MyTest", classFileName );
 
-        classFileName = ResolvedTest.fromFullyQualifiedClass( "my.package.MyTest.class" );
+        classFileName = fromFullyQualifiedClass("my.package.MyTest.class");
         assertEquals( "my/package/MyTest.class", classFileName );
 
-        classFileName = ResolvedTest.fromFullyQualifiedClass( "my/package/MyTest.class" );
+        classFileName = fromFullyQualifiedClass("my/package/MyTest.class");
         assertEquals( "my/package/MyTest.class", classFileName );
+
+        classFileName = fromFullyQualifiedClass("my/package/MyTest.*");
+        assertEquals( "my/package/MyTest.*", classFileName );
+
+        classFileName = fromFullyQualifiedClass("my.package.MyTest.*");
+        assertEquals( "my/package/MyTest.*", classFileName );
     }
 }

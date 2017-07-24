@@ -19,32 +19,38 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.io.PrintStream;
-import java.nio.charset.Charset;
-import java.util.Enumeration;
-import java.util.Properties;
-
-import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLoggerUtils;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.report.ConsoleStream;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.surefire.util.internal.StringUtils;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 
+import java.io.PrintStream;
+import java.util.Map.Entry;
+
+import static java.lang.Integer.toHexString;
+import static java.nio.charset.Charset.defaultCharset;
+import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
+import static org.apache.maven.surefire.util.internal.ObjectUtils.useNonNull;
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
+import static org.apache.maven.surefire.util.internal.StringUtils.escapeBytesToPrintable;
+import static org.apache.maven.surefire.util.internal.StringUtils.escapeToPrintable;
 
 /**
  * Encodes the full output of the test run to the stdout stream.
- * <p/>
+ * <br>
  * This class and the ForkClient contain the full definition of the
  * "wire-level" protocol used by the forked process. The protocol
  * is *not* part of any public api and may change without further
  * notice.
- * <p/>
+ * <br>
  * This class is threadsafe.
- * <p/>
+ * <br>
  * The synchronization in the underlying PrintStream (target instance)
  * is used to preserve thread safety of the output stream. To perform
  * multiple writes/prints for a single request, they must
@@ -53,7 +59,7 @@ import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringFo
  * @author Kristian Rosenvold
  */
 public class ForkingRunListener
-    implements RunListener, ConsoleLogger, ConsoleOutputReceiver
+    implements RunListener, ConsoleLogger, ConsoleOutputReceiver, ConsoleStream
 {
     public static final byte BOOTERCODE_TESTSET_STARTING = (byte) '1';
 
@@ -75,6 +81,10 @@ public class ForkingRunListener
 
     public static final byte BOOTERCODE_TEST_ASSUMPTIONFAILURE = (byte) 'G';
 
+    /**
+     * INFO logger
+     * @see ConsoleLogger#info(String)
+     */
     public static final byte BOOTERCODE_CONSOLE = (byte) 'H';
 
     public static final byte BOOTERCODE_SYSPROPS = (byte) 'I';
@@ -83,9 +93,26 @@ public class ForkingRunListener
 
     public static final byte BOOTERCODE_STOP_ON_NEXT_TEST = (byte) 'S';
 
+    /**
+     * ERROR logger
+     * @see ConsoleLogger#error(String)
+     */
     public static final byte BOOTERCODE_ERROR = (byte) 'X';
 
     public static final byte BOOTERCODE_BYE = (byte) 'Z';
+
+    /**
+     * DEBUG logger
+     * @see ConsoleLogger#debug(String)
+     */
+    public static final byte BOOTERCODE_DEBUG = (byte) 'D';
+
+    /**
+     * WARNING logger
+     * @see ConsoleLogger#warning(String)
+     */
+    public static final byte BOOTERCODE_WARNING = (byte) 'W';
+
 
     private final PrintStream target;
 
@@ -107,46 +134,55 @@ public class ForkingRunListener
         sendProps();
     }
 
-    public void testSetStarting( ReportEntry report )
+    @Override
+    public void testSetStarting( TestSetReportEntry report )
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_TESTSET_STARTING, report, testSetChannelId ) );
     }
 
-    public void testSetCompleted( ReportEntry report )
+    @Override
+    public void testSetCompleted( TestSetReportEntry report )
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_TESTSET_COMPLETED, report, testSetChannelId ) );
     }
 
+    @Override
     public void testStarting( ReportEntry report )
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_TEST_STARTING, report, testSetChannelId ) );
     }
 
+    @Override
     public void testSucceeded( ReportEntry report )
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_TEST_SUCCEEDED, report, testSetChannelId ) );
     }
 
+    @Override
     public void testAssumptionFailure( ReportEntry report )
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_TEST_ASSUMPTIONFAILURE, report, testSetChannelId ) );
     }
 
+    @Override
     public void testError( ReportEntry report )
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_TEST_ERROR, report, testSetChannelId ) );
     }
 
+    @Override
     public void testFailed( ReportEntry report )
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_TEST_FAILED, report, testSetChannelId ) );
     }
 
+    @Override
     public void testSkipped( ReportEntry report )
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_TEST_SKIPPED, report, testSetChannelId ) );
     }
 
+    @Override
     public void testExecutionSkippedByUser()
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_STOP_ON_NEXT_TEST, new SimpleReportEntry(), testSetChannelId ) );
@@ -154,31 +190,36 @@ public class ForkingRunListener
 
     void sendProps()
     {
-        Properties systemProperties = System.getProperties();
-
-        if ( systemProperties != null )
+        for ( Entry<String, String> entry : systemProps().entrySet() )
         {
-            for ( Enumeration<?> propertyKeys = systemProperties.propertyNames(); propertyKeys.hasMoreElements(); )
-            {
-                String key = (String) propertyKeys.nextElement();
-                String value = systemProperties.getProperty( key );
-                encodeAndWriteToTarget( toPropertyString( key, value == null ? "null" : value ) );
-            }
+            String value = entry.getValue();
+            encodeAndWriteToTarget( toPropertyString( entry.getKey(), useNonNull( value, "null" ) ) );
         }
     }
 
+    @Override
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         byte[] header = stdout ? stdOutHeader : stdErrHeader;
         byte[] content =
             new byte[buf.length * 3 + 1]; // Hex-escaping can be up to 3 times length of a regular byte.
-        int i = StringUtils.escapeBytesToPrintable( content, 0, buf, off, len );
+        int i = escapeBytesToPrintable( content, 0, buf, off, len );
         content[i++] = (byte) '\n';
+        byte[] encodeBytes = new byte[header.length + i];
+        System.arraycopy( header, 0, encodeBytes, 0, header.length );
+        System.arraycopy( content, 0, encodeBytes, header.length, i );
 
         synchronized ( target ) // See notes about synchronization/thread safety in class javadoc
         {
-            target.write( header, 0, header.length );
-            target.write( content, 0, i );
+            target.write( encodeBytes, 0, encodeBytes.length );
+            target.flush();
+            if ( target.checkError() )
+            {
+                // We MUST NOT throw any exception from this method; otherwise we are in loop and CPU goes up:
+                // ForkingRunListener -> Exception -> JUnit Notifier and RunListener -> ForkingRunListener -> Exception
+                DumpErrorSingleton.getSingleton()
+                        .dumpStreamText( "Unexpected IOException with stream: " + new String( buf, off, len ) );
+            }
         }
     }
 
@@ -187,22 +228,58 @@ public class ForkingRunListener
         return encodeStringForForkCommunication( String.valueOf( (char) booterCode )
                 + ','
                 + Integer.toString( testSetChannel, 16 )
-                + ',' + Charset.defaultCharset().name()
+                + ',' + defaultCharset().name()
                 + ',' );
     }
 
-    public void info( String message )
+    private void log( byte bootCode, String message )
     {
         if ( message != null )
         {
             StringBuilder sb = new StringBuilder( 7 + message.length() * 5 );
-            append( sb, BOOTERCODE_CONSOLE ); comma( sb );
-            append( sb, Integer.toHexString( testSetChannelId ) ); comma( sb );
-            StringUtils.escapeToPrintable( sb, message );
+            append( sb, bootCode ); comma( sb );
+            append( sb, toHexString( testSetChannelId ) ); comma( sb );
+            escapeToPrintable( sb, message );
 
             sb.append( '\n' );
             encodeAndWriteToTarget( sb.toString() );
         }
+    }
+
+    @Override
+    public void debug( String message )
+    {
+        log( BOOTERCODE_DEBUG, message );
+    }
+
+    @Override
+    public void info( String message )
+    {
+        log( BOOTERCODE_CONSOLE, message );
+    }
+
+    @Override
+    public void warning( String message )
+    {
+        log( BOOTERCODE_WARNING, message );
+    }
+
+    @Override
+    public void error( String message )
+    {
+        log( BOOTERCODE_ERROR, message );
+    }
+
+    @Override
+    public void error( String message, Throwable t )
+    {
+        error( ConsoleLoggerUtils.toString( message, t ) );
+    }
+
+    @Override
+    public void error( Throwable t )
+    {
+        error( null, t );
     }
 
     private void encodeAndWriteToTarget( String string )
@@ -211,6 +288,13 @@ public class ForkingRunListener
         synchronized ( target ) // See notes about synchronization/thread safety in class javadoc
         {
             target.write( encodeBytes, 0, encodeBytes.length );
+            target.flush();
+            if ( target.checkError() )
+            {
+                // We MUST NOT throw any exception from this method; otherwise we are in loop and CPU goes up:
+                // ForkingRunListener -> Exception -> JUnit Notifier and RunListener -> ForkingRunListener -> Exception
+                DumpErrorSingleton.getSingleton().dumpStreamText( "Unexpected IOException: " + string );
+            }
         }
     }
 
@@ -219,11 +303,11 @@ public class ForkingRunListener
         StringBuilder stringBuilder = new StringBuilder();
 
         append( stringBuilder, BOOTERCODE_SYSPROPS ); comma( stringBuilder );
-        append( stringBuilder, Integer.toHexString( testSetChannelId ) ); comma( stringBuilder );
+        append( stringBuilder, toHexString( testSetChannelId ) ); comma( stringBuilder );
 
-        StringUtils.escapeToPrintable( stringBuilder, key );
+        escapeToPrintable( stringBuilder, key );
         comma( stringBuilder );
-        StringUtils.escapeToPrintable( stringBuilder, value );
+        escapeToPrintable( stringBuilder, value );
         stringBuilder.append( "\n" );
         return stringBuilder.toString();
     }
@@ -232,7 +316,7 @@ public class ForkingRunListener
     {
         StringBuilder stringBuilder = new StringBuilder();
         append( stringBuilder, operationCode ); comma( stringBuilder );
-        append( stringBuilder, Integer.toHexString( testSetChannelId ) ); comma( stringBuilder );
+        append( stringBuilder, toHexString( testSetChannelId ) ); comma( stringBuilder );
 
         nullableEncoding( stringBuilder, reportEntry.getSourceName() );
         comma( stringBuilder );
@@ -291,7 +375,7 @@ public class ForkingRunListener
         }
         else
         {
-            StringUtils.escapeToPrintable( stringBuilder, source );
+            escapeToPrintable( stringBuilder, source );
         }
     }
 
@@ -319,5 +403,18 @@ public class ForkingRunListener
                 ? stackTraceWriter.writeTrimmedTraceToString()
                 : stackTraceWriter.writeTraceToString() );
         }
+    }
+
+    @Override
+    public void println( String message )
+    {
+        byte[] buf = message.getBytes();
+        println( buf, 0, buf.length );
+    }
+
+    @Override
+    public void println( byte[] buf, int off, int len )
+    {
+        writeTestOutput( buf, off, len, true );
     }
 }

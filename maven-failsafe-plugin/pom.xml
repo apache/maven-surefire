@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire</artifactId>
-    <version>2.19.2-SNAPSHOT</version>
+    <version>2.21-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.maven.plugins</groupId>
@@ -45,25 +45,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-plugin-api</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>maven-surefire-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.surefire</groupId>
-      <artifactId>surefire-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.shared</groupId>
-      <artifactId>maven-shared-utils</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.plugin-tools</groupId>
-      <artifactId>maven-plugin-annotations</artifactId>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.plugins</groupId>
@@ -73,10 +56,48 @@
       <type>zip</type>
       <classifier>site-source</classifier>
     </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.cxf</groupId>
+        <artifactId>cxf-xjc-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>generate-failsafe-summary</id>
+            <goals>
+              <goal>xsdtojava</goal>
+            </goals>
+            <configuration>
+              <sourceRoot>${project.build.directory}/generated-sources/jaxb</sourceRoot>
+              <xsdOptions>
+                <xsdOption>
+                  <!--
+                  Due to historical reasons and due to both Surefire and Failsafe Plugin have very similar project
+                  pages (mvn site), the Maven Site for both projects is generated upon one common location in
+                  maven-surefire-plugin. The XSD files are located in maven-surefire-plugin project. Do NOT duplicate
+                  the XSD in to maven-failsafe-plugin.
+                  -->
+                  <xsd>../maven-surefire-plugin/src/site/resources/xsd/failsafe-summary.xsd</xsd>
+                  <bindingFile>../maven-surefire-plugin/src/site/resources/xsd/failsafe-summary.xjb</bindingFile>
+                  <packagename>org.apache.maven.plugin.failsafe.xmlsummary</packagename>
+                  <extensionArgs>
+                    <arg>-encoding</arg>
+                    <arg>${project.build.sourceEncoding}</arg>
+                  </extensionArgs>
+                </xsdOption>
+              </xsdOptions>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
@@ -105,31 +126,9 @@
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-shadefire</artifactId>
-            <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to http://jira.codehaus.org/browse/MRELEASE-799 -->
+            <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
           </dependency>
         </dependencies>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-invoker-plugin</artifactId>
-        <configuration>
-          <projectsDirectory>src/it</projectsDirectory>
-          <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
-          <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
-          <showErrors>true</showErrors>
-          <streamLogs>true</streamLogs>
-          <goals>
-            <goal>verify</goal>
-          </goals>
-          <setupIncludes>
-            <setupInclude>dummy-*/pom.xml</setupInclude>
-          </setupIncludes>
-          <pomIncludes>
-            <pomInclude>*/pom.xml</pomInclude>
-          </pomIncludes>
-          <postBuildHookScript>verify.bsh</postBuildHookScript>
-          <settingsFile>src/it/settings.xml</settingsFile>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -174,6 +173,25 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.8</version>
+        <executions>
+          <execution>
+            <id>generate-test-report</id>
+            <phase>pre-site</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target name="generate-failsafe-test-report">
+                <move file="${project.build.directory}/source-site/resources/xsd/surefire-test-report.xsd" tofile="${project.build.directory}/source-site/resources/xsd/failsafe-test-report.xsd" />
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
         <configuration>
           <siteDirectory>${project.build.directory}/source-site</siteDirectory>
@@ -205,7 +223,6 @@
           </execution>
         </executions>
       </plugin>
-
     </plugins>
   </build>
 
@@ -260,20 +277,46 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-invoker-plugin</artifactId>
-            <configuration>
-              <streamLogs>false</streamLogs>
-              <skipInstallation>${skipTests}</skipInstallation>
-              <skipInvocation>${skipTests}</skipInvocation>
-            </configuration>
             <executions>
+              <execution>
+                <id>pre-its</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>install</goal>
+                </goals>
+                <configuration>
+                  <skipInstallation>${skipTests}</skipInstallation>
+                </configuration>
+              </execution>
               <execution>
                 <id>integration-test</id>
                 <goals>
-                  <goal>install</goal>
                   <goal>run</goal>
                 </goals>
+                <configuration>
+                  <projectsDirectory>src/it</projectsDirectory>
+                  <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+                  <goals>
+                    <goal>clean</goal>
+                    <goal>verify</goal>
+                  </goals>
+                  <setupIncludes>
+                    <setupInclude>dummy-*/pom.xml</setupInclude>
+                  </setupIncludes>
+                  <pomIncludes>
+                    <pomInclude>*/pom.xml</pomInclude>
+                  </pomIncludes>
+                  <postBuildHookScript>verify</postBuildHookScript>
+                  <settingsFile>src/it/settings.xml</settingsFile>
+                  <skipInvocation>${skipTests}</skipInvocation>
+                  <streamLogs>false</streamLogs>
+                  <showErrors>true</showErrors>
+                </configuration>
               </execution>
             </executions>
+            <configuration>
+              <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+            </configuration>
           </plugin>
         </plugins>
       </build>

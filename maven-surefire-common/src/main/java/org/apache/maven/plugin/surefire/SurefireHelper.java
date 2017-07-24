@@ -23,22 +23,58 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.internal.DumpFileUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+
+import static java.util.Collections.unmodifiableList;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
+import static org.apache.maven.surefire.booter.DumpErrorSingleton.DUMPSTREAM_FILE_EXT;
+import static org.apache.maven.surefire.booter.DumpErrorSingleton.DUMP_FILE_EXT;
+import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
+import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_ERROR;
+import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_INFO;
+import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_WARN;
+import static org.apache.maven.surefire.cli.CommandLineOption.SHOW_ERRORS;
 
 /**
  * Helper class for surefire plugins
  */
 public final class SurefireHelper
 {
+    private static final String DUMP_FILE_DATE = DumpFileUtils.newFormattedDateFileName();
+
+    public static final String DUMP_FILE_PREFIX = DUMP_FILE_DATE + "-jvmRun";
+
+    public static final String DUMPSTREAM_FILENAME_FORMATTER = DUMP_FILE_PREFIX + "%d" + DUMPSTREAM_FILE_EXT;
+
+    /**
+     * The maximum path that does not require long path prefix on Windows.<br>
+     * See {@code sun/nio/fs/WindowsPath} in
+     * <a href=
+     * "http://hg.openjdk.java.net/jdk8/jdk8/jdk/file/7534523b4174/src/windows/classes/sun/nio/fs/WindowsPath.java#l46">
+     * OpenJDK</a>
+     * and <a href="https://msdn.microsoft.com/en-us/library/aa365247(VS.85).aspx#maxpath">MSDN article</a>.
+     * <br>
+     * The maximum path is 260 minus 1 (NUL) but for directories it is 260
+     * minus 12 minus 1 (to allow for the creation of a 8.3 file in the directory).
+     */
+    private static final int MAX_PATH_LENGTH_WINDOWS = 247;
+
+    private static final String[] DUMP_FILES_PRINT =
+            {
+                    "[date]-jvmRun[N]" + DUMP_FILE_EXT,
+                    "[date]" + DUMPSTREAM_FILE_EXT,
+                    "[date]-jvmRun[N]" + DUMPSTREAM_FILE_EXT
+            };
 
     /**
      * Do not instantiate.
@@ -48,72 +84,56 @@ public final class SurefireHelper
         throw new IllegalAccessError( "Utility class" );
     }
 
-    public static void reportExecution( SurefireReportParameters reportParameters, RunResult result, Log log )
+    public static String[] getDumpFilesToPrint()
+    {
+        return DUMP_FILES_PRINT.clone();
+    }
+
+    public static void reportExecution( SurefireReportParameters reportParameters, RunResult result,
+                                        PluginConsoleLogger log, Exception firstForkException )
         throws MojoFailureException, MojoExecutionException
     {
-        boolean timeoutOrOtherFailure = result.isFailureOrTimeout();
-
-        if ( !timeoutOrOtherFailure )
+        if ( firstForkException == null && !result.isTimeout() && result.isErrorFree() )
         {
-            if ( result.getCompletedCount() == 0 )
+            if ( result.getCompletedCount() == 0 && failIfNoTests( reportParameters ) )
             {
-                if ( ( reportParameters.getFailIfNoTests() == null ) || !reportParameters.getFailIfNoTests() )
-                {
-                    return;
-                }
-                throw new MojoFailureException(
-                    "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
+                throw new MojoFailureException( "No tests were executed!  "
+                                                        + "(Set -DfailIfNoTests=false to ignore this error.)" );
             }
-
-            if ( result.isErrorFree() )
-            {
-                return;
-            }
+            return;
         }
-
-        String msg = timeoutOrOtherFailure
-            ? "There was a timeout or other error in the fork"
-            : "There are test failures.\n\nPlease refer to " + reportParameters.getReportsDirectory()
-                + " for the individual test results.";
 
         if ( reportParameters.isTestFailureIgnore() )
         {
-            log.error( msg );
+            log.error( createErrorMessage( reportParameters, result, firstForkException ) );
         }
         else
         {
-            if ( result.isFailure() )
-            {
-                throw new MojoExecutionException( msg );
-            }
-            else
-            {
-                throw new MojoFailureException( msg );
-            }
+            throwException( reportParameters, result, firstForkException );
         }
     }
 
-    public static List<CommandLineOption> commandLineOptions( MavenSession session, Log log )
+    public static List<CommandLineOption> commandLineOptions( MavenSession session, PluginConsoleLogger log )
     {
         List<CommandLineOption> cli = new ArrayList<CommandLineOption>();
         if ( log.isErrorEnabled() )
         {
-            cli.add( CommandLineOption.LOGGING_LEVEL_ERROR );
+            cli.add( LOGGING_LEVEL_ERROR );
         }
 
         if ( log.isWarnEnabled() )
         {
-            cli.add( CommandLineOption.LOGGING_LEVEL_WARN );
+            cli.add( LOGGING_LEVEL_WARN );
         }
 
         if ( log.isInfoEnabled() )
         {
-            cli.add( CommandLineOption.LOGGING_LEVEL_INFO );
+            cli.add( LOGGING_LEVEL_INFO );
         }
 
         if ( log.isDebugEnabled() )
         {
-            cli.add( CommandLineOption.LOGGING_LEVEL_DEBUG );
+            cli.add( LOGGING_LEVEL_DEBUG );
         }
 
         try
@@ -121,32 +141,32 @@ public final class SurefireHelper
             Method getRequestMethod = session.getClass().getMethod( "getRequest" );
             MavenExecutionRequest request = (MavenExecutionRequest) getRequestMethod.invoke( session );
 
+            if ( request.isShowErrors() )
+            {
+                cli.add( SHOW_ERRORS );
+            }
+
             String f = getFailureBehavior( request );
             if ( f != null )
             {
                 // compatible with enums Maven 3.0
                 cli.add( CommandLineOption.valueOf( f.startsWith( "REACTOR_" ) ? f : "REACTOR_" + f ) );
             }
-
-            if ( request.isShowErrors() )
-            {
-                cli.add( CommandLineOption.SHOW_ERRORS );
-            }
         }
         catch ( Exception e )
         {
             // don't need to log the exception that Maven 2 does not have getRequest() method in Maven Session
         }
-        return Collections.unmodifiableList( cli );
+        return unmodifiableList( cli );
     }
 
-    public static void logDebugOrCliShowErrors( CharSequence s, Log log, Collection<CommandLineOption> cli )
+    public static void logDebugOrCliShowErrors( String s, PluginConsoleLogger log, Collection<CommandLineOption> cli )
     {
-        if ( cli.contains( CommandLineOption.LOGGING_LEVEL_DEBUG ) )
+        if ( cli.contains( LOGGING_LEVEL_DEBUG ) )
         {
             log.debug( s );
         }
-        else if ( cli.contains( CommandLineOption.SHOW_ERRORS ) )
+        else if ( cli.contains( SHOW_ERRORS ) )
         {
             if ( log.isDebugEnabled() )
             {
@@ -157,6 +177,28 @@ public final class SurefireHelper
                 log.info( s );
             }
         }
+    }
+
+    /**
+     * Escape file path for Windows when the path is too long; otherwise returns {@code path}.
+     * <br>
+     * See <a href=
+     * "http://hg.openjdk.java.net/jdk8/jdk8/jdk/file/7534523b4174/src/windows/classes/sun/nio/fs/WindowsPath.java#l46">
+     * sun/nio/fs/WindowsPath</a> for "long path" value explanation (=247), and
+     * <a href="https://msdn.microsoft.com/en-us/library/aa365247(VS.85).aspx#maxpath">MSDN article</a>
+     * for detailed escaping strategy explanation: in short, {@code \\?\} prefix for path with drive letter
+     * or {@code \\?\UNC\} for UNC path.
+     *
+     * @param path    source path
+     * @return escaped to platform path
+     */
+    public static String escapeToPlatformPath( String path )
+    {
+        if ( IS_OS_WINDOWS && path.length() > MAX_PATH_LENGTH_WINDOWS )
+        {
+            path = path.startsWith( "\\\\" ) ? "\\\\?\\UNC\\" + path.substring( 2 ) : "\\\\?\\" + path;
+        }
+        return path;
     }
 
     private static String getFailureBehavior( MavenExecutionRequest request )
@@ -172,6 +214,71 @@ public final class SurefireHelper
                 .getMethod( "getReactorFailureBehavior" )
                 .invoke( request );
         }
+    }
+
+    private static boolean failIfNoTests( SurefireReportParameters reportParameters )
+    {
+        return reportParameters.getFailIfNoTests() != null && reportParameters.getFailIfNoTests();
+    }
+
+    private static boolean isFatal( Exception firstForkException )
+    {
+        return firstForkException != null && !( firstForkException instanceof TestSetFailedException );
+    }
+
+    private static void throwException( SurefireReportParameters reportParameters, RunResult result,
+                                           Exception firstForkException )
+            throws MojoFailureException, MojoExecutionException
+    {
+        if ( isFatal( firstForkException ) || result.isInternalError()  )
+        {
+            throw new MojoExecutionException( createErrorMessage( reportParameters, result, firstForkException ),
+                                                    firstForkException );
+        }
+        else
+        {
+            throw new MojoFailureException( createErrorMessage( reportParameters, result, firstForkException ),
+                                                  firstForkException );
+        }
+    }
+
+    private static String createErrorMessage( SurefireReportParameters reportParameters, RunResult result,
+                                              Exception firstForkException )
+    {
+        StringBuilder msg = new StringBuilder( 512 );
+
+        if ( result.isTimeout() )
+        {
+            msg.append( "There was a timeout or other error in the fork" );
+        }
+        else
+        {
+            msg.append( "There are test failures.\n\nPlease refer to " )
+                    .append( reportParameters.getReportsDirectory() )
+                    .append( " for the individual test results." )
+                    .append( '\n' )
+                    .append( "Please refer to dump files (if any exist) " )
+                    .append( DUMP_FILES_PRINT[0] )
+                    .append( ", " )
+                    .append( DUMP_FILES_PRINT[1] )
+                    .append( " and " )
+                    .append( DUMP_FILES_PRINT[2] )
+                    .append( "." );
+        }
+
+        if ( firstForkException != null && firstForkException.getLocalizedMessage() != null )
+        {
+            msg.append( '\n' )
+                    .append( firstForkException.getLocalizedMessage() );
+        }
+
+        if ( result.isFailure() )
+        {
+            msg.append( '\n' )
+                    .append( result.getFailure() );
+        }
+
+        return msg.toString();
     }
 
 }

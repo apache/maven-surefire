@@ -68,7 +68,6 @@ public class SystemPropertyManager
         return loadProperties( new FileInputStream( file ) );
     }
 
-
     public static void setSystemProperties( File file )
         throws IOException
     {

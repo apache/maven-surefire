@@ -21,7 +21,7 @@ package org.apache.maven.surefire.providerapi;
 
 import org.apache.maven.surefire.booter.Shutdown;
 import org.apache.maven.surefire.cli.CommandLineOption;
-import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.report.ConsoleStream;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
@@ -36,10 +36,10 @@ import java.util.Map;
 
 /**
  * Injected into the providers upon provider construction. Allows the provider to request services and data it needs.
- * <p/>
+ * <br>
  * NOTE: This class is part of the proposed public api for surefire providers from 2.7 and up. It may
  * still be subject to changes, even for minor revisions.
- * <p/>
+ * <br>
  * The api covers this interface and all the types reachable from it. And nothing else.
  *
  * @author Kristian Rosenvold
@@ -80,13 +80,13 @@ public interface ProviderParameters
 
     /**
      * Gets a logger intended for console output.
-     * <p/>
+     * <br>
      * This output is intended for provider-oriented messages that are not attached to a single test-set
      * and will normally be written to something console-like immediately.
      *
-     * @return A console logger
+     * @return A console stream logger
      */
-    ConsoleLogger getConsoleLogger();
+    ConsoleStream getConsoleLogger();
 
     /**
      * The raw parameters used in creating the directory scanner
@@ -136,7 +136,7 @@ public interface ProviderParameters
     List<CommandLineOption> getMainCliOptions();
 
     /**
-     * Defaults to 0. Configured with parameter <em>skipAfterFailureCount</em> in POM.
+     * @return Defaults to 0. Configured with parameter {@code skipAfterFailureCount} in POM.
      */
     int getSkipAfterFailureCount();
 
@@ -147,4 +147,6 @@ public interface ProviderParameters
     boolean isInsideFork();
 
     Shutdown getShutdown();
+
+    Integer getSystemExitTimeout();
 }

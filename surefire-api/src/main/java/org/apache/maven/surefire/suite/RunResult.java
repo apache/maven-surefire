@@ -19,26 +19,12 @@ package org.apache.maven.surefire.suite;
  * under the License.
  */
 
-import org.apache.maven.shared.utils.StringUtils;
-import org.apache.maven.shared.utils.io.IOUtil;
-import org.apache.maven.shared.utils.xml.PrettyPrintXMLWriter;
-import org.apache.maven.shared.utils.xml.Xpp3Dom;
-import org.apache.maven.shared.utils.xml.Xpp3DomBuilder;
-import org.apache.maven.shared.utils.xml.Xpp3DomWriter;
-
-import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 
 /**
  * Represents a test-run-result; this may be from a single test run or an aggregated result.
- * <p/>
+ * <br>
  * In the case of timeout==true, the run-counts reflect the state of the test-run at the time
  * of the timeout.
  *
@@ -79,8 +65,7 @@ public class RunResult
     private static RunResult errorCode( RunResult other, String failure, boolean timeout )
     {
         return new RunResult( other.getCompletedCount(), other.getErrors(), other.getFailures(), other.getSkipped(),
-                              failure, timeout );
-
+                                    failure, timeout );
     }
 
     public RunResult( int completedCount, int errors, int failures, int skipped )
@@ -121,6 +106,7 @@ public class RunResult
         try
         {
             e.printStackTrace( pw );
+            pw.flush();
         }
         finally
         {
@@ -170,13 +156,18 @@ public class RunResult
     /* Indicates if the tests are error free */
     public boolean isErrorFree()
     {
-        return getFailures() == 0 && getErrors() == 0;
+        return getFailures() == 0 && getErrors() == 0 && !isFailure();
+    }
+
+    public boolean isInternalError()
+    {
+        return getFailures() == 0 && getErrors() == 0 && isFailure();
     }
 
     /* Indicates test timeout or technical failure */
     public boolean isFailureOrTimeout()
     {
-        return this.timeout || isFailure();
+        return isTimeout() || isFailure();
     }
 
     public boolean isFailure()
@@ -193,7 +184,6 @@ public class RunResult
     {
         return timeout;
     }
-
 
     public RunResult aggregate( RunResult other )
     {
@@ -212,83 +202,7 @@ public class RunResult
         return new RunResult( 0, 0, 0, 0 );
     }
 
-    private Xpp3Dom create( String node, String value )
-    {
-        Xpp3Dom dom = new Xpp3Dom( node );
-        dom.setValue( value );
-        return dom;
-    }
-
-    private Xpp3Dom create( String node, int value )
-    {
-        return create( node, Integer.toString( value ) );
-    }
-
-    Xpp3Dom asXpp3Dom()
-    {
-        Xpp3Dom dom = new Xpp3Dom( "failsafe-summary" );
-        Integer failsafeCode = getFailsafeCode();
-        if ( failsafeCode != null )
-        {
-            dom.setAttribute( "result", Integer.toString( failsafeCode ) );
-        }
-        dom.setAttribute( "timeout", Boolean.toString( this.timeout ) );
-        dom.addChild( create( "completed", this.completedCount ) );
-        dom.addChild( create( "errors", this.errors ) );
-        dom.addChild( create( "failures", this.failures ) );
-        dom.addChild( create( "skipped", this.skipped ) );
-        dom.addChild( create( "failureMessage", this.failure ) );
-        return dom;
-    }
-
-    public static RunResult fromInputStream( InputStream inputStream, String encoding )
-        throws FileNotFoundException
-    {
-        Xpp3Dom dom = Xpp3DomBuilder.build( inputStream, encoding );
-        boolean timeout = Boolean.parseBoolean( dom.getAttribute( "timeout" ) );
-        int completed = Integer.parseInt( dom.getChild( "completed" ).getValue() );
-        int errors = Integer.parseInt( dom.getChild( "errors" ).getValue() );
-        int failures = Integer.parseInt( dom.getChild( "failures" ).getValue() );
-        int skipped = Integer.parseInt( dom.getChild( "skipped" ).getValue() );
-        String failureMessage1 = dom.getChild( "failureMessage" ).getValue();
-        String failureMessage = StringUtils.isEmpty( failureMessage1 ) ? null : failureMessage1;
-        return new RunResult( completed, errors, failures, skipped, failureMessage, timeout );
-    }
-
-    public void writeSummary( File summaryFile, boolean inProgress, String encoding )
-        throws IOException
-    {
-        if ( !summaryFile.getParentFile().isDirectory() )
-        {
-            //noinspection ResultOfMethodCallIgnored
-            summaryFile.getParentFile().mkdirs();
-        }
-
-        FileInputStream fin = null;
-        FileWriter writer = null;
-        try
-        {
-            RunResult mergedSummary = this;
-            if ( summaryFile.exists() && inProgress )
-            {
-                fin = new FileInputStream( summaryFile );
-
-                RunResult runResult = RunResult.fromInputStream( new BufferedInputStream( fin ), encoding );
-                mergedSummary = mergedSummary.aggregate( runResult );
-            }
-
-            writer = new FileWriter( summaryFile );
-            writer.write( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" );
-            PrettyPrintXMLWriter prettyPrintXMLWriter = new PrettyPrintXMLWriter( writer );
-            Xpp3DomWriter.write( prettyPrintXMLWriter, mergedSummary.asXpp3Dom() );
-        }
-        finally
-        {
-            IOUtil.close( fin );
-            IOUtil.close( writer );
-        }
-    }
-
+    @Override
     @SuppressWarnings( "RedundantIfStatement" )
     public boolean equals( Object o )
     {
@@ -331,6 +245,7 @@ public class RunResult
         return true;
     }
 
+    @Override
     public int hashCode()
     {
         int result = completedCount;

@@ -19,15 +19,21 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * under the License.
  */
 
+import org.apache.maven.surefire.booter.Command;
+import org.apache.maven.surefire.booter.MasterProcessCommand;
 import org.junit.Test;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.maven.surefire.booter.MasterProcessCommand.BYE_ACK;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.decode;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -58,6 +64,7 @@ public class TestProvidingInputStreamTest
         final Thread streamThread = Thread.currentThread();
         FutureTask<Thread.State> futureTask = new FutureTask<Thread.State>( new Callable<Thread.State>()
         {
+            @Override
             public Thread.State call()
             {
                 sleep( 1000 );
@@ -82,6 +89,7 @@ public class TestProvidingInputStreamTest
         is.testSetFinished();
         new Thread( new Runnable()
         {
+            @Override
             public void run()
             {
                 is.provideNewTest();
@@ -95,6 +103,7 @@ public class TestProvidingInputStreamTest
         assertThat( is.read(), is( 0 ) );
         assertThat( is.read(), is( 0 ) );
         assertThat( is.read(), is( 0 ) );
+        is.close();
         assertThat( is.read(), is( -1 ) );
     }
 
@@ -107,6 +116,7 @@ public class TestProvidingInputStreamTest
         final TestProvidingInputStream is = new TestProvidingInputStream( commands );
         new Thread( new Runnable()
         {
+            @Override
             public void run()
             {
                 is.provideNewTest();
@@ -124,6 +134,22 @@ public class TestProvidingInputStreamTest
         assertThat( is.read(), is( (int) 'e' ) );
         assertThat( is.read(), is( (int) 's' ) );
         assertThat( is.read(), is( (int) 't' ) );
+    }
+
+    @Test
+    public void shouldDecodeTwoCommands()
+            throws IOException
+    {
+        TestProvidingInputStream pluginIs = new TestProvidingInputStream( new ConcurrentLinkedDeque<String>() );
+        pluginIs.acknowledgeByeEventReceived();
+        pluginIs.noop();
+        DataInputStream is = new DataInputStream( pluginIs );
+        Command bye = decode( is );
+        assertThat( bye, is( notNullValue() ) );
+        assertThat( bye.getCommandType(), is( BYE_ACK ) );
+        Command noop = decode( is );
+        assertThat( noop, is( notNullValue() ) );
+        assertThat( noop.getCommandType(), is( MasterProcessCommand.NOOP ) );
     }
 
     private static void sleep( long millis )

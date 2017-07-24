@@ -19,29 +19,28 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.Collection;
-
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils;
 import org.apache.maven.plugin.surefire.SurefireHelper;
 import org.apache.maven.plugin.surefire.SurefireReportParameters;
+import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.shared.utils.ReaderFactory;
-import org.apache.maven.shared.utils.StringUtils;
-import org.apache.maven.shared.utils.io.IOUtil;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.suite.RunResult;
+
+import javax.xml.bind.JAXBException;
+import java.io.File;
+import java.util.Collection;
+
+import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
+import static org.apache.maven.shared.utils.StringUtils.capitalizeFirstLetter;
+import static org.apache.maven.surefire.suite.RunResult.noTestsRun;
 
 /**
  * Verify integration tests ran using Surefire.
@@ -49,10 +48,11 @@ import org.apache.maven.surefire.suite.RunResult;
  * @author Stephen Connolly
  * @author Jason van Zyl
  */
+@SuppressWarnings( "unused" )
 @Mojo( name = "verify", defaultPhase = LifecyclePhase.VERIFY, requiresProject = true, threadSafe = true )
 public class VerifyMojo
-    extends AbstractMojo
-    implements SurefireReportParameters
+        extends AbstractMojo
+        implements SurefireReportParameters
 {
 
     /**
@@ -159,78 +159,66 @@ public class VerifyMojo
 
     private Collection<CommandLineOption> cli;
 
+    private volatile PluginConsoleLogger consoleLogger;
+
+    @Override
     public void execute()
-        throws MojoExecutionException, MojoFailureException
+            throws MojoExecutionException, MojoFailureException
     {
         cli = commandLineOptions();
         if ( verifyParameters() )
         {
-            logDebugOrCliShowErrors(
-                StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
+            logDebugOrCliShowErrors( capitalizeFirstLetter( getPluginName() )
+                                             + " report directory: " + getReportsDirectory() );
 
             RunResult summary;
             try
             {
-                final String encoding;
-                if ( StringUtils.isEmpty( this.encoding ) )
-                {
-                    getLog().warn( "File encoding has not been set, using platform encoding "
-                            + ReaderFactory.FILE_ENCODING
-                            + ", i.e. build is platform dependent! The file encoding for reports output files "
-                            + "should be provided by the POM property ${project.reporting.outputEncoding}." );
-                    encoding = ReaderFactory.FILE_ENCODING;
-                }
-                else
-                {
-                    encoding = this.encoding;
-                }
-
-                summary = existsSummaryFile() ? readSummary( encoding, summaryFile ) : RunResult.noTestsRun();
+                summary = existsSummaryFile() ? readSummary( summaryFile ) : noTestsRun();
 
                 if ( existsSummaryFiles() )
                 {
                     for ( final File summaryFile : summaryFiles )
                     {
-                        summary = summary.aggregate( readSummary( encoding, summaryFile ) );
+                        summary = summary.aggregate( readSummary( summaryFile ) );
                     }
                 }
             }
-            catch ( IOException e )
+            catch ( JAXBException e )
             {
                 throw new MojoExecutionException( e.getMessage(), e );
             }
 
-            SurefireHelper.reportExecution( this, summary, getLog() );
+            reportExecution( this, summary, getConsoleLogger(), null );
         }
     }
 
-    private RunResult readSummary( String encoding, File summaryFile )
-        throws IOException
+    private PluginConsoleLogger getConsoleLogger()
     {
-        FileInputStream fileInputStream = null;
-        BufferedInputStream bufferedInputStream = null;
-        Reader reader = null;
-        try
+        if ( consoleLogger == null )
         {
-            fileInputStream = new FileInputStream( summaryFile );
-            bufferedInputStream = new BufferedInputStream( fileInputStream );
-            reader = new InputStreamReader( bufferedInputStream, encoding );
-            return RunResult.fromInputStream( bufferedInputStream, encoding );
+            synchronized ( this )
+            {
+                if ( consoleLogger == null )
+                {
+                    consoleLogger = new PluginConsoleLogger( getLog() );
+                }
+            }
         }
-        finally
-        {
-            IOUtil.close( reader );
-            IOUtil.close( bufferedInputStream );
-            IOUtil.close( fileInputStream );
-        }
+        return consoleLogger;
+    }
+
+    private RunResult readSummary( File summaryFile ) throws JAXBException
+    {
+        return FailsafeSummaryXmlUtils.toRunResult( summaryFile );
     }
 
     protected boolean verifyParameters()
-        throws MojoFailureException
+            throws MojoFailureException
     {
         if ( isSkip() || isSkipTests() || isSkipITs() || isSkipExec() )
         {
-            getLog().info( "Tests are skipped." );
+            getConsoleLogger().info( "Tests are skipped." );
             return false;
         }
 
@@ -244,7 +232,7 @@ public class VerifyMojo
 
         if ( !existsSummary() )
         {
-            getLog().info( "No tests to run." );
+            getConsoleLogger().info( "No tests to run." );
             return false;
         }
 
@@ -261,11 +249,13 @@ public class VerifyMojo
         return null;
     }
 
+    @Override
     public boolean isSkipTests()
     {
         return skipTests;
     }
 
+    @Override
     public void setSkipTests( boolean skipTests )
     {
         this.skipTests = skipTests;
@@ -281,73 +271,87 @@ public class VerifyMojo
         this.skipITs = skipITs;
     }
 
+    @Override
     @Deprecated
     public boolean isSkipExec()
     {
         return skipExec;
     }
 
+    @Override
     @Deprecated
     public void setSkipExec( boolean skipExec )
     {
         this.skipExec = skipExec;
     }
 
+    @Override
     public boolean isSkip()
     {
         return skip;
     }
 
+    @Override
     public void setSkip( boolean skip )
     {
         this.skip = skip;
     }
 
+    @Override
     public boolean isTestFailureIgnore()
     {
         return testFailureIgnore;
     }
 
+    @Override
     public void setTestFailureIgnore( boolean testFailureIgnore )
     {
         this.testFailureIgnore = testFailureIgnore;
     }
 
+    @Override
     public File getBasedir()
     {
         return basedir;
     }
 
+    @Override
     public void setBasedir( File basedir )
     {
         this.basedir = basedir;
     }
 
+    @Override
     public File getTestClassesDirectory()
     {
         return testClassesDirectory;
     }
 
+    @Override
     public void setTestClassesDirectory( File testClassesDirectory )
     {
         this.testClassesDirectory = testClassesDirectory;
     }
 
+    @Override
     public File getReportsDirectory()
     {
         return reportsDirectory;
     }
 
+    @Override
     public void setReportsDirectory( File reportsDirectory )
     {
         this.reportsDirectory = reportsDirectory;
     }
 
+    @Override
     public Boolean getFailIfNoTests()
     {
         return failIfNoTests;
     }
 
+    @Override
     public void setFailIfNoTests( boolean failIfNoTests )
     {
         this.failIfNoTests = failIfNoTests;
@@ -370,12 +374,12 @@ public class VerifyMojo
 
     private Collection<CommandLineOption> commandLineOptions()
     {
-        return SurefireHelper.commandLineOptions( session, getLog() );
+        return SurefireHelper.commandLineOptions( session, getConsoleLogger() );
     }
 
-    private void logDebugOrCliShowErrors( CharSequence s )
+    private void logDebugOrCliShowErrors( String s )
     {
-        SurefireHelper.logDebugOrCliShowErrors( s, getLog(), cli );
+        SurefireHelper.logDebugOrCliShowErrors( s, getConsoleLogger(), cli );
     }
 
 }

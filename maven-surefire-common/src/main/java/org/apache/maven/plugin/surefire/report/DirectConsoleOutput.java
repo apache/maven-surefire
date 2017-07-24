@@ -23,13 +23,14 @@ import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
 
 import org.apache.maven.surefire.report.ReportEntry;
 
+import static java.nio.charset.Charset.defaultCharset;
+
 /**
  * Outputs test system out/system err directly to the console
- * <p/>
+ * <br>
  * Just a step on the road to getting the separation of reporting concerns
  * operating properly.
  *
@@ -49,13 +50,13 @@ public class DirectConsoleOutput
     }
 
 
+    @Override
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
-        PrintStream stream = stdout ? sout : serr;
-
+        final PrintStream stream = stdout ? sout : serr;
         try
         {
-            CharBuffer decode = Charset.defaultCharset().newDecoder().decode( ByteBuffer.wrap( buf, off, len ) );
+            CharBuffer decode = defaultCharset().newDecoder().decode( ByteBuffer.wrap( buf, off, len ) );
             stream.append( decode );
         }
         catch ( CharacterCodingException e )
@@ -64,16 +65,18 @@ public class DirectConsoleOutput
         }
     }
 
+    @Override
     public void testSetStarting( ReportEntry reportEntry )
     {
     }
 
+    @Override
     public void testSetCompleted( ReportEntry report )
     {
     }
 
+    @Override
     public void close()
     {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 }

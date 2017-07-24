@@ -19,17 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
@@ -38,21 +27,47 @@ import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
-import static org.apache.maven.surefire.booter.Shutdown.EXIT;
-import static org.apache.maven.surefire.booter.Shutdown.KILL;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
+import java.lang.reflect.InvocationTargetException;
+import java.security.AccessControlException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static java.lang.Math.max;
+import static java.lang.System.err;
+import static java.lang.System.out;
+import static java.lang.System.setErr;
+import static java.lang.System.setOut;
+import static java.lang.Thread.currentThread;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.maven.surefire.booter.CommandReader.getReader;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_BYE;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_ERROR;
 import static org.apache.maven.surefire.booter.ForkingRunListener.encode;
+import static org.apache.maven.surefire.booter.SystemPropertyManager.setSystemProperties;
 import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * The part of the booter that is unique to a forked vm.
- * <p/>
+ * <br>
  * Deals with deserialization of the booter wire-level protocol
- * <p/>
+ * <br>
  *
  * @author Jason van Zyl
  * @author Emmanuel Venisse
@@ -60,37 +75,48 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  */
 public final class ForkedBooter
 {
-    private static final long SYSTEM_EXIT_TIMEOUT_IN_SECONDS = 30;
+    private static final long DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS = 30;
     private static final long PING_TIMEOUT_IN_SECONDS = 20;
+    private static final long ONE_SECOND_IN_MILLIS = 1000;
+    private static final CommandReader COMMAND_READER = startupMasterProcessReader();
 
-    private static final ScheduledExecutorService JVM_TERMINATOR = createJvmTerminator();
+    private static volatile ScheduledThreadPoolExecutor jvmTerminator;
+    private static volatile long systemExitTimeoutInSeconds = DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS;
 
     /**
      * This method is invoked when Surefire is forked - this method parses and organizes the arguments passed to it and
-     * then calls the Surefire class' run method. <p/> The system exit code will be 1 if an exception is thrown.
+     * then calls the Surefire class' run method. <br> The system exit code will be 1 if an exception is thrown.
      *
      * @param args Commandline arguments
      */
     public static void main( String... args )
     {
-        final CommandReader reader = startupMasterProcessReader();
-        final ScheduledFuture<?> pingScheduler = listenToShutdownCommands( reader );
-        final PrintStream originalOut = System.out;
+        final PrintStream originalOut = out;
+        ExecutorService pingScheduler = null;
         try
         {
-            if ( args.length > 1 )
+            final String tmpDir = args[0];
+            final String dumpFileName = args[1];
+            final String surefirePropsFileName = args[2];
+            PpidChecker.uniqueCommandLineToken = surefirePropsFileName;
+            pingScheduler = isDebugging() ? null : listenToShutdownCommands();
+
+            BooterDeserializer booterDeserializer =
+                    new BooterDeserializer( createSurefirePropertiesIfFileExists( tmpDir, surefirePropsFileName ) );
+            if ( args.length > 3 )
             {
-                SystemPropertyManager.setSystemProperties( new File( args[1] ) );
+                final String effectiveSystemPropertiesFileName = args[3];
+                setSystemProperties( new File( tmpDir, effectiveSystemPropertiesFileName ) );
             }
 
-            File surefirePropertiesFile = new File( args[0] );
-            InputStream stream = surefirePropertiesFile.exists() ? new FileInputStream( surefirePropertiesFile ) : null;
-            BooterDeserializer booterDeserializer = new BooterDeserializer( stream );
-            ProviderConfiguration providerConfiguration = booterDeserializer.deserialize();
-            final StartupConfiguration startupConfiguration = booterDeserializer.getProviderConfiguration();
+            final ProviderConfiguration providerConfiguration = booterDeserializer.deserialize();
+            DumpErrorSingleton.getSingleton().init( dumpFileName, providerConfiguration.getReporterConfiguration() );
 
-            TypeEncodedValue forkedTestSet = providerConfiguration.getTestForFork();
-            boolean readTestsFromInputStream = providerConfiguration.isReadTestsFromInStream();
+            final StartupConfiguration startupConfiguration = booterDeserializer.getProviderConfiguration();
+            systemExitTimeoutInSeconds =
+                    providerConfiguration.systemExitTimeout( DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS );
+            final TypeEncodedValue forkedTestSet = providerConfiguration.getTestForFork();
+            final boolean readTestsFromInputStream = providerConfiguration.isReadTestsFromInStream();
 
             final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
             if ( startupConfiguration.isManifestOnlyJarRequestedAndUsable() )
@@ -98,7 +124,7 @@ public final class ForkedBooter
                 classpathConfiguration.trickClassPathWhenManifestOnlyClasspath();
             }
 
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            final ClassLoader classLoader = currentThread().getContextClassLoader();
             classLoader.setDefaultAssertionStatus( classpathConfiguration.isEnableAssertions() );
             startupConfiguration.writeSurefireTestClasspathProperty();
 
@@ -122,57 +148,119 @@ public final class ForkedBooter
             }
             catch ( InvocationTargetException t )
             {
-                LegacyPojoStackTraceWriter stackTraceWriter =
-                    new LegacyPojoStackTraceWriter( "test subystem", "no method", t.getTargetException() );
+                DumpErrorSingleton.getSingleton().dumpException( t );
+                StackTraceWriter stackTraceWriter =
+                    new LegacyPojoStackTraceWriter( "test subsystem", "no method", t.getTargetException() );
                 StringBuilder stringBuilder = new StringBuilder();
                 encode( stringBuilder, stackTraceWriter, false );
                 encodeAndWriteToOutput( ( (char) BOOTERCODE_ERROR ) + ",0," + stringBuilder + "\n" , originalOut );
             }
             catch ( Throwable t )
             {
-                StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( "test subystem", "no method", t );
+                DumpErrorSingleton.getSingleton().dumpException( t );
+                StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( "test subsystem", "no method", t );
                 StringBuilder stringBuilder = new StringBuilder();
                 encode( stringBuilder, stackTraceWriter, false );
                 encodeAndWriteToOutput( ( (char) BOOTERCODE_ERROR ) + ",0," + stringBuilder + "\n", originalOut );
             }
-            // Say bye.
-            encodeAndWriteToOutput( ( (char) BOOTERCODE_BYE ) + ",0,BYE!\n", originalOut );
-            originalOut.flush();
-            // noinspection CallToSystemExit
-            exit( 0, EXIT, reader, false );
+            acknowledgedExit( originalOut, pingScheduler );
         }
         catch ( Throwable t )
         {
+            DumpErrorSingleton.getSingleton().dumpException( t );
             // Just throwing does getMessage() and a local trace - we want to call printStackTrace for a full trace
             // noinspection UseOfSystemOutOrSystemErr
-            t.printStackTrace( System.err );
+            t.printStackTrace( err );
+            cancelPingScheduler( pingScheduler );
             // noinspection ProhibitedExceptionThrown,CallToSystemExit
-            exit( 1, EXIT, reader, false );
+            exit( 1 );
         }
-        finally
+    }
+
+    private static void cancelPingScheduler( final ExecutorService pingScheduler )
+    {
+        if ( pingScheduler != null )
         {
-            pingScheduler.cancel( true );
+            try
+            {
+                AccessController.doPrivileged( new PrivilegedAction<Object>()
+                                               {
+                                                   @Override
+                                                   public Object run()
+                                                   {
+                                                       pingScheduler.shutdown();
+                                                       return null;
+                                                   }
+                                               }
+                );
+            }
+            catch ( AccessControlException e )
+            {
+                // ignore
+            }
         }
     }
 
     private static CommandReader startupMasterProcessReader()
     {
-        return CommandReader.getReader();
+        return getReader();
     }
 
-    private static ScheduledFuture<?> listenToShutdownCommands( CommandReader reader )
+    private static ExecutorService listenToShutdownCommands()
     {
-        reader.addShutdownListener( createExitHandler( reader ) );
+        COMMAND_READER.addShutdownListener( createExitHandler() );
         AtomicBoolean pingDone = new AtomicBoolean( true );
-        reader.addNoopListener( createPingHandler( pingDone ) );
-        return JVM_TERMINATOR.scheduleAtFixedRate( createPingJob( pingDone, reader ),
-                                                   0, PING_TIMEOUT_IN_SECONDS, SECONDS );
+        COMMAND_READER.addNoopListener( createPingHandler( pingDone ) );
+        ScheduledExecutorService pingScheduler = createPingScheduler();
+        Future<PpidChecker> checker = pingScheduler.submit( createProcessCheckerJob() );
+        pingScheduler.scheduleWithFixedDelay( processCheckerJob( checker ), 0L, 1L, SECONDS );
+        pingScheduler.scheduleAtFixedRate( createPingJob( pingDone, checker ), 0L, PING_TIMEOUT_IN_SECONDS, SECONDS );
+        return pingScheduler;
+    }
+
+    private static Runnable processCheckerJob( final Future<PpidChecker> processChecker )
+    {
+        return new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if ( processChecker.isDone() && !processChecker.isCancelled() )
+                {
+                    try
+                    {
+                        PpidChecker checker = processChecker.get();
+                        if ( checker.canUse() && !checker.isParentProcessAlive() && !processChecker.isCancelled() )
+                        {
+                            kill();
+                        }
+                    }
+                    catch ( Exception e )
+                    {
+                        // nothing to do
+                    }
+                }
+            }
+        };
+    }
+
+    private static Callable<PpidChecker> createProcessCheckerJob()
+    {
+        return new Callable<PpidChecker>()
+        {
+            @Override
+            public PpidChecker call() throws Exception
+            {
+                return new PpidChecker();
+            }
+        };
     }
 
     private static CommandListener createPingHandler( final AtomicBoolean pingDone )
     {
         return new CommandListener()
         {
+            @Override
             public void update( Command command )
             {
                 pingDone.set( true );
@@ -180,55 +268,113 @@ public final class ForkedBooter
         };
     }
 
-    private static CommandListener createExitHandler( final CommandReader reader )
+    private static CommandListener createExitHandler()
     {
         return new CommandListener()
         {
+            @Override
             public void update( Command command )
             {
-                exit( 1, command.toShutdownData(), reader, true );
+                Shutdown shutdown = command.toShutdownData();
+                if ( shutdown.isKill() )
+                {
+                    kill();
+                }
+                else if ( shutdown.isExit() )
+                {
+                    exit( 1 );
+                }
+                // else refers to shutdown=testset, but not used now, keeping reader open
             }
         };
     }
 
-    private static Runnable createPingJob( final AtomicBoolean pingDone, final CommandReader reader  )
+    private static Runnable createPingJob( final AtomicBoolean pingDone, final Future<PpidChecker> processChecker  )
     {
         return new Runnable()
         {
+            @Override
             public void run()
             {
+                if ( canUseNewPingMechanism( processChecker ) )
+                {
+                    return;
+                }
                 boolean hasPing = pingDone.getAndSet( false );
                 if ( !hasPing )
                 {
-                    exit( 1, KILL, reader, true );
+                    kill();
                 }
             }
         };
+    }
+
+    private static boolean canUseNewPingMechanism( Future<PpidChecker> processChecker )
+    {
+        try
+        {
+            return ( !processChecker.isDone() || processChecker.get().canUse() ) && !processChecker.isCancelled();
+        }
+        catch ( Exception e )
+        {
+            return false;
+        }
     }
 
     private static void encodeAndWriteToOutput( String string, PrintStream out )
     {
         byte[] encodeBytes = encodeStringForForkCommunication( string );
-        out.write( encodeBytes, 0, encodeBytes.length );
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        synchronized ( out )
+        {
+            out.write( encodeBytes, 0, encodeBytes.length );
+            out.flush();
+        }
     }
 
-    private static void exit( int returnCode, Shutdown shutdownType, CommandReader reader, boolean stopReaderOnExit )
+    private static void kill()
     {
-        switch ( shutdownType )
+        COMMAND_READER.stop();
+        Runtime.getRuntime().halt( 1 );
+    }
+
+    private static void exit( int returnCode )
+    {
+        launchLastDitchDaemonShutdownThread( returnCode );
+        COMMAND_READER.stop();
+        System.exit( returnCode );
+    }
+
+    private static void acknowledgedExit( PrintStream originalOut, ExecutorService pingScheduler )
+    {
+        final Semaphore barrier = new Semaphore( 0 );
+        COMMAND_READER.addByeAckListener( new CommandListener()
+                                  {
+                                      @Override
+                                      public void update( Command command )
+                                      {
+                                          barrier.release();
+                                      }
+                                  }
+        );
+        encodeAndWriteToOutput( ( (char) BOOTERCODE_BYE ) + ",0,BYE!\n", originalOut );
+        launchLastDitchDaemonShutdownThread( 0 );
+        long timeoutMillis = max( systemExitTimeoutInSeconds * ONE_SECOND_IN_MILLIS, ONE_SECOND_IN_MILLIS );
+        acquireOnePermit( barrier, timeoutMillis );
+        cancelPingScheduler( pingScheduler );
+        COMMAND_READER.stop();
+        System.exit( 0 );
+    }
+
+    private static boolean acquireOnePermit( Semaphore barrier, long timeoutMillis )
+    {
+        try
         {
-            case KILL:
-                Runtime.getRuntime().halt( returnCode );
-            case EXIT:
-                if ( stopReaderOnExit )
-                {
-                    reader.stop();
-                }
-                launchLastDitchDaemonShutdownThread( returnCode );
-                System.exit( returnCode );
-            case DEFAULT:
-                // refers to shutdown=testset, but not used now, keeping reader open
-            default:
-                break;
+            return barrier.tryAcquire( timeoutMillis, MILLISECONDS );
+        }
+        catch ( InterruptedException e )
+        {
+            return true;
         }
     }
 
@@ -240,75 +386,92 @@ public final class ForkedBooter
         final ReporterFactory factory = createForkingReporterFactory( providerConfiguration, originalSystemOut );
 
         return invokeProviderInSameClassLoader( testSet, factory, providerConfiguration, true, startupConfiguration,
-                                                false );
+                                                      false );
     }
 
     private static ReporterFactory createForkingReporterFactory( ProviderConfiguration providerConfiguration,
                                                                  PrintStream originalSystemOut )
     {
         final boolean trimStackTrace = providerConfiguration.getReporterConfiguration().isTrimStackTrace();
-        return SurefireReflector.createForkingReporterFactoryInCurrentClassLoader( trimStackTrace, originalSystemOut );
+        return new ForkingReporterFactory( trimStackTrace, originalSystemOut );
     }
 
-    private static ScheduledExecutorService createJvmTerminator()
+    private static synchronized ScheduledThreadPoolExecutor getJvmTerminator()
     {
-        ThreadFactory threadFactory = newDaemonThreadFactory( "last-ditch-daemon-shutdown-thread-"
-                                                            + SYSTEM_EXIT_TIMEOUT_IN_SECONDS
-                                                            + "sec" );
+        if ( jvmTerminator == null )
+        {
+            ThreadFactory threadFactory =
+                    newDaemonThreadFactory( "last-ditch-daemon-shutdown-thread-" + systemExitTimeoutInSeconds + "s" );
+            jvmTerminator = new ScheduledThreadPoolExecutor( 1, threadFactory );
+            jvmTerminator.setMaximumPoolSize( 1 );
+            return jvmTerminator;
+        }
+        else
+        {
+            return jvmTerminator;
+        }
+    }
+
+    private static ScheduledExecutorService createPingScheduler()
+    {
+        ThreadFactory threadFactory = newDaemonThreadFactory( "ping-" + PING_TIMEOUT_IN_SECONDS + "s" );
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor( 1, threadFactory );
-        executor.setMaximumPoolSize( 1 );
-        executor.prestartCoreThread();
+        executor.setKeepAliveTime( 3L, SECONDS );
+        executor.setMaximumPoolSize( 3 );
         return executor;
     }
 
     @SuppressWarnings( "checkstyle:emptyblock" )
     private static void launchLastDitchDaemonShutdownThread( final int returnCode )
     {
-        JVM_TERMINATOR.schedule( new Runnable()
-        {
-            public void run()
-            {
-                Runtime.getRuntime().halt( returnCode );
-            }
-        }, SYSTEM_EXIT_TIMEOUT_IN_SECONDS, SECONDS );
+        getJvmTerminator().schedule( new Runnable()
+                                        {
+                                            @Override
+                                            public void run()
+                                            {
+                                                COMMAND_READER.stop();
+                                                Runtime.getRuntime().halt( returnCode );
+                                            }
+                                        }, systemExitTimeoutInSeconds, SECONDS
+        );
     }
 
     private static RunResult invokeProviderInSameClassLoader( Object testSet, Object factory,
-                                                             ProviderConfiguration providerConfiguration,
-                                                             boolean insideFork,
-                                                             StartupConfiguration startupConfig,
-                                                             boolean restoreStreams )
+                                                              ProviderConfiguration providerConfig,
+                                                              boolean insideFork,
+                                                              StartupConfiguration startupConfig,
+                                                              boolean restoreStreams )
         throws TestSetFailedException, InvocationTargetException
     {
-        final PrintStream orgSystemOut = System.out;
-        final PrintStream orgSystemErr = System.err;
-        // Note that System.out/System.err are also read in the "ReporterConfiguration" instatiation
+        final PrintStream orgSystemOut = out;
+        final PrintStream orgSystemErr = err;
+        // Note that System.out/System.err are also read in the "ReporterConfiguration" instantiation
         // in createProvider below. These are the same values as here.
 
         try
         {
-            return createProviderInCurrentClassloader( startupConfig, insideFork, providerConfiguration, factory )
-                .invoke( testSet );
+            return createProviderInCurrentClassloader( startupConfig, insideFork, providerConfig, factory )
+                           .invoke( testSet );
         }
         finally
         {
             if ( restoreStreams && System.getSecurityManager() == null )
             {
-                System.setOut( orgSystemOut );
-                System.setErr( orgSystemErr );
+                setOut( orgSystemOut );
+                setErr( orgSystemErr );
             }
         }
     }
 
-    private static SurefireProvider createProviderInCurrentClassloader( StartupConfiguration startupConfiguration1,
-                                                                       boolean isInsideFork,
+    private static SurefireProvider createProviderInCurrentClassloader( StartupConfiguration startupConfiguration,
+                                                                        boolean isInsideFork,
                                                                        ProviderConfiguration providerConfiguration,
-                                                                       Object reporterManagerFactory1 )
+                                                                       Object reporterManagerFactory )
     {
-        BaseProviderFactory bpf = new BaseProviderFactory( (ReporterFactory) reporterManagerFactory1, isInsideFork );
+        BaseProviderFactory bpf = new BaseProviderFactory( (ReporterFactory) reporterManagerFactory, isInsideFork );
         bpf.setTestRequest( providerConfiguration.getTestSuiteDefinition() );
         bpf.setReporterConfiguration( providerConfiguration.getReporterConfiguration() );
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        ClassLoader classLoader = currentThread().getContextClassLoader();
         bpf.setClassLoaders( classLoader );
         bpf.setTestArtifactInfo( providerConfiguration.getTestArtifact() );
         bpf.setProviderProperties( providerConfiguration.getProviderProperties() );
@@ -317,7 +480,27 @@ public final class ForkedBooter
         bpf.setMainCliOptions( providerConfiguration.getMainCliOptions() );
         bpf.setSkipAfterFailureCount( providerConfiguration.getSkipAfterFailureCount() );
         bpf.setShutdown( providerConfiguration.getShutdown() );
-        String providerClass = startupConfiguration1.getActualClassName();
+        bpf.setSystemExitTimeout( providerConfiguration.getSystemExitTimeout() );
+        String providerClass = startupConfiguration.getActualClassName();
         return (SurefireProvider) instantiateOneArg( classLoader, providerClass, ProviderParameters.class, bpf );
+    }
+
+    private static InputStream createSurefirePropertiesIfFileExists( String tmpDir, String propFileName )
+            throws FileNotFoundException
+    {
+        File surefirePropertiesFile = new File( tmpDir, propFileName );
+        return surefirePropertiesFile.exists() ? new FileInputStream( surefirePropertiesFile ) : null;
+    }
+
+    private static boolean isDebugging()
+    {
+        for ( String argument : ManagementFactory.getRuntimeMXBean().getInputArguments() )
+        {
+            if ( "-Xdebug".equals( argument ) || argument.startsWith( "-agentlib:jdwp" ) )
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -19,38 +19,62 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.Not2xCompatible;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.FilenameFilter;
+
+import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * @author Kristian Rosenvold
  */
-@Category( Not2xCompatible.class )
 public class Surefire735ForkFailWithRedirectConsoleOutputIT
-    extends SurefireJUnit4IntegrationTestCase
+        extends SurefireJUnit4IntegrationTestCase
 {
 
     @Test
     public void vmStartFail()
-        throws Exception
+            throws Exception
     {
-        unpack().failNever().executeTest().verifyTextInLog( "Invalid maximum heap size: -Xmxxxx712743m" );
+        OutputValidator outputValidator = unpack().failNever().executeTest();
+        assertJvmCrashed( outputValidator );
     }
 
     @Test
     public void vmStartFailShouldFailBuildk()
-        throws Exception
+            throws Exception
     {
-        unpack().maven().withFailure().executeTest();
+        OutputValidator outputValidator = unpack().maven().withFailure().executeTest();
+        assertJvmCrashed( outputValidator );
     }
 
-    public SurefireLauncher unpack()
+    private SurefireLauncher unpack()
     {
         return unpack( "fork-fail" );
+    }
+
+    private static void assertJvmCrashed( OutputValidator outputValidator )
+    {
+        File reportDir = outputValidator.getSurefireReportsDirectory();
+        String[] dumpFiles = reportDir.list( new FilenameFilter()
+                                             {
+                                                 @Override
+                                                 public boolean accept( File dir, String name )
+                                                 {
+                                                     return name.endsWith( ".dumpstream" );
+                                                 }
+                                             }
+        );
+        assertThat( dumpFiles ).isNotEmpty();
+        for ( String dump : dumpFiles )
+        {
+            outputValidator.getSurefireReportsFile( dump )
+                    .assertContainsText( "Invalid maximum heap size: -Xmxxxx712743m" );
+        }
     }
 
 }

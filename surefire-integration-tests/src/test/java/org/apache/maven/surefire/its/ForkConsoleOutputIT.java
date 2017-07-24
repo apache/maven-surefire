@@ -19,7 +19,6 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
@@ -37,30 +36,47 @@ public class ForkConsoleOutputIT
     @Test
     public void printSummaryTrueWithRedirect()
     {
-        final OutputValidator outputValidator = unpack().redirectToFile( true ).printSummary( true ).executeTest();
-        outputValidator.getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ).assertFileExists();
+        unpack().setForkJvm()
+                .redirectToFile( true )
+                .printSummary( true )
+                .executeTest()
+                .getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" )
+                .assertFileExists();
     }
 
     @Test
     public void printSummaryTrueWithoutRedirect()
     {
-        final OutputValidator outputValidator = unpack().redirectToFile( false ).printSummary( true ).executeTest();
-        outputValidator.getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ).assertFileNotExists();
+        unpack().setForkJvm()
+                .redirectToFile( false )
+                .printSummary( true )
+                .executeTest()
+                .getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" )
+                .assertFileNotExists();
     }
 
     @Test
     public void printSummaryFalseWithRedirect()
     {
-        final OutputValidator outputValidator =
-            unpack().redirectToFile( true ).printSummary( false ).debugLogging().showErrorStackTraces().executeTest();
-        outputValidator.getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ).assertFileExists();
+        unpack().setForkJvm()
+                .redirectToFile( true )
+                .printSummary( false )
+                .debugLogging()
+                .showErrorStackTraces()
+                .executeTest()
+                .getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" )
+                .assertFileExists();
     }
 
     @Test
     public void printSummaryFalseWithoutRedirect()
     {
-        final OutputValidator outputValidator = unpack().redirectToFile( false ).printSummary( false ).executeTest();
-        outputValidator.getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" ).assertFileNotExists();
+        unpack().setForkJvm()
+                .redirectToFile( false )
+                .printSummary( false )
+                .executeTest()
+                .getSurefireReportsFile( "forkConsoleOutput.Test1-output.txt" )
+                .assertFileNotExists();
     }
 
 

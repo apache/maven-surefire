@@ -45,11 +45,13 @@ final class RangeMatcher
         return new RangeMatcher( from, to );
     }
 
+    @Override
     public void describeTo( Description description )
     {
         description.appendValueList( "between ", " and ", "", from, to );
     }
 
+    @Override
     public boolean matches( Object o )
     {
         long actual = (Long) o;

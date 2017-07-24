@@ -23,38 +23,54 @@ import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.TestFile;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 
+import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertThat;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-1082}
+ * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1082">SUREFIRE-1082</a>
  * @since 2.18
  */
 public class Surefire1082ParallelJUnitParameterizedIT
     extends SurefireJUnit4IntegrationTestCase
 {
+    private static Set<String> printOnlyTestLinesFromConsole( OutputValidator validator )
+            throws VerificationException
+    {
+        return printOnlyTestLines( validator.loadLogLines() );
+    }
 
-    private static Set<String> printOnlyTestLines( OutputValidator validator )
+    private static Set<String> printOnlyTestLinesFromOutFile( OutputValidator validator )
+            throws VerificationException
+    {
+        TestFile report = validator.getSurefireReportsFile( "jiras.surefire1082.Jira1082Test-output.txt" );
+        report.assertFileExists();
+        return printOnlyTestLines( validator.loadFile( report.getFile(), Charset.forName( "UTF-8" ) ) );
+    }
+
+    private static Set<String> printOnlyTestLines( Collection<String> logs )
         throws VerificationException
     {
-        Set<String> log = new TreeSet<String>( validator.loadLogLines() );
-        for ( Iterator<String> it = log.iterator(); it.hasNext(); )
+        Set<String> log = new TreeSet<String>();
+        for ( String line : logs )
         {
-            String line = it.next();
-            if ( !line.startsWith( "class jiras.surefire1082." ) )
+            if ( line.startsWith( "class jiras.surefire1082." ) )
             {
-                it.remove();
+                log.add( line );
             }
         }
         return log;
@@ -65,14 +81,8 @@ public class Surefire1082ParallelJUnitParameterizedIT
         return new IsRegex( r );
     }
 
-    @Test
-    public void test()
-        throws VerificationException
+    private static void assertParallelRun( Set<String> log )
     {
-        OutputValidator validator = unpack().setTestToRun(
-            "Jira1082Test" ).parallelClasses().useUnlimitedThreads().executeTest().verifyErrorFree( 4 );
-
-        Set<String> log = printOnlyTestLines( validator );
         assertThat( log.size(), is( 4 ) );
 
         Set<String> expectedLogs1 = new TreeSet<String>();
@@ -90,6 +100,71 @@ public class Surefire1082ParallelJUnitParameterizedIT
         assertThat( log, anyOf( regex( expectedLogs1 ), regex( expectedLogs2 ) ) );
     }
 
+    @Test
+    public void checkClassesRunParallel()
+        throws VerificationException
+    {
+        OutputValidator validator = unpack().setTestToRun( "Jira1082Test" )
+                                            .parallelClasses()
+                                            .useUnlimitedThreads()
+                                            .executeTest()
+                                            .verifyErrorFree( 4 );
+
+        validator.getSurefireReportsXmlFile( "TEST-jiras.surefire1082.Jira1082Test.xml" )
+                .assertFileExists();
+
+        validator.assertThatLogLine( containsString( "Running jiras.surefire1082.Jira1082Test" ), is( 1 ) );
+
+        Set<String> log = printOnlyTestLinesFromConsole( validator );
+        assertParallelRun( log );
+    }
+
+    @Test
+    public void checkOutFileClassesRunParallel()
+            throws VerificationException
+    {
+        OutputValidator validator = unpack().redirectToFile( true )
+                                            .setTestToRun( "Jira1082Test" )
+                                            .parallelClasses()
+                                            .useUnlimitedThreads()
+                                            .executeTest()
+                                            .verifyErrorFree( 4 );
+
+        validator.getSurefireReportsXmlFile( "TEST-jiras.surefire1082.Jira1082Test.xml" )
+                .assertFileExists();
+
+        validator.assertThatLogLine( containsString( "Running jiras.surefire1082.Jira1082Test" ), is( 1 ) );
+
+        Set<String> log = printOnlyTestLinesFromOutFile( validator );
+        assertParallelRun( log );
+    }
+
+    @Test
+    public void shouldRunTwo() throws VerificationException
+    {
+        OutputValidator validator = unpack().redirectToFile( true )
+                                            .parallelClasses()
+                                            .useUnlimitedThreads()
+                                            .executeTest()
+                                            .verifyErrorFree( 8 );
+
+        validator.getSurefireReportsXmlFile( "TEST-jiras.surefire1082.Jira1082Test.xml" )
+                .assertFileExists();
+
+        validator.getSurefireReportsXmlFile( "TEST-jiras.surefire1082.Jira1264Test.xml" )
+                .assertFileExists();
+
+        validator.getSurefireReportsFile( "jiras.surefire1082.Jira1082Test-output.txt" )
+                .assertFileExists();
+
+        validator.getSurefireReportsFile( "jiras.surefire1082.Jira1264Test-output.txt" )
+                .assertFileExists();
+
+        validator.assertThatLogLine( containsString( "Running jiras.surefire1082.Jira1082Test" ), is( 1 ) );
+
+        validator.assertThatLogLine( containsString( "Running jiras.surefire1082.Jira1264Test" ), is( 1 ) );
+    }
+
     private SurefireLauncher unpack()
     {
         return unpack( "surefire-1082-parallel-junit-parameterized" );
@@ -105,6 +180,7 @@ public class Surefire1082ParallelJUnitParameterizedIT
             this.expectedRegex = expectedRegex;
         }
 
+        @Override
         public boolean matches( Object o )
         {
             if ( o != null && o instanceof Set )
@@ -127,6 +203,7 @@ public class Surefire1082ParallelJUnitParameterizedIT
             }
         }
 
+        @Override
         public void describeTo( Description description )
         {
             description.appendValue( expectedRegex );

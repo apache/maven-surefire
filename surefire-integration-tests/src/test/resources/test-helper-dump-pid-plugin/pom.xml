@@ -40,7 +40,7 @@
 				<artifactId>maven-plugin-plugin</artifactId>
 				<version>3.2</version>
 				<configuration>
-					<!-- see http://jira.codehaus.org/browse/MNG-5346 -->
+					<!-- see https://issues.apache.org/jira/browse/MNG-5346 -->
 					<skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
 				</configuration>
 				<executions>

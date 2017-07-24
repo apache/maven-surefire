@@ -45,4 +45,6 @@ public interface NotifiableTestStream
     void shutdown( Shutdown shutdownType );
 
     void noop();
+
+    void acknowledgeByeEventReceived();
 }

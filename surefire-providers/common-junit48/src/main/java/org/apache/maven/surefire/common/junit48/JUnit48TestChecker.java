@@ -45,6 +45,7 @@ public class JUnit48TestChecker
         this.nonAbstractClassFilter = new NonAbstractClassFilter();
     }
 
+    @Override
     public boolean accept( Class testClass )
     {
         return jUnit4TestChecker.accept( testClass ) || isAbstractWithEnclosedRunner( testClass );

@@ -23,24 +23,26 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import static java.lang.System.setErr;
+import static java.lang.System.setOut;
+import static org.apache.maven.surefire.util.internal.StringUtils.NL;
+
 /**
  * Deals with system.out/err.
- * <p/>
+ * <br>
  */
 public class ConsoleOutputCapture
 {
     public static void startCapture( ConsoleOutputReceiver target )
     {
-        System.setOut( new ForwardingPrintStream( true, target ) );
-
-        System.setErr( new ForwardingPrintStream( false, target ) );
+        setOut( new ForwardingPrintStream( true, target ) );
+        setErr( new ForwardingPrintStream( false, target ) );
     }
 
     private static class ForwardingPrintStream
         extends PrintStream
     {
         private final boolean isStdout;
-
         private final ConsoleOutputReceiver target;
 
         ForwardingPrintStream( boolean stdout, ConsoleOutputReceiver target )
@@ -50,6 +52,7 @@ public class ConsoleOutputCapture
             this.target = target;
         }
 
+        @Override
         public void write( byte[] buf, int off, int len )
         {
             // Note: At this point the supplied "buf" instance is reused, which means
@@ -57,12 +60,14 @@ public class ConsoleOutputCapture
             target.writeTestOutput( buf, off, len, isStdout );
         }
 
+        @Override
         public void write( byte[] b )
             throws IOException
         {
             target.writeTestOutput( b, 0, b.length, isStdout );
         }
 
+        @Override
         public void write( int b )
         {
             byte[] buf = new byte[1];
@@ -77,20 +82,23 @@ public class ConsoleOutputCapture
             }
         }
 
+        @Override
         public void println( String s )
         {
             if ( s == null )
             {
                 s = "null"; // Shamelessly taken from super.print
             }
-            final byte[] bytes = ( s + "\n" ).getBytes();
+            final byte[] bytes = ( s + NL ).getBytes();
             target.writeTestOutput( bytes, 0, bytes.length, isStdout );
         }
 
+        @Override
         public void close()
         {
         }
 
+        @Override
         public void flush()
         {
         }

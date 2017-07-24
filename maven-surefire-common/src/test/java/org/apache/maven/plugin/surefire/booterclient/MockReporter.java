@@ -19,13 +19,15 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.TestSetReportEntry;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Internal tests use only.
@@ -65,24 +67,28 @@ public class MockReporter
 
     private final AtomicInteger testFailed = new AtomicInteger();
 
-    public void testSetStarting( ReportEntry report )
+    @Override
+    public void testSetStarting( TestSetReportEntry report )
     {
         events.add( SET_STARTING );
         data.add( report );
     }
 
-    public void testSetCompleted( ReportEntry report )
+    @Override
+    public void testSetCompleted( TestSetReportEntry report )
     {
         events.add( SET_COMPLETED );
         data.add( report );
     }
 
+    @Override
     public void testStarting( ReportEntry report )
     {
         events.add( TEST_STARTING );
         data.add( report );
     }
 
+    @Override
     public void testSucceeded( ReportEntry report )
     {
         events.add( TEST_SUCCEEDED );
@@ -90,6 +96,7 @@ public class MockReporter
         data.add( report );
     }
 
+    @Override
     public void testError( ReportEntry report )
     {
         events.add( TEST_ERROR );
@@ -97,6 +104,7 @@ public class MockReporter
         testFailed.incrementAndGet();
     }
 
+    @Override
     public void testFailed( ReportEntry report )
     {
         events.add( TEST_FAILED );
@@ -104,6 +112,7 @@ public class MockReporter
         testFailed.incrementAndGet();
     }
 
+    @Override
     public void testSkipped( ReportEntry report )
     {
         events.add( TEST_SKIPPED );
@@ -111,6 +120,7 @@ public class MockReporter
         testIgnored.incrementAndGet();
     }
 
+    @Override
     public void testExecutionSkippedByUser()
     {
     }
@@ -140,6 +150,7 @@ public class MockReporter
         return (ReportEntry) data.get( 0 );
     }
 
+    @Override
     public void testAssumptionFailure( ReportEntry report )
     {
         events.add( TEST_ASSUMPTION_FAIL );
@@ -147,12 +158,45 @@ public class MockReporter
         testIgnored.incrementAndGet();
     }
 
+    @Override
+    public void debug( String message )
+    {
+        events.add( CONSOLE_OUTPUT );
+        data.add( message );
+    }
+
+    @Override
     public void info( String message )
     {
         events.add( CONSOLE_OUTPUT );
         data.add( message );
     }
 
+    @Override
+    public void warning( String message )
+    {
+        events.add( CONSOLE_OUTPUT );
+        data.add( message );
+    }
+
+    @Override
+    public void error( String message )
+    {
+        events.add( CONSOLE_OUTPUT );
+        data.add( message );
+    }
+
+    @Override
+    public void error( String message, Throwable t )
+    {
+    }
+
+    @Override
+    public void error( Throwable t )
+    {
+    }
+
+    @Override
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         events.add( stdout ? STDOUT : STDERR );

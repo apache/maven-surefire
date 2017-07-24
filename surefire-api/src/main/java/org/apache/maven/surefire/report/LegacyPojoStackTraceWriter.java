@@ -29,7 +29,6 @@ import java.io.StringWriter;
  * Write the trace out for a POJO test. Java 1.5 compatible.
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
- * @noinspection ThrowableResultOfMethodCallIgnored
  */
 public class LegacyPojoStackTraceWriter
     implements StackTraceWriter
@@ -49,6 +48,7 @@ public class LegacyPojoStackTraceWriter
         this.t = t;
     }
 
+    @Override
     public String writeTraceToString()
     {
         if ( t != null )
@@ -58,18 +58,18 @@ public class LegacyPojoStackTraceWriter
             try
             {
                 t.printStackTrace( stackTrace );
+                stackTrace.flush();
             }
             finally
             {
                 stackTrace.close();
             }
-            w.flush();
             StringBuffer builder = w.getBuffer();
             if ( isMultiLineExceptionMessage( t ) )
             {
                 // SUREFIRE-986
                 String exc = t.getClass().getName() + ": ";
-                if ( builder.toString().startsWith( exc ) )
+                if ( StringUtils.startsWith( builder, exc ) )
                 {
                     builder.insert( exc.length(), '\n' );
                 }
@@ -79,6 +79,7 @@ public class LegacyPojoStackTraceWriter
         return "";
     }
 
+    @Override
     public String smartTrimmedStackTrace()
     {
         StringBuilder result = new StringBuilder();
@@ -147,6 +148,7 @@ public class LegacyPojoStackTraceWriter
     }
 
 
+    @Override
     public String writeTrimmedTraceToString()
     {
         String text = writeTraceToString();
@@ -189,6 +191,7 @@ public class LegacyPojoStackTraceWriter
         return trace.toString();
     }
 
+    @Override
     public SafeThrowable getThrowable()
     {
         return new SafeThrowable( t );

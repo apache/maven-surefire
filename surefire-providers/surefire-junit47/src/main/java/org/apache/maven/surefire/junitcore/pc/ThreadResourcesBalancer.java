@@ -48,7 +48,7 @@ final class ThreadResourcesBalancer
     /**
      * @param numPermits number of permits to acquire when maintaining concurrency on tests.
      *                   Must be &gt;0 and &lt; {@link Integer#MAX_VALUE}.
-     * @param fair       <tt>true</tt> guarantees the waiting schedulers to wake up in order they acquired a permit
+     * @param fair       {@code true} guarantees the waiting schedulers to wake up in order they acquired a permit
      * @throws IllegalArgumentException if <tt>numPermits</tt> is not positive number
      */
     ThreadResourcesBalancer( int numPermits, boolean fair )
@@ -65,9 +65,10 @@ final class ThreadResourcesBalancer
     /**
      * Acquires a permit from this balancer, blocking until one is available.
      *
-     * @return <code>true</code> if current thread is <em>NOT</em> interrupted
+     * @return {@code true} if current thread is <b>NOT</b> interrupted
      *         while waiting for a permit.
      */
+    @Override
     public boolean acquirePermit()
     {
         try
@@ -84,11 +85,13 @@ final class ThreadResourcesBalancer
     /**
      * Releases a permit, returning it to the balancer.
      */
+    @Override
     public void releasePermit()
     {
         balancer.release();
     }
 
+    @Override
     public void releaseAllPermits()
     {
         balancer.release( numPermits );

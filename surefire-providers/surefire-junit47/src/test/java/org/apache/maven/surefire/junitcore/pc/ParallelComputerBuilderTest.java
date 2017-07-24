@@ -20,7 +20,8 @@ package org.apache.maven.surefire.junitcore.pc;
  */
 
 import net.jcip.annotations.NotThreadSafe;
-import org.apache.maven.surefire.junitcore.Logger;
+import org.apache.maven.surefire.report.ConsoleStream;
+import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -63,6 +64,8 @@ public class ParallelComputerBuilderTest
 
     private static volatile Runnable shutdownTask;
 
+    private static final ConsoleStream logger = new DefaultDirectConsoleReporter( System.out );
+
     @Rule
     public final Stopwatch stopwatch = new Stopwatch() {};
 
@@ -88,8 +91,7 @@ public class ParallelComputerBuilderTest
     }
 
     @Before
-    public void beforeTest()
-    {
+    public void beforeTest() throws InterruptedException {
         Class1.maxConcurrentMethods = 0;
         Class1.concurrentMethods = 0;
         shutdownTask = null;
@@ -98,12 +100,14 @@ public class ParallelComputerBuilderTest
         NotThreadSafeTest3.t = null;
         NormalTest1.t = null;
         NormalTest2.t = null;
+        System.gc();
+        Thread.sleep( 50L );
     }
 
     @Test
     public void parallelMethodsReuseOneOrTwoThreads()
     {
-        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( new Logger() );
+        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( logger );
         parallelComputerBuilder.useOnePool( 4 );
 
         // One thread because one suite: TestSuite, however the capacity is 5.
@@ -122,12 +126,12 @@ public class ParallelComputerBuilderTest
         Result result = new JUnitCore().run( computer, TestSuite.class );
         long timeSpent = stopwatch.runtime( MILLISECONDS );
 
-        assertThat( computer.suites.size(), is( 1 ) );
-        assertThat( computer.classes.size(), is( 0 ) );
-        assertThat( computer.nestedClasses.size(), is( 2 ) );
-        assertThat( computer.nestedSuites.size(), is( 0 ) );
-        assertFalse( computer.splitPool );
-        assertThat( computer.poolCapacity, is( 4 ) );
+        assertThat( computer.getSuites().size(), is( 1 ) );
+        assertThat( computer.getClasses().size(), is( 0 ) );
+        assertThat( computer.getNestedClasses().size(), is( 2 ) );
+        assertThat( computer.getNestedSuites().size(), is( 0 ) );
+        assertFalse( computer.isSplitPool() );
+        assertThat( computer.getPoolCapacity(), is( 4 ) );
         assertTrue( result.wasSuccessful() );
         if ( Class1.maxConcurrentMethods == 1 )
         {
@@ -146,7 +150,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void suiteAndClassInOnePool()
     {
-        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( new Logger() );
+        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( logger );
         parallelComputerBuilder.useOnePool( 5 );
         parallelComputerBuilder.parallelSuites( 5 );
         parallelComputerBuilder.parallelClasses( 5 );
@@ -157,12 +161,12 @@ public class ParallelComputerBuilderTest
         Result result = new JUnitCore().run( computer, TestSuite.class, Class1.class );
         long timeSpent = stopwatch.runtime( MILLISECONDS );
 
-        assertThat( computer.suites.size(), is( 1 ) );
-        assertThat( computer.classes.size(), is( 1 ) );
-        assertThat( computer.nestedClasses.size(), is( 2 ) );
-        assertThat( computer.nestedSuites.size(), is( 0 ) );
-        assertFalse( computer.splitPool );
-        assertThat( computer.poolCapacity, is( 5 ) );
+        assertThat( computer.getSuites().size(), is( 1 ) );
+        assertThat( computer.getClasses().size(), is( 1 ) );
+        assertThat( computer.getNestedClasses().size(), is( 2 ) );
+        assertThat( computer.getNestedSuites().size(), is( 0 ) );
+        assertFalse( computer.isSplitPool() );
+        assertThat( computer.getPoolCapacity(), is( 5 ) );
         assertTrue( result.wasSuccessful() );
         assertThat( Class1.maxConcurrentMethods, is( 2 ) );
         assertThat( timeSpent, anyOf( between( 1450, 1750 ), between( 1950, 2250 ), between( 2450, 2750 ) ) );
@@ -172,7 +176,7 @@ public class ParallelComputerBuilderTest
     public void onePoolWithUnlimitedParallelMethods()
     {
         // see ParallelComputerBuilder Javadoc
-        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( new Logger() );
+        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( logger );
         parallelComputerBuilder.useOnePool( 8 );
         parallelComputerBuilder.parallelSuites( 2 );
         parallelComputerBuilder.parallelClasses( 4 );
@@ -183,12 +187,12 @@ public class ParallelComputerBuilderTest
         Result result = new JUnitCore().run( computer, TestSuite.class, Class1.class );
         long timeSpent = stopwatch.runtime( MILLISECONDS );
 
-        assertThat( computer.suites.size(), is( 1 ) );
-        assertThat( computer.classes.size(), is( 1 ) );
-        assertThat( computer.nestedClasses.size(), is( 2 ) );
-        assertThat( computer.nestedSuites.size(), is( 0 ) );
-        assertFalse( computer.splitPool );
-        assertThat( computer.poolCapacity, is( 8 ) );
+        assertThat( computer.getSuites().size(), is( 1 ) );
+        assertThat( computer.getClasses().size(), is( 1 ) );
+        assertThat( computer.getNestedClasses().size(), is( 2 ) );
+        assertThat( computer.getNestedSuites().size(), is( 0 ) );
+        assertFalse( computer.isSplitPool() );
+        assertThat( computer.getPoolCapacity(), is( 8 ) );
         assertTrue( result.wasSuccessful() );
         assertThat( Class1.maxConcurrentMethods, is( 4 ) );
         assertThat( timeSpent, between( 950, 1250 ) );
@@ -197,7 +201,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void underflowParallelism()
     {
-        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( new Logger() );
+        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( logger );
         parallelComputerBuilder.useOnePool( 3 );
 
         // One thread because one suite: TestSuite.
@@ -215,12 +219,12 @@ public class ParallelComputerBuilderTest
         Result result = new JUnitCore().run( computer, TestSuite.class );
         long timeSpent = stopwatch.runtime( MILLISECONDS );
 
-        assertThat( computer.suites.size(), is( 1 ) );
-        assertThat( computer.classes.size(), is( 0 ) );
-        assertThat( computer.nestedClasses.size(), is( 2 ) );
-        assertThat( computer.nestedSuites.size(), is( 0 ) );
-        assertFalse( computer.splitPool );
-        assertThat( computer.poolCapacity, is( 3 ) );
+        assertThat( computer.getSuites().size(), is( 1 ) );
+        assertThat( computer.getClasses().size(), is( 0 ) );
+        assertThat( computer.getNestedClasses().size(), is( 2 ) );
+        assertThat( computer.getNestedSuites().size(), is( 0 ) );
+        assertFalse( computer.isSplitPool() );
+        assertThat( computer.getPoolCapacity(), is( 3 ) );
         assertTrue( result.wasSuccessful() );
         assertThat( Class1.maxConcurrentMethods, is( 1 ) );
         assertThat( timeSpent, between( 1950, 2250 ) );
@@ -229,7 +233,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void separatePoolsWithSuite()
     {
-        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( new Logger() );
+        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( logger );
         parallelComputerBuilder.parallelSuites( 5 );
         parallelComputerBuilder.parallelClasses( 5 );
         parallelComputerBuilder.parallelMethods( 3 );
@@ -239,12 +243,12 @@ public class ParallelComputerBuilderTest
         Result result = new JUnitCore().run( computer, TestSuite.class );
         long timeSpent = stopwatch.runtime( MILLISECONDS );
 
-        assertThat( computer.suites.size(), is( 1 ) );
-        assertThat( computer.classes.size(), is( 0 ) );
-        assertThat( computer.nestedClasses.size(), is( 2 ) );
-        assertThat( computer.nestedSuites.size(), is( 0 ) );
-        assertTrue( computer.splitPool );
-        assertThat( computer.poolCapacity, is( ParallelComputerBuilder.TOTAL_POOL_SIZE_UNDEFINED ) );
+        assertThat( computer.getSuites().size(), is( 1 ) );
+        assertThat( computer.getClasses().size(), is( 0 ) );
+        assertThat( computer.getNestedClasses().size(), is( 2 ) );
+        assertThat( computer.getNestedSuites().size(), is( 0 ) );
+        assertTrue( computer.isSplitPool() );
+        assertThat( computer.getPoolCapacity(), is( ParallelComputerBuilder.TOTAL_POOL_SIZE_UNDEFINED ) );
         assertTrue( result.wasSuccessful() );
         assertThat( Class1.maxConcurrentMethods, is( 3 ) );
         assertThat( timeSpent, between( 950, 1250 ) );
@@ -253,7 +257,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void separatePoolsWithSuiteAndClass()
     {
-        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( new Logger() );
+        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( logger );
         parallelComputerBuilder.parallelSuites( 5 );
         parallelComputerBuilder.parallelClasses( 5 );
         parallelComputerBuilder.parallelMethods( 3 );
@@ -266,12 +270,12 @@ public class ParallelComputerBuilderTest
         Result result = new JUnitCore().run( computer, TestSuite.class, Class1.class );
         long timeSpent = stopwatch.runtime( MILLISECONDS );
 
-        assertThat( computer.suites.size(), is( 1 ) );
-        assertThat( computer.classes.size(), is( 1 ) );
-        assertThat( computer.nestedClasses.size(), is( 2 ) );
-        assertThat( computer.nestedSuites.size(), is( 0 ) );
-        assertTrue( computer.splitPool );
-        assertThat( computer.poolCapacity, is( ParallelComputerBuilder.TOTAL_POOL_SIZE_UNDEFINED ) );
+        assertThat( computer.getSuites().size(), is( 1 ) );
+        assertThat( computer.getClasses().size(), is( 1 ) );
+        assertThat( computer.getNestedClasses().size(), is( 2 ) );
+        assertThat( computer.getNestedSuites().size(), is( 0 ) );
+        assertTrue( computer.isSplitPool() );
+        assertThat( computer.getPoolCapacity(), is( ParallelComputerBuilder.TOTAL_POOL_SIZE_UNDEFINED ) );
         assertTrue( result.wasSuccessful() );
         assertThat( Class1.maxConcurrentMethods, is( 3 ) );
         assertThat( timeSpent, between( 950, 1250 ) );
@@ -280,7 +284,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void separatePoolsWithSuiteAndSequentialClasses()
     {
-        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( new Logger() );
+        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( logger );
         parallelComputerBuilder.parallelSuites( 5 );
         parallelComputerBuilder.parallelClasses( 1 );
         parallelComputerBuilder.parallelMethods( 3 );
@@ -290,12 +294,12 @@ public class ParallelComputerBuilderTest
         Result result = new JUnitCore().run( computer, TestSuite.class, Class1.class );
         long timeSpent = stopwatch.runtime( MILLISECONDS );
 
-        assertThat( computer.suites.size(), is( 1 ) );
-        assertThat( computer.classes.size(), is( 1 ) );
-        assertThat( computer.nestedClasses.size(), is( 2 ) );
-        assertThat( computer.nestedSuites.size(), is( 0 ) );
-        assertTrue( computer.splitPool );
-        assertThat( computer.poolCapacity, is( ParallelComputerBuilder.TOTAL_POOL_SIZE_UNDEFINED ) );
+        assertThat( computer.getSuites().size(), is( 1 ) );
+        assertThat( computer.getClasses().size(), is( 1 ) );
+        assertThat( computer.getNestedClasses().size(), is( 2 ) );
+        assertThat( computer.getNestedSuites().size(), is( 0 ) );
+        assertTrue( computer.isSplitPool() );
+        assertThat( computer.getPoolCapacity(), is( ParallelComputerBuilder.TOTAL_POOL_SIZE_UNDEFINED ) );
         assertTrue( result.wasSuccessful() );
         assertThat( Class1.maxConcurrentMethods, is( 2 ) );
         assertThat( timeSpent, between( 1450, 1750 ) );
@@ -324,7 +328,7 @@ public class ParallelComputerBuilderTest
     public void nothingParallel()
     {
         JUnitCore core = new JUnitCore();
-        ParallelComputerBuilder builder = new ParallelComputerBuilder( new Logger() );
+        ParallelComputerBuilder builder = new ParallelComputerBuilder( logger );
         assertFalse( builder.isOptimized() );
 
         Result result = core.run( builder.buildComputer(), NothingDoingTest1.class, NothingDoingTest2.class );
@@ -377,7 +381,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void keepBeforeAfterOneClass()
     {
-        ParallelComputerBuilder builder = new ParallelComputerBuilder( new Logger() );
+        ParallelComputerBuilder builder = new ParallelComputerBuilder( logger );
         builder.parallelMethods();
         assertFalse( builder.isOptimized() );
         testKeepBeforeAfter( builder, NothingDoingTest1.class );
@@ -386,7 +390,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void keepBeforeAfterTwoClasses()
     {
-        ParallelComputerBuilder builder = new ParallelComputerBuilder( new Logger() );
+        ParallelComputerBuilder builder = new ParallelComputerBuilder( logger );
         builder.useOnePool( 5 ).parallelClasses( 1 ).parallelMethods( 2 );
         assertFalse( builder.isOptimized() );
         testKeepBeforeAfter( builder, NothingDoingTest1.class, NothingDoingTest2.class );
@@ -395,7 +399,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void keepBeforeAfterTwoParallelClasses()
     {
-        ParallelComputerBuilder builder = new ParallelComputerBuilder( new Logger() );
+        ParallelComputerBuilder builder = new ParallelComputerBuilder( logger );
         builder.useOnePool( 8 ).parallelClasses( 2 ).parallelMethods( 2 );
         assertFalse( builder.isOptimized() );
         JUnitCore core = new JUnitCore();
@@ -411,7 +415,7 @@ public class ParallelComputerBuilderTest
     @Test
     public void notThreadSafeTest()
     {
-        ParallelComputerBuilder builder = new ParallelComputerBuilder( new Logger() )
+        ParallelComputerBuilder builder = new ParallelComputerBuilder( logger )
             .useOnePool( 6 ).optimize( true ).parallelClasses( 3 ).parallelMethods( 3 );
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) builder.buildComputer();
         Result result = new JUnitCore().run( computer, NotThreadSafeTest1.class, NotThreadSafeTest2.class );
@@ -420,19 +424,19 @@ public class ParallelComputerBuilderTest
         assertNotNull( NotThreadSafeTest1.t );
         assertNotNull( NotThreadSafeTest2.t );
         assertSame( NotThreadSafeTest1.t, NotThreadSafeTest2.t );
-        assertThat( computer.notParallelRunners.size(), is( 2 ) );
-        assertTrue( computer.suites.isEmpty() );
-        assertTrue( computer.classes.isEmpty() );
-        assertTrue( computer.nestedClasses.isEmpty() );
-        assertTrue( computer.nestedSuites.isEmpty() );
-        assertFalse( computer.splitPool );
-        assertThat( computer.poolCapacity, is( 6 ) );
+        assertThat( computer.getNotParallelRunners().size(), is( 2 ) );
+        assertTrue( computer.getSuites().isEmpty() );
+        assertTrue( computer.getClasses().isEmpty() );
+        assertTrue( computer.getNestedClasses().isEmpty() );
+        assertTrue( computer.getNestedSuites().isEmpty() );
+        assertFalse( computer.isSplitPool() );
+        assertThat( computer.getPoolCapacity(), is( 6 ) );
     }
 
     @Test
     public void mixedThreadSafety()
     {
-        ParallelComputerBuilder builder = new ParallelComputerBuilder( new Logger() )
+        ParallelComputerBuilder builder = new ParallelComputerBuilder( logger )
             .useOnePool( 6 ).optimize( true ).parallelClasses( 3 ).parallelMethods( 3 );
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) builder.buildComputer();
         Result result = new JUnitCore().run( computer, NotThreadSafeTest1.class, NormalTest1.class );
@@ -442,19 +446,19 @@ public class ParallelComputerBuilderTest
         assertNotNull( NormalTest1.t );
         assertThat( NormalTest1.t.getName(), is( not( "maven-surefire-plugin@NotThreadSafe" ) ) );
         assertNotSame( NotThreadSafeTest1.t, NormalTest1.t );
-        assertThat( computer.notParallelRunners.size(), is( 1 ) );
-        assertTrue( computer.suites.isEmpty() );
-        assertThat( computer.classes.size(), is( 1 ) );
-        assertTrue( computer.nestedClasses.isEmpty() );
-        assertTrue( computer.nestedSuites.isEmpty() );
-        assertFalse( computer.splitPool );
-        assertThat( computer.poolCapacity, is( 6 ) );
+        assertThat( computer.getNotParallelRunners().size(), is( 1 ) );
+        assertTrue( computer.getSuites().isEmpty() );
+        assertThat( computer.getClasses().size(), is( 1 ) );
+        assertTrue( computer.getNestedClasses().isEmpty() );
+        assertTrue( computer.getNestedSuites().isEmpty() );
+        assertFalse( computer.isSplitPool() );
+        assertThat( computer.getPoolCapacity(), is( 6 ) );
     }
 
     @Test
     public void notThreadSafeTestsInSuite()
     {
-        ParallelComputerBuilder builder = new ParallelComputerBuilder( new Logger() )
+        ParallelComputerBuilder builder = new ParallelComputerBuilder( logger )
             .useOnePool( 5 ).parallelMethods( 3 );
         assertFalse( builder.isOptimized() );
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) builder.buildComputer();
@@ -465,19 +469,19 @@ public class ParallelComputerBuilderTest
         assertSame( NormalTest1.t, NormalTest2.t );
         assertThat( NormalTest1.t.getName(), is( "maven-surefire-plugin@NotThreadSafe" ) );
         assertThat( NormalTest2.t.getName(), is( "maven-surefire-plugin@NotThreadSafe" ) );
-        assertThat( computer.notParallelRunners.size(), is( 1 ) );
-        assertTrue( computer.suites.isEmpty() );
-        assertTrue( computer.classes.isEmpty() );
-        assertTrue( computer.nestedClasses.isEmpty() );
-        assertTrue( computer.nestedSuites.isEmpty() );
-        assertFalse( computer.splitPool );
-        assertThat( computer.poolCapacity, is( 5 ) );
+        assertThat( computer.getNotParallelRunners().size(), is( 1 ) );
+        assertTrue( computer.getSuites().isEmpty() );
+        assertTrue( computer.getClasses().isEmpty() );
+        assertTrue( computer.getNestedClasses().isEmpty() );
+        assertTrue( computer.getNestedSuites().isEmpty() );
+        assertFalse( computer.isSplitPool() );
+        assertThat( computer.getPoolCapacity(), is( 5 ) );
     }
 
     @Test
     public void mixedThreadSafetyInSuite()
     {
-        ParallelComputerBuilder builder = new ParallelComputerBuilder( new Logger() )
+        ParallelComputerBuilder builder = new ParallelComputerBuilder( logger )
             .useOnePool( 10 ).optimize( true ).parallelSuites( 2 ).parallelClasses( 3 ).parallelMethods( 3 );
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) builder.buildComputer();
         Result result = new JUnitCore().run( computer, MixedSuite.class );
@@ -487,19 +491,19 @@ public class ParallelComputerBuilderTest
         assertNotNull( NormalTest1.t );
         assertThat( NormalTest1.t.getName(), is( not( "maven-surefire-plugin@NotThreadSafe" ) ) );
         assertNotSame( NotThreadSafeTest1.t, NormalTest1.t );
-        assertTrue( computer.notParallelRunners.isEmpty() );
-        assertThat( computer.suites.size(), is( 1 ) );
-        assertTrue( computer.classes.isEmpty() );
-        assertThat( computer.nestedClasses.size(), is( 1 ) );
-        assertTrue( computer.nestedSuites.isEmpty() );
-        assertFalse( computer.splitPool );
-        assertThat( computer.poolCapacity, is( 10 ) );
+        assertTrue( computer.getNotParallelRunners().isEmpty() );
+        assertThat( computer.getSuites().size(), is( 1 ) );
+        assertTrue( computer.getClasses().isEmpty() );
+        assertThat( computer.getNestedClasses().size(), is( 1 ) );
+        assertTrue( computer.getNestedSuites().isEmpty() );
+        assertFalse( computer.isSplitPool() );
+        assertThat( computer.getPoolCapacity(), is( 10 ) );
     }
 
     @Test
     public void inheritanceWithNotThreadSafe()
     {
-        ParallelComputerBuilder builder = new ParallelComputerBuilder( new Logger() )
+        ParallelComputerBuilder builder = new ParallelComputerBuilder( logger )
             .useOnePool( 10 ).optimize( true ).parallelSuites( 2 ).parallelClasses( 3 ).parallelMethods( 3 );
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) builder.buildComputer();
         Result result = new JUnitCore().run( computer, OverMixedSuite.class );
@@ -509,13 +513,13 @@ public class ParallelComputerBuilderTest
         assertNotNull( NormalTest1.t );
         assertThat( NormalTest1.t.getName(), is( "maven-surefire-plugin@NotThreadSafe" ) );
         assertSame( NotThreadSafeTest3.t, NormalTest1.t );
-        assertThat( computer.notParallelRunners.size(), is( 1 ) );
-        assertTrue( computer.suites.isEmpty() );
-        assertTrue( computer.classes.isEmpty() );
-        assertTrue( computer.nestedClasses.isEmpty() );
-        assertTrue( computer.nestedSuites.isEmpty() );
-        assertFalse( computer.splitPool );
-        assertThat( computer.poolCapacity, is( 10 ) );
+        assertThat( computer.getNotParallelRunners().size(), is( 1 ) );
+        assertTrue( computer.getSuites().isEmpty() );
+        assertTrue( computer.getClasses().isEmpty() );
+        assertTrue( computer.getNestedClasses().isEmpty() );
+        assertTrue( computer.getNestedSuites().isEmpty() );
+        assertFalse( computer.isSplitPool() );
+        assertThat( computer.getPoolCapacity(), is( 10 ) );
     }
 
     @Test
@@ -529,7 +533,7 @@ public class ParallelComputerBuilderTest
             TimeUnit.MILLISECONDS.sleep( 500 );
         }
         Collection<Thread> expectedThreads = jvmThreads();
-        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( new Logger() );
+        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( logger );
         parallelComputerBuilder.parallelMethods( 3 );
         ParallelComputer computer = parallelComputerBuilder.buildComputer();
         Result result = new JUnitCore().run( computer, TestWithBeforeAfter.class );
@@ -552,6 +556,7 @@ public class ParallelComputerBuilderTest
         appThreads.removeAll( Collections.singleton( (Thread) null ) );
         Collections.sort( appThreads, new Comparator<Thread>()
         {
+            @Override
             public int compare( Thread t1, Thread t2 )
             {
                 return (int) Math.signum( t1.getId() - t2.getId() );
@@ -564,7 +569,7 @@ public class ParallelComputerBuilderTest
     {
         Result run( final boolean useInterrupt )
         {
-            ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( new Logger() )
+            ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( logger )
                 .useOnePool( 8 )
                 .parallelSuites( 2 )
                 .parallelClasses( 3 )
@@ -576,6 +581,7 @@ public class ParallelComputerBuilderTest
                 (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
             shutdownTask = new Runnable()
             {
+                @Override
                 public void run()
                 {
                     Collection<Description> startedTests = computer.describeStopped( useInterrupt ).getTriggeredTests();

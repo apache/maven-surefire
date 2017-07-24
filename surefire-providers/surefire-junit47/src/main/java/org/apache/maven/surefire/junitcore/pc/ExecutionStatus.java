@@ -20,7 +20,7 @@ package org.apache.maven.surefire.junitcore.pc;
  */
 
 /**
- * Status of {@link ParallelComputer ParallelComputer runtime}.<p/>
+ * Status of {@link ParallelComputer ParallelComputer runtime}.<br>
  * Used together with shutdown hook.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>

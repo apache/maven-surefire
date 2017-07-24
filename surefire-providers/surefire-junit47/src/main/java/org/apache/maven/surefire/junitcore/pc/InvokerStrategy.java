@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.report.ConsoleStream;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -37,7 +37,7 @@ final class InvokerStrategy
 
     private final Queue<Thread> activeThreads = new ConcurrentLinkedQueue<Thread>();
 
-    protected InvokerStrategy( ConsoleLogger logger )
+    protected InvokerStrategy( ConsoleStream logger )
     {
         super( logger );
     }
@@ -91,6 +91,7 @@ final class InvokerStrategy
         return disable();
     }
 
+    @Override
     public boolean destroy()
     {
         return stop();

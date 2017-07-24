@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire</artifactId>
-    <version>2.19.2-SNAPSHOT</version>
+    <version>2.21-SNAPSHOT</version>
   </parent>
 
   <artifactId>surefire-integration-tests</artifactId>
@@ -35,9 +35,7 @@
   <properties>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <it.settings.showPasswords>false</it.settings.showPasswords>
-    <testng.version>5.7</testng.version>
     <surefire.threadcount>5</surefire.threadcount>
-    <mavenHomeUsed>${maven.home}</mavenHomeUsed>
     <useInterpolatedSettings>false</useInterpolatedSettings>
   </properties>
 
@@ -76,6 +74,10 @@
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
@@ -83,18 +85,18 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <skip>true</skip>
+          <test>*Test</test>
         </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to http://jira.codehaus.org/browse/MRELEASE-799 -->
+        <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
         <configuration>
           <runOrder>alphabetical</runOrder>
           <threadCount>1</threadCount>
           <perCoreThreadCount>false</perCoreThreadCount>
           <forkMode>never</forkMode>
-          <argLine>-Xmx512m -XX:MaxPermSize=356m</argLine>
+          <argLine>${argLine}</argLine>
           <includes>
             <include>org/apache/**/*IT*.java</include>
           </includes>
@@ -102,8 +104,7 @@
           <!-- can forward to all integration test projects. SUREFIRE-513 -->
           <systemPropertyVariables>
             <surefire.version>${project.version}</surefire.version>
-            <testng.version>${testng.version}</testng.version>
-            <maven.home>${mavenHomeUsed}</maven.home>
+            <maven.home>${maven.home}</maven.home>
             <maven.settings.file>${project.basedir}/../surefire-setup-integration-tests/target/private/it-settings.xml
             </maven.settings.file>
             <maven.repo.local>${project.basedir}/../surefire-setup-integration-tests/target/it-repo</maven.repo.local>
@@ -113,12 +114,13 @@
             <testBuildDirectory>${project.build.testOutputDirectory}</testBuildDirectory>
             <verifier.forkMode>${verifier.forkMode}</verifier.forkMode>
           </systemPropertyVariables>
+          <redirectTestOutputToFile>false</redirectTestOutputToFile>
         </configuration>
         <dependencies>
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-junit47</artifactId>
-            <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to http://jira.codehaus.org/browse/MRELEASE-799 -->
+            <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
           </dependency>
         </dependencies>
         <executions>
@@ -184,13 +186,12 @@
             <configuration>
               <parallel>classes</parallel>
               <threadCount>${surefire.threadcount}</threadCount>
-              <argLine>-Xmx2512m -XX:MaxPermSize=256m</argLine>
+              <argLine>${argLine} -Xmx512m -XX:MaxPermSize=356m</argLine>
             </configuration>
           </plugin>
         </plugins>
       </build>
     </profile>
-
     <profile>
       <id>embedded</id>
       <activation>
@@ -203,51 +204,36 @@
         <verifier.forkMode>auto</verifier.forkMode>
       </properties>
     </profile>
-
     <profile>
-      <id>maven-2.2.1</id>
-      <properties>
-        <mavenHomeUsed>${project.build.directory}/maven-extract/apache-maven-2.2.1</mavenHomeUsed>
-      </properties>
+      <id>jenkins</id>
       <build>
         <plugins>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <version>2.4</version>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
             <executions>
               <execution>
-                <id>unpack</id>
-                <phase>package</phase>
+                <id>jacoco-agent</id>
                 <goals>
-                  <goal>unpack</goal>
+                  <goal>prepare-agent</goal>
                 </goals>
                 <configuration>
-                  <artifactItems>
-                    <artifactItem>
-                      <groupId>org.apache.maven</groupId>
-                      <artifactId>apache-maven</artifactId>
-                      <version>2.2.1</version>
-                      <type>tar.gz</type>
-                      <classifier>bin</classifier>
-                      <overWrite>false</overWrite>
-                      <outputDirectory>${project.build.directory}/maven-extract</outputDirectory>
-                    </artifactItem>
-                  </artifactItems>
+                  <skip>true</skip>
+                </configuration>
+              </execution>
+              <execution>
+                <id>jacoco-agent-it</id>
+                <goals>
+                  <goal>prepare-agent-integration</goal>
+                </goals>
+                <configuration>
+                  <propertyName>argLine</propertyName>
                 </configuration>
               </execution>
             </executions>
           </plugin>
-          <plugin>
-            <artifactId>maven-failsafe-plugin</artifactId>
-            <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to http://jira.codehaus.org/browse/MRELEASE-799 -->
-            <configuration>
-              <excludedGroups>org.apache.maven.surefire.its.Not2xCompatible</excludedGroups>
-            </configuration>
-          </plugin>
         </plugins>
       </build>
     </profile>
-
   </profiles>
 </project>

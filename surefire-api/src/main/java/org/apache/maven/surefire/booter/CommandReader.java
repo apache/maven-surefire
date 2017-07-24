@@ -19,6 +19,8 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.io.DataInputStream;
@@ -40,16 +42,18 @@ import static java.lang.Thread.State.TERMINATED;
 import static java.lang.StrictMath.max;
 import static org.apache.maven.surefire.booter.Command.toShutdown;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_NEXT_TEST;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.BYE_ACK;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.NOOP;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.RUN_CLASS;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.SHUTDOWN;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.TEST_SET_FINISHED;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.decode;
-import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
-import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
-import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThread;
+import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
+import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
+import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
+import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
 
 /**
  * Reader of commands coming from plugin(master) process.
@@ -80,6 +84,12 @@ public final class CommandReader
 
     private int iteratedCount;
 
+    private volatile ConsoleLogger logger = new NullConsoleLogger();
+
+    private CommandReader()
+    {
+    }
+
     public static CommandReader getReader()
     {
         final CommandReader reader = READER;
@@ -96,6 +106,12 @@ public final class CommandReader
         return this;
     }
 
+    public CommandReader setLogger( ConsoleLogger logger )
+    {
+        this.logger = requireNonNull( logger, "null logger" );
+        return this;
+    }
+
     public boolean awaitStarted()
         throws TestSetFailedException
     {
@@ -108,6 +124,7 @@ public final class CommandReader
             }
             catch ( InterruptedException e )
             {
+                DumpErrorSingleton.getSingleton().dumpException( e );
                 throw new TestSetFailedException( e.getLocalizedMessage() );
             }
         }
@@ -118,7 +135,7 @@ public final class CommandReader
     }
 
     /**
-     * @param listener listener called with <em>Any</em> {@link MasterProcessCommand command type}
+     * @param listener listener called with <b>Any</b> {@link MasterProcessCommand command type}
      */
     public void addListener( CommandListener listener )
     {
@@ -148,6 +165,11 @@ public final class CommandReader
     public void addNoopListener( CommandListener listener )
     {
         addListener( NOOP, listener );
+    }
+
+    public void addByeAckListener( CommandListener listener )
+    {
+        addListener( BYE_ACK, listener );
     }
 
     private void addListener( MasterProcessCommand cmd, CommandListener listener )
@@ -203,7 +225,7 @@ public final class CommandReader
     }
 
     /**
-     * @return <tt>true</tt> if {@link #LAST_TEST_SYMBOL} found at the last index in {@link #testClasses}.
+     * @return {@code true} if {@link #LAST_TEST_SYMBOL} found at the last index in {@link #testClasses}.
      */
     private boolean isQueueFull()
     {
@@ -239,6 +261,7 @@ public final class CommandReader
             this.originalOutStream = originalOutStream;
         }
 
+        @Override
         public Iterator<String> iterator()
         {
             return new ClassesIterator( originalOutStream );
@@ -259,12 +282,14 @@ public final class CommandReader
             this.originalOutStream = originalOutStream;
         }
 
+        @Override
         public boolean hasNext()
         {
             popUnread();
             return isNotBlank( clazz );
         }
 
+        @Override
         public String next()
         {
             popUnread();
@@ -285,6 +310,7 @@ public final class CommandReader
             }
         }
 
+        @Override
         public void remove()
         {
             throw new UnsupportedOperationException();
@@ -320,7 +346,11 @@ public final class CommandReader
         private void requestNextTest()
         {
             byte[] encoded = encodeStringForForkCommunication( ( (char) BOOTERCODE_NEXT_TEST ) + ",0,want more!\n" );
-            originalOutStream.write( encoded, 0, encoded.length );
+            synchronized ( originalOutStream )
+            {
+                originalOutStream.write( encoded, 0, encoded.length );
+                originalOutStream.flush();
+            }
         }
 
         private boolean shouldFinish()
@@ -348,6 +378,7 @@ public final class CommandReader
     private final class CommandRunnable
         implements Runnable
     {
+        @Override
         public void run()
         {
             CommandReader.this.startMonitor.countDown();
@@ -360,7 +391,9 @@ public final class CommandReader
                     Command command = decode( stdIn );
                     if ( command == null )
                     {
-                        System.err.println( "[SUREFIRE] std/in stream corrupted: first sequence not recognized" );
+                        String errorMessage = "[SUREFIRE] std/in stream corrupted: first sequence not recognized";
+                        DumpErrorSingleton.getSingleton().dumpStreamText( errorMessage );
+                        logger.error( errorMessage );
                         break;
                     }
                     else
@@ -399,8 +432,13 @@ public final class CommandReader
                 CommandReader.this.state.set( TERMINATED );
                 if ( !isTestSetFinished )
                 {
+                    String msg = "TestSet has not finished before stream error has appeared >> "
+                                         + "initializing exit by non-null configuration: "
+                                         + CommandReader.this.shutdown;
+                    DumpErrorSingleton.getSingleton().dumpStreamException( e, msg );
+
                     exitByConfiguration();
-                    // does not go to finally
+                    // does not go to finally for non-default config: Shutdown.EXIT or Shutdown.KILL
                 }
             }
             catch ( IOException e )
@@ -409,8 +447,9 @@ public final class CommandReader
                 // If #stop() method is called, reader thread is interrupted and cause is InterruptedException.
                 if ( !( e.getCause() instanceof InterruptedException ) )
                 {
-                    System.err.println( "[SUREFIRE] std/in stream corrupted" );
-                    e.printStackTrace();
+                    String msg = "[SUREFIRE] std/in stream corrupted";
+                    DumpErrorSingleton.getSingleton().dumpStreamException( e, msg );
+                    logger.error( msg, e );
                 }
             }
             finally
@@ -446,17 +485,15 @@ public final class CommandReader
                 CommandReader.this.makeQueueFull();
                 CommandReader.this.wakeupIterator();
                 insertToListeners( toShutdown( shutdown ) );
-                switch ( shutdown )
+                if ( shutdown.isExit() )
                 {
-                    case EXIT:
-                        System.exit( 1 );
-                    case KILL:
-                        Runtime.getRuntime().halt( 1 );
-                    case DEFAULT:
-                    default:
-                        // should not happen; otherwise you missed enum case
-                        break;
+                    System.exit( 1 );
                 }
+                else if ( shutdown.isKill() )
+                {
+                    Runtime.getRuntime().halt( 1 );
+                }
+                // else is default: other than Shutdown.DEFAULT should not happen; otherwise you missed enum case
             }
         }
     }

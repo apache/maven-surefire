@@ -31,7 +31,6 @@ import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
-import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
@@ -55,7 +54,6 @@ import java.util.Set;
 
 import static java.lang.reflect.Modifier.isAbstract;
 import static java.lang.reflect.Modifier.isInterface;
-import static java.util.Collections.unmodifiableCollection;
 import static org.apache.maven.surefire.booter.CommandReader.getReader;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTests;
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createDescription;
@@ -67,6 +65,7 @@ import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture
 import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
 import static org.apache.maven.surefire.testset.TestListResolver.optionallyWildcardFilter;
 import static org.apache.maven.surefire.util.TestsToRun.fromClass;
+import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
 import static org.junit.runner.Request.aClass;
 import static org.junit.runner.Request.method;
 
@@ -80,7 +79,7 @@ public class JUnit4Provider
 
     private final ClassLoader testClassLoader;
 
-    private final Collection<org.junit.runner.notification.RunListener> customRunListeners;
+    private final String customRunListeners;
 
     private final JUnit4TestChecker jUnit4TestChecker;
 
@@ -106,14 +105,14 @@ public class JUnit4Provider
         testClassLoader = bootParams.getTestClassLoader();
         scanResult = bootParams.getScanResult();
         runOrderCalculator = bootParams.getRunOrderCalculator();
-        String listeners = bootParams.getProviderProperties().get( "listener" );
-        customRunListeners = unmodifiableCollection( createCustomListeners( listeners ) );
+        customRunListeners = bootParams.getProviderProperties().get( "listener" );
         jUnit4TestChecker = new JUnit4TestChecker( testClassLoader );
         TestRequest testRequest = bootParams.getTestRequest();
         testResolver = testRequest.getTestListResolver();
         rerunFailingTestsCount = testRequest.getRerunFailingTestsCount();
     }
 
+    @Override
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException
     {
@@ -136,7 +135,7 @@ public class JUnit4Provider
 
             Notifier notifier = new Notifier( new JUnit4RunListener( reporter ), getSkipAfterFailureCount() );
             Result result = new Result();
-            notifier.addListeners( customRunListeners )
+            notifier.addListeners( createCustomListeners( customRunListeners ) )
                 .addListener( result.createListener() );
 
             if ( isFailFast() && commandsReader != null )
@@ -211,6 +210,7 @@ public class JUnit4Provider
     {
         commandsReader.addShutdownListener( new CommandListener()
         {
+            @Override
             public void update( Command command )
             {
                 testsToRun.markTestSetFinished();
@@ -222,6 +222,7 @@ public class JUnit4Provider
     {
         commandsReader.addSkipNextTestsListener( new CommandListener()
         {
+            @Override
             public void update( Command command )
             {
                 notifier.pleaseStop();
@@ -231,7 +232,7 @@ public class JUnit4Provider
 
     private void executeTestSet( Class<?> clazz, RunListener reporter, Notifier notifier )
     {
-        final ReportEntry report = new SimpleReportEntry( getClass().getName(), clazz.getName() );
+        final SimpleReportEntry report = new SimpleReportEntry( getClass().getName(), clazz.getName(), systemProps() );
         reporter.testSetStarting( report );
         try
         {
@@ -300,6 +301,7 @@ public class JUnit4Provider
         }
     }
 
+    @Override
     public Iterable<Class<?>> getSuites()
     {
         testsToRun = scanClassPath();

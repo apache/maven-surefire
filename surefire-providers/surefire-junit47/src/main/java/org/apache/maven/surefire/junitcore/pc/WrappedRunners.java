@@ -23,7 +23,7 @@ import org.junit.runners.ParentRunner;
 
 /**
  * We need to wrap runners in a suite and count children of these runners.
- * <p/>
+ * <br>
  * Old JUnit versions do not cache children after the first call of
  * {@link org.junit.runners.ParentRunner#getChildren()}.
  * Due to performance reasons, the children have to be observed just once.

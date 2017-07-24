@@ -37,9 +37,10 @@ import org.apache.maven.surefire.util.RunOrderTest;
 import org.apache.maven.surefire.util.ScanResultTest;
 import org.apache.maven.surefire.util.TestsToRunTest;
 import org.apache.maven.surefire.util.UrlUtilsTest;
-import org.apache.maven.surefire.util.internal.ByteBufferTest;
 import org.apache.maven.surefire.util.internal.ConcurrencyUtilsTest;
+import org.apache.maven.surefire.util.internal.ImmutableMapTest;
 import org.apache.maven.surefire.util.internal.StringUtilsTest;
+import org.apache.maven.surefire.util.internal.SystemUtilsTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -58,7 +59,6 @@ import org.junit.runners.Suite;
     RunResultTest.class,
     ResolvedTestTest.class,
     TestListResolverTest.class,
-    ByteBufferTest.class,
     ConcurrencyUtilsTest.class,
     StringUtilsTest.class,
     DefaultDirectoryScannerTest.class,
@@ -68,7 +68,9 @@ import org.junit.runners.Suite;
     TestsToRunTest.class,
     UrlUtilsTest.class,
     SpecificTestClassFilterTest.class,
-    FundamentalFilterTest.class
+    FundamentalFilterTest.class,
+    SystemUtilsTest.class,
+    ImmutableMapTest.class
 } )
 @RunWith( Suite.class )
 public class JUnit4SuiteTest

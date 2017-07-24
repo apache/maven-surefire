@@ -23,14 +23,18 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -40,11 +44,62 @@ public class TestSuiteXmlParserTest
 {
     private static final String[] linePatterns = { "at org.apache.Test.", "at org.apache.Test$" };
 
+    private final Collection<String> loggedErrors = new ArrayList<String>();
+
+    private ConsoleLogger consoleLogger;
+
+    @Before
+    public void instantiateLogger()
+    {
+        consoleLogger = new ConsoleLogger()
+        {
+            @Override
+            public void debug( String message )
+            {
+            }
+
+            @Override
+            public void info( String message )
+            {
+            }
+
+            @Override
+            public void warning( String message )
+            {
+                loggedErrors.add( message );
+            }
+
+            @Override
+            public void error( String message )
+            {
+                loggedErrors.add( message );
+            }
+
+            @Override
+            public void error( String message, Throwable t )
+            {
+                loggedErrors.add( message );
+            }
+
+            @Override
+            public void error( Throwable t )
+            {
+                loggedErrors.add( t.getLocalizedMessage() );
+            }
+        };
+    }
+
+    @After
+    public void verifyErrorFreeLogger()
+    {
+        assertThat( loggedErrors, is( empty() ) );
+    }
+
     @Test
     public void testParse()
         throws Exception
     {
-        TestSuiteXmlParser testSuiteXmlParser = new TestSuiteXmlParser();
+        TestSuiteXmlParser testSuiteXmlParser = new TestSuiteXmlParser( consoleLogger );
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
             "<testsuite failures=\"4\" time=\"0.005\" errors=\"0\" skipped=\"0\" tests=\"4\" name=\"wellFormedXmlFailures.TestSurefire3\">\n"
             +
@@ -154,7 +209,7 @@ public class TestSuiteXmlParserTest
     public void testParser()
         throws Exception
     {
-        TestSuiteXmlParser parser = new TestSuiteXmlParser();
+        TestSuiteXmlParser parser = new TestSuiteXmlParser( consoleLogger );
 
         Collection<ReportTestSuite> oldResult = parser.parse(
             "src/test/resources/fixture/testsuitexmlparser/TEST-org.apache.maven.surefire.test.FailingTest.xml" );
@@ -170,7 +225,7 @@ public class TestSuiteXmlParserTest
     public void successfulSurefireTestReport()
         throws Exception
     {
-        TestSuiteXmlParser parser = new TestSuiteXmlParser();
+        TestSuiteXmlParser parser = new TestSuiteXmlParser( consoleLogger );
         File surefireReport = new File( "src/test/resources/junit-pathWithÜmlaut/TEST-umlautTest.BasicTest.xml" );
         assumeTrue( surefireReport.isFile() );
         Collection<ReportTestSuite> suites = parser.parse( surefireReport.getCanonicalPath() );
@@ -203,7 +258,7 @@ public class TestSuiteXmlParserTest
     public void testParserHitsFailsafeSummary()
         throws Exception
     {
-        TestSuiteXmlParser parser = new TestSuiteXmlParser();
+        TestSuiteXmlParser parser = new TestSuiteXmlParser( consoleLogger );
 
         parser.parse( "src/test/resources/fixture/testsuitexmlparser/failsafe-summary.xml" );
 
@@ -283,7 +338,7 @@ public class TestSuiteXmlParserTest
     public void shouldParserEverythingInOrdinalTest()
         throws Exception
     {
-        TestSuiteXmlParser parser = new TestSuiteXmlParser();
+        TestSuiteXmlParser parser = new TestSuiteXmlParser( consoleLogger );
         List<ReportTestSuite> tests =
             parser.parse( "src/test/resources/fixture/testsuitexmlparser/TEST-surefire.MyTest.xml" );
         assertTrue( parser.isValid() );
@@ -347,7 +402,7 @@ public class TestSuiteXmlParserTest
     public void shouldParserEverythingInEnclosedTest()
         throws Exception
     {
-        TestSuiteXmlParser parser = new TestSuiteXmlParser();
+        TestSuiteXmlParser parser = new TestSuiteXmlParser( consoleLogger );
         List<ReportTestSuite> tests =
             parser.parse( "src/test/resources/fixture/testsuitexmlparser/TEST-surefire.MyTest-enclosed.xml" );
         assertTrue( parser.isValid() );
@@ -423,7 +478,7 @@ public class TestSuiteXmlParserTest
     public void shouldParserEverythingInEnclosedTrimStackTraceTest()
         throws Exception
     {
-        TestSuiteXmlParser parser = new TestSuiteXmlParser();
+        TestSuiteXmlParser parser = new TestSuiteXmlParser( consoleLogger );
         List<ReportTestSuite> tests = parser.parse( "src/test/resources/fixture/testsuitexmlparser/"
                                                         + "TEST-surefire.MyTest-enclosed-trimStackTrace.xml" );
         assertTrue( parser.isValid() );
@@ -465,7 +520,7 @@ public class TestSuiteXmlParserTest
     public void shouldParserEverythingInNestedClassTest()
         throws Exception
     {
-        TestSuiteXmlParser parser = new TestSuiteXmlParser();
+        TestSuiteXmlParser parser = new TestSuiteXmlParser( consoleLogger );
         List<ReportTestSuite> tests = parser.parse( "src/test/resources/fixture/testsuitexmlparser/"
                                                         + "TEST-surefire.MyTest-nestedClass.xml" );
         assertTrue( parser.isValid() );
@@ -532,7 +587,7 @@ public class TestSuiteXmlParserTest
     public void shouldParserEverythingInNestedClassTrimStackTraceTest()
         throws Exception
     {
-        TestSuiteXmlParser parser = new TestSuiteXmlParser();
+        TestSuiteXmlParser parser = new TestSuiteXmlParser( consoleLogger );
         List<ReportTestSuite> tests = parser.parse( "src/test/resources/fixture/testsuitexmlparser/"
                                                         + "TEST-surefire.MyTest-nestedClass-trimStackTrace.xml" );
         assertTrue( parser.isValid() );

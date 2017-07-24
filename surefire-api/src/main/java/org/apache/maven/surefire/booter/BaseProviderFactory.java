@@ -21,7 +21,7 @@ package org.apache.maven.surefire.booter;
 
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.report.ConsoleStream;
 import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -36,9 +36,12 @@ import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 
+import java.io.PrintStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import static java.util.Collections.emptyList;
 
 /**
  * @author Kristian Rosenvold
@@ -54,7 +57,7 @@ public class BaseProviderFactory
 
     private final boolean insideFork;
 
-    private List<CommandLineOption> mainCliOptions = Collections.emptyList();
+    private List<CommandLineOption> mainCliOptions = emptyList();
 
     private Map<String, String> providerProperties;
 
@@ -74,12 +77,15 @@ public class BaseProviderFactory
 
     private Shutdown shutdown;
 
+    private Integer systemExitTimeout;
+
     public BaseProviderFactory( ReporterFactory reporterFactory, boolean insideFork )
     {
         this.reporterFactory = reporterFactory;
         this.insideFork = insideFork;
     }
 
+    @Override
     @Deprecated
     public DirectoryScanner getDirectoryScanner()
     {
@@ -90,6 +96,7 @@ public class BaseProviderFactory
                                             directoryScannerParameters.getSpecificTests() );
     }
 
+    @Override
     public ScanResult getScanResult()
     {
         return DefaultScanResult.from( providerProperties );
@@ -101,122 +108,155 @@ public class BaseProviderFactory
         return threadcount == null ? 1 : Math.max( Integer.parseInt( threadcount ), 1 );
     }
 
+    @Override
     public RunOrderCalculator getRunOrderCalculator()
     {
         return directoryScannerParameters == null
                 ? null : new DefaultRunOrderCalculator( runOrderParameters, getThreadCount() );
     }
 
+    @Override
     public ReporterFactory getReporterFactory()
     {
         return reporterFactory;
     }
 
+    @Override
     public void setDirectoryScannerParameters( DirectoryScannerParameters directoryScannerParameters )
     {
         this.directoryScannerParameters = directoryScannerParameters;
     }
 
+    @Override
     public void setReporterConfiguration( ReporterConfiguration reporterConfiguration )
     {
         this.reporterConfiguration = reporterConfiguration;
     }
 
+    @Override
     public void setClassLoaders( ClassLoader testClassLoader )
     {
         this.testClassLoader = testClassLoader;
     }
 
-    public ConsoleLogger getConsoleLogger()
+    @Override
+    public ConsoleStream getConsoleLogger()
     {
-        return insideFork
-                ? new ForkingRunListener( reporterConfiguration.getOriginalSystemOut(), ROOT_CHANNEL,
-                                           reporterConfiguration.isTrimStackTrace() )
-                : new DefaultDirectConsoleReporter( reporterConfiguration.getOriginalSystemOut() );
+        boolean trim = reporterConfiguration.isTrimStackTrace();
+        PrintStream out = reporterConfiguration.getOriginalSystemOut();
+        return insideFork ? new ForkingRunListener( out, ROOT_CHANNEL, trim ) : new DefaultDirectConsoleReporter( out );
     }
 
+    @Override
     public void setTestRequest( TestRequest testRequest )
     {
         this.testRequest = testRequest;
     }
 
+    @Override
     public DirectoryScannerParameters getDirectoryScannerParameters()
     {
         return directoryScannerParameters;
     }
 
+    @Override
     public ReporterConfiguration getReporterConfiguration()
     {
         return reporterConfiguration;
     }
 
+    @Override
     public TestRequest getTestRequest()
     {
         return testRequest;
     }
 
+    @Override
     public ClassLoader getTestClassLoader()
     {
         return testClassLoader;
     }
 
+    @Override
     public void setProviderProperties( Map<String, String> providerProperties )
     {
         this.providerProperties = providerProperties;
     }
 
+    @Override
     public Map<String, String> getProviderProperties()
     {
         return providerProperties;
     }
 
+    @Override
     public TestArtifactInfo getTestArtifactInfo()
     {
         return testArtifactInfo;
     }
 
+    @Override
     public void setTestArtifactInfo( TestArtifactInfo testArtifactInfo )
     {
         this.testArtifactInfo = testArtifactInfo;
     }
 
+    @Override
     public void setRunOrderParameters( RunOrderParameters runOrderParameters )
     {
         this.runOrderParameters = runOrderParameters;
     }
 
+    @Override
     public List<CommandLineOption> getMainCliOptions()
     {
         return mainCliOptions;
     }
 
+    @Override
     public void setMainCliOptions( List<CommandLineOption> mainCliOptions )
     {
         this.mainCliOptions = mainCliOptions == null ? Collections.<CommandLineOption>emptyList() : mainCliOptions;
     }
 
+    @Override
     public int getSkipAfterFailureCount()
     {
         return skipAfterFailureCount;
     }
 
+    @Override
     public void setSkipAfterFailureCount( int skipAfterFailureCount )
     {
         this.skipAfterFailureCount = skipAfterFailureCount;
     }
 
+    @Override
     public boolean isInsideFork()
     {
         return insideFork;
     }
 
+    @Override
     public Shutdown getShutdown()
     {
         return shutdown;
     }
 
+    @Override
     public void setShutdown( Shutdown shutdown )
     {
         this.shutdown = shutdown;
+    }
+
+    @Override
+    public Integer getSystemExitTimeout()
+    {
+        return systemExitTimeout;
+    }
+
+    public void setSystemExitTimeout( Integer systemExitTimeout )
+    {
+        this.systemExitTimeout = systemExitTimeout;
     }
 }

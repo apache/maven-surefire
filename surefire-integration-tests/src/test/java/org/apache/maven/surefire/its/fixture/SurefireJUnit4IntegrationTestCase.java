@@ -22,7 +22,7 @@ package org.apache.maven.surefire.its.fixture;
 /**
  * Contains commonly used features for most tests, encapsulating
  * common use cases.
- * <p/>
+ * <br>
  * Also includes thread-safe access to the extracted resource
  * files, which AbstractSurefireIntegrationTestClass does not.
  * Thread safe only for running in "classes" mode.

@@ -30,35 +30,36 @@ import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.sink.SinkEventAttributeSet;
 import org.apache.maven.doxia.sink.SinkEventAttributes;
 import org.apache.maven.doxia.util.DoxiaUtils;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.reporting.MavenReportException;
+
+import static org.apache.maven.doxia.sink.Sink.JUSTIFY_LEFT;
 
 /**
  *
  */
 public final class SurefireReportGenerator
 {
-    private static final Object[] TAG_TYPE_START = new Object[]{ HtmlMarkup.TAG_TYPE_START };
+    private static final int LEFT = JUSTIFY_LEFT;
 
-    private static final Object[] TAG_TYPE_END = new Object[]{ HtmlMarkup.TAG_TYPE_END };
+    private static final Object[] TAG_TYPE_START = { HtmlMarkup.TAG_TYPE_START };
+
+    private static final Object[] TAG_TYPE_END = { HtmlMarkup.TAG_TYPE_END };
 
     private final SurefireReportParser report;
-
-    private List<ReportTestSuite> testSuites;
 
     private final boolean showSuccess;
 
     private final String xrefLocation;
-    
-    private static final int LEFT = Sink.JUSTIFY_LEFT;
+
+    private List<ReportTestSuite> testSuites;
 
     public SurefireReportGenerator( List<File> reportsDirectories, Locale locale, boolean showSuccess,
-                                    String xrefLocation )
+                                    String xrefLocation, ConsoleLogger consoleLogger )
     {
-        report = new SurefireReportParser( reportsDirectories, locale );
-
-        this.xrefLocation = xrefLocation;
-
+        report = new SurefireReportParser( reportsDirectories, locale, consoleLogger );
         this.showSuccess = showSuccess;
+        this.xrefLocation = xrefLocation;
     }
 
     public void doGenerateReport( ResourceBundle bundle, Sink sink )

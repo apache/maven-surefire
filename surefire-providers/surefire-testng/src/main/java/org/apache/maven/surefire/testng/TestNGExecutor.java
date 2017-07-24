@@ -47,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
+import static org.apache.maven.surefire.cli.CommandLineOption.SHOW_ERRORS;
 import static org.apache.maven.surefire.util.ReflectionUtils.instantiate;
 import static org.apache.maven.surefire.util.ReflectionUtils.tryLoadClass;
 import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDownToZero;
@@ -73,6 +75,7 @@ final class TestNGExecutor
         throw new IllegalStateException( "not instantiable constructor" );
     }
 
+    @SuppressWarnings( "checkstyle:parameternumbercheck" )
     static void run( Iterable<Class<?>> testClasses, String testSourceDirectory,
                             Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
                             RunListener reportManager, File reportsDirectory,
@@ -134,8 +137,7 @@ final class TestNGExecutor
 
     private static boolean isCliDebugOrShowErrors( List<CommandLineOption> mainCliOptions )
     {
-        return mainCliOptions.contains( CommandLineOption.LOGGING_LEVEL_DEBUG )
-            || mainCliOptions.contains( CommandLineOption.SHOW_ERRORS );
+        return mainCliOptions.contains( LOGGING_LEVEL_DEBUG ) || mainCliOptions.contains( SHOW_ERRORS );
     }
 
     private static TestMetadata findTestMetadata( Class<?> testClass )
@@ -333,6 +335,7 @@ final class TestNGExecutor
 
         return new Stoppable()
         {
+            @Override
             public void fireStopEvent()
             {
                 if ( countDownToZero( currentFaultCount ) )

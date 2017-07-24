@@ -22,7 +22,7 @@ package org.apache.maven.surefire.report;
 /**
  * Used by providers to report results.
  * Using this interface integrates the providers together into a common reporting infrastructure.
- * <p/>
+ * <br>
  * An instance of a reporter is not guaranteed to be thread-safe and concurrent test frameworks
  * must request an instance of a reporter per-thread from the ReporterFactory.
  */
@@ -34,7 +34,7 @@ public interface RunListener
      * @param report the report entry describing the testset
      * @throws ReporterException When reporting fails
      */
-    void testSetStarting( ReportEntry report );
+    void testSetStarting( TestSetReportEntry report );
 
     /**
      * Indicates end of a given test-set
@@ -42,7 +42,7 @@ public interface RunListener
      * @param report the report entry describing the testset
      * @throws ReporterException When reporting fails
      */
-    void testSetCompleted( ReportEntry report );
+    void testSetCompleted( TestSetReportEntry report );
 
     /**
      * Event fired when a test is about to start

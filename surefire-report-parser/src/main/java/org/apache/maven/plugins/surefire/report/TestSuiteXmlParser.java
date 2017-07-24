@@ -28,18 +28,20 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.shared.utils.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import static java.util.Locale.ENGLISH;
 
 /**
  *
@@ -47,7 +49,9 @@ import org.xml.sax.helpers.DefaultHandler;
 public final class TestSuiteXmlParser
     extends DefaultHandler
 {
-    private final NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH );
+    private final NumberFormat numberFormat = NumberFormat.getInstance( ENGLISH );
+
+    private final ConsoleLogger consoleLogger;
 
     private ReportTestSuite defaultSuite;
 
@@ -62,6 +66,11 @@ public final class TestSuiteXmlParser
     private ReportTestCase testCase;
 
     private boolean valid;
+
+    public TestSuiteXmlParser( ConsoleLogger consoleLogger )
+    {
+        this.consoleLogger = consoleLogger;
+    }
 
     public List<ReportTestSuite> parse( String xmlPath )
         throws ParserConfigurationException, SAXException, IOException
@@ -108,6 +117,7 @@ public final class TestSuiteXmlParser
     /**
      * {@inheritDoc}
      */
+    @Override
     public void startElement( String uri, String localName, String qName, Attributes attributes )
         throws SAXException
     {
@@ -115,6 +125,7 @@ public final class TestSuiteXmlParser
         {
             try
             {
+                // todo: use jdk7 switch-case
                 if ( "testsuite".equals( qName ) )
                 {
                     defaultSuite = new ReportTestSuite();
@@ -128,7 +139,7 @@ public final class TestSuiteXmlParser
                     }
                     catch ( NullPointerException e )
                     {
-                        System.err.println( "WARNING: no time attribute found on testsuite element" );
+                        consoleLogger.error( "WARNING: no time attribute found on testsuite element" );
                     }
 
                     final String name = attributes.getValue( "name" );
@@ -214,9 +225,11 @@ public final class TestSuiteXmlParser
     /**
      * {@inheritDoc}
      */
+    @Override
     public void endElement( String uri, String localName, String qName )
         throws SAXException
     {
+        // todo: use jdk7 switch-case
         if ( "testcase".equals( qName ) )
         {
             currentSuite.getTestCases().add( testCase );
@@ -243,6 +256,7 @@ public final class TestSuiteXmlParser
     /**
      * {@inheritDoc}
      */
+    @Override
     public void characters( char[] ch, int start, int length )
         throws SAXException
     {

@@ -49,6 +49,7 @@ public class JUnit3TestChecker
         junitClass = ReflectionUtils.tryLoadClass( testClassLoader, "junit.framework.Test" );
     }
 
+    @Override
     public boolean accept( Class testClass )
     {
         return nonAbstractClassFilter.accept( testClass ) && isValidJUnit3Test( testClass );

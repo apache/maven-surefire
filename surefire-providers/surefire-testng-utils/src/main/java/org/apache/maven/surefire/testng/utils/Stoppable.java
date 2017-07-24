@@ -20,7 +20,7 @@ package org.apache.maven.surefire.testng.utils;
  */
 
 /**
- * Covers configuration parameter <em>skipAfterFailureCount</em>.
+ * Covers configuration parameter {@code skipAfterFailureCount}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19

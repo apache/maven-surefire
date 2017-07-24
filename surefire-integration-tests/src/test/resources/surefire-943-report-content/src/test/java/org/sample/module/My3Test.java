@@ -28,7 +28,7 @@ public class My3Test {
     public void fails()
         throws Exception
     {
-        Thread.sleep( 100 );
+        Thread.sleep( 1000 );
         fail( "Always fails" );
     }
 
@@ -36,6 +36,6 @@ public class My3Test {
     public void alwaysSuccessful()
         throws Exception
     {
-        Thread.sleep( 100 );
+        Thread.sleep( 1000 );
     }
 }

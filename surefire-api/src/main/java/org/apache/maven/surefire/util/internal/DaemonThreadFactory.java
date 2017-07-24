@@ -43,6 +43,7 @@ public final class DaemonThreadFactory
         namePrefix = "pool-" + POOL_NUMBER.getAndIncrement() + "-thread-";
     }
 
+    @Override
     public Thread newThread( Runnable r )
     {
         Thread t = new Thread( group, r, namePrefix + threadNumber.getAndIncrement() );
@@ -56,6 +57,7 @@ public final class DaemonThreadFactory
 
     /**
      * Should be used by thread pools.
+     * @return new instance of {@link ThreadFactory} where each {@link Thread thread} is daemon
      */
     public static ThreadFactory newDaemonThreadFactory()
     {
@@ -104,6 +106,7 @@ public final class DaemonThreadFactory
             this.name = name;
         }
 
+        @Override
         public Thread newThread( Runnable r )
         {
             return newDaemonThread( r, name );

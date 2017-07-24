@@ -27,15 +27,15 @@ import org.junit.runner.notification.Failure;
  * TestCase that expose "No tests were executed!" on Test failure using Maven Surefire 2.6-SNAPSHOT
  * and the JUnit 4.8 Runner.
  * {@code
- * * <p/>
+ * * <br>
  * -------------------------------------------------------
  * T E S T S
  * -------------------------------------------------------
- * <p/>
- * Results :
- * <p/>
+ * <br>
+ * Results:
+ * <br>
  * Tests run: 0, Failures: 0, Errors: 0, Skipped: 0
- * <p/>
+ * <br>
  * [INFO] ------------------------------------------------------------------------
  * [INFO] BUILD FAILURE
  * [INFO] ------------------------------------------------------------------------
@@ -46,15 +46,15 @@ import org.junit.runner.notification.Failure;
  * [ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.5:test
  * (default-test) on project xxxxxx: No tests were executed!  (Set -DfailIfNoTests=false to
  * ignore this error.) -> [Help 1]
- * <p/>
- * <p/>
+ * <br>
+ * <br>
  * <dependency>
  * <groupId>junit</groupId>
  * <artifactId>junit</artifactId>
  * <version>4.8.1</version>
  * <scope>test</scope>
  * </dependency>
- * <p/>
+ * <br>
  * <dependency>
  * <groupId>org.apache.maven.surefire</groupId>
  * <artifactId>surefire-booter</artifactId>
@@ -90,7 +90,7 @@ public class MavenSurefireJUnit48RunnerTest
     * JUnits ParentRunner is responsible for adding the BeforeClass/AfterClass statements to the
     * statement execution chain. After BeforeClass is executed, a Statement that delegates to the
     * abstract method: runChild(T child, RunNotifier notifier) is called. As the JavaDoc explains:
-    * "Subclasses are responsible for making sure that relevant test events are reported through {@code notifier}".
+    * "Subclasses are responsible for making sure that relevant test events are reported through <b>notifier</b>".
     * When a @BeforeClass fail, the child that should handle the relevant test events(Started, Failed, Finished)
     * is never executed.
     *

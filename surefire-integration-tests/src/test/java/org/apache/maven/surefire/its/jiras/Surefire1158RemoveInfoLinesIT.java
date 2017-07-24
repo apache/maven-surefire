@@ -18,11 +18,9 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.Not2xCompatible;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireVerifierException;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -35,11 +33,10 @@ import static org.junit.Assert.*;
 /**
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-1158}
+ * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1158">SUREFIRE-1158</a>
  * @since 2.19
  */
 @RunWith( Parameterized.class )
-@Category( Not2xCompatible.class )
 public class Surefire1158RemoveInfoLinesIT
 {
 

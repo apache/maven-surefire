@@ -34,9 +34,19 @@ Shutdown of Forked JVM
   <<<java.lang.System.exit(0)>>> which starts shutdown hooks. At this point
   the process may run next 30 seconds until all non daemon Threads die.
   After the period of time has elapsed, the process kills itself by
-  <<<java.lang.Runtime.halt(0)>>>.
+  <<<java.lang.Runtime.halt(0)>>>. The timeout of 30 seconds can be
+  customized by configuration parameter <<<forkedProcessExitTimeoutInSeconds>>>.
 
 * Pinging forked JVM
+
+  << Since ${thisPlugin} Plugin 2.20.1 ping is platform dependent and fallbacks to old mechanism if platform is
+  not recognized or native commands fail in Java. >>
+
+  Simply the mechanism checks the <<<PPID>>> still exists and it is not reused by OS in another application.
+  If parent (normally Maven) process has died, the forked JVM is killed.
+
+
+  << Since ${thisPlugin} Plugin 2.19 the old mechanism is significantly slower: >>
 
   The master process sends NOOP command to a forked JVM every 10 seconds.
   Forked JVM is waiting for the command every 20 seconds.
@@ -84,4 +94,11 @@ Shutdown of Forked JVM
   amount of time and the whole plugin fails with the error message:
 
   <<<There was a timeout or other error in the fork>>>
-  
+
+
+* Crashed forked JVM caused listing the crashed test(s)
+
+  After the JVM exited abruptly, the console lists the message <<<Crashed tests:>>> with a list of crashed tests if the
+  entire test-set has not been yet completed. This happens if a test exited, killed JVM or a segmentation fault crashed
+  JVM. In such cases you may be interested in dump files generated in reports directory, see {{{../faq.html#dumpfiles}FAQ}}.
+

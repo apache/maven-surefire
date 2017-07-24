@@ -19,18 +19,14 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.internal.StringUtils;
-
 import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 
-import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
-import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
-import static org.apache.maven.surefire.util.internal.StringUtils.requireNonNull;
 import static java.lang.String.format;
+import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
+import static org.apache.maven.surefire.util.internal.StringUtils.ISO_8859_1;
+import static org.apache.maven.surefire.util.internal.StringUtils.US_ASCII;
+import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 
 /**
  * Commands which are sent from plugin to the forked jvm.
@@ -47,9 +43,8 @@ public enum MasterProcessCommand
     SHUTDOWN( 3, String.class ),
 
     /** To tell a forked process that the master process is still alive. Repeated after 10 seconds. */
-    NOOP( 4, Void.class );
-
-    private static final Charset ASCII = Charset.forName( "ASCII" );
+    NOOP( 4, Void.class ),
+    BYE_ACK( 5, Void.class );
 
     private final int id;
 
@@ -89,12 +84,15 @@ public enum MasterProcessCommand
             throw new IllegalArgumentException( "Data type can be only " + String.class );
         }
 
-        byte[] dataBytes = fromDataType( data );
-        byte[] encoded = new byte[8 + dataBytes.length];
-        int command = getId();
-        int len = dataBytes.length;
+        final byte[] dataBytes = fromDataType( data );
+        final int len = dataBytes.length;
+
+        final byte[] encoded = new byte[8 + len];
+
+        final int command = getId();
         setCommandAndDataLength( command, len, encoded );
-        System.arraycopy( dataBytes, 0, encoded, 8, dataBytes.length );
+        System.arraycopy( dataBytes, 0, encoded, 8, len );
+
         return encoded;
     }
 
@@ -124,31 +122,13 @@ public enum MasterProcessCommand
             int dataLength = is.readInt();
             if ( dataLength > 0 )
             {
-                byte[] buffer = new byte[dataLength];
-                int read = 0;
-                int total = 0;
-                do
-                {
-                    total += read;
-                    read = is.read( buffer, total, dataLength - total );
-                } while ( read > 0 );
+                byte[] buffer = new byte[ dataLength ];
+                is.readFully( buffer );
 
                 if ( command.getDataType() == Void.class )
                 {
-                    // must read entire sequence to get to the next command; cannot be above the loop
                     throw new IOException( format( "Command %s unexpectedly read Void data with length %d.",
                                                    command, dataLength ) );
-                }
-
-                if ( total != dataLength )
-                {
-                    if ( read == -1 )
-                    {
-                        throw new EOFException( "stream closed" );
-                    }
-
-                    throw new IOException( format( "%s read %d out of %d bytes",
-                                                    MasterProcessCommand.class, total, dataLength ) );
                 }
 
                 String data = command.toDataTypeAsString( buffer );
@@ -163,21 +143,14 @@ public enum MasterProcessCommand
 
     String toDataTypeAsString( byte... data )
     {
-        try
+        switch ( this )
         {
-            switch ( this )
-            {
-                case RUN_CLASS:
-                    return new String( data, FORK_STREAM_CHARSET_NAME );
-                case SHUTDOWN:
-                    return StringUtils.decode( data, ASCII );
-                default:
-                    return null;
-            }
-        }
-        catch ( UnsupportedEncodingException e )
-        {
-            throw new IllegalStateException( e );
+            case RUN_CLASS:
+                return new String( data, ISO_8859_1 );
+            case SHUTDOWN:
+                return new String( data, US_ASCII );
+            default:
+                return null;
         }
     }
 
@@ -188,7 +161,7 @@ public enum MasterProcessCommand
             case RUN_CLASS:
                 return encodeStringForForkCommunication( data );
             case SHUTDOWN:
-                return StringUtils.encode( data, ASCII );
+                return data.getBytes( US_ASCII );
             default:
                 return new byte[0];
         }

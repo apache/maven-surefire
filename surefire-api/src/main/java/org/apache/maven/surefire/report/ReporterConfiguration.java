@@ -24,7 +24,7 @@ import java.io.PrintStream;
 
 /**
  * Bits and pieces of reporting configuration that seem to be necessary on the provider side.
- * <p/>
+ * <br>
  * Todo: Consider moving these fields elsewhere, this concept does not smell too good
  *
  * @author Kristian Rosenvold

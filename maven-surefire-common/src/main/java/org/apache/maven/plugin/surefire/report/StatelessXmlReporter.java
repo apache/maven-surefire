@@ -25,7 +25,9 @@ import org.apache.maven.shared.utils.xml.XMLWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.SafeThrowable;
+import org.apache.maven.surefire.util.internal.StringUtils;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
@@ -37,25 +39,26 @@ import java.nio.charset.Charset;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType;
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
-import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
+import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
+import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 
+@SuppressWarnings( { "javadoc", "checkstyle:javadoctype" } )
 // CHECKSTYLE_OFF: LineLength
 /**
  * XML format reporter writing to <code>TEST-<i>reportName</i>[-<i>suffix</i>].xml</code> file like written and read
  * by Ant's <a href="http://ant.apache.org/manual/Tasks/junit.html"><code>&lt;junit&gt;</code></a> and
  * <a href="http://ant.apache.org/manual/Tasks/junitreport.html"><code>&lt;junitreport&gt;</code></a> tasks,
  * then supported by many tools like CI servers.
- * <p/>
+ * <br>
  * <pre>&lt;?xml version="1.0" encoding="UTF-8"?>
  * &lt;testsuite name="<i>suite name</i>" [group="<i>group</i>"] tests="<i>0</i>" failures="<i>0</i>" errors="<i>0</i>" skipped="<i>0</i>" time="<i>0,###.###</i>">
  *  &lt;properties>
@@ -84,10 +87,6 @@ import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
  */
 public class StatelessXmlReporter
 {
-    private static final String ENCODING = "UTF-8";
-
-    private static final Charset ENCODING_CS = Charset.forName( ENCODING );
-
     private final File reportsDirectory;
 
     private final String reportNameSuffix;
@@ -96,19 +95,23 @@ public class StatelessXmlReporter
 
     private final int rerunFailingTestsCount;
 
+    private final String xsdSchemaLocation;
+
     // Map between test class name and a map between test method name
     // and the list of runs for each test method
     private final Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistoryMap;
 
     public StatelessXmlReporter( File reportsDirectory, String reportNameSuffix, boolean trimStackTrace,
                                  int rerunFailingTestsCount,
-                                 Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistoryMap )
+                                 Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistoryMap,
+                                 String xsdSchemaLocation )
     {
         this.reportsDirectory = reportsDirectory;
         this.reportNameSuffix = reportNameSuffix;
         this.trimStackTrace = trimStackTrace;
         this.rerunFailingTestsCount = rerunFailingTestsCount;
         this.testClassMethodRunHistoryMap = testClassMethodRunHistoryMap;
+        this.xsdSchemaLocation = xsdSchemaLocation;
     }
 
     public void testSetCompleted( WrappedReportEntry testSetReportEntry, TestSetStats testSetStats )
@@ -123,20 +126,19 @@ public class StatelessXmlReporter
             getAddMethodEntryList( methodRunHistoryMap, methodEntry );
         }
 
-        FileOutputStream outputStream = getOutputStream( testSetReportEntry );
+        OutputStream outputStream = getOutputStream( testSetReportEntry );
         OutputStreamWriter fw = getWriter( outputStream );
         try
         {
             XMLWriter ppw = new PrettyPrintXMLWriter( fw );
-            ppw.setEncoding( ENCODING );
+            ppw.setEncoding( StringUtils.UTF_8.name() );
 
-            createTestSuiteElement( ppw, testSetReportEntry, testSetStats, reportNameSuffix,
-                                    testSetReportEntry.elapsedTimeAsString() );
+            createTestSuiteElement( ppw, testSetReportEntry, testSetStats, testSetReportEntry.elapsedTimeAsString() );
 
-            showProperties( ppw );
+            showProperties( ppw, testSetReportEntry.getSystemProperties() );
 
             // Iterate through all the test methods in the test class
-            for ( Map.Entry<String, List<WrappedReportEntry>> entry : methodRunHistoryMap.entrySet() )
+            for ( Entry<String, List<WrappedReportEntry>> entry : methodRunHistoryMap.entrySet() )
             {
                 List<WrappedReportEntry> methodEntryList = entry.getValue();
                 if ( methodEntryList == null )
@@ -284,7 +286,7 @@ public class StatelessXmlReporter
         return methodRunHistoryMap;
     }
 
-    private FileOutputStream getOutputStream( WrappedReportEntry testSetReportEntry )
+    private OutputStream getOutputStream( WrappedReportEntry testSetReportEntry )
     {
         File reportFile = getReportFile( testSetReportEntry, reportsDirectory, reportNameSuffix );
 
@@ -295,8 +297,7 @@ public class StatelessXmlReporter
 
         try
         {
-
-            return new FileOutputStream( reportFile );
+            return new BufferedOutputStream( new FileOutputStream( reportFile ), 16 * 1024 );
         }
         catch ( Exception e )
         {
@@ -304,9 +305,9 @@ public class StatelessXmlReporter
         }
     }
 
-    private static OutputStreamWriter getWriter( FileOutputStream fos )
+    private static OutputStreamWriter getWriter( OutputStream fos )
     {
-        return new OutputStreamWriter( fos, ENCODING_CS );
+        return new OutputStreamWriter( fos, UTF_8 );
     }
 
     private static void getAddMethodEntryList( Map<String, List<WrappedReportEntry>> methodRunHistoryMap,
@@ -324,9 +325,8 @@ public class StatelessXmlReporter
     private static File getReportFile( ReportEntry report, File reportsDirectory, String reportNameSuffix )
     {
         String reportName = "TEST-" + report.getName();
-        return isNotBlank( reportNameSuffix )
-            ? new File( reportsDirectory, stripIllegalFilenameChars( reportName + "-" + reportNameSuffix + ".xml" ) )
-            : new File( reportsDirectory, stripIllegalFilenameChars( reportName + ".xml" ) );
+        String customizedReportName = isBlank( reportNameSuffix ) ? reportName : reportName + "-" + reportNameSuffix;
+        return new File( reportsDirectory, stripIllegalFilenameChars( customizedReportName + ".xml" ) );
     }
 
     private static void startTestElement( XMLWriter ppw, WrappedReportEntry report, String reportNameSuffix,
@@ -352,17 +352,15 @@ public class StatelessXmlReporter
         ppw.addAttribute( "time", timeAsString );
     }
 
-    private static void createTestSuiteElement( XMLWriter ppw, WrappedReportEntry report, TestSetStats testSetStats,
-                                                String reportNameSuffix1, String timeAsString )
+    private void createTestSuiteElement( XMLWriter ppw, WrappedReportEntry report, TestSetStats testSetStats,
+                                         String timeAsString )
     {
         ppw.startElement( "testsuite" );
 
         ppw.addAttribute( "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance" );
+        ppw.addAttribute( "xsi:noNamespaceSchemaLocation", xsdSchemaLocation );
 
-        ppw.addAttribute( "xsi:noNamespaceSchemaLocation",
-                          "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" );
-
-        ppw.addAttribute( "name", report.getReportName( reportNameSuffix1 ) );
+        ppw.addAttribute( "name", report.getReportName( reportNameSuffix ) );
 
         if ( report.getGroup() != null )
         {
@@ -381,7 +379,7 @@ public class StatelessXmlReporter
     }
 
     private static void getTestProblems( OutputStreamWriter outputStreamWriter, XMLWriter ppw,
-                                         WrappedReportEntry report, boolean trimStackTrace, FileOutputStream fw,
+                                         WrappedReportEntry report, boolean trimStackTrace, OutputStream fw,
                                          String testErrorType, boolean createOutErrElementsInside )
     {
         ppw.startElement( testErrorType );
@@ -428,7 +426,7 @@ public class StatelessXmlReporter
 
     // Create system-out and system-err elements
     private static void createOutErrElements( OutputStreamWriter outputStreamWriter, XMLWriter ppw,
-                                              WrappedReportEntry report, FileOutputStream fw )
+                                              WrappedReportEntry report, OutputStream fw )
     {
         EncodingOutputStream eos = new EncodingOutputStream( fw );
         addOutputStreamElement( outputStreamWriter, eos, ppw, report.getStdout(), "system-out" );
@@ -464,40 +462,30 @@ public class StatelessXmlReporter
 
     /**
      * Adds system properties to the XML report.
-     * <p/>
+     * <br>
      *
      * @param xmlWriter The test suite to report to
      */
-    private static void showProperties( XMLWriter xmlWriter )
+    private static void showProperties( XMLWriter xmlWriter, Map<String, String> systemProperties )
     {
         xmlWriter.startElement( "properties" );
-
-        Properties systemProperties = System.getProperties();
-
-        if ( systemProperties != null )
+        for ( final Entry<String, String> entry : systemProperties.entrySet() )
         {
-            Enumeration<?> propertyKeys = systemProperties.propertyNames();
+            final String key = entry.getKey();
+            String value = entry.getValue();
 
-            while ( propertyKeys.hasMoreElements() )
+            if ( value == null )
             {
-                String key = (String) propertyKeys.nextElement();
-
-                String value = systemProperties.getProperty( key );
-
-                if ( value == null )
-                {
-                    value = "null";
-                }
-
-                xmlWriter.startElement( "property" );
-
-                xmlWriter.addAttribute( "name", key );
-
-                xmlWriter.addAttribute( "value", extraEscape( value, true ) );
-
-                xmlWriter.endElement();
-
+                value = "null";
             }
+
+            xmlWriter.startElement( "property" );
+
+            xmlWriter.addAttribute( "name", key );
+
+            xmlWriter.addAttribute( "value", extraEscape( value, true ) );
+
+            xmlWriter.endElement();
         }
         xmlWriter.endElement();
     }
@@ -512,14 +500,10 @@ public class StatelessXmlReporter
     private static String extraEscape( String message, boolean attribute )
     {
         // Someday convert to xml 1.1 which handles everything but 0 inside string
-        if ( !containsEscapesIllegalnXml10( message ) )
-        {
-            return message;
-        }
-        return escapeXml( message, attribute );
+        return containsEscapesIllegalXml10( message ) ? escapeXml( message, attribute ) : message;
     }
 
-    private static class EncodingOutputStream
+    private static final class EncodingOutputStream
         extends FilterOutputStream
     {
         private int c1;
@@ -557,7 +541,7 @@ public class StatelessXmlReporter
                 // there's nothing better we can do! :-(
                 // SUREFIRE-456
                 out.write( ByteConstantsHolder.AMP_BYTES );
-                out.write( String.valueOf( b ).getBytes( ENCODING ) );
+                out.write( String.valueOf( b ).getBytes( UTF_8 ) );
                 out.write( ';' ); // & Will be encoded to amp inside xml encodingSHO
             }
             else
@@ -569,7 +553,7 @@ public class StatelessXmlReporter
         }
     }
 
-    private static boolean containsEscapesIllegalnXml10( String message )
+    private static boolean containsEscapesIllegalXml10( String message )
     {
         int size = message.length();
         for ( int i = 0; i < size; i++ )
@@ -617,7 +601,7 @@ public class StatelessXmlReporter
         return sb.toString();
     }
 
-    private static class ByteConstantsHolder
+    private static final class ByteConstantsHolder
     {
         private static final byte[] CDATA_START_BYTES;
 
@@ -629,17 +613,10 @@ public class StatelessXmlReporter
 
         static
         {
-            try
-            {
-                CDATA_START_BYTES = "<![CDATA[".getBytes( ENCODING );
-                CDATA_END_BYTES = "]]>".getBytes( ENCODING );
-                CDATA_ESCAPE_STRING_BYTES = "]]><![CDATA[>".getBytes( ENCODING );
-                AMP_BYTES = "&amp#".getBytes( ENCODING );
-            }
-            catch ( UnsupportedEncodingException e )
-            {
-                throw new RuntimeException( e );
-            }
+            CDATA_START_BYTES = "<![CDATA[".getBytes( UTF_8 );
+            CDATA_END_BYTES = "]]>".getBytes( UTF_8 );
+            CDATA_ESCAPE_STRING_BYTES = "]]><![CDATA[>".getBytes( UTF_8 );
+            AMP_BYTES = "&amp#".getBytes( UTF_8 );
         }
     }
 }

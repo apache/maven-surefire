@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire</artifactId>
-    <version>2.19.2-SNAPSHOT</version>
+    <version>2.21-SNAPSHOT</version>
   </parent>
 
   <artifactId>maven-surefire-common</artifactId>
@@ -93,6 +93,7 @@
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
@@ -106,9 +107,14 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
+      <version>1.13</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>1.8.4</version>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -116,18 +122,58 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!-- Remove in 3.0 -->
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>shared-logging-generated-sources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
+              <overWriteIfNewer>false</overWriteIfNewer>
+              <artifact>org.apache.maven.shared:maven-shared-utils:3.1.0:jar:sources</artifact>
+              <includes>org/apache/maven/shared/utils/logging/*.java</includes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <includes>
             <include>**/JUnit4SuiteTest.java</include>
           </includes>
+          <classpathDependencyExcludes>
+            <classpathDependencyExclude>org.fusesource.jansi:jansi</classpathDependencyExclude>
+          </classpathDependencyExcludes>
         </configuration>
         <dependencies>
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-shadefire</artifactId>
-            <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to http://jira.codehaus.org/browse/MRELEASE-799 -->
+            <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
           </dependency>
         </dependencies>
       </plugin>
@@ -147,6 +193,7 @@
                   <include>org.apache.maven.shared:maven-shared-utils</include>
                   <include>org.apache.maven.shared:maven-common-artifact-filters</include>
                   <include>commons-io:commons-io</include>
+                  <include>org.apache.commons:commons-lang3</include>
                 </includes>
               </artifactSet>
               <relocations>
@@ -157,6 +204,10 @@
                 <relocation>
                   <pattern>org.apache.commons.io</pattern>
                   <shadedPattern>org.apache.maven.surefire.shade.org.apache.commons.io</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.commons.lang3</pattern>
+                  <shadedPattern>org.apache.maven.surefire.shade.org.apache.commons.lang3</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>

@@ -19,7 +19,6 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
@@ -38,9 +37,14 @@ public class CheckTestNgReportTestIT
     public void testNgReport()
         throws Exception
     {
-        final OutputValidator outputValidator =
-            unpack( "/testng-simple" ).addSurefireReportGoal().executeCurrentGoals().verifyErrorFree( 3 );
-        outputValidator.getSiteFile( "surefire-report.html" ).assertFileExists();
+        unpack( "/testng-simple" )
+                .sysProp( "testNgVersion", "5.7" )
+                .sysProp( "testNgClassifier", "jdk15" )
+                .addSurefireReportGoal()
+                .executeCurrentGoals()
+                .verifyErrorFree( 3 )
+                .getSiteFile( "surefire-report.html" )
+                .assertFileExists();
     }
 
     @Test

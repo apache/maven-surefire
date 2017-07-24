@@ -34,6 +34,7 @@ public class SurefireRepMavenProjectStub
     /**
      * {@inheritDoc}
      */
+    @Override
     public List getReportPlugins()
     {
         Reporting reporting = new Reporting();

@@ -39,7 +39,10 @@ public class JUnitTestFailureListener
     public void testFailure( Failure failure )
         throws Exception
     {
-        allFailures.add( failure );
+        if ( failure != null )
+        {
+            allFailures.add( failure );
+        }
     }
 
     public List<Failure> getAllFailures()

@@ -19,12 +19,13 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
+import junit.framework.TestCase;
+
 import java.io.File;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
+import java.net.URI;
 import java.net.URL;
 
-import junit.framework.TestCase;
+import static org.apache.maven.surefire.util.internal.UrlUtils.toURL;
 
 /**
  * Test the URL utilities.
@@ -34,6 +35,7 @@ public class UrlUtilsTest
 {
     private String homeDir;
 
+    @Override
     public void setUp()
         throws Exception
     {
@@ -55,28 +57,14 @@ public class UrlUtilsTest
         throws Exception
     {
         File f = new File( homeDir, fileName );
-        URL u = UrlUtils.getURL( f );
+        URL u = toURL( f );
+        URI uri = u.toURI();
+        File urlFile = new File( uri );
         String url = u.toString();
+
         assertStartsWith( url, "file:" );
         assertEndsWith( url, expectedFileName );
-
-        try
-        {
-            // use reflection to do "URI uri = u.toURI()" if JDK 1.5+
-            Method toURI = URL.class.getMethod( "toURI", null );
-            Object uri = toURI.invoke( u, null );
-
-            // use reflection to do "File urlFile = new File( uri )" if JDK 1.4+
-            Constructor newFile = File.class.getConstructor( new Class[]{ uri.getClass() } );
-            File urlFile = (File) newFile.newInstance( uri );
-
-            assertEquals( f, urlFile );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            // URL.toURI() method in JDK 1.5+, not available currently
-            // we won't be able to check for file equality...
-        }
+        assertEquals( f, urlFile );
     }
 
     private void assertStartsWith( String string, String substring )

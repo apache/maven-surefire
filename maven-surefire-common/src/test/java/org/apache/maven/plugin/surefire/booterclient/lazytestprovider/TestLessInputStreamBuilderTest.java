@@ -20,10 +20,12 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  */
 
 import org.apache.maven.surefire.booter.Command;
+import org.apache.maven.surefire.booter.MasterProcessCommand;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -31,12 +33,15 @@ import java.util.NoSuchElementException;
 import static org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream.TestLessInputStreamBuilder;
 import static org.apache.maven.surefire.booter.Command.NOOP;
 import static org.apache.maven.surefire.booter.Command.SKIP_SINCE_NEXT_TEST;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.BYE_ACK;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.SHUTDOWN;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.decode;
 import static org.apache.maven.surefire.booter.Shutdown.EXIT;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Testing cached and immediate commands in {@link TestLessInputStream}.
@@ -125,5 +130,22 @@ public class TestLessInputStreamBuilderTest
         assertThat( is.availablePermits(), is( 0 ) );
         e.expect( NoSuchElementException.class );
         is.nextCommand();
+    }
+
+    @Test
+    public void shouldDecodeTwoCommands()
+            throws IOException
+    {
+        TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
+        TestLessInputStream pluginIs = builder.build();
+        builder.getImmediateCommands().acknowledgeByeEventReceived();
+        builder.getImmediateCommands().noop();
+        DataInputStream is = new DataInputStream( pluginIs );
+        Command bye = decode( is );
+        assertThat( bye, is( notNullValue() ) );
+        assertThat( bye.getCommandType(), is( BYE_ACK ) );
+        Command noop = decode( is );
+        assertThat( noop, is( notNullValue() ) );
+        assertThat( noop.getCommandType(), is( MasterProcessCommand.NOOP ) );
     }
 }

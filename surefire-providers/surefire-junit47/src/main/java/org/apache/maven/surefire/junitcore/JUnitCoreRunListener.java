@@ -19,20 +19,22 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.Map;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit48.JUnit46StackTraceWriter;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.StackTraceWriter;
-
 import org.junit.runner.Description;
 import org.junit.runner.Result;
+import org.junit.runner.RunWith;
 import org.junit.runner.notification.Failure;
+import org.junit.runners.Parameterized;
+
+import java.lang.annotation.Annotation;
+import java.util.Map;
 
 /**
  * Noteworthy things about JUnit4 listening:
- * <p/>
+ * <br>
  * A class that is annotated with @Ignore will have one invocation of "testSkipped" with source==name
  * A method that is annotated with @Ignore will have a invocation of testSkipped with source and name distinct
  * Methods annotated with @Ignore trigger no further events.
@@ -59,6 +61,7 @@ public class JUnitCoreRunListener
      *
      * @see org.junit.runner.notification.RunListener#testRunStarted(org.junit.runner.Description)
      */
+    @Override
     public void testRunStarted( Description description )
         throws Exception
     {
@@ -73,43 +76,74 @@ public class JUnitCoreRunListener
         reporter.testSetCompleted( null );
     }
 
-    private void fillTestCountMap( Description description )
+    private void fillTestCountMap( Description testDesc )
     {
-        final ArrayList<Description> children = description.getChildren();
+        TestSet testSet = new TestSet( testDesc );
 
-        TestSet testSet = new TestSet( description );
-        String itemTestClassName = null;
-        for ( Description item : children )
-        {
-            if ( !item.isTest() )
-            {
-                fillTestCountMap( item );
-            }
-            else
-            {
-                if ( item.getMethodName() != null )
-                {
-                    testSet.incrementTestMethodCount();
-                    if ( itemTestClassName == null )
-                    {
-                        itemTestClassName = item.getClassName();
-                    }
-                }
-                else
-                {
-                    classMethodCounts.put( item.getClassName(), new TestSet( item ) );
-                }
-            }
-        }
+        String itemTestClassName =
+                isParameterizedRunner( testDesc ) ? testDesc.getClassName() : asSuiteRunner( testDesc, testSet );
+
         if ( itemTestClassName != null )
         {
             classMethodCounts.put( itemTestClassName, testSet );
         }
     }
 
+    private String asSuiteRunner( Description description, TestSet testSet )
+    {
+        String itemTestClassName = null;
+        for ( Description child : description.getChildren() )
+        {
+            if ( !child.isTest() )
+            {
+                fillTestCountMap( child );
+            }
+            else
+            {
+                if ( extractDescriptionMethodName( child ) != null )
+                {
+                    testSet.incrementTestMethodCount();
+                    if ( itemTestClassName == null )
+                    {
+                        itemTestClassName = extractDescriptionClassName( child );
+                    }
+                }
+                else
+                {
+                    classMethodCounts.put( extractDescriptionClassName( child ), new TestSet( child ) );
+                }
+            }
+        }
+        return itemTestClassName;
+    }
+
+    private static boolean isParameterizedRunner( Description description )
+    {
+        for ( Annotation ann : description.getAnnotations() )
+        {
+            if ( ann.annotationType() == RunWith.class )
+            {
+                return Parameterized.class.isAssignableFrom( ( (RunWith) ann ).value() );
+            }
+        }
+        return false;
+    }
+
     @Override
     protected StackTraceWriter createStackTraceWriter( Failure failure )
     {
         return new JUnit46StackTraceWriter( failure );
+    }
+
+    @Override
+    protected String extractDescriptionClassName( Description description )
+    {
+        return description.getClassName();
+    }
+
+    @Override
+    protected String extractDescriptionMethodName( Description description )
+    {
+        return description.getMethodName();
     }
 }

@@ -20,6 +20,8 @@ package org.apache.maven.surefire.booter;
  */
 
 import java.io.PrintStream;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.suite.RunResult;
@@ -29,18 +31,15 @@ import org.apache.maven.surefire.suite.RunResult;
  * This factory is only used inside forks.
  *
  * @author Kristian Rosenvold
- * @noinspection UnusedDeclaration
  */
-
 public class ForkingReporterFactory
     implements ReporterFactory
 {
-
     private final boolean isTrimstackTrace;
 
     private final PrintStream originalSystemOut;
 
-    private volatile int testSetChannelId = 1;
+    private final AtomicInteger testSetChannelId = new AtomicInteger( 1 );
 
     public ForkingReporterFactory( boolean trimstackTrace, PrintStream originalSystemOut )
     {
@@ -48,11 +47,13 @@ public class ForkingReporterFactory
         this.originalSystemOut = originalSystemOut;
     }
 
+    @Override
     public RunListener createReporter()
     {
-        return new ForkingRunListener( originalSystemOut, testSetChannelId++, isTrimstackTrace );
+        return new ForkingRunListener( originalSystemOut, testSetChannelId.getAndIncrement(), isTrimstackTrace );
     }
 
+    @Override
     public RunResult close()
     {
         return new RunResult( 17, 17, 17, 17 );

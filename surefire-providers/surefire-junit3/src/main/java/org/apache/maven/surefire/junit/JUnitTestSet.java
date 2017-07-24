@@ -64,6 +64,7 @@ public final class JUnitTestSet
     }
 
 
+    @Override
     public void execute( RunListener reporter, ClassLoader loader )
         throws TestSetFailedException
     {
@@ -120,6 +121,7 @@ public final class JUnitTestSet
         }
     }
 
+    @Override
     public String getName()
     {
         return testClass.getName();

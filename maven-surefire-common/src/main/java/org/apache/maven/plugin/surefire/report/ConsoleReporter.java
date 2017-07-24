@@ -19,12 +19,16 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.io.BufferedOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.util.List;
+
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.shared.utils.logging.MessageBuilder;
 import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.plugin.surefire.log.api.Level;
+
+import static org.apache.maven.plugin.surefire.log.api.Level.resolveLevel;
+import static org.apache.maven.plugin.surefire.report.TestSetStats.concatenateWithTestGroup;
+import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
 
 /**
  * Base class for console reporters.
@@ -40,63 +44,56 @@ public class ConsoleReporter
 
     private static final String TEST_SET_STARTING_PREFIX = "Running ";
 
-    private static final int BUFFER_SIZE = 4096;
+    private final ConsoleLogger logger;
 
-    private final PrintWriter writer;
-
-    public ConsoleReporter( PrintStream originalSystemOut )
+    public ConsoleReporter( ConsoleLogger logger )
     {
-        OutputStreamWriter out = new OutputStreamWriter( new BufferedOutputStream( originalSystemOut, BUFFER_SIZE ) );
-        writer = new PrintWriter( out );
+        this.logger = logger;
+    }
+
+    public ConsoleLogger getConsoleLogger()
+    {
+        return logger;
     }
 
     public void testSetStarting( ReportEntry report )
     {
-        writeMessage( getTestSetStartingMessage( report ) );
-    }
-
-    public void writeMessage( String message )
-    {
-        writer.print( message );
-        writer.flush();
-    }
-
-    public void writeLnMessage( String message )
-    {
-        writer.println( message );
-        writer.flush();
+        MessageBuilder builder = buffer();
+        logger.info( concatenateWithTestGroup( builder.a( TEST_SET_STARTING_PREFIX ), report ) );
     }
 
     public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
     {
-        writeMessage( testSetStats.getTestSetSummary( report ) );
+        boolean success = testSetStats.getCompletedCount() > 0;
+        boolean failures = testSetStats.getFailures() > 0;
+        boolean errors = testSetStats.getErrors() > 0;
+        boolean skipped = testSetStats.getSkipped() > 0;
+        boolean flakes = testSetStats.getSkipped() > 0;
+        Level level = resolveLevel( success, failures, errors, skipped, flakes );
 
-        if ( testResults != null )
+        println( testSetStats.getColoredTestSetSummary( report ), level );
+        for ( String testResult : testResults )
         {
-            for ( String testResult : testResults )
-            {
-                writeLnMessage( testResult );
-            }
+            println( testResult, level );
         }
     }
 
-
     public void reset()
     {
-        writer.flush();
     }
 
-    /**
-     * Get the test set starting message for a report.
-     * eg. "Running org.foo.BarTest ( of group )"
-     *
-     * @param report report whose test set is starting
-     * @return the message
-     */
-    static String getTestSetStartingMessage( ReportEntry report )
+    private void println( String message, Level level )
     {
-        return TEST_SET_STARTING_PREFIX + report.getNameWithGroup() + "\n";
+        switch ( level )
+        {
+            case FAILURE:
+                logger.error( message );
+                break;
+            case UNSTABLE:
+                logger.warning( message );
+                break;
+            default:
+                logger.info( message );
+        }
     }
-
-
 }

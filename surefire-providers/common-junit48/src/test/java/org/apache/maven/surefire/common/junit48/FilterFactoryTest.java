@@ -188,7 +188,7 @@ public class FilterFactoryTest
     @Test
     public void testNegativeEmptyRegex()
     {
-        TestListResolver resolver = new TestListResolver( "%regex[ ]" );
+        TestListResolver resolver = new TestListResolver( "%regex[   ]" );
         assertTrue( resolver.getExcludedPatterns().isEmpty() );
         assertTrue( resolver.getIncludedPatterns().isEmpty() );
         assertTrue( resolver.isEmpty() );

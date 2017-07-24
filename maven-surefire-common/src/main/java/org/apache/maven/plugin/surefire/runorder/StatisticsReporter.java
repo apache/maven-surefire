@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import org.apache.maven.surefire.report.ReportEntry;
 
+import static org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMap.fromFile;
+
 /**
  * @author Kristian Rosenvold
  */
@@ -36,12 +38,17 @@ public class StatisticsReporter
 
     public StatisticsReporter( File dataFile )
     {
-        this.dataFile = dataFile;
-        this.existing = RunEntryStatisticsMap.fromFile( this.dataFile );
-        this.newResults = new RunEntryStatisticsMap();
+        this( dataFile, fromFile( dataFile ), new RunEntryStatisticsMap() );
     }
 
-    public void testSetCompleted()
+    protected StatisticsReporter( File dataFile, RunEntryStatisticsMap existing, RunEntryStatisticsMap newRestuls )
+    {
+        this.dataFile = dataFile;
+        this.existing = existing;
+        this.newResults = newRestuls;
+    }
+
+    public synchronized void testSetCompleted()
     {
         try
         {

@@ -24,7 +24,8 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
-import org.apache.maven.surefire.report.DefaultConsoleReporter;
+import org.apache.maven.surefire.report.ConsoleStream;
+import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.RunStatistics;
@@ -147,7 +148,7 @@ public class ConcurrentRunListenerTest
     {
         DefaultReporterFactory reporterFactory = createReporterFactory();
         HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
-        final DefaultConsoleReporter defaultConsoleReporter = new DefaultConsoleReporter( System.out );
+        final ConsoleStream defaultConsoleReporter = new DefaultDirectConsoleReporter( System.out );
         RunListener reporter =
             new ClassesParallelRunListener( classMethodCounts, reporterFactory, defaultConsoleReporter );
         JUnitCoreRunListener runListener = new JUnitCoreRunListener( reporter, classMethodCounts );
@@ -200,8 +201,8 @@ public class ConcurrentRunListenerTest
         throws TestSetFailedException
     {
         return new JUnitCoreRunListener(
-            new ClassesParallelRunListener( testSetMap, reporterFactory, new DefaultConsoleReporter( System.out ) ),
-            testSetMap );
+            new ClassesParallelRunListener( testSetMap, reporterFactory,
+                                                  new DefaultDirectConsoleReporter( System.out ) ), testSetMap );
     }
 
 

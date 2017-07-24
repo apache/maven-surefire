@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * @noinspection CustomClassloader
+ * Loads classes from jar files added via {@link #addURL(URL)}.
  */
 public class IsolatedClassLoader
     extends URLClassLoader
@@ -49,9 +49,16 @@ public class IsolatedClassLoader
         this.roleName = roleName;
     }
 
+    /**
+     * @deprecated this method will use {@link java.io.File} instead of {@link URL} in the next
+     * major version.
+     */
+    @Override
+    @Deprecated
     public void addURL( URL url )
     {
         // avoid duplicates
+        // todo avoid URL due to calling equals method may cause some overhead due to resolving host or file.
         if ( !urls.contains( url ) )
         {
             super.addURL( url );
@@ -59,16 +66,13 @@ public class IsolatedClassLoader
         }
     }
 
+    @Override
     public synchronized Class loadClass( String name )
         throws ClassNotFoundException
     {
-        Class c;
-
         if ( childDelegation )
         {
-            c = findLoadedClass( name );
-
-            ClassNotFoundException ex = null;
+            Class<?> c = findLoadedClass( name );
 
             if ( c == null )
             {
@@ -78,28 +82,26 @@ public class IsolatedClassLoader
                 }
                 catch ( ClassNotFoundException e )
                 {
-                    ex = e;
-
-                    if ( parent != null )
+                    if ( parent == null )
+                    {
+                        throw e;
+                    }
+                    else
                     {
                         c = parent.loadClass( name );
                     }
                 }
             }
 
-            if ( c == null )
-            {
-                throw ex;
-            }
+            return c;
         }
         else
         {
-            c = super.loadClass( name );
+            return super.loadClass( name );
         }
-
-        return c;
     }
 
+    @Override
     public String toString()
     {
         return "IsolatedClassLoader{roleName='" + roleName + "'}";

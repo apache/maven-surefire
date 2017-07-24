@@ -34,7 +34,7 @@ import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArr
 
 /**
  * Creates the surefire provider.
- * <p/>
+ * <br>
  *
  * @author Kristian Rosenvold
  */
@@ -109,13 +109,16 @@ public class ProviderFactory
         surefireReflector.setMainCliOptions( o, providerConfiguration.getMainCliOptions() );
         surefireReflector.setSkipAfterFailureCount( o, providerConfiguration.getSkipAfterFailureCount() );
         surefireReflector.setShutdown( o, providerConfiguration.getShutdown() );
+        if ( isInsideFork )
+        {
+            surefireReflector.setSystemExitTimeout( o, providerConfiguration.getSystemExitTimeout() );
+        }
 
         Object provider = surefireReflector.instantiateProvider( startupConfiguration.getActualClassName(), o );
         currentThread.setContextClassLoader( systemClassLoader );
 
         return new ProviderProxy( provider, classLoader );
     }
-
 
     private final class ProviderProxy
         implements SurefireProvider
@@ -131,6 +134,7 @@ public class ProviderFactory
             this.testsClassLoader = testsClassLoader;
         }
 
+        @Override
         @SuppressWarnings( "unchecked" )
         public Iterable<Class<?>> getSuites()
         {
@@ -145,6 +149,7 @@ public class ProviderFactory
             }
         }
 
+        @Override
         public RunResult invoke( Object forkTestSet )
             throws TestSetFailedException, InvocationTargetException
         {
@@ -172,6 +177,7 @@ public class ProviderFactory
             return current;
         }
 
+        @Override
         public void cancel()
         {
             Class<?> providerType = providerInOtherClassLoader.getClass();

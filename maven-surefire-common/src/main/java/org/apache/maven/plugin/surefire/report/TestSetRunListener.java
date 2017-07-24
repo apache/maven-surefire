@@ -21,17 +21,24 @@ package org.apache.maven.plugin.surefire.report;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
-import org.apache.maven.surefire.report.ConsoleLogger;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.TestSetReportEntry;
+
+import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
+import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
+import static org.apache.maven.plugin.surefire.report.ReportEntryType.SKIPPED;
+import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
 
 /**
  * Reports data for a single test set.
- * <p/>
+ * <br>
  *
  * @author Kristian Rosenvold
  */
@@ -76,18 +83,47 @@ public class TestSetRunListener
         this.simpleXMLReporter = simpleXMLReporter;
         this.consoleOutputReceiver = consoleOutputReceiver;
         this.briefOrPlainFormat = briefOrPlainFormat;
-        this.detailsForThis = new TestSetStats( trimStackTrace, isPlainFormat );
-        this.testMethodStats = new ArrayList<TestMethodStats>(  );
+        detailsForThis = new TestSetStats( trimStackTrace, isPlainFormat );
+        testMethodStats = new ArrayList<TestMethodStats>();
     }
 
+    @Override
+    public void debug( String message )
+    {
+        consoleReporter.getConsoleLogger().debug( trimTrailingNewLine( message ) );
+    }
+
+    @Override
     public void info( String message )
     {
-        if ( consoleReporter != null )
-        {
-            consoleReporter.writeMessage( message );
-        }
+        consoleReporter.getConsoleLogger().info( trimTrailingNewLine( message ) );
     }
 
+    @Override
+    public void warning( String message )
+    {
+        consoleReporter.getConsoleLogger().warning( trimTrailingNewLine( message ) );
+    }
+
+    @Override
+    public void error( String message )
+    {
+        consoleReporter.getConsoleLogger().error( trimTrailingNewLine( message ) );
+    }
+
+    @Override
+    public void error( String message, Throwable t )
+    {
+        consoleReporter.getConsoleLogger().error( message, t );
+    }
+
+    @Override
+    public void error( Throwable t )
+    {
+        consoleReporter.getConsoleLogger().error( t );
+    }
+
+    @Override
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         try
@@ -108,13 +144,11 @@ public class TestSetRunListener
         consoleOutputReceiver.writeTestOutput( buf, off, len, stdout );
     }
 
-    public void testSetStarting( ReportEntry report )
+    @Override
+    public void testSetStarting( TestSetReportEntry report )
     {
         detailsForThis.testSetStart();
-        if ( consoleReporter != null )
-        {
-            consoleReporter.testSetStarting( report );
-        }
+        consoleReporter.testSetStarting( report );
         consoleOutputReceiver.testSetStarting( report );
     }
 
@@ -124,79 +158,61 @@ public class TestSetRunListener
         testStdErr = initDeferred( "stderr" );
     }
 
-    public void testSetCompleted( ReportEntry report )
+    @Override
+    public void testSetCompleted( TestSetReportEntry report )
     {
-        WrappedReportEntry wrap = wrapTestSet( report );
-        List<String> testResults = briefOrPlainFormat ? detailsForThis.getTestResults() : null;
-        if ( fileReporter != null )
-        {
-            fileReporter.testSetCompleted( wrap, detailsForThis, testResults );
-        }
-        if ( simpleXMLReporter != null )
-        {
-            simpleXMLReporter.testSetCompleted( wrap, detailsForThis );
-        }
-        if ( statisticsReporter != null )
-        {
-            statisticsReporter.testSetCompleted();
-        }
-        if ( consoleReporter != null )
-        {
-            consoleReporter.testSetCompleted( wrap, detailsForThis, testResults );
-        }
+        final WrappedReportEntry wrap = wrapTestSet( report );
+        final List<String> testResults =
+                briefOrPlainFormat ? detailsForThis.getTestResults() : Collections.<String>emptyList();
+        fileReporter.testSetCompleted( wrap, detailsForThis, testResults );
+        simpleXMLReporter.testSetCompleted( wrap, detailsForThis );
+        statisticsReporter.testSetCompleted();
+        consoleReporter.testSetCompleted( wrap, detailsForThis, testResults );
         consoleOutputReceiver.testSetCompleted( wrap );
-        if ( consoleReporter != null )
-        {
-            consoleReporter.reset();
-        }
+        consoleReporter.reset();
 
         wrap.getStdout().free();
         wrap.getStdErr().free();
 
         addTestMethodStats();
         detailsForThis.reset();
-
+        clearCapture();
     }
 
     // ----------------------------------------------------------------------
     // Test
     // ----------------------------------------------------------------------
 
+    @Override
     public void testStarting( ReportEntry report )
     {
         detailsForThis.testStart();
     }
 
+    @Override
     public void testSucceeded( ReportEntry reportEntry )
     {
-        WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.SUCCESS );
+        WrappedReportEntry wrapped = wrap( reportEntry, SUCCESS );
         detailsForThis.testSucceeded( wrapped );
-        if ( statisticsReporter != null )
-        {
-            statisticsReporter.testSucceeded( reportEntry );
-        }
+        statisticsReporter.testSucceeded( reportEntry );
         clearCapture();
     }
 
+    @Override
     public void testError( ReportEntry reportEntry )
     {
-        WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.ERROR );
+        WrappedReportEntry wrapped = wrap( reportEntry, ERROR );
         detailsForThis.testError( wrapped );
-        if ( statisticsReporter != null )
-        {
-            statisticsReporter.testError( reportEntry );
-        }
+        statisticsReporter.testError( reportEntry );
         clearCapture();
     }
 
+    @Override
     public void testFailed( ReportEntry reportEntry )
     {
-        WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.FAILURE );
+        WrappedReportEntry wrapped = wrap( reportEntry, FAILURE );
         detailsForThis.testFailure( wrapped );
-        if ( statisticsReporter != null )
-        {
-            statisticsReporter.testFailed( reportEntry );
-        }
+        statisticsReporter.testFailed( reportEntry );
         clearCapture();
     }
 
@@ -204,22 +220,22 @@ public class TestSetRunListener
     // Counters
     // ----------------------------------------------------------------------
 
+    @Override
     public void testSkipped( ReportEntry reportEntry )
     {
-        WrappedReportEntry wrapped = wrap( reportEntry, ReportEntryType.SKIPPED );
+        WrappedReportEntry wrapped = wrap( reportEntry, SKIPPED );
 
         detailsForThis.testSkipped( wrapped );
-        if ( statisticsReporter != null )
-        {
-            statisticsReporter.testSkipped( reportEntry );
-        }
+        statisticsReporter.testSkipped( reportEntry );
         clearCapture();
     }
 
+    @Override
     public void testExecutionSkippedByUser()
     {
     }
 
+    @Override
     public void testAssumptionFailure( ReportEntry report )
     {
         testSkipped( report );
@@ -228,7 +244,7 @@ public class TestSetRunListener
     private WrappedReportEntry wrap( ReportEntry other, ReportEntryType reportEntryType )
     {
         final int estimatedElapsed;
-        if ( reportEntryType != ReportEntryType.SKIPPED )
+        if ( reportEntryType != SKIPPED )
         {
             if ( other.getElapsed() != null )
             {
@@ -247,19 +263,16 @@ public class TestSetRunListener
         return new WrappedReportEntry( other, reportEntryType, estimatedElapsed, testStdOut, testStdErr );
     }
 
-    private WrappedReportEntry wrapTestSet( ReportEntry other )
+    private WrappedReportEntry wrapTestSet( TestSetReportEntry other )
     {
         return new WrappedReportEntry( other, null, other.getElapsed() != null
             ? other.getElapsed()
-            : detailsForThis.getElapsedSinceTestSetStart(), testStdOut, testStdErr );
+            : detailsForThis.getElapsedSinceTestSetStart(), testStdOut, testStdErr, other.getSystemProperties() );
     }
 
     public void close()
     {
-        if ( consoleOutputReceiver != null )
-        {
-            consoleOutputReceiver.close();
-        }
+        consoleOutputReceiver.close();
     }
 
     public void  addTestMethodStats()
@@ -276,5 +289,16 @@ public class TestSetRunListener
     public List<TestMethodStats> getTestMethodStats()
     {
         return testMethodStats;
+    }
+
+    public static String trimTrailingNewLine( final String message )
+    {
+        final int e = message == null ? 0 : lineBoundSymbolWidth( message );
+        return message != null && e != 0 ? message.substring( 0, message.length() - e ) : message;
+    }
+
+    private static int lineBoundSymbolWidth( String message )
+    {
+        return message.endsWith( "\n" ) || message.endsWith( "\r" ) ? 1 : ( message.endsWith( "\r\n" ) ? 2 : 0 );
     }
 }

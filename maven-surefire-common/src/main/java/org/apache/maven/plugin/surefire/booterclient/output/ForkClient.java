@@ -19,31 +19,59 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
+import org.apache.maven.shared.utils.cli.StreamConsumer;
+import org.apache.maven.surefire.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.StackTraceWriter;
+import org.apache.maven.surefire.report.TestSetReportEntry;
+
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Properties;
+import java.util.Queue;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
-import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
-import org.apache.maven.shared.utils.cli.StreamConsumer;
-import org.apache.maven.surefire.booter.ForkingRunListener;
-import org.apache.maven.surefire.report.CategorizedReportEntry;
-import org.apache.maven.surefire.report.ConsoleLogger;
-import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.surefire.util.internal.StringUtils;
-
+import static java.lang.Integer.decode;
+import static java.lang.System.currentTimeMillis;
+import static java.util.Collections.unmodifiableMap;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_BYE;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_CONSOLE;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_DEBUG;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_ERROR;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_NEXT_TEST;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_STDERR;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_STDOUT;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_STOP_ON_NEXT_TEST;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_SYSPROPS;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_TESTSET_COMPLETED;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_TESTSET_STARTING;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_TEST_ASSUMPTIONFAILURE;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_TEST_ERROR;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_TEST_FAILED;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_TEST_SKIPPED;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_TEST_STARTING;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_TEST_SUCCEEDED;
+import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_WARNING;
 import static org.apache.maven.surefire.booter.Shutdown.KILL;
+import static org.apache.maven.surefire.report.CategorizedReportEntry.reportEntry;
+import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
+import static org.apache.maven.surefire.util.internal.StringUtils.unescapeBytes;
+import static org.apache.maven.surefire.util.internal.StringUtils.unescapeString;
+
+// todo move to the same package with ForkStarter
 
 /**
  * Knows how to reconstruct *all* the state transmitted over stdout by the forked process.
@@ -51,43 +79,65 @@ import static org.apache.maven.surefire.booter.Shutdown.KILL;
  * @author Kristian Rosenvold
  */
 public class ForkClient
-    implements StreamConsumer
+     implements StreamConsumer
 {
+    private static final String PRINTABLE_JVM_NATIVE_STREAM = "Listening for transport dt_socket at address:";
     private static final long START_TIME_ZERO = 0L;
     private static final long START_TIME_NEGATIVE_TIMEOUT = -1L;
 
     private final DefaultReporterFactory defaultReporterFactory;
 
+    private final Map<String, String> testVmSystemProperties = new ConcurrentHashMap<String, String>();
+
     private final NotifiableTestStream notifiableTestStream;
 
-    private final Map<Integer, RunListener> testSetReporters = new ConcurrentHashMap<Integer, RunListener>();
-
-    private final Properties testVmSystemProperties;
+    private final Queue<String> testsInProgress = new ConcurrentLinkedQueue<String>();
 
     /**
-     * <t>testSetStartedAt</t> is set to non-zero after received
-     * {@link ForkingRunListener#BOOTERCODE_TESTSET_STARTING test-set}.
+     * {@code testSetStartedAt} is set to non-zero after received
+     * {@link org.apache.maven.surefire.booter.ForkingRunListener#BOOTERCODE_TESTSET_STARTING test-set}.
      */
     private final AtomicLong testSetStartedAt = new AtomicLong( START_TIME_ZERO );
+
+    private final ConsoleLogger log;
+
+    private RunListener testSetReporter;
 
     private volatile boolean saidGoodBye;
 
     private volatile StackTraceWriter errorInFork;
 
-    public ForkClient( DefaultReporterFactory defaultReporterFactory, Properties testVmSystemProperties,
-                       NotifiableTestStream notifiableTestStream )
+    private volatile int forkNumber;
+
+    // prevents from printing same warning
+    private boolean printedErrorStream;
+
+    public ForkClient( DefaultReporterFactory defaultReporterFactory,
+                       NotifiableTestStream notifiableTestStream, ConsoleLogger log )
     {
         this.defaultReporterFactory = defaultReporterFactory;
-        this.testVmSystemProperties = testVmSystemProperties;
         this.notifiableTestStream = notifiableTestStream;
+        this.log = log;
     }
 
     protected void stopOnNextTest()
     {
     }
 
+    public void kill()
+    {
+        if ( !saidGoodBye )
+        {
+            notifiableTestStream.shutdown( KILL );
+        }
+    }
+
     /**
      * Called in concurrent Thread.
+     * Will shutdown if timeout was reached.
+     *
+     * @param currentTimeMillis    current time in millis seconds
+     * @param forkedProcessTimeoutInSeconds timeout in seconds given by MOJO
      */
     public final void tryToTimeout( long currentTimeMillis, int forkedProcessTimeoutInSeconds )
     {
@@ -108,9 +158,10 @@ public class ForkClient
         return defaultReporterFactory;
     }
 
+    @Override
     public final void consumeLine( String s )
     {
-        if ( StringUtils.isNotBlank( s ) )
+        if ( isNotBlank( s ) )
         {
             processLine( s );
         }
@@ -122,7 +173,7 @@ public class ForkClient
         {
             // Not necessary to call JNI library library #currentTimeMillis
             // which may waste 10 - 30 machine cycles in callback. Callbacks should be fast.
-            testSetStartedAt.compareAndSet( START_TIME_ZERO, System.currentTimeMillis() );
+            testSetStartedAt.compareAndSet( START_TIME_ZERO, currentTimeMillis() );
         }
     }
 
@@ -131,127 +182,171 @@ public class ForkClient
         return testSetStartedAt.get() == START_TIME_NEGATIVE_TIMEOUT;
     }
 
-    private void processLine( String s )
+    private RunListener getTestSetReporter()
     {
+        if ( testSetReporter == null )
+        {
+            testSetReporter = defaultReporterFactory.createReporter();
+        }
+        return testSetReporter;
+    }
+
+    private void processLine( String event )
+    {
+        final OperationalData op;
         try
         {
-            final byte operationId = (byte) s.charAt( 0 );
-            int commma = s.indexOf( ",", 3 );
-            if ( commma < 0 )
-            {
-                System.out.println( s );
-                return;
-            }
-            final int channelNumber = Integer.parseInt( s.substring( 2, commma ), 16 );
-            int rest = s.indexOf( ",", commma );
-            final String remaining = s.substring( rest + 1 );
+            op = new OperationalData( event );
+        }
+        catch ( RuntimeException e )
+        {
+            logStreamWarning( e, event );
+            return;
+        }
+        final String remaining = op.getData();
+        switch ( op.getOperationId() )
+        {
+            case BOOTERCODE_TESTSET_STARTING:
+                getTestSetReporter().testSetStarting( createReportEntry( remaining ) );
+                setCurrentStartTime();
+                break;
+            case BOOTERCODE_TESTSET_COMPLETED:
+                testsInProgress.clear();
 
-            switch ( operationId )
-            {
-                case ForkingRunListener.BOOTERCODE_TESTSET_STARTING:
-                    getOrCreateReporter( channelNumber ).testSetStarting( createReportEntry( remaining ) );
-                    setCurrentStartTime();
-                    break;
-                case ForkingRunListener.BOOTERCODE_TESTSET_COMPLETED:
-                    getOrCreateReporter( channelNumber ).testSetCompleted( createReportEntry( remaining ) );
-                    break;
-                case ForkingRunListener.BOOTERCODE_TEST_STARTING:
-                    getOrCreateReporter( channelNumber ).testStarting( createReportEntry( remaining ) );
-                    break;
-                case ForkingRunListener.BOOTERCODE_TEST_SUCCEEDED:
-                    getOrCreateReporter( channelNumber ).testSucceeded( createReportEntry( remaining ) );
-                    break;
-                case ForkingRunListener.BOOTERCODE_TEST_FAILED:
-                    getOrCreateReporter( channelNumber ).testFailed( createReportEntry( remaining ) );
-                    break;
-                case ForkingRunListener.BOOTERCODE_TEST_SKIPPED:
-                    getOrCreateReporter( channelNumber ).testSkipped( createReportEntry( remaining ) );
-                    break;
-                case ForkingRunListener.BOOTERCODE_TEST_ERROR:
-                    getOrCreateReporter( channelNumber ).testError( createReportEntry( remaining ) );
-                    break;
-                case ForkingRunListener.BOOTERCODE_TEST_ASSUMPTIONFAILURE:
-                    getOrCreateReporter( channelNumber ).testAssumptionFailure( createReportEntry( remaining ) );
-                    break;
-                case ForkingRunListener.BOOTERCODE_SYSPROPS:
-                    int keyEnd = remaining.indexOf( "," );
-                    StringBuilder key = new StringBuilder();
-                    StringBuilder value = new StringBuilder();
-                    StringUtils.unescapeString( key, remaining.substring( 0, keyEnd ) );
-                    StringUtils.unescapeString( value, remaining.substring( keyEnd + 1 ) );
+                getTestSetReporter().testSetCompleted( createReportEntry( remaining, testVmSystemProperties ) );
+                break;
+            case BOOTERCODE_TEST_STARTING:
+                ReportEntry reportEntry = createReportEntry( remaining );
+                testsInProgress.offer( reportEntry.getSourceName() );
 
-                    synchronized ( testVmSystemProperties )
-                    {
-                        testVmSystemProperties.put( key.toString(), value.toString() );
-                    }
-                    break;
-                case ForkingRunListener.BOOTERCODE_STDOUT:
-                    writeTestOutput( channelNumber, remaining, true );
-                    break;
-                case ForkingRunListener.BOOTERCODE_STDERR:
-                    writeTestOutput( channelNumber, remaining, false );
-                    break;
-                case ForkingRunListener.BOOTERCODE_CONSOLE:
-                    getOrCreateConsoleLogger( channelNumber ).info( createConsoleMessage( remaining ) );
-                    break;
-                case ForkingRunListener.BOOTERCODE_NEXT_TEST:
-                    notifiableTestStream.provideNewTest();
-                    break;
-                case ForkingRunListener.BOOTERCODE_ERROR:
-                    errorInFork = deserializeStackTraceWriter( new StringTokenizer( remaining, "," ) );
-                    break;
-                case ForkingRunListener.BOOTERCODE_BYE:
-                    saidGoodBye = true;
-                    break;
-                case ForkingRunListener.BOOTERCODE_STOP_ON_NEXT_TEST:
-                    stopOnNextTest();
-                    break;
-                default:
-                    System.out.println( s );
-            }
-        }
-        catch ( NumberFormatException e )
-        {
-            // SUREFIRE-859
-            System.out.println( s );
-        }
-        catch ( NoSuchElementException e )
-        {
-            // SUREFIRE-859
-            System.out.println( s );
-        }
-        catch ( ReporterException e )
-        {
-            throw new RuntimeException( e );
+                getTestSetReporter().testStarting( createReportEntry( remaining ) );
+                break;
+            case BOOTERCODE_TEST_SUCCEEDED:
+                reportEntry = createReportEntry( remaining );
+                testsInProgress.remove( reportEntry.getSourceName() );
+
+                getTestSetReporter().testSucceeded( createReportEntry( remaining ) );
+                break;
+            case BOOTERCODE_TEST_FAILED:
+                reportEntry = createReportEntry( remaining );
+                testsInProgress.remove( reportEntry.getSourceName() );
+
+                getTestSetReporter().testFailed( createReportEntry( remaining ) );
+                break;
+            case BOOTERCODE_TEST_SKIPPED:
+                reportEntry = createReportEntry( remaining );
+                testsInProgress.remove( reportEntry.getSourceName() );
+
+                getTestSetReporter().testSkipped( createReportEntry( remaining ) );
+                break;
+            case BOOTERCODE_TEST_ERROR:
+                reportEntry = createReportEntry( remaining );
+                testsInProgress.remove( reportEntry.getSourceName() );
+
+                getTestSetReporter().testError( createReportEntry( remaining ) );
+                break;
+            case BOOTERCODE_TEST_ASSUMPTIONFAILURE:
+                reportEntry = createReportEntry( remaining );
+                testsInProgress.remove( reportEntry.getSourceName() );
+
+                getTestSetReporter().testAssumptionFailure( createReportEntry( remaining ) );
+                break;
+            case BOOTERCODE_SYSPROPS:
+                int keyEnd = remaining.indexOf( "," );
+                StringBuilder key = new StringBuilder();
+                StringBuilder value = new StringBuilder();
+                unescapeString( key, remaining.substring( 0, keyEnd ) );
+                unescapeString( value, remaining.substring( keyEnd + 1 ) );
+                testVmSystemProperties.put( key.toString(), value.toString() );
+                break;
+            case BOOTERCODE_STDOUT:
+                writeTestOutput( remaining, true );
+                break;
+            case BOOTERCODE_STDERR:
+                writeTestOutput( remaining, false );
+                break;
+            case BOOTERCODE_CONSOLE:
+                getOrCreateConsoleLogger()
+                        .info( createConsoleMessage( remaining ) );
+                break;
+            case BOOTERCODE_NEXT_TEST:
+                notifiableTestStream.provideNewTest();
+                break;
+            case BOOTERCODE_ERROR:
+                errorInFork = deserializeStackTraceWriter( new StringTokenizer( remaining, "," ) );
+                break;
+            case BOOTERCODE_BYE:
+                saidGoodBye = true;
+                notifiableTestStream.acknowledgeByeEventReceived();
+                break;
+            case BOOTERCODE_STOP_ON_NEXT_TEST:
+                stopOnNextTest();
+                break;
+            case BOOTERCODE_DEBUG:
+                getOrCreateConsoleLogger()
+                        .debug( createConsoleMessage( remaining ) );
+                break;
+            case BOOTERCODE_WARNING:
+                getOrCreateConsoleLogger()
+                        .warning( createConsoleMessage( remaining ) );
+                break;
+            default:
+                logStreamWarning( event );
         }
     }
 
-    private void writeTestOutput( final int channelNumber, final String remaining, boolean isStdout )
+    private void logStreamWarning( String event )
+    {
+        logStreamWarning( null, event );
+    }
+
+    private void logStreamWarning( Throwable e, String event )
+    {
+        if ( event == null || !event.contains( PRINTABLE_JVM_NATIVE_STREAM ) )
+        {
+            final String msg = "Corrupted stdin stream in forked JVM " + forkNumber + ".";
+            final InPluginProcessDumpSingleton util = InPluginProcessDumpSingleton.getSingleton();
+            final File dump =
+                    e == null
+                    ? util.dumpText( msg + " Stream '" + event + "'.", defaultReporterFactory, forkNumber )
+                    : util.dumpException( e, msg + " Stream '" + event + "'.", defaultReporterFactory, forkNumber );
+
+            if ( !printedErrorStream )
+            {
+                printedErrorStream = true;
+                log.warning( msg + " See the dump file " + dump.getAbsolutePath() );
+            }
+        }
+        else
+        {
+            log.info( event );
+        }
+    }
+
+    private void writeTestOutput( String remaining, boolean isStdout )
     {
         int csNameEnd = remaining.indexOf( ',' );
         String charsetName = remaining.substring( 0, csNameEnd );
         String byteEncoded = remaining.substring( csNameEnd + 1 );
-        ByteBuffer unescaped = StringUtils.unescapeBytes( byteEncoded, charsetName );
+        ByteBuffer unescaped = unescapeBytes( byteEncoded, charsetName );
 
         if ( unescaped.hasArray() )
         {
             byte[] convertedBytes = unescaped.array();
-
-            getOrCreateConsoleOutputReceiver( channelNumber )
+            getOrCreateConsoleOutputReceiver()
                 .writeTestOutput( convertedBytes, unescaped.position(), unescaped.remaining(), isStdout );
         }
         else
         {
             byte[] convertedBytes = new byte[unescaped.remaining()];
             unescaped.get( convertedBytes, 0, unescaped.remaining() );
-
-            getOrCreateConsoleOutputReceiver( channelNumber )
+            getOrCreateConsoleOutputReceiver()
                 .writeTestOutput( convertedBytes, 0, convertedBytes.length, isStdout );
         }
     }
 
     public final void consumeMultiLineContent( String s )
-        throws IOException
+            throws IOException
     {
         BufferedReader stringReader = new BufferedReader( new StringReader( s ) );
         for ( String s1 = stringReader.readLine(); s1 != null; s1 = stringReader.readLine() )
@@ -265,7 +360,12 @@ public class ForkClient
         return unescape( remaining );
     }
 
-    private ReportEntry createReportEntry( String untokenized )
+    private TestSetReportEntry createReportEntry( String untokenized )
+    {
+        return createReportEntry( untokenized, Collections.<String, String>emptyMap() );
+    }
+
+    private TestSetReportEntry createReportEntry( String untokenized, Map<String, String> systemProperties )
     {
         StringTokenizer tokens = new StringTokenizer( untokenized, "," );
         try
@@ -275,11 +375,11 @@ public class ForkClient
             String group = nullableCsv( tokens.nextToken() );
             String message = nullableCsv( tokens.nextToken() );
             String elapsedStr = tokens.nextToken();
-            Integer elapsed = "null".equals( elapsedStr ) ? null : Integer.decode( elapsedStr );
+            Integer elapsed = "null".equals( elapsedStr ) ? null : decode( elapsedStr );
             final StackTraceWriter stackTraceWriter =
-                tokens.hasMoreTokens() ? deserializeStackTraceWriter( tokens ) : null;
+                    tokens.hasMoreTokens() ? deserializeStackTraceWriter( tokens ) : null;
 
-            return CategorizedReportEntry.reportEntry( source, name, group, stackTraceWriter, elapsed, message );
+            return reportEntry( source, name, group, stackTraceWriter, elapsed, message, systemProperties );
         }
         catch ( RuntimeException e )
         {
@@ -292,9 +392,8 @@ public class ForkClient
         String stackTraceMessage = nullableCsv( tokens.nextToken() );
         String smartStackTrace = nullableCsv( tokens.nextToken() );
         String stackTrace = tokens.hasMoreTokens() ? nullableCsv( tokens.nextToken() ) : null;
-        return stackTrace != null
-            ? new DeserializedStacktraceWriter( stackTraceMessage, smartStackTrace, stackTrace )
-            : null;
+        boolean hasTrace = stackTrace != null;
+        return hasTrace ? new DeserializedStacktraceWriter( stackTraceMessage, smartStackTrace, stackTrace ) : null;
     }
 
     private String nullableCsv( String source )
@@ -305,44 +404,39 @@ public class ForkClient
     private String unescape( String source )
     {
         StringBuilder stringBuffer = new StringBuilder( source.length() );
-        StringUtils.unescapeString( stringBuffer, source );
+        unescapeString( stringBuffer, source );
         return stringBuffer.toString();
+    }
+
+    public final Map<String, String> getTestVmSystemProperties()
+    {
+        return unmodifiableMap( testVmSystemProperties );
     }
 
     /**
      * Used when getting reporters on the plugin side of a fork.
+     * Used by testing purposes only. May not be volatile variable.
      *
-     * @param channelNumber The logical channel number
      * @return A mock provider reporter
      */
-    public final RunListener getReporter( int channelNumber )
+    public final RunListener getReporter()
     {
-        return testSetReporters.get( channelNumber );
+        return getTestSetReporter();
     }
 
-    private RunListener getOrCreateReporter( int channelNumber )
+    private ConsoleOutputReceiver getOrCreateConsoleOutputReceiver()
     {
-        RunListener reporter = testSetReporters.get( channelNumber );
-        if ( reporter == null )
-        {
-            reporter = defaultReporterFactory.createReporter();
-            testSetReporters.put( channelNumber, reporter );
-        }
-        return reporter;
+        return (ConsoleOutputReceiver) getTestSetReporter();
     }
 
-    private ConsoleOutputReceiver getOrCreateConsoleOutputReceiver( int channelNumber )
+    private ConsoleLogger getOrCreateConsoleLogger()
     {
-        return (ConsoleOutputReceiver) getOrCreateReporter( channelNumber );
-    }
-
-    private ConsoleLogger getOrCreateConsoleLogger( int channelNumber )
-    {
-        return (ConsoleLogger) getOrCreateReporter( channelNumber );
+        return (ConsoleLogger) getTestSetReporter();
     }
 
     public void close( boolean hadTimeout )
     {
+        // no op
     }
 
     public final boolean isSaidGoodBye()
@@ -358,5 +452,50 @@ public class ForkClient
     public final boolean isErrorInFork()
     {
         return errorInFork != null;
+    }
+
+    public Set<String> testsInProgress()
+    {
+        return new TreeSet<String>( testsInProgress );
+    }
+
+    public boolean hasTestsInProgress()
+    {
+        return !testsInProgress.isEmpty();
+    }
+
+    public void setForkNumber( int forkNumber )
+    {
+        assert this.forkNumber == 0;
+        this.forkNumber = forkNumber;
+    }
+
+    private static final class OperationalData
+    {
+        private final byte operationId;
+        private final String data;
+
+        OperationalData( String event )
+        {
+            operationId = (byte) event.charAt( 0 );
+            int comma = event.indexOf( ",", 3 );
+            if ( comma < 0 )
+            {
+                throw new IllegalArgumentException( "Stream stdin corrupted. Expected comma after third character "
+                                                            + "in command '" + event + "'." );
+            }
+            int rest = event.indexOf( ",", comma );
+            data = event.substring( rest + 1 );
+        }
+
+        byte getOperationId()
+        {
+            return operationId;
+        }
+
+        String getData()
+        {
+            return data;
+        }
     }
 }

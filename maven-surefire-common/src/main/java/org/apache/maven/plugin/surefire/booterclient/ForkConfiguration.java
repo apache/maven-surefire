@@ -27,18 +27,21 @@ import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ForkedBooter;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
-import org.apache.maven.surefire.util.UrlUtils;
+import org.apache.maven.surefire.util.internal.ImmutableMap;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Enumeration;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+
+import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
 
 /**
  * Configuration for forking tests.
@@ -65,7 +68,7 @@ public class ForkConfiguration
 
     private final String jvmExecutable;
 
-    private Properties modelProperties;
+    private final Properties modelProperties;
 
     private final String argLine;
 
@@ -92,7 +95,7 @@ public class ForkConfiguration
         this.workingDirectory = workingDirectory;
         this.modelProperties = modelProperties;
         this.argLine = argLine;
-        this.environmentVariables = environmentVariables;
+        this.environmentVariables = toImmutable( environmentVariables );
         this.debug = debugEnabled;
         this.forkCount = forkCount;
         this.reuseForks = reuseForks;
@@ -128,6 +131,7 @@ public class ForkConfiguration
      * @param classPath            cla the classpath arguments
      * @param startupConfiguration The startup configuration
      * @param threadNumber         the thread number, to be the replacement in the argLine   @return A commandline
+     * @return CommandLine able to flush entire command going to be sent to forked JVM
      * @throws org.apache.maven.surefire.booter.SurefireBooterForkException
      *          when unable to perform the fork
      */
@@ -159,35 +163,29 @@ public class ForkConfiguration
                                                    threadNumber ) );
         }
 
-        if ( environmentVariables != null )
+        for ( Map.Entry<String, String> entry : environmentVariables.entrySet() )
         {
-            for ( Map.Entry<String, String> entry : environmentVariables.entrySet() )
-            {
-                String value = entry.getValue();
-                cli.addEnvironment( entry.getKey(), value == null ? "" : value );
-            }
+            String value = entry.getValue();
+            cli.addEnvironment( entry.getKey(), value == null ? "" : value );
         }
 
-        if ( getDebugLine() != null && !"".equals( getDebugLine() ) )
+        if ( getDebugLine() != null && !getDebugLine().isEmpty() )
         {
             cli.createArg().setLine( getDebugLine() );
         }
 
         if ( useJar )
         {
-            File jarFile;
             try
             {
-                jarFile = createJar( classPath, providerThatHasMainMethod );
+                File jarFile = createJar( classPath, providerThatHasMainMethod );
+                cli.createArg().setValue( "-jar" );
+                cli.createArg().setValue( escapeToPlatformPath( jarFile.getAbsolutePath() ) );
             }
             catch ( IOException e )
             {
                 throw new SurefireBooterForkException( "Error creating archive file", e );
             }
-
-            cli.createArg().setValue( "-jar" );
-
-            cli.createArg().setValue( jarFile.getAbsolutePath() );
         }
         else
         {
@@ -241,9 +239,8 @@ public class ForkConfiguration
             return null;
         }
 
-        for ( Enumeration<?> e = modelProperties.propertyNames(); e.hasMoreElements(); )
+        for ( final String key : modelProperties.stringPropertyNames() )
         {
-            String key = e.nextElement().toString();
             String field = "@{" + key + "}";
             if ( argLine.contains( field ) )
             {
@@ -258,7 +255,7 @@ public class ForkConfiguration
      * Create a jar with just a manifest containing a Main-Class entry for BooterConfiguration and a Class-Path entry
      * for all classpath elements.
      *
-     * @param classPath      List&lt;String> of all classpath elements.
+     * @param classPath      List&lt;String&gt; of all classpath elements.
      * @param startClassName  The classname to start (main-class)
      * @return The file pointint to the jar
      * @throws java.io.IOException When a file operation fails.
@@ -284,11 +281,20 @@ public class ForkConfiguration
             // we can't use StringUtils.join here since we need to add a '/' to
             // the end of directory entries - otherwise the jvm will ignore them.
             StringBuilder cp = new StringBuilder();
-            for ( String el : classPath )
+            for ( Iterator<String> it = classPath.iterator(); it.hasNext(); )
             {
-                // NOTE: if File points to a directory, this entry MUST end in '/'.
-                cp.append( UrlUtils.getURL( new File( el ) ).toExternalForm() )
-                        .append( " " );
+                File file1 = new File( it.next() );
+                String uri = file1.toURI().toASCIIString();
+                cp.append( uri );
+                if ( file1.isDirectory() && !uri.endsWith( "/" ) )
+                {
+                    cp.append( '/' );
+                }
+
+                if ( it.hasNext() )
+                {
+                    cp.append( ' ' );
+                }
             }
 
             man.getMainAttributes().putValue( "Manifest-Version", "1.0" );
@@ -296,23 +302,21 @@ public class ForkConfiguration
             man.getMainAttributes().putValue( "Main-Class", startClassName );
 
             man.write( jos );
+
+            jos.closeEntry();
+            jos.flush();
+
+            return file;
         }
         finally
         {
             jos.close();
         }
-
-        return file;
     }
 
     public boolean isDebug()
     {
         return debug;
-    }
-
-    public String stripNewLines( String argline )
-    {
-        return argline.replace( "\n", " " ).replace( "\r", " " );
     }
 
     public String getDebugLine()
@@ -330,9 +334,26 @@ public class ForkConfiguration
         return forkCount;
     }
 
-
     public boolean isReuseForks()
     {
         return reuseForks;
+    }
+
+    private static String stripNewLines( String argLine )
+    {
+        return argLine.replace( "\n", " " ).replace( "\r", " " );
+    }
+
+    /**
+     * Immutable map.
+     *
+     * @param map    immutable map copies elements from <code>map</code>
+     * @param <K>    key type
+     * @param <V>    value type
+     * @return never returns null
+     */
+    private static <K, V> Map<K, V> toImmutable( Map<K, V> map )
+    {
+        return map == null ? Collections.<K, V>emptyMap() : new ImmutableMap<K, V>( map );
     }
 }

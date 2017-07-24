@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ConsoleLogger;
+import org.apache.maven.surefire.report.ConsoleStream;
 import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 import org.junit.runner.Description;
 import org.junit.runners.model.RunnerScheduler;
@@ -33,8 +33,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Used to execute tests annotated with {@link net.jcip.annotations.NotThreadSafe}.
- * <p/>
+ * Used to execute tests annotated with net.jcip.annotations.NotThreadSafe.
+ * <br>
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @see ParallelComputerBuilder
@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit;
  */
 final class SingleThreadScheduler
 {
-    private final ConsoleLogger logger;
+    private final ConsoleStream logger;
 
     private final ExecutorService pool = newPool();
 
@@ -54,7 +54,7 @@ final class SingleThreadScheduler
         return new ThreadPoolExecutor( 1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), tf );
     }
 
-    SingleThreadScheduler( ConsoleLogger logger )
+    SingleThreadScheduler( ConsoleStream logger )
     {
         this.logger = logger;
         SchedulingStrategy strategy = SchedulingStrategies.createParallelSharedStrategy( logger, pool );

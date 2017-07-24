@@ -29,15 +29,18 @@ package org.apache.maven.surefire.junitcore.pc;
 final class NullBalancer
     implements Balancer
 {
+    @Override
     public boolean acquirePermit()
     {
         return true;
     }
 
+    @Override
     public void releasePermit()
     {
     }
 
+    @Override
     public void releaseAllPermits()
     {
     }

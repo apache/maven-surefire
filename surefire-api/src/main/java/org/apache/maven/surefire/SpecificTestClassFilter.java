@@ -48,6 +48,7 @@ public class SpecificTestClassFilter
         }
     }
 
+    @Override
     public boolean accept( Class testClass )
     {
         // If the tests enumeration is empty, allow anything.

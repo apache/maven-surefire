@@ -23,14 +23,14 @@ import org.apache.maven.surefire.booter.ProviderParameterNames;
 
 /**
  * TestNG 4.7 and 5.1 configurator.
- * <p/>
+ * <br>
  * Allowed options:
  * -groups
  * -excludedgroups
  * -junit (boolean)
  * -threadcount (int)
  * -parallel (boolean)
- * <p/>
+ * <br>
  *
  * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
  */

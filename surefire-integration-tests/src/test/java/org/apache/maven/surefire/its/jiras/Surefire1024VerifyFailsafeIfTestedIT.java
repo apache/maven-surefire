@@ -29,7 +29,7 @@ import org.junit.Test;
  * Found in Surefire 2.16.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-1024}
+ * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1024">SUREFIRE-1024</a>
  * @since 2.19
  */
 public class Surefire1024VerifyFailsafeIfTestedIT

@@ -36,6 +36,12 @@ public class CheckTestNgBeforeMethodFailureIT
     public void TestNgBeforeMethodFailure()
         throws Exception
     {
-        unpack( "/testng-beforeMethodFailure" ).maven().withFailure().executeTest().assertTestSuiteResults( 2, 0, 1, 1 );
+        unpack( "/testng-beforeMethodFailure" )
+                .maven()
+                .sysProp( "testNgVersion", "5.7" )
+                .sysProp( "testNgClassifier", "jdk15" )
+                .withFailure()
+                .executeTest()
+                .assertTestSuiteResults( 2, 0, 1, 1 );
     }
 }

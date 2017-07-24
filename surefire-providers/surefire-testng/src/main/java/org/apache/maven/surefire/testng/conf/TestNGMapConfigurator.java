@@ -24,20 +24,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.testng.TestNG;
 import org.testng.xml.XmlSuite;
 
+import static java.lang.Integer.parseInt;
+import static org.apache.maven.surefire.booter.ProviderParameterNames.PARALLEL_PROP;
+import static org.apache.maven.surefire.booter.ProviderParameterNames.THREADCOUNT_PROP;
+import static org.apache.maven.surefire.testng.conf.AbstractDirectConfigurator.loadListenerClasses;
+
 /**
  * TestNG configurator for 5.3+ versions. TestNG exposes a {@link org.testng.TestNG#configure(java.util.Map)} method.
- * All suppported TestNG options are passed in String format, except
- * <code>TestNGCommandLineArgs.LISTENER_COMMAND_OPT</code> which is <code>List&gt;Class&lt;</code>,
- * <code>TestNGCommandLineArgs.JUNIT_DEF_OPT</code> which is a <code>Boolean</code>,
- * <code>TestNGCommandLineArgs.SKIP_FAILED_INVOCATION_COUNT_OPT</code> which is a <code>Boolean</code>,
- * <code>TestNGCommandLineArgs.OBJECT_FACTORY_COMMAND_OPT</code> which is a <code>Class</code>,
- * <code>TestNGCommandLineArgs.REPORTERS_LIST</code> which is a <code>List&gt;ReporterConfig&lt;</code>.
- * <p/>
+ * All supported TestNG options are passed in String format, except
+ * {@link org.testng.TestNGCommandLineArgs#LISTENER_COMMAND_OPT} which is {@link java.util.List List&gt;Class&lt;},
+ * {@link org.testng.TestNGCommandLineArgs#JUNIT_DEF_OPT} which is a {@link Boolean},
+ * {@link org.testng.TestNGCommandLineArgs#SKIP_FAILED_INVOCATION_COUNT_OPT} which is a {@link Boolean},
+ * {@link org.testng.TestNGCommandLineArgs#OBJECT_FACTORY_COMMAND_OPT} which is a {@link Class},
+ * {@link org.testng.TestNGCommandLineArgs#REPORTERS_LIST} which is a {@link java.util.List List&gt;ReporterConfig&lt;}.
+ * <br>
  * Test classes and/or suite files are not passed along as options parameters, but configured separately.
  *
  * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
@@ -45,6 +49,7 @@ import org.testng.xml.XmlSuite;
 public class TestNGMapConfigurator
     implements Configurator
 {
+    @Override
     public void configure( TestNG testng, Map<String, String> options )
         throws TestSetFailedException
     {
@@ -52,14 +57,15 @@ public class TestNGMapConfigurator
         testng.configure( convertedOptions );
     }
 
+    @Override
     public void configure( XmlSuite suite, Map<String, String> options )
         throws TestSetFailedException
     {
-        String threadCountString = options.get( ProviderParameterNames.THREADCOUNT_PROP );
-        int threadCount = ( null != threadCountString ) ? Integer.parseInt( threadCountString ) : 1;
+        String threadCountAsString = options.get( THREADCOUNT_PROP );
+        int threadCount = threadCountAsString == null ? 1 : parseInt( threadCountAsString );
         suite.setThreadCount( threadCount );
 
-        String parallel = options.get( ProviderParameterNames.PARALLEL_PROP );
+        String parallel = options.get( PARALLEL_PROP );
         if ( parallel != null )
         {
             suite.setParallel( parallel );
@@ -75,6 +81,7 @@ public class TestNGMapConfigurator
         {
             String key = entry.getKey();
             Object val = entry.getValue();
+            // todo: use switch-case of jdk7
             if ( "listener".equals( key ) )
             {
                 val = convertListeners( entry.getValue() );
@@ -114,7 +121,7 @@ public class TestNGMapConfigurator
             {
                 val = convert( val, Boolean.class );
             }
-            else if ( ProviderParameterNames.THREADCOUNT_PROP.equals( key ) )
+            else if ( THREADCOUNT_PROP.equals( key ) )
             {
                 val = convert ( val, String.class );
             }
@@ -144,10 +151,9 @@ public class TestNGMapConfigurator
     // ReporterConfig only became available in later versions of TestNG
     protected Object convertReporterConfig( Object val )
     {
-        final String reporterConfigClassName = "org.testng.ReporterConfig";
         try
         {
-            Class<?> reporterConfig = Class.forName( reporterConfigClassName );
+            Class<?> reporterConfig = Class.forName( "org.testng.ReporterConfig" );
             Method deserialize = reporterConfig.getMethod( "deserialize", String.class );
             Object rc = deserialize.invoke( null, val );
             ArrayList<Object> reportersList = new ArrayList<Object>();
@@ -162,7 +168,7 @@ public class TestNGMapConfigurator
 
     protected Object convertListeners( String listenerClasses ) throws TestSetFailedException
     {
-        return AbstractDirectConfigurator.loadListenerClasses( listenerClasses );
+        return loadListenerClasses( listenerClasses );
     }
 
     protected Object convert( Object val, Class<?> type )
@@ -171,26 +177,25 @@ public class TestNGMapConfigurator
         {
             return null;
         }
-        if ( type.isAssignableFrom( val.getClass() ) )
+        else if ( type.isAssignableFrom( val.getClass() ) )
         {
             return val;
         }
-
-        if ( ( type == Boolean.class || type == boolean.class ) && val.getClass() == String.class )
+        else if ( ( type == Boolean.class || type == boolean.class ) && val.getClass() == String.class )
         {
             return Boolean.valueOf( (String) val );
         }
-
-        if ( ( type == Integer.class || type == int.class ) && val.getClass() == String.class )
+        else if ( ( type == Integer.class || type == int.class ) && val.getClass() == String.class )
         {
             return Integer.valueOf( (String) val );
         }
-
-        if ( type == String.class )
+        else if ( type == String.class )
         {
             return val.toString();
         }
-
-        return val;
+        else
+        {
+            return val;
+        }
     }
 }

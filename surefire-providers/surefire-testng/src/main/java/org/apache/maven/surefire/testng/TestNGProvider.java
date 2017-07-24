@@ -40,7 +40,6 @@ import org.apache.maven.surefire.util.TestsToRun;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +51,6 @@ import static org.apache.maven.surefire.util.TestsToRun.fromClass;
 
 /**
  * @author Kristian Rosenvold
- * @noinspection UnusedDeclaration
  */
 public class TestNGProvider
     extends AbstractProvider
@@ -91,6 +89,7 @@ public class TestNGProvider
         mainCliOptions = bootParams.getMainCliOptions();
     }
 
+    @Override
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException
     {
@@ -174,6 +173,7 @@ public class TestNGProvider
     {
         commandsReader.addShutdownListener( new CommandListener()
         {
+            @Override
             public void update( Command command )
             {
                 testsToRun.markTestSetFinished();
@@ -185,6 +185,7 @@ public class TestNGProvider
     {
         commandsReader.addSkipNextTestsListener( new CommandListener()
         {
+            @Override
             public void update( Command command )
             {
                 FailFastEventsSingleton.getInstance().setSkipOnNextTest();
@@ -207,11 +208,20 @@ public class TestNGProvider
                                        reporterConfiguration.getReportsDirectory(), getSkipAfterFailureCount() );
     }
 
+    @Override
+    @SuppressWarnings( "unchecked" )
     public Iterable<Class<?>> getSuites()
     {
         if ( isTestNGXmlTestSuite( testRequest ) )
         {
-            return Collections.emptySet();
+            try
+            {
+                return newXmlSuite().locateTestSets();
+            }
+            catch ( TestSetFailedException e )
+            {
+                throw new RuntimeException( e );
+            }
         }
         else
         {

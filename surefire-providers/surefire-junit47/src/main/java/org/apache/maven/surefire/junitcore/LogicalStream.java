@@ -19,68 +19,62 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import java.util.Collection;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.util.internal.ByteBuffer;
+
+import java.util.Arrays;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * A stream-like object that preserves ordering between stdout/stderr
  */
 public final class LogicalStream
 {
-    private final Collection<Entry> output = new ConcurrentLinkedQueue<Entry>();
+    private final Queue<Entry> output = new ConcurrentLinkedQueue<Entry>();
 
-    static final class Entry
+    private static final class Entry
     {
-        final boolean stdout;
+        private final boolean stdout;
 
-        final byte[] b;
+        private final byte[] b;
 
-        final int off;
+        private final int off;
 
-        final int len;
+        private final int len;
 
-        Entry( boolean stdout, byte[] b, int off, int len )
+        private Entry( boolean stdout, byte[] b, int off, int len )
         {
             this.stdout = stdout;
-            this.b = ByteBuffer.copy( b, off, len );
+            this.b = Arrays.copyOfRange( b, off, off + len );
             this.off = 0;
             this.len = len;
         }
 
-        public void writeDetails( ConsoleOutputReceiver outputReceiver )
+        private void writeDetails( ConsoleOutputReceiver outputReceiver )
         {
             outputReceiver.writeTestOutput( b, off, len, stdout );
         }
-
-        @Override
-        public String toString()
-        {
-            return new String( b, off, len );
-        }
-
-        public boolean isBlankLine()
-        {
-            return "\n".equals( toString() );
-        }
     }
 
-    public synchronized void write( boolean stdout, byte b[], int off, int len )
+    public void write( boolean stdout, byte b[], int off, int len )
     {
-        Entry entry = new Entry( stdout, b, off, len );
-        if ( !entry.isBlankLine() )
+        if ( !isBlankLine( b, len ) )
         {
+            Entry entry = new Entry( stdout, b, off, len );
             output.add( entry );
         }
     }
 
-    public synchronized void writeDetails( ConsoleOutputReceiver outputReceiver )
+    public void writeDetails( ConsoleOutputReceiver outputReceiver )
     {
-        for ( Entry entry : output )
+        for ( Entry entry = output.poll(); entry != null; entry = output.poll() )
         {
             entry.writeDetails( outputReceiver );
         }
+    }
+
+    private static boolean isBlankLine( byte[] b, int len )
+    {
+        return b == null || len == 0;
     }
 }

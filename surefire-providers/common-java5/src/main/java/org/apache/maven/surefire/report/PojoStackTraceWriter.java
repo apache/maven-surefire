@@ -20,6 +20,8 @@ package org.apache.maven.surefire.report;
  */
 
 
+import org.apache.maven.surefire.util.internal.StringUtils;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -44,6 +46,7 @@ public class PojoStackTraceWriter
         this.t = t;
     }
 
+    @Override
     public String writeTraceToString()
     {
         if ( t != null )
@@ -53,18 +56,18 @@ public class PojoStackTraceWriter
             try
             {
                 t.printStackTrace( stackTrace );
+                stackTrace.flush();
             }
             finally
             {
                 stackTrace.close();
             }
-            w.flush();
             StringBuffer builder = w.getBuffer();
             if ( isMultiLineExceptionMessage( t ) )
             {
                 // SUREFIRE-986
                 String exc = t.getClass().getName() + ": ";
-                if ( builder.toString().startsWith( exc ) )
+                if ( StringUtils.startsWith( builder, exc ) )
                 {
                     builder.insert( exc.length(), '\n' );
                 }
@@ -74,16 +77,19 @@ public class PojoStackTraceWriter
         return "";
     }
 
+    @Override
     public String smartTrimmedStackTrace()
     {
         return t == null ? "" : new SmartStackTraceParser( testClass, t, testMethod ).getString();
     }
 
+    @Override
     public String writeTrimmedTraceToString()
     {
         return t == null ? "" : SmartStackTraceParser.stackTraceWithFocusOnClassAsString( t, testClass );
     }
 
+    @Override
     public SafeThrowable getThrowable()
     {
         return t == null ? null : new SafeThrowable( t );

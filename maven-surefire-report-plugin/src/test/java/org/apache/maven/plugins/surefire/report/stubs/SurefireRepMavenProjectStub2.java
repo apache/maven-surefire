@@ -32,6 +32,7 @@ public class SurefireRepMavenProjectStub2
     /**
      * {@inheritDoc}
      */
+    @Override
     public List getReportPlugins()
     {
         return new ArrayList();

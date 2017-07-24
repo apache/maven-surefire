@@ -39,7 +39,6 @@ import static junit.framework.Assert.assertTrue;
  */
 public class TestFile
 {
-
     private final File file;
 
     private final Charset encoding;
@@ -147,5 +146,10 @@ public class TestFile
     public URI toURI()
     {
         return file.toURI();
+    }
+
+    public File getFile()
+    {
+        return file;
     }
 }

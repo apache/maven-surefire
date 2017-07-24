@@ -24,7 +24,7 @@ import org.junit.Test;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-855}
+ * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-855">SUREFIRE-855</a>
  * @since 2.19
  */
 public class Surefire855AllowFailsafeUseArtifactFileIT

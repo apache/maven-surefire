@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import static org.apache.maven.surefire.booter.Command.BYE_ACK;
 import static org.apache.maven.surefire.booter.Command.NOOP;
 import static org.apache.maven.surefire.booter.Command.SKIP_SINCE_NEXT_TEST;
 import static org.apache.maven.surefire.booter.Command.toShutdown;
@@ -61,10 +62,12 @@ public final class TestLessInputStream
         this.builder = builder;
     }
 
+    @Override
     public void provideNewTest()
     {
     }
 
+    @Override
     public void skipSinceNextTest()
     {
         if ( canContinue() )
@@ -74,6 +77,7 @@ public final class TestLessInputStream
         }
     }
 
+    @Override
     public void shutdown( Shutdown shutdownType )
     {
         if ( canContinue() )
@@ -83,6 +87,7 @@ public final class TestLessInputStream
         }
     }
 
+    @Override
     public void noop()
     {
         if ( canContinue() )
@@ -93,15 +98,19 @@ public final class TestLessInputStream
     }
 
     @Override
-    protected boolean isClosed()
+    public void acknowledgeByeEventReceived()
     {
-        return closed.get();
+        if ( canContinue() )
+        {
+            immediateCommands.add( BYE_ACK );
+            barrier.release();
+        }
     }
 
     @Override
-    protected boolean canContinue()
+    protected boolean isClosed()
     {
-        return !isClosed();
+        return closed.get();
     }
 
     @Override
@@ -181,6 +190,7 @@ public final class TestLessInputStream
         {
             iterableCachable = new Iterable<Command>()
             {
+                @Override
                 public Iterator<Command> iterator()
                 {
                     return new CIt();
@@ -237,20 +247,6 @@ public final class TestLessInputStream
         }
 
         @SuppressWarnings( "checkstyle:innerassignment" )
-        private void addTailNode( Command command )
-        {
-            Node newTail = new Node( command );
-            Node currentTail = head;
-            do
-            {
-                for ( Node successor; ( successor = currentTail.next.get() ) != null; )
-                {
-                    currentTail = successor;
-                }
-            } while ( !currentTail.next.compareAndSet( null, newTail ) );
-        }
-
-        @SuppressWarnings( "checkstyle:innerassignment" )
         private boolean addTailNodeIfAbsent( Command command )
         {
             Node newTail = new Node( command );
@@ -279,11 +275,13 @@ public final class TestLessInputStream
         {
             private Node node = TestLessInputStreamBuilder.this.head;
 
+            @Override
             public boolean hasNext()
             {
                 return examineNext( false ) != null;
             }
 
+            @Override
             public Command next()
             {
                 Command command = examineNext( true );
@@ -294,6 +292,7 @@ public final class TestLessInputStream
                 return command;
             }
 
+            @Override
             public void remove()
             {
                 throw new UnsupportedOperationException();
@@ -316,10 +315,12 @@ public final class TestLessInputStream
         private final class ImmediateCommands
             implements NotifiableTestStream
         {
+            @Override
             public void provideNewTest()
             {
             }
 
+            @Override
             public void skipSinceNextTest()
             {
                 Lock lock = rwLock.readLock();
@@ -337,6 +338,7 @@ public final class TestLessInputStream
                 }
             }
 
+            @Override
             public void shutdown( Shutdown shutdownType )
             {
                 Lock lock = rwLock.readLock();
@@ -354,6 +356,7 @@ public final class TestLessInputStream
                 }
             }
 
+            @Override
             public void noop()
             {
                 Lock lock = rwLock.readLock();
@@ -370,6 +373,24 @@ public final class TestLessInputStream
                     lock.unlock();
                 }
             }
+
+            @Override
+            public void acknowledgeByeEventReceived()
+            {
+                Lock lock = rwLock.readLock();
+                lock.lock();
+                try
+                {
+                    for ( TestLessInputStream aliveStream : TestLessInputStreamBuilder.this.aliveStreams )
+                    {
+                        aliveStream.acknowledgeByeEventReceived();
+                    }
+                }
+                finally
+                {
+                    lock.unlock();
+                }
+            }
         }
 
         /**
@@ -378,10 +399,12 @@ public final class TestLessInputStream
         private final class CachableCommands
             implements NotifiableTestStream
         {
+            @Override
             public void provideNewTest()
             {
             }
 
+            @Override
             public void skipSinceNextTest()
             {
                 Lock lock = rwLock.readLock();
@@ -399,6 +422,7 @@ public final class TestLessInputStream
                 }
             }
 
+            @Override
             public void shutdown( Shutdown shutdownType )
             {
                 Lock lock = rwLock.readLock();
@@ -416,6 +440,7 @@ public final class TestLessInputStream
                 }
             }
 
+            @Override
             public void noop()
             {
                 Lock lock = rwLock.readLock();
@@ -423,6 +448,24 @@ public final class TestLessInputStream
                 try
                 {
                     if ( TestLessInputStreamBuilder.this.addTailNodeIfAbsent( NOOP ) )
+                    {
+                        release();
+                    }
+                }
+                finally
+                {
+                    lock.unlock();
+                }
+            }
+
+            @Override
+            public void acknowledgeByeEventReceived()
+            {
+                Lock lock = rwLock.readLock();
+                lock.lock();
+                try
+                {
+                    if ( TestLessInputStreamBuilder.this.addTailNodeIfAbsent( BYE_ACK ) )
                     {
                         release();
                     }

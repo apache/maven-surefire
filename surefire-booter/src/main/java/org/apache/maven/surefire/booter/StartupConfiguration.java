@@ -95,8 +95,8 @@ public class StartupConfiguration
 
     /**
      * <p>Strip any of a supplied String from the end of a String.</p>
-     * <p/>
-     * <p>If the strip String is <code>null</code>, whitespace is
+     * <br>
+     * <p>If the strip String is {@code null}, whitespace is
      * stripped.</p>
      *
      * @param str   the String to remove characters from

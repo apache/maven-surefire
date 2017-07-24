@@ -24,8 +24,8 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
 /**
- * Description of SUREFIRE-1080: <p/>
- * <p/>
+ * Description of SUREFIRE-1080: <br>
+ * <br>
  * There are 9 tests in total in the attached project, and mvn test will show 9 tests run.
  * When I use the command " mvn test -Dparallel=classes -DforkCount=2 -DuseUnlimitedThreads=true", it shows 13 tests
  * run (and sometimes 16), and some tests are run more than once.
@@ -35,7 +35,7 @@ import org.junit.Test;
  * JUnit 4.11
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-1080}
+ * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1080">SUREFIRE-1080</a>
  * @since 2.18
  */
 public class Surefire1080ParallelForkDoubleTestIT

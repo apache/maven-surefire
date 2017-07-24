@@ -32,7 +32,7 @@ import java.util.Map;
 import static org.junit.runners.Parameterized.Parameter;
 
 /**
- * Base test class for SUREFIRE-580, configuration parameter <em>skipAfterFailureCount</em>.
+ * Base test class for SUREFIRE-580, configuration parameter {@code skipAfterFailureCount}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19

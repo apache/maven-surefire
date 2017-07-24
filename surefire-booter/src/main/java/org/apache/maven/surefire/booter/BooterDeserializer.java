@@ -37,12 +37,12 @@ import static org.apache.maven.surefire.cli.CommandLineOption.*;
 
 /**
  * Knows how to serialize and deserialize the booter configuration.
- * <p/>
+ * <br>
  * The internal serialization format is through a properties file. The long-term goal of this
  * class is not to expose this implementation information to its clients. This still leaks somewhat,
  * and there are some cases where properties are being accessed as "Properties" instead of
  * more representative domain objects.
- * <p/>
+ * <br>
  *
  * @author Jason van Zyl
  * @author Emmanuel Venisse
@@ -86,7 +86,8 @@ public class BooterDeserializer
             new DirectoryScannerParameters( testClassesDirectory, includes, excludes, specificTests,
                                             properties.getBooleanProperty( FAILIFNOTESTS ), runOrder );
 
-        RunOrderParameters runOrderParameters = new RunOrderParameters( runOrder, runStatisticsFile );
+        RunOrderParameters runOrderParameters
+                = new RunOrderParameters( runOrder, runStatisticsFile == null ? null : new File( runStatisticsFile ) );
 
         TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testArtifactClassifier );
         TestRequest testSuiteDefinition =
@@ -102,10 +103,15 @@ public class BooterDeserializer
 
         Shutdown shutdown = Shutdown.valueOf( properties.getProperty( SHUTDOWN ) );
 
+        String systemExitTimeoutAsString = properties.getProperty( SYSTEM_EXIT_TIMEOUT );
+        Integer systemExitTimeout =
+                systemExitTimeoutAsString == null ? null : Integer.valueOf( systemExitTimeoutAsString );
+
         return new ProviderConfiguration( dirScannerParams, runOrderParameters,
                                           properties.getBooleanProperty( FAILIFNOTESTS ), reporterConfiguration, testNg,
                                           testSuiteDefinition, properties.getProperties(), typeEncodedTestForFork,
-                                          preferTestsFromInStream, fromStrings( cli ), failFastCount, shutdown );
+                                          preferTestsFromInStream, fromStrings( cli ), failFastCount, shutdown,
+                                          systemExitTimeout );
     }
 
     public StartupConfiguration getProviderConfiguration()

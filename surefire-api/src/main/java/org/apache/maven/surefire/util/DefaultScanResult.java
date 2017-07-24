@@ -41,16 +41,19 @@ public class DefaultScanResult
         this.files = Collections.unmodifiableList( files );
     }
 
+    @Override
     public int size()
     {
         return files.size();
     }
 
+    @Override
     public String getClassName( int index )
     {
         return files.get( index );
     }
 
+    @Override
     public void writeTo( Map<String, String> properties )
     {
         for ( int i = 0, size = files.size(); i < size; i++ )
@@ -84,6 +87,7 @@ public class DefaultScanResult
         return files;
     }
 
+    @Override
     public TestsToRun applyFilter( ScannerFilter scannerFilter, ClassLoader testClassLoader )
     {
         Set<Class<?>> result = new LinkedHashSet<Class<?>>();
@@ -104,6 +108,7 @@ public class DefaultScanResult
         return new TestsToRun( result );
     }
 
+    @Override
     public List<Class<?>> getClassesSkippedByValidation( ScannerFilter scannerFilter, ClassLoader testClassLoader )
     {
         List<Class<?>> result = new ArrayList<Class<?>>();

@@ -23,6 +23,7 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
+@SuppressWarnings( { "javadoc", "checkstyle:javadoctype" } )
 /**
  *
  * In the surefire plugin, it is possible to specify one or more RunListener when running tests with JUnit.
@@ -41,7 +42,7 @@ import org.junit.Test;
  * Note: other methods in the RunListener I tested seems fine (i.e., they get a valid Description object as input)
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-1095}
+ * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1095}"/>
  * @since 2.18
  */
 public final class Surefire1095NpeInRunListener
@@ -50,7 +51,7 @@ public final class Surefire1095NpeInRunListener
 
     /**
      * Method Request.classes( String, Class[] ); exists in JUnit 4.0 - 4.4
-     * @see JUnit4Reflector
+     * See JUnit4Reflector.
      */
     @Test
     public void testRunStartedWithJUnit40()
@@ -64,7 +65,7 @@ public final class Surefire1095NpeInRunListener
 
     /**
      * Method Request.classes( Class[] ); Since of JUnit 4.5
-     * @see JUnit4Reflector
+     * See JUnit4Reflector.
      */
     @Test
     public void testRunStartedWithJUnit45()

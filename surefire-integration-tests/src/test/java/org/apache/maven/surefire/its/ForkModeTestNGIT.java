@@ -27,6 +27,7 @@ package org.apache.maven.surefire.its;
 public class ForkModeTestNGIT
     extends ForkModeIT
 {
+    @Override
     protected String getProject()
     {
         return "fork-mode-testng";

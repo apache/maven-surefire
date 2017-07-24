@@ -19,17 +19,32 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.shared.utils.logging.MessageBuilder;
+import org.apache.maven.surefire.report.ReportEntry;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
+
 /**
  * Maintains per-thread test result state. Not thread safe.
  */
 public class TestSetStats
 {
+    private static final String TESTS = "Tests ";
+    private static final String RUN = "run: ";
+    private static final String TESTS_RUN = "Tests run: ";
+    private static final String FAILURES = "Failures: ";
+    private static final String ERRORS = "Errors: ";
+    private static final String SKIPPED = "Skipped: ";
+    private static final String FAILURE_MARKER = " <<< FAILURE!";
+    private static final String IN_MARKER = " - in ";
+    private static final String COMMA = ", ";
+
     private final Queue<WrappedReportEntry> reportEntries = new ConcurrentLinkedQueue<WrappedReportEntry>();
 
     private final boolean trimStackTrace;
@@ -164,28 +179,91 @@ public class TestSetStats
 
     public String getTestSetSummary( WrappedReportEntry reportEntry )
     {
-        String summary = "Tests run: ";
-        summary += completedCount;
-        summary += ", Failures: ";
-        summary += failures;
-        summary += ", Errors: ";
-        summary += errors;
-        summary += ", Skipped: ";
-        summary += skipped;
-        summary += ", ";
-        summary += reportEntry.getElapsedTimeVerbose();
+        String summary = TESTS_RUN + completedCount
+                                 + COMMA
+                                 + FAILURES + failures
+                                 + COMMA
+                                 + ERRORS + errors
+                                 + COMMA
+                                 + SKIPPED + skipped
+                                 + COMMA
+                                 + reportEntry.getElapsedTimeVerbose();
 
         if ( failures > 0 || errors > 0 )
         {
-            summary += " <<< FAILURE!";
+            summary += FAILURE_MARKER;
         }
 
-        summary += " - in ";
-        summary += reportEntry.getNameWithGroup();
-
-        summary += "\n";
+        summary += IN_MARKER + reportEntry.getNameWithGroup();
 
         return summary;
+    }
+
+    public String getColoredTestSetSummary( WrappedReportEntry reportEntry )
+    {
+        final boolean isSuccessful = failures == 0 && errors == 0 && skipped == 0;
+        final boolean isFailure = failures > 0;
+        final boolean isError = errors > 0;
+        final boolean isFailureOrError = isFailure | isError;
+        final boolean isSkipped = skipped > 0;
+        final  MessageBuilder builder = buffer();
+        if ( isSuccessful )
+        {
+            if ( completedCount == 0 )
+            {
+                builder.strong( TESTS_RUN ).strong( completedCount );
+            }
+            else
+            {
+                builder.success( TESTS_RUN ).success( completedCount );
+            }
+        }
+        else
+        {
+            if ( isFailureOrError )
+            {
+                builder.failure( TESTS ).strong( RUN ).strong( completedCount );
+            }
+            else
+            {
+                builder.warning( TESTS ).strong( RUN ).strong( completedCount );
+            }
+        }
+        builder.a( COMMA );
+        if ( isFailure )
+        {
+            builder.failure( FAILURES ).failure( failures );
+        }
+        else
+        {
+            builder.a( FAILURES ).a( failures );
+        }
+        builder.a( COMMA );
+        if ( isError )
+        {
+            builder.failure( ERRORS ).failure( errors );
+        }
+        else
+        {
+            builder.a( ERRORS ).a( errors );
+        }
+        builder.a( COMMA );
+        if ( isSkipped )
+        {
+            builder.warning( SKIPPED ).warning( skipped );
+        }
+        else
+        {
+            builder.a( SKIPPED ).a( skipped );
+        }
+        builder.a( COMMA )
+                .a( reportEntry.getElapsedTimeVerbose() );
+        if ( isFailureOrError )
+        {
+            builder.failure( FAILURE_MARKER );
+        }
+        builder.a( IN_MARKER );
+        return concatenateWithTestGroup( builder, reportEntry );
     }
 
     public List<String> getTestResults()
@@ -212,5 +290,24 @@ public class TestSetStats
     public Collection<WrappedReportEntry> getReportEntries()
     {
         return reportEntries;
+    }
+
+    /**
+     * Append the test set message for a report.
+     * e.g. "org.foo.BarTest ( of group )"
+     *
+     * @param builder    MessageBuilder with preceded text inside
+     * @param report     report whose test set is starting
+     * @return the message
+     */
+    public static String concatenateWithTestGroup( MessageBuilder builder, ReportEntry report )
+    {
+        final String testClass = report.getNameWithGroup();
+        int delimiter = testClass.lastIndexOf( '.' );
+        String pkg = testClass.substring( 0, 1 + delimiter );
+        String cls = testClass.substring( 1 + delimiter );
+        return builder.a( pkg )
+                       .strong( cls )
+                       .toString();
     }
 }

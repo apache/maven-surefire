@@ -24,6 +24,10 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Test project using -Dtest=mtClass#myMethod
  *
@@ -34,10 +38,15 @@ public class TestSingleMethodIT
 {
     private static final String RUNNING_WITH_PROVIDER47 = "parallel='none', perCoreThreadCount=true, threadCount=0";
 
-    public OutputValidator singleMethod( String projectName, String testToRun, String... goals )
+    public OutputValidator singleMethod( String projectName, Map<String, String> props, String testToRun,
+                                         String... goals )
         throws Exception
     {
         SurefireLauncher launcher = unpack( projectName );
+        for ( Map.Entry<String, String> entry : props.entrySet() )
+        {
+            launcher.sysProp( entry.getKey(), entry.getValue() );
+        }
         for ( String goal : goals )
         {
             launcher.addGoal( goal );
@@ -56,21 +65,21 @@ public class TestSingleMethodIT
     public void testJunit44()
         throws Exception
     {
-        singleMethod( "junit44-single-method", null );
+        singleMethod( "junit44-single-method", Collections.<String, String>emptyMap(), null );
     }
 
     @Test
     public void testJunit48Provider4()
         throws Exception
     {
-        singleMethod( "junit48-single-method", null, "-P surefire-junit4" );
+        singleMethod( "junit48-single-method", Collections.<String, String>emptyMap(), null, "-P surefire-junit4" );
     }
 
     @Test
     public void testJunit48Provider47()
         throws Exception
     {
-        singleMethod( "junit48-single-method", null, "-P surefire-junit47" )
+        singleMethod( "junit48-single-method", Collections.<String, String>emptyMap(), null, "-P surefire-junit47" )
             .verifyTextInLog( RUNNING_WITH_PROVIDER47 );
     }
 
@@ -90,35 +99,43 @@ public class TestSingleMethodIT
     public void testTestNg()
         throws Exception
     {
-        singleMethod( "testng-single-method", null );
+        Map<String, String> props = new HashMap<String, String>();
+        props.put( "testNgVersion", "5.7" );
+        props.put( "testNgClassifier", "jdk15" );
+        singleMethod( "testng-single-method", props, null );
     }
 
     @Test
     public void testTestNg5149()
         throws Exception
     {
-        singleMethod( "/testng-single-method-5-14-9", null );
+        singleMethod( "/testng-single-method-5-14-9", Collections.<String, String>emptyMap(), null );
     }
 
     @Test
     public void fullyQualifiedJunit48Provider4()
             throws Exception
     {
-        singleMethod( "junit48-single-method", "junit4.BasicTest#testSuccessOne", "-P surefire-junit4" );
+        singleMethod( "junit48-single-method", Collections.<String, String>emptyMap(),
+                            "junit4.BasicTest#testSuccessOne", "-P surefire-junit4" );
     }
 
     @Test
     public void fullyQualifiedJunit48Provider47()
             throws Exception
     {
-        singleMethod("junit48-single-method", "junit4.BasicTest#testSuccessOne", "-P surefire-junit47");
+        singleMethod("junit48-single-method", Collections.<String, String>emptyMap(),
+                            "junit4.BasicTest#testSuccessOne", "-P surefire-junit47");
     }
 
     @Test
     public void fullyQualifiedTestNg()
             throws Exception
     {
-        singleMethod( "testng-single-method", "testng.BasicTest#testSuccessOne" );
+        Map<String, String> props = new HashMap<String, String>();
+        props.put( "testNgVersion", "5.7" );
+        props.put( "testNgClassifier", "jdk15" );
+        singleMethod( "testng-single-method", props, "testng.BasicTest#testSuccessOne" );
     }
 
 }

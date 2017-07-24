@@ -51,6 +51,7 @@ public abstract class AbstractDirectConfigurator
         this.setters = options;
     }
 
+    @Override
     public void configure( TestNG testng, Map<String, String> options )
         throws TestSetFailedException
     {
@@ -65,6 +66,7 @@ public abstract class AbstractDirectConfigurator
         testng.setListenerClasses( loadListenerClasses( listeners ) );
     }
 
+    @Override
     public void configure( XmlSuite suite, Map<String, String> options )
         throws TestSetFailedException
     {
@@ -112,7 +114,7 @@ public abstract class AbstractDirectConfigurator
     static List<Class> loadListenerClasses( String listenerClasses )
         throws TestSetFailedException
     {
-        if ( listenerClasses == null || "".equals( listenerClasses.trim() ) )
+        if ( listenerClasses == null || listenerClasses.trim().isEmpty() )
         {
             return new ArrayList<Class>();
         }

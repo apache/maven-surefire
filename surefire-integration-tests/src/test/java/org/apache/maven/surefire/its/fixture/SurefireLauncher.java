@@ -19,30 +19,25 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
+import org.apache.maven.it.VerificationException;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import org.apache.maven.artifact.versioning.ArtifactVersion;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
-import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.it.VerificationException;
+
+import static java.util.Collections.singletonList;
 
 /**
  * Encapsulate all needed features to start a surefire run
- * <p/>
+ * <br>
  * Also includes thread-safe access to the extracted resource
  * files
  *
  * @author Kristian Rosenvold                                 -
  */
-public class SurefireLauncher
+public final class SurefireLauncher
 {
-
     private final MavenLauncher mavenLauncher;
-
-    private final String testNgVersion = System.getProperty( "testng.version" );
 
     private final String surefireVersion = System.getProperty( "surefire.version" );
 
@@ -65,7 +60,7 @@ public class SurefireLauncher
     public void reset()
     {
         mavenLauncher.reset();
-        for ( String s : getInitialGoals( testNgVersion ) )
+        for ( String s : getInitialGoals() )
         {
             mavenLauncher.addGoal( s );
         }
@@ -122,40 +117,9 @@ public class SurefireLauncher
         return this;
     }
 
-    private List<String> getInitialGoals( String testNgVersion )
+    private List<String> getInitialGoals()
     {
-        List<String> goals1 = new ArrayList<String>();
-        goals1.add( "-Dsurefire.version=" + surefireVersion );
-
-        if ( this.testNgVersion != null )
-        {
-            goals1.add( "-DtestNgVersion=" + testNgVersion );
-
-            ArtifactVersion v = new DefaultArtifactVersion( testNgVersion );
-            try
-            {
-                if ( VersionRange.createFromVersionSpec( "(,5.12.1)" ).containsVersion( v ) )
-                {
-                    goals1.add( "-DtestNgClassifier=jdk15" );
-                }
-            }
-            catch ( InvalidVersionSpecificationException e )
-            {
-                throw new RuntimeException( e.getMessage(), e );
-            }
-        }
-
-        return goals1;
-    }
-
-    public SurefireLauncher resetInitialGoals( String testNgVersion )
-    {
-        mavenLauncher.resetGoals();
-        for ( String s : getInitialGoals( testNgVersion ) )
-        {
-            mavenLauncher.addGoal( s );
-        }
-        return this;
+        return singletonList( "-Dsurefire.version=" + surefireVersion );
     }
 
     public SurefireLauncher showErrorStackTraces()
@@ -264,12 +228,7 @@ public class SurefireLauncher
 
     public SurefireLauncher forkPerThread()
     {
-        return forkMode( "perthread" ).reuseForks( false );
-    }
-
-    public SurefireLauncher forkOncePerThread()
-    {
-        return forkPerThread().reuseForks( true );
+        return forkMode( "perthread" );
     }
 
     public SurefireLauncher threadCount( int threadCount )

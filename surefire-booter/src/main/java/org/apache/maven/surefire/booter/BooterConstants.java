@@ -55,4 +55,5 @@ public final class BooterConstants
     public static final String MAIN_CLI_OPTIONS = "mainCliOptions";
     public static final String FAIL_FAST_COUNT = "failFastCount";
     public static final String SHUTDOWN = "shutdown";
+    public static final String SYSTEM_EXIT_TIMEOUT = "systemExitTimeout";
 }

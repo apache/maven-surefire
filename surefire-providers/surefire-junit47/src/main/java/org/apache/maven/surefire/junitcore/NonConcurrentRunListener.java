@@ -23,10 +23,16 @@ import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
+
+import java.util.Collections;
+import java.util.Map;
+
+import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
 
 /**
  * A class to be used when there is no JUnit parallelism (methods or/and class). This allow to workaround JUnit
@@ -37,7 +43,6 @@ public class NonConcurrentRunListener
     extends JUnit4RunListener
     implements ConsoleOutputReceiver
 {
-
     private Description currentTestSetDescription;
 
     private Description lastFinishedDescription;
@@ -48,20 +53,45 @@ public class NonConcurrentRunListener
         super( reporter );
     }
 
+    @Override
     public synchronized void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         // We can write immediately: no parallelism and a single class.
         ( (ConsoleOutputReceiver) reporter ).writeTestOutput( buf, off, len, stdout );
     }
 
+    @Override
     protected SimpleReportEntry createReportEntry( Description description )
     {
-        return new SimpleReportEntry( description.getClassName(), description.getDisplayName() );
+        return new SimpleReportEntry( extractDescriptionClassName( description ), description.getDisplayName() );
     }
 
-    protected SimpleReportEntry createReportEntryForTestSet( Description description )
+    private TestSetReportEntry createReportEntryForTestSet( Description description, Map<String, String> systemProps )
     {
-        return new SimpleReportEntry( description.getClassName(), description.getClassName() );
+        String testClassName = extractDescriptionClassName( description );
+        return new SimpleReportEntry( testClassName, testClassName, systemProps );
+    }
+
+    private TestSetReportEntry createTestSetReportEntryStarted( Description description )
+    {
+        return createReportEntryForTestSet( description, Collections.<String, String>emptyMap() );
+    }
+
+    private TestSetReportEntry createTestSetReportEntryFinished( Description description )
+    {
+        return createReportEntryForTestSet( description, systemProps() );
+    }
+
+    @Override
+    protected String extractDescriptionClassName( Description description )
+    {
+        return description.getClassName();
+    }
+
+    @Override
+    protected String extractDescriptionMethodName( Description description )
+    {
+        return description.getMethodName();
     }
 
     @Override
@@ -79,10 +109,11 @@ public class NonConcurrentRunListener
             currentTestSetDescription = description;
             if ( lastFinishedDescription != null )
             {
-                reporter.testSetCompleted( createReportEntryForTestSet( lastFinishedDescription ) );
+                TestSetReportEntry reportEntry = createTestSetReportEntryFinished( lastFinishedDescription );
+                reporter.testSetCompleted( reportEntry );
                 lastFinishedDescription = null;
             }
-            reporter.testSetStarting( createReportEntryForTestSet( description ) );
+            reporter.testSetStarting( createTestSetReportEntryStarted( description ) );
         }
     }
 
@@ -110,7 +141,7 @@ public class NonConcurrentRunListener
         throws Exception
     {
         super.testFinished( description );
-        this.lastFinishedDescription = description;
+        lastFinishedDescription = description;
     }
 
     @Override
@@ -120,7 +151,7 @@ public class NonConcurrentRunListener
         finishLastTestSetIfNecessary( description );
 
         super.testIgnored( description );
-        this.lastFinishedDescription = description;
+        lastFinishedDescription = description;
     }
 
     @Override
@@ -130,14 +161,14 @@ public class NonConcurrentRunListener
         finishLastTestSetIfNecessary( failure.getDescription() );
 
         super.testFailure( failure );
-        this.lastFinishedDescription = failure.getDescription();
+        lastFinishedDescription = failure.getDescription();
     }
 
     @Override
     public void testAssumptionFailure( Failure failure )
     {
         super.testAssumptionFailure( failure );
-        this.lastFinishedDescription = failure.getDescription();
+        lastFinishedDescription = failure.getDescription();
     }
 
     @Override
@@ -152,7 +183,7 @@ public class NonConcurrentRunListener
     {
         if ( lastFinishedDescription != null )
         {
-            reporter.testSetCompleted( createReportEntryForTestSet( lastFinishedDescription ) );
+            reporter.testSetCompleted( createTestSetReportEntryFinished( lastFinishedDescription ) );
             lastFinishedDescription = null;
         }
     }

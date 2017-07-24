@@ -36,19 +36,23 @@ public abstract class AbstractCommandStream
 {
     private byte[] currentBuffer;
     private int currentPos;
-    private volatile MasterProcessCommand lastCommand;
 
     protected abstract boolean isClosed();
 
     /**
-     * Unnecessarily opposite to {@link #isClosed()} however may respect
-     * {@link #getLastCommand() last command} and {@link #isClosed()}.
+     * Opposite to {@link #isClosed()}.
+     * @return {@code true} if not closed
      */
-    protected abstract boolean canContinue();
+    protected boolean canContinue()
+    {
+        return !isClosed();
+    }
 
     /**
      * Possibly waiting for next command (see {@link #nextCommand()}) unless the stream is atomically
      * closed (see {@link #isClosed()} returns {@code true}) before this method has returned.
+     *
+     * @throws IOException stream error while waiting for notification regarding next test required by forked jvm
      */
     protected void beforeNextCommand()
         throws IOException
@@ -66,11 +70,6 @@ public abstract class AbstractCommandStream
         currentPos = 0;
     }
 
-    protected final MasterProcessCommand getLastCommand()
-    {
-        return lastCommand;
-    }
-
     /**
      * Used by single thread in StreamFeeder class.
      *
@@ -84,11 +83,11 @@ public abstract class AbstractCommandStream
     {
         if ( isClosed() )
         {
+            tryFlush();
             return -1;
         }
 
-        byte[] buffer = currentBuffer;
-        if ( buffer == null )
+        if ( currentBuffer == null )
         {
             tryFlush();
 
@@ -106,17 +105,16 @@ public abstract class AbstractCommandStream
             }
 
             Command cmd = nextCommand();
-            lastCommand = cmd.getCommandType();
-            buffer = lastCommand.hasDataType() ? lastCommand.encode( cmd.getData() ) : lastCommand.encode();
+            MasterProcessCommand cmdType = cmd.getCommandType();
+            currentBuffer = cmdType.hasDataType() ? cmdType.encode( cmd.getData() ) : cmdType.encode();
         }
 
-        int b =  buffer[currentPos++] & 0xff;
-        if ( currentPos == buffer.length )
+        int b =  currentBuffer[currentPos++] & 0xff;
+        if ( currentPos == currentBuffer.length )
         {
-            buffer = null;
+            currentBuffer = null;
             currentPos = 0;
         }
-        currentBuffer = buffer;
         return b;
     }
 }

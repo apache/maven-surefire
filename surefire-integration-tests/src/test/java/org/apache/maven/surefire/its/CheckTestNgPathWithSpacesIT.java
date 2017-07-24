@@ -33,6 +33,10 @@ public class CheckTestNgPathWithSpacesIT
     @Test
     public void TestWithSpaces()
     {
-        unpack( "testng-path with spaces" ).executeTest().verifyErrorFree( 1 );
+        unpack( "testng-path with spaces" )
+                .sysProp( "testNgVersion", "5.7" )
+                .sysProp( "testNgClassifier", "jdk15" )
+                .executeTest()
+                .verifyErrorFree( 1 );
     }
 }

@@ -30,7 +30,7 @@ public class My1Test
     public void fails()
         throws Exception
     {
-        Thread.sleep( 100 );
+        Thread.sleep( 1000 );
         fail( "Always fails" );
     }
 
@@ -38,7 +38,7 @@ public class My1Test
     public void alwaysSuccessful()
         throws Exception
     {
-        Thread.sleep( 100 );
+        Thread.sleep( 1000 );
     }
 
     @Test

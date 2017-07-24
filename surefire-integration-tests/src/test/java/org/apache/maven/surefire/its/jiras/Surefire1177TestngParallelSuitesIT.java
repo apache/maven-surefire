@@ -24,11 +24,11 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assume.assumeThat;
 
 /**
  * IT for https://issues.apache.org/jira/browse/SUREFIRE-1177
@@ -43,8 +43,7 @@ public class Surefire1177TestngParallelSuitesIT
     public void shouldRunTwoSuitesInParallel()
         throws VerificationException
     {
-        assumeThat( "java.specification.version: ",
-                    System.getProperty( "java.specification.version" ), is( greaterThanOrEqualTo( "1.7" ) ) );
+        assumeJavaVersion( JAVA_1_7 );
 
         unpack().executeTest()
             .verifyErrorFree( 2 )
