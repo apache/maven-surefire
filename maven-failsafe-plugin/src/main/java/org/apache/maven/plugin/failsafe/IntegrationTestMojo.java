@@ -19,6 +19,7 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
@@ -36,6 +37,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import static org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils.writeSummary;
 
@@ -440,6 +442,13 @@ public class IntegrationTestMojo
     protected String getReportSchemaLocation()
     {
         return "https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report.xsd";
+    }
+
+    @Override
+    protected Artifact getMojoArtifact()
+    {
+        final Map<String, Artifact> pluginArtifactMap = getPluginArtifactMap();
+        return pluginArtifactMap.get( "org.apache.maven.plugins:maven-failsafe-plugin" );
     }
 
     @Override

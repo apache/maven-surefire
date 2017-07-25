@@ -790,6 +790,8 @@ public abstract class AbstractSurefireMojo
 
     protected abstract String getReportSchemaLocation();
 
+    protected abstract Artifact getMojoArtifact();
+
     private String getDefaultExcludes()
     {
         return "**/*$*";
@@ -2815,9 +2817,7 @@ public abstract class AbstractSurefireMojo
         public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
-            final Map<String, Artifact> pluginArtifactMap = getPluginArtifactMap();
-            Artifact plugin = pluginArtifactMap.get( "org.apache.maven.plugins:maven-surefire-plugin" );
-            return dependencyResolver.addProviderToClasspath( pluginArtifactMap, plugin );
+            return dependencyResolver.addProviderToClasspath( pluginArtifactMap, getMojoArtifact() );
         }
     }
 

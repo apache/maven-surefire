@@ -23,6 +23,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -376,6 +378,13 @@ public class SurefirePlugin
         return "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd";
     }
 
+    @Override
+    protected Artifact getMojoArtifact()
+    {
+        final Map<String, Artifact> pluginArtifactMap = getPluginArtifactMap();
+        return pluginArtifactMap.get( "org.apache.maven.plugins:maven-surefire-plugin" );
+    }
+    
     // now for the implementation of the field accessors
 
     @Override
