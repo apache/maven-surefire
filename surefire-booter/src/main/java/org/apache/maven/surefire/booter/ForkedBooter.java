@@ -37,9 +37,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.security.AccessControlException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
@@ -91,15 +89,13 @@ public final class ForkedBooter
      */
     public static void main( String... args )
     {
+        final ExecutorService pingScheduler = isDebugging() ? null : listenToShutdownCommands();
         final PrintStream originalOut = out;
-        ExecutorService pingScheduler = null;
         try
         {
             final String tmpDir = args[0];
             final String dumpFileName = args[1];
             final String surefirePropsFileName = args[2];
-            PpidChecker.uniqueCommandLineToken = surefirePropsFileName;
-            pingScheduler = isDebugging() ? null : listenToShutdownCommands();
 
             BooterDeserializer booterDeserializer =
                     new BooterDeserializer( createSurefirePropertiesIfFileExists( tmpDir, surefirePropsFileName ) );
@@ -211,49 +207,10 @@ public final class ForkedBooter
         COMMAND_READER.addShutdownListener( createExitHandler() );
         AtomicBoolean pingDone = new AtomicBoolean( true );
         COMMAND_READER.addNoopListener( createPingHandler( pingDone ) );
+        Runnable pingJob = createPingJob( pingDone );
         ScheduledExecutorService pingScheduler = createPingScheduler();
-        Future<PpidChecker> checker = pingScheduler.submit( createProcessCheckerJob() );
-        pingScheduler.scheduleWithFixedDelay( processCheckerJob( checker ), 0L, 1L, SECONDS );
-        pingScheduler.scheduleAtFixedRate( createPingJob( pingDone, checker ), 0L, PING_TIMEOUT_IN_SECONDS, SECONDS );
+        pingScheduler.scheduleAtFixedRate( pingJob, 0, PING_TIMEOUT_IN_SECONDS, SECONDS );
         return pingScheduler;
-    }
-
-    private static Runnable processCheckerJob( final Future<PpidChecker> processChecker )
-    {
-        return new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                if ( processChecker.isDone() && !processChecker.isCancelled() )
-                {
-                    try
-                    {
-                        PpidChecker checker = processChecker.get();
-                        if ( checker.canUse() && !checker.isParentProcessAlive() && !processChecker.isCancelled() )
-                        {
-                            kill();
-                        }
-                    }
-                    catch ( Exception e )
-                    {
-                        // nothing to do
-                    }
-                }
-            }
-        };
-    }
-
-    private static Callable<PpidChecker> createProcessCheckerJob()
-    {
-        return new Callable<PpidChecker>()
-        {
-            @Override
-            public PpidChecker call() throws Exception
-            {
-                return new PpidChecker();
-            }
-        };
     }
 
     private static CommandListener createPingHandler( final AtomicBoolean pingDone )
@@ -289,17 +246,13 @@ public final class ForkedBooter
         };
     }
 
-    private static Runnable createPingJob( final AtomicBoolean pingDone, final Future<PpidChecker> processChecker  )
+    private static Runnable createPingJob( final AtomicBoolean pingDone  )
     {
         return new Runnable()
         {
             @Override
             public void run()
             {
-                if ( canUseNewPingMechanism( processChecker ) )
-                {
-                    return;
-                }
                 boolean hasPing = pingDone.getAndSet( false );
                 if ( !hasPing )
                 {
@@ -307,18 +260,6 @@ public final class ForkedBooter
                 }
             }
         };
-    }
-
-    private static boolean canUseNewPingMechanism( Future<PpidChecker> processChecker )
-    {
-        try
-        {
-            return ( !processChecker.isDone() || processChecker.get().canUse() ) && !processChecker.isCancelled();
-        }
-        catch ( Exception e )
-        {
-            return false;
-        }
     }
 
     private static void encodeAndWriteToOutput( String string, PrintStream out )
@@ -416,8 +357,8 @@ public final class ForkedBooter
     {
         ThreadFactory threadFactory = newDaemonThreadFactory( "ping-" + PING_TIMEOUT_IN_SECONDS + "s" );
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor( 1, threadFactory );
-        executor.setKeepAliveTime( 3L, SECONDS );
-        executor.setMaximumPoolSize( 3 );
+        executor.setMaximumPoolSize( 1 );
+        executor.prestartCoreThread();
         return executor;
     }
 

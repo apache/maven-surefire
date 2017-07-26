@@ -27,9 +27,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Iterator;
+import java.util.Locale;
 
-import static org.apache.commons.lang.SystemUtils.IS_OS_LINUX;
-import static org.apache.commons.lang.SystemUtils.IS_OS_MAC_OSX;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -47,7 +46,8 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
     @Before
     public void skipWindows()
     {
-        assumeTrue( IS_OS_LINUX || IS_OS_MAC_OSX );
+        String os = System.getProperty( "os.name" ).toLowerCase( Locale.ROOT );
+        assumeTrue( os.equals( "mac os x" ) || os.equals( "linux" ) /*||  os.contains( "windows" )*/ );
     }
 
     @Test

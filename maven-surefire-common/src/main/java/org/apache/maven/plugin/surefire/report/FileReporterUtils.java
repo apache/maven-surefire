@@ -19,8 +19,6 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
-
 /**
  * Utils class for file-based reporters
  *
@@ -47,6 +45,13 @@ public final class FileReporterUtils
 
     private static String getOSSpecificIllegalChars()
     {
-        return IS_OS_WINDOWS ? "\\/:*?\"<>|\0" : "/\0";
+        if ( System.getProperty( "os.name" ).toLowerCase().startsWith( "win" ) )
+        {
+            return "\\/:*?\"<>|\0";
+        }
+        else
+        {
+            return "/\0";
+        }
     }
 }

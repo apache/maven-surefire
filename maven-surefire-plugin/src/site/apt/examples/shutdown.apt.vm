@@ -39,15 +39,6 @@ Shutdown of Forked JVM
 
 * Pinging forked JVM
 
-  << Since ${thisPlugin} Plugin 2.20.1 ping is platform dependent and fallbacks to old mechanism if platform is
-  not recognized or native commands fail in Java. >>
-
-  Simply the mechanism checks the <<<PPID>>> still exists and it is not reused by OS in another application.
-  If parent (normally Maven) process has died, the forked JVM is killed.
-
-
-  << Since ${thisPlugin} Plugin 2.19 the old mechanism is significantly slower: >>
-
   The master process sends NOOP command to a forked JVM every 10 seconds.
   Forked JVM is waiting for the command every 20 seconds.
   If the master process is killed (received SIGKILL signal) or shutdown 

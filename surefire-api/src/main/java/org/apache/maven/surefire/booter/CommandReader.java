@@ -438,7 +438,7 @@ public final class CommandReader
                     DumpErrorSingleton.getSingleton().dumpStreamException( e, msg );
 
                     exitByConfiguration();
-                    // does not go to finally for non-default config: Shutdown.EXIT or Shutdown.KILL
+                    // does not go to finally
                 }
             }
             catch ( IOException e )
@@ -493,7 +493,7 @@ public final class CommandReader
                 {
                     Runtime.getRuntime().halt( 1 );
                 }
-                // else is default: other than Shutdown.DEFAULT should not happen; otherwise you missed enum case
+                // else is default: should not happen; otherwise you missed enum case
             }
         }
     }

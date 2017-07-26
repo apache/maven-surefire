@@ -93,7 +93,6 @@
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
@@ -193,7 +192,6 @@
                   <include>org.apache.maven.shared:maven-shared-utils</include>
                   <include>org.apache.maven.shared:maven-common-artifact-filters</include>
                   <include>commons-io:commons-io</include>
-                  <include>org.apache.commons:commons-lang3</include>
                 </includes>
               </artifactSet>
               <relocations>
@@ -204,10 +202,6 @@
                 <relocation>
                   <pattern>org.apache.commons.io</pattern>
                   <shadedPattern>org.apache.maven.surefire.shade.org.apache.commons.io</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>org.apache.commons.lang3</pattern>
-                  <shadedPattern>org.apache.maven.surefire.shade.org.apache.commons.lang3</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>
