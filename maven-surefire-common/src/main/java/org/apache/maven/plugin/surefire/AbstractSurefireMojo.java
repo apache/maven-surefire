@@ -1401,7 +1401,11 @@ public abstract class AbstractSurefireMojo
         }
 
         getProperties().setProperty( ProviderParameterNames.PARALLEL_PROP, usedParallel );
-        getProperties().setProperty( ProviderParameterNames.THREADCOUNT_PROP, Integer.toString( getThreadCount() ) );
+        if ( this.getThreadCount() > 0 )
+        {
+            getProperties().setProperty( ProviderParameterNames.THREADCOUNT_PROP,
+                                         Integer.toString( getThreadCount() ) );
+        }
         getProperties().setProperty( "perCoreThreadCount", Boolean.toString( getPerCoreThreadCount() ) );
         getProperties().setProperty( "useUnlimitedThreads", Boolean.toString( getUseUnlimitedThreads() ) );
         getProperties().setProperty( ProviderParameterNames.THREADCOUNTSUITES_PROP,
