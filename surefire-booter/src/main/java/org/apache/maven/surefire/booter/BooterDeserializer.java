@@ -58,6 +58,14 @@ public class BooterDeserializer
         properties = SystemPropertyManager.loadProperties( inputStream );
     }
 
+    /**
+     * @return PID of Maven process where plugin is executed; or null if PID could not be determined.
+     */
+    public Long getPluginPid()
+    {
+        return properties.getLongProperty( PLUGIN_PID );
+    }
+
     public ProviderConfiguration deserialize()
     {
         final File reportsDirectory = new File( properties.getProperty( REPORTSDIRECTORY ) );

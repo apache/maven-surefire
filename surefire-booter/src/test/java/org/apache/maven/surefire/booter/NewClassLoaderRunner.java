@@ -34,9 +34,18 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+
+import static java.io.File.pathSeparator;
+import static org.apache.commons.io.FileUtils.readFileToString;
 
 /**
  * JUnit runner testing methods in a separate class loader.
@@ -185,7 +194,63 @@ public class NewClassLoaderRunner
     {
         public TestClassLoader()
         {
-            super( ( (URLClassLoader) Thread.currentThread().getContextClassLoader() ).getURLs(), null );
+            super( toClassPath(), null );
+        }
+
+        /**
+         * Compliant with Java 9 or prior version of JRE.
+         *
+         * @return classpath
+         */
+        private static URL[] toClassPath()
+        {
+            try
+            {
+                Collection<URL> cp = toPathList(); // if Maven run
+                if ( cp.isEmpty() )
+                {
+                    // if IDE
+                    cp = toPathList( System.getProperty( "java.class.path" ) );
+                }
+                return cp.toArray( new URL[cp.size()] );
+            }
+            catch ( IOException e )
+            {
+                return new URL[0];
+            }
+        }
+
+        private static Collection<URL> toPathList( String path ) throws MalformedURLException
+        {
+            Collection<URL> classPath = new HashSet<URL>();
+            for ( String file : path.split( pathSeparator ) )
+            {
+                classPath.add( new File( file ).toURL() );
+            }
+            return classPath;
+        }
+
+        private static Collection<URL> toPathList()
+        {
+            Collection<URL> classPath = new HashSet<URL>();
+            try
+            {
+                String[] files = readFileToString( new File( "target/test-classpath/cp.txt" ) ).split( pathSeparator );
+                for ( String file : files )
+                {
+                    File f = new File( file );
+                    File dir = f.getParentFile();
+                    classPath.add( ( dir.getName().equals( "target" ) ? new File( dir, "classes" ) : f ).toURL() );
+                }
+                classPath.add( new File( "target/classes" ).toURL() );
+                classPath.add( new File( "target/test-classes" ).toURL() );
+            }
+            catch ( IOException e )
+            {
+                // turn to java.class.path
+                classPath.clear();
+            }
+            return classPath;
         }
     }
 }

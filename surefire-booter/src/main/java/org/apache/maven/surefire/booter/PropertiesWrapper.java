@@ -70,6 +70,12 @@ public class PropertiesWrapper
         return Integer.parseInt( properties.get( propertyName ) );
     }
 
+    public Long getLongProperty( String propertyName )
+    {
+        String number = getProperty( propertyName );
+        return number == null ? null : Long.parseLong( number );
+    }
+
     public File getFileProperty( String key )
     {
         final String property = getProperty( key );

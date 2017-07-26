@@ -19,8 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.internal.SystemUtils;
-
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;

@@ -193,6 +193,14 @@ public class SurefireProperties
         }
     }
 
+    public void setProperty( String key, Long value )
+    {
+        if ( value != null )
+        {
+            setProperty( key, value.toString() );
+        }
+    }
+
     public void addList( List<?> items, String propertyPrefix )
     {
         if ( items != null && !items.isEmpty() )

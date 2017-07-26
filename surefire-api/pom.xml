@@ -40,6 +40,11 @@
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-shared-utils</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -47,6 +52,7 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <jvm>${test.jre}/bin/java</jvm>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <includes>
             <include>**/JUnit4SuiteTest.java</include>
@@ -74,17 +80,12 @@
               <artifactSet>
                 <includes>
                   <include>org.apache.maven.shared:maven-shared-utils</include>
-                  <include>commons-lang:commons-lang</include>
                 </includes>
               </artifactSet>
               <relocations>
                 <relocation>
                   <pattern>org.apache.maven.shared</pattern>
                   <shadedPattern>org.apache.maven.surefire.shade.org.apache.maven.shared</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>org.apache.commons.lang</pattern>
-                  <shadedPattern>org.apache.maven.surefire.shade.org.apache.commons.lang</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>

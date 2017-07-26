@@ -82,11 +82,13 @@ public class ForkConfiguration
 
     private final String debugLine;
 
+    private final Platform pluginPlatform;
+
     @SuppressWarnings( "checkstyle:parameternumber" )
     public ForkConfiguration( Classpath bootClasspathConfiguration, File tmpDir, String debugLine,
                               String jvmExecutable, File workingDirectory, Properties modelProperties, String argLine,
                               Map<String, String> environmentVariables, boolean debugEnabled, int forkCount,
-                              boolean reuseForks )
+                              boolean reuseForks, Platform pluginPlatform )
     {
         this.bootClasspathConfiguration = bootClasspathConfiguration;
         this.tempDirectory = tmpDir;
@@ -99,6 +101,7 @@ public class ForkConfiguration
         this.debug = debugEnabled;
         this.forkCount = forkCount;
         this.reuseForks = reuseForks;
+        this.pluginPlatform = pluginPlatform;
     }
 
     public Classpath getBootClasspath()
@@ -337,6 +340,11 @@ public class ForkConfiguration
     public boolean isReuseForks()
     {
         return reuseForks;
+    }
+
+    public Platform getPluginPlatform()
+    {
+        return pluginPlatform;
     }
 
     private static String stripNewLines( String argLine )

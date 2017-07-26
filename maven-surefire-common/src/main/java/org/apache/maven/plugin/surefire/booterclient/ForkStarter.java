@@ -550,7 +550,11 @@ public class ForkStarter
             BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
 
             surefireProperties = booterSerializer.serialize( providerProperties, providerConfiguration,
-                                                             startupConfiguration, testSet, readTestsFromInStream );
+                                                                   startupConfiguration, testSet,
+                                                                   readTestsFromInStream,
+                                                                   forkConfiguration.getPluginPlatform().getPid() );
+
+            log.debug( "Determined Maven Process ID " + forkConfiguration.getPluginPlatform().getPid() );
 
             if ( effectiveSystemProperties != null )
             {

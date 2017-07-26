@@ -162,7 +162,7 @@ public class ForkConfigurationTest
         throws IOException
     {
         return new ForkConfiguration( Classpath.emptyClasspath(), null, null, jvm, cwd, new Properties(), argLine, null,
-                                      false, 1, false );
+                                      false, 1, false, new Platform() );
     }
 
     // based on http://stackoverflow.com/questions/2591083/getting-version-of-java-in-runtime

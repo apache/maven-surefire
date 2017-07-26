@@ -70,11 +70,13 @@ class BooterSerializer
      * Does not modify sourceProperties
      */
     File serialize( KeyValueSource sourceProperties, ProviderConfiguration booterConfiguration,
-                           StartupConfiguration providerConfiguration, Object testSet, boolean readTestsFromInStream )
+                    StartupConfiguration providerConfiguration, Object testSet, boolean readTestsFromInStream,
+                    Long pid )
         throws IOException
     {
-
         SurefireProperties properties = new SurefireProperties( sourceProperties );
+
+        properties.setProperty( PLUGIN_PID, pid );
 
         ClasspathConfiguration cp = providerConfiguration.getClasspathConfiguration();
         properties.setClasspath( ClasspathConfiguration.CLASSPATH, cp.getTestClasspath() );

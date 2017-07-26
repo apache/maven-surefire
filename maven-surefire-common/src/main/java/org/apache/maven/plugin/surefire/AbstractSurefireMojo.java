@@ -43,6 +43,7 @@ import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
+import org.apache.maven.plugin.surefire.booterclient.Platform;
 import org.apache.maven.plugin.surefire.booterclient.ProviderDetector;
 import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
@@ -114,6 +115,8 @@ public abstract class AbstractSurefireMojo
     extends AbstractMojo
     implements SurefireExecutionParameters
 {
+    private static final Platform PLATFORM = new Platform();
+
     private final ProviderDetector providerDetector = new ProviderDetector();
 
     /**
@@ -1623,13 +1626,14 @@ public abstract class AbstractSurefireMojo
             Classpath providerClasspath = ClasspathCache.getCachedClassPath( providerName );
             if ( providerClasspath == null )
             {
+                // todo: 100 milli seconds, try to fetch List<String> within classpath asynchronously
                 providerClasspath = provider.getProviderClasspath();
                 ClasspathCache.setCachedClasspath( providerName, providerClasspath );
             }
             Artifact surefireArtifact = getCommonArtifact();
-            Classpath inprocClassPath = providerClasspath.
-                    addClassPathElementUrl( surefireArtifact.getFile().getAbsolutePath() )
-                    .addClassPathElementUrl( getApiArtifact().getFile().getAbsolutePath() );
+            Classpath inprocClassPath =
+                    providerClasspath.addClassPathElementUrl( surefireArtifact.getFile().getAbsolutePath() )
+                            .addClassPathElementUrl( getApiArtifact().getFile().getAbsolutePath() );
 
             final Classpath testClasspath = generateTestClasspath();
 
@@ -1926,7 +1930,6 @@ public abstract class AbstractSurefireMojo
         ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );
         return new InPluginVMSurefireStarter( startupConfiguration, providerConfiguration,
                                                     startupReportConfiguration, consoleLogger );
-
     }
 
     protected ForkConfiguration getForkConfiguration()
@@ -1937,6 +1940,7 @@ public abstract class AbstractSurefireMojo
 
         Artifact shadeFire = getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-shadefire" );
 
+        // todo: 150 milli seconds, try to fetch List<String> within classpath asynchronously
         final Classpath bootClasspathConfiguration =
             getArtifactClasspath( shadeFire != null ? shadeFire : surefireBooterArtifact );
 
@@ -1945,7 +1949,7 @@ public abstract class AbstractSurefireMojo
                                       getWorkingDirectory() != null ? getWorkingDirectory() : getBasedir(),
                                       getProject().getModel().getProperties(),
                                       getArgLine(), getEnvironmentVariables(), getConsoleLogger().isDebugEnabled(),
-                                      getEffectiveForkCount(), reuseForks );
+                                      getEffectiveForkCount(), reuseForks, PLATFORM );
     }
 
     private void convertDeprecatedForkMode()

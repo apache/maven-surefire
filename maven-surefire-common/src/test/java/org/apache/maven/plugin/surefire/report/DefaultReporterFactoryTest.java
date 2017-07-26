@@ -27,6 +27,7 @@ import junit.framework.TestCase;
 
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.report.StackTraceWriter;
@@ -61,6 +62,7 @@ public class DefaultReporterFactoryTest
 
     public void testMergeTestHistoryResult()
     {
+        MessageUtils.setColorEnabled( false );
         File reportsDirectory = new File("target");
         StartupReportConfiguration reportConfig =
                 new StartupReportConfiguration( true, true, "PLAIN", false, false, reportsDirectory, false, null,

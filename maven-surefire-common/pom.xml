@@ -44,7 +44,6 @@
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-annotations</artifactId>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
@@ -93,6 +92,7 @@
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
@@ -160,13 +160,11 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <jvm>${test.jre}/bin/java</jvm>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <includes>
             <include>**/JUnit4SuiteTest.java</include>
           </includes>
-          <classpathDependencyExcludes>
-            <classpathDependencyExclude>org.fusesource.jansi:jansi</classpathDependencyExclude>
-          </classpathDependencyExcludes>
         </configuration>
         <dependencies>
           <dependency>
@@ -192,6 +190,7 @@
                   <include>org.apache.maven.shared:maven-shared-utils</include>
                   <include>org.apache.maven.shared:maven-common-artifact-filters</include>
                   <include>commons-io:commons-io</include>
+                  <include>org.apache.commons:commons-lang3</include>
                 </includes>
               </artifactSet>
               <relocations>
@@ -202,6 +201,10 @@
                 <relocation>
                   <pattern>org.apache.commons.io</pattern>
                   <shadedPattern>org.apache.maven.surefire.shade.org.apache.commons.io</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.commons.lang3</pattern>
+                  <shadedPattern>org.apache.maven.surefire.shade.org.apache.commons.lang3</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>
