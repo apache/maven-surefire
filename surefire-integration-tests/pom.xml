@@ -37,6 +37,8 @@
     <it.settings.showPasswords>false</it.settings.showPasswords>
     <surefire.threadcount>5</surefire.threadcount>
     <useInterpolatedSettings>false</useInterpolatedSettings>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
   </properties>
 
   <dependencies>

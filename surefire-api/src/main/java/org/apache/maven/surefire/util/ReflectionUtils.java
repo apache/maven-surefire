@@ -28,6 +28,9 @@ import java.lang.reflect.Method;
  */
 public final class ReflectionUtils
 {
+    private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
+    private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+
     private ReflectionUtils()
     {
         throw new IllegalStateException( "no instantiable constructor" );
@@ -64,7 +67,12 @@ public final class ReflectionUtils
 
     public static Object invokeGetter( Object instance, String methodName )
     {
-        final Method method = getMethod( instance, methodName );
+        return invokeGetter( instance.getClass(), instance, methodName );
+    }
+
+    public static Object invokeGetter( Class<?> instanceType, Object instance, String methodName )
+    {
+        Method method = getMethod( instanceType, methodName );
         return invokeMethodWithArray( instance, method );
     }
 
@@ -247,14 +255,22 @@ public final class ReflectionUtils
      *
      * @param clazz         class on which public static no-argument {@code methodName} is invoked
      * @param methodName    public static no-argument method to be called
+     * @param parameterTypes    method parameter types
+     * @param parameters    method parameters
      * @return value returned by {@code methodName}
      * @throws RuntimeException if no such method found
-     * @throws SurefireReflectionException if the method could not be called or threw an exception
+     * @throws SurefireReflectionException if the method could not be called or threw an exception.
+     * It has original cause Exception.
      */
-    public static Object invokeStaticMethod( Class<?> clazz, String methodName )
+    public static Object invokeStaticMethod( Class<?> clazz, String methodName,
+                                             Class<?>[] parameterTypes, Object[] parameters )
     {
-        Method method = getMethod( clazz, methodName );
-        return invokeMethodWithArray( null, method );
+        if ( parameterTypes.length != parameters.length )
+        {
+            throw new IllegalArgumentException( "arguments length do not match" );
+        }
+        Method method = getMethod( clazz, methodName, parameterTypes );
+        return invokeMethodWithArray( null, method, parameters );
     }
 
     /**
@@ -279,7 +295,8 @@ public final class ReflectionUtils
             {
                 if ( i == 0 )
                 {
-                    obj = invokeStaticMethod( classesChain[i], noArgMethodNames[i] );
+                    obj = invokeStaticMethod( classesChain[i], noArgMethodNames[i],
+                                                    EMPTY_CLASS_ARRAY, EMPTY_OBJECT_ARRAY );
                 }
                 else
                 {

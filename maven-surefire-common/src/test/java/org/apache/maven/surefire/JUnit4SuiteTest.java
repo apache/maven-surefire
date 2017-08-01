@@ -21,6 +21,7 @@ package org.apache.maven.surefire;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
+import org.apache.maven.plugin.surefire.AbstractSurefireMojoTest;
 import org.apache.maven.plugin.surefire.SurefireHelperTest;
 import org.apache.maven.plugin.surefire.SurefireReflectorTest;
 import org.apache.maven.plugin.surefire.SurefirePropertiesTest;
@@ -72,7 +73,8 @@ import org.junit.runners.Suite;
     TestLessInputStreamBuilderTest.class,
     SPITest.class,
     SurefireReflectorTest.class,
-    SurefireHelperTest.class
+    SurefireHelperTest.class,
+    AbstractSurefireMojoTest.class
 } )
 @RunWith( Suite.class )
 public class JUnit4SuiteTest

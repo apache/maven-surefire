@@ -76,12 +76,14 @@ import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultScanResult;
 import org.apache.maven.surefire.util.RunOrder;
+import org.apache.maven.surefire.util.SurefireReflectionException;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -98,12 +100,18 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Thread.currentThread;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.maven.shared.utils.StringUtils.capitalizeFirstLetter;
 import static org.apache.maven.shared.utils.StringUtils.isEmpty;
 import static org.apache.maven.shared.utils.StringUtils.isNotBlank;
 import static org.apache.maven.shared.utils.StringUtils.split;
 import static org.apache.maven.surefire.suite.RunResult.failure;
 import static org.apache.maven.surefire.suite.RunResult.noTestsRun;
+import static org.apache.maven.surefire.util.ReflectionUtils.invokeGetter;
+import static org.apache.maven.surefire.util.ReflectionUtils.invokeStaticMethod;
+import static org.apache.maven.surefire.util.ReflectionUtils.tryLoadClass;
 
 /**
  * Abstract base class for running tests using Surefire.
@@ -116,6 +124,8 @@ public abstract class AbstractSurefireMojo
     implements SurefireExecutionParameters
 {
     private static final Platform PLATFORM = new Platform();
+
+    private static final File SYSTEM_TMP_DIR = new File( System.getProperty( "java.io.tmpdir" ) );
 
     private final ProviderDetector providerDetector = new ProviderDetector();
 
@@ -342,7 +352,12 @@ public abstract class AbstractSurefireMojo
     private String forkMode;
 
     /**
-     * Relative path to <i>project.build.directory</i> containing internal Surefire temporary files.
+     * Relative path to <i>temporary-surefire-boot</i> directory containing internal Surefire temporary files.
+     * <br>
+     * The <i>temporary-surefire-boot</i> directory is <i>project.build.directory</i> on most platforms or
+     * <i>system default temporary-directory</i> specified by the system property {@code java.io.tmpdir}
+     * on Windows (see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1400">SUREFIRE-1400</a>).
+     * <br>
      * It is deleted after the test set has completed.
      *
      * @since 2.20
@@ -1935,8 +1950,6 @@ public abstract class AbstractSurefireMojo
     protected ForkConfiguration getForkConfiguration()
     {
         File tmpDir = getSurefireTempDir();
-        //noinspection ResultOfMethodCallIgnored
-        tmpDir.mkdirs();
 
         Artifact shadeFire = getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-shadefire" );
 
@@ -2061,9 +2074,9 @@ public abstract class AbstractSurefireMojo
      *
      * @return A file pointing to the location of surefire's own temp files
      */
-    private File getSurefireTempDir()
+    File getSurefireTempDir()
     {
-        return new File( getProjectBuildDirectory(), getTempDir() );
+        return IS_OS_WINDOWS ? createSurefireBootDirectoryInTemp() : createSurefireBootDirectoryInBuild();
     }
 
     /**
@@ -2827,6 +2840,76 @@ public abstract class AbstractSurefireMojo
             }
             return null;
         }
+    }
+
+    File createSurefireBootDirectoryInBuild()
+    {
+        File tmp = new File( getProjectBuildDirectory(), getTempDir() );
+        //noinspection ResultOfMethodCallIgnored
+        tmp.mkdirs();
+        return tmp;
+    }
+
+    // todo use Java7 java.nio.file.Files.createTempDirectory()
+    File createSurefireBootDirectoryInTemp()
+    {
+        if ( isJavaVersionAtLeast( JAVA_1_7 ) )
+        {
+            try
+            {
+                return new File( SYSTEM_TMP_DIR, createTmpDirectoryNameWithJava7( getTempDir() ) );
+            }
+            catch ( IOException e )
+            {
+                return createSurefireBootDirectoryInBuild();
+            }
+        }
+        else
+        {
+            try
+            {
+                File tmp = File.createTempFile( getTempDir(), null );
+                //noinspection ResultOfMethodCallIgnored
+                return tmp.mkdirs() ? tmp : createSurefireBootDirectoryInBuild();
+            }
+            catch ( IOException e )
+            {
+                return createSurefireBootDirectoryInBuild();
+            }
+        }
+    }
+
+    /**
+     * Reflection call of java.nio.file.Files.createTempDirectory( "surefire" ).
+     * @return Java 7 NIO Path
+     */
+    static Object createTmpDirectoryWithJava7( String directoryPrefix )
+            throws IOException
+    {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        Class<?> filesType = tryLoadClass( classLoader, "java.nio.file.Files" );
+        Class<?> fileAttributeType = tryLoadClass( classLoader, "java.nio.file.attribute.FileAttribute" );
+        Object attrs = Array.newInstance( fileAttributeType, 0 );
+        try
+        {
+            return invokeStaticMethod( filesType, "createTempDirectory",
+                                             new Class<?>[]{ String.class, attrs.getClass() },
+                                             new Object[]{ directoryPrefix, attrs } );
+        }
+        catch ( SurefireReflectionException e )
+        {
+            Throwable cause = e.getCause();
+            throw cause instanceof IOException ? (IOException) cause : new IOException( cause );
+        }
+    }
+
+    static String createTmpDirectoryNameWithJava7( String directoryPrefix )
+            throws IOException
+    {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        Class<?> pathType = tryLoadClass( classLoader, "java.nio.file.Path" );
+        Object path = createTmpDirectoryWithJava7( directoryPrefix );
+        return invokeGetter( pathType, path, "getFileName" ).toString();
     }
 
     @Override

@@ -34,13 +34,15 @@ public class ReflectionUtilsTest
     @Test(expected = RuntimeException.class)
     public void shouldNotInvokeStaticMethod()
     {
-        ReflectionUtils.invokeStaticMethod( ReflectionUtilsTest.class, "notCallable" );
+        ReflectionUtils.invokeStaticMethod( ReflectionUtilsTest.class, "notCallable",
+                                                  new Class<?>[0], new Object[0] );
     }
 
     @Test
     public void shouldInvokeStaticMethod()
     {
-        Object o = ReflectionUtils.invokeStaticMethod( ReflectionUtilsTest.class, "callable" );
+        Object o = ReflectionUtils.invokeStaticMethod( ReflectionUtilsTest.class, "callable",
+                                                             new Class<?>[0], new Object[0] );
         assertThat( o )
                 .isEqualTo( 3L );
     }
