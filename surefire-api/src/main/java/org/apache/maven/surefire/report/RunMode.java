@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.log.api;
+package org.apache.maven.surefire.report;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,42 +19,42 @@ package org.apache.maven.plugin.surefire.log.api;
  * under the License.
  */
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static java.util.Collections.unmodifiableMap;
 
 /**
+ * Determines the purpose the provider started the tests. It can be either normal run or re-run.
+ *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.20
+ * @since 2.20.1
  */
-public final class ConsoleLoggerUtils
+public enum RunMode
 {
-    private ConsoleLoggerUtils()
+    NORMAL_RUN( "normal-run" ), RERUN( "re-run" );
+
+    public static final Map<String, RunMode> MODES = modes();
+
+    private static Map<String, RunMode> modes()
     {
-        throw new IllegalStateException( "non instantiable constructor" );
+        Map<String, RunMode> modes = new ConcurrentHashMap<String, RunMode>();
+        for ( RunMode mode : values() )
+        {
+            modes.put( mode.geRunName(), mode );
+        }
+        return unmodifiableMap( modes );
     }
 
-    public static String toString( Throwable t )
+    private final String runName;
+
+    RunMode( String runName )
     {
-        return toString( null, t );
+        this.runName = runName;
     }
 
-    public static String toString( String message, Throwable t )
+    public String geRunName()
     {
-        StringWriter result = new StringWriter( 512 );
-        PrintWriter writer = new PrintWriter( result );
-        try
-        {
-            if ( message != null )
-            {
-                writer.println( message );
-            }
-            t.printStackTrace( writer );
-            writer.flush();
-            return result.toString();
-        }
-        finally
-        {
-            writer.close();
-        }
+        return runName;
     }
 }

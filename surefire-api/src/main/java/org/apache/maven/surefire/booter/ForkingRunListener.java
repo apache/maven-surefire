@@ -28,15 +28,19 @@ import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ConsoleStream;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.RunMode;
 import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
 
 import static java.lang.Integer.toHexString;
 import static java.nio.charset.Charset.defaultCharset;
+import static org.apache.maven.surefire.report.RunMode.NORMAL_RUN;
+import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 import static org.apache.maven.surefire.util.internal.StringUtils.escapeBytesToPrintable;
 import static org.apache.maven.surefire.util.internal.StringUtils.escapeToPrintable;
+import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 
 /**
  * Encodes the full output of the test run to the stdout stream.
@@ -84,11 +88,11 @@ public class ForkingRunListener
      */
     public static final byte BOOTERCODE_CONSOLE = (byte) 'H';
 
-    public static final byte BOOTERCODE_SYSPROPS = (byte) 'I';
+    public static final byte BOOTERCODE_SYSPROPS = (byte) 'I';//
 
-    public static final byte BOOTERCODE_NEXT_TEST = (byte) 'N';
+    public static final byte BOOTERCODE_NEXT_TEST = (byte) 'N';//
 
-    public static final byte BOOTERCODE_STOP_ON_NEXT_TEST = (byte) 'S';
+    public static final byte BOOTERCODE_STOP_ON_NEXT_TEST = (byte) 'S';//
 
     /**
      * ERROR logger
@@ -111,7 +115,7 @@ public class ForkingRunListener
     public static final byte BOOTERCODE_WARNING = (byte) 'W';
 
 
-    private final PrintStream target;
+    private final ForkedChannelEncoder target;
 
     private final int testSetChannelId;
 
@@ -121,7 +125,9 @@ public class ForkingRunListener
 
     private final byte[] stdErrHeader;
 
-    public ForkingRunListener( PrintStream target, int testSetChannelId, boolean trimStackTraces )
+    private volatile RunMode runMode = NORMAL_RUN;
+
+    public ForkingRunListener( ForkedChannelEncoder target, int testSetChannelId, boolean trimStackTraces )
     {
         this.target = target;
         this.testSetChannelId = testSetChannelId;
@@ -174,6 +180,13 @@ public class ForkingRunListener
     public void testExecutionSkippedByUser()
     {
         encodeAndWriteToTarget( toString( BOOTERCODE_STOP_ON_NEXT_TEST, new SimpleReportEntry(), testSetChannelId ) );
+    }
+
+    public RunMode markAs( RunMode currentRunMode )
+    {
+        RunMode runMode = this.runMode;
+        this.runMode = requireNonNull( currentRunMode );
+        return runMode;
     }
 
     void sendProps()
@@ -260,7 +273,7 @@ public class ForkingRunListener
 
     public void error( String message, Throwable t )
     {
-        error( ConsoleLoggerUtils.toString( message, t ) );
+        error( ConsoleLoggerUtils.toString( message, t ) );//tu daj localized msg a potom string:stacktrace
     }
 
     public void error( Throwable t )
@@ -355,7 +368,7 @@ public class ForkingRunListener
 
     private static void nullableEncoding( StringBuilder stringBuilder, String source )
     {
-        if ( source == null || source.length() == 0 )
+        if ( isBlank( source ) )
         {
             stringBuilder.append( "null" );
         }

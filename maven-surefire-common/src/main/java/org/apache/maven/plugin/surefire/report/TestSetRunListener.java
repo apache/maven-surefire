@@ -19,21 +19,24 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.RunMode;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SKIPPED;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
+import static org.apache.maven.surefire.report.RunMode.NORMAL_RUN;
+import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
 
 /**
  * Reports data for a single test set.
@@ -68,6 +71,8 @@ public class TestSetRunListener
     private final FileReporter fileReporter;
 
     private final StatisticsReporter statisticsReporter;
+
+    private volatile RunMode runMode = NORMAL_RUN;
 
     @SuppressWarnings( "checkstyle:parameternumber" )
     public TestSetRunListener( ConsoleReporter consoleReporter, FileReporter fileReporter,
@@ -217,6 +222,13 @@ public class TestSetRunListener
 
     public void testExecutionSkippedByUser()
     {
+    }
+
+    public RunMode markAs( RunMode currentRunMode )
+    {
+        RunMode runMode = this.runMode;
+        this.runMode = requireNonNull( currentRunMode );
+        return runMode;
     }
 
     public void testAssumptionFailure( ReportEntry report )

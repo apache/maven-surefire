@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.log.api;
+package org.apache.maven.plugin.surefire.booterclient.output;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,42 +19,13 @@ package org.apache.maven.plugin.surefire.log.api;
  * under the License.
  */
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import org.apache.maven.surefire.report.RunMode;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.20
+ * @since 2.20.1
  */
-public final class ConsoleLoggerUtils
+public interface ForkedProcessEventListener
 {
-    private ConsoleLoggerUtils()
-    {
-        throw new IllegalStateException( "non instantiable constructor" );
-    }
-
-    public static String toString( Throwable t )
-    {
-        return toString( null, t );
-    }
-
-    public static String toString( String message, Throwable t )
-    {
-        StringWriter result = new StringWriter( 512 );
-        PrintWriter writer = new PrintWriter( result );
-        try
-        {
-            if ( message != null )
-            {
-                writer.println( message );
-            }
-            t.printStackTrace( writer );
-            writer.flush();
-            return result.toString();
-        }
-        finally
-        {
-            writer.close();
-        }
-    }
+    void handle();
 }

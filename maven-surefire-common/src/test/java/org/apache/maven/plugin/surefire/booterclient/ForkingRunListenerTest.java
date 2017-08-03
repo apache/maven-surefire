@@ -25,6 +25,7 @@ import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Notifiable
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
+import org.apache.maven.surefire.booter.ForkedChannelEncoder;
 import org.apache.maven.surefire.booter.ForkingRunListener;
 import org.apache.maven.surefire.report.CategorizedReportEntry;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
@@ -269,10 +270,10 @@ public class ForkingRunListenerTest
         ReportEntry expected = createDefaultReportEntry();
         final SimpleReportEntry secondExpected = createAnotherDefaultReportEntry();
 
-        new ForkingRunListener( printStream, defaultChannel, false )
+        new ForkingRunListener( new ForkedChannelEncoder( printStream ), defaultChannel, false )
                 .testStarting( expected );
 
-        new ForkingRunListener( anotherPrintStream, anotherChannel, false )
+        new ForkingRunListener( new ForkedChannelEncoder( anotherPrintStream ), anotherChannel, false )
                 .testSkipped( secondExpected );
 
         TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
@@ -338,7 +339,7 @@ public class ForkingRunListenerTest
 
     private RunListener createForkingRunListener( Integer testSetChannel )
     {
-        return new ForkingRunListener( printStream, testSetChannel, false );
+        return new ForkingRunListener( new ForkedChannelEncoder( printStream ), testSetChannel, false );
     }
 
     private class StandardTestRun

@@ -140,7 +140,7 @@ final class JUnitCoreWrapper
         if ( computer instanceof ParallelComputer )
         {
             String timeoutMessage = ( (ParallelComputer) computer ).describeElapsedTimeout();
-            if ( timeoutMessage.length() != 0 )
+            if ( !timeoutMessage.isEmpty() )
             {
                 throw new TestSetFailedException( timeoutMessage );
             }

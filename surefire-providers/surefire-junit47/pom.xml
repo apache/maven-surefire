@@ -90,7 +90,7 @@
           </execution>
           <execution>
             <id>test</id>
-            <phase>process-sources</phase>
+            <phase>process-test-sources</phase>
             <goals>
               <goal>copy</goal>
             </goals>

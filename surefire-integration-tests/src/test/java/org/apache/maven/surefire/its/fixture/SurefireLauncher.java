@@ -70,7 +70,7 @@ public final class SurefireLauncher
     public SurefireLauncher setInProcessJavaHome()
     {
         String javaHome = System.getenv( "JAVA_HOME" );
-        if ( javaHome != null && javaHome.length() > 0 )
+        if ( javaHome != null && !javaHome.isEmpty() )
         {
             try
             {

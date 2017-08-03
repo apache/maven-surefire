@@ -51,8 +51,8 @@ public class TypeEncodedValue
 
     public Object getDecodedValue( ClassLoader classLoader )
     {
-        // todo: use jdk6 switch case
-        if ( type.trim().length() == 0 )
+        // todo: use jdk7 switch case
+        if ( type.trim().isEmpty() )
         {
             return null;
         }

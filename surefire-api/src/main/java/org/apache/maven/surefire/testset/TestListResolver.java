@@ -74,7 +74,7 @@ public class TestListResolver
                 for ( String request : split( csvTests, "," ) )
                 {
                     request = request.trim();
-                    if ( request.length() != 0 && !request.equals( "!" ) )
+                    if ( !request.isEmpty() && !request.equals( "!" ) )
                     {
                         resolveTestRequest( request, patterns, includedFilters, excludedFilters );
                     }
@@ -249,7 +249,7 @@ public class TestListResolver
         }
 
         aggregatedTest += aggregatedTest( "!", getExcludedPatterns() );
-        return aggregatedTest.length() == 0 ? "" : aggregatedTest;
+        return aggregatedTest.isEmpty() ? "" : aggregatedTest;
     }
 
     public Set<ResolvedTest> getIncludedPatterns()
@@ -309,7 +309,7 @@ public class TestListResolver
 
     static String removeExclamationMark( String s )
     {
-        return s.length() != 0 && s.charAt( 0 ) == '!' ? s.substring( 1 ) : s;
+        return !s.isEmpty() && s.charAt( 0 ) == '!' ? s.substring( 1 ) : s;
     }
 
     private static void updatedFilters( boolean isExcluded, ResolvedTest test, IncludedExcludedPatterns patterns,
@@ -334,7 +334,7 @@ public class TestListResolver
         for ( ResolvedTest test : tests )
         {
             String readableTest = test.toString();
-            if ( readableTest.length() != 0 )
+            if ( !readableTest.isEmpty() )
             {
                 if ( aggregatedTest.length() != 0 )
                 {
@@ -357,7 +357,7 @@ public class TestListResolver
             if ( exc != null )
             {
                 exc = exc.trim();
-                if ( exc.length() != 0 )
+                if ( !exc.isEmpty() )
                 {
                     if ( exc.contains( "!" ) )
                     {
@@ -457,8 +457,8 @@ public class TestListResolver
         if ( isRegexPrefixedPattern( request ) )
         {
             final String[] unwrapped = unwrapRegex( request );
-            final boolean hasClass = unwrapped[0].length() != 0;
-            final boolean hasMethod = unwrapped[1].length() != 0;
+            final boolean hasClass = !unwrapped[0].isEmpty();
+            final boolean hasMethod = !unwrapped[1].isEmpty();
             if ( hasClass && hasMethod )
             {
                 test = new ResolvedTest( unwrapped[0], unwrapped[1], true );

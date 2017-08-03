@@ -136,7 +136,8 @@ public class BaseProviderFactory
     {
         boolean trim = reporterConfiguration.isTrimStackTrace();
         PrintStream out = reporterConfiguration.getOriginalSystemOut();
-        return insideFork ? new ForkingRunListener( out, ROOT_CHANNEL, trim ) : new DefaultDirectConsoleReporter( out );
+        return insideFork ? new ForkingRunListener( new ForkedChannelEncoder( out ), ROOT_CHANNEL, trim )
+                       : new DefaultDirectConsoleReporter( out );
     }
 
     public void setTestRequest( TestRequest testRequest )

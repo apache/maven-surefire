@@ -25,6 +25,7 @@ import org.apache.maven.surefire.report.ConsoleStream;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.RunMode;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
@@ -116,6 +117,11 @@ public abstract class ConcurrentRunListener
     {
         // cannot guarantee proper call to all listeners
         reporterManagerThreadLocal.get().testExecutionSkippedByUser();
+    }
+
+    public RunMode markAs( RunMode currentRunMode )
+    {
+        return reporterManagerThreadLocal.get().markAs( currentRunMode );
     }
 
     public void testAssumptionFailure( ReportEntry failure )

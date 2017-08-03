@@ -23,6 +23,7 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
 
 import static org.apache.maven.surefire.util.internal.StringUtils.NL;
+import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
 
 /**
  * @author Kristian Rosenvold
@@ -125,7 +126,7 @@ public class WrappedReportEntry
 
     public String getReportName( String suffix )
     {
-        return suffix != null && suffix.length() > 0 ? getReportName() + "(" + suffix + ")" : getReportName();
+        return isNotBlank( suffix ) ? getReportName() + "(" + suffix + ")" : getReportName();
     }
 
     public String getOutput( boolean trimStackTrace )

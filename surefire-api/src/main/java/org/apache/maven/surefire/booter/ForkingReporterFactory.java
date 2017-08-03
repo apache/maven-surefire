@@ -19,12 +19,11 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.io.PrintStream;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.suite.RunResult;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Creates ForkingReporters, which are typically one instance per TestSet or thread.
@@ -39,19 +38,19 @@ public class ForkingReporterFactory
 {
     private final boolean isTrimstackTrace;
 
-    private final PrintStream originalSystemOut;
+    private final ForkedChannelEncoder eventChannel;
 
     private final AtomicInteger testSetChannelId = new AtomicInteger( 1 );
 
-    public ForkingReporterFactory( boolean trimstackTrace, PrintStream originalSystemOut )
+    public ForkingReporterFactory( boolean trimstackTrace, ForkedChannelEncoder eventChannel )
     {
         isTrimstackTrace = trimstackTrace;
-        this.originalSystemOut = originalSystemOut;
+        this.eventChannel = eventChannel;
     }
 
     public RunListener createReporter()
     {
-        return new ForkingRunListener( originalSystemOut, testSetChannelId.getAndIncrement(), isTrimstackTrace );
+        return new ForkingRunListener( eventChannel, testSetChannelId.getAndIncrement(), isTrimstackTrace );
     }
 
     public RunResult close()
