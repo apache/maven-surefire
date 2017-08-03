@@ -25,6 +25,7 @@ import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Notifiable
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
+import org.apache.maven.surefire.booter.ForkedChannelEncoder;
 import org.apache.maven.surefire.booter.ForkingRunListener;
 import org.apache.maven.surefire.report.CategorizedReportEntry;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
@@ -38,7 +39,6 @@ import org.apache.maven.surefire.report.StackTraceWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -57,10 +57,6 @@ public class ForkingRunListenerTest
 
     private final PrintStream printStream, anotherPrintStream;
 
-    final int defaultChannel = 17;
-
-    final int anotherChannel = 18;
-
     public ForkingRunListenerTest()
     {
         content = new ByteArrayOutputStream();
@@ -74,20 +70,6 @@ public class ForkingRunListenerTest
     {
         printStream.flush();
         content.reset();
-    }
-
-    public void testHeaderCreation()
-    {
-        final byte[] header = ForkingRunListener.createHeader( (byte) 'F', 0xCAFE );
-        String asString = new String( header );
-        assertEquals( "F,cafe," + Charset.defaultCharset().name() + ",", asString );
-    }
-
-    public void testHeaderCreationShort()
-    {
-        final byte[] header = ForkingRunListener.createHeader( (byte) 'F', 0xE );
-        String asString = new String( header );
-        assertEquals( "F,e," + Charset.defaultCharset().name() + ",", asString );
     }
 
     public void testSetStarting()
@@ -207,7 +189,7 @@ public class ForkingRunListenerTest
     {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ConsoleOutputReceiver directConsoleReporter = (ConsoleOutputReceiver) standardTestRun.run();
-        directConsoleReporter.writeTestOutput( "HeyYou".getBytes(), 0, 6, true );
+        directConsoleReporter.writeTestOutput( "HeyYou", true );
         standardTestRun.assertExpected( MockReporter.STDOUT, "HeyYou" );
     }
 
@@ -218,7 +200,7 @@ public class ForkingRunListenerTest
         standardTestRun.run();
 
         reset();
-        createForkingRunListener( defaultChannel );
+        createForkingRunListener();
 
         TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
         final Properties testVmSystemProperties = new Properties();
@@ -239,7 +221,7 @@ public class ForkingRunListenerTest
         standardTestRun.run();
 
         reset();
-        RunListener forkingReporter = createForkingRunListener( defaultChannel );
+        RunListener forkingReporter = createForkingRunListener();
 
         ReportEntry reportEntry = createDefaultReportEntry();
         forkingReporter.testSetStarting( reportEntry );
@@ -269,10 +251,10 @@ public class ForkingRunListenerTest
         ReportEntry expected = createDefaultReportEntry();
         final SimpleReportEntry secondExpected = createAnotherDefaultReportEntry();
 
-        new ForkingRunListener( printStream, defaultChannel, false )
+        new ForkingRunListener( new ForkedChannelEncoder( printStream ), false )
                 .testStarting( expected );
 
-        new ForkingRunListener( anotherPrintStream, anotherChannel, false )
+        new ForkingRunListener( new ForkedChannelEncoder( anotherPrintStream ), false )
                 .testSkipped( secondExpected );
 
         TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
@@ -336,9 +318,9 @@ public class ForkingRunListenerTest
         }
     }
 
-    private RunListener createForkingRunListener( Integer testSetChannel )
+    private RunListener createForkingRunListener()
     {
-        return new ForkingRunListener( printStream, testSetChannel, false );
+        return new ForkingRunListener( new ForkedChannelEncoder( printStream ), false );
     }
 
     private class StandardTestRun
@@ -349,7 +331,7 @@ public class ForkingRunListenerTest
             throws ReporterException
         {
             reset();
-            return createForkingRunListener( defaultChannel );
+            return createForkingRunListener();
         }
 
         public void clientReceiveContent()

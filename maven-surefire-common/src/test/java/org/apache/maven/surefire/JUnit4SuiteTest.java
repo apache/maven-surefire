@@ -30,6 +30,7 @@ import org.apache.maven.plugin.surefire.booterclient.ForkConfigurationTest;
 import org.apache.maven.plugin.surefire.booterclient.ForkingRunListenerTest;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStreamBuilderTest;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStreamTest;
+import org.apache.maven.plugin.surefire.booterclient.output.ForkClientTest;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactoryTest;
 import org.apache.maven.plugin.surefire.report.StatelessXmlReporterTest;
 import org.apache.maven.plugin.surefire.report.WrappedReportEntryTest;
@@ -75,6 +76,7 @@ import org.junit.runners.Suite;
     SurefireReflectorTest.class,
     ImmutableMapTest.class,
     SurefireHelperTest.class,
+    ForkClientTest.class
 } )
 @RunWith( Suite.class )
 public class JUnit4SuiteTest

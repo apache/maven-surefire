@@ -33,6 +33,11 @@ public final class ConsoleLoggerUtils
         throw new IllegalStateException( "non instantiable constructor" );
     }
 
+    public static String toString( Throwable t )
+    {
+        return toString( null, t );
+    }
+
     public static String toString( String message, Throwable t )
     {
         StringWriter result = new StringWriter( 512 );

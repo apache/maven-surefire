@@ -34,7 +34,7 @@ public class ForkingRunListenerTest
     {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         PrintStream target = new PrintStream( byteArrayOutputStream );
-        ForkingRunListener forkingRunListener = new ForkingRunListener( target, 1, true );
+        ForkingRunListener forkingRunListener = new ForkingRunListener( new ForkedChannelEncoder( target ), true );
         forkingRunListener.info( new String( new byte[]{ 65 } ) );
         forkingRunListener.info( new String( new byte[]{ } ) );
 

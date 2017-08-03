@@ -172,9 +172,9 @@ class TestMethod
         return ls;
     }
 
-    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    public void writeTestOutput( String output, boolean stdout )
     {
-        getLogicalStream().write( stdout, buf, off, len );
+        getLogicalStream().write( stdout, output );
     }
 
     public TestSet getTestSet()

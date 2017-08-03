@@ -20,13 +20,8 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import java.io.PrintStream;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
 
 import org.apache.maven.surefire.report.ReportEntry;
-
-import static java.nio.charset.Charset.defaultCharset;
 
 /**
  * Outputs test system out/system err directly to the console
@@ -50,18 +45,11 @@ public class DirectConsoleOutput
     }
 
 
-    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    @Override
+    public void writeTestOutput( String output, boolean stdout )
     {
         final PrintStream stream = stdout ? sout : serr;
-        try
-        {
-            CharBuffer decode = defaultCharset().newDecoder().decode( ByteBuffer.wrap( buf, off, len ) );
-            stream.append( decode );
-        }
-        catch ( CharacterCodingException e )
-        {
-            stream.write( buf, off, len );
-        }
+        stream.append( output );
     }
 
     public void testSetStarting( ReportEntry reportEntry )

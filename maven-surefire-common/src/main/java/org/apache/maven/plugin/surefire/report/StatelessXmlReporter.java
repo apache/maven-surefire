@@ -45,6 +45,7 @@ import java.util.StringTokenizer;
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType;
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
 import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
+import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
 
 // CHECKSTYLE_OFF: LineLength
 /**
@@ -335,7 +336,7 @@ public class StatelessXmlReporter
         }
         if ( report.getSourceName() != null )
         {
-            if ( reportNameSuffix != null && reportNameSuffix.length() > 0 )
+            if ( isNotBlank( reportNameSuffix ) )
             {
                 ppw.addAttribute( "classname", report.getSourceName() + "(" + reportNameSuffix + ")" );
             }
@@ -381,7 +382,7 @@ public class StatelessXmlReporter
 
         String stackTrace = report.getStackTrace( trimStackTrace );
 
-        if ( report.getMessage() != null && report.getMessage().length() > 0 )
+        if ( isNotBlank( report.getMessage() ) )
         {
             ppw.addAttribute( "message", extraEscape( report.getMessage(), true ) );
         }

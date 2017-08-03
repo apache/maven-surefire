@@ -39,7 +39,6 @@ import org.apache.maven.surefire.util.TestsToRunTest;
 import org.apache.maven.surefire.util.UrlUtilsTest;
 import org.apache.maven.surefire.util.internal.ByteBufferTest;
 import org.apache.maven.surefire.util.internal.ConcurrencyUtilsTest;
-import org.apache.maven.surefire.util.internal.StringUtilsTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -60,7 +59,6 @@ import org.junit.runners.Suite;
     TestListResolverTest.class,
     ByteBufferTest.class,
     ConcurrencyUtilsTest.class,
-    StringUtilsTest.class,
     DefaultDirectoryScannerTest.class,
     RunOrderCalculatorTest.class,
     RunOrderTest.class,

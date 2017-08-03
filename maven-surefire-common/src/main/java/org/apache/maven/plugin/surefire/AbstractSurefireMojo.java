@@ -232,6 +232,7 @@ public abstract class AbstractSurefireMojo
      * being tested. This directory is declared by the parameter <code>testClassesDirectory</code> which defaults
      * to the POM property <code>${project.build.testOutputDirectory}</code>, typically <em>src/test/java</em>
      * unless overridden.
+     * //todo use regex for fully qualified class names and change the filtering abilities
      */
     @Parameter
     // TODO use regex for fully qualified class names in 3.0 and change the filtering abilities
@@ -1260,7 +1261,7 @@ public abstract class AbstractSurefireMojo
 
     protected boolean isAnyConcurrencySelected()
     {
-        return this.getParallel() != null && this.getParallel().trim().length() > 0;
+        return getParallel() != null && !getParallel().trim().isEmpty();
     }
 
     protected boolean isAnyGroupsSelected()
@@ -1821,7 +1822,7 @@ public abstract class AbstractSurefireMojo
             if ( item != null )
             {
                 item = item.trim();
-                if ( item.length() != 0 )
+                if ( !item.isEmpty() )
                 {
                     result.add( item );
                 }

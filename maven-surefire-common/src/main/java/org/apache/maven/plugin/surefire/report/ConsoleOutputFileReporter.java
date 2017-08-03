@@ -25,6 +25,7 @@ import java.io.IOException;
 
 import org.apache.maven.surefire.report.ReportEntry;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.plugin.surefire.report.FileReporter.getReportFile;
 
 /**
@@ -79,7 +80,7 @@ public class ConsoleOutputFileReporter
         }
     }
 
-    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    public void writeTestOutput( String output, boolean stdout )
     {
         try
         {
@@ -93,7 +94,7 @@ public class ConsoleOutputFileReporter
                 File file = getReportFile( reportsDirectory, reportEntryName, reportNameSuffix, "-output.txt" );
                 fileOutputStream = new FileOutputStream( file );
             }
-            fileOutputStream.write( buf, off, len );
+            fileOutputStream.write( output.getBytes( UTF_8 ) );
         }
         catch ( IOException e )
         {

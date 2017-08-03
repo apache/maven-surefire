@@ -25,7 +25,6 @@ import java.io.PrintStream;
 
 import static java.lang.System.setErr;
 import static java.lang.System.setOut;
-import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 
 /**
  * Deals with system.out/err.
@@ -56,13 +55,13 @@ public class ConsoleOutputCapture
         {
             // Note: At this point the supplied "buf" instance is reused, which means
             // data must be copied out of the buffer
-            target.writeTestOutput( buf, off, len, isStdout );
+            target.writeTestOutput( new String( buf, off, len ), isStdout );
         }
 
         public void write( byte[] b )
             throws IOException
         {
-            target.writeTestOutput( b, 0, b.length, isStdout );
+            target.writeTestOutput( new String( b ), isStdout );
         }
 
         public void write( int b )
@@ -81,12 +80,7 @@ public class ConsoleOutputCapture
 
         public void println( String s )
         {
-            if ( s == null )
-            {
-                s = "null"; // Shamelessly taken from super.print
-            }
-            final byte[] bytes = ( s + NL ).getBytes();
-            target.writeTestOutput( bytes, 0, bytes.length, isStdout );
+            target.writeTestOutput( s == null ? "null" : s, isStdout );
         }
 
         public void close()

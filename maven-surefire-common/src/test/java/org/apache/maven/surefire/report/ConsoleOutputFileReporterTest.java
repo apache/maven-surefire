@@ -43,7 +43,7 @@ public class ConsoleOutputFileReporterTest
         reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
         reporter = new ConsoleOutputFileReporter( reportDir, null );
         reporter.testSetStarting( reportEntry );
-        reporter.writeTestOutput( "some text".getBytes(), 0, 5, true );
+        reporter.writeTestOutput( "some ", true );
         reporter.testSetCompleted( reportEntry );
 
         File expectedReportFile = new File( reportDir, testName + "-output.txt" );
@@ -62,7 +62,7 @@ public class ConsoleOutputFileReporterTest
         reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
         reporter = new ConsoleOutputFileReporter( reportDir, suffixText );
         reporter.testSetStarting( reportEntry );
-        reporter.writeTestOutput( "some text".getBytes(), 0, 5, true );
+        reporter.writeTestOutput( "some ", true );
         reporter.testSetCompleted( reportEntry );
 
         File expectedReportFile = new File( reportDir, testName + "-" + suffixText + "-output.txt" );

@@ -19,18 +19,20 @@ package org.apache.maven.surefire.testng.utils;
  * under the License.
  */
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.maven.surefire.group.match.AndGroupMatcher;
 import org.apache.maven.surefire.group.match.GroupMatcher;
 import org.apache.maven.surefire.group.match.InverseGroupMatcher;
 import org.apache.maven.surefire.group.parse.GroupMatcherParser;
 import org.apache.maven.surefire.group.parse.ParseException;
-
 import org.testng.IMethodSelector;
 import org.testng.IMethodSelectorContext;
 import org.testng.ITestNGMethod;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
 
 /**
  * Method selector delegating to {@link GroupMatcher} to decide if a method is included or not.
@@ -77,7 +79,7 @@ public class GroupMatcherMethodSelector
         {
             AndGroupMatcher matcher = new AndGroupMatcher();
             GroupMatcher in = null;
-            if ( groups != null && groups.trim().length() > 0 )
+            if ( isNotBlank( groups ) )
             {
                 in = new GroupMatcherParser( groups ).parse();
             }
@@ -88,7 +90,7 @@ public class GroupMatcherMethodSelector
             }
 
             GroupMatcher ex = null;
-            if ( excludedGroups != null && excludedGroups.trim().length() > 0 )
+            if ( isNotBlank( excludedGroups ) )
             {
                 ex = new GroupMatcherParser( excludedGroups ).parse();
             }

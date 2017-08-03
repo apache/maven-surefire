@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.RunMode;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import junit.framework.Test;
@@ -102,6 +103,11 @@ public class JUnitTestSetTest
 
         public void testExecutionSkippedByUser()
         {
+        }
+
+        public RunMode markAs( RunMode currentRunMode )
+        {
+            return RunMode.NORMAL_RUN;
         }
 
         public void testSkippedByUser( ReportEntry report )

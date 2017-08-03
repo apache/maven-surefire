@@ -27,6 +27,7 @@ import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Notifiable
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStream;
+import org.apache.maven.plugin.surefire.booterclient.output.ErrorInFork;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.plugin.surefire.booterclient.output.NativeStdErrStreamConsumer;
@@ -46,7 +47,6 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
-import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DefaultScanResult;
@@ -660,12 +660,13 @@ public class ForkStarter
 
                 if ( forkClient.isErrorInFork() )
                 {
-                    StackTraceWriter errorInFork = forkClient.getErrorInFork();
-                    // noinspection ThrowFromFinallyBlock
+                    ErrorInFork errorInFork = forkClient.getErrorInFork();
+                    //todo boolean showStackTrace = providerConfiguration.getMainCliOptions().contains( SHOW_ERRORS );
+                    //noinspection ThrowFromFinallyBlock
                     throw new SurefireBooterForkException( "There was an error in the forked process"
                                                         + detail
                                                         + '\n'
-                                                        + errorInFork.getThrowable().getLocalizedMessage(), cause );
+                                                        + errorInFork, cause );
                 }
                 if ( !forkClient.isSaidGoodBye() )
                 {

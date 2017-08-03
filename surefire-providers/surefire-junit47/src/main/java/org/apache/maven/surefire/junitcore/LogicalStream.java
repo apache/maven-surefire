@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.util.internal.ByteBuffer;
 
 /**
  * A stream-like object that preserves ordering between stdout/stderr
@@ -34,31 +33,24 @@ public final class LogicalStream
 
     static final class Entry
     {
-        final boolean stdout;
+        private final boolean stdout;
+        private final String text;
 
-        final byte[] b;
-
-        final int off;
-
-        final int len;
-
-        Entry( boolean stdout, byte[] b, int off, int len )
+        Entry( boolean stdout, String text )
         {
             this.stdout = stdout;
-            this.b = ByteBuffer.copy( b, off, len );
-            this.off = 0;
-            this.len = len;
+            this.text = text;
         }
 
         public void writeDetails( ConsoleOutputReceiver outputReceiver )
         {
-            outputReceiver.writeTestOutput( b, off, len, stdout );
+            outputReceiver.writeTestOutput( text, stdout );
         }
 
         @Override
         public String toString()
         {
-            return new String( b, off, len );
+            return text;
         }
 
         public boolean isBlankLine()
@@ -67,9 +59,9 @@ public final class LogicalStream
         }
     }
 
-    public synchronized void write( boolean stdout, byte b[], int off, int len )
+    public synchronized void write( boolean stdout, String text )
     {
-        Entry entry = new Entry( stdout, b, off, len );
+        Entry entry = new Entry( stdout, text );
         if ( !entry.isBlankLine() )
         {
             output.add( entry );

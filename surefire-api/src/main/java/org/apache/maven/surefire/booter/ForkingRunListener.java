@@ -19,24 +19,15 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.io.PrintStream;
-import java.util.Properties;
-
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.plugin.surefire.log.api.ConsoleLoggerUtils;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ConsoleStream;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.SafeThrowable;
-import org.apache.maven.surefire.report.SimpleReportEntry;
-import org.apache.maven.surefire.report.StackTraceWriter;
+import org.apache.maven.surefire.report.RunMode;
 
-import static java.lang.Integer.toHexString;
-import static java.nio.charset.Charset.defaultCharset;
-import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
-import static org.apache.maven.surefire.util.internal.StringUtils.escapeBytesToPrintable;
-import static org.apache.maven.surefire.util.internal.StringUtils.escapeToPrintable;
+import static org.apache.maven.surefire.report.RunMode.NORMAL_RUN;
+import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
 
 /**
  * Encodes the full output of the test run to the stdout stream.
@@ -51,216 +42,118 @@ import static org.apache.maven.surefire.util.internal.StringUtils.escapeToPrinta
  * The synchronization in the underlying PrintStream (target instance)
  * is used to preserve thread safety of the output stream. To perform
  * multiple writes/prints for a single request, they must
- * synchronize on "target" variable in this class.
+ * synchronize on "target.out" variable in this class.
  *
  * @author Kristian Rosenvold
  */
 public class ForkingRunListener
     implements RunListener, ConsoleLogger, ConsoleOutputReceiver, ConsoleStream
 {
-    public static final byte BOOTERCODE_TESTSET_STARTING = (byte) '1';
+    private final ForkedChannelEncoder target;
 
-    public static final byte BOOTERCODE_TESTSET_COMPLETED = (byte) '2';
+    private final boolean trim;
 
-    public static final byte BOOTERCODE_STDOUT = (byte) '3';
+    private volatile RunMode runMode = NORMAL_RUN;
 
-    public static final byte BOOTERCODE_STDERR = (byte) '4';
-
-    public static final byte BOOTERCODE_TEST_STARTING = (byte) '5';
-
-    public static final byte BOOTERCODE_TEST_SUCCEEDED = (byte) '6';
-
-    public static final byte BOOTERCODE_TEST_ERROR = (byte) '7';
-
-    public static final byte BOOTERCODE_TEST_FAILED = (byte) '8';
-
-    public static final byte BOOTERCODE_TEST_SKIPPED = (byte) '9';
-
-    public static final byte BOOTERCODE_TEST_ASSUMPTIONFAILURE = (byte) 'G';
-
-    /**
-     * INFO logger
-     * @see ConsoleLogger#info(String)
-     */
-    public static final byte BOOTERCODE_CONSOLE = (byte) 'H';
-
-    public static final byte BOOTERCODE_SYSPROPS = (byte) 'I';
-
-    public static final byte BOOTERCODE_NEXT_TEST = (byte) 'N';
-
-    public static final byte BOOTERCODE_STOP_ON_NEXT_TEST = (byte) 'S';
-
-    /**
-     * ERROR logger
-     * @see ConsoleLogger#error(String)
-     */
-    public static final byte BOOTERCODE_ERROR = (byte) 'X';
-
-    public static final byte BOOTERCODE_BYE = (byte) 'Z';
-
-    /**
-     * DEBUG logger
-     * @see ConsoleLogger#debug(String)
-     */
-    public static final byte BOOTERCODE_DEBUG = (byte) 'D';
-
-    /**
-     * WARNING logger
-     * @see ConsoleLogger#warning(String)
-     */
-    public static final byte BOOTERCODE_WARNING = (byte) 'W';
-
-
-    private final PrintStream target;
-
-    private final int testSetChannelId;
-
-    private final boolean trimStackTraces;
-
-    private final byte[] stdOutHeader;
-
-    private final byte[] stdErrHeader;
-
-    public ForkingRunListener( PrintStream target, int testSetChannelId, boolean trimStackTraces )
+    public ForkingRunListener( ForkedChannelEncoder target, boolean trim )
     {
         this.target = target;
-        this.testSetChannelId = testSetChannelId;
-        this.trimStackTraces = trimStackTraces;
-        stdOutHeader = createHeader( BOOTERCODE_STDOUT, testSetChannelId );
-        stdErrHeader = createHeader( BOOTERCODE_STDERR, testSetChannelId );
-        sendProps();
+        this.trim = trim;
+        sendProps(); // todo really needed? - sent after every test class
     }
 
     public void testSetStarting( ReportEntry report )
     {
-        encodeAndWriteToTarget( toString( BOOTERCODE_TESTSET_STARTING, report, testSetChannelId ) );
+        target.testSetStarting( report, trim );
     }
 
     public void testSetCompleted( ReportEntry report )
     {
-        encodeAndWriteToTarget( toString( BOOTERCODE_TESTSET_COMPLETED, report, testSetChannelId ) );
+        target.testSetCompleted( report, trim );
     }
 
     public void testStarting( ReportEntry report )
     {
-        encodeAndWriteToTarget( toString( BOOTERCODE_TEST_STARTING, report, testSetChannelId ) );
+        target.testStarting( report, trim );
     }
 
     public void testSucceeded( ReportEntry report )
     {
-        encodeAndWriteToTarget( toString( BOOTERCODE_TEST_SUCCEEDED, report, testSetChannelId ) );
+        target.testSucceeded( report, trim );
     }
 
     public void testAssumptionFailure( ReportEntry report )
     {
-        encodeAndWriteToTarget( toString( BOOTERCODE_TEST_ASSUMPTIONFAILURE, report, testSetChannelId ) );
+        target.testAssumptionFailure( report, trim );
     }
 
     public void testError( ReportEntry report )
     {
-        encodeAndWriteToTarget( toString( BOOTERCODE_TEST_ERROR, report, testSetChannelId ) );
+        target.testError( report, trim );
     }
 
     public void testFailed( ReportEntry report )
     {
-        encodeAndWriteToTarget( toString( BOOTERCODE_TEST_FAILED, report, testSetChannelId ) );
+        target.testFailed( report, trim );
     }
 
     public void testSkipped( ReportEntry report )
     {
-        encodeAndWriteToTarget( toString( BOOTERCODE_TEST_SKIPPED, report, testSetChannelId ) );
+        target.testSkipped( report, trim );
     }
 
     public void testExecutionSkippedByUser()
     {
-        encodeAndWriteToTarget( toString( BOOTERCODE_STOP_ON_NEXT_TEST, new SimpleReportEntry(), testSetChannelId ) );
+        target.stopOnNextTest();
+    }
+
+    public RunMode markAs( RunMode currentRunMode )
+    {
+        RunMode runMode = this.runMode;
+        this.runMode = requireNonNull( currentRunMode );
+        return runMode;
     }
 
     void sendProps()
     {
-        Properties systemProperties = System.getProperties();
+        target.sendSystemProperties();
+    }
 
-        if ( systemProperties != null )
+    public void writeTestOutput( String output, boolean stdout )
+    {
+        if ( stdout )
         {
-            for ( final String key : systemProperties.stringPropertyNames() )
-            {
-                String value = systemProperties.getProperty( key );
-                encodeAndWriteToTarget( toPropertyString( key, value == null ? "null" : value ) );
-            }
+            target.stdOut( output );
         }
-    }
-
-    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
-    {
-        byte[] header = stdout ? stdOutHeader : stdErrHeader;
-        byte[] content =
-            new byte[buf.length * 3 + 1]; // Hex-escaping can be up to 3 times length of a regular byte.
-        int i = escapeBytesToPrintable( content, 0, buf, off, len );
-        content[i++] = (byte) '\n';
-        byte[] encodeBytes = new byte[header.length + i];
-        System.arraycopy( header, 0, encodeBytes, 0, header.length );
-        System.arraycopy( content, 0, encodeBytes, header.length, i );
-
-        synchronized ( target ) // See notes about synchronization/thread safety in class javadoc
+        else
         {
-            target.write( encodeBytes, 0, encodeBytes.length );
-            target.flush();
-            if ( target.checkError() )
-            {
-                // We MUST NOT throw any exception from this method; otherwise we are in loop and CPU goes up:
-                // ForkingRunListener -> Exception -> JUnit Notifier and RunListener -> ForkingRunListener -> Exception
-                DumpErrorSingleton.getSingleton()
-                        .dumpStreamText( "Unexpected IOException with stream: " + new String( buf, off, len ) );
-            }
-        }
-    }
-
-    public static byte[] createHeader( byte booterCode, int testSetChannel )
-    {
-        return encodeStringForForkCommunication( String.valueOf( (char) booterCode )
-                + ','
-                + Integer.toString( testSetChannel, 16 )
-                + ',' + defaultCharset().name()
-                + ',' );
-    }
-
-    private void log( byte bootCode, String message )
-    {
-        if ( message != null )
-        {
-            StringBuilder sb = new StringBuilder( 7 + message.length() * 5 );
-            append( sb, bootCode ); comma( sb );
-            append( sb, toHexString( testSetChannelId ) ); comma( sb );
-            escapeToPrintable( sb, message );
-
-            sb.append( '\n' );
-            encodeAndWriteToTarget( sb.toString() );
+            target.stdErr( output );
         }
     }
 
     public void debug( String message )
     {
-        log( BOOTERCODE_DEBUG, message );
+        target.debug( message );
     }
 
     public void info( String message )
     {
-        log( BOOTERCODE_CONSOLE, message );
+        target.console( message );
     }
 
     public void warning( String message )
     {
-        log( BOOTERCODE_WARNING, message );
+        target.warning( message );
     }
 
     public void error( String message )
     {
-        log( BOOTERCODE_ERROR, message );
+        target.error( message );
     }
 
     public void error( String message, Throwable t )
     {
-        error( ConsoleLoggerUtils.toString( message, t ) );
+        target.error( message, t );
     }
 
     public void error( Throwable t )
@@ -268,137 +161,8 @@ public class ForkingRunListener
         error( null, t );
     }
 
-    private void encodeAndWriteToTarget( String string )
-    {
-        byte[] encodeBytes = encodeStringForForkCommunication( string );
-        synchronized ( target ) // See notes about synchronization/thread safety in class javadoc
-        {
-            target.write( encodeBytes, 0, encodeBytes.length );
-            target.flush();
-            if ( target.checkError() )
-            {
-                // We MUST NOT throw any exception from this method; otherwise we are in loop and CPU goes up:
-                // ForkingRunListener -> Exception -> JUnit Notifier and RunListener -> ForkingRunListener -> Exception
-                DumpErrorSingleton.getSingleton().dumpStreamText( "Unexpected IOException: " + string );
-            }
-        }
-    }
-
-    private String toPropertyString( String key, String value )
-    {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        append( stringBuilder, BOOTERCODE_SYSPROPS ); comma( stringBuilder );
-        append( stringBuilder, toHexString( testSetChannelId ) ); comma( stringBuilder );
-
-        escapeToPrintable( stringBuilder, key );
-        comma( stringBuilder );
-        escapeToPrintable( stringBuilder, value );
-        stringBuilder.append( "\n" );
-        return stringBuilder.toString();
-    }
-
-    private String toString( byte operationCode, ReportEntry reportEntry, int testSetChannelId )
-    {
-        StringBuilder stringBuilder = new StringBuilder();
-        append( stringBuilder, operationCode ); comma( stringBuilder );
-        append( stringBuilder, toHexString( testSetChannelId ) ); comma( stringBuilder );
-
-        nullableEncoding( stringBuilder, reportEntry.getSourceName() );
-        comma( stringBuilder );
-        nullableEncoding( stringBuilder, reportEntry.getName() );
-        comma( stringBuilder );
-        nullableEncoding( stringBuilder, reportEntry.getGroup() );
-        comma( stringBuilder );
-        nullableEncoding( stringBuilder, reportEntry.getMessage() );
-        comma( stringBuilder );
-        nullableEncoding( stringBuilder, reportEntry.getElapsed() );
-        encode( stringBuilder, reportEntry.getStackTraceWriter() );
-        stringBuilder.append( "\n" );
-        return stringBuilder.toString();
-    }
-
-    private static void comma( StringBuilder stringBuilder )
-    {
-        stringBuilder.append( "," );
-    }
-
-    private ForkingRunListener append( StringBuilder stringBuilder, String message )
-    {
-        stringBuilder.append( encode( message ) );
-        return this;
-    }
-
-    private ForkingRunListener append( StringBuilder stringBuilder, byte b )
-    {
-        stringBuilder.append( (char) b );
-        return this;
-    }
-
-    private void nullableEncoding( StringBuilder stringBuilder, Integer source )
-    {
-        if ( source == null )
-        {
-            stringBuilder.append( "null" );
-        }
-        else
-        {
-            stringBuilder.append( source.toString() );
-        }
-    }
-
-    private String encode( String source )
-    {
-        return source;
-    }
-
-
-    private static void nullableEncoding( StringBuilder stringBuilder, String source )
-    {
-        if ( source == null || source.length() == 0 )
-        {
-            stringBuilder.append( "null" );
-        }
-        else
-        {
-            escapeToPrintable( stringBuilder, source );
-        }
-    }
-
-    private void encode( StringBuilder stringBuilder, StackTraceWriter stackTraceWriter )
-    {
-        encode( stringBuilder, stackTraceWriter, trimStackTraces );
-    }
-
-    public static void encode( StringBuilder stringBuilder, StackTraceWriter stackTraceWriter, boolean trimStackTraces )
-    {
-        if ( stackTraceWriter != null )
-        {
-            comma( stringBuilder );
-            //noinspection ThrowableResultOfMethodCallIgnored
-            final SafeThrowable throwable = stackTraceWriter.getThrowable();
-            if ( throwable != null )
-            {
-                String message = throwable.getLocalizedMessage();
-                nullableEncoding( stringBuilder, message );
-            }
-            comma( stringBuilder );
-            nullableEncoding( stringBuilder, stackTraceWriter.smartTrimmedStackTrace() );
-            comma( stringBuilder );
-            nullableEncoding( stringBuilder, trimStackTraces
-                ? stackTraceWriter.writeTrimmedTraceToString()
-                : stackTraceWriter.writeTraceToString() );
-        }
-    }
-
     public void println( String message )
     {
-        byte[] buf = message.getBytes();
-        println( buf, 0, buf.length );
-    }
-
-    public void println( byte[] buf, int off, int len )
-    {
-        writeTestOutput( buf, off, len, true );
+        writeTestOutput( message, true );
     }
 }

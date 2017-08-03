@@ -94,7 +94,7 @@ public class CommandReaderTest
     @Test
     public void readJustOneClass() throws Exception
     {
-        Iterator<String> it = reader.getIterableClasses( nul() ).iterator();
+        Iterator<String> it = reader.getIterableClasses( new ForkedChannelEncoder( nul() ) ).iterator();
         assertTrue( it.hasNext() );
         assertThat( it.next(), is( getClass().getName() ) );
         reader.stop();
@@ -113,7 +113,7 @@ public class CommandReaderTest
     @Test
     public void manyClasses() throws Exception
     {
-        Iterator<String> it1 = reader.getIterableClasses( nul() ).iterator();
+        Iterator<String> it1 = reader.getIterableClasses( new ForkedChannelEncoder( nul() ) ).iterator();
         assertThat( it1.next(), is( getClass().getName() ) );
         addTestToPipeline( A.class.getName() );
         assertThat( it1.next(), is( A.class.getName() ) );
@@ -129,7 +129,7 @@ public class CommandReaderTest
     @Test
     public void twoIterators() throws Exception
     {
-        Iterator<String> it1 = reader.getIterableClasses( nul() ).iterator();
+        Iterator<String> it1 = reader.getIterableClasses(new ForkedChannelEncoder( nul() ) ).iterator();
 
         assertThat( it1.next(), is( getClass().getName() ) );
         addTestToPipeline( A.class.getName() );
@@ -162,7 +162,7 @@ public class CommandReaderTest
         {
             public void run()
             {
-                Iterator<String> it = reader.getIterableClasses( nul() ).iterator();
+                Iterator<String> it = reader.getIterableClasses( new ForkedChannelEncoder( nul() ) ).iterator();
                 assertThat( it.next(), is( CommandReaderTest.class.getName() ) );
             }
         };
@@ -189,7 +189,7 @@ public class CommandReaderTest
         {
             public void run()
             {
-                Iterator<String> it = reader.getIterableClasses( nul() ).iterator();
+                Iterator<String> it = reader.getIterableClasses( new ForkedChannelEncoder( nul() ) ).iterator();
                 assertThat( it.next(), is( CommandReaderTest.class.getName() ) );
                 counter.countDown();
                 assertThat( it.next(), is( PropertiesWrapperTest.class.getName() ) );

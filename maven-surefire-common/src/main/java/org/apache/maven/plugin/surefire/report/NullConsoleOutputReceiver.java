@@ -49,7 +49,8 @@ class NullConsoleOutputReceiver
     {
     }
 
-    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    @Override
+    public void writeTestOutput( String output, boolean stdout )
     {
     }
 }

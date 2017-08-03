@@ -23,7 +23,6 @@ import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
@@ -49,13 +48,9 @@ import static java.lang.Thread.currentThread;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.surefire.booter.CommandReader.getReader;
-import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_BYE;
-import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_ERROR;
-import static org.apache.maven.surefire.booter.ForkingRunListener.encode;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.setSystemProperties;
 import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
-import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 
 /**
  * The part of the booter that is unique to a forked vm.
@@ -87,7 +82,7 @@ public final class ForkedBooter
     {
         final CommandReader reader = startupMasterProcessReader();
         final ScheduledFuture<?> pingScheduler = listenToShutdownCommands( reader );
-        final PrintStream originalOut = out;
+        final ForkedChannelEncoder eventChannel = new ForkedChannelEncoder( out );
         try
         {
             final String tmpDir = args[0];
@@ -128,7 +123,7 @@ public final class ForkedBooter
             }
             else if ( readTestsFromInputStream )
             {
-                testSet = new LazyTestsToRun( originalOut );
+                testSet = new LazyTestsToRun( eventChannel );
             }
             else
             {
@@ -137,26 +132,20 @@ public final class ForkedBooter
 
             try
             {
-                runSuitesInProcess( testSet, startupConfiguration, providerConfiguration, originalOut );
+                runSuitesInProcess( testSet, startupConfiguration, providerConfiguration, eventChannel );
             }
             catch ( InvocationTargetException t )
             {
+                Throwable e = t.getTargetException();
                 DumpErrorSingleton.getSingleton().dumpException( t );
-                StackTraceWriter stackTraceWriter =
-                    new LegacyPojoStackTraceWriter( "test subsystem", "no method", t.getTargetException() );
-                StringBuilder stringBuilder = new StringBuilder();
-                encode( stringBuilder, stackTraceWriter, false );
-                encodeAndWriteToOutput( ( (char) BOOTERCODE_ERROR ) + ",0," + stringBuilder + "\n" , originalOut );
+                eventChannel.error( new LegacyPojoStackTraceWriter( "test subsystem", "no method", e ), false );
             }
             catch ( Throwable t )
             {
                 DumpErrorSingleton.getSingleton().dumpException( t );
-                StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( "test subsystem", "no method", t );
-                StringBuilder stringBuilder = new StringBuilder();
-                encode( stringBuilder, stackTraceWriter, false );
-                encodeAndWriteToOutput( ( (char) BOOTERCODE_ERROR ) + ",0," + stringBuilder + "\n", originalOut );
+                eventChannel.error( new LegacyPojoStackTraceWriter( "test subsystem", "no method", t ), false );
             }
-            acknowledgedExit( reader, originalOut );
+            acknowledgedExit( reader, eventChannel );
         }
         catch ( Throwable t )
         {
@@ -233,17 +222,6 @@ public final class ForkedBooter
         };
     }
 
-    private static void encodeAndWriteToOutput( String string, PrintStream out )
-    {
-        byte[] encodeBytes = encodeStringForForkCommunication( string );
-        //noinspection SynchronizationOnLocalVariableOrMethodParameter
-        synchronized ( out )
-        {
-            out.write( encodeBytes, 0, encodeBytes.length );
-            out.flush();
-        }
-    }
-
     private static void kill()
     {
         Runtime.getRuntime().halt( 1 );
@@ -255,7 +233,7 @@ public final class ForkedBooter
         System.exit( returnCode );
     }
 
-    private static void acknowledgedExit( CommandReader reader, PrintStream originalOut )
+    private static void acknowledgedExit( CommandReader reader, ForkedChannelEncoder eventChannel )
     {
         final Semaphore barrier = new Semaphore( 0 );
         reader.addByeAckListener( new CommandListener()
@@ -267,7 +245,7 @@ public final class ForkedBooter
                                       }
                                   }
         );
-        encodeAndWriteToOutput( ( (char) BOOTERCODE_BYE ) + ",0,BYE!\n", originalOut );
+        eventChannel.bye();
         launchLastDitchDaemonShutdownThread( 0 );
         long timeoutMillis = max( systemExitTimeoutInSeconds * ONE_SECOND_IN_MILLIS, ONE_SECOND_IN_MILLIS );
         acquireOnePermit( barrier, timeoutMillis );
@@ -288,20 +266,20 @@ public final class ForkedBooter
 
     private static RunResult runSuitesInProcess( Object testSet, StartupConfiguration startupConfiguration,
                                                  ProviderConfiguration providerConfiguration,
-                                                 PrintStream originalSystemOut )
+                                                 ForkedChannelEncoder eventChannel )
         throws SurefireExecutionException, TestSetFailedException, InvocationTargetException
     {
-        final ReporterFactory factory = createForkingReporterFactory( providerConfiguration, originalSystemOut );
+        final ReporterFactory factory = createForkingReporterFactory( providerConfiguration, eventChannel );
 
         return invokeProviderInSameClassLoader( testSet, factory, providerConfiguration, true, startupConfiguration,
-                                                      false );
+                                                      false, eventChannel );
     }
 
     private static ReporterFactory createForkingReporterFactory( ProviderConfiguration providerConfiguration,
-                                                                 PrintStream originalSystemOut )
+                                                                 ForkedChannelEncoder eventChannel )
     {
         final boolean trimStackTrace = providerConfiguration.getReporterConfiguration().isTrimStackTrace();
-        return new ForkingReporterFactory( trimStackTrace, originalSystemOut );
+        return new ForkingReporterFactory( trimStackTrace, eventChannel );
     }
 
     private static synchronized ScheduledThreadPoolExecutor getJvmTerminator()
@@ -346,7 +324,8 @@ public final class ForkedBooter
                                                               ProviderConfiguration providerConfig,
                                                               boolean insideFork,
                                                               StartupConfiguration startupConfig,
-                                                              boolean restoreStreams )
+                                                              boolean restoreStreams,
+                                                              ForkedChannelEncoder forkedChannelEncoder )
         throws TestSetFailedException, InvocationTargetException
     {
         final PrintStream orgSystemOut = out;
@@ -356,8 +335,8 @@ public final class ForkedBooter
 
         try
         {
-            return createProviderInCurrentClassloader( startupConfig, insideFork, providerConfig, factory )
-                           .invoke( testSet );
+            return createProviderInCurrentClassloader( startupConfig, insideFork, providerConfig, factory,
+                    forkedChannelEncoder ).invoke( testSet );
         }
         finally
         {
@@ -371,12 +350,14 @@ public final class ForkedBooter
 
     private static SurefireProvider createProviderInCurrentClassloader( StartupConfiguration startupConfiguration,
                                                                         boolean isInsideFork,
-                                                                       ProviderConfiguration providerConfiguration,
-                                                                       Object reporterManagerFactory )
+                                                                        ProviderConfiguration providerConfiguration,
+                                                                        Object reporterManagerFactory,
+                                                                        ForkedChannelEncoder forkedChannelEncoder )
     {
         BaseProviderFactory bpf = new BaseProviderFactory( (ReporterFactory) reporterManagerFactory, isInsideFork );
         bpf.setTestRequest( providerConfiguration.getTestSuiteDefinition() );
         bpf.setReporterConfiguration( providerConfiguration.getReporterConfiguration() );
+        bpf.setForkedChannelEncoder( forkedChannelEncoder );
         ClassLoader classLoader = currentThread().getContextClassLoader();
         bpf.setClassLoaders( classLoader );
         bpf.setTestArtifactInfo( providerConfiguration.getTestArtifact() );

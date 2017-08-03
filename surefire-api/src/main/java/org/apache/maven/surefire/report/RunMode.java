@@ -19,23 +19,42 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.io.PrintStream;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static java.util.Collections.unmodifiableMap;
 
 /**
- * @author <a href="mailto:kristian@zenior.no">Kristian Rosenvold</a>
+ * Determines the purpose the provider started the tests. It can be either normal run or re-run.
+ *
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 2.20.1
  */
-public final class DefaultDirectConsoleReporter
-    implements ConsoleStream
+public enum RunMode
 {
-    private final PrintStream systemOut;
+    NORMAL_RUN( "normal-run" ), RERUN( "re-run" );
 
-    public DefaultDirectConsoleReporter( PrintStream systemOut )
+    public static final Map<String, RunMode> MODES = modes();
+
+    private static Map<String, RunMode> modes()
     {
-        this.systemOut = systemOut;
+        Map<String, RunMode> modes = new ConcurrentHashMap<String, RunMode>();
+        for ( RunMode mode : values() )
+        {
+            modes.put( mode.geRunName(), mode );
+        }
+        return unmodifiableMap( modes );
     }
 
-    public void println( String message )
+    private final String runName;
+
+    RunMode( String runName )
     {
-        systemOut.println( message );
+        this.runName = runName;
+    }
+
+    public String geRunName()
+    {
+        return runName;
     }
 }

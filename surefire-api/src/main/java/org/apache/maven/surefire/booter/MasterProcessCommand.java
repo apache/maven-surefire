@@ -21,11 +21,8 @@ package org.apache.maven.surefire.booter;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 
-import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
-import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
 import static java.lang.String.format;
 
@@ -46,8 +43,6 @@ public enum MasterProcessCommand
     /** To tell a forked process that the master process is still alive. Repeated after 10 seconds. */
     NOOP( 4, Void.class ),
     BYE_ACK( 5, Void.class );
-
-    private static final Charset ASCII = Charset.forName( "US-ASCII" );
 
     private final int id;
 
@@ -143,21 +138,13 @@ public enum MasterProcessCommand
 
     String toDataTypeAsString( byte... data )
     {
-        try
+        switch ( this )
         {
-            switch ( this )
-            {
-                case RUN_CLASS:
-                    return new String( data, FORK_STREAM_CHARSET_NAME );
-                case SHUTDOWN:
-                    return new String( data, ASCII );
-                default:
-                    return null;
-            }
-        }
-        catch ( UnsupportedEncodingException e )
-        {
-            throw new IllegalStateException( e );
+            case RUN_CLASS:
+            case SHUTDOWN:
+                return new String( data, US_ASCII );
+            default:
+                return null;
         }
     }
 
@@ -166,9 +153,8 @@ public enum MasterProcessCommand
         switch ( this )
         {
             case RUN_CLASS:
-                return encodeStringForForkCommunication( data );
             case SHUTDOWN:
-                return data.getBytes( ASCII );
+                return data.getBytes( US_ASCII );
             default:
                 return new byte[0];
         }

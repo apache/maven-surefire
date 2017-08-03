@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.report;
+package org.apache.maven.plugin.surefire.booterclient.output;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,19 +19,20 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-/**
- * A receiver of stdout/sterr output from running tests. This receiver knows how to associate
- * the output with a given testset.
- */
-public interface ConsoleOutputReceiver
-{
+import org.junit.Test;
 
-    /**
-     * Forwards process output from the running test-case into the reporting system
-     *
-     * @param output stdout/sterr output from running tests
-     * @param stdout Indicates if this is stdout
-     */
-    void writeTestOutput( String output, boolean stdout );
+import static org.junit.Assert.*;
+
+/**
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 2.20.1
+ */
+public class ForkClientTest
+{
+    @Test
+    public void test()
+    {
+        ForkClient client = new ForkClient( null, null, null, null );
+    }
 
 }

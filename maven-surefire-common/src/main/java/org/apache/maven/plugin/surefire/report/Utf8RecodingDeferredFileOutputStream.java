@@ -44,7 +44,7 @@ class Utf8RecodingDeferredFileOutputStream
     @SuppressWarnings( "checkstyle:magicnumber" )
     public Utf8RecodingDeferredFileOutputStream( String channel )
     {
-        this.deferredFileOutputStream = new DeferredFileOutputStream( 1000000, channel, "deferred", null );
+        deferredFileOutputStream = new DeferredFileOutputStream( 1000000, channel, "deferred", null );
     }
 
     public synchronized void write( byte[] buf, int off, int len )
@@ -58,13 +58,14 @@ class Utf8RecodingDeferredFileOutputStream
         if ( !Charset.defaultCharset().equals( UTF8 ) )
         {
             CharBuffer decodedFromDefaultCharset = Charset.defaultCharset().decode( ByteBuffer.wrap( buf, off, len ) );
+            //todo check encoding
             ByteBuffer utf8Encoded = UTF8.encode( decodedFromDefaultCharset );
 
             if ( utf8Encoded.hasArray() )
             {
                 byte[] convertedBytes = utf8Encoded.array();
 
-                deferredFileOutputStream.write( convertedBytes, utf8Encoded.position(), utf8Encoded.remaining() );
+                deferredFileOutputStream.write( convertedBytes, utf8Encoded.arrayOffset(), utf8Encoded.remaining() );
             }
             else
             {

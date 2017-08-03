@@ -58,7 +58,8 @@ final class MultipleFailureException
     public String getMessage()
     {
         StringBuilder messages = new StringBuilder();
-        for ( Throwable exception = exceptions.peek(); exception != null; exception = exceptions.peek() )
+        for ( //noinspection ThrowableResultOfMethodCallIgnored
+                Throwable exception = exceptions.peek(); exception != null; exception = exceptions.peek() )
         {
             if ( messages.length() != 0 )
             {
