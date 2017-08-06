@@ -21,6 +21,7 @@ package org.apache.maven.surefire.booter;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Queue;
 import java.util.Scanner;
 import java.util.StringTokenizer;
@@ -128,7 +129,7 @@ final class PpidChecker
     // http://hg.openjdk.java.net/jdk7/jdk7/jdk/file/9b8c96f96a0f/test/java/lang/ProcessBuilder/Basic.java#L167
     ProcessInfo unix()
     {
-        ProcessInfoConsumer reader = new ProcessInfoConsumer()
+        ProcessInfoConsumer reader = new ProcessInfoConsumer( Charset.defaultCharset().name() )
         {
             @Override
             ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo )
@@ -154,7 +155,7 @@ final class PpidChecker
 
     ProcessInfo windows()
     {
-        ProcessInfoConsumer reader = new ProcessInfoConsumer()
+        ProcessInfoConsumer reader = new ProcessInfoConsumer( Charset.defaultCharset().name() ) // Windows-1252
         {
             private boolean hasHeader;
 
@@ -248,6 +249,13 @@ final class PpidChecker
      */
     private abstract class ProcessInfoConsumer
     {
+        private final String charset;
+
+        ProcessInfoConsumer( String charset )
+        {
+            this.charset = charset;
+        }
+
         abstract ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo );
 
         ProcessInfo execute( String... command )
@@ -260,7 +268,7 @@ final class PpidChecker
             {
                 process = processBuilder.start();
                 destroyableCommands.add( process );
-                Scanner scanner = new Scanner( process.getInputStream() );
+                Scanner scanner = new Scanner( process.getInputStream(), charset );
                 while ( scanner.hasNextLine() )
                 {
                     String line = scanner.nextLine().trim();
@@ -272,10 +280,12 @@ final class PpidChecker
             }
             catch ( IOException e )
             {
+                DumpErrorSingleton.getSingleton().dumpException( e );
                 return ERR_PROCESS_INFO;
             }
             catch ( InterruptedException e )
             {
+                DumpErrorSingleton.getSingleton().dumpException( e );
                 return ERR_PROCESS_INFO;
             }
             finally
