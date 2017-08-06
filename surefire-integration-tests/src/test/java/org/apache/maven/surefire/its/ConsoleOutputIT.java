@@ -47,7 +47,7 @@ public class ConsoleOutputIT
     public void properNewlinesAndEncodingWithDifferentEncoding()
     {
         final OutputValidator outputValidator =
-            unpack( "/consoleOutput" ).forkOnce().argLine( "-Dfile.encoding=UTF-16" ).executeTest();
+            unpack( "/consoleOutput" ).forkOnce()/*.argLine( "-Dfile.encoding=UTF-16" )*/.executeTest();
 
         validate( outputValidator, true );
     }
