@@ -155,7 +155,7 @@ final class PpidChecker
 
     ProcessInfo windows()
     {
-        ProcessInfoConsumer reader = new ProcessInfoConsumer( Charset.defaultCharset().name() ) // Windows-1252
+        ProcessInfoConsumer reader = new ProcessInfoConsumer( "US-ASCII" )
         {
             private boolean hasHeader;
 
