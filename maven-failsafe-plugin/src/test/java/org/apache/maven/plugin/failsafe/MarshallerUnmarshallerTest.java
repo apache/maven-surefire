@@ -19,14 +19,12 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
-import org.apache.maven.plugin.failsafe.util.JAXB;
-import org.apache.maven.plugin.failsafe.xmlsummary.FailsafeSummary;
+import org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils;
+import org.apache.maven.surefire.suite.RunResult;
 import org.junit.Test;
 
 import java.io.File;
 
-import static org.apache.maven.plugin.failsafe.xmlsummary.ErrorType.FAILURE;
-import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
 import static org.fest.assertions.Assertions.assertThat;
 
 public class MarshallerUnmarshallerTest
@@ -35,9 +33,9 @@ public class MarshallerUnmarshallerTest
     public void shouldUnmarshallExistingXmlFile() throws Exception
     {
         File xml = new File( "target/test-classes/org/apache/maven/plugin/failsafe/failsafe-summary.xml" );
-        FailsafeSummary summary = JAXB.unmarshal( xml, FailsafeSummary.class );
+        RunResult summary = FailsafeSummaryXmlUtils.toRunResult( xml );
 
-        assertThat( summary.getCompleted() )
+        assertThat( summary.getCompletedCount() )
                 .isEqualTo( 7 );
 
         assertThat( summary.getErrors() )
@@ -49,14 +47,14 @@ public class MarshallerUnmarshallerTest
         assertThat( summary.getSkipped() )
                 .isEqualTo( 3 );
 
-        assertThat( summary.getFailureMessage() )
+        assertThat( summary.getFailure() )
                 .contains( "There was an error in the forked processtest "
                                    + "subsystem#no method RuntimeException Hi There!"
                 );
 
-        assertThat( summary.getFailureMessage() )
+        assertThat( summary.getFailure() )
                 .contains( "There was an error in the forked processtest "
-                                   + "subsystem#no method RuntimeException Hi There!"
+                                   + "subsystem#no method RuntimeException Hi There! $&>>"
                                    + "\n\tat org.apache.maven.plugin.surefire.booterclient.ForkStarter"
                                    + ".awaitResultsDone(ForkStarter.java:489)"
                 );
@@ -65,23 +63,17 @@ public class MarshallerUnmarshallerTest
     @Test
     public void shouldMarshallAndUnmarshallSameXml() throws Exception
     {
-        FailsafeSummary expected = new FailsafeSummary();
-        expected.setResult( FAILURE );
-        expected.setTimeout( true );
-        expected.setCompleted( 7 );
-        expected.setErrors( 1 );
-        expected.setFailures( 2 );
-        expected.setSkipped( 3 );
-        expected.setFailureMessage( "There was an error in the forked processtest "
-                                            + "subsystem#no method RuntimeException Hi There!"
-                                            + "\n\tat org.apache.maven.plugin.surefire.booterclient.ForkStarter"
-                                            + ".awaitResultsDone(ForkStarter.java:489)"
-        );
+        RunResult expected =
+                new RunResult( 7, 1, 2, 3, 2,
+                                     "There was an error in the forked processtest "
+                                             + "subsystem#no method RuntimeException Hi There! $&>>"
+                                             + "\n\tat org.apache.maven.plugin.surefire.booterclient.ForkStarter"
+                                             + ".awaitResultsDone(ForkStarter.java:489)", true );
 
         File xml = File.createTempFile( "failsafe-summary", ".xml" );
-        JAXB.marshal( expected, UTF_8, xml );
+        FailsafeSummaryXmlUtils.writeSummary( expected, xml, false );
 
-        FailsafeSummary actual = JAXB.unmarshal( xml, FailsafeSummary.class );
+        RunResult actual = FailsafeSummaryXmlUtils.toRunResult( xml );
 
         assertThat( actual.getFailures() )
                 .isEqualTo( expected.getFailures() );
@@ -89,8 +81,8 @@ public class MarshallerUnmarshallerTest
         assertThat( actual.isTimeout() )
                 .isEqualTo( expected.isTimeout() );
 
-        assertThat( actual.getCompleted() )
-                .isEqualTo( expected.getCompleted() );
+        assertThat( actual.getCompletedCount() )
+                .isEqualTo( expected.getCompletedCount() );
 
         assertThat( actual.getErrors() )
                 .isEqualTo( expected.getErrors() );
@@ -101,7 +93,7 @@ public class MarshallerUnmarshallerTest
         assertThat( actual.getSkipped() )
                 .isEqualTo( expected.getSkipped() );
 
-        assertThat( actual.getFailureMessage() )
-                .isEqualTo( expected.getFailureMessage() );
+        assertThat( actual.getFailure() )
+                .isEqualTo( expected.getFailure() );
     }
 }

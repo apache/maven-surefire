@@ -34,7 +34,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.suite.RunResult;
 
-import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.util.Collection;
 
@@ -145,7 +144,9 @@ public class VerifyMojo
 
     /**
      * The character encoding scheme to be applied.
+     * Deprecated since 2.20.1 and used encoding UTF-8 in <tt>failsafe-summary.xml</tt>.
      *
+     * @deprecated since of 2.20.1
      * @noinspection UnusedDeclaration
      */
     @Parameter( property = "encoding", defaultValue = "${project.reporting.outputEncoding}" )
@@ -184,7 +185,7 @@ public class VerifyMojo
                     }
                 }
             }
-            catch ( JAXBException e )
+            catch ( Exception e )
             {
                 throw new MojoExecutionException( e.getMessage(), e );
             }
@@ -208,7 +209,7 @@ public class VerifyMojo
         return consoleLogger;
     }
 
-    private RunResult readSummary( File summaryFile ) throws JAXBException
+    private RunResult readSummary( File summaryFile ) throws Exception
     {
         return FailsafeSummaryXmlUtils.toRunResult( summaryFile );
     }

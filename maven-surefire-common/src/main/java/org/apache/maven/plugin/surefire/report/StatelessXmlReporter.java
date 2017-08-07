@@ -19,7 +19,6 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.shared.utils.io.IOUtil;
 import org.apache.maven.shared.utils.xml.PrettyPrintXMLWriter;
 import org.apache.maven.shared.utils.xml.XMLWriter;
 import org.apache.maven.surefire.report.ReportEntry;
@@ -42,6 +41,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
+import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType;
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
 import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
@@ -239,7 +239,7 @@ public class StatelessXmlReporter
         }
         finally
         {
-            IOUtil.close( fw );
+            closeQuietly( fw );
         }
     }
 

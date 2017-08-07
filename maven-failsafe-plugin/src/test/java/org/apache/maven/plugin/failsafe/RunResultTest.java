@@ -23,12 +23,9 @@ import org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils;
 import org.apache.maven.surefire.suite.RunResult;
 import org.junit.Test;
 
-import javax.xml.bind.JAXBException;
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
 
-import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
@@ -61,35 +58,35 @@ public class RunResultTest
 
     @Test
     public void testSerialization()
-            throws IOException, JAXBException
+            throws Exception
     {
         writeReadCheck( getSimpleAggregate() );
     }
 
     @Test
     public void testFailures()
-            throws IOException, JAXBException
+            throws Exception
     {
         writeReadCheck( new RunResult( 0, 1, 2, 3, "stacktraceHere", false ) );
     }
 
     @Test
     public void testSkipped()
-            throws IOException, JAXBException
+            throws Exception
     {
         writeReadCheck( new RunResult( 3, 2, 1, 0, null, true ) );
     }
 
     @Test
     public void testAppendSerialization()
-            throws IOException, JAXBException
+            throws Exception
     {
         RunResult simpleAggregate = getSimpleAggregate();
         RunResult additional = new RunResult( 2, 1, 2, 2, "msg " + ( (char) 0x0E01 ), true );
 
         File summary = File.createTempFile( "failsafe", "test" );
-        FailsafeSummaryXmlUtils.writeSummary( simpleAggregate, summary, false, UTF_8 );
-        FailsafeSummaryXmlUtils.writeSummary( additional, summary, true, UTF_8 );
+        FailsafeSummaryXmlUtils.writeSummary( simpleAggregate, summary, false );
+        FailsafeSummaryXmlUtils.writeSummary( additional, summary, true );
         RunResult actual = FailsafeSummaryXmlUtils.toRunResult( summary );
         //noinspection ResultOfMethodCallIgnored
         summary.delete();
@@ -132,7 +129,7 @@ public class RunResultTest
     }
 
     private void writeReadCheck( RunResult expected )
-            throws IOException, JAXBException
+            throws Exception
     {
         File tmp = File.createTempFile( "test", "xml" );
         FailsafeSummaryXmlUtils.fromRunResultToFile( expected, tmp );

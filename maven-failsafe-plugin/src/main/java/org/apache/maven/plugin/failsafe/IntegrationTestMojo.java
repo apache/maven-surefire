@@ -27,10 +27,8 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.suite.RunResult;
 
-import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -40,7 +38,6 @@ import java.util.List;
 import java.util.Locale;
 
 import static org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils.writeSummary;
-import static org.apache.maven.shared.utils.ReaderFactory.FILE_ENCODING;
 
 /**
  * Run integration tests using Surefire.
@@ -258,6 +255,9 @@ public class IntegrationTestMojo
 
     /**
      * The character encoding scheme to be applied.
+     * Deprecated since 2.20.1 and used encoding UTF-8 in <tt>failsafe-summary.xml</tt>.
+     *
+     * @deprecated since of 2.20.1
      */
     @Parameter( property = "encoding", defaultValue = "${project.reporting.outputEncoding}" )
     private String encoding;
@@ -390,36 +390,14 @@ public class IntegrationTestMojo
         try
         {
             Object token = getPluginContext().get( FAILSAFE_IN_PROGRESS_CONTEXT_KEY );
-            writeSummary( summary, summaryFile, token != null, toCharset( getEncodingOrDefault() ) );
+            writeSummary( summary, summaryFile, token != null );
         }
-        catch ( IOException e )
-        {
-            throw new MojoExecutionException( e.getMessage(), e );
-        }
-        catch ( JAXBException e )
+        catch ( Exception e )
         {
             throw new MojoExecutionException( e.getMessage(), e );
         }
 
         getPluginContext().put( FAILSAFE_IN_PROGRESS_CONTEXT_KEY, FAILSAFE_IN_PROGRESS_CONTEXT_KEY );
-    }
-
-    private String getEncodingOrDefault()
-    {
-        if ( StringUtils.isEmpty( encoding ) )
-        {
-            getConsoleLogger()
-                    .warning( "File encoding has not been set, using platform encoding "
-                                      + FILE_ENCODING
-                                      + ", i.e. build is platform dependent! The file encoding for reports output files"
-                                      + " should be provided by the POM property ${project.reporting.outputEncoding}."
-            );
-            return FILE_ENCODING;
-        }
-        else
-        {
-            return encoding;
-        }
     }
 
     private boolean isJarArtifact( File artifactFile )

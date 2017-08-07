@@ -89,7 +89,7 @@
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-settings</artifactId>
-      <version>2.0.6</version>
+      <version>${mavenVersion}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -106,6 +106,23 @@
   </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <targetPath>${project.build.outputDirectory}</targetPath>
+        <excludes>
+          <exclude>toolchains.xml</exclude>
+        </excludes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <targetPath>${project.build.directory}/private</targetPath>
+        <includes>
+          <include>toolchains.xml</include>
+        </includes>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <artifactId>maven-help-plugin</artifactId>
@@ -127,11 +144,9 @@
       <plugin>
         <artifactId>maven-invoker-plugin</artifactId>
         <configuration>
-          <extraArtifacts>
-            <extraArtifact>org.apache.maven.surefire:surefire-testng-utils:${project.version}</extraArtifact>
-          </extraArtifacts>
           <localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
           <extraArtifacts>
+            <extraArtifact>org.apache.maven.surefire:surefire-testng-utils:${project.version}</extraArtifact>
             <extraArtifact>org.testng:testng:4.7:jar:jdk15</extraArtifact>
             <extraArtifact>org.testng:testng:5.0.2:jar:jdk15</extraArtifact>
             <extraArtifact>org.testng:testng:5.1:jar:jdk15</extraArtifact>
@@ -173,6 +188,7 @@
             <extraArtifact>junit:junit:4.8.1</extraArtifact>
             <extraArtifact>junit:junit:4.8.2</extraArtifact>
             <extraArtifact>junit:junit:4.11</extraArtifact>
+            <extraArtifact>junit:junit:4.12</extraArtifact>
             <extraArtifact>junit:junit-dep:4.8</extraArtifact>
             <extraArtifact>junit:junit-dep:4.7</extraArtifact>
             <extraArtifact>junit:junit-dep:4.4</extraArtifact>
@@ -184,7 +200,11 @@
             <extraArtifact>org.codehaus.plexus:plexus-utils:1.5.8</extraArtifact>
             <extraArtifact>org.codehaus.plexus:plexus-utils:1.5.15</extraArtifact>
             <extraArtifact>org.mockito:mockito-core:1.8.5</extraArtifact>
+            <extraArtifact>org.powermock:powermock-mockito-release-full:1.6.4:jar:full</extraArtifact>
             <extraArtifact>org.codehaus.plexus:plexus-interpolation:1.12</extraArtifact>
+            <extraArtifact>org.hamcrest:hamcrest-core:1.3</extraArtifact>
+            <extraArtifact>org.hamcrest:hamcrest-library:1.3</extraArtifact>
+            <extraArtifact>org.easytesting:fest-assert:1.4</extraArtifact>
           </extraArtifacts>
         </configuration>
         <executions>

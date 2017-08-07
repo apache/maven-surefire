@@ -19,29 +19,32 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.SystemUtils;
+import org.apache.maven.plugin.surefire.JdkAttributes;
+import org.apache.maven.shared.utils.StringUtils;
+import org.apache.maven.shared.utils.cli.Commandline;
+import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.booter.SurefireBooterForkException;
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Properties;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.SystemUtils;
-import org.apache.maven.shared.utils.StringUtils;
-import org.apache.maven.shared.utils.cli.Commandline;
-import org.apache.maven.surefire.booter.Classpath;
-import org.apache.maven.surefire.booter.SurefireBooterForkException;
-
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class ForkConfigurationTest
-    extends TestCase
 {
-
+    @Test
     public void testCreateCommandLine_UseSystemClassLoaderForkOnce_ShouldConstructManifestOnlyJar()
         throws IOException, SurefireBooterForkException
     {
-        ForkConfiguration config = getForkConfiguration( null, "java" );
+        ForkConfiguration config = getForkConfiguration( (String) null );
         File cpElement = getTempClasspathFile();
 
         Commandline cli =
@@ -51,12 +54,13 @@ public class ForkConfigurationTest
         assertTrue( line.contains( "-jar" ) );
     }
 
+    @Test
     public void testArglineWithNewline()
         throws IOException, SurefireBooterForkException
     {
         // SUREFIRE-657
         File cpElement = getTempClasspathFile();
-        ForkConfiguration forkConfiguration = getForkConfiguration( "abc\ndef", null );
+        ForkConfiguration forkConfiguration = getForkConfiguration( "abc\ndef" );
 
         final Commandline commandLine =
             forkConfiguration.createCommandLine( Collections.singletonList( cpElement.getAbsolutePath() ), false, false,
@@ -64,18 +68,19 @@ public class ForkConfigurationTest
         assertTrue( commandLine.toString().contains( "abc def" ) );
     }
 
+    @Test
     public void testCurrentWorkingDirectoryPropagationIncludingForkNumberExpansion()
         throws IOException, SurefireBooterForkException
     {
         // SUREFIRE-1136
         File baseDir =
             new File( FileUtils.getTempDirectory(), "SUREFIRE-1136-" + RandomStringUtils.randomAlphabetic( 3 ) );
-        baseDir.mkdirs();
+        assertTrue( baseDir.mkdirs() );
         baseDir.deleteOnExit();
 
         File cwd = new File( baseDir, "fork_${surefire.forkNumber}" );
 
-        ForkConfiguration config = getForkConfiguration( null, "java", cwd.getCanonicalFile() );
+        ForkConfiguration config = getForkConfiguration( null, cwd.getCanonicalFile() );
         Commandline commandLine = config.createCommandLine( Collections.<String>emptyList(), true, false, null, 1 );
 
         File forkDirectory = new File( baseDir, "fork_1" );
@@ -84,20 +89,21 @@ public class ForkConfigurationTest
             commandLine.getShell().getWorkingDirectory().getCanonicalPath() ) );
     }
 
+    @Test
     public void testExceptionWhenCurrentDirectoryIsNotRealDirectory()
         throws IOException, SurefireBooterForkException
     {
         // SUREFIRE-1136
         File baseDir =
             new File( FileUtils.getTempDirectory(), "SUREFIRE-1136-" + RandomStringUtils.randomAlphabetic( 3 ) );
-        baseDir.mkdirs();
+        assertTrue( baseDir.mkdirs() );
         baseDir.deleteOnExit();
 
         File cwd = new File( baseDir, "cwd.txt" );
         FileUtils.touch( cwd );
         cwd.deleteOnExit();
 
-        ForkConfiguration config = getForkConfiguration( null, "java", cwd.getCanonicalFile() );
+        ForkConfiguration config = getForkConfiguration( null, cwd.getCanonicalFile() );
 
         try
         {
@@ -114,19 +120,20 @@ public class ForkConfigurationTest
         fail();
     }
 
+    @Test
     public void testExceptionWhenCurrentDirectoryCannotBeCreated()
         throws IOException, SurefireBooterForkException
     {
         // SUREFIRE-1136
         File baseDir =
             new File( FileUtils.getTempDirectory(), "SUREFIRE-1136-" + RandomStringUtils.randomAlphabetic( 3 ) );
-        baseDir.mkdirs();
+        assertTrue( baseDir.mkdirs() );
         baseDir.deleteOnExit();
 
         // NULL is invalid for JDK starting from 1.7.60 - https://github.com/openjdk-mirror/jdk/commit/e5389115f3634d25d101e2dcc71f120d4fd9f72f
         // ? character is invalid on Windows, seems to be imposable to create invalid directory using Java on Linux
         File cwd = new File( baseDir, "?\u0000InvalidDirectoryName" );
-        ForkConfiguration config = getForkConfiguration( null, "java", cwd.getAbsoluteFile() );
+        ForkConfiguration config = getForkConfiguration( null, cwd.getAbsoluteFile() );
 
         try
         {
@@ -152,17 +159,31 @@ public class ForkConfigurationTest
         return cpElement;
     }
 
-    public static ForkConfiguration getForkConfiguration( String argLine, String jvm )
-        throws IOException
+    public static ForkConfiguration getForkConfiguration( File javaExec )
+            throws IOException
     {
-        return getForkConfiguration( argLine, jvm, new File( "." ).getCanonicalFile() );
+        return getForkConfiguration( null, javaExec.getAbsolutePath(), new File( "." ).getCanonicalFile() );
     }
 
-    public static ForkConfiguration getForkConfiguration( String argLine, String jvm, File cwd )
+    public static ForkConfiguration getForkConfiguration( String argLine )
         throws IOException
     {
-        return new ForkConfiguration( Classpath.emptyClasspath(), null, null, jvm, cwd, new Properties(), argLine, null,
-                                      false, 1, false, new Platform() );
+        File jvm = new File( new File( System.getProperty( "java.home" ), "bin" ), "java" );
+        return getForkConfiguration( argLine, jvm.getAbsolutePath(), new File( "." ).getCanonicalFile() );
+    }
+
+    public static ForkConfiguration getForkConfiguration( String argLine, File cwd )
+            throws IOException
+    {
+        File jvm = new File( new File( System.getProperty( "java.home" ), "bin" ), "java" );
+        return getForkConfiguration( argLine, jvm.getAbsolutePath(), cwd );
+    }
+
+    private static ForkConfiguration getForkConfiguration( String argLine, String jvm, File cwd )
+        throws IOException
+    {
+        return new ForkConfiguration( Classpath.emptyClasspath(), null, null, new JdkAttributes( jvm, false ),
+                                            cwd, new Properties(), argLine, null, false, 1, false, new Platform() );
     }
 
     // based on http://stackoverflow.com/questions/2591083/getting-version-of-java-in-runtime
@@ -170,6 +191,6 @@ public class ForkConfigurationTest
     {
         String[] javaVersionElements = System.getProperty( "java.runtime.version" ).split( "\\.|_|-b" );
         return Integer.valueOf( javaVersionElements[1] ) >= major
-            && Integer.valueOf( javaVersionElements[4] ) >= update;
+            && Integer.valueOf( javaVersionElements[3] ) >= update;
     }
 }

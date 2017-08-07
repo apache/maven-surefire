@@ -55,6 +55,12 @@
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-mockito-release-full</artifactId>
+      <classifier>full</classifier>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -85,7 +91,7 @@
           </dependency>
         </dependencies>
         <configuration>
-          <jvm>${test.jre}/bin/java</jvm>
+          <jvm>${jdk.home}/bin/java</jvm>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <includes>
             <include>**/JUnit4SuiteTest.java</include>

@@ -20,9 +20,9 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
+import org.apache.maven.plugin.surefire.JdkAttributes;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
 import org.apache.maven.plugin.surefire.util.Relocator;
-import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ForkedBooter;
 import org.apache.maven.surefire.booter.StartupConfiguration;
@@ -42,6 +42,7 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
+import static org.apache.maven.shared.utils.StringUtils.join;
 
 /**
  * Configuration for forking tests.
@@ -66,7 +67,7 @@ public class ForkConfiguration
 
     private final Classpath bootClasspathConfiguration;
 
-    private final String jvmExecutable;
+    private final JdkAttributes jdk;
 
     private final Properties modelProperties;
 
@@ -86,14 +87,14 @@ public class ForkConfiguration
 
     @SuppressWarnings( "checkstyle:parameternumber" )
     public ForkConfiguration( Classpath bootClasspathConfiguration, File tmpDir, String debugLine,
-                              String jvmExecutable, File workingDirectory, Properties modelProperties, String argLine,
+                              JdkAttributes jdk, File workingDirectory, Properties modelProperties, String argLine,
                               Map<String, String> environmentVariables, boolean debugEnabled, int forkCount,
                               boolean reuseForks, Platform pluginPlatform )
     {
         this.bootClasspathConfiguration = bootClasspathConfiguration;
         this.tempDirectory = tmpDir;
         this.debugLine = debugLine;
-        this.jvmExecutable = jvmExecutable;
+        this.jdk = jdk;
         this.workingDirectory = workingDirectory;
         this.modelProperties = modelProperties;
         this.argLine = argLine;
@@ -131,24 +132,25 @@ public class ForkConfiguration
     }
 
     /**
-     * @param classPath            cla the classpath arguments
-     * @param startupConfiguration The startup configuration
+     * @param classPath            cli the classpath arguments
+     * @param config               The startup configuration
      * @param threadNumber         the thread number, to be the replacement in the argLine   @return A commandline
      * @return CommandLine able to flush entire command going to be sent to forked JVM
      * @throws org.apache.maven.surefire.booter.SurefireBooterForkException
      *          when unable to perform the fork
      */
-    public OutputStreamFlushableCommandline createCommandLine( List<String> classPath,
-                                                               StartupConfiguration startupConfiguration,
+    public OutputStreamFlushableCommandline createCommandLine( List<String> classPath, StartupConfiguration config,
                                                                int threadNumber )
-        throws SurefireBooterForkException
+            throws SurefireBooterForkException
     {
-        return createCommandLine( classPath,
-                                  startupConfiguration.getClassLoaderConfiguration()
-                                      .isManifestOnlyJarRequestedAndUsable(),
-                                  startupConfiguration.isShadefire(), startupConfiguration.isProviderMainClass()
-            ? startupConfiguration.getActualClassName()
-            : ForkedBooter.class.getName(), threadNumber );
+        boolean useJar = config.getClassLoaderConfiguration().isManifestOnlyJarRequestedAndUsable();
+
+        boolean shadefire = config.isShadefire();
+
+        String providerThatHasMainMethod =
+                config.isProviderMainClass() ? config.getActualClassName() : ForkedBooter.class.getName();
+
+        return createCommandLine( classPath, useJar, shadefire, providerThatHasMainMethod, threadNumber );
     }
 
     OutputStreamFlushableCommandline createCommandLine( List<String> classPath, boolean useJar, boolean shadefire,
@@ -157,13 +159,26 @@ public class ForkConfiguration
     {
         OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
 
-        cli.setExecutable( jvmExecutable );
+        cli.setExecutable( jdk.getJvmExecutable() );
 
-        if ( argLine != null )
+        String jvmArgLine =
+                replaceThreadNumberPlaceholder( stripNewLines( replacePropertyExpressions() ), threadNumber );
+
+        if ( jdk.isJava9AtLeast() && !jvmArgLine.contains( "--add-modules" ) )
         {
-            cli.createArg().setLine(
-                   replaceThreadNumberPlaceholder( stripNewLines( replacePropertyExpressions( argLine ) ),
-                                                   threadNumber ) );
+            if ( jvmArgLine.isEmpty() )
+            {
+                jvmArgLine = "--add-modules ALL-SYSTEM";
+            }
+            else
+            {
+                jvmArgLine = "--add-modules ALL-SYSTEM " + jvmArgLine;
+            }
+        }
+
+        if ( !jvmArgLine.isEmpty() )
+        {
+            cli.createArg().setLine( jvmArgLine );
         }
 
         for ( Map.Entry<String, String> entry : environmentVariables.entrySet() )
@@ -192,7 +207,7 @@ public class ForkConfiguration
         }
         else
         {
-            cli.addEnvironment( "CLASSPATH", StringUtils.join( classPath.iterator(), File.pathSeparator ) );
+            cli.addEnvironment( "CLASSPATH", join( classPath.iterator(), File.pathSeparator ) );
 
             final String forkedBooter =
                 providerThatHasMainMethod != null ? providerThatHasMainMethod : ForkedBooter.class.getName();
@@ -235,11 +250,18 @@ public class ForkConfiguration
      *
      * This allows other plugins to modify or set properties with the changes getting picked up by surefire.
      */
-    private String replacePropertyExpressions( String argLine )
+    private String replacePropertyExpressions()
     {
         if ( argLine == null )
         {
-            return null;
+            return "";
+        }
+
+        String resolvedArgLine = argLine.trim();
+
+        if ( resolvedArgLine.isEmpty() )
+        {
+            return "";
         }
 
         for ( final String key : modelProperties.stringPropertyNames() )
@@ -247,11 +269,11 @@ public class ForkConfiguration
             String field = "@{" + key + "}";
             if ( argLine.contains( field ) )
             {
-                argLine = argLine.replace( field, modelProperties.getProperty( key, "" ) );
+                resolvedArgLine = resolvedArgLine.replace( field, modelProperties.getProperty( key, "" ) );
             }
         }
 
-        return argLine;
+        return resolvedArgLine;
     }
 
     /**

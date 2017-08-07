@@ -19,11 +19,10 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.AbstractJigsawIT;
 import org.junit.Test;
 
-import static org.junit.Assume.assumeTrue;
+import java.io.IOException;
 
 @SuppressWarnings( { "javadoc", "checkstyle:javadoctype" } )
 /**
@@ -40,19 +39,19 @@ import static org.junit.Assume.assumeTrue;
  * @since 2.20.1
  */
 public class Surefire1265Java9IT
-        extends SurefireJUnit4IntegrationTestCase
+        extends AbstractJigsawIT
 {
     @Test
-    public void shouldRunInPluginJava9()
+    public void shouldRunInPluginJava9() throws IOException
     {
-        assumeTrue( System.getProperty( "java.specification.version" ).compareTo( "1.8" ) > 0 );
-        unpack()
+        assumeJigsaw()
                 .executeTest()
                 .verifyErrorFree( 2 );
     }
 
-    private SurefireLauncher unpack()
+    @Override
+    protected String getProjectDirectoryName()
     {
-        return unpack( "/surefire-1265" );
+        return "/surefire-1265";
     }
 }

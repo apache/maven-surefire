@@ -66,39 +66,6 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.cxf</groupId>
-        <artifactId>cxf-xjc-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
-          <execution>
-            <id>generate-failsafe-summary</id>
-            <goals>
-              <goal>xsdtojava</goal>
-            </goals>
-            <configuration>
-              <sourceRoot>${project.build.directory}/generated-sources/jaxb</sourceRoot>
-              <xsdOptions>
-                <xsdOption>
-                  <!--
-                  Due to historical reasons and due to both Surefire and Failsafe Plugin have very similar project
-                  pages (mvn site), the Maven Site for both projects is generated upon one common location in
-                  maven-surefire-plugin. The XSD files are located in maven-surefire-plugin project. Do NOT duplicate
-                  the XSD in to maven-failsafe-plugin.
-                  -->
-                  <xsd>../maven-surefire-plugin/src/site/resources/xsd/failsafe-summary.xsd</xsd>
-                  <bindingFile>../maven-surefire-plugin/src/site/resources/xsd/failsafe-summary.xjb</bindingFile>
-                  <packagename>org.apache.maven.plugin.failsafe.xmlsummary</packagename>
-                  <extensionArgs>
-                    <arg>-encoding</arg>
-                    <arg>${project.build.sourceEncoding}</arg>
-                  </extensionArgs>
-                </xsdOption>
-              </xsdOptions>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
         <configuration>
@@ -211,12 +178,17 @@
               <artifactSet>
                 <includes>
                   <include>org.apache.maven.shared:maven-shared-utils</include>
+                  <include>commons-io:commons-io</include>
                 </includes>
               </artifactSet>
               <relocations>
                 <relocation>
                   <pattern>org.apache.maven.shared</pattern>
                   <shadedPattern>org.apache.maven.surefire.shade.org.apache.maven.shared</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.commons.io</pattern>
+                  <shadedPattern>org.apache.maven.surefire.shade.org.apache.commons.io</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>

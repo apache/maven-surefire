@@ -19,16 +19,26 @@ package org.apache.maven.plugin.failsafe.util;
  * under the License.
  */
 
-import org.apache.maven.plugin.failsafe.xmlsummary.ErrorType;
-import org.apache.maven.plugin.failsafe.xmlsummary.FailsafeSummary;
+import org.apache.commons.io.IOUtils;
 import org.apache.maven.surefire.suite.RunResult;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
 
-import javax.xml.bind.JAXBException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.util.Locale;
 
+import static java.lang.Boolean.parseBoolean;
+import static java.lang.Integer.parseInt;
+import static org.apache.commons.lang3.StringEscapeUtils.escapeXml10;
+import static org.apache.commons.lang3.StringEscapeUtils.unescapeXml;
 import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
+import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -36,46 +46,86 @@ import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
  */
 public final class FailsafeSummaryXmlUtils
 {
+    private static final String FAILSAFE_SUMMARY_XML_SCHEMA_LOCATION =
+            "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/failsafe-summary.xsd";
+
+    private static final String FAILSAFE_SUMMARY_XML_NIL_ATTR =
+            " xsi:nil=\"true\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
+
+    private static final String FAILSAFE_SUMMARY_XML_TEMPLATE =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                    + "<failsafe-summary xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
+                    + " xsi:noNamespaceSchemaLocation=\"" + FAILSAFE_SUMMARY_XML_SCHEMA_LOCATION + "\""
+                    + " result=\"%s\" timeout=\"%s\">\n"
+                    + "    <completed>%d</completed>\n"
+                    + "    <errors>%d</errors>\n"
+                    + "    <failures>%d</failures>\n"
+                    + "    <skipped>%d</skipped>\n"
+                    + "    <failureMessage%s>%s</failureMessage>\n"
+                    + "</failsafe-summary>";
+
     private FailsafeSummaryXmlUtils()
     {
         throw new IllegalStateException( "No instantiable constructor." );
     }
 
-    public static RunResult toRunResult( File failsafeSummaryXml ) throws JAXBException
+    public static RunResult toRunResult( File failsafeSummaryXml ) throws Exception
     {
-        FailsafeSummary failsafeSummary = JAXB.unmarshal( failsafeSummaryXml, FailsafeSummary.class );
+        XPathFactory xpathFactory = XPathFactory.newInstance();
+        XPath xpath = xpathFactory.newXPath();
 
-        return new RunResult( failsafeSummary.getCompleted(), failsafeSummary.getErrors(),
-                                    failsafeSummary.getFailures(), failsafeSummary.getSkipped(),
-                                    failsafeSummary.getFailureMessage(), failsafeSummary.isTimeout()
-        );
+        FileInputStream is = new FileInputStream( failsafeSummaryXml );
+
+        try
+        {
+            Node root = (Node) xpath.evaluate( "/", new InputSource( is ), XPathConstants.NODE );
+
+            String completed = xpath.evaluate( "/failsafe-summary/completed", root );
+            String errors = xpath.evaluate( "/failsafe-summary/errors", root );
+            String failures = xpath.evaluate( "/failsafe-summary/failures", root );
+            String skipped = xpath.evaluate( "/failsafe-summary/skipped", root );
+            String failureMessage = xpath.evaluate( "/failsafe-summary/failureMessage", root );
+            String timeout = xpath.evaluate( "/failsafe-summary/@timeout", root );
+
+            return new RunResult( parseInt( completed ), parseInt( errors ), parseInt( failures ), parseInt( skipped ),
+                                        isBlank( failureMessage ) ? null : unescapeXml( failureMessage ),
+                                        parseBoolean( timeout )
+            );
+        }
+        finally
+        {
+            is.close();
+        }
     }
 
     public static void fromRunResultToFile( RunResult fromRunResult, File toFailsafeSummaryXml )
-            throws JAXBException, IOException
+            throws IOException
     {
-        fromRunResultToFile( fromRunResult, toFailsafeSummaryXml, UTF_8 );
+        String failure = fromRunResult.getFailure();
+        String xml = String.format( Locale.ROOT, FAILSAFE_SUMMARY_XML_TEMPLATE,
+                                          fromRunResult.getFailsafeCode(),
+                                          String.valueOf( fromRunResult.isTimeout() ),
+                                          fromRunResult.getCompletedCount(),
+                                          fromRunResult.getErrors(),
+                                          fromRunResult.getFailures(),
+                                          fromRunResult.getSkipped(),
+                                          isBlank( failure ) ? FAILSAFE_SUMMARY_XML_NIL_ATTR : "",
+                                          isBlank( failure ) ? "" : escapeXml10( failure )
+        );
+
+        FileOutputStream os = new FileOutputStream( toFailsafeSummaryXml );
+        try
+        {
+            IOUtils.write( xml, os, UTF_8 );
+        }
+        finally
+        {
+            os.close();
+        }
     }
 
-    public static void fromRunResultToFile( RunResult fromRunResult, File toFailsafeSummaryXml, Charset encoding )
-            throws JAXBException, IOException
-    {
-        FailsafeSummary summary = new FailsafeSummary();
-        summary.setCompleted( fromRunResult.getCompletedCount() );
-        summary.setFailureMessage( fromRunResult.getFailure() );
-        summary.setErrors( fromRunResult.getErrors() );
-        summary.setFailures( fromRunResult.getFailures() );
-        summary.setSkipped( fromRunResult.getSkipped() );
-        summary.setTimeout( fromRunResult.isTimeout() );
-        Integer errorCode = fromRunResult.getFailsafeCode();
-        summary.setResult( errorCode == null ? null : ErrorType.fromValue( String.valueOf( errorCode ) ) );
-
-        JAXB.marshal( summary, encoding, toFailsafeSummaryXml );
-    }
-
-    public static void writeSummary( RunResult mergedSummary, File mergedSummaryFile, boolean inProgress,
-                                     Charset encoding )
-            throws IOException, JAXBException
+    public static void writeSummary( RunResult mergedSummary, File mergedSummaryFile, boolean inProgress )
+            throws Exception
     {
         if ( !mergedSummaryFile.getParentFile().isDirectory() )
         {
@@ -89,6 +139,6 @@ public final class FailsafeSummaryXmlUtils
             mergedSummary = mergedSummary.aggregate( runResult );
         }
 
-        fromRunResultToFile( mergedSummary, mergedSummaryFile, encoding );
+        fromRunResultToFile( mergedSummary, mergedSummaryFile );
     }
 }

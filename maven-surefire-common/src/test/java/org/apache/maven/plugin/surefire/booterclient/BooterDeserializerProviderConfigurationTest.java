@@ -207,7 +207,7 @@ public class BooterDeserializerProviderConfigurationTest
                                                  boolean readTestsFromInStream )
         throws IOException
     {
-        final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration( null, null );
+        final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration( (String) null );
         PropertiesWrapper props = new PropertiesWrapper( new HashMap<String, String>() );
         BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
         Object test;

@@ -77,6 +77,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultScanResult;
 import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.surefire.util.SurefireReflectionException;
+import org.apache.maven.toolchain.DefaultToolchain;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 
@@ -100,13 +101,21 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Thread.currentThread;
+import static java.util.Collections.singletonMap;
 import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
+import static org.apache.commons.lang3.JavaVersion.JAVA_9;
+import static org.apache.commons.lang3.JavaVersion.JAVA_RECENT;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.maven.shared.utils.StringUtils.capitalizeFirstLetter;
 import static org.apache.maven.shared.utils.StringUtils.isEmpty;
 import static org.apache.maven.shared.utils.StringUtils.isNotBlank;
+import static org.apache.maven.shared.utils.StringUtils.isNotEmpty;
 import static org.apache.maven.shared.utils.StringUtils.split;
+import static org.apache.maven.surefire.booter.SystemUtils.endsWithJavaPath;
+import static org.apache.maven.surefire.booter.SystemUtils.isJava9AtLeast;
+import static org.apache.maven.surefire.booter.SystemUtils.toJdkHomeFromJvmExec;
+import static org.apache.maven.surefire.booter.SystemUtils.toJdkVersionFromReleaseFile;
 import static org.apache.maven.surefire.suite.RunResult.failure;
 import static org.apache.maven.surefire.suite.RunResult.noTestsRun;
 import static org.apache.maven.surefire.util.ReflectionUtils.invokeGetter;
@@ -123,6 +132,10 @@ public abstract class AbstractSurefireMojo
     extends AbstractMojo
     implements SurefireExecutionParameters
 {
+    private static final Map<String, String> JAVA_9_MATCHER_OLD_NOTATION = singletonMap( "version", "[1.9,)" );
+
+    private static final Map<String, String> JAVA_9_MATCHER = singletonMap( "version", "[9,)" );
+
     private static final Platform PLATFORM = new Platform();
 
     private static final File SYSTEM_TMP_DIR = new File( System.getProperty( "java.io.tmpdir" ) );
@@ -895,7 +908,7 @@ public abstract class AbstractSurefireMojo
             getConsoleLogger().info( "Toolchain in maven-" + getPluginName() + "-plugin: " + toolchain );
             if ( jvmToUse != null )
             {
-                getConsoleLogger().warning( "Toolchains are ignored, 'executable' parameter is set to " + jvmToUse );
+                getConsoleLogger().warning( "Toolchains are ignored, 'jvm' parameter is set to " + jvmToUse );
             }
         }
 
@@ -1947,7 +1960,7 @@ public abstract class AbstractSurefireMojo
                                                     startupReportConfiguration, consoleLogger );
     }
 
-    protected ForkConfiguration getForkConfiguration()
+    private ForkConfiguration getForkConfiguration() throws MojoFailureException
     {
         File tmpDir = getSurefireTempDir();
 
@@ -2038,24 +2051,59 @@ public abstract class AbstractSurefireMojo
         return debugForkedProcess;
     }
 
-    private String getEffectiveJvm()
+    private JdkAttributes getEffectiveJvm() throws MojoFailureException
     {
-        String jvmToUse = getJvm();
-        if ( toolchain != null && jvmToUse == null )
+        if ( isNotEmpty( jvm ) )
         {
-            jvmToUse = toolchain.findTool( "java" ); //NOI18N
+            File pathToJava = new File( jvm ).getAbsoluteFile();
+            if ( !endsWithJavaPath( pathToJava.getPath() ) )
+            {
+                throw new MojoFailureException( "Given path does not end with java executor \""
+                                                        + pathToJava.getPath() + "\"." );
+            }
+
+            if ( !( pathToJava.isFile()
+                            || "java".equals( pathToJava.getName() ) && pathToJava.getParentFile().isDirectory() ) )
+            {
+                throw new MojoFailureException( "Given path to java executor does not exist \""
+                                                        + pathToJava.getPath() + "\"." );
+            }
+
+            File jdkHome = toJdkHomeFromJvmExec( pathToJava.getPath() );
+            Double version = jdkHome == null ? null : toJdkVersionFromReleaseFile( jdkHome );
+            boolean javaVersion9 = version == null ? isJava9AtLeast( pathToJava.getPath() ) : isJava9AtLeast( version );
+            return new JdkAttributes( pathToJava.getPath(), javaVersion9 );
         }
 
-        if ( isEmpty( jvmToUse ) )
+        if ( toolchain != null )
         {
-            // use the same JVM as the one used to run Maven (the "java.home" one)
-            jvmToUse = System.getProperty( "java.home" ) + File.separator + "bin" + File.separator + "java";
-            getConsoleLogger().debug( "Using JVM: " + jvmToUse );
+            String jvmToUse = toolchain.findTool( "java" );
+            if ( isNotEmpty( jvmToUse ) )
+            {
+                boolean javaVersion9 = false;
+
+                if ( toolchain instanceof DefaultToolchain )
+                {
+                    DefaultToolchain defaultToolchain = (DefaultToolchain) toolchain;
+                    javaVersion9 = defaultToolchain.matchesRequirements( JAVA_9_MATCHER )
+                                             || defaultToolchain.matchesRequirements( JAVA_9_MATCHER_OLD_NOTATION );
+                }
+
+                if ( !javaVersion9 )
+                {
+                    javaVersion9 = isJava9AtLeast( jvmToUse );
+                }
+
+                return new JdkAttributes( jvmToUse, javaVersion9 );
+            }
         }
 
-        return jvmToUse;
+        // use the same JVM as the one used to run Maven (the "java.home" one)
+        String jvmToUse = System.getProperty( "java.home" ) + File.separator + "bin" + File.separator + "java";
+        getConsoleLogger().debug( "Using JVM: " + jvmToUse + " with Java version " + JAVA_RECENT.toString() );
+
+        return new JdkAttributes( jvmToUse, isJavaVersionAtLeast( JAVA_9 ) );
     }
-
 
     private Artifact getSurefireBooterArtifact()
     {
