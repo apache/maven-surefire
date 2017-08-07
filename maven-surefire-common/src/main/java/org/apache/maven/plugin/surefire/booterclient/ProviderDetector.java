@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import org.apache.maven.surefire.spi.ServiceLoader;
+import org.apache.maven.surefire.providerapi.ServiceLoader;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;

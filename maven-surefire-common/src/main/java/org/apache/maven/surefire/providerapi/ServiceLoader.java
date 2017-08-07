@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.spi;
+package org.apache.maven.surefire.providerapi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -36,7 +36,10 @@ import static java.util.Collections.emptySet;
 import static org.apache.maven.surefire.util.ReflectionUtils.getConstructor;
 
 /**
- * SPI loader for Java 1.5.
+ * SPI loader for Surefire/Failsafe should use {@link Thread#getContextClassLoader() current ClassLoader}.
+ * <br>
+ * The {@link java.util.ServiceLoader} embedded in JVM uses
+ * {@link ClassLoader#getSystemClassLoader() System ClassLoader} and cannot be used in Surefire/Failsafe.
  *
  * @since 2.20
  */

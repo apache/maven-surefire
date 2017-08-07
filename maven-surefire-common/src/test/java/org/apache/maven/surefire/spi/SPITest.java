@@ -20,6 +20,7 @@ package org.apache.maven.surefire.spi;
  */
 
 import org.apache.maven.plugin.surefire.booterclient.ProviderDetector;
+import org.apache.maven.surefire.providerapi.ServiceLoader;
 import org.junit.Test;
 
 import java.io.IOException;
