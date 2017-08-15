@@ -4,6 +4,9 @@ pipeline {
     }
     stages {
         stage('Unix Build') {
+            agent {
+                label env.NIX_LABEL
+            }
             tools {
                 maven 'Maven 3.5.0'
                 jdk 'JDK 1.8.0_144'
@@ -13,7 +16,7 @@ pipeline {
                 jacoco changeBuildStatus: false, execPattern: '**/*.exec'
             }
             post {
-                success {
+                always {
                     junit healthScaleFactor: 0.0, allowEmptyResults: true, keepLongStdio: true, testResults: '**/surefire-integration-tests/target/failsafe-reports/**/*.xml,**/surefire-integration-tests/target/surefire-reports/**/*.xml,**/maven-*/target/surefire-reports/**/*.xml,**/surefire-*/target/surefire-reports/**/*.xml,**/common-*/target/surefire-reports/**/*.xml'
                 }
             }
@@ -31,7 +34,7 @@ pipeline {
                 jacoco changeBuildStatus: false, execPattern: '**/*.exec'
             }
             post {
-                success {
+                always {
                     junit healthScaleFactor: 0.0, allowEmptyResults: true, keepLongStdio: true, testResults: '**/surefire-integration-tests/target/failsafe-reports/**/*.xml,**/surefire-integration-tests/target/surefire-reports/**/*.xml,**/maven-*/target/surefire-reports/**/*.xml,**/surefire-*/target/surefire-reports/**/*.xml,**/common-*/target/surefire-reports/**/*.xml'
                 }
             }
