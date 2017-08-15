@@ -10,8 +10,6 @@ pipeline {
             }
             steps {
                 sh 'mvn clean install jacoco:report -B -U -e -fae -V -Prun-its,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084 -Djdk.home=$JDK_9_B181_HOME'
-            }
-            steps {
                 jacoco changeBuildStatus: false, execPattern: '**/*.exec'
             }
             post {
@@ -30,8 +28,6 @@ pipeline {
             }
             steps {
                 bat 'mvn clean install jacoco:report -B -U -e -fae -V -Prun-its,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084 -Djdk.home=%JDK_9_B181_HOME%'
-            }
-            steps {
                 jacoco changeBuildStatus: false, execPattern: '**/*.exec'
             }
             post {
