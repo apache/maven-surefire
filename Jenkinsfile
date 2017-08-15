@@ -5,15 +5,18 @@ pipeline {
     stages {
         stage('Unix Build') {
             tools {
-                maven 'Maven 3.3.9'
-                jdk 'JDK 1.8.0_102'
+                maven 'Maven 3.5.0'
+                jdk 'JDK 1.8.0_144'
             }
             steps {
-                sh 'mvn clean install jacoco:report -B -U -e -fae -V -Prun-its,embedded,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084'
+                sh 'mvn clean install jacoco:report -B -U -e -fae -V -Prun-its,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084 -Djdk.home=$JDK_9_B181_HOME'
+            }
+            stage('JaCoCo') {
+                jacoco changeBuildStatus: false, execPattern: '**/*.exec'
             }
             post {
                 success {
-                    junit '**/target/surefire-reports/**/*.xml,**/target/failsafe-reports/**/*.xml' 
+                    junit healthScaleFactor: 0.0, allowEmptyResults: true, keepLongStdio: true, testResults: '**/surefire-integration-tests/target/failsafe-reports/**/*.xml,**/surefire-integration-tests/target/surefire-reports/**/*.xml,**/maven-*/target/surefire-reports/**/*.xml,**/surefire-*/target/surefire-reports/**/*.xml,**/common-*/target/surefire-reports/**/*.xml'
                 }
             }
         }
@@ -22,15 +25,18 @@ pipeline {
                 label env.WIN_LABEL
             }
             tools {
-                maven 'Maven 3.3.9 (Windows)'
+                maven 'Maven 3.5.0 (Windows)'
                 jdk 'JDK 1.8_121 (Windows Only)'
             }
             steps {
-                bat 'mvn clean install jacoco:report -B -U -e -fae -V -Prun-its,embedded,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084'
+                bat 'mvn clean install jacoco:report -B -U -e -fae -V -Prun-its,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084 -Djdk.home=$JDK_9_B181_HOME'
+            }
+            stage('JaCoCo') {
+                jacoco changeBuildStatus: false, execPattern: '**/*.exec'
             }
             post {
                 success {
-                    junit '**/target/surefire-reports/**/*.xml,**/target/failsafe-reports/**/*.xml' 
+                    junit healthScaleFactor: 0.0, allowEmptyResults: true, keepLongStdio: true, testResults: '**/surefire-integration-tests/target/failsafe-reports/**/*.xml,**/surefire-integration-tests/target/surefire-reports/**/*.xml,**/maven-*/target/surefire-reports/**/*.xml,**/surefire-*/target/surefire-reports/**/*.xml,**/common-*/target/surefire-reports/**/*.xml'
                 }
             }
         }
