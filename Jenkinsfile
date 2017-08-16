@@ -12,7 +12,8 @@ pipeline {
                 jdk 'JDK 1.8.0_144'
             }
             steps {
-                sh "mvn clean install jacoco:report -B -U -e -fae -V -Prun-its,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084 \\\"-Djdk.home=${env.JDK_9_B181_HOME}\\\""
+                sh "mvn clean install jacoco:report -B -U -e -fae -V -Prun-its,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084"
+                //   \\\"-Djdk.home=${env.JDK_9_B181_HOME}\\\"
                 jacoco changeBuildStatus: false, execPattern: '**/*.exec'
             }
             post {
@@ -30,7 +31,8 @@ pipeline {
                 jdk 'JDK 1.8_121 (Windows Only)'
             }
             steps {
-                bat "mvn clean install jacoco:report -B -U -e -fae -V -Prun-its,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084 \\\"-Djdk.home=${env.JDK_9_B181_HOME}\\\""
+                bat "mvn clean install jacoco:report -B -U -e -fae -V -Prun-its,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084"
+                //   \\\"-Djdk.home=${env.JDK_9_B181_HOME}\\\"
                 jacoco changeBuildStatus: false, execPattern: '**/*.exec'
             }
             post {
