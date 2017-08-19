@@ -2638,10 +2638,11 @@ public abstract class AbstractSurefireMojo
         }
 
         public Classpath getProviderClasspath()
-            throws ArtifactResolutionException, ArtifactNotFoundException, ArtifactResolverException
+            throws ArtifactResolutionException, ArtifactNotFoundException
         {
             return dependencyResolver.getProviderClasspath( "surefire-junit-platform",
-                                                            surefireBooterArtifact.getBaseVersion() );
+                                                            surefireBooterArtifact.getBaseVersion(),
+                                                            null );
         }
 
     }
