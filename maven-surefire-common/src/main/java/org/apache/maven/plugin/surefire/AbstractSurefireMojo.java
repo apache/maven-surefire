@@ -1431,12 +1431,12 @@ public abstract class AbstractSurefireMojo
 
     private boolean isJunit47Compatible( Artifact artifact )
     {
-        return dependencyResolver.isWithinVersionSpec( artifact, "[4.7,4.12.0)" );
+        return dependencyResolver.isWithinVersionSpec( artifact, "[4.7,)" );
     }
 
     private boolean isAnyJunit4( Artifact artifact )
     {
-        return dependencyResolver.isWithinVersionSpec( artifact, "[4.0,4.12.0)" );
+        return dependencyResolver.isWithinVersionSpec( artifact, "[4.0,)" );
     }
 
     private boolean isJunitJupiter( Artifact artifact )

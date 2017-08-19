@@ -29,9 +29,9 @@ import org.junit.jupiter.api.Test;
 public class BasicTest
 {
 
-    private boolean setUpCalled = false;
+    private boolean setUpCalled;
 
-    private static boolean tearDownCalled = false;
+    private static boolean tearDownCalled;
 
     @BeforeEach
     public void setUp()
@@ -59,7 +59,7 @@ public class BasicTest
     @AfterAll
     public static void oneTimeTearDown()
     {
-
+        assertTrue( tearDownCalled );
     }
 
 }
