@@ -168,11 +168,11 @@ public class ForkConfiguration
         {
             if ( jvmArgLine.isEmpty() )
             {
-                jvmArgLine = "--add-modules ALL-SYSTEM";
+                jvmArgLine = "--add-modules java.se.ee";
             }
             else
             {
-                jvmArgLine = "--add-modules ALL-SYSTEM " + jvmArgLine;
+                jvmArgLine = "--add-modules java.se.ee " + jvmArgLine;
             }
         }
 
