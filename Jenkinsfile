@@ -1,7 +1,5 @@
 pipeline {
-    agent {
-        label env.NIX_LABEL
-    }
+    agent none
     stages {
         stage('Unix Build') {
             agent {
