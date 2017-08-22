@@ -10,7 +10,7 @@ pipeline {
                 jdk 'JDK 1.8.0_144'
             }
             steps {
-                sh "mvn clean install jacoco:report -B -U -e -fae -V -Prun-its,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084   \\\"-Djdk.home=${tool('JDK 9 b181')}\\\""
+                sh "mvn clean install jacoco:report -B -U -e -fae -V -P run-its,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084   \\\"-Djdk.home=${tool('JDK 9 b181')}\\\""
                 jacoco changeBuildStatus: false, execPattern: '**/*.exec'
             }
             post {
@@ -28,7 +28,7 @@ pipeline {
                 jdk 'JDK 1.8_121 (Windows Only)'
             }
             steps {
-                bat "mvn clean install jacoco:report -B -U -e -fae -V -Prun-its,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084   \\\"-Djdk.home=${tool('JDK 9 b181')}\\\""
+                bat "mvn clean install jacoco:report -B -U -e -fae -V -P run-its,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084   \\\"-Djdk.home=${tool('JDK 9 b181')}\\\""
                 jacoco changeBuildStatus: false, execPattern: '**/*.exec'
             }
             post {
@@ -40,6 +40,6 @@ pipeline {
     }
     options {
         buildDiscarder(logRotator(numToKeepStr:'3'))
-        timeout(time: 3, unit: 'HOURS')
+        timeout(time: 10, unit: 'HOURS')
     }
 }
