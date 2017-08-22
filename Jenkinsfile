@@ -29,7 +29,7 @@ pipeline {
                         }
                         steps {
                             checkout scm
-                            bat "mvn clean install jacoco:report -B -U -e -fae -V -P run-its,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084
+                            bat "mvn clean install jacoco:report -B -U -e -fae -V -P run-its,jenkins -Dsurefire.useFile=false -Dfailsafe.useFile=false -Dintegration-test-port=8084"
                             jacoco changeBuildStatus: false, execPattern: '**/*.exec'
                         }
                         post {
