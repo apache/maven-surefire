@@ -25,15 +25,16 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import junit.framework.TestCase;
+import org.apache.maven.plugin.surefire.runorder.impl.RunOrderLoader;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
-import org.apache.maven.surefire.util.RunOrder;
 
-import junit.framework.TestCase;
+import static org.apache.maven.plugin.surefire.runorder.impl.RunOrderLoader.getRunOrderProvider;
 
 /**
  * @author Kristian Rosenvold
@@ -61,7 +62,7 @@ public class SurefireReflectorTest
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
 
-        RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, new File( "." ) );
+        RunOrderParameters runOrderParameters = new RunOrderParameters( getRunOrderProvider().defaultRunOrder(), new File( "." ) );
         surefireReflector.setRunOrderParameters( foo, runOrderParameters );
         assertTrue( isCalled( foo ) );
 

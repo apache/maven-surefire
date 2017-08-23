@@ -22,8 +22,8 @@ package org.apache.maven.plugin.surefire.booterclient;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-
 import org.apache.maven.plugin.surefire.SurefireProperties;
+import org.apache.maven.plugin.surefire.runorder.impl.RunOrderLoader;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.KeyValueSource;
@@ -37,7 +37,6 @@ import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
-import org.apache.maven.surefire.util.RunOrder;
 
 // CHECKSTYLE_OFF: imports
 import static org.apache.maven.surefire.booter.BooterConstants.*;
@@ -119,7 +118,7 @@ class BooterSerializer
         final RunOrderParameters runOrderParameters = booterConfiguration.getRunOrderParameters();
         if ( runOrderParameters != null )
         {
-            properties.setProperty( RUN_ORDER, RunOrder.asString( runOrderParameters.getRunOrder() ) );
+            properties.setProperty( RUN_ORDER, RunOrderLoader.asString( runOrderParameters.getRunOrders() ) );
             properties.setProperty( RUN_STATISTICS_FILE, runOrderParameters.getRunStatisticsFile() );
         }
 

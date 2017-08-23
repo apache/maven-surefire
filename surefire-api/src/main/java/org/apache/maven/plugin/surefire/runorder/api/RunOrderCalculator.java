@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.util;
+package org.apache.maven.plugin.surefire.runorder.api;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -18,6 +18,8 @@ package org.apache.maven.surefire.util;
  * specific language governing permissions and limitations
  * under the License.
  */
+
+import org.apache.maven.surefire.util.TestsToRun;
 
 /**
  * @author Kristian Rosenvold

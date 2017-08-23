@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.util;
+package org.apache.maven.plugin.surefire.runorder.api;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,9 +21,11 @@ package org.apache.maven.surefire.util;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.apache.maven.plugin.surefire.runorder.impl.DefaultRunOrderCalculator;
 import org.apache.maven.surefire.testset.RunOrderParameters;
 
 import junit.framework.TestCase;
+import org.apache.maven.surefire.util.TestsToRun;
 
 /**
  * @author Kristian Rosenvold

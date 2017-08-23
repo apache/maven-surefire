@@ -21,7 +21,10 @@ package org.apache.maven.surefire.testset;
 
 import java.io.File;
 import java.util.List;
-import org.apache.maven.surefire.util.RunOrder;
+import org.apache.maven.plugin.surefire.runorder.api.RunOrder;
+import org.apache.maven.plugin.surefire.runorder.impl.RunOrderLoader;
+
+import static org.apache.maven.plugin.surefire.runorder.impl.RunOrderLoader.defaultRunOrder;
 
 /**
  * @author Kristian Rosenvold
@@ -41,17 +44,17 @@ public class DirectoryScannerParameters
 
     private final boolean failIfNoTests;
 
-    private final RunOrder[] runOrder;
+    private final RunOrder[] runOrders;
 
     private DirectoryScannerParameters( File testClassesDirectory, List<String> includes, List<String> excludes,
-                                        List<String> specificTests, boolean failIfNoTests, RunOrder[] runOrder )
+                                        List<String> specificTests, boolean failIfNoTests, RunOrder[] runOrders )
     {
         this.testClassesDirectory = testClassesDirectory;
         this.includes = includes;
         this.excludes = excludes;
         this.specificTests = specificTests;
         this.failIfNoTests = failIfNoTests;
-        this.runOrder = runOrder;
+        this.runOrders = runOrders;
     }
 
     public DirectoryScannerParameters( File testClassesDirectory, @Deprecated List<String> includes,
@@ -59,7 +62,7 @@ public class DirectoryScannerParameters
                                        boolean failIfNoTests, String runOrder )
     {
         this( testClassesDirectory, includes, excludes, specificTests, failIfNoTests,
-              runOrder == null ? RunOrder.DEFAULT : RunOrder.valueOfMulti( runOrder ) );
+              runOrder == null ? defaultRunOrder() : RunOrderLoader.runOrdersOf( runOrder ) );
     }
 
     @Deprecated
@@ -110,8 +113,13 @@ public class DirectoryScannerParameters
         return failIfNoTests;
     }
 
-    public RunOrder[] getRunOrder()
+    /**
+     * RunOrder Implementations, as specified on the plugin runOrder parameter.
+     *
+     * @return The RunOrders
+     */
+    public RunOrder[] getRunOrders()
     {
-        return runOrder;
+        return runOrders;
     }
 }

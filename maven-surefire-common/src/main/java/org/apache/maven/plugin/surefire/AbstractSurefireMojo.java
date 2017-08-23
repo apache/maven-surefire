@@ -47,6 +47,8 @@ import org.apache.maven.plugin.surefire.booterclient.Platform;
 import org.apache.maven.plugin.surefire.booterclient.ProviderDetector;
 import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.runorder.api.RunOrder;
+import org.apache.maven.plugin.surefire.runorder.impl.RunOrderLoader;
 import org.apache.maven.plugin.surefire.util.DependencyScanner;
 import org.apache.maven.plugin.surefire.util.DirectoryScanner;
 import org.apache.maven.plugins.annotations.Component;
@@ -75,7 +77,6 @@ import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultScanResult;
-import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.surefire.util.SurefireReflectionException;
 import org.apache.maven.toolchain.DefaultToolchain;
 import org.apache.maven.toolchain.Toolchain;
@@ -107,6 +108,9 @@ import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.JavaVersion.JAVA_RECENT;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
+import static org.apache.maven.plugin.surefire.runorder.impl.RunOrderLoader.defaultRunOrder;
+import static org.apache.maven.plugin.surefire.runorder.model.RunOrderFactory.BALANCED;
+import static org.apache.maven.plugin.surefire.runorder.model.RunOrderFactory.FAILEDFIRST;
 import static org.apache.maven.shared.utils.StringUtils.capitalizeFirstLetter;
 import static org.apache.maven.shared.utils.StringUtils.isEmpty;
 import static org.apache.maven.shared.utils.StringUtils.isNotBlank;
@@ -1530,14 +1534,15 @@ public abstract class AbstractSurefireMojo
     private List<RunOrder> getRunOrders()
     {
         String runOrderString = getRunOrder();
-        RunOrder[] runOrder = runOrderString == null ? RunOrder.DEFAULT : RunOrder.valueOfMulti( runOrderString );
+        RunOrder[] runOrder = runOrderString == null ? defaultRunOrder()
+                : RunOrderLoader.runOrdersOf( runOrderString );
         return Arrays.asList( runOrder );
     }
 
     private boolean requiresRunHistory()
     {
         final List<RunOrder> runOrders = getRunOrders();
-        return runOrders.contains( RunOrder.BALANCED ) || runOrders.contains( RunOrder.FAILEDFIRST );
+        return runOrders.contains( BALANCED ) || runOrders.contains( FAILEDFIRST );
     }
 
     private boolean getEffectiveFailIfNoTests()

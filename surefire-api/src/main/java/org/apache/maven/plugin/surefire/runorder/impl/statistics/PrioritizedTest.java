@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.runorder;
+package org.apache.maven.plugin.surefire.runorder.impl.statistics;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -22,7 +22,7 @@ package org.apache.maven.plugin.surefire.runorder;
 /**
  * @author Kristian Rosenvold
  */
-public class PrioritizedTest
+class PrioritizedTest
 {
     private final Class<?> clazz;
 
