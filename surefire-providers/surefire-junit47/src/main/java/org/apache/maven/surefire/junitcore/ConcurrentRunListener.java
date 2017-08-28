@@ -184,7 +184,7 @@ public abstract class ConcurrentRunListener
 
     protected abstract void checkIfTestSetCanBeReported( TestSet testSetForTest );
 
-    TestSet getTestSet( ReportEntry description )
+    private TestSet getTestSet( ReportEntry description )
     {
         return classMethodCounts.get( description.getSourceName() );
     }

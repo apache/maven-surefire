@@ -79,7 +79,6 @@ public class MockReporter
     {
         events.add( TEST_COMPLETED );
         testSucceeded.incrementAndGet();
-
     }
 
     @Override
@@ -126,4 +125,8 @@ public class MockReporter
     {
     }
 
+    public boolean containsNotification( String event )
+    {
+        return events.contains( event );
+    }
 }

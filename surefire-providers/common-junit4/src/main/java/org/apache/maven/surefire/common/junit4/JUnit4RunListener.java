@@ -86,8 +86,14 @@ public class JUnit4RunListener
     public void testStarted( Description description )
         throws Exception
     {
-        reporter.testStarting( createReportEntry( description ) );
-        failureFlag.remove();
+        try
+        {
+            reporter.testStarting( createReportEntry( description ) );
+        }
+        finally
+        {
+            failureFlag.remove();
+        }
     }
 
     /**
@@ -100,34 +106,47 @@ public class JUnit4RunListener
     public void testFailure( Failure failure )
         throws Exception
     {
-        String testHeader = failure.getTestHeader();
-        if ( isInsaneJunitNullString( testHeader ) )
+        try
         {
-            testHeader = "Failure when constructing test";
+            String testHeader = failure.getTestHeader();
+            if ( isInsaneJunitNullString( testHeader ) )
+            {
+                testHeader = "Failure when constructing test";
+            }
+
+            String testClassName = getClassName( failure.getDescription() );
+            StackTraceWriter stackTrace = createStackTraceWriter( failure );
+
+            ReportEntry report = withException( testClassName, testHeader, stackTrace );
+
+            if ( failure.getException() instanceof AssertionError )
+            {
+                reporter.testFailed( report );
+            }
+            else
+            {
+                reporter.testError( report );
+            }
         }
-
-        ReportEntry report =
-            withException( getClassName( failure.getDescription() ), testHeader, createStackTraceWriter( failure ) );
-
-        if ( failure.getException() instanceof AssertionError )
+        finally
         {
-            reporter.testFailed( report );
+            failureFlag.set( true );
         }
-        else
-        {
-            reporter.testError( report );
-        }
-
-        failureFlag.set( true );
     }
 
     @SuppressWarnings( "UnusedDeclaration" )
     public void testAssumptionFailure( Failure failure )
     {
-        Description desc = failure.getDescription();
-        String test = getClassName( desc );
-        reporter.testAssumptionFailure( assumption( test, desc.getDisplayName(), failure.getMessage() ) );
-        failureFlag.set( true );
+        try
+        {
+            Description desc = failure.getDescription();
+            String test = getClassName( desc );
+            reporter.testAssumptionFailure( assumption( test, desc.getDisplayName(), failure.getMessage() ) );
+        }
+        finally
+        {
+            failureFlag.set( true );
+        }
     }
 
     /**

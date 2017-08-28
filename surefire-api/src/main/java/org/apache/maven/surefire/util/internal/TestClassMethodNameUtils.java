@@ -51,6 +51,6 @@ public final class TestClassMethodNameUtils
     public static String extractMethodName( String displayName )
     {
         Matcher m = METHOD_CLASS_PATTERN.matcher( displayName );
-        return m.matches() ? m.group( 1 ) : null;
+        return m.matches() ? m.group( 1 ) : displayName;
     }
 }

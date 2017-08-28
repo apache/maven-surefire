@@ -23,11 +23,9 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.TestSetReportEntry;
-import org.junit.runner.Description;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -42,7 +40,7 @@ public class TestSet
 {
     private static final InheritableThreadLocal<TestSet> TEST_SET = new InheritableThreadLocal<TestSet>();
 
-    private final Description testSetDescription;
+    private final String testClassName;
 
     private final Collection<TestMethod> testMethods = new ConcurrentLinkedQueue<TestMethod>();
 
@@ -57,9 +55,9 @@ public class TestSet
 
     private volatile boolean allScheduled;
 
-    public TestSet( Description testSetDescription )
+    public TestSet( String testClassName )
     {
-        this.testSetDescription = testSetDescription;
+        this.testClassName = testClassName;
     }
 
     public void replay( RunListener target )
@@ -122,19 +120,7 @@ public class TestSet
 
     private TestSetReportEntry createReportEntry( Integer elapsed, Map<String, String> systemProps )
     {
-        final String className = testSetDescription.getClassName();
-        final boolean isJunit3 = className == null;
-        final String classNameToUse;
-        if ( isJunit3 )
-        {
-            List<Description> children = testSetDescription.getChildren();
-            classNameToUse = children.isEmpty() ? testSetDescription.toString() : children.get( 0 ).getClassName();
-        }
-        else
-        {
-            classNameToUse = className;
-        }
-        return new SimpleReportEntry( classNameToUse, classNameToUse, null, elapsed, systemProps );
+        return new SimpleReportEntry( testClassName, testClassName, null, elapsed, systemProps );
     }
 
     public void incrementTestMethodCount()

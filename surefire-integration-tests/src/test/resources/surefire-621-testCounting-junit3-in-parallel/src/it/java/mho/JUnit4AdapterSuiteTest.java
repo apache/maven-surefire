@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junitcore;
+package mho;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,24 +19,21 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.SimpleReportEntry;
+import junit.framework.JUnit4TestAdapter;
+import junit.framework.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
-import junit.framework.TestCase;
-
-/**
- * @author Kristian Rosenvold
- */
-public class TestMethodTest
-    extends TestCase
+@Suite.SuiteClasses( {
+    MySuiteTest1.class,
+    MySuiteTest2.class,
+    MySuiteTest3.class
+} )
+@RunWith( Suite.class )
+public class JUnit4AdapterSuiteTest
 {
-    public void testTestFailure()
+    public static Test suite()
     {
-        ReportEntry reportEntry = new SimpleReportEntry( "a", "b" );
-        TestMethod testMethod = new TestMethod( reportEntry, new TestSet( TestMethodTest.class.getName() ) );
-        testMethod.testFailure( reportEntry );
-        final int elapsed = testMethod.getElapsed();
-        assertTrue( elapsed >= 0 );
-        assertTrue( elapsed < 100000 );
+        return new JUnit4TestAdapter( JUnit4AdapterSuiteTest.class );
     }
 }

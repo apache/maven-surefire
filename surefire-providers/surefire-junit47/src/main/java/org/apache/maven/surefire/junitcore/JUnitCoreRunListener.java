@@ -25,11 +25,8 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
-import org.junit.runner.RunWith;
 import org.junit.runner.notification.Failure;
-import org.junit.runners.Parameterized;
 
-import java.lang.annotation.Annotation;
 import java.util.Map;
 
 /**
@@ -73,60 +70,52 @@ public class JUnitCoreRunListener
     public void testRunFinished( Result result )
         throws Exception
     {
-        reporter.testSetCompleted( null );
+        try
+        {
+            reporter.testSetCompleted( null );
+        }
+        finally
+        {
+            classMethodCounts.clear();
+        }
     }
 
     private void fillTestCountMap( Description testDesc )
     {
-        TestSet testSet = new TestSet( testDesc );
-
-        String itemTestClassName =
-                isParameterizedRunner( testDesc ) ? testDesc.getClassName() : asSuiteRunner( testDesc, testSet );
-
-        if ( itemTestClassName != null )
+        for ( Description child : testDesc.getChildren() )
         {
-            classMethodCounts.put( itemTestClassName, testSet );
-        }
-    }
-
-    private String asSuiteRunner( Description description, TestSet testSet )
-    {
-        String itemTestClassName = null;
-        for ( Description child : description.getChildren() )
-        {
-            if ( !child.isTest() )
+            if ( !asTestLeaf( child ) )
             {
                 fillTestCountMap( child );
             }
-            else
+        }
+    }
+
+    private boolean asTestLeaf( Description description )
+    {
+        if ( description.isTest() )
+        {
+            final String testClassName = extractDescriptionClassName( description );
+            if ( testClassName != null )
             {
-                if ( extractDescriptionMethodName( child ) != null )
+                final TestSet testSet;
+                if ( classMethodCounts.containsKey( testClassName ) )
                 {
-                    testSet.incrementTestMethodCount();
-                    if ( itemTestClassName == null )
-                    {
-                        itemTestClassName = extractDescriptionClassName( child );
-                    }
+                    testSet = classMethodCounts.get( testClassName );
                 }
                 else
                 {
-                    classMethodCounts.put( extractDescriptionClassName( child ), new TestSet( child ) );
+                    testSet = new TestSet( testClassName );
+                    classMethodCounts.put( testClassName, testSet );
                 }
+                testSet.incrementTestMethodCount();
             }
+            return true;
         }
-        return itemTestClassName;
-    }
-
-    private static boolean isParameterizedRunner( Description description )
-    {
-        for ( Annotation ann : description.getAnnotations() )
+        else
         {
-            if ( ann.annotationType() == RunWith.class )
-            {
-                return Parameterized.class.isAssignableFrom( ( (RunWith) ann ).value() );
-            }
+            return false;
         }
-        return false;
     }
 
     @Override
