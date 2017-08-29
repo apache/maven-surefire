@@ -19,9 +19,7 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
 /**
@@ -32,13 +30,10 @@ import org.junit.Test;
 public class Surefire569RunTestFromDependencyJarsIT
 	extends	SurefireJUnit4IntegrationTestCase {
 
-	@Test
-	public void shouldScanAndRunTestsInDependencyJars() throws Exception {
-		SurefireLauncher launcher = unpack( "surefire-569-RunTestFromDependencyJars" );
-		launcher.addGoal("test").addGoal("install");
-		launcher.executeCurrentGoals();
-
-		OutputValidator module1 = launcher.getSubProjectValidator("module1");
-		module1.assertTestSuiteResults(1, 0, 0, 0);
-	}
+    @Test
+    public void shouldScanAndRunTestsInDependencyJars() throws Exception {
+        unpack( "surefire-569-RunTestFromDependencyJars/testjar", "testjar" ).executeInstall();
+        unpack( "surefire-569-RunTestFromDependencyJars/module1", "module1" ).executeTest()
+                .assertTestSuiteResults(1, 0, 0, 0);
+    }
 }

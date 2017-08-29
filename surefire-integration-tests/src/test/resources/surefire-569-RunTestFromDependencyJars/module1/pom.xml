@@ -4,14 +4,12 @@
 
     <parent>
         <groupId>org.apache.maven.surefire</groupId>
-        <artifactId>surefire-569-RunTestFromDependencyJars</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../</relativePath>
+        <artifactId>it-parent</artifactId>
+        <version>1.0</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.apache.maven.plugins.surefire.dependency-jar</groupId>
-    <artifactId>module1</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>surefire-569-module1</artifactId>
 
     <dependencies>
         <dependency>
@@ -23,8 +21,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.maven.plugins.surefire.dependency-jar</groupId>
-            <artifactId>testjar</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>surefire-569-testjar</artifactId>
             <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
@@ -41,7 +39,7 @@
                         <include>**/*A*.java</include>
                     </includes>
                     <dependenciesToScan>
-                        <dependency>org.apache.maven.plugins.surefire.dependency-jar:testjar</dependency>
+                        <dependency>${project.groupId}:surefire-569-testjar</dependency>
                     </dependenciesToScan>
                 </configuration>
             </plugin>
