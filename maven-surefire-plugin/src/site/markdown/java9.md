@@ -23,7 +23,7 @@ Java 9 in JAVA_HOME
     $ export JAVA_HOME=/path/to/jdk9
     $ mvn test
 
-The plugin will automatically add `--add-modules ALL-SYSTEM` on JVM argument in CLI (unless already specified by user)
+The plugin will automatically add `--add-modules java.se.ee` on JVM argument in CLI (unless already specified by user)
 and all Java 9 API is provided to run your tests.
 
 
