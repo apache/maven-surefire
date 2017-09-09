@@ -137,5 +137,24 @@ under the License.
         </p>
       </answer>
     </faq>
+    <faq id="corruptedstream">
+      <question>Corrupted STDOUT by directly writing to native stream in forked JVM</question>
+      <answer>
+        <p>
+        If your tests use native library which prints to STDOUT this warning message appears because the library
+        corrupted the channel used by the plugin in order to transmit events with test status back to Maven process.
+        It would be even worse if you override the Java stream by <em>System.setOut</em> because the stream is also
+        supposed to be corrupted but the Maven will never see the tests finished and build may hang.
+        <br/>
+        This warning message appears if you use <em>FileDescriptor.out</em> or JVM prints GC summary.
+        <br/>
+        In that case the warning is printed
+        <em>"Corrupted STDOUT by directly writing to native stream in forked JVM"</em>, and a dump file can be found
+        in Reports directory.
+        <br/>
+        If debug level is enabled then messages of corrupted stream appear in the console.
+        </p>
+      </answer>
+    </faq>
   </part>
 </faqs>

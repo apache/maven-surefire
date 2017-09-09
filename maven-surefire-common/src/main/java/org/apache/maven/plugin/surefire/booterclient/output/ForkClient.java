@@ -42,6 +42,7 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.lang.Integer.decode;
@@ -101,23 +102,35 @@ public class ForkClient
 
     private final ConsoleLogger log;
 
+    private final boolean debug;
+
+    /**
+     * prevents from printing same warning
+     */
+    private final AtomicBoolean printedErrorStream;
+
+    /**
+     * Used by single Thread started by {@link ThreadedStreamConsumer} and therefore does not need to be volatile.
+     */
     private RunListener testSetReporter;
 
+    /**
+     * Written by one Thread and read by another: Main Thread and ForkStarter's Thread.
+     */
     private volatile boolean saidGoodBye;
 
     private volatile StackTraceWriter errorInFork;
 
     private volatile int forkNumber;
 
-    // prevents from printing same warning
-    private boolean printedErrorStream;
-
-    public ForkClient( DefaultReporterFactory defaultReporterFactory,
-                       NotifiableTestStream notifiableTestStream, ConsoleLogger log )
+    public ForkClient( DefaultReporterFactory defaultReporterFactory, NotifiableTestStream notifiableTestStream,
+                       ConsoleLogger log, boolean debug, AtomicBoolean printedErrorStream )
     {
         this.defaultReporterFactory = defaultReporterFactory;
         this.notifiableTestStream = notifiableTestStream;
         this.log = log;
+        this.debug = debug;
+        this.printedErrorStream = printedErrorStream;
     }
 
     protected void stopOnNextTest()
@@ -304,18 +317,27 @@ public class ForkClient
     {
         if ( event == null || !event.contains( PRINTABLE_JVM_NATIVE_STREAM ) )
         {
-            final String msg = "Corrupted stdin stream in forked JVM " + forkNumber + ".";
-            final InPluginProcessDumpSingleton util = InPluginProcessDumpSingleton.getSingleton();
-            final File dump =
+            String msg = "Corrupted STDOUT by directly writing to native stream in forked JVM " + forkNumber + ".";
+
+            InPluginProcessDumpSingleton util = InPluginProcessDumpSingleton.getSingleton();
+            File dump =
                     e == null
                     ? util.dumpText( msg + " Stream '" + event + "'.", defaultReporterFactory, forkNumber )
                     : util.dumpException( e, msg + " Stream '" + event + "'.", defaultReporterFactory, forkNumber );
 
-            if ( !printedErrorStream )
+            if ( printedErrorStream.compareAndSet( false, true ) )
             {
-                printedErrorStream = true;
-                log.warning( msg + " See the dump file " + dump.getAbsolutePath() );
+                log.warning( msg + " See FAQ web page and the dump file " + dump.getAbsolutePath() );
             }
+
+            if ( debug && event != null )
+            {
+                log.debug( event );
+            }
+        }
+        else if ( debug )
+        {
+            log.debug( event );
         }
         else
         {

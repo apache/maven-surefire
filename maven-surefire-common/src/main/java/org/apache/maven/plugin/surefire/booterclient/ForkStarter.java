@@ -69,6 +69,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.StrictMath.min;
@@ -269,7 +270,8 @@ public class ForkStarter
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
         PropertiesWrapper props = new PropertiesWrapper( providerProperties );
         TestLessInputStream stream = builder.build();
-        ForkClient forkClient = new ForkClient( forkedReporterFactory, stream, log );
+        ForkClient forkClient = new ForkClient( forkedReporterFactory, stream, log, forkConfiguration.isDebug(),
+                new AtomicBoolean() );
         Thread shutdown = createImmediateShutdownHookThread( builder, providerConfiguration.getShutdown() );
         ScheduledFuture<?> ping = triggerPingTimerForShutdown( builder );
         try
@@ -334,7 +336,8 @@ public class ForkStarter
             addShutDownHook( shutdown );
             int failFastCount = providerConfiguration.getSkipAfterFailureCount();
             final AtomicInteger notifyStreamsToSkipTestsJustNow = new AtomicInteger( failFastCount );
-            Collection<Future<RunResult>> results = new ArrayList<Future<RunResult>>( forkCount );
+            final Collection<Future<RunResult>> results = new ArrayList<Future<RunResult>>( forkCount );
+            final AtomicBoolean printedErrorStream = new AtomicBoolean();
             for ( final TestProvidingInputStream testProvidingInputStream : testStreams )
             {
                 Callable<RunResult> pf = new Callable<RunResult>()
@@ -345,7 +348,8 @@ public class ForkStarter
                     {
                         DefaultReporterFactory reporter = new DefaultReporterFactory( startupReportConfiguration, log );
                         defaultReporterFactories.add( reporter );
-                        ForkClient forkClient = new ForkClient( reporter, testProvidingInputStream, log )
+                        ForkClient forkClient = new ForkClient( reporter, testProvidingInputStream, log,
+                                forkConfiguration.isDebug(), printedErrorStream )
                         {
                             @Override
                             protected void stopOnNextTest()
@@ -397,6 +401,7 @@ public class ForkStarter
             addShutDownHook( shutdown );
             int failFastCount = providerConfiguration.getSkipAfterFailureCount();
             final AtomicInteger notifyStreamsToSkipTestsJustNow = new AtomicInteger( failFastCount );
+            final AtomicBoolean printedErrorStream = new AtomicBoolean();
             for ( final Object testSet : getSuitesIterator() )
             {
                 Callable<RunResult> pf = new Callable<RunResult>()
@@ -408,8 +413,8 @@ public class ForkStarter
                         DefaultReporterFactory forkedReporterFactory =
                             new DefaultReporterFactory( startupReportConfiguration, log );
                         defaultReporterFactories.add( forkedReporterFactory );
-                        ForkClient forkClient =
-                                new ForkClient( forkedReporterFactory, builder.getImmediateCommands(), log )
+                        ForkClient forkClient = new ForkClient( forkedReporterFactory, builder.getImmediateCommands(),
+                                log, forkConfiguration.isDebug(), printedErrorStream )
                         {
                             @Override
                             protected void stopOnNextTest()
