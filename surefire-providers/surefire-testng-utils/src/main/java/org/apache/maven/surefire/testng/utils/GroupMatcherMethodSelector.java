@@ -79,7 +79,7 @@ public class GroupMatcherMethodSelector
         {
             AndGroupMatcher matcher = new AndGroupMatcher();
             GroupMatcher in = null;
-            if ( groups != null && groups.trim().length() > 0 )
+            if ( groups != null && !groups.trim().isEmpty() )
             {
                 in = new GroupMatcherParser( groups ).parse();
             }
@@ -90,7 +90,7 @@ public class GroupMatcherMethodSelector
             }
 
             GroupMatcher ex = null;
-            if ( excludedGroups != null && excludedGroups.trim().length() > 0 )
+            if ( excludedGroups != null && !excludedGroups.trim().isEmpty() )
             {
                 ex = new GroupMatcherParser( excludedGroups ).parse();
             }

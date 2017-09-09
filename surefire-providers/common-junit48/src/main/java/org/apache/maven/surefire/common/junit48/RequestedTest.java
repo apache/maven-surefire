@@ -59,7 +59,7 @@ final class RequestedTest
     public String describe()
     {
         String description = test.toString();
-        return description.length() == 0 ? "*" : description;
+        return description.isEmpty() ? "*" : description;
     }
 
     @Override

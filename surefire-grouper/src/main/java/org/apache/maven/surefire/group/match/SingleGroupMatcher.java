@@ -111,7 +111,7 @@ public class SingleGroupMatcher
     {
         for ( String cat : cats )
         {
-            if ( cat == null || cat.trim().length() < 1 )
+            if ( cat == null || cat.trim().isEmpty() )
             {
                 continue;
             }

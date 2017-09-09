@@ -1307,7 +1307,7 @@ public abstract class AbstractSurefireMojo
 
     protected boolean isAnyConcurrencySelected()
     {
-        return this.getParallel() != null && this.getParallel().trim().length() > 0;
+        return getParallel() != null && !getParallel().trim().isEmpty();
     }
 
     protected boolean isAnyGroupsSelected()
@@ -1869,7 +1869,7 @@ public abstract class AbstractSurefireMojo
             if ( item != null )
             {
                 item = item.trim();
-                if ( item.length() != 0 )
+                if ( !item.isEmpty() )
                 {
                     result.add( item );
                 }

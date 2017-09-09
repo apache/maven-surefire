@@ -369,7 +369,7 @@ public class ForkingRunListener
 
     private static void nullableEncoding( StringBuilder stringBuilder, String source )
     {
-        if ( source == null || source.length() == 0 )
+        if ( source == null || source.isEmpty() )
         {
             stringBuilder.append( "null" );
         }

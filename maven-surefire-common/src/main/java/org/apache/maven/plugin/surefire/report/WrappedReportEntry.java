@@ -147,7 +147,7 @@ public class WrappedReportEntry
 
     public String getReportName( String suffix )
     {
-        return suffix != null && suffix.length() > 0 ? getReportName() + "(" + suffix + ")" : getReportName();
+        return suffix != null && !suffix.isEmpty() ? getReportName() + "(" + suffix + ")" : getReportName();
     }
 
     public String getOutput( boolean trimStackTrace )

@@ -84,7 +84,7 @@ public class Classpath implements Iterable<String>
         for ( String element : elements )
         {
             element = element.trim();
-            if ( element.length() != 0 )
+            if ( !element.isEmpty() )
             {
                 newCp.add( element );
             }

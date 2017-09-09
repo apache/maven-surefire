@@ -333,7 +333,7 @@ public class StatelessXmlReporter
         }
         if ( report.getSourceName() != null )
         {
-            if ( reportNameSuffix != null && reportNameSuffix.length() > 0 )
+            if ( reportNameSuffix != null && !reportNameSuffix.isEmpty() )
             {
                 ppw.addAttribute( "classname", report.getSourceName() + "(" + reportNameSuffix + ")" );
             }
@@ -379,7 +379,7 @@ public class StatelessXmlReporter
 
         String stackTrace = report.getStackTrace( trimStackTrace );
 
-        if ( report.getMessage() != null && report.getMessage().length() > 0 )
+        if ( report.getMessage() != null && !report.getMessage().isEmpty() )
         {
             ppw.addAttribute( "message", extraEscape( report.getMessage(), true ) );
         }
