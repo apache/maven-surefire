@@ -61,8 +61,7 @@ public class Foo
 
 
     /**
-     * @return true if it has been callsed
-     * @noinspection UnusedDeclaration
+     * @return true if it has been called
      */
     public Boolean isCalled()
     {

@@ -121,9 +121,6 @@ public class JUnit3TestCheckerTest
 
     public static class NotValidTest
     {
-        /**
-         * @noinspection UnusedDeclaration
-         */
         public void testSomething()
         {
         }
@@ -132,9 +129,6 @@ public class JUnit3TestCheckerTest
     public abstract static class BaseClassWithTest
         extends TestCase
     {
-        /**
-         * @noinspection UnusedDeclaration
-         */
         public void testWeAreAlsoATest()
         {
         }

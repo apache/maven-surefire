@@ -152,9 +152,6 @@ public class SurefireReflector
 
     }
 
-    /**
-     * @noinspection UnusedDeclaration
-     */
     class ClassLoaderProxy
         implements InvocationHandler
     {
@@ -162,7 +159,6 @@ public class SurefireReflector
 
         /**
          * @param delegate a target
-         * @noinspection UnusedDeclaration
          */
         public ClassLoaderProxy( Object delegate )
         {

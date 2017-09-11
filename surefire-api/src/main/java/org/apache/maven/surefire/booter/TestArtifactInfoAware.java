@@ -23,7 +23,6 @@ import org.apache.maven.surefire.testset.TestArtifactInfo;
 
 /**
  * @author Kristian Rosenvold
- * @noinspection UnusedDeclaration
  */
 interface TestArtifactInfoAware
 {

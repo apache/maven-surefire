@@ -23,7 +23,6 @@ import org.apache.maven.surefire.testset.RunOrderParameters;
 
 /**
  * @author Kristian Rosenvold
- * @noinspection UnusedDeclaration
  */
 interface RunOrderParametersAware
 {

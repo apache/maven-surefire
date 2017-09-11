@@ -119,16 +119,12 @@ public class VerifyMojo
 
     /**
      * The summary file to read integration test results from.
-     *
-     * @noinspection UnusedDeclaration
      */
     @Parameter( defaultValue = "${project.build.directory}/failsafe-reports/failsafe-summary.xml", required = true )
     private File summaryFile;
 
     /**
      * Additional summary files to read integration test results from.
-     *
-     * @noinspection UnusedDeclaration, MismatchedReadAndWriteOfArray
      * @since 2.6
      */
     @Parameter
@@ -147,7 +143,6 @@ public class VerifyMojo
      * Deprecated since 2.20.1 and used encoding UTF-8 in <tt>failsafe-summary.xml</tt>.
      *
      * @deprecated since of 2.20.1
-     * @noinspection UnusedDeclaration
      */
     @Parameter( property = "encoding", defaultValue = "${project.reporting.outputEncoding}" )
     private String encoding;

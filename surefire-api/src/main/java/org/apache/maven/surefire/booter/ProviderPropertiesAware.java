@@ -23,7 +23,6 @@ import java.util.Map;
 
 /**
  * @author Kristian Rosenvold
- * @noinspection UnusedDeclaration
  */
 interface ProviderPropertiesAware
 {

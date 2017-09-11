@@ -23,7 +23,6 @@ import org.apache.maven.surefire.report.ReporterConfiguration;
 
 /**
  * @author Kristian Rosenvold
- * @noinspection UnusedDeclaration
  */
 interface ReporterConfigurationAware
 {
