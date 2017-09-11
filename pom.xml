@@ -23,7 +23,7 @@
   <parent>
     <artifactId>maven-parent</artifactId>
     <groupId>org.apache.maven</groupId>
-    <version>26</version>
+    <version>30</version>
     <relativePath>../pom/maven/pom.xml</relativePath>
   </parent>
 
@@ -86,8 +86,6 @@
   </distributionManagement>
 
   <properties>
-    <maven.compiler.source>1.6</maven.compiler.source>
-    <maven.compiler.target>1.6</maven.compiler.target>
     <mavenVersion>2.2.1</mavenVersion>
     <!-- <shadedVersion>2.12.4</shadedVersion> commented out due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
     <mavenPluginPluginVersion>3.3</mavenPluginPluginVersion>
@@ -434,6 +432,11 @@
               <include>**/surefire/**/*</include>
             </includes>
           </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.4</version>
         </plugin>
       </plugins>
     </pluginManagement>
