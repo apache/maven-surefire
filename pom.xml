@@ -403,6 +403,7 @@
           <configuration>
             <autoVersionSubmodules>true</autoVersionSubmodules>
             <preparationGoals>clean install</preparationGoals>
+            <commitByProject>true</commitByProject>
           </configuration>
         </plugin>
         <plugin>
