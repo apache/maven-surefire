@@ -53,29 +53,35 @@ public class TestSuiteXmlParserTest
     {
         consoleLogger = new ConsoleLogger()
         {
+            @Override
             public void debug( String message )
             {
             }
 
+            @Override
             public void info( String message )
             {
             }
 
+            @Override
             public void warning( String message )
             {
                 loggedErrors.add( message );
             }
 
+            @Override
             public void error( String message )
             {
                 loggedErrors.add( message );
             }
 
+            @Override
             public void error( String message, Throwable t )
             {
                 loggedErrors.add( message );
             }
 
+            @Override
             public void error( Throwable t )
             {
                 loggedErrors.add( t.getLocalizedMessage() );

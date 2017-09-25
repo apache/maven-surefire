@@ -35,11 +35,12 @@ import static java.util.Collections.singleton;
 import static org.apache.maven.surefire.testset.ResolvedTest.Type.CLASS;
 import static org.apache.maven.surefire.testset.ResolvedTest.Type.METHOD;
 
+// TODO In Surefire 3.0 see SUREFIRE-1309 and use normal fully qualified class name regex instead.
 /**
  * Resolved multi pattern filter e.g. -Dtest=MyTest#test,!AnotherTest#otherTest into an object model
- * composed of included and excluded tests.<br/>
+ * composed of included and excluded tests.<br>
  * The methods {@link #shouldRun(String, String)} are filters easily used in JUnit filter or TestNG.
- * This class is independent of JUnit and TestNG API.<br/>
+ * This class is independent of JUnit and TestNG API.<br>
  * It is accessed by Java Reflection API in {@link org.apache.maven.surefire.booter.SurefireReflector}
  * using specific ClassLoader.
  */
@@ -73,7 +74,7 @@ public class TestListResolver
                 for ( String request : split( csvTests, "," ) )
                 {
                     request = request.trim();
-                    if ( request.length() != 0 && !request.equals( "!" ) )
+                    if ( !request.isEmpty() && !request.equals( "!" ) )
                     {
                         resolveTestRequest( request, patterns, includedFilters, excludedFilters );
                     }
@@ -116,16 +117,19 @@ public class TestListResolver
                                      includedPatterns, excludedPatterns );
     }
 
+    @Override
     public boolean hasIncludedMethodPatterns()
     {
         return hasIncludedMethodPatterns;
     }
 
+    @Override
     public boolean hasExcludedMethodPatterns()
     {
         return hasExcludedMethodPatterns;
     }
 
+    @Override
     public boolean hasMethodPatterns()
     {
         return hasIncludedMethodPatterns() || hasExcludedMethodPatterns();
@@ -135,7 +139,7 @@ public class TestListResolver
      *
      * @param resolver    filter possibly having method patterns
      * @return {@code resolver} if {@link TestListResolver#hasMethodPatterns() resolver.hasMethodPatterns()}
-     * returns <tt>true</tt>; Otherwise wildcard filter <em>*.class</em> is returned.
+     * returns {@code true}; Otherwise wildcard filter {@code *.class} is returned.
      */
     public static TestListResolver optionallyWildcardFilter( TestListResolver resolver )
     {
@@ -161,6 +165,7 @@ public class TestListResolver
     {
         return new TestFilter<String, String>()
         {
+            @Override
             public boolean shouldRun( String testClass, String methodName )
             {
                 return TestListResolver.this.shouldRun( testClass, methodName )
@@ -173,6 +178,7 @@ public class TestListResolver
     {
         return new TestFilter<String, String>()
         {
+            @Override
             public boolean shouldRun( String testClass, String methodName )
             {
                 return TestListResolver.this.shouldRun( testClass, methodName )
@@ -192,6 +198,7 @@ public class TestListResolver
      * @param testClassFile format must be e.g. "my/package/MyTest.class" including class extension; or null
      * @param methodName real test-method name; or null
      */
+    @Override
     public boolean shouldRun( String testClassFile, String methodName )
     {
         if ( isEmpty() || isBlank( testClassFile ) && isBlank( methodName ) )
@@ -233,11 +240,13 @@ public class TestListResolver
         }
     }
 
+    @Override
     public boolean isEmpty()
     {
         return equals( EMPTY );
     }
 
+    @Override
     public String getPluginParameterTest()
     {
         String aggregatedTest = aggregatedTest( "", getIncludedPatterns() );
@@ -251,11 +260,13 @@ public class TestListResolver
         return aggregatedTest.length() == 0 ? "" : aggregatedTest;
     }
 
+    @Override
     public Set<ResolvedTest> getIncludedPatterns()
     {
         return includedPatterns;
     }
 
+    @Override
     public Set<ResolvedTest> getExcludedPatterns()
     {
         return excludedPatterns;
@@ -308,7 +319,7 @@ public class TestListResolver
 
     static String removeExclamationMark( String s )
     {
-        return s.length() != 0 && s.charAt( 0 ) == '!' ? s.substring( 1 ) : s;
+        return !s.isEmpty() && s.charAt( 0 ) == '!' ? s.substring( 1 ) : s;
     }
 
     private static void updatedFilters( boolean isExcluded, ResolvedTest test, IncludedExcludedPatterns patterns,
@@ -333,7 +344,7 @@ public class TestListResolver
         for ( ResolvedTest test : tests )
         {
             String readableTest = test.toString();
-            if ( readableTest.length() != 0 )
+            if ( !readableTest.isEmpty() )
             {
                 if ( aggregatedTest.length() != 0 )
                 {
@@ -356,7 +367,7 @@ public class TestListResolver
             if ( exc != null )
             {
                 exc = exc.trim();
-                if ( exc.length() != 0 )
+                if ( !exc.isEmpty() )
                 {
                     if ( exc.contains( "!" ) )
                     {
@@ -445,7 +456,7 @@ public class TestListResolver
     }
 
     /**
-     * Requires trimmed <code>request</code> been not equal to "!".
+     * Requires trimmed {@code request} been not equal to "!".
      */
     static void resolveTestRequest( String request, IncludedExcludedPatterns patterns,
                                     Collection<ResolvedTest> includedFilters, Collection<ResolvedTest> excludedFilters )
@@ -456,8 +467,8 @@ public class TestListResolver
         if ( isRegexPrefixedPattern( request ) )
         {
             final String[] unwrapped = unwrapRegex( request );
-            final boolean hasClass = unwrapped[0].length() != 0;
-            final boolean hasMethod = unwrapped[1].length() != 0;
+            final boolean hasClass = !unwrapped[0].isEmpty();
+            final boolean hasMethod = !unwrapped[1].isEmpty();
             if ( hasClass && hasMethod )
             {
                 test = new ResolvedTest( unwrapped[0], unwrapped[1], true );

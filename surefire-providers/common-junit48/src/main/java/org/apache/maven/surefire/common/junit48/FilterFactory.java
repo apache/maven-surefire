@@ -45,7 +45,7 @@ public class FilterFactory
     }
 
     /**
-     * @return <tt>true</tt> if non-blank
+     * @return {@code true} if non-blank
      * {@link org.apache.maven.surefire.booter.ProviderParameterNames#TESTNG_GROUPS_PROP} and/or
      * {@link org.apache.maven.surefire.booter.ProviderParameterNames#TESTNG_EXCLUDEDGROUPS_PROP} exists.
      */

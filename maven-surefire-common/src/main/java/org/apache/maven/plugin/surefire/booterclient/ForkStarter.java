@@ -28,8 +28,10 @@ import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStre
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStream;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
+import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.plugin.surefire.booterclient.output.NativeStdErrStreamConsumer;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.shared.utils.cli.CommandLineCallable;
 import org.apache.maven.shared.utils.cli.CommandLineException;
@@ -44,7 +46,6 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestRequest;
@@ -53,11 +54,9 @@ import org.apache.maven.surefire.util.DefaultScanResult;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
@@ -70,6 +69,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.StrictMath.min;
@@ -80,29 +80,30 @@ import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.createCopyAndReplaceForkNumPlaceholder;
+import static org.apache.maven.plugin.surefire.SurefireHelper.DUMP_FILE_PREFIX;
 import static org.apache.maven.plugin.surefire.booterclient.ForkNumberBucket.drawNumber;
 import static org.apache.maven.plugin.surefire.booterclient.ForkNumberBucket.returnNumber;
 import static org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream
-    .TestLessInputStreamBuilder;
+                      .TestLessInputStreamBuilder;
 import static org.apache.maven.shared.utils.cli.CommandLineUtils.executeCommandLineAsCallable;
 import static org.apache.maven.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
 import static org.apache.maven.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
 import static org.apache.maven.surefire.booter.Classpath.join;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.writePropertiesFile;
-import static org.apache.maven.surefire.suite.RunResult.timeout;
-import static org.apache.maven.surefire.suite.RunResult.failure;
 import static org.apache.maven.surefire.suite.RunResult.SUCCESS;
+import static org.apache.maven.surefire.suite.RunResult.failure;
+import static org.apache.maven.surefire.suite.RunResult.timeout;
 import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDownToZero;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThread;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
-import static org.apache.maven.surefire.util.internal.StringUtils.FORK_STREAM_CHARSET_NAME;
 import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
+import static org.apache.maven.surefire.util.internal.StringUtils.ISO_8859_1;
 
 /**
  * Starts the fork or runs in-process.
- * <p/>
+ * <br>
  * Lives only on the plugin-side (not present in remote vms)
- * <p/>
+ * <br>
  * Knows how to fork new vms and also how to delegate non-forking invocation to SurefireStarter directly
  *
  * @author Jason van Zyl
@@ -114,6 +115,8 @@ import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull
  */
 public class ForkStarter
 {
+    private static final String EXECUTION_EXCEPTION = "ExecutionException";
+
     private static final long PING_IN_SECONDS = 10;
 
     private static final int TIMEOUT_CHECK_PERIOD_MILLIS = 100;
@@ -151,15 +154,18 @@ public class ForkStarter
     /**
      * Closes stuff, with a shutdown hook to make sure things really get closed.
      */
-    private static class CloseableCloser
+    private final class CloseableCloser
         implements Runnable, Closeable
     {
+        private final int jvmRun;
+
         private final Queue<Closeable> testProvidingInputStream;
 
         private final Thread inputStreamCloserHook;
 
-        public CloseableCloser( Closeable... testProvidingInputStream )
+        public CloseableCloser( int jvmRun, Closeable... testProvidingInputStream )
         {
+            this.jvmRun = jvmRun;
             this.testProvidingInputStream = new ConcurrentLinkedQueue<Closeable>();
             addAll( this.testProvidingInputStream, testProvidingInputStream );
             if ( this.testProvidingInputStream.isEmpty() )
@@ -173,6 +179,7 @@ public class ForkStarter
             }
         }
 
+        @Override
         @SuppressWarnings( "checkstyle:innerassignment" )
         public void run()
         {
@@ -184,11 +191,21 @@ public class ForkStarter
                 }
                 catch ( IOException e )
                 {
-                    // ignore
+                    // This error does not fail a test and does not necessarily mean that the forked JVM std/out stream
+                    // was not closed, see ThreadedStreamConsumer. This error means that JVM wrote messages to a native
+                    // stream which could not be parsed or report failed. The tests may still correctly run nevertheless
+                    // this exception happened => warning on console. The user would see hint to check dump file only
+                    // if tests failed, but if this does not happen then printing warning to console is the only way to
+                    // inform the users.
+                    String msg = "ForkStarter IOException: " + e.getLocalizedMessage() + ".";
+                    File dump = InPluginProcessDumpSingleton.getSingleton()
+                                        .dumpException( e, msg, defaultReporterFactory, jvmRun );
+                    log.warning( msg + " See the dump file " + dump.getAbsolutePath() );
                 }
             }
         }
 
+        @Override
         public void close()
         {
             run();
@@ -253,8 +270,8 @@ public class ForkStarter
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
         PropertiesWrapper props = new PropertiesWrapper( providerProperties );
         TestLessInputStream stream = builder.build();
-        Properties sysProps = startupReportConfiguration.getTestVmSystemProperties();
-        ForkClient forkClient = new ForkClient( forkedReporterFactory, sysProps, stream, log );
+        ForkClient forkClient = new ForkClient( forkedReporterFactory, stream, log, forkConfiguration.isDebug(),
+                new AtomicBoolean() );
         Thread shutdown = createImmediateShutdownHookThread( builder, providerConfiguration.getShutdown() );
         ScheduledFuture<?> ping = triggerPingTimerForShutdown( builder );
         try
@@ -319,20 +336,20 @@ public class ForkStarter
             addShutDownHook( shutdown );
             int failFastCount = providerConfiguration.getSkipAfterFailureCount();
             final AtomicInteger notifyStreamsToSkipTestsJustNow = new AtomicInteger( failFastCount );
-            Collection<Future<RunResult>> results = new ArrayList<Future<RunResult>>( forkCount );
+            final Collection<Future<RunResult>> results = new ArrayList<Future<RunResult>>( forkCount );
+            final AtomicBoolean printedErrorStream = new AtomicBoolean();
             for ( final TestProvidingInputStream testProvidingInputStream : testStreams )
             {
                 Callable<RunResult> pf = new Callable<RunResult>()
                 {
+                    @Override
                     public RunResult call()
                         throws Exception
                     {
                         DefaultReporterFactory reporter = new DefaultReporterFactory( startupReportConfiguration, log );
                         defaultReporterFactories.add( reporter );
-
-                        Properties vmProps = startupReportConfiguration.getTestVmSystemProperties();
-
-                        ForkClient forkClient = new ForkClient( reporter, vmProps, testProvidingInputStream, log )
+                        ForkClient forkClient = new ForkClient( reporter, testProvidingInputStream, log,
+                                forkConfiguration.isDebug(), printedErrorStream )
                         {
                             @Override
                             protected void stopOnNextTest()
@@ -384,19 +401,20 @@ public class ForkStarter
             addShutDownHook( shutdown );
             int failFastCount = providerConfiguration.getSkipAfterFailureCount();
             final AtomicInteger notifyStreamsToSkipTestsJustNow = new AtomicInteger( failFastCount );
+            final AtomicBoolean printedErrorStream = new AtomicBoolean();
             for ( final Object testSet : getSuitesIterator() )
             {
                 Callable<RunResult> pf = new Callable<RunResult>()
                 {
+                    @Override
                     public RunResult call()
                         throws Exception
                     {
                         DefaultReporterFactory forkedReporterFactory =
                             new DefaultReporterFactory( startupReportConfiguration, log );
                         defaultReporterFactories.add( forkedReporterFactory );
-                        Properties vmProps = startupReportConfiguration.getTestVmSystemProperties();
-                        ForkClient forkClient = new ForkClient( forkedReporterFactory, vmProps,
-                                                                      builder.getImmediateCommands(), log )
+                        ForkClient forkClient = new ForkClient( forkedReporterFactory, builder.getImmediateCommands(),
+                                log, forkConfiguration.isDebug(), printedErrorStream )
                         {
                             @Override
                             protected void stopOnNextTest()
@@ -436,6 +454,7 @@ public class ForkStarter
         throws SurefireBooterForkException
     {
         RunResult globalResult = new RunResult( 0, 0, 0, 0 );
+        SurefireBooterForkException exception = null;
         for ( Future<RunResult> result : results )
         {
             try
@@ -459,10 +478,31 @@ public class ForkStarter
             catch ( ExecutionException e )
             {
                 Throwable realException = e.getCause();
-                String error = realException == null ? "" : realException.getLocalizedMessage();
-                throw new SurefireBooterForkException( "ExecutionException " + error, realException );
+                if ( realException == null )
+                {
+                    if ( exception == null )
+                    {
+                        exception = new SurefireBooterForkException( EXECUTION_EXCEPTION );
+                    }
+                }
+                else
+                {
+                    String previousError = "";
+                    if ( exception != null && !EXECUTION_EXCEPTION.equals( exception.getLocalizedMessage().trim() ) )
+                    {
+                        previousError = exception.getLocalizedMessage() + "\n";
+                    }
+                    String error = previousError + EXECUTION_EXCEPTION + " " + realException.getLocalizedMessage();
+                    exception = new SurefireBooterForkException( error, realException );
+                }
             }
         }
+
+        if ( exception != null )
+        {
+            throw exception;
+        }
+
         return globalResult;
     }
 
@@ -489,6 +529,7 @@ public class ForkStarter
         throws SurefireBooterForkException
     {
         int forkNumber = drawNumber();
+        forkClient.setForkNumber( forkNumber );
         try
         {
             return fork( testSet, providerProperties, forkClient, effectiveSystemProperties, forkNumber,
@@ -505,14 +546,20 @@ public class ForkStarter
                             AbstractForkInputStream testProvidingInputStream, boolean readTestsFromInStream )
         throws SurefireBooterForkException
     {
+        final String tempDir;
         final File surefireProperties;
         final File systPropsFile;
         try
         {
+            tempDir = forkConfiguration.getTempDirectory().getCanonicalPath();
             BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
 
             surefireProperties = booterSerializer.serialize( providerProperties, providerConfiguration,
-                                                             startupConfiguration, testSet, readTestsFromInStream );
+                                                                   startupConfiguration, testSet,
+                                                                   readTestsFromInStream,
+                                                                   forkConfiguration.getPluginPlatform().getPid() );
+
+            log.debug( "Determined Maven Process ID " + forkConfiguration.getPluginPlatform().getPid() );
 
             if ( effectiveSystemProperties != null )
             {
@@ -553,31 +600,35 @@ public class ForkStarter
             testProvidingInputStream.setFlushReceiverProvider( cli );
         }
 
-        cli.createArg().setFile( surefireProperties );
-
+        cli.createArg().setValue( tempDir );
+        cli.createArg().setValue( DUMP_FILE_PREFIX + forkNumber );
+        cli.createArg().setValue( surefireProperties.getName() );
         if ( systPropsFile != null )
         {
-            cli.createArg().setFile( systPropsFile );
+            cli.createArg().setValue( systPropsFile.getName() );
         }
 
         final ThreadedStreamConsumer threadedStreamConsumer = new ThreadedStreamConsumer( forkClient );
-        final CloseableCloser closer =
-                new CloseableCloser( threadedStreamConsumer, requireNonNull( testProvidingInputStream, "null param" ) );
+        final CloseableCloser closer = new CloseableCloser( forkNumber, threadedStreamConsumer,
+                                                            requireNonNull( testProvidingInputStream, "null param" ) );
 
         log.debug( "Forking command line: " + cli );
 
+        Integer result = null;
         RunResult runResult = null;
         SurefireBooterForkException booterForkException = null;
         try
         {
+            NativeStdErrStreamConsumer stdErrConsumer =
+                    new NativeStdErrStreamConsumer( forkClient.getDefaultReporterFactory() );
+
             CommandLineCallable future =
-                executeCommandLineAsCallable( cli, testProvidingInputStream, threadedStreamConsumer,
-                                              new NativeStdErrStreamConsumer(), 0, closer,
-                                              Charset.forName( FORK_STREAM_CHARSET_NAME ) );
+                    executeCommandLineAsCallable( cli, testProvidingInputStream, threadedStreamConsumer,
+                                                        stdErrConsumer, 0, closer, ISO_8859_1 );
 
             currentForkClients.add( forkClient );
 
-            int result = future.call();
+            result = future.call();
 
             if ( forkClient.hadTimeout() )
             {
@@ -599,6 +650,7 @@ public class ForkStarter
         }
         finally
         {
+            currentForkClients.remove( forkClient );
             closer.close();
             if ( runResult == null )
             {
@@ -615,17 +667,23 @@ public class ForkStarter
                 {
                     StackTraceWriter errorInFork = forkClient.getErrorInFork();
                     // noinspection ThrowFromFinallyBlock
-                    throw new RuntimeException( "There was an error in the forked process"
+                    throw new SurefireBooterForkException( "There was an error in the forked process"
                                                         + detail
                                                         + '\n'
-                                                        + errorInFork.writeTraceToString(), cause );
+                                                        + errorInFork.getThrowable().getLocalizedMessage(), cause );
                 }
                 if ( !forkClient.isSaidGoodBye() )
                 {
+                    String errorCode = result == null ? "" : "\nProcess Exit Code: " + result;
+                    String testsInProgress = forkClient.hasTestsInProgress() ? "\nCrashed tests:" : "";
+                    for ( String test : forkClient.testsInProgress() )
+                    {
+                        testsInProgress += "\n" + test;
+                    }
                     // noinspection ThrowFromFinallyBlock
-                    throw new RuntimeException(
+                    throw new SurefireBooterForkException(
                         "The forked VM terminated without properly saying goodbye. VM crash or System.exit called?"
-                            + "\nCommand was " + cli.toString() + detail, cause );
+                            + "\nCommand was " + cli.toString() + detail + errorCode + testsInProgress, cause );
                 }
             }
 
@@ -666,6 +724,7 @@ public class ForkStarter
     {
         return SHUTDOWN_HOOK_THREAD_FACTORY.newThread( new Runnable()
         {
+            @Override
             public void run()
             {
                 builder.getImmediateCommands().shutdown( shutdownType );
@@ -678,6 +737,7 @@ public class ForkStarter
     {
         return SHUTDOWN_HOOK_THREAD_FACTORY.newThread( new Runnable()
         {
+            @Override
             public void run()
             {
                 builder.getCachableCommands().shutdown( shutdownType );
@@ -690,6 +750,7 @@ public class ForkStarter
     {
         return SHUTDOWN_HOOK_THREAD_FACTORY.newThread( new Runnable()
         {
+            @Override
             public void run()
             {
                 for ( TestProvidingInputStream stream : streams )
@@ -716,6 +777,7 @@ public class ForkStarter
     {
         return pingThreadScheduler.scheduleAtFixedRate( new Runnable()
         {
+            @Override
             public void run()
             {
                 builder.getImmediateCommands().noop();
@@ -727,6 +789,7 @@ public class ForkStarter
     {
         return pingThreadScheduler.scheduleAtFixedRate( new Runnable()
         {
+            @Override
             public void run()
             {
                 for ( TestProvidingInputStream stream : streams )
@@ -741,6 +804,7 @@ public class ForkStarter
     {
         return timeoutCheckScheduler.scheduleAtFixedRate( new Runnable()
         {
+            @Override
             public void run()
             {
                 long systemTime = currentTimeMillis();

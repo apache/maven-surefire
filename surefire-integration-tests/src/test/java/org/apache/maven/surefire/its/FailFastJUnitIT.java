@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import static org.junit.runners.Parameterized.Parameters;
 
 /**
- * Test class for SUREFIRE-580, configuration parameter <em>skipAfterFailureCount</em>.
+ * Test class for SUREFIRE-580, configuration parameter {@code skipAfterFailureCount}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19

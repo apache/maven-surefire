@@ -23,30 +23,36 @@ package org.apache.maven.plugin.surefire.log.api;
  * Logger doing nothing rather than using null.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19.2
+ * @since 2.20
  */
 public final class NullConsoleLogger implements ConsoleLogger
 {
+    @Override
     public void debug( String message )
     {
     }
 
+    @Override
     public void info( String message )
     {
     }
 
+    @Override
     public void warning( String message )
     {
     }
 
+    @Override
     public void error( String message )
     {
     }
 
+    @Override
     public void error( String message, Throwable t )
     {
     }
 
+    @Override
     public void error( Throwable t )
     {
     }

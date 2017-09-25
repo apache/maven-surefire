@@ -19,9 +19,11 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import org.apache.maven.surefire.report.ReportEntry;
 
@@ -29,7 +31,7 @@ import static org.apache.maven.plugin.surefire.report.FileReporter.getReportFile
 
 /**
  * Surefire output consumer proxy that writes test output to a {@link java.io.File} for each test suite.
- * <p/>
+ * <br>
  * This class is not threadsafe, but can be serially handed off from thread to thread.
  *
  * @author Kristian Rosenvold
@@ -44,7 +46,7 @@ public class ConsoleOutputFileReporter
 
     private String reportEntryName;
 
-    private FileOutputStream fileOutputStream;
+    private OutputStream fileOutputStream;
 
     public ConsoleOutputFileReporter( File reportsDirectory, String reportNameSuffix )
     {
@@ -52,33 +54,47 @@ public class ConsoleOutputFileReporter
         this.reportNameSuffix = reportNameSuffix;
     }
 
+    @Override
     public void testSetStarting( ReportEntry reportEntry )
     {
         close();
         reportEntryName = reportEntry.getName();
     }
 
+    @Override
     public void testSetCompleted( ReportEntry report )
     {
     }
 
+    @Override
     @SuppressWarnings( "checkstyle:emptyblock" )
     public void close()
     {
         if ( fileOutputStream != null )
         {
+            //noinspection EmptyCatchBlock
             try
             {
                 fileOutputStream.flush();
-                fileOutputStream.close();
             }
             catch ( IOException e )
             {
+            }
+            finally
+            {
+                try
+                {
+                    fileOutputStream.close();
+                }
+                catch ( IOException ignored )
+                {
+                }
             }
             fileOutputStream = null;
         }
     }
 
+    @Override
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         try
@@ -91,7 +107,7 @@ public class ConsoleOutputFileReporter
                     reportsDirectory.mkdirs();
                 }
                 File file = getReportFile( reportsDirectory, reportEntryName, reportNameSuffix, "-output.txt" );
-                fileOutputStream = new FileOutputStream( file );
+                fileOutputStream = new BufferedOutputStream( new FileOutputStream( file ), 16 * 1024 );
             }
             fileOutputStream.write( buf, off, len );
         }

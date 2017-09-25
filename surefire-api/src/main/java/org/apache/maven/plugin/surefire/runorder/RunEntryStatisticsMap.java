@@ -150,6 +150,7 @@ public final class RunEntryStatisticsMap
     static final class RunCountComparator
         implements Comparator<RunEntryStatistics>
     {
+        @Override
         public int compare( RunEntryStatistics o, RunEntryStatistics o1 )
         {
             int runtime = o.getSuccessfulBuilds() - o1.getSuccessfulBuilds();
@@ -238,6 +239,7 @@ public final class RunEntryStatisticsMap
     static final class PrioritizedTestComparator
         implements Comparator<PrioritizedTest>
     {
+        @Override
         public int compare( PrioritizedTest o, PrioritizedTest o1 )
         {
             return o.getPriority() - o1.getPriority();
@@ -247,6 +249,7 @@ public final class RunEntryStatisticsMap
     static final class TestRuntimeComparator
         implements Comparator<Priority>
     {
+        @Override
         public int compare( Priority o, Priority o1 )
         {
             return o1.getTotalRuntime() - o.getTotalRuntime();
@@ -256,6 +259,7 @@ public final class RunEntryStatisticsMap
     static final class LeastFailureComparator
         implements Comparator<Priority>
     {
+        @Override
         public int compare( Priority o, Priority o1 )
         {
             return o.getMinSuccessRate() - o1.getMinSuccessRate();

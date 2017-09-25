@@ -48,16 +48,12 @@ public abstract class AbstractSurefireReportMojo
 
     /**
      * If set to false, only failures are shown.
-     *
-     * @noinspection UnusedDeclaration
      */
     @Parameter( defaultValue = "true", required = true, property = "showSuccess" )
     private boolean showSuccess;
 
     /**
      * Directories containing the XML Report files that will be parsed and rendered to HTML format.
-     *
-     * @noinspection UnusedDeclaration
      */
     @Parameter
     private File[] reportsDirectories;
@@ -65,8 +61,6 @@ public abstract class AbstractSurefireReportMojo
     /**
      * (Deprecated, use reportsDirectories) This directory contains the XML Report files that will be parsed and
      * rendered to HTML format.
-     *
-     * @noinspection UnusedDeclaration
      */
     @Deprecated
     @Parameter
@@ -74,32 +68,24 @@ public abstract class AbstractSurefireReportMojo
 
     /**
      * The projects in the reactor for aggregation report.
-     *
-     * @noinspection MismatchedQueryAndUpdateOfCollection, UnusedDeclaration
      */
     @Parameter( defaultValue = "${reactorProjects}", readonly = true )
     private List<MavenProject> reactorProjects;
 
     /**
      * Location of the Xrefs to link.
-     *
-     * @noinspection UnusedDeclaration
      */
     @Parameter( defaultValue = "${project.reporting.outputDirectory}/xref-test" )
     private File xrefLocation;
 
     /**
      * Whether to link the XRef if found.
-     *
-     * @noinspection UnusedDeclaration
      */
     @Parameter( defaultValue = "true", property = "linkXRef" )
     private boolean linkXRef;
 
     /**
      * Whether to build an aggregated report at the root, or build individual reports.
-     *
-     * @noinspection UnusedDeclaration
      */
     @Parameter( defaultValue = "false", property = "aggregate" )
     private boolean aggregate;
@@ -131,6 +117,7 @@ public abstract class AbstractSurefireReportMojo
     /**
      * {@inheritDoc}
      */
+    @Override
     public void executeReport( Locale locale )
         throws MavenReportException
     {
@@ -312,6 +299,7 @@ public abstract class AbstractSurefireReportMojo
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getName( Locale locale )
     {
         return getBundle( locale ).getString( "report.surefire.name" );
@@ -320,6 +308,7 @@ public abstract class AbstractSurefireReportMojo
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getDescription( Locale locale )
     {
         return getBundle( locale ).getString( "report.surefire.description" );
@@ -328,6 +317,7 @@ public abstract class AbstractSurefireReportMojo
     /**
      * {@inheritDoc}
      */
+    @Override
     public abstract String getOutputName();
 
     private ResourceBundle getBundle( Locale locale )

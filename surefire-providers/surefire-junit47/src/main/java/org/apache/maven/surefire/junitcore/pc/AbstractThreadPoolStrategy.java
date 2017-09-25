@@ -126,6 +126,7 @@ abstract class AbstractThreadPoolStrategy
         }
     }
 
+    @Override
     public boolean destroy()
     {
         try

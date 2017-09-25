@@ -33,7 +33,7 @@ import org.apache.maven.surefire.testset.TestRequest;
 /**
  * Represents the surefire configuration that passes all the way into the provider
  * classloader and the provider.
- * <p/>
+ * <br>
  *
  * @author Jason van Zyl
  * @author Emmanuel Venisse
@@ -41,11 +41,6 @@ import org.apache.maven.surefire.testset.TestRequest;
  */
 public class ProviderConfiguration
 {
-    /**
-     * @noinspection UnusedDeclaration
-     */
-    public static final int TESTS_SUCCEEDED_EXIT_CODE = 0;
-
     private final DirectoryScannerParameters dirScannerParams;
 
     private final ReporterConfiguration reporterConfiguration;

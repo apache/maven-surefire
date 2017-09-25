@@ -25,7 +25,7 @@ import org.apache.maven.surefire.report.StackTraceWriter;
 /**
  * Represents a deserialize stacktracewriter that has been
  * marshalled across to the plugin from the fork.
- * <p/>
+ * <br>
  * Might be better to represent this whole thing differently
  *
  * @author Kristian Rosenvold
@@ -46,24 +46,28 @@ public class DeserializedStacktraceWriter
         this.stackTrace = stackTrace;
     }
 
+    @Override
     public String smartTrimmedStackTrace()
     {
         return smartTrimmed;
     }
 
     // Trimming or not is decided on the forking side
+    @Override
     public String writeTraceToString()
     {
         return stackTrace;
     }
 
+    @Override
     public String writeTrimmedTraceToString()
     {
         return stackTrace;
     }
 
+    @Override
     public SafeThrowable getThrowable()
     {
-        return new SafeThrowable( new Throwable( message ) );
+        return new SafeThrowable( message );
     }
 }

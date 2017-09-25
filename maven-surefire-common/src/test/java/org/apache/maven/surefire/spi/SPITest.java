@@ -20,6 +20,7 @@ package org.apache.maven.surefire.spi;
  */
 
 import org.apache.maven.plugin.surefire.booterclient.ProviderDetector;
+import org.apache.maven.surefire.providerapi.ServiceLoader;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -29,7 +30,7 @@ import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19.2
+ * @since 2.20
  */
 public class SPITest
 {

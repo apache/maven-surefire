@@ -33,7 +33,12 @@ public class Surefire376TestNgAfterSuiteFailureIT
     @Test
     public void testAfterSuiteFailure()
     {
-        unpack( "/testng-afterSuiteFailure" ).maven().withFailure().executeTest().
-            assertTestSuiteResults( 2, 0, 1, 0 );
+        unpack( "/testng-afterSuiteFailure" )
+                .maven()
+                .sysProp( "testNgVersion", "5.7" )
+                .sysProp( "testNgClassifier", "jdk15" )
+                .withFailure()
+                .executeTest()
+                .assertTestSuiteResults( 2, 0, 1, 0 );
     }
 }

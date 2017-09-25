@@ -63,16 +63,19 @@ final class LazyTestsToRun
     {
         private final Iterator<String> it = getReader().getIterableClasses( originalOutStream ).iterator();
 
+        @Override
         public boolean hasNext()
         {
             return it.hasNext();
         }
 
+        @Override
         public Class<?> next()
         {
             return findClass( it.next() );
         }
 
+        @Override
         public void remove()
         {
             throw new UnsupportedOperationException();
@@ -93,6 +96,7 @@ final class LazyTestsToRun
      * {@inheritDoc}
      * @see org.apache.maven.surefire.util.TestsToRun#iterator()
      * */
+    @Override
     public Iterator<Class<?>> iterator()
     {
         return new BlockingIterator();
@@ -102,6 +106,7 @@ final class LazyTestsToRun
      * {@inheritDoc}
       * @see org.apache.maven.surefire.util.TestsToRun#toString()
       */
+    @Override
     public String toString()
     {
         return "LazyTestsToRun";
@@ -111,6 +116,7 @@ final class LazyTestsToRun
      * {@inheritDoc}
      * @see org.apache.maven.surefire.util.TestsToRun#allowEagerReading()
      */
+    @Override
     public boolean allowEagerReading()
     {
         return false;
@@ -153,6 +159,7 @@ final class LazyTestsToRun
             {
             }
 
+            @Override
             public void remove()
             {
                 throw new UnsupportedOperationException( "unsupported remove" );

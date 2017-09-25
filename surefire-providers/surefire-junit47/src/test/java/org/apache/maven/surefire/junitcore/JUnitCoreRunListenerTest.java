@@ -33,6 +33,9 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.RunListener;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
 /**
  * @author Kristian Rosenvold
  */
@@ -81,7 +84,6 @@ public class JUnitCoreRunListenerTest
         assertEquals( 2, classMethodCounts.size() );
         Iterator<TestSet> iterator = classMethodCounts.values().iterator();
         assertFalse(iterator.next().equals( iterator.next() ));
-
     }
 
     public void testTestClassNotLoadableFromJUnitClassLoader()
@@ -102,6 +104,42 @@ public class JUnitCoreRunListenerTest
         assertEquals( 1, classMethodCounts.size() );
         TestSet testSet = classMethodCounts.get( "cannot.be.loaded.by.junit.Test" );
         assertNotNull( testSet );
+    }
+
+    public void testNonEmptyTestRunStarted() throws Exception
+    {
+        Description aggregator = Description.createSuiteDescription( "null" );
+        Description suite = Description.createSuiteDescription( "some.junit.Test" );
+        suite.addChild( Description.createSuiteDescription( "testMethodA(some.junit.Test)" ) );
+        suite.addChild( Description.createSuiteDescription( "testMethodB(some.junit.Test)" ) );
+        suite.addChild( Description.createSuiteDescription( "testMethod(another.junit.Test)" ) );
+        aggregator.addChild( suite );
+        Map<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
+        JUnitCoreRunListener listener = new JUnitCoreRunListener( new MockReporter(), classMethodCounts );
+        listener.testRunStarted( aggregator );
+        assertThat( classMethodCounts.keySet(), hasSize( 2 ) );
+        assertThat( classMethodCounts.keySet(), containsInAnyOrder( "some.junit.Test", "another.junit.Test" ) );
+        TestSet testSet = classMethodCounts.get( "some.junit.Test" );
+        MockReporter reporter = new MockReporter();
+        testSet.replay( reporter );
+        assertTrue( reporter.containsNotification( MockReporter.SET_STARTED ) );
+        assertTrue( reporter.containsNotification( MockReporter.SET_COMPLETED ) );
+        listener.testRunFinished( null );
+        assertThat( classMethodCounts.keySet(), empty() );
+    }
+
+    public void testEmptySuiteTestRunStarted() throws Exception
+    {
+        Description aggregator = Description.createSuiteDescription( "null" );
+        Description suite = Description.createSuiteDescription( "some.junit.TestSuite" );
+        aggregator.addChild( suite );
+        Map<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
+        JUnitCoreRunListener listener = new JUnitCoreRunListener( new MockReporter(), classMethodCounts );
+        listener.testRunStarted( aggregator );
+        assertThat( classMethodCounts.keySet(), hasSize( 1 ) );
+        assertThat( classMethodCounts.keySet(), contains( "some.junit.TestSuite" ) );
+        listener.testRunFinished( null );
+        assertThat( classMethodCounts.keySet(), empty() );
     }
 
     public static class STest1

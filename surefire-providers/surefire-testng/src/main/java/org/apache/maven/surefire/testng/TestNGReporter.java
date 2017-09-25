@@ -40,7 +40,6 @@ import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
  * {@link org.apache.maven.surefire.report.RunListener}.
  *
  * @author jkuhnert
- * @noinspection ThrowableResultOfMethodCallIgnored
  */
 public class TestNGReporter
     implements ITestListener, ISuiteListener
@@ -50,8 +49,8 @@ public class TestNGReporter
     /**
      * Constructs a new instance that will listen to
      * test updates from a {@link org.testng.TestNG} class instance.
-     * <p/>
-     * <p/>It is assumed that the requisite {@link org.testng.TestNG#addListener(ITestListener)}
+     * <br>
+     * <br>It is assumed that the requisite {@link org.testng.TestNG#addListener(ITestListener)}
      * method call has already associated with this instance <i>before</i> the test
      * suite is run.
      *
@@ -62,6 +61,7 @@ public class TestNGReporter
         this.reporter = reportManager;
     }
 
+    @Override
     public void onTestStart( ITestResult result )
     {
         String group = groupString( result.getMethod().getGroups(), result.getTestClass().getName() );
@@ -74,12 +74,14 @@ public class TestNGReporter
         return result.getTestClass().getName();
     }
 
+    @Override
     public void onTestSuccess( ITestResult result )
     {
         ReportEntry report = new SimpleReportEntry( getSource( result ), getUserFriendlyTestName( result ) );
         reporter.testSucceeded( report );
     }
 
+    @Override
     public void onTestFailure( ITestResult result )
     {
         ReportEntry report = withException( getSource( result ), getUserFriendlyTestName( result ),
@@ -96,6 +98,7 @@ public class TestNGReporter
         return result.getName() + "(" + result.getTestClass().getName() + ")";
     }
 
+    @Override
     public void onTestSkipped( ITestResult result )
     {
         Throwable t = result.getThrowable();
@@ -104,6 +107,7 @@ public class TestNGReporter
         reporter.testSkipped( report );
     }
 
+    @Override
     public void onTestFailedButWithinSuccessPercentage( ITestResult result )
     {
         ReportEntry report = withException( getSource( result ), getUserFriendlyTestName( result ),
@@ -114,22 +118,26 @@ public class TestNGReporter
         reporter.testSucceeded( report );
     }
 
+    @Override
     public void onStart( ITestContext context )
     {
 
     }
 
+    @Override
     public void onFinish( ITestContext context )
     {
 
     }
 
 
+    @Override
     public void onStart( ISuite suite )
     {
 
     }
 
+    @Override
     public void onFinish( ISuite suite )
     {
 

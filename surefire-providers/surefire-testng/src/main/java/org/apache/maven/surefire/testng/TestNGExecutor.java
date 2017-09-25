@@ -335,6 +335,7 @@ final class TestNGExecutor
 
         return new Stoppable()
         {
+            @Override
             public void fireStopEvent()
             {
                 if ( countDownToZero( currentFaultCount ) )

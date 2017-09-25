@@ -21,11 +21,12 @@ package org.apache.maven.surefire.spi;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19.2
+ * @since 2.20
  */
 public class CustomizedImpl
     implements IDefault
 {
+    @Override
     public boolean isDefault()
     {
         return false;

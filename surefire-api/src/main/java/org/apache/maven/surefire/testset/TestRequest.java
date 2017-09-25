@@ -74,6 +74,8 @@ public class TestRequest
 
     /**
      * A specific test request issued with -Dtest= from the command line.
+     *
+     * @return filter
      */
     public TestListResolver getTestListResolver()
     {

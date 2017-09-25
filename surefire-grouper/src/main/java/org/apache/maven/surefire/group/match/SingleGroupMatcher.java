@@ -83,6 +83,7 @@ public class SingleGroupMatcher
         return "*" + enabled;
     }
 
+    @Override
     public boolean enabled( Class<?>... cats )
     {
         if ( cats != null )
@@ -105,11 +106,12 @@ public class SingleGroupMatcher
         return false;
     }
 
+    @Override
     public boolean enabled( String... cats )
     {
         for ( String cat : cats )
         {
-            if ( cat == null || cat.trim().length() < 1 )
+            if ( cat == null || cat.trim().isEmpty() )
             {
                 continue;
             }
@@ -128,6 +130,7 @@ public class SingleGroupMatcher
         return false;
     }
 
+    @Override
     public void loadGroupClasses( ClassLoader classLoader )
     {
         try

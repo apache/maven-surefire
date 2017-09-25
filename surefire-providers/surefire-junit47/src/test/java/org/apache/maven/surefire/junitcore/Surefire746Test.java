@@ -54,7 +54,7 @@ import static junit.framework.Assert.assertEquals;
  * <version>4.8.1</version>
  * <scope>test</scope>
  * </dependency>
- * <p/>
+ * <br>
  * <dependency>
  * <groupId>org.apache.maven.surefire</groupId>
  * <artifactId>surefire-booter</artifactId>

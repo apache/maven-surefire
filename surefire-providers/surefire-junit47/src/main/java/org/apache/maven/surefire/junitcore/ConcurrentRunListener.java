@@ -26,13 +26,14 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.StackTraceWriter;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import static org.apache.maven.surefire.junitcore.TestMethod.getThreadTestMethod;
 
 /**
  * Handles responses from concurrent junit
- * <p/>
+ * <br>
  * Stuff to remember about JUnit threading:
  * parallel=classes; beforeClass/afterClass, constructor and all tests method run on same thread
  * parallel=methods; beforeClass/afterClass run on main thread, constructor + each test method run on same thread
@@ -69,11 +70,13 @@ public abstract class ConcurrentRunListener
         };
     }
 
-    public void testSetStarting( ReportEntry description )
+    @Override
+    public void testSetStarting( TestSetReportEntry description )
     {
     }
 
-    public void testSetCompleted( ReportEntry result )
+    @Override
+    public void testSetCompleted( TestSetReportEntry result )
     {
         final RunListener reporterManager = getRunListener();
         for ( TestSet testSet : classMethodCounts.values() )
@@ -83,6 +86,7 @@ public abstract class ConcurrentRunListener
         reporterManagerThreadLocal.remove();
     }
 
+    @Override
     public void testFailed( ReportEntry failure )
     {
         final TestMethod testMethod = getOrCreateThreadAttachedTestMethod( failure );
@@ -93,6 +97,7 @@ public abstract class ConcurrentRunListener
         }
     }
 
+    @Override
     public void testError( ReportEntry failure )
     {
         final TestMethod testMethod = getOrCreateThreadAttachedTestMethod( failure );
@@ -103,6 +108,7 @@ public abstract class ConcurrentRunListener
         }
     }
 
+    @Override
     public void testSkipped( ReportEntry description )
     {
         TestSet testSet = getTestSet( description );
@@ -112,22 +118,25 @@ public abstract class ConcurrentRunListener
         testMethod.detachFromCurrentThread();
     }
 
+    @Override
     public void testExecutionSkippedByUser()
     {
         // cannot guarantee proper call to all listeners
         reporterManagerThreadLocal.get().testExecutionSkippedByUser();
     }
 
+    @Override
     public void testAssumptionFailure( ReportEntry failure )
     {
         final TestMethod testMethod = getOrCreateThreadAttachedTestMethod( failure );
         if ( testMethod != null )
         {
-            testMethod.testIgnored( failure );
+            testMethod.testAssumption( failure );
             testMethod.detachFromCurrentThread();
         }
     }
 
+    @Override
     public void testStarting( ReportEntry description )
     {
         TestSet testSet = getTestSet( description );
@@ -137,6 +146,7 @@ public abstract class ConcurrentRunListener
         testSet.attachToThread();
     }
 
+    @Override
     public void testSucceeded( ReportEntry report )
     {
         TestMethod testMethod = getThreadTestMethod();
@@ -174,7 +184,7 @@ public abstract class ConcurrentRunListener
 
     protected abstract void checkIfTestSetCanBeReported( TestSet testSetForTest );
 
-    TestSet getTestSet( ReportEntry description )
+    private TestSet getTestSet( ReportEntry description )
     {
         return classMethodCounts.get( description.getSourceName() );
     }
@@ -196,6 +206,7 @@ public abstract class ConcurrentRunListener
     }
 
 
+    @Override
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         TestMethod threadTestMethod = getThreadTestMethod();

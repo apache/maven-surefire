@@ -20,7 +20,7 @@ package org.apache.maven.surefire.booter;
  */
 
 /**
- * See the plugin configuration parameter <em>shutdown</em>.
+ * See the plugin configuration parameter {@code shutdown}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19

@@ -20,10 +20,16 @@ package org.apache.maven.surefire.its.jiras;
  */
 
 import org.apache.maven.it.VerificationException;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-
+import org.apache.maven.surefire.its.fixture.SurefireVerifierException;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.FilenameFilter;
+
+import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * SUREFIRE-613 Asserts proper test counts when running in parallel
@@ -46,6 +52,7 @@ public class Surefire141PluggableProvidersIT
         throws Exception
     {
         unpack( "surefire-141-pluggableproviders" )
+            .setForkJvm()
             .maven()
             .showExceptionMessages()
             .debugLogging()
@@ -59,36 +66,114 @@ public class Surefire141PluggableProvidersIT
     public void invokeRuntimeException()
         throws Exception
     {
-        unpack( "surefire-141-pluggableproviders" )
+        final String errorText = "Let's fail with a runtimeException";
+
+        OutputValidator validator = unpack( "surefire-141-pluggableproviders" )
+            .setForkJvm()
             .sysProp( "invokeCrash", "runtimeException" )
             .maven()
             .withFailure()
-            .executeTest()
-            .verifyTextInLog( "Let's fail with a runtimeException" );
+            .executeTest();
+
+        assertErrorMessage( validator, errorText );
+
+        boolean hasErrorInLog = verifiedErrorInLog( validator, "There was an error in the forked process" );
+        boolean verifiedInLog = verifiedErrorInLog( validator, errorText );
+        assertThat( hasErrorInLog && verifiedInLog )
+                .describedAs( "'" + errorText + "' could not be verified in log.txt nor *.dump file. ("
+                                      + hasErrorInLog + ", " + verifiedInLog + ")" )
+                .isTrue();
     }
 
     @Test
     public void invokeReporterException()
         throws Exception
     {
-        unpack( "surefire-141-pluggableproviders" )
+        final String errorText = "Let's fail with a reporterexception";
+
+        OutputValidator validator = unpack( "surefire-141-pluggableproviders" )
+            .setForkJvm()
             .sysProp( "invokeCrash", "reporterException" )
             .maven()
             .withFailure()
-            .executeTest()
-            .verifyTextInLog( "Let's fail with a reporterexception" );
+            .executeTest();
+
+        assertErrorMessage( validator, errorText );
+
+        boolean hasErrorInLog = verifiedErrorInLog( validator, "There was an error in the forked process" );
+        boolean verifiedInLog = verifiedErrorInLog( validator, errorText );
+        assertThat( hasErrorInLog && verifiedInLog )
+                .describedAs( "'" + errorText + "' could not be verified in log.txt nor *.dump file. ("
+                                      + hasErrorInLog + ", " + verifiedInLog + ")" )
+                .isTrue();
     }
 
     @Test
     public void constructorRuntimeException()
         throws Exception
     {
-        unpack( "surefire-141-pluggableproviders" )
-            .sysProp( "constructorCrash", "runtimeException" )
-            .maven()
-            .withFailure()
-            .executeTest()
-            .verifyTextInLog( "Let's fail with a runtimeException" );
+        final String errorText = "Let's fail with a runtimeException";
+
+        OutputValidator validator = unpack( "surefire-141-pluggableproviders" )
+                                            .setForkJvm()
+                                            .sysProp( "constructorCrash", "runtimeException" )
+                                            .maven()
+                                            .withFailure()
+                                            .executeTest();
+
+        assertErrorMessage( validator, errorText );
+
+        boolean hasErrorInLog = verifiedErrorInLog( validator, "There was an error in the forked process" );
+        boolean verifiedInLog = verifiedErrorInLog( validator, errorText );
+        assertThat( hasErrorInLog && verifiedInLog )
+                .describedAs( "'" + errorText + "' could not be verified in log.txt nor *.dump file. ("
+                                      + hasErrorInLog + ", " + verifiedInLog + ")" )
+                .isTrue();
+    }
+
+    private static void assertErrorMessage( OutputValidator validator, String message )
+    {
+        File reportDir = validator.getSurefireReportsDirectory();
+        String[] dumpFiles = reportDir.list( new FilenameFilter()
+                                             {
+                                                 @Override
+                                                 public boolean accept( File dir, String name )
+                                                 {
+                                                     return name.endsWith( ".dump" );
+                                                 }
+                                             });
+        assertThat( dumpFiles ).isNotEmpty();
+        for ( String dump : dumpFiles )
+        {
+            validator.getSurefireReportsFile( dump )
+                    .assertContainsText( message );
+        }
+    }
+
+    private static boolean verifiedErrorInLog( OutputValidator validator, String errorText )
+    {
+        try
+        {
+            validator.verifyTextInLog( errorText );
+            return  true;
+        }
+        catch ( SurefireVerifierException e )
+        {
+            return false;
+        }
+    }
+
+    private static boolean verifiedErrorInDump( OutputValidator validator, String errorText )
+    {
+        try
+        {
+            assertErrorMessage( validator, errorText );
+            return true;
+        }
+        catch ( AssertionError e )
+        {
+            return false;
+        }
     }
 
 }

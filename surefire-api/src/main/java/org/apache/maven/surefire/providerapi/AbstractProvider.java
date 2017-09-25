@@ -29,6 +29,7 @@ public abstract class AbstractProvider
 {
     private final Thread creatingThread = Thread.currentThread();
 
+    @Override
     public void cancel()
     {
         synchronized ( creatingThread )

@@ -19,20 +19,29 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
 
 /**
  * Used by forked JMV, see {@link org.apache.maven.plugin.surefire.booterclient.ForkStarter}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19.2
+ * @since 2.20
  * @see org.apache.maven.plugin.surefire.booterclient.ForkStarter
  */
 public final class NativeStdErrStreamConsumer
     implements StreamConsumer
 {
+    private final DefaultReporterFactory defaultReporterFactory;
+
+    public NativeStdErrStreamConsumer( DefaultReporterFactory defaultReporterFactory )
+    {
+        this.defaultReporterFactory = defaultReporterFactory;
+    }
+
+    @Override
     public void consumeLine( String line )
     {
-        System.err.println( line );
+        InPluginProcessDumpSingleton.getSingleton().dumpText( line, defaultReporterFactory );
     }
 }

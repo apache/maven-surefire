@@ -28,6 +28,7 @@ import org.apache.maven.surefire.util.ScannerFilter;
 public class NonAbstractClassFilter
     implements ScannerFilter
 {
+    @Override
     public boolean accept( Class testClass )
     {
         return !Modifier.isAbstract( testClass.getModifiers() );

@@ -24,7 +24,7 @@ import org.junit.Test;
 
 /**
  * @author agudian
- * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-1122}
+ * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1122">SUREFIRE-1122</a>
  */
 public class Surefire1122ParallelAndFlakyTestsIT
     extends SurefireJUnit4IntegrationTestCase

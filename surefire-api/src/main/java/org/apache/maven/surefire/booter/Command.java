@@ -36,6 +36,7 @@ public final class Command
     public static final Command TEST_SET_FINISHED = new Command( MasterProcessCommand.TEST_SET_FINISHED );
     public static final Command SKIP_SINCE_NEXT_TEST = new Command( MasterProcessCommand.SKIP_SINCE_NEXT_TEST );
     public static final Command NOOP = new Command( MasterProcessCommand.NOOP );
+    public static final Command BYE_ACK = new Command( MasterProcessCommand.BYE_ACK );
 
     private final MasterProcessCommand command;
     private final String data;

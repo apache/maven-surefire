@@ -21,7 +21,7 @@ package org.apache.maven.surefire.booter;
 
 /**
  * Represents the classpaths for the BooterConfiguration.
- * <p/>
+ * <br>
  *
  * @author Jason van Zyl
  * @author Emmanuel Venisse
@@ -82,7 +82,7 @@ public class ClasspathConfiguration
         throws SurefireExecutionException
     {
         return Classpath.join( inprocClasspath, classpathUrls )
-            .createClassLoader( null, this.childDelegation, enableAssertions, "test" );
+            .createClassLoader( childDelegation, enableAssertions, "test" );
     }
 
     public Classpath getProviderClasspath()
@@ -90,8 +90,7 @@ public class ClasspathConfiguration
         return surefireClasspathUrls;
     }
 
-
-        public Classpath getTestClasspath()
+    public Classpath getTestClasspath()
     {
         return classpathUrls;
     }

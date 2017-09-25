@@ -33,12 +33,20 @@ public class Surefire377TestNgAndJUnitTogetherIT
     @Test
     public void testTestNgAndJUnitTogether()
     {
-        executeErrorFreeTest( "/testng-junit-together", 2 );
+        unpack( "/testng-junit-together" )
+                .sysProp( "testNgVersion", "5.7" )
+                .sysProp( "testNgClassifier", "jdk15" )
+                .executeTest()
+                .verifyErrorFree( 2 );
     }
 
     @Test
     public void testTestNgAndJUnit4Together()
     {
-        executeErrorFreeTest( "/testng-junit4-together", 3 );
+        unpack( "/testng-junit4-together" )
+                .sysProp( "testNgVersion", "5.7" )
+                .sysProp( "testNgClassifier", "jdk15" )
+                .executeTest()
+                .verifyErrorFree( 3 );
     }
 }

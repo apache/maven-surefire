@@ -28,7 +28,7 @@ import static org.junit.Assert.assertFalse;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-1053}
+ * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1053">SUREFIRE-1053</a>
  * @since 2.18
  */
 public class Surefire1053SystemPropertiesIT

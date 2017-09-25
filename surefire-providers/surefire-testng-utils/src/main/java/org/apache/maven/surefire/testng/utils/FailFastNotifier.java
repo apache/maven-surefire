@@ -34,6 +34,7 @@ public class FailFastNotifier
     implements IInvokedMethodListener
 {
 
+    @Override
     public void beforeInvocation( IInvokedMethod iInvokedMethod, ITestResult iTestResult )
     {
         if ( FailFastEventsSingleton.getInstance().isSkipAfterFailure() )
@@ -43,6 +44,7 @@ public class FailFastNotifier
         }
     }
 
+    @Override
     public void afterInvocation( IInvokedMethod iInvokedMethod, ITestResult iTestResult )
     {
 

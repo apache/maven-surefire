@@ -31,9 +31,7 @@ import org.apache.maven.surefire.suite.RunResult;
  * This factory is only used inside forks.
  *
  * @author Kristian Rosenvold
- * @noinspection UnusedDeclaration
  */
-
 public class ForkingReporterFactory
     implements ReporterFactory
 {
@@ -49,11 +47,13 @@ public class ForkingReporterFactory
         this.originalSystemOut = originalSystemOut;
     }
 
+    @Override
     public RunListener createReporter()
     {
         return new ForkingRunListener( originalSystemOut, testSetChannelId.getAndIncrement(), isTrimstackTrace );
     }
 
+    @Override
     public RunResult close()
     {
         return new RunResult( 17, 17, 17, 17 );

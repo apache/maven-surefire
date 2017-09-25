@@ -21,13 +21,13 @@ package org.apache.maven.surefire.spi;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19.2
+ * @since 2.20
  */
 public interface IDefault
 {
     /**
-     * @return <tt>true</tt> if SPI implementation vendor is maven-surefire-plugin or maven-failsafe-plugin.
-     * <tt>false</tt> if customized by users.
+     * @return {@code true} if SPI implementation vendor is maven-surefire-plugin or maven-failsafe-plugin.
+     * {@code false} if customized by users.
      */
     boolean isDefault();
 }

@@ -35,6 +35,10 @@ public class CheckTestNgBeforeMethodIT
     public void TestNgBeforeMethod()
         throws Exception
     {
-        unpack( "/testng-beforeMethod" ).executeTest().verifyErrorFree( 1 );
+        unpack( "/testng-beforeMethod" )
+                .sysProp( "testNgVersion", "5.7" )
+                .sysProp( "testNgClassifier", "jdk15" )
+                .executeTest()
+                .verifyErrorFree( 1 );
     }
 }

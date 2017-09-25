@@ -41,7 +41,12 @@ public class TwoTestCasesIT
     public void testTwoTestCases()
         throws Exception
     {
-        unpack( "junit-twoTestCases" ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 2, 0, 0, 0 );
+        unpack( "junit-twoTestCases" )
+                .sysProp( "testNgVersion", "5.7" )
+                .sysProp( "testNgClassifier", "jdk15" )
+                .executeTest()
+                .verifyErrorFreeLog()
+                .assertTestSuiteResults( 2, 0, 0, 0 );
     }
 
     /**
@@ -51,7 +56,10 @@ public class TwoTestCasesIT
     public void testTwoTestCaseSuite()
         throws Exception
     {
-        final OutputValidator outputValidator = unpack( "junit-twoTestCaseSuite" ).executeTest();
+        final OutputValidator outputValidator = unpack( "junit-twoTestCaseSuite" )
+                                                        .sysProp( "testNgVersion", "5.7" )
+                                                        .sysProp( "testNgClassifier", "jdk15" )
+                                                        .executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 2, 0, 0, 0 );
         List<ReportTestSuite> reports = HelperAssertions.extractReports( outputValidator.getBaseDir() );
         Set<String> classNames = extractClassNames( reports );
@@ -85,7 +93,10 @@ public class TwoTestCasesIT
     public void testJunit4Suite()
         throws Exception
     {
-        final OutputValidator outputValidator = unpack( "junit4-twoTestCaseSuite" ).executeTest();
+        final OutputValidator outputValidator = unpack( "junit4-twoTestCaseSuite" )
+                                                        .sysProp( "testNgVersion", "5.7" )
+                                                        .sysProp( "testNgClassifier", "jdk15" )
+                                                        .executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 2, 0, 0, 0 );
 
         List<ReportTestSuite> reports =
@@ -102,7 +113,10 @@ public class TwoTestCasesIT
     public void testTestNGSuite()
         throws Exception
     {
-        final OutputValidator outputValidator = unpack( "testng-twoTestCaseSuite" ).executeTest();
+        final OutputValidator outputValidator = unpack( "testng-twoTestCaseSuite" )
+                                                        .sysProp( "testNgVersion", "5.7" )
+                                                        .sysProp( "testNgClassifier", "jdk15" )
+                                                        .executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 2, 0, 0, 0 );
         List<ReportTestSuite> reports = HelperAssertions.extractReports( outputValidator.getBaseDir() );
         Set<String> classNames = extractClassNames( reports );

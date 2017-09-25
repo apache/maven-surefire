@@ -19,20 +19,19 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.Map;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit48.JUnit46StackTraceWriter;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.StackTraceWriter;
-
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
+import java.util.Map;
+
 /**
  * Noteworthy things about JUnit4 listening:
- * <p/>
+ * <br>
  * A class that is annotated with @Ignore will have one invocation of "testSkipped" with source==name
  * A method that is annotated with @Ignore will have a invocation of testSkipped with source and name distinct
  * Methods annotated with @Ignore trigger no further events.
@@ -59,6 +58,7 @@ public class JUnitCoreRunListener
      *
      * @see org.junit.runner.notification.RunListener#testRunStarted(org.junit.runner.Description)
      */
+    @Override
     public void testRunStarted( Description description )
         throws Exception
     {
@@ -70,40 +70,51 @@ public class JUnitCoreRunListener
     public void testRunFinished( Result result )
         throws Exception
     {
-        reporter.testSetCompleted( null );
+        try
+        {
+            reporter.testSetCompleted( null );
+        }
+        finally
+        {
+            classMethodCounts.clear();
+        }
     }
 
-    private void fillTestCountMap( Description description )
+    private void fillTestCountMap( Description testDesc )
     {
-        final ArrayList<Description> children = description.getChildren();
-
-        TestSet testSet = new TestSet( description );
-        String itemTestClassName = null;
-        for ( Description item : children )
+        for ( Description child : testDesc.getChildren() )
         {
-            if ( !item.isTest() )
+            if ( !asTestLeaf( child ) )
             {
-                fillTestCountMap( item );
+                fillTestCountMap( child );
             }
-            else
+        }
+    }
+
+    private boolean asTestLeaf( Description description )
+    {
+        if ( description.isTest() )
+        {
+            final String testClassName = extractDescriptionClassName( description );
+            if ( testClassName != null )
             {
-                if ( item.getMethodName() != null )
+                final TestSet testSet;
+                if ( classMethodCounts.containsKey( testClassName ) )
                 {
-                    testSet.incrementTestMethodCount();
-                    if ( itemTestClassName == null )
-                    {
-                        itemTestClassName = item.getClassName();
-                    }
+                    testSet = classMethodCounts.get( testClassName );
                 }
                 else
                 {
-                    classMethodCounts.put( item.getClassName(), new TestSet( item ) );
+                    testSet = new TestSet( testClassName );
+                    classMethodCounts.put( testClassName, testSet );
                 }
+                testSet.incrementTestMethodCount();
             }
+            return true;
         }
-        if ( itemTestClassName != null )
+        else
         {
-            classMethodCounts.put( itemTestClassName, testSet );
+            return false;
         }
     }
 
@@ -111,5 +122,17 @@ public class JUnitCoreRunListener
     protected StackTraceWriter createStackTraceWriter( Failure failure )
     {
         return new JUnit46StackTraceWriter( failure );
+    }
+
+    @Override
+    protected String extractDescriptionClassName( Description description )
+    {
+        return description.getClassName();
+    }
+
+    @Override
+    protected String extractDescriptionMethodName( Description description )
+    {
+        return description.getMethodName();
     }
 }

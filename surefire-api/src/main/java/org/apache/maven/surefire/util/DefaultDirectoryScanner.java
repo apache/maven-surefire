@@ -64,6 +64,7 @@ public class DefaultDirectoryScanner
         this.specificTests = specificTests;
     }
 
+    @Override
     public TestsToRun locateTestClasses( ClassLoader classLoader, ScannerFilter scannerFilter )
     {
         String[] testClassNames = collectTests();

@@ -25,7 +25,7 @@ import org.apache.maven.surefire.report.ReportEntry;
  * ConsoleReporter doing nothing rather than using null.
  *
  * @author <a href="mailto:britter@apache.org">Benedikt Ritter</a>
- * @since 2.19.2
+ * @since 2.20
  */
 class NullConsoleOutputReceiver
     implements TestcycleConsoleOutputReceiver
@@ -37,18 +37,22 @@ class NullConsoleOutputReceiver
     {
     }
 
+    @Override
     public void testSetStarting( ReportEntry reportEntry )
     {
     }
 
+    @Override
     public void testSetCompleted( ReportEntry report )
     {
     }
 
+    @Override
     public void close()
     {
     }
 
+    @Override
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
     }

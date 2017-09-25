@@ -87,7 +87,10 @@ public final class ParallelComputerUtilTest
 
     @Before
     public void beforeTest()
+        throws InterruptedException
     {
+        System.gc();
+        Thread.sleep( 50L );
         assertFalse( Thread.currentThread().isInterrupted() );
     }
 

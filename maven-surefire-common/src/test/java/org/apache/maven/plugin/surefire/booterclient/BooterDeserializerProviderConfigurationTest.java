@@ -207,7 +207,7 @@ public class BooterDeserializerProviderConfigurationTest
                                                  boolean readTestsFromInStream )
         throws IOException
     {
-        final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration( null, null );
+        final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration( (String) null );
         PropertiesWrapper props = new PropertiesWrapper( new HashMap<String, String>() );
         BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
         Object test;
@@ -220,8 +220,9 @@ public class BooterDeserializerProviderConfigurationTest
             test = "aTest";
         }
         final File propsTest = booterSerializer.serialize( props, booterConfiguration, testProviderConfiguration, test,
-                                                           readTestsFromInStream );
+                                                           readTestsFromInStream, 51L );
         BooterDeserializer booterDeserializer = new BooterDeserializer( new FileInputStream( propsTest ) );
+        assertEquals( 51L, (Object) booterDeserializer.getPluginPid() );
         return booterDeserializer.deserialize();
     }
 

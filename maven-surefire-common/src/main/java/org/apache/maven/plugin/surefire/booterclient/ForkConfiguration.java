@@ -20,25 +20,29 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
+import org.apache.maven.plugin.surefire.JdkAttributes;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
 import org.apache.maven.plugin.surefire.util.Relocator;
-import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ForkedBooter;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
-import org.apache.maven.surefire.util.UrlUtils;
+import org.apache.maven.surefire.util.internal.ImmutableMap;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Enumeration;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+
+import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
+import static org.apache.maven.shared.utils.StringUtils.join;
 
 /**
  * Configuration for forking tests.
@@ -63,9 +67,9 @@ public class ForkConfiguration
 
     private final Classpath bootClasspathConfiguration;
 
-    private final String jvmExecutable;
+    private final JdkAttributes jdk;
 
-    private Properties modelProperties;
+    private final Properties modelProperties;
 
     private final String argLine;
 
@@ -79,23 +83,26 @@ public class ForkConfiguration
 
     private final String debugLine;
 
+    private final Platform pluginPlatform;
+
     @SuppressWarnings( "checkstyle:parameternumber" )
     public ForkConfiguration( Classpath bootClasspathConfiguration, File tmpDir, String debugLine,
-                              String jvmExecutable, File workingDirectory, Properties modelProperties, String argLine,
+                              JdkAttributes jdk, File workingDirectory, Properties modelProperties, String argLine,
                               Map<String, String> environmentVariables, boolean debugEnabled, int forkCount,
-                              boolean reuseForks )
+                              boolean reuseForks, Platform pluginPlatform )
     {
         this.bootClasspathConfiguration = bootClasspathConfiguration;
         this.tempDirectory = tmpDir;
         this.debugLine = debugLine;
-        this.jvmExecutable = jvmExecutable;
+        this.jdk = jdk;
         this.workingDirectory = workingDirectory;
         this.modelProperties = modelProperties;
         this.argLine = argLine;
-        this.environmentVariables = environmentVariables;
+        this.environmentVariables = toImmutable( environmentVariables );
         this.debug = debugEnabled;
         this.forkCount = forkCount;
         this.reuseForks = reuseForks;
+        this.pluginPlatform = pluginPlatform;
     }
 
     public Classpath getBootClasspath()
@@ -125,23 +132,25 @@ public class ForkConfiguration
     }
 
     /**
-     * @param classPath            cla the classpath arguments
-     * @param startupConfiguration The startup configuration
+     * @param classPath            cli the classpath arguments
+     * @param config               The startup configuration
      * @param threadNumber         the thread number, to be the replacement in the argLine   @return A commandline
+     * @return CommandLine able to flush entire command going to be sent to forked JVM
      * @throws org.apache.maven.surefire.booter.SurefireBooterForkException
      *          when unable to perform the fork
      */
-    public OutputStreamFlushableCommandline createCommandLine( List<String> classPath,
-                                                               StartupConfiguration startupConfiguration,
+    public OutputStreamFlushableCommandline createCommandLine( List<String> classPath, StartupConfiguration config,
                                                                int threadNumber )
-        throws SurefireBooterForkException
+            throws SurefireBooterForkException
     {
-        return createCommandLine( classPath,
-                                  startupConfiguration.getClassLoaderConfiguration()
-                                      .isManifestOnlyJarRequestedAndUsable(),
-                                  startupConfiguration.isShadefire(), startupConfiguration.isProviderMainClass()
-            ? startupConfiguration.getActualClassName()
-            : ForkedBooter.class.getName(), threadNumber );
+        boolean useJar = config.getClassLoaderConfiguration().isManifestOnlyJarRequestedAndUsable();
+
+        boolean shadefire = config.isShadefire();
+
+        String providerThatHasMainMethod =
+                config.isProviderMainClass() ? config.getActualClassName() : ForkedBooter.class.getName();
+
+        return createCommandLine( classPath, useJar, shadefire, providerThatHasMainMethod, threadNumber );
     }
 
     OutputStreamFlushableCommandline createCommandLine( List<String> classPath, boolean useJar, boolean shadefire,
@@ -150,48 +159,55 @@ public class ForkConfiguration
     {
         OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
 
-        cli.setExecutable( jvmExecutable );
+        cli.setExecutable( jdk.getJvmExecutable() );
 
-        if ( argLine != null )
-        {
-            cli.createArg().setLine(
-                   replaceThreadNumberPlaceholder( stripNewLines( replacePropertyExpressions( argLine ) ),
-                                                   threadNumber ) );
-        }
+        String jvmArgLine =
+                replaceThreadNumberPlaceholder( stripNewLines( replacePropertyExpressions() ), threadNumber );
 
-        if ( environmentVariables != null )
+        if ( jdk.isJava9AtLeast() && !jvmArgLine.contains( "--add-modules" ) )
         {
-            for ( Map.Entry<String, String> entry : environmentVariables.entrySet() )
+            if ( jvmArgLine.isEmpty() )
             {
-                String value = entry.getValue();
-                cli.addEnvironment( entry.getKey(), value == null ? "" : value );
+                jvmArgLine = "--add-modules java.se.ee";
+            }
+            else
+            {
+                jvmArgLine = "--add-modules java.se.ee " + jvmArgLine;
             }
         }
 
-        if ( getDebugLine() != null && !"".equals( getDebugLine() ) )
+        if ( !jvmArgLine.isEmpty() )
+        {
+            cli.createArg().setLine( jvmArgLine );
+        }
+
+        for ( Map.Entry<String, String> entry : environmentVariables.entrySet() )
+        {
+            String value = entry.getValue();
+            cli.addEnvironment( entry.getKey(), value == null ? "" : value );
+        }
+
+        if ( getDebugLine() != null && !getDebugLine().isEmpty() )
         {
             cli.createArg().setLine( getDebugLine() );
         }
 
         if ( useJar )
         {
-            File jarFile;
             try
             {
-                jarFile = createJar( classPath, providerThatHasMainMethod );
+                File jarFile = createJar( classPath, providerThatHasMainMethod );
+                cli.createArg().setValue( "-jar" );
+                cli.createArg().setValue( escapeToPlatformPath( jarFile.getAbsolutePath() ) );
             }
             catch ( IOException e )
             {
                 throw new SurefireBooterForkException( "Error creating archive file", e );
             }
-
-            cli.createArg().setValue( "-jar" );
-
-            cli.createArg().setValue( jarFile.getAbsolutePath() );
         }
         else
         {
-            cli.addEnvironment( "CLASSPATH", StringUtils.join( classPath.iterator(), File.pathSeparator ) );
+            cli.addEnvironment( "CLASSPATH", join( classPath.iterator(), File.pathSeparator ) );
 
             final String forkedBooter =
                 providerThatHasMainMethod != null ? providerThatHasMainMethod : ForkedBooter.class.getName();
@@ -234,31 +250,37 @@ public class ForkConfiguration
      *
      * This allows other plugins to modify or set properties with the changes getting picked up by surefire.
      */
-    private String replacePropertyExpressions( String argLine )
+    private String replacePropertyExpressions()
     {
         if ( argLine == null )
         {
-            return null;
+            return "";
         }
 
-        for ( Enumeration<?> e = modelProperties.propertyNames(); e.hasMoreElements(); )
+        String resolvedArgLine = argLine.trim();
+
+        if ( resolvedArgLine.isEmpty() )
         {
-            String key = e.nextElement().toString();
+            return "";
+        }
+
+        for ( final String key : modelProperties.stringPropertyNames() )
+        {
             String field = "@{" + key + "}";
             if ( argLine.contains( field ) )
             {
-                argLine = argLine.replace( field, modelProperties.getProperty( key, "" ) );
+                resolvedArgLine = resolvedArgLine.replace( field, modelProperties.getProperty( key, "" ) );
             }
         }
 
-        return argLine;
+        return resolvedArgLine;
     }
 
     /**
      * Create a jar with just a manifest containing a Main-Class entry for BooterConfiguration and a Class-Path entry
      * for all classpath elements.
      *
-     * @param classPath      List&lt;String> of all classpath elements.
+     * @param classPath      List&lt;String&gt; of all classpath elements.
      * @param startClassName  The classname to start (main-class)
      * @return The file pointint to the jar
      * @throws java.io.IOException When a file operation fails.
@@ -284,11 +306,20 @@ public class ForkConfiguration
             // we can't use StringUtils.join here since we need to add a '/' to
             // the end of directory entries - otherwise the jvm will ignore them.
             StringBuilder cp = new StringBuilder();
-            for ( String el : classPath )
+            for ( Iterator<String> it = classPath.iterator(); it.hasNext(); )
             {
-                // NOTE: if File points to a directory, this entry MUST end in '/'.
-                cp.append( UrlUtils.getURL( new File( el ) ).toExternalForm() )
-                        .append( " " );
+                File file1 = new File( it.next() );
+                String uri = file1.toURI().toASCIIString();
+                cp.append( uri );
+                if ( file1.isDirectory() && !uri.endsWith( "/" ) )
+                {
+                    cp.append( '/' );
+                }
+
+                if ( it.hasNext() )
+                {
+                    cp.append( ' ' );
+                }
             }
 
             man.getMainAttributes().putValue( "Manifest-Version", "1.0" );
@@ -296,23 +327,21 @@ public class ForkConfiguration
             man.getMainAttributes().putValue( "Main-Class", startClassName );
 
             man.write( jos );
+
+            jos.closeEntry();
+            jos.flush();
+
+            return file;
         }
         finally
         {
             jos.close();
         }
-
-        return file;
     }
 
     public boolean isDebug()
     {
         return debug;
-    }
-
-    public String stripNewLines( String argline )
-    {
-        return argline.replace( "\n", " " ).replace( "\r", " " );
     }
 
     public String getDebugLine()
@@ -330,9 +359,31 @@ public class ForkConfiguration
         return forkCount;
     }
 
-
     public boolean isReuseForks()
     {
         return reuseForks;
+    }
+
+    public Platform getPluginPlatform()
+    {
+        return pluginPlatform;
+    }
+
+    private static String stripNewLines( String argLine )
+    {
+        return argLine.replace( "\n", " " ).replace( "\r", " " );
+    }
+
+    /**
+     * Immutable map.
+     *
+     * @param map    immutable map copies elements from <code>map</code>
+     * @param <K>    key type
+     * @param <V>    value type
+     * @return never returns null
+     */
+    private static <K, V> Map<K, V> toImmutable( Map<K, V> map )
+    {
+        return map == null ? Collections.<K, V>emptyMap() : new ImmutableMap<K, V>( map );
     }
 }

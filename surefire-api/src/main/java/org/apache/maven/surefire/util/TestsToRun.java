@@ -73,6 +73,7 @@ public class TestsToRun implements Iterable<Class<?>>
      *
      * @return an unmodifiable iterator
      */
+    @Override
     public Iterator<Class<?>> iterator()
     {
         return new ClassesIterator();
@@ -127,6 +128,7 @@ public class TestsToRun implements Iterable<Class<?>>
         return finished;
     }
 
+    @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder( "TestsToRun: [" );

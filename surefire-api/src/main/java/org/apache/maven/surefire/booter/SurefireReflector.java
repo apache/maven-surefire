@@ -58,7 +58,7 @@ import static org.apache.maven.surefire.util.ReflectionUtils.newInstance;
 
 /**
  * Does reflection based invocation of the surefire methods.
- * <p/>
+ * <br>
  * This is to avoid complications with linkage issues
  *
  * @author Kristian Rosenvold
@@ -152,9 +152,6 @@ public class SurefireReflector
 
     }
 
-    /**
-     * @noinspection UnusedDeclaration
-     */
     class ClassLoaderProxy
         implements InvocationHandler
     {
@@ -162,13 +159,13 @@ public class SurefireReflector
 
         /**
          * @param delegate a target
-         * @noinspection UnusedDeclaration
          */
         public ClassLoaderProxy( Object delegate )
         {
             this.target = delegate;
         }
 
+        @Override
         public Object invoke( Object proxy, Method method, Object[] args )
             throws Throwable
         {

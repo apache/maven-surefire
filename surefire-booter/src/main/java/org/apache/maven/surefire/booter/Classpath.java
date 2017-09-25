@@ -19,8 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.UrlUtils;
-
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -32,6 +30,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import static java.io.File.pathSeparatorChar;
+import static org.apache.maven.surefire.util.internal.UrlUtils.toURL;
 
 /**
  * An ordered list of classpath elements with set behaviour
@@ -85,7 +84,7 @@ public class Classpath implements Iterable<String>
         for ( String element : elements )
         {
             element = element.trim();
-            if ( element.length() != 0 )
+            if ( !element.isEmpty() )
             {
                 newCp.add( element );
             }
@@ -115,6 +114,9 @@ public class Classpath implements Iterable<String>
     /**
      * @deprecated this should be package private method which returns List of Files. It will be
      * removed in the next major version.
+     *
+     * @return list of {@link URL jar files paths} with {@code file} protocol in URL.
+     * @throws MalformedURLException if {@link URL} could not be created upon given class-path element(s)
      */
     @Deprecated
     public List<URL> getAsUrlList()
@@ -124,7 +126,7 @@ public class Classpath implements Iterable<String>
         for ( String url : unmodifiableElements )
         {
             File f = new File( url );
-            urls.add( UrlUtils.getURL( f ) );
+            urls.add( toURL( f ) );
         }
         return urls;
     }
@@ -140,6 +142,7 @@ public class Classpath implements Iterable<String>
         System.setProperty( propertyName, sb.toString() );
     }
 
+    @Override
     public boolean equals( Object o )
     {
         if ( this == o )
@@ -156,16 +159,16 @@ public class Classpath implements Iterable<String>
         return unmodifiableElements.equals( classpath.unmodifiableElements );
     }
 
-    public ClassLoader createClassLoader( ClassLoader parent, boolean childDelegation, boolean enableAssertions,
-                                          String roleName )
+    public ClassLoader createClassLoader( boolean childDelegation, boolean enableAssertions, String roleName )
         throws SurefireExecutionException
     {
         try
         {
+            ClassLoader parent = SystemUtils.platformClassLoader();
             IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation, roleName );
-            for ( URL url : getAsUrlList() )
+            for ( String classPathElement : unmodifiableElements )
             {
-                classLoader.addURL( url );
+                classLoader.addURL( new File( classPathElement ).toURL() );
             }
             if ( parent != null )
             {
@@ -180,7 +183,7 @@ public class Classpath implements Iterable<String>
         }
     }
 
-
+    @Override
     public int hashCode()
     {
         return unmodifiableElements.hashCode();
@@ -225,6 +228,7 @@ public class Classpath implements Iterable<String>
         return result.toString();
     }
 
+    @Override
     public Iterator<String> iterator()
     {
         return unmodifiableElements.iterator();

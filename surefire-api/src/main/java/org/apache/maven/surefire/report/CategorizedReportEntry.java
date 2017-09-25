@@ -19,6 +19,9 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+import java.util.Collections;
+import java.util.Map;
+
 /**
  * @author Kristian Rosenvold
  */
@@ -47,18 +50,26 @@ public class CategorizedReportEntry
     public CategorizedReportEntry( String source, String name, String group, StackTraceWriter stackTraceWriter,
                                    Integer elapsed, String message )
     {
-        super( source, name, stackTraceWriter, elapsed, message );
+        this( source, name, group, stackTraceWriter, elapsed, message, Collections.<String, String>emptyMap() );
+    }
+
+    public CategorizedReportEntry( String source, String name, String group, StackTraceWriter stackTraceWriter,
+                                   Integer elapsed, String message, Map<String, String> systemProperties )
+    {
+        super( source, name, stackTraceWriter, elapsed, message, systemProperties );
         this.group = group;
     }
 
-    public static ReportEntry reportEntry( String source, String name, String group, StackTraceWriter stackTraceWriter,
-                                           Integer elapsed, String message )
+    public static TestSetReportEntry reportEntry( String source, String name, String group,
+                                                  StackTraceWriter stackTraceWriter, Integer elapsed, String message,
+                                                  Map<String, String> systemProperties )
     {
         return group != null
-            ? new CategorizedReportEntry( source, name, group, stackTraceWriter, elapsed, message )
-            : new SimpleReportEntry( source, name, stackTraceWriter, elapsed, message );
+            ? new CategorizedReportEntry( source, name, group, stackTraceWriter, elapsed, message, systemProperties )
+            : new SimpleReportEntry( source, name, stackTraceWriter, elapsed, message, systemProperties );
     }
 
+    @Override
     public String getGroup()
     {
         return group;
@@ -67,19 +78,10 @@ public class CategorizedReportEntry
     @Override
     public String getNameWithGroup()
     {
-        StringBuilder result = new StringBuilder();
-        result.append( getName() );
-
-        if ( getGroup() != null && !getName().equals( getGroup() ) )
-        {
-            result.append( GROUP_PREFIX );
-            result.append( getGroup() );
-            result.append( GROUP_SUFIX );
-        }
-
-        return result.toString();
+        return isNameWithGroup() ? getName() + GROUP_PREFIX + getGroup() + GROUP_SUFIX : getName();
     }
 
+    @Override
     public boolean equals( Object o )
     {
         if ( this == o )
@@ -101,10 +103,16 @@ public class CategorizedReportEntry
 
     }
 
+    @Override
     public int hashCode()
     {
         int result = super.hashCode();
         result = 31 * result + ( group != null ? group.hashCode() : 0 );
         return result;
+    }
+
+    private boolean isNameWithGroup()
+    {
+        return getGroup() != null && !getGroup().equals( getName() );
     }
 }

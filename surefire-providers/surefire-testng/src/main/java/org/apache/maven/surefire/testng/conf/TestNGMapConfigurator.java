@@ -35,13 +35,13 @@ import static org.apache.maven.surefire.testng.conf.AbstractDirectConfigurator.l
 
 /**
  * TestNG configurator for 5.3+ versions. TestNG exposes a {@link org.testng.TestNG#configure(java.util.Map)} method.
- * All suppported TestNG options are passed in String format, except
- * <code>TestNGCommandLineArgs.LISTENER_COMMAND_OPT</code> which is <code>List&gt;Class&lt;</code>,
- * <code>TestNGCommandLineArgs.JUNIT_DEF_OPT</code> which is a <code>Boolean</code>,
- * <code>TestNGCommandLineArgs.SKIP_FAILED_INVOCATION_COUNT_OPT</code> which is a <code>Boolean</code>,
- * <code>TestNGCommandLineArgs.OBJECT_FACTORY_COMMAND_OPT</code> which is a <code>Class</code>,
- * <code>TestNGCommandLineArgs.REPORTERS_LIST</code> which is a <code>List&gt;ReporterConfig&lt;</code>.
- * <p/>
+ * All supported TestNG options are passed in String format, except
+ * {@link org.testng.TestNGCommandLineArgs#LISTENER_COMMAND_OPT} which is {@link java.util.List List&gt;Class&lt;},
+ * {@link org.testng.TestNGCommandLineArgs#JUNIT_DEF_OPT} which is a {@link Boolean},
+ * {@link org.testng.TestNGCommandLineArgs#SKIP_FAILED_INVOCATION_COUNT_OPT} which is a {@link Boolean},
+ * {@link org.testng.TestNGCommandLineArgs#OBJECT_FACTORY_COMMAND_OPT} which is a {@link Class},
+ * {@link org.testng.TestNGCommandLineArgs#REPORTERS_LIST} which is a {@link java.util.List List&gt;ReporterConfig&lt;}.
+ * <br>
  * Test classes and/or suite files are not passed along as options parameters, but configured separately.
  *
  * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
@@ -49,6 +49,7 @@ import static org.apache.maven.surefire.testng.conf.AbstractDirectConfigurator.l
 public class TestNGMapConfigurator
     implements Configurator
 {
+    @Override
     public void configure( TestNG testng, Map<String, String> options )
         throws TestSetFailedException
     {
@@ -56,6 +57,7 @@ public class TestNGMapConfigurator
         testng.configure( convertedOptions );
     }
 
+    @Override
     public void configure( XmlSuite suite, Map<String, String> options )
         throws TestSetFailedException
     {

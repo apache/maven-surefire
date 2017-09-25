@@ -29,6 +29,7 @@ import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
@@ -37,7 +38,7 @@ import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
 
 /**
  * Reports data for a single test set.
- * <p/>
+ * <br>
  *
  * @author Kristian Rosenvold
  */
@@ -86,36 +87,43 @@ public class TestSetRunListener
         testMethodStats = new ArrayList<TestMethodStats>();
     }
 
+    @Override
     public void debug( String message )
     {
         consoleReporter.getConsoleLogger().debug( trimTrailingNewLine( message ) );
     }
 
+    @Override
     public void info( String message )
     {
         consoleReporter.getConsoleLogger().info( trimTrailingNewLine( message ) );
     }
 
+    @Override
     public void warning( String message )
     {
         consoleReporter.getConsoleLogger().warning( trimTrailingNewLine( message ) );
     }
 
+    @Override
     public void error( String message )
     {
         consoleReporter.getConsoleLogger().error( trimTrailingNewLine( message ) );
     }
 
+    @Override
     public void error( String message, Throwable t )
     {
         consoleReporter.getConsoleLogger().error( message, t );
     }
 
+    @Override
     public void error( Throwable t )
     {
         consoleReporter.getConsoleLogger().error( t );
     }
 
+    @Override
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         try
@@ -136,7 +144,8 @@ public class TestSetRunListener
         consoleOutputReceiver.writeTestOutput( buf, off, len, stdout );
     }
 
-    public void testSetStarting( ReportEntry report )
+    @Override
+    public void testSetStarting( TestSetReportEntry report )
     {
         detailsForThis.testSetStart();
         consoleReporter.testSetStarting( report );
@@ -149,7 +158,8 @@ public class TestSetRunListener
         testStdErr = initDeferred( "stderr" );
     }
 
-    public void testSetCompleted( ReportEntry report )
+    @Override
+    public void testSetCompleted( TestSetReportEntry report )
     {
         final WrappedReportEntry wrap = wrapTestSet( report );
         final List<String> testResults =
@@ -166,18 +176,20 @@ public class TestSetRunListener
 
         addTestMethodStats();
         detailsForThis.reset();
-
+        clearCapture();
     }
 
     // ----------------------------------------------------------------------
     // Test
     // ----------------------------------------------------------------------
 
+    @Override
     public void testStarting( ReportEntry report )
     {
         detailsForThis.testStart();
     }
 
+    @Override
     public void testSucceeded( ReportEntry reportEntry )
     {
         WrappedReportEntry wrapped = wrap( reportEntry, SUCCESS );
@@ -186,6 +198,7 @@ public class TestSetRunListener
         clearCapture();
     }
 
+    @Override
     public void testError( ReportEntry reportEntry )
     {
         WrappedReportEntry wrapped = wrap( reportEntry, ERROR );
@@ -194,6 +207,7 @@ public class TestSetRunListener
         clearCapture();
     }
 
+    @Override
     public void testFailed( ReportEntry reportEntry )
     {
         WrappedReportEntry wrapped = wrap( reportEntry, FAILURE );
@@ -206,6 +220,7 @@ public class TestSetRunListener
     // Counters
     // ----------------------------------------------------------------------
 
+    @Override
     public void testSkipped( ReportEntry reportEntry )
     {
         WrappedReportEntry wrapped = wrap( reportEntry, SKIPPED );
@@ -215,10 +230,12 @@ public class TestSetRunListener
         clearCapture();
     }
 
+    @Override
     public void testExecutionSkippedByUser()
     {
     }
 
+    @Override
     public void testAssumptionFailure( ReportEntry report )
     {
         testSkipped( report );
@@ -246,11 +263,11 @@ public class TestSetRunListener
         return new WrappedReportEntry( other, reportEntryType, estimatedElapsed, testStdOut, testStdErr );
     }
 
-    private WrappedReportEntry wrapTestSet( ReportEntry other )
+    private WrappedReportEntry wrapTestSet( TestSetReportEntry other )
     {
         return new WrappedReportEntry( other, null, other.getElapsed() != null
             ? other.getElapsed()
-            : detailsForThis.getElapsedSinceTestSetStart(), testStdOut, testStdErr );
+            : detailsForThis.getElapsedSinceTestSetStart(), testStdOut, testStdErr, other.getSystemProperties() );
     }
 
     public void close()

@@ -46,6 +46,7 @@ public class SurefireReportParserTest
     /**
      * {@inheritDoc}
      */
+    @Override
     protected void setUp()
         throws Exception
     {

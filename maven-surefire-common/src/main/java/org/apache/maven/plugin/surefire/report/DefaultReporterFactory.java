@@ -31,6 +31,7 @@ import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -55,7 +56,7 @@ import static org.apache.maven.surefire.util.internal.ObjectUtils.useNonNull;
 
 /**
  * Provides reporting modules on the plugin side.
- * <p/>
+ * <br>
  * Keeps a centralized count of test run results.
  *
  * @author Kristian Rosenvold
@@ -85,6 +86,7 @@ public class DefaultReporterFactory
         listeners = new ConcurrentLinkedQueue<TestSetRunListener>();
     }
 
+    @Override
     public RunListener createReporter()
     {
         TestSetRunListener testSetRunListener =
@@ -98,6 +100,11 @@ public class DefaultReporterFactory
                                     reportConfiguration.isBriefOrPlainFormat() );
         addListener( testSetRunListener );
         return testSetRunListener;
+    }
+
+    public File getReportsDirectory()
+    {
+        return reportConfiguration.getReportsDirectory();
     }
 
     private ConsoleReporter createConsoleReporter()
@@ -153,6 +160,7 @@ public class DefaultReporterFactory
         listeners.add( listener );
     }
 
+    @Override
     public RunResult close()
     {
         mergeTestHistoryResult();
@@ -201,6 +209,8 @@ public class DefaultReporterFactory
 
     /**
      * For testing purposes only.
+     *
+     * @return DefaultReporterFactory for testing purposes
      */
     public static DefaultReporterFactory defaultNoXml()
     {
@@ -421,12 +431,12 @@ public class DefaultReporterFactory
     enum TestResultType
     {
 
-        error(   "Tests in error: " ),
-        failure( "Failed tests: "   ),
-        flake(   "Flaked tests: "   ),
-        success( "Success: "        ),
-        skipped( "Skipped: "        ),
-        unknown( "Unknown: "        );
+        error(   "Errors: "   ),
+        failure( "Failures: " ),
+        flake(   "Flakes: "   ),
+        success( "Success: "  ),
+        skipped( "Skipped: "  ),
+        unknown( "Unknown: "  );
 
         private final String logPrefix;
 

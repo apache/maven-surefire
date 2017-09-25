@@ -24,7 +24,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
  * TestNG 5.14.3 configurator. Changed: "reporterslist" replaced by "reporter",
- *                                       and "listener" can use String instead of List<Class>.
+ *                                       and "listener" can use String instead of List&lt;Class&gt;.
  */
 public class TestNG5143Configurator
     extends TestNG5141Configurator

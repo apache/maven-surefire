@@ -24,7 +24,7 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
 /**
- * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-1146}
+ * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1146">SUREFIRE-1146</a>
  */
 public class Surefire1146RerunFailedAndParameterized
     extends SurefireJUnit4IntegrationTestCase
@@ -39,7 +39,7 @@ public class Surefire1146RerunFailedAndParameterized
 
     private void verify( OutputValidator outputValidator, int run, int failures, int errors, int skipped, int flakes )
     {
-        outputValidator.verifyTextInLog( "Flaked tests:" );
+        outputValidator.verifyTextInLog( "Flakes:" );
         outputValidator.verifyTextInLog( "jiras.surefire1146.CustomDescriptionParameterizedTest.flakyTest[0: (Test11); Test12; Test13;](jiras.surefire1146.CustomDescriptionParameterizedTest)" );
         outputValidator.verifyTextInLog( "Run 1: CustomDescriptionParameterizedTest.flakyTest:" );
         outputValidator.verifyTextInLog( "Run 2: CustomDescriptionParameterizedTest.flakyTest:" );

@@ -25,7 +25,7 @@ import org.junit.Test;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-995}
+ * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-995">SUREFIRE-995</a>
  * @since 2.18.1
  */
 public class Surefire995CategoryInheritanceIT

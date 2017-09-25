@@ -27,6 +27,7 @@ import junit.framework.TestCase;
 
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.report.StackTraceWriter;
@@ -61,6 +62,7 @@ public class DefaultReporterFactoryTest
 
     public void testMergeTestHistoryResult()
     {
+        MessageUtils.setColorEnabled( false );
         File reportsDirectory = new File("target");
         StartupReportConfiguration reportConfig =
                 new StartupReportConfiguration( true, true, "PLAIN", false, false, reportsDirectory, false, null,
@@ -120,7 +122,7 @@ public class DefaultReporterFactoryTest
         // Now test the result will be printed out correctly
         factory.printTestFailures( flake );
         String[] expectedFlakeOutput =
-            { "Flaked tests: ", TEST_FOUR, "  Run 1: " + ASSERTION_FAIL, "  Run 2: PASS", "", TEST_ONE,
+            { "Flakes: ", TEST_FOUR, "  Run 1: " + ASSERTION_FAIL, "  Run 2: PASS", "", TEST_ONE,
                 "  Run 1: " + ERROR, "  Run 2: " + ASSERTION_FAIL, "  Run 3: PASS", "", TEST_TWO, "  Run 1: " + ERROR,
                 "  Run 2: PASS", "" };
         assertEquals( asList( expectedFlakeOutput ), reporter.getMessages() );
@@ -128,7 +130,7 @@ public class DefaultReporterFactoryTest
         reporter.reset();
         factory.printTestFailures( error );
         String[] expectedFailureOutput =
-            { "Tests in error: ", TEST_THREE, "  Run 1: " + ASSERTION_FAIL, "  Run 2: " + ERROR, "  Run 3: " + ERROR, ""
+            { "Errors: ", TEST_THREE, "  Run 1: " + ASSERTION_FAIL, "  Run 2: " + ERROR, "  Run 3: " + ERROR, ""
             };
         assertEquals( asList( expectedFailureOutput ), reporter.getMessages() );
 
@@ -142,31 +144,37 @@ public class DefaultReporterFactoryTest
     {
         private final List<String> messages = new ArrayList<String>();
 
+        @Override
         public void debug( String message )
         {
             messages.add( message );
         }
 
+        @Override
         public void info( String message )
         {
             messages.add( message );
         }
 
+        @Override
         public void warning( String message )
         {
             messages.add( message );
         }
 
+        @Override
         public void error( String message )
         {
             messages.add( message );
         }
 
+        @Override
         public void error( String message, Throwable t )
         {
             messages.add( message );
         }
 
+        @Override
         public void error( Throwable t )
         {
         }
@@ -233,21 +241,25 @@ public class DefaultReporterFactoryTest
             this.stackTrace = stackTrace;
         }
 
+        @Override
         public String writeTraceToString()
         {
             return "";
         }
 
+        @Override
         public String writeTrimmedTraceToString()
         {
             return "";
         }
 
+        @Override
         public String smartTrimmedStackTrace()
         {
             return stackTrace;
         }
 
+        @Override
         public SafeThrowable getThrowable()
         {
             return null;

@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.maven.surefire.booter.MasterProcessCommand.TEST_SET_FINISHED;
+import static org.apache.maven.surefire.booter.Command.BYE_ACK;
 import static org.apache.maven.surefire.booter.Command.NOOP;
 import static org.apache.maven.surefire.booter.Command.SKIP_SINCE_NEXT_TEST;
 import static org.apache.maven.surefire.booter.Command.toRunClass;
@@ -36,13 +36,13 @@ import static org.apache.maven.surefire.booter.Command.toShutdown;
 
 /**
  * An {@link java.io.InputStream} that, when read, provides test class names out of a queue.
- * <p/>
+ * <br>
  * The Stream provides only one test at a time, but only after {@link #provideNewTest()} has been invoked.
- * <p/>
+ * <br>
  * After providing each test class name, followed by a newline character, a flush is performed on the
  * {@link FlushReceiver} provided by the {@link FlushReceiverProvider} that can be set using
  * {@link #setFlushReceiverProvider(FlushReceiverProvider)}.
- * <p/>
+ * <br>
  * The instance is used only in reusable forks in {@link org.apache.maven.plugin.surefire.booterclient.ForkStarter}
  * by one Thread.
  *
@@ -82,6 +82,7 @@ public final class TestProvidingInputStream
         }
     }
 
+    @Override
     public void skipSinceNextTest()
     {
         if ( canContinue() )
@@ -91,6 +92,7 @@ public final class TestProvidingInputStream
         }
     }
 
+    @Override
     public void shutdown( Shutdown shutdownType )
     {
         if ( canContinue() )
@@ -100,11 +102,22 @@ public final class TestProvidingInputStream
         }
     }
 
+    @Override
     public void noop()
     {
         if ( canContinue() )
         {
             commands.add( NOOP );
+            barrier.release();
+        }
+    }
+
+    @Override
+    public void acknowledgeByeEventReceived()
+    {
+        if ( canContinue() )
+        {
+            commands.add( BYE_ACK );
             barrier.release();
         }
     }
@@ -137,15 +150,10 @@ public final class TestProvidingInputStream
         return closed.get();
     }
 
-    @Override
-    protected boolean canContinue()
-    {
-        return getLastCommand() != TEST_SET_FINISHED && !isClosed();
-    }
-
     /**
      * Signal that a new test is to be provided.
      */
+    @Override
     public void provideNewTest()
     {
         if ( canContinue() )

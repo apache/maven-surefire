@@ -27,9 +27,9 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 @RunWith( Parameterized.class )
-public final class Jira1082Test
+public class Jira1082Test
 {
-    private int x;
+    private final int x;
 
     public Jira1082Test( int x )
     {

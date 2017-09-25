@@ -91,7 +91,11 @@ public class ForkModeIT
     @Test
     public void testForkModeOncePerThreadSingleThread()
     {
-        String[] pids = doTest( unpack( getProject() ).setForkJvm().forkOncePerThread().threadCount( 1 ) );
+        String[] pids = doTest( unpack( getProject() )
+                .setForkJvm()
+                .forkPerThread()
+                .reuseForks( true )
+                .threadCount( 1 ) );
         assertSamePids( pids );
         assertEndWith( pids, "_1_1", 3 );
         assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
@@ -100,8 +104,11 @@ public class ForkModeIT
     @Test
     public void testForkModeOncePerThreadTwoThreads()
     {
-        String[] pids =
-            doTest( unpack( getProject() ).forkOncePerThread().threadCount( 2 ).addGoal( "-DsleepLength=1200" ) );
+        String[] pids = doTest( unpack( getProject() )
+                .forkPerThread()
+                .reuseForks( true )
+                .threadCount( 2 )
+                .addGoal( "-DsleepLength=1200" ) );
         assertDifferentPids( pids, 2 );
         assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
     }
@@ -137,7 +144,7 @@ public class ForkModeIT
     public void testForkCountTwoNoReuse()
     {
         String[] pids =
-            doTest( unpack( getProject() ).forkCount( 2 ).reuseForks( false ).addGoal( "-DsleepLength=1200" ) );
+            doTest( unpack( getProject() ).setForkJvm().forkCount( 2 ).reuseForks( false ).addGoal( "-DsleepLength=1200" ) );
         assertDifferentPids( pids );
         assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
     }

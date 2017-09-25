@@ -19,13 +19,15 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import org.apache.commons.io.output.DeferredFileOutputStream;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 
-import org.apache.commons.io.output.DeferredFileOutputStream;
+import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
 
 /**
  * A deferred file output stream decorator that recodes the bytes written into the stream from the VM default encoding
@@ -38,8 +40,6 @@ class Utf8RecodingDeferredFileOutputStream
     private DeferredFileOutputStream deferredFileOutputStream;
 
     private boolean closed = false;
-
-    private static final Charset UTF8 = Charset.forName( "UTF-8" );
 
     @SuppressWarnings( "checkstyle:magicnumber" )
     public Utf8RecodingDeferredFileOutputStream( String channel )
@@ -55,10 +55,10 @@ class Utf8RecodingDeferredFileOutputStream
             return;
         }
 
-        if ( !Charset.defaultCharset().equals( UTF8 ) )
+        if ( !Charset.defaultCharset().equals( UTF_8 ) )
         {
             CharBuffer decodedFromDefaultCharset = Charset.defaultCharset().decode( ByteBuffer.wrap( buf, off, len ) );
-            ByteBuffer utf8Encoded = UTF8.encode( decodedFromDefaultCharset );
+            ByteBuffer utf8Encoded = UTF_8.encode( decodedFromDefaultCharset );
 
             if ( utf8Encoded.hasArray() )
             {

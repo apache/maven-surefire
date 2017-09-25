@@ -22,6 +22,7 @@ package org.apache.maven.plugin.surefire.report;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -60,7 +61,7 @@ public class FileReporter
 
         try
         {
-            PrintWriter writer = new PrintWriter( new FileWriter( reportFile ) );
+            PrintWriter writer = new PrintWriter( new BufferedWriter( new FileWriter( reportFile ), 16 * 1024 ) );
 
             writer.println( "-------------------------------------------------------------------------------" );
 
@@ -86,9 +87,10 @@ public class FileReporter
 
     public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
     {
-        PrintWriter writer = testSetStarting( report );
+        PrintWriter writer = null;
         try
         {
+            writer = testSetStarting( report );
             writer.println( testSetStats.getTestSetSummary( report ) );
             for ( String testResult : testResults )
             {
@@ -98,7 +100,10 @@ public class FileReporter
         }
         finally
         {
-            writer.close();
+            if ( writer != null )
+            {
+                writer.close();
+            }
         }
     }
 }

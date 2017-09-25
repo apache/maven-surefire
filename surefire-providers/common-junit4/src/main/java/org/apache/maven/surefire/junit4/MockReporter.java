@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 
 /**
  * Internal tests use only.
@@ -55,34 +56,39 @@ public class MockReporter
     {
     }
 
-    public void testSetStarting( ReportEntry report )
+    @Override
+    public void testSetStarting( TestSetReportEntry report )
     {
         events.add( SET_STARTED );
     }
 
-    public void testSetCompleted( ReportEntry report )
+    @Override
+    public void testSetCompleted( TestSetReportEntry report )
     {
         events.add( SET_COMPLETED );
     }
 
+    @Override
     public void testStarting( ReportEntry report )
     {
         events.add( TEST_STARTED );
     }
 
+    @Override
     public void testSucceeded( ReportEntry report )
     {
         events.add( TEST_COMPLETED );
         testSucceeded.incrementAndGet();
-
     }
 
+    @Override
     public void testSkipped( ReportEntry report )
     {
         events.add( TEST_SKIPPED );
         testIgnored.incrementAndGet();
     }
 
+    @Override
     public void testExecutionSkippedByUser()
     {
     }
@@ -102,18 +108,25 @@ public class MockReporter
         return testFailed.get();
     }
 
+    @Override
     public void testError( ReportEntry report )
     {
         testError.incrementAndGet();
     }
 
+    @Override
     public void testFailed( ReportEntry report )
     {
         testFailed.incrementAndGet();
     }
 
+    @Override
     public void testAssumptionFailure( ReportEntry report )
     {
     }
 
+    public boolean containsNotification( String event )
+    {
+        return events.contains( event );
+    }
 }

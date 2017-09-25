@@ -63,6 +63,7 @@ public class JUnit4RunListenerTest
 
         DaemonThreadFactory.newDaemonThread( new Runnable()
         {
+            @Override
             public void run()
             {
                 try

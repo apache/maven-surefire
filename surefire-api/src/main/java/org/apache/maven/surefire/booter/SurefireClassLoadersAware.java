@@ -21,7 +21,6 @@ package org.apache.maven.surefire.booter;
 
 /**
  * @author Kristian Rosenvold
- * @noinspection UnusedDeclaration
  */
 interface SurefireClassLoadersAware
 {

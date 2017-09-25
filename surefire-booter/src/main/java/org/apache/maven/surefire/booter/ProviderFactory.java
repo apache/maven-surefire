@@ -34,7 +34,7 @@ import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArr
 
 /**
  * Creates the surefire provider.
- * <p/>
+ * <br>
  *
  * @author Kristian Rosenvold
  */
@@ -134,6 +134,7 @@ public class ProviderFactory
             this.testsClassLoader = testsClassLoader;
         }
 
+        @Override
         @SuppressWarnings( "unchecked" )
         public Iterable<Class<?>> getSuites()
         {
@@ -148,6 +149,7 @@ public class ProviderFactory
             }
         }
 
+        @Override
         public RunResult invoke( Object forkTestSet )
             throws TestSetFailedException, InvocationTargetException
         {
@@ -175,6 +177,7 @@ public class ProviderFactory
             return current;
         }
 
+        @Override
         public void cancel()
         {
             Class<?> providerType = providerInOtherClassLoader.getClass();

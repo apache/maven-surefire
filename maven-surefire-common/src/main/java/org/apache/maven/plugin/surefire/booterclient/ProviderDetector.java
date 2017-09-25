@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import org.apache.maven.surefire.spi.ServiceLoader;
+import org.apache.maven.surefire.providerapi.ServiceLoader;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -28,7 +28,6 @@ import java.util.Set;
 /**
  * @author Stephen Conolly
  * @author Kristian Rosenvold
- * @noinspection UnusedDeclaration
  */
 public final class ProviderDetector
 {

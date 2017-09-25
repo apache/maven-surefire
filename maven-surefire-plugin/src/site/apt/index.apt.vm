@@ -31,7 +31,7 @@
 Maven ${thisPlugin} Plugin
 
 
-  Requirements: Maven 2.2.1 or 3.x, and JDK 1.5 or higher. Due to wrong formatting of console text messages
+  Requirements: Maven 2.2.1 or 3.x, and JDK 1.6 or higher. Due to wrong formatting of console text messages
   in Maven Version prior to 3.1.0 it is highly recommended to use Maven 3.1.0 or higher.
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
@@ -81,13 +81,18 @@ mvn verify
 
   []
 
-  By default, these files are generated at <<<$\{basedir\}/target/${thisPlugin.toLowerCase()}-reports>>>.
+  By default, these files are generated in <<<$\{basedir\}/target/${thisPlugin.toLowerCase()}-reports/TEST-*.xml>>>.
 
   The schema for the ${thisPlugin} XML reports is available at
   {{{./xsd/${thisPlugin.toLowerCase()}-test-report.xsd}${thisPlugin} XML Report Schema}}.
 
   For an HTML format of the report, please see the
   {{{http://maven.apache.org/plugins/maven-surefire-report-plugin/}Maven Surefire Report Plugin}}.
+
+#{if}(${project.artifactId}=="maven-failsafe-plugin")
+  By default this plugin generates summary XML file at <<<$\{basedir\}/target/failsafe-reports/failsafe-summary.xml>>>
+  and the schema is available at {{{./xsd/failsafe-summary.xsd}Failsafe XML Summary Schema}}.
+#{end}
 
 * Goals Overview
 

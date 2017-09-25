@@ -47,6 +47,7 @@ public class JUnit4TestChecker
         nonAbstractClassFilter = new NonAbstractClassFilter();
     }
 
+    @Override
     public boolean accept( Class testClass )
     {
         return jUnit3TestChecker.accept( testClass ) || isValidJUnit4Test( testClass );

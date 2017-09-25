@@ -28,9 +28,8 @@ import java.lang.reflect.Method;
  */
 public final class ReflectionUtils
 {
-    private static final Class[] NO_ARGS = new Class[0];
-
-    private static final Object[] NO_ARGS_VALUES = new Object[0];
+    private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
+    private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
     private ReflectionUtils()
     {
@@ -68,8 +67,13 @@ public final class ReflectionUtils
 
     public static Object invokeGetter( Object instance, String methodName )
     {
-        final Method method = getMethod( instance, methodName, NO_ARGS );
-        return invokeMethodWithArray( instance, method, NO_ARGS_VALUES );
+        return invokeGetter( instance.getClass(), instance, methodName );
+    }
+
+    public static Object invokeGetter( Class<?> instanceType, Object instance, String methodName )
+    {
+        Method method = getMethod( instanceType, methodName );
+        return invokeMethodWithArray( instance, method );
     }
 
     public static Constructor getConstructor( Class<?> clazz, Class<?>... arguments )
@@ -243,6 +247,68 @@ public final class ReflectionUtils
         catch ( ClassNotFoundException e )
         {
             throw new SurefireReflectionException( e );
+        }
+    }
+
+    /**
+     * Invoker of public static no-argument method.
+     *
+     * @param clazz         class on which public static no-argument {@code methodName} is invoked
+     * @param methodName    public static no-argument method to be called
+     * @param parameterTypes    method parameter types
+     * @param parameters    method parameters
+     * @return value returned by {@code methodName}
+     * @throws RuntimeException if no such method found
+     * @throws SurefireReflectionException if the method could not be called or threw an exception.
+     * It has original cause Exception.
+     */
+    public static Object invokeStaticMethod( Class<?> clazz, String methodName,
+                                             Class<?>[] parameterTypes, Object[] parameters )
+    {
+        if ( parameterTypes.length != parameters.length )
+        {
+            throw new IllegalArgumentException( "arguments length do not match" );
+        }
+        Method method = getMethod( clazz, methodName, parameterTypes );
+        return invokeMethodWithArray( null, method, parameters );
+    }
+
+    /**
+     * Method chain invoker.
+     *
+     * @param classesChain        classes to invoke on method chain
+     * @param noArgMethodNames    chain of public methods to call
+     * @param fallback            returned value if a chain could not be invoked due to an error
+     * @return successfully returned value from the last method call; {@code fallback} otherwise
+     * @throws IllegalArgumentException if {@code classes} and {@code noArgMethodNames} have different array length
+     */
+    public static Object invokeMethodChain( Class<?>[] classesChain, String[] noArgMethodNames, Object fallback )
+    {
+        if ( classesChain.length != noArgMethodNames.length )
+        {
+            throw new IllegalArgumentException( "arrays must have the same length" );
+        }
+        Object obj = null;
+        try
+        {
+            for ( int i = 0, len = noArgMethodNames.length; i < len; i++ )
+            {
+                if ( i == 0 )
+                {
+                    obj = invokeStaticMethod( classesChain[i], noArgMethodNames[i],
+                                                    EMPTY_CLASS_ARRAY, EMPTY_OBJECT_ARRAY );
+                }
+                else
+                {
+                    Method method = getMethod( classesChain[i], noArgMethodNames[i] );
+                    obj = invokeMethodWithArray( obj, method );
+                }
+            }
+            return obj;
+        }
+        catch ( RuntimeException e )
+        {
+            return fallback;
         }
     }
 }

@@ -136,6 +136,7 @@ public class LegacyPojoStackTraceWriterTest
             this.stackTrace = stackTrace;
         }
 
+        @Override
         public void printStackTrace( PrintWriter s )
         {
             s.write( stackTrace );

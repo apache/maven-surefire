@@ -30,7 +30,8 @@ import java.util.Iterator;
 /**
  * An algorithm which configures {@link ParallelComputer} with allocated thread resources by given
  * {@link org.apache.maven.surefire.junitcore.JUnitCoreParameters}.
- * The <code>AbstractSurefireMojo</code> has to provide correct combinations of thread-counts and <em>parallel</em>.
+ * The {@code AbstractSurefireMojo} has to provide correct combinations of thread-counts and
+ * configuration parameter {@code parallel}.
  *
  * @author Tibor Digana (tibor17)
  * @see org.apache.maven.surefire.junitcore.pc.ParallelComputerBuilder

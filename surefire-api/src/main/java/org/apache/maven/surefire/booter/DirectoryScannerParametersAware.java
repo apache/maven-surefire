@@ -23,7 +23,6 @@ import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 
 /**
  * @author Kristian Rosenvold
- * @noinspection UnusedDeclaration
  */
 interface DirectoryScannerParametersAware
 {

@@ -106,11 +106,13 @@ public class JUnit3TestCheckerTest
     public static class MySuite2
         implements junit.framework.Test
     {
+        @Override
         public int countTestCases()
         {
             return 0;
         }
 
+        @Override
         public void run( TestResult testResult )
         {
         }
@@ -119,9 +121,6 @@ public class JUnit3TestCheckerTest
 
     public static class NotValidTest
     {
-        /**
-         * @noinspection UnusedDeclaration
-         */
         public void testSomething()
         {
         }
@@ -130,9 +129,6 @@ public class JUnit3TestCheckerTest
     public abstract static class BaseClassWithTest
         extends TestCase
     {
-        /**
-         * @noinspection UnusedDeclaration
-         */
         public void testWeAreAlsoATest()
         {
         }

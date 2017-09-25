@@ -32,6 +32,7 @@ public class ReportTestCaseTest
     /**
      * {@inheritDoc}
      */
+    @Override
     protected void setUp()
         throws Exception
     {

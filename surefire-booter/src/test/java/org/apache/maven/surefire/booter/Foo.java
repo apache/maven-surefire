@@ -52,6 +52,7 @@ public class Foo
 
     boolean called = false;
 
+    @Override
     public void setDirectoryScannerParameters( DirectoryScannerParameters directoryScanner )
     {
         this.directoryScannerParameters = directoryScanner;
@@ -60,26 +61,28 @@ public class Foo
 
 
     /**
-     * @return true if it has been callsed
-     * @noinspection UnusedDeclaration
+     * @return true if it has been called
      */
     public Boolean isCalled()
     {
         return called;
     }
 
+    @Override
     public void setProviderProperties( Map<String, String> providerProperties )
     {
         this.providerProperties = providerProperties;
         this.called = true;
     }
 
+    @Override
     public void setReporterConfiguration( ReporterConfiguration reporterConfiguration )
     {
         this.reporterConfiguration = reporterConfiguration;
         this.called = true;
     }
 
+    @Override
     public void setClassLoaders( ClassLoader testClassLoader )
     {
         this.testClassLoader = testClassLoader;
@@ -87,18 +90,21 @@ public class Foo
         this.called = true;
     }
 
+    @Override
     public void setTestRequest( TestRequest testRequest1 )
     {
         this.testRequest = testRequest1;
         this.called = true;
     }
 
+    @Override
     public void setTestArtifactInfo( TestArtifactInfo testArtifactInfo )
     {
         this.testArtifactInfo = testArtifactInfo;
         this.called = true;
     }
 
+    @Override
     public void setRunOrderParameters( RunOrderParameters runOrderParameters )
     {
         this.runOrderParameters = runOrderParameters;

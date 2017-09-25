@@ -30,7 +30,7 @@ import static java.nio.charset.Charset.defaultCharset;
 
 /**
  * Outputs test system out/system err directly to the console
- * <p/>
+ * <br>
  * Just a step on the road to getting the separation of reporting concerns
  * operating properly.
  *
@@ -50,6 +50,7 @@ public class DirectConsoleOutput
     }
 
 
+    @Override
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         final PrintStream stream = stdout ? sout : serr;
@@ -64,14 +65,17 @@ public class DirectConsoleOutput
         }
     }
 
+    @Override
     public void testSetStarting( ReportEntry reportEntry )
     {
     }
 
+    @Override
     public void testSetCompleted( ReportEntry report )
     {
     }
 
+    @Override
     public void close()
     {
     }

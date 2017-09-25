@@ -62,7 +62,7 @@ final class FileScanner
             for ( File fileOrDir : filesAndDirs )
             {
                 String name = fileOrDir.getName();
-                if ( name.length() != 0 )
+                if ( !name.isEmpty() )
                 {
                     if ( fileOrDir.isFile() )
                     {
@@ -74,7 +74,7 @@ final class FileScanner
                             if ( filter.shouldRun( toFile( path, simpleClassName ), null ) )
                             {
                                 String fullyQualifiedClassName =
-                                    pAckage.length() == 0 ? simpleClassName : pAckage + '.' + simpleClassName;
+                                    pAckage.isEmpty() ? simpleClassName : pAckage + '.' + simpleClassName;
                                 scannedJavaClassNames.add( fullyQualifiedClassName );
                             }
                         }
@@ -122,7 +122,7 @@ final class FileScanner
     private String toFile( String path, String fileNameWithoutExtension )
     {
         String pathWithoutExtension =
-            path.length() == 0 ? fileNameWithoutExtension : path + '/' + fileNameWithoutExtension;
+            path.isEmpty() ? fileNameWithoutExtension : path + '/' + fileNameWithoutExtension;
         return pathWithoutExtension + ext;
     }
 }

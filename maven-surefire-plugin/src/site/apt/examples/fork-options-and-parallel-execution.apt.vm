@@ -291,6 +291,12 @@ Fork Options and Parallel Test Execution
   <<<-T>>>, the only limitation is that you can not use it together with
   <<<forkCount=0>>>.
 
+  When running parallel maven builds without forks, all system properties
+  are shared among the builder threads and ${thisPlugin.toLowerCase()} executions,
+  therefore the threads will encounter race conditions when setting
+  properties, e.g. <<<baseDir>>>, which may lead to changing system properties
+  and unexpected runtime behaviour.
+
 * Migrating the Deprecated forkMode Parameter to forkCount and reuseForks
 
   ${thisPlugin.toLowerCase()} versions prior 2.14 used the parameter <<<forkMode>>>

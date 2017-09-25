@@ -27,7 +27,7 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
  * Calling {@link Log#isInfoEnabled()} before {@link Log#info(CharSequence)} due to Maven 2.2.1.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19.2
+ * @since 2.20
  * @see ConsoleLogger
  */
 public final class PluginConsoleLogger
@@ -45,6 +45,7 @@ public final class PluginConsoleLogger
         return mojoLogger.isDebugEnabled();
     }
 
+    @Override
     public void debug( String message )
     {
         if ( mojoLogger.isDebugEnabled() )
@@ -66,6 +67,7 @@ public final class PluginConsoleLogger
         return mojoLogger.isInfoEnabled();
     }
 
+    @Override
     public void info( String message )
     {
         if ( mojoLogger.isInfoEnabled() )
@@ -79,6 +81,7 @@ public final class PluginConsoleLogger
         return mojoLogger.isWarnEnabled();
     }
 
+    @Override
     public void warning( String message )
     {
         if ( mojoLogger.isWarnEnabled() )
@@ -100,6 +103,7 @@ public final class PluginConsoleLogger
         return mojoLogger.isErrorEnabled();
     }
 
+    @Override
     public void error( String message )
     {
         if ( mojoLogger.isErrorEnabled() )
@@ -108,6 +112,7 @@ public final class PluginConsoleLogger
         }
     }
 
+    @Override
     public void error( String message, Throwable t )
     {
         if ( mojoLogger.isErrorEnabled() )
@@ -116,6 +121,7 @@ public final class PluginConsoleLogger
         }
     }
 
+    @Override
     public void error( Throwable t )
     {
         if ( mojoLogger.isErrorEnabled() )

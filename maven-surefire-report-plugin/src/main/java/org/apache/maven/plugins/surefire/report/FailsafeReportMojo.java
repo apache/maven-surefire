@@ -43,17 +43,13 @@ public class FailsafeReportMojo
 
     /**
      * The filename to use for the report.
-     *
-     * @noinspection UnusedDeclaration
      */
     @Parameter( defaultValue = "failsafe-report", property = "outputName", required = true )
     private String outputName;
 
     /**
      * If set to true the failsafe report will be generated even when there are no failsafe result files.
-     * Defaults to <code>false</code> to preserve legacy behaviour pre 2.10
-     *
-     * @noinspection UnusedDeclaration
+     * Defaults to {@code false} to preserve legacy behaviour pre 2.10.
      * @since 2.11
      */
     @Parameter( defaultValue = "false", property = "alwaysGenerateFailsafeReport" )
@@ -61,29 +57,31 @@ public class FailsafeReportMojo
 
     /**
      * If set to true the failsafe report generation will be skipped.
-     *
-     * @noinspection UnusedDeclaration
      * @since 2.11
      */
     @Parameter( defaultValue = "false", property = "skipFailsafeReport" )
     private boolean skipFailsafeReport;
 
+    @Override
     protected File getSurefireReportsDirectory( MavenProject subProject )
     {
         String buildDir = subProject.getBuild().getDirectory();
         return new File( buildDir + "/failsafe-reports" );
     }
 
+    @Override
     public String getOutputName()
     {
         return outputName;
     }
 
+    @Override
     protected boolean isSkipped()
     {
         return skipFailsafeReport;
     }
 
+    @Override
     protected boolean isGeneratedWhenNoResults()
     {
         return alwaysGenerateFailsafeReport;
@@ -92,6 +90,7 @@ public class FailsafeReportMojo
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getName( Locale locale )
     {
         return getBundle( locale ).getString( "report.failsafe.name" );
@@ -100,6 +99,7 @@ public class FailsafeReportMojo
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getDescription( Locale locale )
     {
         return getBundle( locale ).getString( "report.failsafe.description" );

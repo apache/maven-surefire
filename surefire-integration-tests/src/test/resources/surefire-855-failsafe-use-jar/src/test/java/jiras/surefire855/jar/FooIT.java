@@ -47,7 +47,8 @@ public final class FooIT
     private static File surefireDir()
         throws IOException
     {
-        return new File( "target/surefire" ).getCanonicalFile();
+        String bootPath = System.getProperty( "surefire.real.class.path" );
+        return bootPath == null ? null : new File( bootPath ).getParentFile();
     }
 
     private static File[] surefireProviderProperties()
@@ -60,25 +61,6 @@ public final class FooIT
                 try
                 {
                     return isSurefireProviderProperties( pathname );
-                }
-                catch ( IOException e )
-                {
-                    return false;
-                }
-            }
-        } );
-    }
-
-    private static File[] surefireBooterJar()
-        throws IOException
-    {
-        return surefireDir().listFiles( new FileFilter()
-        {
-            public boolean accept( File pathname )
-            {
-                try
-                {
-                    return isSurefireBooter( pathname );
                 }
                 catch ( IOException e )
                 {
@@ -111,9 +93,9 @@ public final class FooIT
     private static String manifestClassPath( Class clazz )
         throws IOException
     {
-        File[] booters = surefireBooterJar();
-        assertThat( booters, is( arrayWithSize( 1 ) ) );
-        File booter = booters[0];
+        File booter = new File( System.getProperty( "surefire.real.class.path" ) );
+        assertThat( booter ).exists();
+        assertThat( booter ).isFile();
         JarFile jarFile = new JarFile( booter );
         try
         {
@@ -161,10 +143,6 @@ public final class FooIT
         assertThat( classPath, not( containsString( "/target/classes" ) ) );
         assertThat( classPath, containsString( "/target/" + ARTIFACT_FILE_NAME ) );
 
-        File surefireDir = new File( "target/surefire" ).getCanonicalFile();
-        System.out.println( "SUREFIRE DIR:" );
-        System.out.println( surefireDir );
-
         File[] descriptors = surefireProviderProperties();
         assertThat( descriptors ).hasSize( 1 );
         assertThat( descriptors ).doesNotContainNull();
@@ -187,7 +165,7 @@ public final class FooIT
     {
         assumeThat( System.getProperty( "forkMode" ), is( "never" ) );
 
-        assertThat( surefireDir() ).doesNotExist();
+        assertThat( surefireDir() ).isNull();
         assertThat( new File( "target/" + ARTIFACT_FILE_NAME ).getCanonicalFile() ).isFile();
     }
 

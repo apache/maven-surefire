@@ -21,9 +21,11 @@ package org.apache.maven.surefire.booter;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 
 import static org.apache.maven.surefire.util.ReflectionUtils.loadClass;
+import static org.apache.maven.surefire.util.internal.StringUtils.ISO_8859_1;
 
 /**
  * @author Kristian Rosenvold
@@ -51,8 +53,7 @@ public class TypeEncodedValue
 
     public Object getDecodedValue( ClassLoader classLoader )
     {
-        // todo: use jdk6 switch case
-        if ( type.trim().length() == 0 )
+        if ( type.trim().isEmpty() )
         {
             return null;
         }
@@ -79,13 +80,12 @@ public class TypeEncodedValue
         else if ( type.equals( Properties.class.getName() ) )
         {
             Properties result = new Properties();
-            // todo: use jdk7 Closable
             try
             {
-                result.load( new ByteArrayInputStream( value.getBytes( "8859_1" ) ) );
+                result.load( new ByteArrayInputStream( value.getBytes( ISO_8859_1 ) ) );
                 return result;
             }
-            catch ( Exception e )
+            catch ( IOException e )
             {
                 throw new IllegalStateException( "bug in property conversion", e );
             }
@@ -96,6 +96,7 @@ public class TypeEncodedValue
         }
     }
 
+    @Override
     public boolean equals( Object o )
     {
         if ( this == o )
@@ -113,6 +114,7 @@ public class TypeEncodedValue
 
     }
 
+    @Override
     public int hashCode()
     {
         int result = type != null ? type.hashCode() : 0;

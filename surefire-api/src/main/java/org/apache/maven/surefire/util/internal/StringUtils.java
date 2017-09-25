@@ -19,7 +19,6 @@ package org.apache.maven.surefire.util.internal;
  * under the License.
  */
 
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -28,12 +27,14 @@ import java.util.StringTokenizer;
 
 /**
  * <p>
- * Common <code>String</code> manipulation routines.
+ * Common {@link String java.lang.String} manipulation routines.
  * </p>
- * <p/>
+ * <br>
  * <p>
  * Originally from <a href="http://jakarta.apache.org/turbine/">Turbine</a> and the GenerationJavaCore library.
  * </p>
+ * <br>
+ * NOTE: This class is not part of any api and is public purely for technical reasons !
  *
  * @author <a href="mailto:jon@latchkey.com">Jon S. Stevens</a>
  * @author <a href="mailto:dlr@finemaltcoding.com">Daniel Rall</a>
@@ -47,26 +48,27 @@ import java.util.StringTokenizer;
  * @author <a href="mailto:alex@purpletech.com">Alexander Day Chaffee</a>
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
  * @version $Id: StringUtils.java 8001 2009-01-03 13:17:09Z vsiveton $
- * @noinspection JavaDoc
- *               <p/>
- *               A quick borrow from plexus-utils by Kristian Rosenvold, to restore jdk1.3 compat Threw away all the
- *               unused stuff.
- *               <p/>
- *               NOTE: This class is not part of any api and is public purely for technical reasons !
  * @since 1.0
  */
 public final class StringUtils
 {
     public static final String NL = System.getProperty( "line.separator" );
 
-    private static final byte[] HEX_CHARS = new byte[] {
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        'A', 'B', 'C', 'D', 'E', 'F' };
+    private static final byte[] HEX_CHARS = {
+                    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
     private static final Charset DEFAULT_CHARSET = Charset.defaultCharset();
 
+    /**
+     * TODO
+     * Use JDK7 StandardCharsets
+     */
+    public static final Charset US_ASCII = Charset.forName( "US-ASCII" );
+
     // 8-bit charset Latin-1
-    public static final String FORK_STREAM_CHARSET_NAME = "ISO-8859-1";
+    public static final Charset ISO_8859_1 = Charset.forName( "ISO-8859-1" );
+
+    public static final Charset UTF_8 = Charset.forName( "UTF-8" );
 
     private StringUtils()
     {
@@ -75,8 +77,7 @@ public final class StringUtils
 
     public static String[] split( String text, String separator )
     {
-        int max = -1;
-        StringTokenizer tok;
+        final StringTokenizer tok;
         if ( separator == null )
         {
             // Null separator means we're using StringTokenizer's default
@@ -88,60 +89,34 @@ public final class StringUtils
             tok = new StringTokenizer( text, separator );
         }
 
-        int listSize = tok.countTokens();
-        if ( max > 0 && listSize > max )
+        String[] list = new String[tok.countTokens()];
+        for ( int i = 0; tok.hasMoreTokens(); i++ )
         {
-            listSize = max;
-        }
-
-        String[] list = new String[listSize];
-        int i = 0;
-        int lastTokenBegin;
-        int lastTokenEnd = 0;
-        while ( tok.hasMoreTokens() )
-        {
-            if ( max > 0 && i == listSize - 1 )
-            {
-                // In the situation where we hit the max yet have
-                // tokens left over in our input, the last list
-                // element gets all remaining text.
-                String endToken = tok.nextToken();
-                lastTokenBegin = text.indexOf( endToken, lastTokenEnd );
-                list[i] = text.substring( lastTokenBegin );
-                break;
-            }
-            else
-            {
-                list[i] = tok.nextToken();
-                lastTokenBegin = text.indexOf( list[i], lastTokenEnd );
-                lastTokenEnd = lastTokenBegin + list[i].length();
-            }
-            i++;
+            list[i] = tok.nextToken();
         }
         return list;
     }
 
     /**
      * <p>
-     * Checks if a (trimmed) String is <code>null</code> or blank.
+     * Checks if a (trimmed) String is {@code null} or blank.
      * </p>
      *
      * @param str the String to check
-     * @return <code>true</code> if the String is <code>null</code>, or length zero once trimmed
+     * @return {@code true} if the String is {@code null}, or length zero once trimmed
      */
     public static boolean isBlank( String str )
     {
-        return str == null || str.trim().length() == 0;
+        return str == null || str.trim().isEmpty();
     }
 
     /**
      * <p>
-     * Checks if a (trimmed) String is not <code>null</code> and not blank.
+     * Checks if a (trimmed) String is not {@code null} and not blank.
      * </p>
      *
      * @param str the String to check
-     * @return <code>true</code> if the String is not <code>null</code> and length of trimmed
-     * <code>str</code> is not zero.
+     * @return {@code true} if the String is not {@code null} and length of trimmed {@code str} is not zero.
      */
     public static boolean isNotBlank( String str )
     {
@@ -249,7 +224,7 @@ public final class StringUtils
      * <p>
      * A save length of {@code out} is {@code len * 3 + outoff}.
      * <p>
-     * The reverse-method is {@link #unescapeBytes(byte[], String)}.
+     * The reverse-method is {@link #unescapeBytes(String, String)}.
      *
      * @param out output buffer
      * @param outoff offset in the output buffer
@@ -333,9 +308,7 @@ public final class StringUtils
             try
             {
                 decodedFromSourceCharset = sourceCharset.newDecoder().decode( ByteBuffer.wrap( out, 0, outPos ) );
-                ByteBuffer defaultEncoded = DEFAULT_CHARSET.encode( decodedFromSourceCharset );
-
-                return defaultEncoded;
+                return DEFAULT_CHARSET.encode( decodedFromSourceCharset );
             }
             catch ( CharacterCodingException e )
             {
@@ -346,41 +319,34 @@ public final class StringUtils
         return ByteBuffer.wrap( out, 0, outPos );
     }
 
-    public static String decode( byte[] toDecode, Charset charset )
-    {
-        try
-        {
-            // @todo use new JDK 1.6 constructor String(byte bytes[], Charset charset)
-            return new String( toDecode, charset.name() );
-        }
-        catch ( UnsupportedEncodingException e )
-        {
-            throw new RuntimeException( "The JVM must support Charset " + charset, e );
-        }
-    }
-
-    public static byte[] encode( String toEncode, Charset charset )
-    {
-        try
-        {
-            // @todo use new JDK 1.6 method getBytes(Charset charset)
-            return toEncode.getBytes( charset.name() );
-        }
-        catch ( UnsupportedEncodingException e )
-        {
-            throw new RuntimeException( "The JVM must support Charset " + charset, e );
-        }
-    }
-
     public static byte[] encodeStringForForkCommunication( String string )
     {
-        try
+        return string.getBytes( ISO_8859_1 );
+    }
+
+    /**
+     * Determines if {@code buffer} starts with specific literal(s).
+     *
+     * @param buffer     Examined StringBuffer
+     * @param pattern    a pattern which should start in {@code buffer}
+     * @return    {@code true} if buffer's literal starts with given {@code pattern}, or both are empty.
+     */
+    public static boolean startsWith( StringBuffer buffer, String pattern )
+    {
+        if ( buffer.length() < pattern.length() )
         {
-            return string.getBytes( FORK_STREAM_CHARSET_NAME );
+            return false;
         }
-        catch ( UnsupportedEncodingException e )
+        else
         {
-           throw new RuntimeException( "The JVM must support Charset " + FORK_STREAM_CHARSET_NAME, e );
+            for ( int i = 0, len = pattern.length(); i < len; i++ )
+            {
+                if ( buffer.charAt( i ) != pattern.charAt( i ) )
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

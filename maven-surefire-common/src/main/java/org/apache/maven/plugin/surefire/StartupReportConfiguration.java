@@ -19,13 +19,6 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import java.io.File;
-import java.io.PrintStream;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
 import org.apache.maven.plugin.surefire.report.DirectConsoleOutput;
 import org.apache.maven.plugin.surefire.report.FileReporter;
@@ -35,13 +28,18 @@ import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 
 import javax.annotation.Nonnull;
+import java.io.File;
+import java.io.PrintStream;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.maven.plugin.surefire.report.ConsoleReporter.BRIEF;
 import static org.apache.maven.plugin.surefire.report.ConsoleReporter.PLAIN;
 
 /**
  * All the parameters used to construct reporters
- * <p/>
+ * <br>
  *
  * @author Kristian Rosenvold
  */
@@ -79,8 +77,6 @@ public final class StartupReportConfiguration
 
     private final String xsdSchemaLocation;
 
-    private final Properties testVmSystemProperties = new Properties();
-
     private final Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistory
         = new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>();
 
@@ -111,6 +107,8 @@ public final class StartupReportConfiguration
 
     /**
      * For testing purposes only.
+     *
+     * @return StartupReportConfiguration fo testing purposes
      */
     public static StartupReportConfiguration defaultValue()
     {
@@ -122,6 +120,8 @@ public final class StartupReportConfiguration
 
     /**
      * For testing purposes only.
+     *
+     * @return StartupReportConfiguration fo testing purposes
      */
     public static StartupReportConfiguration defaultNoXml()
     {
@@ -211,11 +211,6 @@ public final class StartupReportConfiguration
     public File getStatisticsFile()
     {
         return statisticsFile;
-    }
-
-    public Properties getTestVmSystemProperties()
-    {
-        return testVmSystemProperties;
     }
 
     public boolean isTrimStackTrace()

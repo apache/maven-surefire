@@ -196,6 +196,7 @@ public final class ReportTestSuite
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return fullClassName + " [" + getNumberOfTests() + "/" + getNumberOfFailures() + "/"

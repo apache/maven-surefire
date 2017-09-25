@@ -23,13 +23,13 @@
   <parent>
     <artifactId>maven-parent</artifactId>
     <groupId>org.apache.maven</groupId>
-    <version>26</version>
+    <version>30</version>
     <relativePath>../pom/maven/pom.xml</relativePath>
   </parent>
 
   <groupId>org.apache.maven.surefire</groupId>
   <artifactId>surefire</artifactId>
-  <version>2.19.2-SNAPSHOT</version>
+  <version>2.21.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Apache Maven Surefire</name>
@@ -76,7 +76,7 @@
   </issueManagement>
   <ciManagement>
     <system>Jenkins</system>
-    <url>https://builds.apache.org/job/maven-surefire/</url>
+    <url>https://builds.apache.org/view/M-R/view/Maven/job/maven-surefire-pipeline/job/master/</url>
   </ciManagement>
   <distributionManagement>
     <site>
@@ -89,8 +89,13 @@
     <mavenVersion>2.2.1</mavenVersion>
     <!-- <shadedVersion>2.12.4</shadedVersion> commented out due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
     <mavenPluginPluginVersion>3.3</mavenPluginPluginVersion>
+    <commonsLang3Version>3.5</commonsLang3Version>
+    <commonsIoVersion>2.5</commonsIoVersion>
+    <mavenSharedUtilsVersion>0.9</mavenSharedUtilsVersion>
     <maven.surefire.scm.devConnection>scm:git:https://git-wip-us.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
     <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
+    <!-- Override with Jigsaw JRE 9 -->
+    <jdk.home>${java.home}/..</jdk.home>
   </properties>
 
   <dependencyManagement>
@@ -103,12 +108,12 @@
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
-        <version>3.1</version>
+        <version>${commonsLang3Version}</version>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
-        <version>2.2</version>
+        <version>${commonsIoVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.surefire</groupId>
@@ -211,9 +216,20 @@
         <version>${mavenVersion}</version>
       </dependency>
       <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-settings</artifactId>
+        <version>${mavenVersion}</version>
+      </dependency>
+      <dependency>
         <groupId>org.apache.maven.shared</groupId>
         <artifactId>maven-shared-utils</artifactId>
-        <version>0.9</version>
+        <version>${mavenSharedUtilsVersion}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.shared</groupId>
@@ -224,6 +240,28 @@
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
         <version>1.10.19</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.powermock</groupId>
+        <artifactId>powermock-mockito-release-full</artifactId>
+        <version>1.6.4</version>
+        <classifier>full</classifier>
+        <exclusions>
+          <exclusion>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>junit</groupId>
@@ -253,6 +291,12 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest-core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
@@ -270,14 +314,65 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>1.12</version>
+        </plugin>
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.6.1</version>
+          <executions>
+            <execution>
+              <id>compile-generated</id>
+              <phase>process-sources</phase>
+              <goals>
+                <goal>compile</goal>
+              </goals>
+              <configuration>
+                <includes>
+                  <include>org/apache/maven/shared/utils/logging/*.java</include>
+                  <include>HelpMojo.java</include>
+                  <include>**/HelpMojo.java</include>
+                  <include>org/apache/maven/plugin/failsafe/xmlsummary/*.java</include>
+                </includes>
+                <compilerArgs>
+                  <!-- FIXME: maven-plugin-plugin therefore used -syntax or none due to HelpMojo -->
+                  <arg>-Xdoclint:none</arg>
+                </compilerArgs>
+              </configuration>
+            </execution>
+            <execution>
+              <id>default-compile</id>
+              <phase>compile</phase>
+              <goals>
+                <goal>compile</goal>
+              </goals>
+              <configuration>
+                <excludes>
+                  <exclude>org/apache/maven/shared/utils/logging/*.java</exclude>
+                  <exclude>HelpMojo.java</exclude>
+                  <exclude>**/HelpMojo.java</exclude>
+                  <exclude>org/apache/maven/plugin/failsafe/xmlsummary/*.java</exclude>
+                </excludes>
+                <compilerArgs>
+                  <arg>-Xdoclint:all</arg>
+                </compilerArgs>
+              </configuration>
+            </execution>
+          </executions>
+          <configuration>
+            <fork>true</fork>
+            <compilerArgs>
+              <arg>-Xdoclint:all</arg>
+            </compilerArgs>
+          </configuration>
         </plugin>
         <!-- NOTE: animal sniffer does not check test classes: https://jira.codehaus.org/browse/MANIMALSNIFFER-40 -->
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>animal-sniffer-maven-plugin</artifactId>
-          <version>1.11</version>
+          <version>1.15</version>
           <executions>
             <execution>
               <id>signature-check</id>
@@ -289,8 +384,8 @@
           <configuration>
             <signature>
               <groupId>org.codehaus.mojo.signature</groupId>
-              <artifactId>java15</artifactId>
-              <version>1.0</version>
+              <artifactId>java16</artifactId>
+              <version>1.1</version>
             </signature>
           </configuration>
         </plugin>
@@ -300,7 +395,7 @@
           <configuration>
             <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
             <useSystemClassLoader>false</useSystemClassLoader>
-            <argLine>${jacoco.agent}</argLine>
+            <argLine>-Xms128m -Xmx128m</argLine>
           </configuration>
         </plugin>
         <plugin>
@@ -308,11 +403,12 @@
           <configuration>
             <autoVersionSubmodules>true</autoVersionSubmodules>
             <preparationGoals>clean install</preparationGoals>
+            <commitByProject>true</commitByProject>
           </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-shade-plugin</artifactId>
-          <version>1.5</version>
+          <version>3.0.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-plugin-plugin</artifactId>
@@ -323,12 +419,12 @@
         </plugin>
         <plugin>
           <artifactId>maven-invoker-plugin</artifactId>
-          <version>1.10</version>
+          <version>3.0.1</version>
         </plugin>
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.7.7.201606060606</version>
+          <version>0.7.9</version>
           <configuration>
             <includes>
               <include>**/failsafe/*</include>
@@ -337,6 +433,11 @@
               <include>**/surefire/**/*</include>
             </includes>
           </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.4</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -383,6 +484,7 @@
         <plugin>
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
+          <version>0.12</version>
           <executions>
             <execution>
               <id>rat-check</id>
@@ -391,6 +493,7 @@
               </goals>
               <configuration>
                 <excludes combine.children="append">
+                  <exclude>Jenkinsfile</exclude>
                   <exclude>README.md</exclude>
                   <exclude>.gitignore</exclude>
                   <exclude>.git/**/*</exclude>
@@ -552,6 +655,12 @@
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <argLine>-Xms128m -Xmx144m ${jacoco.agent}</argLine>
+            </configuration>
           </plugin>
         </plugins>
       </build>

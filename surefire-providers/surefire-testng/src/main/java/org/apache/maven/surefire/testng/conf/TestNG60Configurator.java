@@ -34,6 +34,7 @@ public class TestNG60Configurator
     extends TestNG5143Configurator
 {
 
+    @Override
     Map<String, Object> getConvertedOptions( Map<String, String> options )
         throws TestSetFailedException
     {

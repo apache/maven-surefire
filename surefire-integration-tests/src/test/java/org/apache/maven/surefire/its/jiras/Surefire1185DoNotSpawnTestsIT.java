@@ -37,7 +37,7 @@ import static org.hamcrest.Matchers.is;
  * Running pkg.RunningTest
  * Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 sec - in pkg.RunningTest
  *
- * Results :
+ * Results:
  *
  * Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
  */

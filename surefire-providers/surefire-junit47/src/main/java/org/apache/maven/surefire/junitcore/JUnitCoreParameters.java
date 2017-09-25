@@ -117,10 +117,11 @@ public final class JUnitCoreParameters
     }
 
     /**
-     * @deprecated Instead use the expression ( {@link #isParallelMethods()} && {@link #isParallelClasses()} ).
+     * @deprecated Instead use the expression isParallelMethods() &amp;&amp; isParallelClasses().
+     * @return {@code true} if classes and methods are both parallel
      */
     @Deprecated
-    @SuppressWarnings( { "unused", "deprecation" } )
+    @SuppressWarnings( "unused" )
     public boolean isParallelBoth()
     {
         return isParallelMethods() && isParallelClasses();

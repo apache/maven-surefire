@@ -159,6 +159,7 @@ public final class ReportTestCase
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return fullName;

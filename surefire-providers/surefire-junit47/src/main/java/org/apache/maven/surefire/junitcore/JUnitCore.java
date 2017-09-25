@@ -32,7 +32,7 @@ import org.junit.runner.notification.RunListener;
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
- * @see https://github.com/junit-team/junit/issues/1186
+ * @see <a href="https://github.com/junit-team/junit/issues/1186">JUnit issue 1186</a>
  */
 class JUnitCore
 {

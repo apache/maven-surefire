@@ -19,12 +19,7 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
@@ -33,22 +28,29 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.suite.RunResult;
 
-import static org.apache.maven.shared.utils.ReaderFactory.FILE_ENCODING;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import static org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils.writeSummary;
 
 /**
  * Run integration tests using Surefire.
  *
  * @author Jason van Zyl
  * @author Stephen Connolly
- * @noinspection JavaDoc,
  */
 @Mojo( name = "integration-test", requiresProject = true, requiresDependencyResolution = ResolutionScope.TEST,
-       defaultPhase = LifecyclePhase.INTEGRATION_TEST, threadSafe = true )
+             defaultPhase = LifecyclePhase.INTEGRATION_TEST, threadSafe = true )
 public class IntegrationTestMojo
-    extends AbstractSurefireMojo
+        extends AbstractSurefireMojo
 {
 
     private static final String FAILSAFE_IN_PROGRESS_CONTEXT_KEY = "failsafe-in-progress";
@@ -56,7 +58,7 @@ public class IntegrationTestMojo
     /**
      * The path representing project <em>JAR</em> file, if exists; Otherwise the directory containing generated
      * classes of the project being tested. This will be included after the test classes in the test classpath.
-     * Defaults to built artifact <em>JAR</em> file or ${project.build.outputDirectory}.
+     * Defaults to built artifact <em>JAR</em> file or <code>${project.build.outputDirectory}</code>.
      */
     @Parameter
     private File classesDirectory;
@@ -79,25 +81,28 @@ public class IntegrationTestMojo
     @Parameter( defaultValue = "${project.build.directory}/failsafe-reports" )
     private File reportsDirectory;
 
+    @SuppressWarnings( "checkstyle:linelength" )
     /**
-     * Specify this parameter to run individual tests by file name, overriding the <code>includes/excludes</code>
-     * parameters. Each pattern you specify here will be used to create an include pattern formatted like
-     * <code>**&#47;${test}.java</code>, so you can just type "-Dit.test=MyTest" to run a single test called
-     * "foo/MyTest.java".<br/>
-     * This parameter overrides the <code>includes/excludes</code> parameters, and the TestNG <code>suiteXmlFiles</code>
-     * parameter.
-     * <p/>
-     * Since 2.7.3 You can execute a limited number of methods in the test with adding #myMethod or #my*ethod. E.g. type
-     * "-Dit.test=MyTest#myMethod" <b>supported for junit 4.x and testNg</b>
-     * <br/>
-     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):<br/>
-     * "-Dit.test=???IT, !Unstable*, pkg&#47;**&#47;Ci*leIT.java, *IT#test*One+testTwo?????, #fast*+slowTest"<br/>
-     * "-Dit.test=Basic*, !%regex[.*.Unstable.*], !%regex[.*.MyIT.class#one.*|two.*], %regex[#fast.*|slow.*]"<br/>
-     * <br/>
-     * The Parameterized JUnit runner <em>describes</em> test methods using an index in brackets, so the non-regex
-     * method pattern would become: <em>#testMethod[*]</em>. If using <em>@Parameters(name="{index}: fib({0})={1}")</em>
-     * and selecting the index e.g. 5 in pattern, the non-regex method pattern would become <em>#testMethod[5:*]</em>.
-     * <br/>
+     * Specify this parameter to run individual tests by file name, overriding parameter {@code includes} and
+     * {@code excludes}. Each pattern you specify here will be used to create an include pattern formatted like
+     * <code>**{@literal /}${it.test}.java</code>, so you can just type {@code -Dit.test=MyIT} to run
+     * a single test file called "foo/MyIT.java". The test patterns prefixed with a <em>!</em> will be excluded.
+     * <br>
+     * This parameter overrides the parameter {@code includes} and {@code excludes}, and the TestNG parameter
+     * {@code suiteXmlFiles}.
+     * <br>
+     * Since 2.7.3 You can execute a limited number of methods in the test with adding <i>#myMethod</i> or
+     * <i>#my*ethod</i>. E.g. type {@code -Dit.test=MyIT#myMethod} <b>supported for junit 4.x and TestNg.</b>
+     * <br>
+     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):
+     * <pre><code>"-Dit.test=???IT, !Unstable*, pkg{@literal /}**{@literal /}Ci*leIT.java, *IT#test*One+testTwo?????, #fast*+slowTest"</code></pre>
+     * or e.g.
+     * <br>
+     * <pre><code>"-Dit.test=Basic*, !%regex[.*.Unstable.*], !%regex[.*.MyIT.class#one.*|two.*], %regex[#fast.*|slow.*]"</code></pre>
+     * <br>
+     * The Parameterized JUnit runner {@code describes} test methods using an index in brackets, so the non-regex
+     * method pattern would become: {@code #testMethod[*]}. If using <code>@Parameters(name="{index}: fib({0})={1}")</code>
+     * and selecting the index e.g. 5 in pattern, the non-regex method pattern would become {@code #testMethod[5:*]}.
      */
     @Parameter( property = "it.test" )
     private String test;
@@ -128,7 +133,7 @@ public class IntegrationTestMojo
     private boolean useFile;
 
     /**
-     * Set this to "true" to cause a failure if the none of the tests specified in -Dtest=... are run. Defaults to
+     * Set this to "true" to cause a failure if none of the tests specified in -Dtest=... are run. Defaults to
      * "true".
      *
      * @since 2.12
@@ -139,7 +144,7 @@ public class IntegrationTestMojo
     /**
      * Attach a debugger to the forked JVM. If set to "true", the process will suspend and wait for a debugger to attach
      * on port 5005. If set to some other string, that string will be appended to the argLine, allowing you to configure
-     * arbitrary debuggability options (without overwriting the other options specified through the <code>argLine</code>
+     * arbitrary debugging ability options (without overwriting the other options specified through the {@code argLine}
      * parameter).
      *
      * @since 2.4
@@ -159,22 +164,22 @@ public class IntegrationTestMojo
     /**
      * Forked process is normally terminated without any significant delay after given tests have completed.
      * If the particular tests started non-daemon Thread(s), the process hangs instead of been properly terminated
-     * by <em>System.exit()</em>. Use this parameter in order to determine the timeout of terminating the process.
+     * by {@code System.exit()}. Use this parameter in order to determine the timeout of terminating the process.
      * <a href="http://maven.apache.org/surefire/maven-failsafe-plugin/examples/shutdown.html">see the documentation:
      * http://maven.apache.org/surefire/maven-failsafe-plugin/examples/shutdown.html</a>
      *
-     * @since 2.19.2
+     * @since 2.20
      */
     @Parameter( property = "failsafe.exitTimeout", defaultValue = "30" )
     private int forkedProcessExitTimeoutInSeconds;
 
     /**
      * Stop executing queued parallel JUnit tests after a certain number of seconds.
-     * <br/>
-     * Example values: "3.5", "4"<br/>
-     * <br/>
+     * <br>
+     * Example values: "3.5", "4"<br>
+     * <br>
      * If set to 0, wait forever, never timing out.
-     * Makes sense with specified <code>parallel</code> different from "none".
+     * Makes sense with specified {@code parallel} different from "none".
      *
      * @since 2.16
      */
@@ -183,40 +188,45 @@ public class IntegrationTestMojo
 
     /**
      * Stop executing queued parallel JUnit tests
-     * and <em>interrupt</em> currently running tests after a certain number of seconds.
-     * <br/>
-     * Example values: "3.5", "4"<br/>
-     * <br/>
+     * and <i>interrupt</i> currently running tests after a certain number of seconds.
+     * <br>
+     * Example values: "3.5", "4"<br>
+     * <br>
      * If set to 0, wait forever, never timing out.
-     * Makes sense with specified <code>parallel</code> different from "none".
+     * Makes sense with specified {@code parallel} different from "none".
      *
      * @since 2.16
      */
     @Parameter( property = "failsafe.parallel.forcedTimeout" )
     private double parallelTestsTimeoutForcedInSeconds;
 
+    @SuppressWarnings( "checkstyle:linelength" )
     /**
-     * A list of &lt;include> elements specifying the tests (by pattern) that should be included in testing. When not
-     * specified and when the <code>test</code> parameter is not specified, the default includes will be <code><br/>
-     * &lt;includes><br/>
-     * &nbsp;&lt;include>**&#47;IT*.java&lt;/include><br/>
-     * &nbsp;&lt;include>**&#47;*IT.java&lt;/include><br/>
-     * &nbsp;&lt;include>**&#47;*ITCase.java&lt;/include><br/>
-     * &lt;/includes><br/>
-     * </code>
-     * <p/>
+     * A list of {@literal <include>} elements specifying the test filter (by pattern) of tests which should be
+     * included in testing. If it is not specified and the {@code test} parameter is unspecified as well, the default
+     * includes is
+     * <pre><code>
+     * {@literal <includes>}
+     *     {@literal <include>}**{@literal /}IT*.java{@literal </include>}
+     *     {@literal <include>}**{@literal /}*IT.java{@literal </include>}
+     *     {@literal <include>}**{@literal /}*ITCase.java{@literal </include>}
+     * {@literal </includes>}
+     * </code></pre>
+     * <br>
      * Each include item may also contain a comma-separated sublist of items, which will be treated as multiple
-     * &nbsp;&lt;include> entries.<br/>
-     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):<br/>
-     * &nbsp;&lt;include>%regex[.*[Cat|Dog].*], Basic????, !Unstable*&lt;/include><br/>
-     * &nbsp;&lt;include>%regex[.*[Cat|Dog].*], !%regex[pkg.*Slow.*.class], pkg&#47;**&#47;*Fast*.java&lt;/include><br/>
-     * <p/>
-     * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.<br/>
-     * <br/>
-     * <em>Notice that</em> these values are relative to the directory containing generated test classes of the project
-     * being tested. This directory is declared by the parameter <code>testClassesDirectory</code> which defaults
-     * to the POM property <code>${project.build.testOutputDirectory}</code>, typically <em>src/test/java</em>
-     * unless overridden.
+     * {@literal <include>} entries.<br>
+     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):
+     * <pre><code>
+     * {@literal <include>}%regex[.*[Cat|Dog].*], Basic????, !Unstable*{@literal </include>}
+     * {@literal <include>}%regex[.*[Cat|Dog].*], !%regex[pkg.*Slow.*.class], pkg{@literal /}**{@literal /}*Fast*.java{@literal </include>}
+     * </code></pre>
+     * <br>
+     * This parameter is ignored if the TestNG {@code suiteXmlFiles} parameter is specified.<br>
+     * <br>
+     * <b>Notice that</b> these values are relative to the directory containing generated test classes of the project
+     * being tested. This directory is declared by the parameter {@code testClassesDirectory} which defaults
+     * to the POM property <code>${project.build.testOutputDirectory}</code>, typically
+     * <code>{@literal src/test/java}</code> unless overridden.
      */
     @Parameter
     private List<String> includes;
@@ -235,9 +245,9 @@ public class IntegrationTestMojo
      * By default, Surefire forks your tests using a manifest-only JAR; set this parameter to "false" to force it to
      * launch your tests with a plain old Java classpath. (See the
      * <a href="http://maven.apache.org/plugins/maven-failsafe-plugin/examples/class-loading.html">
-     *     http://maven.apache.org/plugins/maven-failsafe-plugin/examples/class-loading.html</a>
+     * http://maven.apache.org/plugins/maven-failsafe-plugin/examples/class-loading.html</a>
      * for a more detailed explanation of manifest-only JARs and their benefits.)
-     * <br/>
+     * <br>
      * Beware, setting this to "false" may cause your tests to fail on Windows if your classpath is too long.
      *
      * @since 2.4.3
@@ -247,6 +257,9 @@ public class IntegrationTestMojo
 
     /**
      * The character encoding scheme to be applied.
+     * Deprecated since 2.20.1 and used encoding UTF-8 in <tt>failsafe-summary.xml</tt>.
+     *
+     * @deprecated since of 2.20.1
      */
     @Parameter( property = "encoding", defaultValue = "${project.reporting.outputEncoding}" )
     private String encoding;
@@ -261,10 +274,10 @@ public class IntegrationTestMojo
     private int rerunFailingTestsCount;
 
     /**
-     * (TestNG) List of &lt;suiteXmlFile> elements specifying TestNG suite xml file locations. Note that
-     * <code>suiteXmlFiles</code> is incompatible with several other parameters of this plugin, like
-     * <code>includes/excludes</code>.<br/>
-     * This parameter is ignored if the <code>test</code> parameter is specified (allowing you to run a single test
+     * (TestNG) List of &lt;suiteXmlFile&gt; elements specifying TestNG suite xml file locations. Note that
+     * {@code suiteXmlFiles} is incompatible with several other parameters of this plugin, like
+     * {@code includes} and {@code excludes}.<br>
+     * This parameter is ignored if the {@code test} parameter is specified (allowing you to run a single test
      * instead of an entire suite).
      *
      * @since 2.2
@@ -273,26 +286,26 @@ public class IntegrationTestMojo
     private File[] suiteXmlFiles;
 
     /**
-     * Defines the order the tests will be run in. Supported values are "alphabetical", "reversealphabetical", "random",
-     * "hourly" (alphabetical on even hours, reverse alphabetical on odd hours), "failedfirst", "balanced" and
-     * "filesystem".
-     * <br/>
-     * <br/>
+     * Defines the order the tests will be run in. Supported values are {@code alphabetical},
+     * {@code reversealphabetical}, {@code random}, {@code hourly} (alphabetical on even hours, reverse alphabetical
+     * on odd hours), {@code failedfirst}, {@code balanced} and {@code filesystem}.
+     * <br>
+     * <br>
      * Odd/Even for hourly is determined at the time the of scanning the classpath, meaning it could change during a
      * multi-module build.
-     * <br/>
-     * <br/>
+     * <br>
+     * <br>
      * Failed first will run tests that failed on previous run first, as well as new tests for this run.
-     * <br/>
-     * <br/>
+     * <br>
+     * <br>
      * Balanced is only relevant with parallel=classes, and will try to optimize the run-order of the tests reducing the
      * overall execution time. Initially a statistics file is created and every next test run will reorder classes.
-     * <br/>
-     * <br/>
-     * Note that the statistics are stored in a file named .surefire-XXXXXXXXX beside pom.xml, and should not be checked
-     * into version control. The "XXXXX" is the SHA1 checksum of the entire surefire configuration, so different
-     * configurations will have different statistics files, meaning if you change any config settings you will re-run
-     * once before new statistics data can be established.
+     * <br>
+     * <br>
+     * Note that the statistics are stored in a file named <b>.surefire-XXXXXXXXX</b> beside <i>pom.xml</i> and
+     * should not be checked into version control. The "XXXXX" is the SHA1 checksum of the entire surefire
+     * configuration, so different configurations will have different statistics files, meaning if you change any
+     * configuration settings you will re-run once before new statistics data can be established.
      *
      * @since 2.7
      */
@@ -300,33 +313,39 @@ public class IntegrationTestMojo
     private String runOrder;
 
     /**
-     * A file containing include patterns. Blank lines, or lines starting with # are ignored. If {@code includes} are
-     * also specified, these patterns are appended. Example with path, simple and regex includes:<br/>
-     * &#042;&#047;test/*<br/>
-     * &#042;&#042;&#047;NotIncludedByDefault.java<br/>
-     * %regex[.*Test.*|.*Not.*]<br/>
+     * A file containing include patterns, each in a next line. Blank lines, or lines starting with # are ignored.
+     * If {@code includes} are also specified, these patterns are appended. Example with path, simple and regex
+     * includes:
+     * <pre><code>
+     * *{@literal /}it{@literal /}*
+     * **{@literal /}NotIncludedByDefault.java
+     * %regex[.*IT.*|.*Not.*]
+     * </code></pre>
      */
     @Parameter( property = "failsafe.includesFile" )
     private File includesFile;
 
     /**
-     * A file containing exclude patterns. Blank lines, or lines starting with # are ignored. If {@code excludes} are
-     * also specified, these patterns are appended. Example with path, simple and regex excludes:<br/>
-     * &#042;&#047;test/*<br/>
-     * &#042;&#042;&#047;DontRunTest.*<br/>
-     * %regex[.*Test.*|.*Not.*]<br/>
+     * A file containing exclude patterns, each in a next line. Blank lines, or lines starting with # are ignored.
+     * If {@code excludes} are also specified, these patterns are appended.
+     * Example with path, simple and regex excludes:
+     * <pre><code>
+     * *{@literal /}it{@literal /}*
+     * **{@literal /}DontRunIT.*
+     * %regex[.*IT.*|.*Not.*]
+     * </code></pre>
      */
     @Parameter( property = "failsafe.excludesFile" )
     private File excludesFile;
 
     /**
      * Set to error/failure count in order to skip remaining tests.
-     * Due to race conditions in parallel/forked execution this may not be fully guaranteed.<br/>
-     * Enable with system property -Dfailsafe.skipAfterFailureCount=1 or any number greater than zero.
-     * Defaults to "0".<br/>
-     * See the prerequisites and limitations in documentation:<br/>
+     * Due to race conditions in parallel/forked execution this may not be fully guaranteed.<br>
+     * Enable with system property {@code -Dfailsafe.skipAfterFailureCount=1} or any number greater than zero.
+     * Defaults to "0".<br>
+     * See the prerequisites and limitations in documentation:<br>
      * <a href="http://maven.apache.org/plugins/maven-failsafe-plugin/examples/skip-after-failure.html">
-     *     http://maven.apache.org/plugins/maven-failsafe-plugin/examples/skip-after-failure.html</a>
+     * http://maven.apache.org/plugins/maven-failsafe-plugin/examples/skip-after-failure.html</a>
      *
      * @since 2.19
      */
@@ -334,26 +353,34 @@ public class IntegrationTestMojo
     private int skipAfterFailureCount;
 
     /**
-     * After the plugin process is shutdown by sending SIGTERM signal (CTRL+C), SHUTDOWN command is received by every
-     * forked JVM. By default (shutdown=testset) forked JVM would not continue with new test which means that
-     * the current test may still continue to run.<br/>
-     * The parameter can be configured with other two values "exit" and "kill".<br/>
-     * Using "exit" forked JVM executes System.exit(1) after the plugin process has received SIGTERM signal.<br/>
-     * Using "kill" the JVM executes Runtime.halt(1) and kills itself.
+     * After the plugin process is shutdown by sending <i>SIGTERM signal (CTRL+C)</i>, <i>SHUTDOWN command</i> is
+     * received by every forked JVM.
+     * <br>
+     * By default ({@code shutdown=testset}) forked JVM would not continue with new test which means that
+     * the current test may still continue to run.
+     * <br>
+     * The parameter can be configured with other two values {@code exit} and {@code kill}.
+     * <br>
+     * Using {@code exit} forked JVM executes {@code System.exit(1)} after the plugin process has received
+     * <i>SIGTERM signal</i>.
+     * <br>
+     * Using {@code kill} the JVM executes {@code Runtime.halt(1)} and kills itself.
      *
      * @since 2.19
      */
     @Parameter( property = "failsafe.shutdown", defaultValue = "testset" )
     private String shutdown;
 
+    @Override
     protected int getRerunFailingTestsCount()
     {
         return rerunFailingTestsCount;
     }
 
+    @Override
     @SuppressWarnings( "unchecked" )
     protected void handleSummary( RunResult summary, Exception firstForkException )
-        throws MojoExecutionException, MojoFailureException
+            throws MojoExecutionException, MojoFailureException
     {
         File summaryFile = getSummaryFile();
         if ( !summaryFile.getParentFile().isDirectory() )
@@ -365,30 +392,14 @@ public class IntegrationTestMojo
         try
         {
             Object token = getPluginContext().get( FAILSAFE_IN_PROGRESS_CONTEXT_KEY );
-            summary.writeSummary( summaryFile, token != null, getEncodingOrDefault() );
+            writeSummary( summary, summaryFile, token != null );
         }
-        catch ( IOException e )
+        catch ( Exception e )
         {
             throw new MojoExecutionException( e.getMessage(), e );
         }
 
         getPluginContext().put( FAILSAFE_IN_PROGRESS_CONTEXT_KEY, FAILSAFE_IN_PROGRESS_CONTEXT_KEY );
-    }
-
-    private String getEncodingOrDefault()
-    {
-        if ( StringUtils.isEmpty( encoding ) )
-        {
-            getConsoleLogger().warning( "File encoding has not been set, using platform encoding "
-                + FILE_ENCODING
-                + ", i.e. build is platform dependent! The file encoding for reports output files "
-                + "should be provided by the POM property ${project.reporting.outputEncoding}." );
-            return FILE_ENCODING;
-        }
-        else
-        {
-            return encoding;
-        }
     }
 
     private boolean isJarArtifact( File artifactFile )
@@ -408,17 +419,20 @@ public class IntegrationTestMojo
         }
     }
 
+    @Override
     @SuppressWarnings( "deprecation" )
     protected boolean isSkipExecution()
     {
         return isSkip() || isSkipTests() || isSkipITs() || isSkipExec();
     }
 
+    @Override
     protected String getPluginName()
     {
         return "failsafe";
     }
 
+    @Override
     protected String[] getDefaultIncludes()
     {
         return new String[]{ "**/IT*.java", "**/*IT.java", "**/*ITCase.java" };
@@ -430,11 +444,20 @@ public class IntegrationTestMojo
         return "https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report.xsd";
     }
 
+    @Override
+    protected Artifact getMojoArtifact()
+    {
+        final Map<String, Artifact> pluginArtifactMap = getPluginArtifactMap();
+        return pluginArtifactMap.get( "org.apache.maven.plugins:maven-failsafe-plugin" );
+    }
+
+    @Override
     public boolean isSkipTests()
     {
         return skipTests;
     }
 
+    @Override
     public void setSkipTests( boolean skipTests )
     {
         this.skipTests = skipTests;
@@ -450,6 +473,7 @@ public class IntegrationTestMojo
         this.skipITs = skipITs;
     }
 
+    @Override
     @SuppressWarnings( "deprecation" )
     @Deprecated
     public boolean isSkipExec()
@@ -457,6 +481,7 @@ public class IntegrationTestMojo
         return skipExec;
     }
 
+    @Override
     @SuppressWarnings( "deprecation" )
     @Deprecated
     public void setSkipExec( boolean skipExec )
@@ -464,31 +489,37 @@ public class IntegrationTestMojo
         this.skipExec = skipExec;
     }
 
+    @Override
     public boolean isSkip()
     {
         return skip;
     }
 
+    @Override
     public void setSkip( boolean skip )
     {
         this.skip = skip;
     }
 
+    @Override
     public File getBasedir()
     {
         return basedir;
     }
 
+    @Override
     public void setBasedir( File basedir )
     {
         this.basedir = basedir;
     }
 
+    @Override
     public File getTestClassesDirectory()
     {
         return testClassesDirectory;
     }
 
+    @Override
     public void setTestClassesDirectory( File testClassesDirectory )
     {
         this.testClassesDirectory = testClassesDirectory;
@@ -499,6 +530,7 @@ public class IntegrationTestMojo
      * {@link #useSystemClassLoader} is ignored and the {@link org.apache.maven.surefire.booter.IsolatedClassLoader} is
      * used instead. See the resolution of {@link #getClassLoaderConfiguration() ClassLoaderConfiguration}.
      */
+    @Override
     public File getClassesDirectory()
     {
         File artifact = getProject().getArtifact().getFile();
@@ -506,6 +538,7 @@ public class IntegrationTestMojo
         return isDefaultClsDir ? ( isJarArtifact( artifact ) ? artifact : defaultClassesDirectory ) : classesDirectory;
     }
 
+    @Override
     public void setClassesDirectory( File classesDirectory )
     {
         this.classesDirectory = toAbsoluteCanonical( classesDirectory );
@@ -516,21 +549,25 @@ public class IntegrationTestMojo
         this.defaultClassesDirectory = toAbsoluteCanonical( defaultClassesDirectory );
     }
 
+    @Override
     public File getReportsDirectory()
     {
         return reportsDirectory;
     }
 
+    @Override
     public void setReportsDirectory( File reportsDirectory )
     {
         this.reportsDirectory = reportsDirectory;
     }
 
+    @Override
     public String getTest()
     {
         return test;
     }
 
+    @Override
     public void setTest( String test )
     {
         this.test = test;
@@ -546,101 +583,121 @@ public class IntegrationTestMojo
         this.summaryFile = summaryFile;
     }
 
+    @Override
     public boolean isPrintSummary()
     {
         return printSummary;
     }
 
+    @Override
     public void setPrintSummary( boolean printSummary )
     {
         this.printSummary = printSummary;
     }
 
+    @Override
     public String getReportFormat()
     {
         return reportFormat;
     }
 
+    @Override
     public void setReportFormat( String reportFormat )
     {
         this.reportFormat = reportFormat;
     }
 
+    @Override
     public boolean isUseFile()
     {
         return useFile;
     }
 
+    @Override
     public void setUseFile( boolean useFile )
     {
         this.useFile = useFile;
     }
 
+    @Override
     public String getDebugForkedProcess()
     {
         return debugForkedProcess;
     }
 
+    @Override
     public void setDebugForkedProcess( String debugForkedProcess )
     {
         this.debugForkedProcess = debugForkedProcess;
     }
 
+    @Override
     public int getForkedProcessTimeoutInSeconds()
     {
         return forkedProcessTimeoutInSeconds;
     }
 
+    @Override
     public void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds )
     {
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
     }
 
+    @Override
     public int getForkedProcessExitTimeoutInSeconds()
     {
         return forkedProcessExitTimeoutInSeconds;
     }
 
+    @Override
     public void setForkedProcessExitTimeoutInSeconds( int forkedProcessExitTimeoutInSeconds )
     {
         this.forkedProcessExitTimeoutInSeconds = forkedProcessExitTimeoutInSeconds;
     }
 
+    @Override
     public double getParallelTestsTimeoutInSeconds()
     {
         return parallelTestsTimeoutInSeconds;
     }
 
+    @Override
     public void setParallelTestsTimeoutInSeconds( double parallelTestsTimeoutInSeconds )
     {
         this.parallelTestsTimeoutInSeconds = parallelTestsTimeoutInSeconds;
     }
 
+    @Override
     public double getParallelTestsTimeoutForcedInSeconds()
     {
         return parallelTestsTimeoutForcedInSeconds;
     }
 
+    @Override
     public void setParallelTestsTimeoutForcedInSeconds( double parallelTestsTimeoutForcedInSeconds )
     {
         this.parallelTestsTimeoutForcedInSeconds = parallelTestsTimeoutForcedInSeconds;
     }
 
+    @Override
     public boolean isUseSystemClassLoader()
     {
         return useSystemClassLoader;
     }
 
+    @Override
     public void setUseSystemClassLoader( boolean useSystemClassLoader )
     {
         this.useSystemClassLoader = useSystemClassLoader;
     }
 
+    @Override
     public boolean isUseManifestOnlyJar()
     {
         return useManifestOnlyJar;
     }
 
+    @Override
     public void setUseManifestOnlyJar( boolean useManifestOnlyJar )
     {
         this.useManifestOnlyJar = useManifestOnlyJar;
@@ -658,27 +715,32 @@ public class IntegrationTestMojo
         // ignore
     }
 
+    @Override
     protected void addPluginSpecificChecksumItems( ChecksumCalculator checksum )
     {
         checksum.add( skipITs );
         checksum.add( summaryFile );
     }
 
+    @Override
     public Boolean getFailIfNoSpecifiedTests()
     {
         return failIfNoSpecifiedTests;
     }
 
+    @Override
     public void setFailIfNoSpecifiedTests( boolean failIfNoSpecifiedTests )
     {
         this.failIfNoSpecifiedTests = failIfNoSpecifiedTests;
     }
 
+    @Override
     public int getSkipAfterFailureCount()
     {
         return skipAfterFailureCount;
     }
 
+    @Override
     public String getShutdown()
     {
         return shutdown;
@@ -696,22 +758,26 @@ public class IntegrationTestMojo
         this.includes = includes;
     }
 
+    @Override
     public File[] getSuiteXmlFiles()
     {
         return suiteXmlFiles.clone();
     }
 
+    @Override
     @SuppressWarnings( "UnusedDeclaration" )
     public void setSuiteXmlFiles( File[] suiteXmlFiles )
     {
         this.suiteXmlFiles = suiteXmlFiles.clone();
     }
 
+    @Override
     public String getRunOrder()
     {
         return runOrder;
     }
 
+    @Override
     @SuppressWarnings( "UnusedDeclaration" )
     public void setRunOrder( String runOrder )
     {
@@ -740,5 +806,10 @@ public class IntegrationTestMojo
     protected final boolean hasSuiteXmlFiles()
     {
         return suiteXmlFiles != null && suiteXmlFiles.length != 0;
+    }
+
+    static Charset toCharset( String encoding )
+    {
+        return Charset.forName( Charset.isSupported( encoding ) ? encoding : encoding.toUpperCase( Locale.ROOT ) );
     }
 }

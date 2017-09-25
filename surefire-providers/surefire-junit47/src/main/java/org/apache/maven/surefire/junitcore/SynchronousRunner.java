@@ -31,11 +31,13 @@ import org.junit.runners.model.RunnerScheduler;
 class SynchronousRunner
     implements RunnerScheduler
 {
+    @Override
     public void schedule( final Runnable childStatement )
     {
         childStatement.run();
     }
 
+    @Override
     public void finished()
     {
     }

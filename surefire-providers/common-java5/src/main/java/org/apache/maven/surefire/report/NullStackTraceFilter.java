@@ -25,6 +25,7 @@ package org.apache.maven.surefire.report;
 final class NullStackTraceFilter
     implements StackTraceFilter
 {
+    @Override
     public boolean matches( StackTraceElement element )
     {
         return true;

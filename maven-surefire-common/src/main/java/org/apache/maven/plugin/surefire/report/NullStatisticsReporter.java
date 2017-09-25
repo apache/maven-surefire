@@ -26,7 +26,7 @@ import org.apache.maven.surefire.report.ReportEntry;
  * StatisticsReporter doing nothing rather than using null.
  *
  * @author <a href="mailto:britter@apache.org">Benedikt Ritter</a>
- * @since 2.19.2
+ * @since 2.20
  */
 class NullStatisticsReporter
     extends StatisticsReporter

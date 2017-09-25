@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * @noinspection CustomClassloader
+ * Loads classes from jar files added via {@link #addURL(URL)}.
  */
 public class IsolatedClassLoader
     extends URLClassLoader
@@ -53,6 +53,7 @@ public class IsolatedClassLoader
      * @deprecated this method will use {@link java.io.File} instead of {@link URL} in the next
      * major version.
      */
+    @Override
     @Deprecated
     public void addURL( URL url )
     {
@@ -65,6 +66,7 @@ public class IsolatedClassLoader
         }
     }
 
+    @Override
     public synchronized Class loadClass( String name )
         throws ClassNotFoundException
     {
@@ -99,6 +101,7 @@ public class IsolatedClassLoader
         }
     }
 
+    @Override
     public String toString()
     {
         return "IsolatedClassLoader{roleName='" + roleName + "'}";

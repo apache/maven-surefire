@@ -21,6 +21,7 @@ package org.apache.maven.surefire.its;
 
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -48,32 +49,32 @@ public class CheckTestNgListenerReporterIT
     public static Collection<Object[]> data()
     {
         return Arrays.asList(new Object[][] {
-            { "5.6", JAVA_1_5 }, // First TestNG version with reporter support
-            { "5.7", JAVA_1_5 }, // default version from pom of the test case
-            { "5.10", JAVA_1_5 },
-            { "5.13", JAVA_1_5 }, // "reporterslist" param becomes String instead of List<ReporterConfig>
+            { "5.6", "jdk15", JAVA_1_5 }, // First TestNG version with reporter support
+            { "5.7", "jdk15", JAVA_1_5 }, // default version from pom of the test case
+            { "5.10", "jdk15", JAVA_1_5 },
+            { "5.13", null, JAVA_1_5 }, // "reporterslist" param becomes String instead of List<ReporterConfig>
                         // "listener" param becomes String instead of List<Class>
 
                 // configure(Map) in 5.14.1 and 5.14.2 is transforming List<Class> into a String with a space as separator.
                 // Then configure(CommandLineArgs) splits this String into a List<String> with , or ; as separator => fail.
                 // If we used configure(CommandLineArgs), we would not have the problem with white spaces.
-            //{ "5.14.1", "1.5" }, // "listener" param becomes List instead of String
+            //{ "5.14.1", null, "1.5" }, // "listener" param becomes List instead of String
                             // Fails: Issue with 5.14.1 and 5.14.2 => join with <space>, split with ","
                             // TODO will work with "configure(CommandLineArgs)"
-            //{ "5.14.2", "1.5" }, // ReporterConfig is not available
+            //{ "5.14.2", null, "1.5" }, // ReporterConfig is not available
 
-            //{ "5.14.3", "1.5" }, // TestNG uses "reporter" instead of "reporterslist"
+            //{ "5.14.3", null, "1.5" }, // TestNG uses "reporter" instead of "reporterslist"
                           // Both String or List are possible for "listener"
                           // Fails: not able to test due to system dependency org.testng:guice missed the path and use to break CI
                           // ClassNotFoundException: com.beust.jcommander.ParameterException
 
-            //{ "5.14.4", "1.5" }, { "5.14.5", "1.5" }, // Fails: not able to test due to system dependency org.testng:guice missed the path and use to break CI
+            //{ "5.14.4", null, "1.5" }, { "5.14.5", null, "1.5" }, // Fails: not able to test due to system dependency org.testng:guice missed the path and use to break CI
                                         // ClassNotFoundException: com.beust.jcommander.ParameterException
 
-            { "5.14.6", JAVA_1_5 }, // Usage of org.testng:guice removed
-            { "5.14.9", JAVA_1_5 }, // Latest 5.14.x TestNG version
-            { "6.0", JAVA_1_5 },
-            { "6.9.9", JAVA_1_7 } // Currently latest TestNG version
+            { "5.14.6", null, JAVA_1_5 }, // Usage of org.testng:guice removed
+            { "5.14.9", null, JAVA_1_5 }, // Latest 5.14.x TestNG version
+            { "6.0", null, JAVA_1_5 },
+            { "6.9.9", null, JAVA_1_7 } // Currently latest TestNG version
         });
     }
 
@@ -81,16 +82,24 @@ public class CheckTestNgListenerReporterIT
     public String version;
 
     @Parameter(1)
+    public String classifier;
+
+    @Parameter(2)
     public JavaVersion javaVersion;
 
     @Test
     public void testNgListenerReporter()
     {
-
         assumeJavaVersion( javaVersion );
-        unpack( "testng-listener-reporter", "_" + version )
-                .resetInitialGoals( version )
-                .executeTest()
+        final SurefireLauncher launcher = unpack( "testng-listener-reporter", "_" + version )
+                                                  .sysProp( "testNgVersion", version );
+
+        if ( classifier != null )
+        {
+            launcher.sysProp( "testNgClassifier", "jdk15" );
+        }
+
+        launcher.executeTest()
                 .verifyErrorFree( 1 )
                 .getTargetFile( "resultlistener-output.txt" ).assertFileExists()
                 .getTargetFile( "suitelistener-output.txt" ).assertFileExists()

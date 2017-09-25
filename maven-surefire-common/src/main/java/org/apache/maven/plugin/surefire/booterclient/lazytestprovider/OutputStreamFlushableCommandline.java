@@ -48,6 +48,7 @@ public class OutputStreamFlushableCommandline
             this.outputStream = outputStream;
         }
 
+        @Override
         public void flush()
             throws IOException
         {
@@ -71,6 +72,7 @@ public class OutputStreamFlushableCommandline
         return process;
     }
 
+    @Override
     public FlushReceiver getFlushReceiver()
     {
         return flushReceiver;

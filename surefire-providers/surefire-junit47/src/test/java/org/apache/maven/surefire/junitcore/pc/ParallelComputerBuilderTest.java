@@ -33,7 +33,10 @@ import org.junit.runner.Description;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
+import org.junit.runner.notification.RunNotifier;
+import org.junit.runners.ParentRunner;
 import org.junit.runners.Suite;
+import org.junit.runners.model.InitializationError;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +45,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -91,8 +95,7 @@ public class ParallelComputerBuilderTest
     }
 
     @Before
-    public void beforeTest()
-    {
+    public void beforeTest() throws InterruptedException {
         Class1.maxConcurrentMethods = 0;
         Class1.concurrentMethods = 0;
         shutdownTask = null;
@@ -101,6 +104,17 @@ public class ParallelComputerBuilderTest
         NotThreadSafeTest3.t = null;
         NormalTest1.t = null;
         NormalTest2.t = null;
+        System.gc();
+        Thread.sleep( 50L );
+    }
+
+    @Test
+    public void testsWithoutChildrenShouldAlsoBeRun()
+    {
+        ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( logger );
+        ParallelComputerBuilder.PC computer = ( ParallelComputerBuilder.PC ) parallelComputerBuilder.buildComputer();
+        Result result = new JUnitCore().run( computer, TestWithoutPrecalculatedChildren.class );
+        assertThat( result.getRunCount(), is( 1 ) );
     }
 
     @Test
@@ -555,6 +569,7 @@ public class ParallelComputerBuilderTest
         appThreads.removeAll( Collections.singleton( (Thread) null ) );
         Collections.sort( appThreads, new Comparator<Thread>()
         {
+            @Override
             public int compare( Thread t1, Thread t2 )
             {
                 return (int) Math.signum( t1.getId() - t2.getId() );
@@ -579,6 +594,7 @@ public class ParallelComputerBuilderTest
                 (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
             shutdownTask = new Runnable()
             {
+                @Override
                 public void run()
                 {
                     Collection<Description> startedTests = computer.describeStopped( useInterrupt ).getTriggeredTests();
@@ -684,6 +700,61 @@ public class ParallelComputerBuilderTest
     @Suite.SuiteClasses( { Class2.class, Class1.class } )
     public static class TestSuite
     {
+    }
+
+    public static class Test2
+    {
+        @Test
+        public void test()
+        {
+
+        }
+    }
+
+    @RunWith( ReportOneTestAtRuntimeRunner.class )
+    public static class TestWithoutPrecalculatedChildren {}
+
+    public static class ReportOneTestAtRuntimeRunner
+            extends ParentRunner
+    {
+        private final Class testClass;
+        private final Description suiteDescription;
+        private Description myTestMethodDescr;
+
+        public ReportOneTestAtRuntimeRunner( Class testClass ) throws InitializationError
+        {
+            super( Object.class );
+            this.testClass = testClass;
+            suiteDescription = Description.createSuiteDescription( testClass );
+            myTestMethodDescr = Description.createTestDescription( testClass, "my_test" );
+//            suiteDescription.addChild(myTestMethodDescr); // let it be not known at start time
+        }
+
+        protected List getChildren()
+        {
+            throw new UnsupportedOperationException( "workflow from ParentRunner not supported" );
+        }
+
+        protected Description describeChild( Object child )
+        {
+            throw new UnsupportedOperationException( "workflow from ParentRunner not supported" );
+        }
+
+        protected void runChild( Object child, RunNotifier notifier )
+        {
+            throw new UnsupportedOperationException( "workflow from ParentRunner not supported" );
+        }
+
+        public Description getDescription()
+        {
+            return suiteDescription;
+        }
+
+        public void run( RunNotifier notifier )
+        {
+            notifier.fireTestStarted( myTestMethodDescr );
+            notifier.fireTestFinished( Description.createTestDescription( testClass, "my_test" ) );
+        }
     }
 
     @NotThreadSafe

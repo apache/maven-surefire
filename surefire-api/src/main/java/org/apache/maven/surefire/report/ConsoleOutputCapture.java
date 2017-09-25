@@ -29,7 +29,7 @@ import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 
 /**
  * Deals with system.out/err.
- * <p/>
+ * <br>
  */
 public class ConsoleOutputCapture
 {
@@ -52,6 +52,7 @@ public class ConsoleOutputCapture
             this.target = target;
         }
 
+        @Override
         public void write( byte[] buf, int off, int len )
         {
             // Note: At this point the supplied "buf" instance is reused, which means
@@ -59,12 +60,14 @@ public class ConsoleOutputCapture
             target.writeTestOutput( buf, off, len, isStdout );
         }
 
+        @Override
         public void write( byte[] b )
             throws IOException
         {
             target.writeTestOutput( b, 0, b.length, isStdout );
         }
 
+        @Override
         public void write( int b )
         {
             byte[] buf = new byte[1];
@@ -79,6 +82,7 @@ public class ConsoleOutputCapture
             }
         }
 
+        @Override
         public void println( String s )
         {
             if ( s == null )
@@ -89,10 +93,12 @@ public class ConsoleOutputCapture
             target.writeTestOutput( bytes, 0, bytes.length, isStdout );
         }
 
+        @Override
         public void close()
         {
         }
 
+        @Override
         public void flush()
         {
         }

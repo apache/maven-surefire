@@ -30,7 +30,6 @@ import org.testng.ITestNGMethod;
  * For internal use only
  *
  * @author Olivier Lamy
- * @noinspection UnusedDeclaration
  * @since 2.7.3
  */
 public class MethodSelector
@@ -38,10 +37,12 @@ public class MethodSelector
 {
     private static volatile TestListResolver testListResolver = null;
 
+    @Override
     public void setTestMethods( List arg0 )
     {
     }
 
+    @Override
     public boolean includeMethod( IMethodSelectorContext context, ITestNGMethod testngMethod, boolean isTestMethod )
     {
         return testngMethod.isBeforeClassConfiguration() || testngMethod.isBeforeGroupsConfiguration()

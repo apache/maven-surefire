@@ -19,18 +19,11 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.Collection;
-
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils;
 import org.apache.maven.plugin.surefire.SurefireHelper;
 import org.apache.maven.plugin.surefire.SurefireReportParameters;
 import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
@@ -41,11 +34,11 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.suite.RunResult;
 
+import java.io.File;
+import java.util.Collection;
+
 import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
-import static org.apache.maven.shared.utils.ReaderFactory.FILE_ENCODING;
 import static org.apache.maven.shared.utils.StringUtils.capitalizeFirstLetter;
-import static org.apache.maven.shared.utils.StringUtils.isEmpty;
-import static org.apache.maven.shared.utils.io.IOUtil.close;
 import static org.apache.maven.surefire.suite.RunResult.noTestsRun;
 
 /**
@@ -54,10 +47,11 @@ import static org.apache.maven.surefire.suite.RunResult.noTestsRun;
  * @author Stephen Connolly
  * @author Jason van Zyl
  */
+@SuppressWarnings( "unused" )
 @Mojo( name = "verify", defaultPhase = LifecyclePhase.VERIFY, requiresProject = true, threadSafe = true )
 public class VerifyMojo
-    extends AbstractMojo
-    implements SurefireReportParameters
+        extends AbstractMojo
+        implements SurefireReportParameters
 {
 
     /**
@@ -125,16 +119,12 @@ public class VerifyMojo
 
     /**
      * The summary file to read integration test results from.
-     *
-     * @noinspection UnusedDeclaration
      */
     @Parameter( defaultValue = "${project.build.directory}/failsafe-reports/failsafe-summary.xml", required = true )
     private File summaryFile;
 
     /**
      * Additional summary files to read integration test results from.
-     *
-     * @noinspection UnusedDeclaration, MismatchedReadAndWriteOfArray
      * @since 2.6
      */
     @Parameter
@@ -150,8 +140,9 @@ public class VerifyMojo
 
     /**
      * The character encoding scheme to be applied.
+     * Deprecated since 2.20.1 and used encoding UTF-8 in <tt>failsafe-summary.xml</tt>.
      *
-     * @noinspection UnusedDeclaration
+     * @deprecated since of 2.20.1
      */
     @Parameter( property = "encoding", defaultValue = "${project.reporting.outputEncoding}" )
     private String encoding;
@@ -166,50 +157,35 @@ public class VerifyMojo
 
     private volatile PluginConsoleLogger consoleLogger;
 
+    @Override
     public void execute()
-        throws MojoExecutionException, MojoFailureException
+            throws MojoExecutionException, MojoFailureException
     {
         cli = commandLineOptions();
         if ( verifyParameters() )
         {
-            logDebugOrCliShowErrors(
-                capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
+            logDebugOrCliShowErrors( capitalizeFirstLetter( getPluginName() )
+                                             + " report directory: " + getReportsDirectory() );
 
             RunResult summary;
             try
             {
-                final String encoding;
-                if ( isEmpty( this.encoding ) )
-                {
-                    getConsoleLogger()
-                            .warning( "File encoding has not been set, using platform encoding "
-                                              + FILE_ENCODING
-                                              + ", i.e. build is platform dependent! The file encoding for "
-                                              + "reports output files should be provided by the POM property "
-                                              + "${project.reporting.outputEncoding}." );
-                    encoding = FILE_ENCODING;
-                }
-                else
-                {
-                    encoding = this.encoding;
-                }
-
-                summary = existsSummaryFile() ? readSummary( encoding, summaryFile ) : noTestsRun();
+                summary = existsSummaryFile() ? readSummary( summaryFile ) : noTestsRun();
 
                 if ( existsSummaryFiles() )
                 {
                     for ( final File summaryFile : summaryFiles )
                     {
-                        summary = summary.aggregate( readSummary( encoding, summaryFile ) );
+                        summary = summary.aggregate( readSummary( summaryFile ) );
                     }
                 }
             }
-            catch ( IOException e )
+            catch ( Exception e )
             {
                 throw new MojoExecutionException( e.getMessage(), e );
             }
 
-            reportExecution( this, summary, getConsoleLogger() );
+            reportExecution( this, summary, getConsoleLogger(), null );
         }
     }
 
@@ -228,29 +204,13 @@ public class VerifyMojo
         return consoleLogger;
     }
 
-    private RunResult readSummary( String encoding, File summaryFile )
-        throws IOException
+    private RunResult readSummary( File summaryFile ) throws Exception
     {
-        FileInputStream fileInputStream = null;
-        BufferedInputStream bufferedInputStream = null;
-        Reader reader = null;
-        try
-        {
-            fileInputStream = new FileInputStream( summaryFile );
-            bufferedInputStream = new BufferedInputStream( fileInputStream );
-            reader = new InputStreamReader( bufferedInputStream, encoding );
-            return RunResult.fromInputStream( bufferedInputStream, encoding );
-        }
-        finally
-        {
-            close( reader );
-            close( bufferedInputStream );
-            close( fileInputStream );
-        }
+        return FailsafeSummaryXmlUtils.toRunResult( summaryFile );
     }
 
     protected boolean verifyParameters()
-        throws MojoFailureException
+            throws MojoFailureException
     {
         if ( isSkip() || isSkipTests() || isSkipITs() || isSkipExec() )
         {
@@ -285,11 +245,13 @@ public class VerifyMojo
         return null;
     }
 
+    @Override
     public boolean isSkipTests()
     {
         return skipTests;
     }
 
+    @Override
     public void setSkipTests( boolean skipTests )
     {
         this.skipTests = skipTests;
@@ -305,73 +267,87 @@ public class VerifyMojo
         this.skipITs = skipITs;
     }
 
+    @Override
     @Deprecated
     public boolean isSkipExec()
     {
         return skipExec;
     }
 
+    @Override
     @Deprecated
     public void setSkipExec( boolean skipExec )
     {
         this.skipExec = skipExec;
     }
 
+    @Override
     public boolean isSkip()
     {
         return skip;
     }
 
+    @Override
     public void setSkip( boolean skip )
     {
         this.skip = skip;
     }
 
+    @Override
     public boolean isTestFailureIgnore()
     {
         return testFailureIgnore;
     }
 
+    @Override
     public void setTestFailureIgnore( boolean testFailureIgnore )
     {
         this.testFailureIgnore = testFailureIgnore;
     }
 
+    @Override
     public File getBasedir()
     {
         return basedir;
     }
 
+    @Override
     public void setBasedir( File basedir )
     {
         this.basedir = basedir;
     }
 
+    @Override
     public File getTestClassesDirectory()
     {
         return testClassesDirectory;
     }
 
+    @Override
     public void setTestClassesDirectory( File testClassesDirectory )
     {
         this.testClassesDirectory = testClassesDirectory;
     }
 
+    @Override
     public File getReportsDirectory()
     {
         return reportsDirectory;
     }
 
+    @Override
     public void setReportsDirectory( File reportsDirectory )
     {
         this.reportsDirectory = reportsDirectory;
     }
 
+    @Override
     public Boolean getFailIfNoTests()
     {
         return failIfNoTests;
     }
 
+    @Override
     public void setFailIfNoTests( boolean failIfNoTests )
     {
         this.failIfNoTests = failIfNoTests;

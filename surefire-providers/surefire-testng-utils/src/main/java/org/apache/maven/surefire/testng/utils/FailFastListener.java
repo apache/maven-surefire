@@ -39,36 +39,43 @@ public class FailFastListener
         this.stoppable = stoppable;
     }
 
+    @Override
     public void onTestStart( ITestResult result )
     {
 
     }
 
+    @Override
     public void onTestSuccess( ITestResult result )
     {
 
     }
 
+    @Override
     public void onTestFailure( ITestResult result )
     {
         stoppable.fireStopEvent();
     }
 
+    @Override
     public void onTestSkipped( ITestResult result )
     {
 
     }
 
+    @Override
     public void onTestFailedButWithinSuccessPercentage( ITestResult result )
     {
 
     }
 
+    @Override
     public void onStart( ITestContext context )
     {
 
     }
 
+    @Override
     public void onFinish( ITestContext context )
     {
 

@@ -19,16 +19,17 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.TestSetReportEntry;
+import org.apache.maven.surefire.testset.TestSetFailedException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class JUnitTestSetTest
     extends TestCase
@@ -63,43 +64,52 @@ public class JUnitTestSetTest
 
         private List<ReportEntry> succeededTests = new ArrayList<ReportEntry>();
 
-        public void testSetStarting( ReportEntry report )
+        @Override
+        public void testSetStarting( TestSetReportEntry report )
         {
         }
 
-        public void testSetCompleted( ReportEntry report )
+        @Override
+        public void testSetCompleted( TestSetReportEntry report )
         {
         }
 
+        @Override
         public void testStarting( ReportEntry report )
         {
         }
 
+        @Override
         public void testSucceeded( ReportEntry report )
         {
             this.succeededTests.add( report );
         }
 
+        @Override
         public void testAssumptionFailure( ReportEntry report )
         {
             throw new IllegalStateException();
         }
 
+        @Override
         public void testError( ReportEntry report )
         {
             throw new IllegalStateException();
         }
 
+        @Override
         public void testFailed( ReportEntry report )
         {
             throw new IllegalStateException();
         }
 
+        @Override
         public void testSkipped( ReportEntry report )
         {
             throw new IllegalStateException();
         }
 
+        @Override
         public void testExecutionSkippedByUser()
         {
         }

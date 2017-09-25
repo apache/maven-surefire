@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
 
 /**
  * After compiling sources under endorsed junit:4.7, this annotation
- * is relocated in {@link org.junit.runner.notification.RunListener.ThreadSafe}.
+ * is relocated in org.junit.runner.notification.RunListener.ThreadSafe.
  */
 @Documented
 @Target( ElementType.TYPE )

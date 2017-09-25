@@ -45,6 +45,7 @@ public class AndGroupMatcher
         }
     }
 
+    @Override
     public boolean enabled( Class<?>... cats )
     {
         for ( GroupMatcher matcher : getMatchers() )
@@ -59,6 +60,7 @@ public class AndGroupMatcher
         return true;
     }
 
+    @Override
     public boolean enabled( String... cats )
     {
         for ( GroupMatcher matcher : getMatchers() )

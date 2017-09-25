@@ -33,8 +33,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Used to execute tests annotated with {@link net.jcip.annotations.NotThreadSafe}.
- * <p/>
+ * Used to execute tests annotated with net.jcip.annotations.NotThreadSafe.
+ * <br>
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @see ParallelComputerBuilder

@@ -30,11 +30,11 @@ public class TestSetFailedException
 {
 
     /**
-     * Create a <code>TestFailedException</code> with a detail message.
+     * Creates {@code TestSetFailedException} with a detail message.
      *
-     * @param message A detail message for this <code>TestFailedException</code>, or
-     *                <code>null</code>. If <code>null</code> is passed, the <code>getMessage</code>
-     *                method will return an empty <code>String</code>.
+     * @param message A detail message for this {@code TestSetFailedException}, or
+     *                {@code null}. If {@code null} is passed, the {@link #getMessage}
+     *                method will return an empty {@link String string}.
      */
     public TestSetFailedException( String message )
     {
@@ -42,15 +42,15 @@ public class TestSetFailedException
     }
 
     /**
-     * Create a <code>TestFailedException</code> with the specified detail
+     * Creates {@code TestSetFailedException} with the specified detail
      * message and cause.
-     * <p/>
+     * <br>
      * <p>Note that the detail message associated with cause is
-     * <em>not</em> automatically incorporated in this throwable's detail
+     * <b>NOT</b> automatically incorporated in this throwable's detail
      * message.
      *
-     * @param message A detail message for this <code>TestFailedException</code>, or <code>null</code>.
-     * @param cause   the cause, which is saved for later retrieval by the <code>getCause</code> method.
+     * @param message A detail message for this {@code TestSetFailedException}, or {@code null}.
+     * @param cause   the cause, which is saved for later retrieval by the {@link #getCause} method.
      *                (A null value is permitted, and indicates that the cause is nonexistent or unknown.)
      */
     public TestSetFailedException( String message, Throwable cause )
@@ -59,9 +59,8 @@ public class TestSetFailedException
     }
 
     /**
-     * Create a <code>TestFailedException</code> with the specified cause.  The
-     * <code>getMessage</code> method of this exception object will return
-     * <code>(cause == null ? "" : cause.toString())</code>.
+     * Creates {@code TestSetFailedException} with the specified cause. The mthod {@link #getMessage} method of this
+     * exception object will return {@code cause == null ? "" : cause.toString()}.
      *
      * @param cause The cause
      */

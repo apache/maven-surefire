@@ -28,7 +28,7 @@ import org.junit.Test;
  * Allow rerunFailingTestsCount, skipAfterFailureCount together
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @see {@linkplain https://jira.codehaus.org/browse/SUREFIRE-1202}
+ * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1202">SUREFIRE-1202</a>
  * @since 2.19.1
  */
 public class Surefire1202RerunAndSkipIT
