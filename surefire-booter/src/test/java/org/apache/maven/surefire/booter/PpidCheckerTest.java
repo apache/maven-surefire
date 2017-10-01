@@ -68,6 +68,10 @@ public class PpidCheckerTest
     {
         assumeTrue( IS_OS_UNIX );
 
+        assertThat( PpidChecker.canExecuteUnixPs() )
+                .as( "Surefire should be tested on real box OS, e.g. Ubuntu or FreeBSD." )
+                .isTrue();
+
         long expectedPid = Long.parseLong( ManagementFactory.getRuntimeMXBean().getName().split( "@" )[0].trim() );
 
         PpidChecker checker = new PpidChecker( expectedPid );

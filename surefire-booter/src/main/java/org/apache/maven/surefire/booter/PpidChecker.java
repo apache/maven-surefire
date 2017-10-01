@@ -65,12 +65,13 @@ final class PpidChecker
     PpidChecker( long pluginPid )
     {
         this.pluginPid = pluginPid;
+        //todo WARN logger (after new logger is finished) that (IS_OS_UNIX && canExecuteUnixPs()) is false
     }
 
     boolean canUse()
     {
         return pluginProcessInfo == null
-                       ? IS_OS_WINDOWS || IS_OS_UNIX
+                       ? IS_OS_WINDOWS || IS_OS_UNIX && canExecuteUnixPs()
                        : pluginProcessInfo.isValid() && !pluginProcessInfo.isError();
     }
 
@@ -203,7 +204,22 @@ final class PpidChecker
 
     static String unixPathToPS()
     {
-        return new File( "/usr/bin/ps" ).canExecute() ? "/usr/bin/ps" : "/bin/ps";
+        return canExecuteLocalUnixPs() ? "/usr/bin/ps" : "/bin/ps";
+    }
+
+    static boolean canExecuteUnixPs()
+    {
+        return canExecuteLocalUnixPs() || canExecuteStandardUnixPs();
+    }
+
+    private static boolean canExecuteLocalUnixPs()
+    {
+        return new File( "/usr/bin/ps" ).canExecute();
+    }
+
+    private static boolean canExecuteStandardUnixPs()
+    {
+        return new File( "/bin/ps" ).canExecute();
     }
 
     static long fromDays( Matcher matcher )
