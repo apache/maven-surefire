@@ -19,7 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -268,8 +267,6 @@ public class SystemUtilsTest
 
     @RunWith( PowerMockRunner.class )
     @PrepareForTest( SystemUtils.class )
-    // todo check PowerMock is compliant with Java 9
-    @Ignore( value = "use this test after issue is fixed https://github.com/powermock/powermock/issues/783")
     public static class MockTest
     {
 
@@ -322,12 +319,11 @@ public class SystemUtilsTest
                 assertThat( SystemUtils.isJava9AtLeast( path.getAbsolutePath() ) ).isFalse();
             }
 
-            verifyStatic( Mockito.times( 0 ) );
+            verifyStatic( SystemUtils.class, Mockito.times( 0 ) );
             SystemUtils.toJdkVersionFromReleaseFile( any( File.class ) );
 
-            verifyStatic( Mockito.times( 1 ) );
+            verifyStatic( SystemUtils.class, Mockito.times( 1 ) );
             SystemUtils.isBuiltInJava9AtLeast();
         }
-
     }
 }
