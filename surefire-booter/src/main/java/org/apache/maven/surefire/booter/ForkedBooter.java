@@ -70,6 +70,8 @@ public final class ForkedBooter
     private static final long DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS = 30L;
     private static final long PING_TIMEOUT_IN_SECONDS = 30L;
     private static final long ONE_SECOND_IN_MILLIS = 1000L;
+    private static final String LAST_DITCH_SHUTDOWN_THREAD = "surefire-forkedjvm-last-ditch-daemon-shutdown-thread-";
+    private static final String PING_THREAD = "surefire-forkedjvm-ping-";
 
     private final CommandReader commandReader = CommandReader.getReader();
     private final PrintStream originalOut = System.out;
@@ -345,7 +347,7 @@ public final class ForkedBooter
         if ( jvmTerminator == null )
         {
             ThreadFactory threadFactory =
-                    newDaemonThreadFactory( "last-ditch-daemon-shutdown-thread-" + systemExitTimeoutInSeconds + "s" );
+                    newDaemonThreadFactory( LAST_DITCH_SHUTDOWN_THREAD + systemExitTimeoutInSeconds + "s" );
             jvmTerminator = new ScheduledThreadPoolExecutor( 1, threadFactory );
             jvmTerminator.setMaximumPoolSize( 1 );
         }
@@ -434,7 +436,7 @@ public final class ForkedBooter
 
     private static ScheduledExecutorService createPingScheduler()
     {
-        ThreadFactory threadFactory = newDaemonThreadFactory( "ping-" + PING_TIMEOUT_IN_SECONDS + "s" );
+        ThreadFactory threadFactory = newDaemonThreadFactory( PING_THREAD + PING_TIMEOUT_IN_SECONDS + "s" );
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor( 1, threadFactory );
         executor.setKeepAliveTime( 3L, SECONDS );
         executor.setMaximumPoolSize( 2 );
