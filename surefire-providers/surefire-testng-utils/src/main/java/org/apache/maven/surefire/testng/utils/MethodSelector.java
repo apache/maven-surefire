@@ -62,6 +62,17 @@ public class MethodSelector
     {
         TestListResolver resolver = testListResolver;
         boolean hasTestResolver = resolver != null && !resolver.isEmpty();
-        return hasTestResolver && resolver.shouldRun( test.getRealClass(), test.getMethodName() );
+        boolean resolved = false;
+        Class<?> clazz = test.getRealClass();
+        if (resolver != null) {
+            while (true) {
+                if (clazz.equals(Object.class) || resolved) {
+                    break;
+                }
+                resolved = resolver.shouldRun(clazz, test.getMethodName());
+                clazz = clazz.getSuperclass();
+            }
+        }
+        return hasTestResolver && resolved;
     }
 }
