@@ -33,7 +33,7 @@ import org.testng.ITestNGMethod;
  * @since 2.7.3
  */
 public class MethodSelector
-    implements IMethodSelector
+        implements IMethodSelector
 {
     private static volatile TestListResolver testListResolver = null;
 
@@ -46,11 +46,11 @@ public class MethodSelector
     public boolean includeMethod( IMethodSelectorContext context, ITestNGMethod testngMethod, boolean isTestMethod )
     {
         return testngMethod.isBeforeClassConfiguration() || testngMethod.isBeforeGroupsConfiguration()
-            || testngMethod.isBeforeMethodConfiguration() || testngMethod.isBeforeSuiteConfiguration()
-            || testngMethod.isBeforeTestConfiguration() || testngMethod.isAfterClassConfiguration()
-            || testngMethod.isAfterGroupsConfiguration() || testngMethod.isAfterMethodConfiguration()
-            || testngMethod.isAfterSuiteConfiguration() || testngMethod.isAfterTestConfiguration()
-            || shouldRun( testngMethod );
+                || testngMethod.isBeforeMethodConfiguration() || testngMethod.isBeforeSuiteConfiguration()
+                || testngMethod.isBeforeTestConfiguration() || testngMethod.isAfterClassConfiguration()
+                || testngMethod.isAfterGroupsConfiguration() || testngMethod.isAfterMethodConfiguration()
+                || testngMethod.isAfterSuiteConfiguration() || testngMethod.isAfterTestConfiguration()
+                || shouldRun( testngMethod );
     }
 
     public static void setTestListResolver( TestListResolver testListResolver )
@@ -62,6 +62,15 @@ public class MethodSelector
     {
         TestListResolver resolver = testListResolver;
         boolean hasTestResolver = resolver != null && !resolver.isEmpty();
-        return hasTestResolver && resolver.shouldRun( test.getRealClass(), test.getMethodName() );
+        if ( hasTestResolver )
+        {
+            boolean run = false;
+            for ( Class<?> clazz = test.getRealClass(); !run && clazz != Object.class; clazz = clazz.getSuperclass() )
+            {
+                run = resolver.shouldRun( clazz, test.getMethodName() );
+            }
+            return run;
+        }
+        return false;
     }
 }
