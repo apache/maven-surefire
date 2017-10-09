@@ -279,8 +279,11 @@ public class SystemUtilsTest
         @Test
         public void shouldBeSameJdk9() throws IOException
         {
-            assumeFalse( JAVA_RECENT.atLeast( JAVA_9 ) );
-            testIsJava9AtLeast( new File( System.getProperty( "java.home" ) ).getParentFile() );
+            // PowerMockJUnit44RunnerDelegateImpl does not work with Assumptions: assumeFalse
+            if ( !JAVA_RECENT.atLeast( JAVA_9 ) )
+            {
+                testIsJava9AtLeast( new File( System.getProperty( "java.home" ) ).getParentFile() );
+            }
         }
 
         private static void testIsJava9AtLeast( File pathInJdk ) throws IOException
