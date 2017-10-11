@@ -38,7 +38,6 @@ import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_NET_BSD;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_OPEN_BSD;
 import static org.fest.assertions.Assertions.assertThat;
-import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyDouble;
@@ -227,6 +226,15 @@ public class SystemUtilsTest
         }
 
         @Test
+        public void shouldBeMockPidStatusOnLinux() throws Exception
+        {
+            String root = new File( System.getProperty( "user.dir" ), "target/test-classes" ).getAbsolutePath();
+            Long actualPid = SystemUtils.pidStatusOnLinux( root );
+            assertThat( actualPid )
+                    .isEqualTo( 48982L );
+        }
+
+        @Test
         public void shouldBePidStatusOnBSD() throws Exception
         {
             assumeTrue( IS_OS_FREE_BSD || IS_OS_NET_BSD || IS_OS_OPEN_BSD );
@@ -236,6 +244,15 @@ public class SystemUtilsTest
 
             assertThat( actualPid + "" )
                     .isEqualTo( expectedPid );
+        }
+
+        @Test
+        public void shouldBeMockPidStatusOnBSD() throws Exception
+        {
+            String root = new File( System.getProperty( "user.dir" ), "target/test-classes" ).getAbsolutePath();
+            Long actualPid = SystemUtils.pidStatusOnBSD( root );
+            assertThat( actualPid )
+                    .isEqualTo( 60424L );
         }
 
         @Test

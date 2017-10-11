@@ -257,9 +257,37 @@ public final class SystemUtils
         return null;
     }
 
+    /**
+     * $ cat /proc/self/stat
+     * <br>
+     * 48982 (cat) R 9744 48982 9744 34818 48982 8192 185 0 0 0 0 0 0 0 20 0 1 0
+     * 137436614 103354368 134 18446744073709551615 4194304 4235780 140737488346592
+     * 140737488343784 252896458544 0 0 0 0 0 0 0 17 2 0 0 0 0 0
+     * <br>
+     * $ SELF_PID=$(cat /proc/self/stat)
+     * <br>
+     * $ echo $CPU_ID | gawk '{print $1}'
+     * <br>
+     * 48982
+     *
+     * @return self PID
+     * @throws Exception i/o and number format exc
+     */
     static Long pidStatusOnLinux() throws Exception
     {
-        FileReader input = new FileReader( "/proc/self/stat" );
+        return pidStatusOnLinux( "" );
+    }
+
+    /**
+     * For testing purposes only.
+     *
+     * @param root    shifted to test-classes
+     * @return same as in {@link #pidStatusOnLinux()}
+     * @throws Exception same as in {@link #pidStatusOnLinux()}
+     */
+    static Long pidStatusOnLinux( String root ) throws Exception
+    {
+        FileReader input = new FileReader( root + "/proc/self/stat" );
         try
         {
             // Reading and encoding 20 characters is bit faster than whole line.
@@ -277,14 +305,36 @@ public final class SystemUtils
     /**
      * The process status.  This file is read-only and returns a single
      * line containing multiple space-separated fields.
+     * <br>
      * See <a href="https://www.freebsd.org/cgi/man.cgi?query=procfs&sektion=5">procfs status</a>
+     * <br>
+     * # cat /proc/curproc/status
+     * <br>
+     * cat 60424 60386 60424 60386 5,0 ctty 972854153,236415 0,0 0,1043 nochan 0 0 0,0 prisoner
+     * <br>
+     * Fields are:
+     * <br>
+     * comm pid ppid pgid sid maj, min ctty, sldr start user/system time wmsg euid ruid rgid,egid,
+     * groups[1 .. NGROUPS] hostname
      *
      * @return current PID
      * @throws Exception if could not read /proc/curproc/status
      */
     static Long pidStatusOnBSD() throws Exception
     {
-        BufferedReader input = new BufferedReader( new FileReader( "/proc/curproc/status" ) );
+        return pidStatusOnBSD( "" );
+    }
+
+    /**
+     * For testing purposes only.
+     *
+     * @param root    shifted to test-classes
+     * @return same as in {@link #pidStatusOnBSD()}
+     * @throws Exception same as in {@link #pidStatusOnBSD()}
+     */
+    static Long pidStatusOnBSD( String root ) throws Exception
+    {
+        BufferedReader input = new BufferedReader( new FileReader( root + "/proc/curproc/status" ) );
         try
         {
             String line = input.readLine();
