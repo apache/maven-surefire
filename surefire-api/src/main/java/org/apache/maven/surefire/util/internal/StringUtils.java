@@ -216,6 +216,90 @@ public final class StringUtils
             return ch - '0';
         }
     }
+    
+    /**
+     * List element for a linked bite list, where new elements can be added easily.
+     * 
+     * @author dagere
+     */
+    private static class ByteListElement
+    {
+        final byte myBite;
+        ByteListElement successor;
+
+        public ByteListElement( byte value )
+        {
+            myBite = value;
+        }
+
+        /**
+         * Adds new element to the list
+         * 
+         * @param value value of the new element
+         * @return reference of the new element
+         */
+        private ByteListElement setSuccesor( byte value )
+        {
+            successor = new ByteListElement( value );
+            return successor;
+        }
+    }
+
+    /**
+     * Escapes a byte array, adding a header and taking a offset and a given length of the array. A newline is added in
+     * the end.
+     * 
+     * @param header header in front of the input
+     * @param input input that should be escaped
+     * @param off offset in the input buffer
+     * @param len number of bytes to copy from the input buffer
+     * @return escaped byte array
+     */
+    @SuppressWarnings( "checkstyle:magicnumber" )
+    public static byte[] escapeBytesToPrintable( final byte[] header, final byte[] input, final int off, final int len )
+    {
+        final ByteListElement anchor = new ByteListElement( (byte) 0 );
+        ByteListElement next = anchor;
+
+        int index = 0;
+        final int end = off + len;
+        for ( int i = off; i < end; i++ )
+        {
+            final byte b = input[i];
+
+            // handle non-nicely printable bytes
+            if ( b < 32 || b > 126 || b == '\\' || b == ',' )
+            {
+                final int upper = ( 0xF0 & b ) >> 4;
+                final int lower = ( 0x0F & b );
+
+                final byte head = '\\';
+                next = next.setSuccesor( head );
+                next = next.setSuccesor( HEX_CHARS[upper] );
+                next = next.setSuccesor( HEX_CHARS[lower] );
+                index += 3;
+            }
+            else
+            {
+                next = next.setSuccesor( b );
+                index++;
+            }
+        }
+
+        final byte[] result = new byte[header.length + index + 1];
+        System.arraycopy( header, 0, result, 0, header.length );
+        next = anchor;
+        index = header.length;
+        while ( next.successor != null )
+        {
+            next = next.successor;
+            result[index] = next.myBite;
+            index++;
+        }
+        result[index] = (byte) '\n';
+
+        return result;
+    }
 
     /**
      * Escapes the bytes in the array {@code str} to contain only 'printable' bytes.

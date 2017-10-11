@@ -200,14 +200,8 @@ public class ForkingRunListener
     @Override
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
-        byte[] header = stdout ? stdOutHeader : stdErrHeader;
-        byte[] content =
-            new byte[buf.length * 3 + 1]; // Hex-escaping can be up to 3 times length of a regular byte.
-        int i = escapeBytesToPrintable( content, 0, buf, off, len );
-        content[i++] = (byte) '\n';
-        byte[] encodeBytes = new byte[header.length + i];
-        System.arraycopy( header, 0, encodeBytes, 0, header.length );
-        System.arraycopy( content, 0, encodeBytes, header.length, i );
+        final byte[] header = stdout ? stdOutHeader : stdErrHeader;
+        final byte[] encodeBytes = escapeBytesToPrintable( header, buf, off, len );
 
         synchronized ( target ) // See notes about synchronization/thread safety in class javadoc
         {

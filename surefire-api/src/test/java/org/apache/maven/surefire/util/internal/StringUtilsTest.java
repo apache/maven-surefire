@@ -66,6 +66,35 @@ public class StringUtilsTest
         return sb;
     }
 
+    public void testUnescapeBytesList()
+    {
+        byte[] input = new byte[256];
+
+        for ( int i = 0; i <= 0xFF; i++ )
+        {
+            byte b = (byte) ( 0xFF & i );
+            input[i] = b;
+        }
+
+        byte[] escaped = StringUtils.escapeBytesToPrintable( new byte[0], input, 0, input.length );
+
+        String escapedString = new String( escaped, 0, escaped.length );
+
+        assertEquals( escaped.length, escapedString.length() );
+
+        java.nio.ByteBuffer unescaped = StringUtils.unescapeBytes( escapedString, Charset.defaultCharset().name() );
+
+        // +1, since escapeBytesToPrintable in this version adds a line break,
+        // since this is expected for surefire test output
+        assertEquals( input.length + 1, unescaped.remaining() - unescaped.position() );
+
+        for ( int i = 0; i < input.length; i++ )
+        {
+            byte actual = unescaped.get();
+            assertEquals( "At position " + i, input[i], actual );
+        }
+    }
+
     public void testUnescapeBytes()
     {
         byte[] input = new byte[256];
