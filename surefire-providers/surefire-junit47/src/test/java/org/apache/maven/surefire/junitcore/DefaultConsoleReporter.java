@@ -71,4 +71,9 @@ public class DefaultConsoleReporter
     {
 
     }
+
+    @Override
+    public boolean isQuiet() {
+        return false;
+    }
 }

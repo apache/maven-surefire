@@ -57,5 +57,5 @@ public interface ConsoleLogger
      */
     void error( Throwable t );
 
-
+    boolean isQuiet();
 }

@@ -129,4 +129,10 @@ public final class PluginConsoleLogger
             mojoLogger.error( t );
         }
     }
+
+    @Override
+    public boolean isQuiet()
+    {
+        return !isErrorEnabled() && !isWarnEnabled() && !isInfoEnabled() && !isDebugEnabled();
+    }
 }

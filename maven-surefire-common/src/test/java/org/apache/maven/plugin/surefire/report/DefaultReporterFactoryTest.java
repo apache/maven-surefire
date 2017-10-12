@@ -179,6 +179,11 @@ public class DefaultReporterFactoryTest
         {
         }
 
+        @Override
+        public boolean isQuiet() {
+            return false;
+        }
+
         List<String> getMessages()
         {
             return messages;

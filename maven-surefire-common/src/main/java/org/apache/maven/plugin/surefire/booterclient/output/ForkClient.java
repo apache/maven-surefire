@@ -335,13 +335,21 @@ public class ForkClient
                 log.debug( event );
             }
         }
-        else if ( debug )
-        {
-            log.debug( event );
-        }
         else
         {
-            log.info( event );
+            if ( debug )
+            {
+                log.debug( event );
+            }
+            else if ( log.isQuiet() )
+            {
+                // In case of debugging forked JVM, see PRINTABLE_JVM_NATIVE_STREAM.
+                System.out.println( event );
+            }
+            else
+            {
+                log.info( event );
+            }
         }
     }
 

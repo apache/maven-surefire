@@ -124,6 +124,12 @@ public class TestSetRunListener
     }
 
     @Override
+    public boolean isQuiet()
+    {
+        return consoleReporter.getConsoleLogger().isQuiet();
+    }
+
+    @Override
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         try

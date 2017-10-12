@@ -69,4 +69,10 @@ public class PrintStreamLogger
     {
         error( null, t );
     }
+
+    @Override
+    public boolean isQuiet()
+    {
+        return false;
+    }
 }

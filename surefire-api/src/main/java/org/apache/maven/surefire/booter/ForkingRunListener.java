@@ -282,6 +282,12 @@ public class ForkingRunListener
         error( null, t );
     }
 
+    @Override
+    public boolean isQuiet()
+    {
+        return false;
+    }
+
     private void encodeAndWriteToTarget( String string )
     {
         byte[] encodeBytes = encodeStringForForkCommunication( string );

@@ -134,6 +134,13 @@ final class PluginConsoleLogger
         }
     }
 
+    @Override
+    public boolean isQuiet()
+    {
+        return !mojoLogger.isErrorEnabled() && !mojoLogger.isWarnEnabled()
+                && !mojoLogger.isInfoEnabled() && !mojoLogger.isDebugEnabled();
+    }
+
     private static MessageBuilder createAnsiBuilder( CharSequence message )
     {
         return buffer( bufferSize( message ) );

@@ -86,6 +86,11 @@ public class TestSuiteXmlParserTest
             {
                 loggedErrors.add( t.getLocalizedMessage() );
             }
+
+            @Override
+            public boolean isQuiet() {
+                return false;
+            }
         };
     }
 

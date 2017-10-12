@@ -56,4 +56,10 @@ public final class NullConsoleLogger implements ConsoleLogger
     public void error( Throwable t )
     {
     }
+
+    @Override
+    public boolean isQuiet()
+    {
+        return true;
+    }
 }

@@ -197,6 +197,11 @@ public class MockReporter
     }
 
     @Override
+    public boolean isQuiet() {
+        return false;
+    }
+
+    @Override
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         events.add( stdout ? STDOUT : STDERR );
