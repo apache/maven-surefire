@@ -152,8 +152,9 @@ public class WrappedReportEntry
 
     public String getOutput( boolean trimStackTrace )
     {
-        return getElapsedTimeSummary() + "  <<< " + getReportEntryType().toString().toUpperCase() + "!" + NL
-            + getStackTrace( trimStackTrace );
+        String outputLine = getElapsedTimeSummary() + "  <<< " + getReportEntryType().name() + "!";
+        String trimmedStackTrace = getStackTrace( trimStackTrace );
+        return trimmedStackTrace == null ? outputLine : outputLine + NL + trimmedStackTrace;
     }
 
     public String getElapsedTimeVerbose()
