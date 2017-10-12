@@ -25,7 +25,7 @@ pipeline {
         }
     }
     options {
-        buildDiscarder(logRotator(numToKeepStr:'3'))
+        buildDiscarder(logRotator(numToKeepStr:'10'))
         timeout(time: 10, unit: 'HOURS')
     }
 }
