@@ -54,8 +54,20 @@ public class TestSuiteXmlParserTest
         consoleLogger = new ConsoleLogger()
         {
             @Override
+            public boolean isDebugEnabled()
+            {
+                return true;
+            }
+
+            @Override
             public void debug( String message )
             {
+            }
+
+            @Override
+            public boolean isInfoEnabled()
+            {
+                return true;
             }
 
             @Override
@@ -64,9 +76,21 @@ public class TestSuiteXmlParserTest
             }
 
             @Override
+            public boolean isWarnEnabled()
+            {
+                return true;
+            }
+
+            @Override
             public void warning( String message )
             {
                 loggedErrors.add( message );
+            }
+
+            @Override
+            public boolean isErrorEnabled()
+            {
+                return true;
             }
 
             @Override
@@ -85,11 +109,6 @@ public class TestSuiteXmlParserTest
             public void error( Throwable t )
             {
                 loggedErrors.add( t.getLocalizedMessage() );
-            }
-
-            @Override
-            public boolean isQuiet() {
-                return false;
             }
         };
     }

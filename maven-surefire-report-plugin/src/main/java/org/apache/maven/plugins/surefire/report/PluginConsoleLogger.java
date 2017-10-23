@@ -39,11 +39,12 @@ final class PluginConsoleLogger
 {
     private final Log mojoLogger;
 
-    public PluginConsoleLogger( Log mojoLogger )
+    PluginConsoleLogger( Log mojoLogger )
     {
         this.mojoLogger = mojoLogger;
     }
 
+    @Override
     public boolean isDebugEnabled()
     {
         return mojoLogger.isDebugEnabled();
@@ -66,6 +67,7 @@ final class PluginConsoleLogger
         }
     }
 
+    @Override
     public boolean isInfoEnabled()
     {
         return mojoLogger.isInfoEnabled();
@@ -80,6 +82,7 @@ final class PluginConsoleLogger
         }
     }
 
+    @Override
     public boolean isWarnEnabled()
     {
         return mojoLogger.isWarnEnabled();
@@ -102,6 +105,7 @@ final class PluginConsoleLogger
         }
     }
 
+    @Override
     public boolean isErrorEnabled()
     {
         return mojoLogger.isErrorEnabled();
@@ -132,13 +136,6 @@ final class PluginConsoleLogger
         {
             mojoLogger.error( t );
         }
-    }
-
-    @Override
-    public boolean isQuiet()
-    {
-        return !mojoLogger.isErrorEnabled() && !mojoLogger.isWarnEnabled()
-                && !mojoLogger.isInfoEnabled() && !mojoLogger.isDebugEnabled();
     }
 
     private static MessageBuilder createAnsiBuilder( CharSequence message )

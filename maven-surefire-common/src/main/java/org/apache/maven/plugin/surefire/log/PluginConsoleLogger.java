@@ -19,12 +19,12 @@ package org.apache.maven.plugin.surefire.log;
  * under the License.
  */
 
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.codehaus.plexus.logging.Logger;
 
 /**
- * Wrapper logger of miscellaneous (Maven 2.2.1 or 3.1) implementations of {@link Log}.
- * Calling {@link Log#isInfoEnabled()} before {@link Log#info(CharSequence)} due to Maven 2.2.1.
+ * Wrapper logger of miscellaneous (Maven 2.2.1 or 3.1) implementations of {@link Logger}.
+ * Calling {@link Logger#isInfoEnabled()} before {@link Logger#info(String)} due to Maven 2.2.1.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20
@@ -33,106 +33,104 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 public final class PluginConsoleLogger
     implements ConsoleLogger
 {
-    private final Log mojoLogger;
+    private final Logger plexusLogger;
 
-    public PluginConsoleLogger( Log mojoLogger )
+    public PluginConsoleLogger( Logger plexusLogger )
     {
-        this.mojoLogger = mojoLogger;
+        this.plexusLogger = plexusLogger;
     }
 
+    @Override
     public boolean isDebugEnabled()
     {
-        return mojoLogger.isDebugEnabled();
+        return plexusLogger.isDebugEnabled();
     }
 
     @Override
     public void debug( String message )
     {
-        if ( mojoLogger.isDebugEnabled() )
+        if ( isDebugEnabled() )
         {
-            mojoLogger.debug( message );
+            plexusLogger.debug( message );
         }
     }
 
     public void debug( CharSequence content, Throwable error )
     {
-        if ( mojoLogger.isDebugEnabled() )
+        if ( isDebugEnabled() )
         {
-            mojoLogger.debug( content, error );
+            plexusLogger.debug( content == null ? "" : content.toString(), error );
         }
     }
 
+    @Override
     public boolean isInfoEnabled()
     {
-        return mojoLogger.isInfoEnabled();
+        return plexusLogger.isInfoEnabled();
     }
 
     @Override
     public void info( String message )
     {
-        if ( mojoLogger.isInfoEnabled() )
+        if ( isInfoEnabled() )
         {
-            mojoLogger.info( message );
+            plexusLogger.info( message );
         }
     }
 
+    @Override
     public boolean isWarnEnabled()
     {
-        return mojoLogger.isWarnEnabled();
+        return plexusLogger.isWarnEnabled();
     }
 
     @Override
     public void warning( String message )
     {
-        if ( mojoLogger.isWarnEnabled() )
+        if ( isWarnEnabled() )
         {
-            mojoLogger.warn( message );
+            plexusLogger.warn( message );
         }
     }
 
     public void warning( CharSequence content, Throwable error )
     {
-        if ( mojoLogger.isWarnEnabled() )
+        if ( isWarnEnabled() )
         {
-            mojoLogger.warn( content, error );
+            plexusLogger.warn( content == null ? "" : content.toString(), error );
         }
     }
 
+    @Override
     public boolean isErrorEnabled()
     {
-        return mojoLogger.isErrorEnabled();
+        return plexusLogger.isErrorEnabled() || plexusLogger.isFatalErrorEnabled();
     }
 
     @Override
     public void error( String message )
     {
-        if ( mojoLogger.isErrorEnabled() )
+        if ( isErrorEnabled() )
         {
-            mojoLogger.error( message );
+            plexusLogger.error( message );
         }
     }
 
     @Override
     public void error( String message, Throwable t )
     {
-        if ( mojoLogger.isErrorEnabled() )
+        if ( isErrorEnabled() )
         {
-            mojoLogger.error( message, t );
+            plexusLogger.error( message, t );
         }
     }
 
     @Override
     public void error( Throwable t )
     {
-        if ( mojoLogger.isErrorEnabled() )
+        if ( isErrorEnabled() )
         {
-            mojoLogger.error( t );
+            plexusLogger.error( "", t );
         }
-    }
-
-    @Override
-    public boolean isQuiet()
-    {
-        return !isErrorEnabled() && !isWarnEnabled() && !isInfoEnabled() && !isDebugEnabled();
     }
 }

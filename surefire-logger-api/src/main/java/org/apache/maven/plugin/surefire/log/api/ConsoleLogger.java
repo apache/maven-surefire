@@ -31,11 +31,19 @@ package org.apache.maven.plugin.surefire.log.api;
  */
 public interface ConsoleLogger
 {
+    boolean isDebugEnabled();
+
     void debug( String message );
+
+    boolean isInfoEnabled();
 
     void info( String message );
 
+    boolean isWarnEnabled();
+
     void warning( String message );
+
+    boolean isErrorEnabled();
 
     /**
      * @param message          message to log
@@ -56,6 +64,4 @@ public interface ConsoleLogger
      * @param t                exception, message and trace to log
      */
     void error( Throwable t );
-
-    boolean isQuiet();
 }

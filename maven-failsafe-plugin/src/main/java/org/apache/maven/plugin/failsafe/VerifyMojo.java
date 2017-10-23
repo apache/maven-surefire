@@ -33,6 +33,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.suite.RunResult;
+import org.codehaus.plexus.logging.Logger;
 
 import java.io.File;
 import java.util.Collection;
@@ -153,6 +154,9 @@ public class VerifyMojo
     @Component
     private MavenSession session;
 
+    @Component
+    private Logger logger;
+
     private Collection<CommandLineOption> cli;
 
     private volatile PluginConsoleLogger consoleLogger;
@@ -197,7 +201,7 @@ public class VerifyMojo
             {
                 if ( consoleLogger == null )
                 {
-                    consoleLogger = new PluginConsoleLogger( getLog() );
+                    consoleLogger = new PluginConsoleLogger( logger );
                 }
             }
         }

@@ -80,6 +80,7 @@ import org.apache.maven.surefire.util.SurefireReflectionException;
 import org.apache.maven.toolchain.DefaultToolchain;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
+import org.codehaus.plexus.logging.Logger;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -688,6 +689,9 @@ public abstract class AbstractSurefireMojo
     @Component
     private MavenSession session;
 
+    @Component
+    private Logger logger;
+
     /**
      * (TestNG only) Define the factory class used to create all test instances.
      *
@@ -841,7 +845,7 @@ public abstract class AbstractSurefireMojo
             {
                 if ( consoleLogger == null )
                 {
-                    consoleLogger = new PluginConsoleLogger( getLog() );
+                    consoleLogger = new PluginConsoleLogger( logger );
                 }
             }
         }

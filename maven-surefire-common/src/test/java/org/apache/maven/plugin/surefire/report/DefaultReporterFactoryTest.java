@@ -145,9 +145,21 @@ public class DefaultReporterFactoryTest
         private final List<String> messages = new ArrayList<String>();
 
         @Override
+        public boolean isDebugEnabled()
+        {
+            return true;
+        }
+
+        @Override
         public void debug( String message )
         {
             messages.add( message );
+        }
+
+        @Override
+        public boolean isInfoEnabled()
+        {
+            return true;
         }
 
         @Override
@@ -157,9 +169,21 @@ public class DefaultReporterFactoryTest
         }
 
         @Override
+        public boolean isWarnEnabled()
+        {
+            return true;
+        }
+
+        @Override
         public void warning( String message )
         {
             messages.add( message );
+        }
+
+        @Override
+        public boolean isErrorEnabled()
+        {
+            return true;
         }
 
         @Override
@@ -177,11 +201,6 @@ public class DefaultReporterFactoryTest
         @Override
         public void error( Throwable t )
         {
-        }
-
-        @Override
-        public boolean isQuiet() {
-            return false;
         }
 
         List<String> getMessages()

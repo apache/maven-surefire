@@ -102,8 +102,6 @@ public class ForkClient
 
     private final ConsoleLogger log;
 
-    private final boolean debug;
-
     /**
      * prevents from printing same warning
      */
@@ -124,12 +122,11 @@ public class ForkClient
     private volatile int forkNumber;
 
     public ForkClient( DefaultReporterFactory defaultReporterFactory, NotifiableTestStream notifiableTestStream,
-                       ConsoleLogger log, boolean debug, AtomicBoolean printedErrorStream )
+                       ConsoleLogger log, AtomicBoolean printedErrorStream )
     {
         this.defaultReporterFactory = defaultReporterFactory;
         this.notifiableTestStream = notifiableTestStream;
         this.log = log;
-        this.debug = debug;
         this.printedErrorStream = printedErrorStream;
     }
 
@@ -330,25 +327,25 @@ public class ForkClient
                 log.warning( msg + " See FAQ web page and the dump file " + dump.getAbsolutePath() );
             }
 
-            if ( debug && event != null )
+            if ( log.isDebugEnabled() && event != null )
             {
                 log.debug( event );
             }
         }
         else
         {
-            if ( debug )
+            if ( log.isDebugEnabled() )
             {
                 log.debug( event );
             }
-            else if ( log.isQuiet() )
+            else if ( log.isInfoEnabled() )
             {
-                // In case of debugging forked JVM, see PRINTABLE_JVM_NATIVE_STREAM.
-                System.out.println( event );
+                log.info( event );
             }
             else
             {
-                log.info( event );
+                // In case of debugging forked JVM, see PRINTABLE_JVM_NATIVE_STREAM.
+                System.out.println( event );
             }
         }
     }

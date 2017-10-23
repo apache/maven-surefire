@@ -35,9 +35,21 @@ public class PrintStreamLogger
     }
 
     @Override
+    public boolean isDebugEnabled()
+    {
+        return true;
+    }
+
+    @Override
     public void debug( String message )
     {
         stream.println( message );
+    }
+
+    @Override
+    public boolean isInfoEnabled()
+    {
+        return true;
     }
 
     @Override
@@ -47,9 +59,21 @@ public class PrintStreamLogger
     }
 
     @Override
+    public boolean isWarnEnabled()
+    {
+        return true;
+    }
+
+    @Override
     public void warning( String message )
     {
         stream.println( message );
+    }
+
+    @Override
+    public boolean isErrorEnabled()
+    {
+        return true;
     }
 
     @Override
@@ -68,11 +92,5 @@ public class PrintStreamLogger
     public void error( Throwable t )
     {
         error( null, t );
-    }
-
-    @Override
-    public boolean isQuiet()
-    {
-        return false;
     }
 }

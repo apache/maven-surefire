@@ -28,8 +28,20 @@ package org.apache.maven.plugin.surefire.log.api;
 public final class NullConsoleLogger implements ConsoleLogger
 {
     @Override
+    public boolean isDebugEnabled()
+    {
+        return false;
+    }
+
+    @Override
     public void debug( String message )
     {
+    }
+
+    @Override
+    public boolean isInfoEnabled()
+    {
+        return false;
     }
 
     @Override
@@ -38,8 +50,20 @@ public final class NullConsoleLogger implements ConsoleLogger
     }
 
     @Override
+    public boolean isWarnEnabled()
+    {
+        return false;
+    }
+
+    @Override
     public void warning( String message )
     {
+    }
+
+    @Override
+    public boolean isErrorEnabled()
+    {
+        return false;
     }
 
     @Override
@@ -55,11 +79,5 @@ public final class NullConsoleLogger implements ConsoleLogger
     @Override
     public void error( Throwable t )
     {
-    }
-
-    @Override
-    public boolean isQuiet()
-    {
-        return true;
     }
 }

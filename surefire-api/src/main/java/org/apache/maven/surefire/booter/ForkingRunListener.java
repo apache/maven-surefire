@@ -247,9 +247,21 @@ public class ForkingRunListener
     }
 
     @Override
+    public boolean isDebugEnabled()
+    {
+        return true;
+    }
+
+    @Override
     public void debug( String message )
     {
         log( BOOTERCODE_DEBUG, message );
+    }
+
+    @Override
+    public boolean isInfoEnabled()
+    {
+        return true;
     }
 
     @Override
@@ -259,9 +271,21 @@ public class ForkingRunListener
     }
 
     @Override
+    public boolean isWarnEnabled()
+    {
+        return true;
+    }
+
+    @Override
     public void warning( String message )
     {
         log( BOOTERCODE_WARNING, message );
+    }
+
+    @Override
+    public boolean isErrorEnabled()
+    {
+        return true;
     }
 
     @Override
@@ -280,12 +304,6 @@ public class ForkingRunListener
     public void error( Throwable t )
     {
         error( null, t );
-    }
-
-    @Override
-    public boolean isQuiet()
-    {
-        return false;
     }
 
     private void encodeAndWriteToTarget( String string )

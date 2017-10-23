@@ -159,10 +159,22 @@ public class MockReporter
     }
 
     @Override
+    public boolean isDebugEnabled()
+    {
+        return true;
+    }
+
+    @Override
     public void debug( String message )
     {
         events.add( CONSOLE_OUTPUT );
         data.add( message );
+    }
+
+    @Override
+    public boolean isInfoEnabled()
+    {
+        return true;
     }
 
     @Override
@@ -173,10 +185,22 @@ public class MockReporter
     }
 
     @Override
+    public boolean isWarnEnabled()
+    {
+        return true;
+    }
+
+    @Override
     public void warning( String message )
     {
         events.add( CONSOLE_OUTPUT );
         data.add( message );
+    }
+
+    @Override
+    public boolean isErrorEnabled()
+    {
+        return true;
     }
 
     @Override
@@ -194,11 +218,6 @@ public class MockReporter
     @Override
     public void error( Throwable t )
     {
-    }
-
-    @Override
-    public boolean isQuiet() {
-        return false;
     }
 
     @Override

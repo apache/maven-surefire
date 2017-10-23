@@ -88,9 +88,21 @@ public class TestSetRunListener
     }
 
     @Override
+    public boolean isDebugEnabled()
+    {
+        return consoleReporter.getConsoleLogger().isDebugEnabled();
+    }
+
+    @Override
     public void debug( String message )
     {
         consoleReporter.getConsoleLogger().debug( trimTrailingNewLine( message ) );
+    }
+
+    @Override
+    public boolean isInfoEnabled()
+    {
+        return consoleReporter.getConsoleLogger().isInfoEnabled();
     }
 
     @Override
@@ -100,9 +112,21 @@ public class TestSetRunListener
     }
 
     @Override
+    public boolean isWarnEnabled()
+    {
+        return consoleReporter.getConsoleLogger().isWarnEnabled();
+    }
+
+    @Override
     public void warning( String message )
     {
         consoleReporter.getConsoleLogger().warning( trimTrailingNewLine( message ) );
+    }
+
+    @Override
+    public boolean isErrorEnabled()
+    {
+        return consoleReporter.getConsoleLogger().isErrorEnabled();
     }
 
     @Override
@@ -121,12 +145,6 @@ public class TestSetRunListener
     public void error( Throwable t )
     {
         consoleReporter.getConsoleLogger().error( t );
-    }
-
-    @Override
-    public boolean isQuiet()
-    {
-        return consoleReporter.getConsoleLogger().isQuiet();
     }
 
     @Override

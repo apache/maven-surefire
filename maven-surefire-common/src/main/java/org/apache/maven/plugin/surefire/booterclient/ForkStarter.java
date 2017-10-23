@@ -270,8 +270,7 @@ public class ForkStarter
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
         PropertiesWrapper props = new PropertiesWrapper( providerProperties );
         TestLessInputStream stream = builder.build();
-        ForkClient forkClient = new ForkClient( forkedReporterFactory, stream, log, forkConfiguration.isDebug(),
-                new AtomicBoolean() );
+        ForkClient forkClient = new ForkClient( forkedReporterFactory, stream, log, new AtomicBoolean() );
         Thread shutdown = createImmediateShutdownHookThread( builder, providerConfiguration.getShutdown() );
         ScheduledFuture<?> ping = triggerPingTimerForShutdown( builder );
         try
@@ -348,8 +347,8 @@ public class ForkStarter
                     {
                         DefaultReporterFactory reporter = new DefaultReporterFactory( startupReportConfiguration, log );
                         defaultReporterFactories.add( reporter );
-                        ForkClient forkClient = new ForkClient( reporter, testProvidingInputStream, log,
-                                forkConfiguration.isDebug(), printedErrorStream )
+                        ForkClient forkClient =
+                                new ForkClient( reporter, testProvidingInputStream, log, printedErrorStream )
                         {
                             @Override
                             protected void stopOnNextTest()
@@ -414,7 +413,7 @@ public class ForkStarter
                             new DefaultReporterFactory( startupReportConfiguration, log );
                         defaultReporterFactories.add( forkedReporterFactory );
                         ForkClient forkClient = new ForkClient( forkedReporterFactory, builder.getImmediateCommands(),
-                                log, forkConfiguration.isDebug(), printedErrorStream )
+                                log, printedErrorStream )
                         {
                             @Override
                             protected void stopOnNextTest()
