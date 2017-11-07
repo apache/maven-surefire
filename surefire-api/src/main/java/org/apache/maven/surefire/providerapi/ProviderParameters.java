@@ -28,7 +28,7 @@ import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DirectoryScanner;
-import org.apache.maven.surefire.util.RunOrderCalculator;
+import org.apache.maven.plugin.surefire.runorder.api.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 
 import java.util.List;

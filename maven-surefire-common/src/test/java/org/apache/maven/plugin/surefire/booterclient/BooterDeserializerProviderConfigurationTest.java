@@ -19,19 +19,36 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
-import org.apache.maven.surefire.booter.*;
-import org.apache.maven.surefire.cli.CommandLineOption;
-import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.testset.*;
-import org.apache.maven.surefire.util.RunOrder;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import junit.framework.Assert;
+import junit.framework.TestCase;
+import org.apache.maven.plugin.surefire.runorder.impl.RunOrderLoader;
+import org.apache.maven.surefire.booter.BooterDeserializer;
+import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
+import org.apache.maven.surefire.booter.ClasspathConfiguration;
+import org.apache.maven.surefire.booter.PropertiesWrapper;
+import org.apache.maven.surefire.booter.ProviderConfiguration;
+import org.apache.maven.surefire.booter.Shutdown;
+import org.apache.maven.surefire.booter.StartupConfiguration;
+import org.apache.maven.surefire.booter.TypeEncodedValue;
+import org.apache.maven.surefire.cli.CommandLineOption;
+import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.ResolvedTest;
+import org.apache.maven.surefire.testset.RunOrderParameters;
+import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestListResolver;
+import org.apache.maven.surefire.testset.TestRequest;
 
+import static org.apache.maven.plugin.surefire.runorder.impl.RunOrderLoader.defaultRunOrder;
+import static org.apache.maven.plugin.surefire.runorder.impl.RunOrderLoader.getRunOrderProvider;
 import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
 import static org.apache.maven.surefire.cli.CommandLineOption.REACTOR_FAIL_FAST;
 import static org.apache.maven.surefire.cli.CommandLineOption.SHOW_ERRORS;
@@ -199,7 +216,7 @@ public class BooterDeserializerProviderConfigurationTest
         excludes.add( "xx2" );
 
         return new DirectoryScannerParameters( aDir, includes, excludes, Collections.<String>emptyList(), true,
-                                               RunOrder.asString( RunOrder.DEFAULT ) );
+                                               RunOrderLoader.asString( defaultRunOrder() ) );
     }
 
     private ProviderConfiguration saveAndReload( ProviderConfiguration booterConfiguration,
@@ -235,7 +252,7 @@ public class BooterDeserializerProviderConfigurationTest
             new TestRequest( getSuiteXmlFileStrings(), getTestSourceDirectory(),
                              new TestListResolver( aUserRequestedTest + "#aUserRequestedTestMethod" ),
                              rerunFailingTestsCount );
-        RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null );
+        RunOrderParameters runOrderParameters = new RunOrderParameters( defaultRunOrder(), null );
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, true, reporterConfiguration,
                 new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new HashMap<String, String>(), aTestTyped,
                 readTestsFromInStream, cli, 0, Shutdown.DEFAULT, 0 );

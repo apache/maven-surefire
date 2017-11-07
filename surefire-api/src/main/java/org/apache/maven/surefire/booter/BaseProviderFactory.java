@@ -19,6 +19,11 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import java.io.PrintStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import org.apache.maven.plugin.surefire.runorder.api.RunOrderCalculator;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ConsoleStream;
@@ -30,18 +35,12 @@ import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DefaultDirectoryScanner;
-import org.apache.maven.surefire.util.DefaultRunOrderCalculator;
 import org.apache.maven.surefire.util.DefaultScanResult;
 import org.apache.maven.surefire.util.DirectoryScanner;
-import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 
-import java.io.PrintStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import static java.util.Collections.emptyList;
+import static org.apache.maven.plugin.surefire.runorder.impl.RunOrderLoader.getRunOrderProvider;
 
 /**
  * @author Kristian Rosenvold
@@ -111,8 +110,14 @@ public class BaseProviderFactory
     @Override
     public RunOrderCalculator getRunOrderCalculator()
     {
-        return directoryScannerParameters == null
-                ? null : new DefaultRunOrderCalculator( runOrderParameters, getThreadCount() );
+        if ( directoryScannerParameters == null )
+        {
+            return null;
+        }
+        else
+        {
+            return getRunOrderProvider().createRunOrderCalculator( runOrderParameters, getThreadCount() );
+        }
     }
 
     @Override
@@ -204,6 +209,7 @@ public class BaseProviderFactory
     @Override
     public void setRunOrderParameters( RunOrderParameters runOrderParameters )
     {
+        runOrderParameters.setLogger( getConsoleLogger() );
         this.runOrderParameters = runOrderParameters;
     }
 

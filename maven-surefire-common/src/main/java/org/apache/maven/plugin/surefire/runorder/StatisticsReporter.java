@@ -21,9 +21,11 @@ package org.apache.maven.plugin.surefire.runorder;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+
+import org.apache.maven.plugin.surefire.runorder.impl.statistics.RunEntryStatisticsMap;
 import org.apache.maven.surefire.report.ReportEntry;
 
-import static org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMap.fromFile;
+import static org.apache.maven.plugin.surefire.runorder.impl.statistics.RunEntryStatisticsMap.fromFile;
 
 /**
  * @author Kristian Rosenvold

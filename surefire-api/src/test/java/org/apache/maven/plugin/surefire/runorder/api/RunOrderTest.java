@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.util;
+package org.apache.maven.plugin.surefire.runorder.api;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,43 +20,49 @@ package org.apache.maven.surefire.util;
  */
 
 import junit.framework.TestCase;
+import org.apache.maven.plugin.surefire.runorder.impl.RunOrderLoader;
+
+import static org.apache.maven.plugin.surefire.runorder.model.RunOrderFactory.ALPHABETICAL;
+import static org.apache.maven.plugin.surefire.runorder.model.RunOrderFactory.BALANCED;
+import static org.apache.maven.plugin.surefire.runorder.model.RunOrderFactory.FAILEDFIRST;
+import static org.apache.maven.plugin.surefire.runorder.model.RunOrderFactory.HOURLY;
 
 public class RunOrderTest
     extends TestCase
 {
     public void testShouldReturnRunOrderForLowerCaseName()
     {
-        assertEquals( RunOrder.HOURLY, RunOrder.valueOfMulti( "hourly" )[0] );
+        assertEquals( HOURLY, RunOrderLoader.runOrdersOf( "hourly" )[0] );
     }
 
     public void testMultiValue()
     {
-        final RunOrder[] hourlies = RunOrder.valueOfMulti( "failedfirst,balanced" );
-        assertEquals( RunOrder.FAILEDFIRST, hourlies[0] );
-        assertEquals( RunOrder.BALANCED, hourlies[1] );
+        final RunOrder[] hourlies = RunOrderLoader.runOrdersOf( "failedfirst,balanced" );
+        assertEquals( FAILEDFIRST, hourlies[0] );
+        assertEquals( BALANCED, hourlies[1] );
     }
 
     public void testAsString()
     {
-        RunOrder[] orders = new RunOrder[]{ RunOrder.FAILEDFIRST, RunOrder.ALPHABETICAL };
-        assertEquals( "failedfirst,alphabetical", RunOrder.asString( orders ) );
+        RunOrder[] orders = new RunOrder[]{ FAILEDFIRST, ALPHABETICAL };
+        assertEquals( "failedfirst,alphabetical", RunOrderLoader.asString( orders ) );
     }
 
     public void testShouldReturnRunOrderForUpperCaseName()
     {
-        assertEquals( RunOrder.HOURLY, RunOrder.valueOfMulti( "HOURLY" )[0] );
+        assertEquals( HOURLY, RunOrderLoader.runOrdersOf( "HOURLY" )[0] );
     }
 
     public void testShouldReturnNullForNullName()
     {
-        assertTrue( RunOrder.valueOfMulti( null ).length == 0 );
+        assertTrue( RunOrderLoader.runOrdersOf( null ).length == 0 );
     }
 
     public void testShouldThrowExceptionForInvalidName()
     {
         try
         {
-            RunOrder.valueOfMulti( "arbitraryName" );
+            RunOrderLoader.runOrdersOf( "arbitraryName" );
             fail( "IllegalArgumentException not thrown." );
         }
         catch ( IllegalArgumentException expected )

@@ -34,7 +34,7 @@ import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvid
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactoryTest;
 import org.apache.maven.plugin.surefire.report.StatelessXmlReporterTest;
 import org.apache.maven.plugin.surefire.report.WrappedReportEntryTest;
-import org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMapTest;
+import org.apache.maven.plugin.surefire.runorder.impl.statistics.RunEntryStatisticsMapTest;
 import org.apache.maven.plugin.surefire.util.DependenciesScannerTest;
 import org.apache.maven.plugin.surefire.util.DirectoryScannerTest;
 import org.apache.maven.plugin.surefire.util.SpecificFileFilterTest;

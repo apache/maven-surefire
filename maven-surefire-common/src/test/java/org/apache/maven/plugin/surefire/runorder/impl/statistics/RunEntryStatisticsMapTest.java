@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.runorder;
+package org.apache.maven.plugin.surefire.runorder.impl.statistics;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.List;
+
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 
@@ -62,9 +63,9 @@ public class RunEntryStatisticsMapTest
 
     private StringReader getStatisticsFile()
     {
-        String content = "0,17,testA(org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMapTest$A)\n" +
-            "2,42,testB(org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMapTest$B)\n" +
-            "1,100,testC(org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMapTest$C)\n";
+        String content = "0,17,testA(org.apache.maven.plugin.surefire.runorder.impl.statistics.RunEntryStatisticsMapTest$A)\n" +
+            "2,42,testB(org.apache.maven.plugin.surefire.runorder.impl.statistics.RunEntryStatisticsMapTest$B)\n" +
+            "1,100,testC(org.apache.maven.plugin.surefire.runorder.impl.statistics.RunEntryStatisticsMapTest$C)\n";
         return new StringReader( content );
     }
 

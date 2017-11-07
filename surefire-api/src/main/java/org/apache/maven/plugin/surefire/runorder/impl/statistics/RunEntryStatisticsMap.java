@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.runorder;
+package org.apache.maven.plugin.surefire.runorder.impl.statistics;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -40,8 +40,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.util.Collections.sort;
-import static org.apache.maven.plugin.surefire.runorder.RunEntryStatistics.fromReportEntry;
-import static org.apache.maven.plugin.surefire.runorder.RunEntryStatistics.fromString;
+import static org.apache.maven.plugin.surefire.runorder.impl.statistics.RunEntryStatistics.fromReportEntry;
+import static org.apache.maven.plugin.surefire.runorder.impl.statistics.RunEntryStatistics.fromString;
 
 /**
  * @author Kristian Rosenvold

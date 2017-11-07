@@ -27,9 +27,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
+import javax.annotation.Nonnull;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLoggerDecorator;
+import org.apache.maven.plugin.surefire.runorder.impl.RunOrderLoader;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
@@ -40,20 +41,16 @@ import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
-import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.surefire.util.SurefireReflectionException;
 
-import javax.annotation.Nonnull;
-
 import static java.util.Collections.checkedList;
-
 import static org.apache.maven.surefire.util.ReflectionUtils.getConstructor;
 import static org.apache.maven.surefire.util.ReflectionUtils.getMethod;
+import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
+import static org.apache.maven.surefire.util.ReflectionUtils.instantiateTwoArgs;
 import static org.apache.maven.surefire.util.ReflectionUtils.invokeGetter;
 import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray;
-import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
 import static org.apache.maven.surefire.util.ReflectionUtils.invokeSetter;
-import static org.apache.maven.surefire.util.ReflectionUtils.instantiateTwoArgs;
 import static org.apache.maven.surefire.util.ReflectionUtils.newInstance;
 
 /**
@@ -221,7 +218,7 @@ public class SurefireReflector
                             directoryScannerParameters.getExcludes(),
                             directoryScannerParameters.getSpecificTests(),
                             directoryScannerParameters.isFailIfNoTests(),
-                            RunOrder.asString( directoryScannerParameters.getRunOrder() ) );
+                            RunOrderLoader.asString( directoryScannerParameters.getRunOrders() ) );
     }
 
 
@@ -235,7 +232,8 @@ public class SurefireReflector
         Class<?>[] arguments = { String.class, File.class };
         Constructor constructor = getConstructor( this.runOrderParameters, arguments );
         File runStatisticsFile = runOrderParameters.getRunStatisticsFile();
-        return newInstance( constructor, RunOrder.asString( runOrderParameters.getRunOrder() ), runStatisticsFile );
+        return newInstance( constructor, RunOrderLoader.asString( runOrderParameters.getRunOrders() ),
+                runStatisticsFile );
     }
 
     Object createTestArtifactInfo( TestArtifactInfo testArtifactInfo )

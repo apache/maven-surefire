@@ -20,37 +20,56 @@ package org.apache.maven.surefire.testset;
  */
 
 import java.io.File;
-import org.apache.maven.surefire.util.RunOrder;
+import java.util.Collection;
+import java.util.Map;
+
+import org.apache.maven.plugin.surefire.runorder.api.RunOrder;
+import org.apache.maven.plugin.surefire.runorder.impl.RunOrderLoader;
+import org.apache.maven.surefire.report.ConsoleStream;
+
+import static org.apache.maven.plugin.surefire.runorder.impl.RunOrderLoader.asArray;
+import static org.apache.maven.plugin.surefire.runorder.impl.RunOrderLoader.defaultRunOrder;
+import static org.apache.maven.plugin.surefire.runorder.model.RunOrderFactory.ALPHABETICAL;
 
 /**
  * @author Kristian Rosenvold
  */
 public class RunOrderParameters
 {
-    private final RunOrder[] runOrder;
+    private final RunOrder[] runOrders;
 
-    private File runStatisticsFile;
+    private final File runStatisticsFile;
 
-    public RunOrderParameters( RunOrder[] runOrder, File runStatisticsFile )
+    private ConsoleStream logger;
+
+    private Map<String, String> runOrderProperties;
+
+    public RunOrderParameters( RunOrder[] runOrders, File runStatisticsFile )
     {
-        this.runOrder = runOrder;
+        this.runOrders = runOrders;
         this.runStatisticsFile = runStatisticsFile;
     }
 
-    public RunOrderParameters( String runOrder, File runStatisticsFile )
+    public RunOrderParameters( Collection<RunOrder> runOrders, File runStatisticsFile )
     {
-        this.runOrder = runOrder == null ? RunOrder.DEFAULT : RunOrder.valueOfMulti( runOrder );
+        this.runOrders = asArray( runOrders );
+        this.runStatisticsFile = runStatisticsFile;
+    }
+
+    public RunOrderParameters( String runOrders, File runStatisticsFile )
+    {
+        this.runOrders = runOrders == null ? defaultRunOrder() : RunOrderLoader.runOrdersOf( runOrders );
         this.runStatisticsFile = runStatisticsFile;
     }
 
     public static RunOrderParameters alphabetical()
     {
-        return new RunOrderParameters( new RunOrder[]{ RunOrder.ALPHABETICAL }, null );
+        return new RunOrderParameters( new RunOrder[]{ ALPHABETICAL }, null );
     }
 
-    public RunOrder[] getRunOrder()
+    public RunOrder[] getRunOrders()
     {
-        return runOrder;
+        return runOrders;
     }
 
     public File getRunStatisticsFile()
@@ -58,4 +77,23 @@ public class RunOrderParameters
         return runStatisticsFile;
     }
 
+    public void setRunOrderProperties( Map<String, String> runOrderProperties )
+    {
+        this.runOrderProperties = runOrderProperties;
+    }
+
+    public Map<String, String> getRunOrderProperties()
+    {
+        return runOrderProperties;
+    }
+
+    public ConsoleStream getLogger()
+    {
+        return logger;
+    }
+
+    public void setLogger( ConsoleStream logger )
+    {
+        this.logger = logger;
+    }
 }
