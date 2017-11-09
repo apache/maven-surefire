@@ -600,7 +600,12 @@ public final class SurefireReportGenerator
 
                 sink.tableCell();
                 SinkEventAttributeSet atts = new SinkEventAttributeSet();
-                atts.addAttribute( SinkEventAttributes.ID, tCase.getName() + "error" );
+                if (tCase.isError()) {
+                    atts.addAttribute( SinkEventAttributes.ID, tCase.getName() + "error" );
+                } else {
+                    atts.addAttribute( SinkEventAttributes.ID, tCase.getName() + "failure" );
+                }
+
                 sink.unknown( "div", TAG_TYPE_START, atts );
 
                 String fullClassName = tCase.getFullClassName();

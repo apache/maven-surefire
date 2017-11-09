@@ -46,6 +46,8 @@ public final class ReportTestCase
 
     private boolean hasFailure;
 
+    private boolean isError;
+
     public String getName()
     {
         return name;
@@ -154,6 +156,17 @@ public final class ReportTestCase
     public boolean hasFailure()
     {
         return hasFailure;
+    }
+
+    public boolean isError()
+    {
+        return isError;
+    }
+
+    public ReportTestCase setError( boolean error )
+    {
+        this.isError = error;
+        return this;
     }
 
     /**

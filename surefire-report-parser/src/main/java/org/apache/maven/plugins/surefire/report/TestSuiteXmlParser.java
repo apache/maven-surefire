@@ -197,7 +197,8 @@ public final class TestSuiteXmlParser
                 }
                 else if ( "error".equals( qName ) )
                 {
-                    testCase.setFailure( attributes.getValue( "message" ), attributes.getValue( "type" ) );
+                    testCase.setFailure( attributes.getValue( "message" ), attributes.getValue( "type" ) )
+                            .setError( true );
                     currentSuite.incrementNumberOfErrors();
                 }
                 else if ( "skipped".equals( qName ) )

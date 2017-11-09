@@ -188,6 +188,7 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 0 ).getFailureMessage(), is( "<" ) );
         assertThat( tests.get( 0 ).getFullName(), is( "wellFormedXmlFailures.TestSurefire3.testLower" ) );
         assertThat( tests.get( 0 ).getFailureType(), is( "junit.framework.AssertionFailedError" ) );
+        assertThat( tests.get( 0 ).isError(), is( false ) );
 
         assertThat( tests.get( 1 ).getFullClassName(), is( "wellFormedXmlFailures.TestSurefire3" ) );
         assertThat( tests.get( 1 ).getName(), is( "testU0000" ) );
@@ -201,6 +202,7 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 1 ).getFailureMessage(), is( "&0#;" ) );
         assertThat( tests.get( 1 ).getFullName(), is( "wellFormedXmlFailures.TestSurefire3.testU0000" ) );
         assertThat( tests.get( 1 ).getFailureType(), is( "junit.framework.AssertionFailedError" ) );
+        assertThat( tests.get( 1 ).isError(), is( false ) );
 
         assertThat( tests.get( 2 ).getFullClassName(), is( "wellFormedXmlFailures.TestSurefire3" ) );
         assertThat( tests.get( 2 ).getName(), is( "testGreater" ) );
@@ -214,6 +216,7 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 2 ).getFailureMessage(), is( ">" ) );
         assertThat( tests.get( 2 ).getFullName(), is( "wellFormedXmlFailures.TestSurefire3.testGreater" ) );
         assertThat( tests.get( 2 ).getFailureType(), is( "junit.framework.AssertionFailedError" ) );
+        assertThat( tests.get( 2 ).isError(), is( false ) );
 
         assertThat( tests.get( 3 ).getFullClassName(), is( "wellFormedXmlFailures.TestSurefire3" ) );
         assertThat( tests.get( 3 ).getName(), is( "testQuote" ) );
@@ -227,6 +230,7 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 3 ).getFailureMessage(), is( "\"" ) );
         assertThat( tests.get( 3 ).getFullName(), is( "wellFormedXmlFailures.TestSurefire3.testQuote" ) );
         assertThat( tests.get( 3 ).getFailureType(), is( "junit.framework.AssertionFailedError" ) );
+        assertThat( tests.get( 3 ).isError(), is( false ) );
     }
 
     @Test
@@ -420,6 +424,7 @@ public class TestSuiteXmlParserTest
         + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
         + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
         + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)" ) );
+        assertThat( tests.get( 0 ).getTestCases().get( 0 ).isError(), is( true ) );
     }
 
     @Test
@@ -496,6 +501,7 @@ public class TestSuiteXmlParserTest
         + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
         + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
         + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)\n" ) );
+        assertThat( tests.get( 0 ).getTestCases().get( 0 ).isError(), is( true ) );
     }
 
     @Test
@@ -538,6 +544,7 @@ public class TestSuiteXmlParserTest
                             + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
                             + "\tat surefire.MyTest.access$200(MyTest.java:9)\n"
                             + "\tat surefire.MyTest$A.t(MyTest.java:45)\n" ) );
+        assertThat( tests.get( 0 ).getTestCases().get( 0 ).isError(), is( true ) );
     }
 
     @Test
@@ -605,6 +612,7 @@ public class TestSuiteXmlParserTest
         + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
         + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
         + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)" ) );
+        assertThat( tests.get( 0 ).getTestCases().get( 0 ).isError(), is( true ) );
     }
 
     @Test
@@ -648,6 +656,7 @@ public class TestSuiteXmlParserTest
                             + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
                             + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
                             + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)" ) );
+        assertThat( tests.get( 0 ).getTestCases().get( 0 ).isError(), is( true ) );
     }
 
     @Test
