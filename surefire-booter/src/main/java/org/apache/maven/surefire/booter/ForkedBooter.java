@@ -90,7 +90,7 @@ public final class ForkedBooter
     {
         BooterDeserializer booterDeserializer =
                 new BooterDeserializer( createSurefirePropertiesIfFileExists( tmpDir, surefirePropsFileName ) );
-        // todo: print PID in debug console logger in version 2.20.2
+        // todo: print PID in debug console logger in version 2.21.2
         pingScheduler = isDebugging() ? null : listenToShutdownCommands( booterDeserializer.getPluginPid() );
         setSystemProperties( new File( tmpDir, effectiveSystemPropertiesFileName ) );
 
@@ -98,20 +98,24 @@ public final class ForkedBooter
         DumpErrorSingleton.getSingleton().init( dumpFileName, providerConfiguration.getReporterConfiguration() );
 
         startupConfiguration = booterDeserializer.getProviderConfiguration();
-        systemExitTimeoutInSeconds =
-                providerConfiguration.systemExitTimeout( DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS );
+        systemExitTimeoutInSeconds = providerConfiguration.systemExitTimeout( DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS );
 
-        ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
-        if ( startupConfiguration.isManifestOnlyJarRequestedAndUsable() )
+        AbstractPathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
+
+        if ( classpathConfiguration.isClassPathConfig() )
         {
-            classpathConfiguration.trickClassPathWhenManifestOnlyClasspath();
+            if ( startupConfiguration.isManifestOnlyJarRequestedAndUsable() )
+            {
+                classpathConfiguration.toRealPath( ClasspathConfiguration.class )
+                        .trickClassPathWhenManifestOnlyClasspath();
+            }
+            startupConfiguration.writeSurefireTestClasspathProperty();
         }
 
         ClassLoader classLoader = currentThread().getContextClassLoader();
         classLoader.setDefaultAssertionStatus( classpathConfiguration.isEnableAssertions() );
-        startupConfiguration.writeSurefireTestClasspathProperty();
-        testSet = createTestSet( providerConfiguration.getTestForFork(),
-                                       providerConfiguration.isReadTestsFromInStream(), classLoader );
+        boolean readTestsFromCommandReader = providerConfiguration.isReadTestsFromInStream();
+        testSet = createTestSet( providerConfiguration.getTestForFork(), readTestsFromCommandReader, classLoader );
     }
 
     private void execute()

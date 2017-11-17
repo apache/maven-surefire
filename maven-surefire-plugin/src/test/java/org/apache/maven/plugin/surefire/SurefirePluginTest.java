@@ -20,7 +20,6 @@ package org.apache.maven.plugin.surefire;
 
 
 import java.lang.reflect.Field;
-import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.toolchain.Toolchain;
 
 import junit.framework.TestCase;
@@ -35,7 +34,7 @@ public class SurefirePluginTest
         SurefirePlugin surefirePlugin = new SurefirePlugin();
         setFieldValue( surefirePlugin, "toolchain", new MyToolChain() );
         setFieldValue( surefirePlugin, "forkMode", "never" );
-        assertEquals( ForkConfiguration.FORK_ONCE, surefirePlugin.getEffectiveForkMode() );
+        assertEquals( "once", surefirePlugin.getEffectiveForkMode() );
     }
 
     public void testForkCountComputation()

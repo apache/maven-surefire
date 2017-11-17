@@ -88,7 +88,7 @@
   <properties>
     <mavenVersion>2.2.1</mavenVersion>
     <!-- <shadedVersion>2.12.4</shadedVersion> commented out due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
-    <mavenPluginPluginVersion>3.3</mavenPluginPluginVersion>
+    <mavenPluginPluginVersion>3.5</mavenPluginPluginVersion>
     <commonsLang3Version>3.5</commonsLang3Version>
     <commonsIoVersion>2.5</commonsIoVersion>
     <mavenSharedUtilsVersion>0.9</mavenSharedUtilsVersion>
@@ -234,8 +234,29 @@
       </dependency>
       <dependency>
         <groupId>org.apache.maven.shared</groupId>
+        <artifactId>maven-common-artifact-filters</artifactId>
+        <version>1.3</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.maven.shared</groupId>
+            <artifactId>maven-plugin-testing-harness</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.fusesource.jansi</groupId>
+        <artifactId>jansi</artifactId>
+        <version>1.13</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.shared</groupId>
         <artifactId>maven-verifier</artifactId>
         <version>1.6</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-java</artifactId>
+        <version>0.9.3</version>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
@@ -387,15 +408,23 @@
               <goals>
                 <goal>check</goal>
               </goals>
+              <configuration>
+                <signature>
+                  <groupId>org.codehaus.mojo.signature</groupId>
+                  <artifactId>java16</artifactId>
+                  <version>1.1</version>
+                </signature>
+                <excludeDependencies>
+                  <param>org.codehaus.plexus:plexus-java</param>
+                  <param>org.ow2.asm:asm</param>
+                </excludeDependencies>
+                <ignores>
+                  <param>org.objectweb.asm.*</param>
+                  <param>org.codehaus.plexus.languages.java.jpms.*</param>
+                </ignores>
+              </configuration>
             </execution>
           </executions>
-          <configuration>
-            <signature>
-              <groupId>org.codehaus.mojo.signature</groupId>
-              <artifactId>java16</artifactId>
-              <version>1.1</version>
-            </signature>
-          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
@@ -416,7 +445,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-shade-plugin</artifactId>
-          <version>3.0.0</version>
+          <version>3.1.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-plugin-plugin</artifactId>
@@ -481,6 +510,24 @@
                   <version>[3.1.0,)</version>
                 </requireMavenVersion>
               </rules>
+            </configuration>
+          </execution>
+          <execution>
+            <id>enforce-bytecode-version</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <enforceBytecodeVersion>
+                  <maxJdkVersion>${maven.compiler.target}</maxJdkVersion>
+                  <excludes>
+                    <exclude>org.codehaus.plexus:plexus-java</exclude>
+                    <exclude>org.ow2.asm:asm</exclude>
+                  </excludes>
+                </enforceBytecodeVersion>
+              </rules>
+              <fail>true</fail>
             </configuration>
           </execution>
         </executions>

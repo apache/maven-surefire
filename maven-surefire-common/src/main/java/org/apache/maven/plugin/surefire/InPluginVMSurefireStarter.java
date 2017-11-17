@@ -20,6 +20,7 @@ package org.apache.maven.plugin.surefire;
  */
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
@@ -73,7 +74,9 @@ public class InPluginVMSurefireStarter
         scanResult.writeTo( providerProperties );
 
         startupConfig.writeSurefireTestClasspathProperty();
-        ClassLoader testClassLoader = startupConfig.getClasspathConfiguration().createMergedClassLoader();
+        ClassLoader testClassLoader = startupConfig.getClasspathConfiguration()
+                .toRealPath( ClasspathConfiguration.class )
+                .createMergedClassLoader();
 
         CommonReflector surefireReflector = new CommonReflector( testClassLoader );
 

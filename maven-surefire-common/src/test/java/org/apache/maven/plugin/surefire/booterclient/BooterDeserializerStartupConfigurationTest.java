@@ -60,12 +60,14 @@ public class BooterDeserializerStartupConfigurationTest
     public void testClassPathConfiguration()
         throws IOException
     {
-        ClasspathConfiguration reloadedClasspathConfiguration =
+        AbstractPathConfiguration reloadedClasspathConfiguration =
             getReloadedStartupConfiguration().getClasspathConfiguration();
-        assertEquals( classpathConfiguration, reloadedClasspathConfiguration );
+
+        assertTrue( reloadedClasspathConfiguration instanceof ClasspathConfiguration );
+        assertCpConfigEquals( classpathConfiguration, (ClasspathConfiguration) reloadedClasspathConfiguration );
     }
 
-    private void assertEquals( ClasspathConfiguration expectedConfiguration,
+    private void assertCpConfigEquals( ClasspathConfiguration expectedConfiguration,
                                ClasspathConfiguration actualConfiguration )
     {
         assertEquals( expectedConfiguration.getTestClasspath().getClassPath(),

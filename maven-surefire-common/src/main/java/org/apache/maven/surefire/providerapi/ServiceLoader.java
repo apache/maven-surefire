@@ -43,7 +43,7 @@ import static org.apache.maven.surefire.util.ReflectionUtils.getConstructor;
  *
  * @since 2.20
  */
-public class ServiceLoader
+public final class ServiceLoader
 {
 
     @Nonnull

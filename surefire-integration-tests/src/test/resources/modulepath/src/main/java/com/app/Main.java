@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.util;
+package com.app;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,26 +19,16 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.util.Relocator;
+import org.joda.time.DateTime;
 
-import junit.framework.TestCase;
-
-/**
- * @author Kristian Rosenvold
- */
-public class RelocatorTest
-    extends TestCase
+public class Main
 {
-
-    public void testFoo()
+    public static void main( String... args )
     {
-        String cn = "org.apache.maven.surefire.report.ForkingConsoleReporter";
-        assertEquals( "org.apache.maven.surefire.shadefire.report.ForkingConsoleReporter", Relocator.relocate( cn ) );
-    }
+        System.out.println( "module path => " + System.getProperty( "jdk.module.path" ) );
+        System.out.println( " class path => " + System.getProperty( "java.class.path" ) );
 
-    public void testRelocation()
-    {
-        String org1 = "org.apache.maven.surefire.fooz.Baz";
-        assertEquals( "org.apache.maven.surefire.shadefire.fooz.Baz", Relocator.relocate( org1 ) );
+        DateTime dt = new DateTime();
+        System.out.println( dt );
     }
 }

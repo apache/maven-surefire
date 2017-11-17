@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.util;
+package org.apache.maven.surefire.its;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,26 +19,27 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.util.Relocator;
+import org.junit.Test;
 
-import junit.framework.TestCase;
+import java.io.IOException;
 
-/**
- * @author Kristian Rosenvold
- */
-public class RelocatorTest
-    extends TestCase
+public class ModulePathIT
+        extends AbstractJigsawIT
 {
-
-    public void testFoo()
+    @Test
+    public void testModulePath()
+            throws IOException
     {
-        String cn = "org.apache.maven.surefire.report.ForkingConsoleReporter";
-        assertEquals( "org.apache.maven.surefire.shadefire.report.ForkingConsoleReporter", Relocator.relocate( cn ) );
+        assumeJigsaw()
+                .debugLogging()
+                .executeTest()
+                .verifyErrorFreeLog()
+                .assertTestSuiteResults( 2 );
     }
 
-    public void testRelocation()
+    @Override
+    protected String getProjectDirectoryName()
     {
-        String org1 = "org.apache.maven.surefire.fooz.Baz";
-        assertEquals( "org.apache.maven.surefire.shadefire.fooz.Baz", Relocator.relocate( org1 ) );
+        return "modulepath";
     }
 }

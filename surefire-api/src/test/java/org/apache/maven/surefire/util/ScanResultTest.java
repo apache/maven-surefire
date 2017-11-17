@@ -41,9 +41,9 @@ public class ScanResultTest
         scanResult.writeTo( serialized );
 
         DefaultScanResult read = DefaultScanResult.from( serialized );
-        List files1 = read.getFiles();
-        assertEquals( 2, files1.size() );
-        assertTrue( files1.contains( "abc" ) );
-        assertTrue( files1.contains( "cde" ) );
+        List classes = read.getClasses();
+        assertEquals( 2, classes.size() );
+        assertTrue( classes.contains( "abc" ) );
+        assertTrue( classes.contains( "cde" ) );
     }
 }

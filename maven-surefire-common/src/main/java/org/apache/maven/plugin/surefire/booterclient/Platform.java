@@ -19,6 +19,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.JdkAttributes;
 import org.apache.maven.surefire.booter.SystemUtils;
 
 import java.util.concurrent.Callable;
@@ -35,25 +36,43 @@ import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDae
  */
 public final class Platform
 {
-    private final RunnableFuture<Long> pidJob;
+    private final RunnableFuture<Long> pluginPidJob;
+
+    private volatile JdkAttributes jdk;
 
     public Platform()
     {
         // the job may take 50 or 80 ms
-        pidJob = new FutureTask<Long>( pidJob() );
-        newDaemonThread( pidJob ).start();
+        this( new FutureTask<Long>( pidJob() ), null );
+        newDaemonThread( pluginPidJob ).start();
     }
 
-    public Long getPid()
+    private Platform( RunnableFuture<Long> pluginPidJob, JdkAttributes jdk )
+    {
+        this.pluginPidJob = pluginPidJob;
+        this.jdk = jdk;
+    }
+
+    public Long getPluginPid()
     {
         try
         {
-            return pidJob.get();
+            return pluginPidJob.get();
         }
         catch ( Exception e )
         {
             return null;
         }
+    }
+
+    public JdkAttributes getJdkExecAttributesForTests()
+    {
+        return jdk;
+    }
+
+    public Platform withJdkExecAttributesForTests( JdkAttributes jdk )
+    {
+        return new Platform( pluginPidJob, jdk );
     }
 
     private static Callable<Long> pidJob()

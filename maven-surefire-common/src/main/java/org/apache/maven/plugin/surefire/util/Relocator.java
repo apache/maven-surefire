@@ -21,47 +21,38 @@ package org.apache.maven.plugin.surefire.util;
 
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * Relocates class names when running with relocated provider
  *
  * @author Kristian Rosenvold
  */
-public class Relocator
+public final class Relocator
 {
     private static final String RELOCATION_BASE = "org.apache.maven.surefire.";
+    private static final String PACKAGE_DELIMITER = "shadefire";
 
-    @Nullable
-    private final String relocation;
-
-    public Relocator( @Nullable String relocation )
+    private Relocator()
     {
-        this.relocation = relocation;
+        throw new IllegalStateException( "no instantiable constructor" );
     }
 
-    public Relocator()
+    @Nonnull
+    public static String relocate( @Nonnull String className )
     {
-        relocation = "shadefire";
-    }
-
-    @Nullable private String getRelocation()
-    {
-        return relocation;
-    }
-
-    @Nonnull public String relocate( @Nonnull String className )
-    {
-        if ( relocation == null )
+        if ( className.contains( PACKAGE_DELIMITER ) )
         {
             return className;
         }
-        if ( className.contains( relocation ) )
+        else
         {
-            return className;
+            if ( !className.startsWith( RELOCATION_BASE ) )
+            {
+                throw new IllegalArgumentException( "'" + className + "' should start with '" + RELOCATION_BASE + "'" );
+            }
+            String rest = className.substring( RELOCATION_BASE.length() );
+            final String s = RELOCATION_BASE + PACKAGE_DELIMITER + ".";
+            return s + rest;
         }
-        String rest = className.substring( RELOCATION_BASE.length() );
-        final String s = RELOCATION_BASE + getRelocation() + ".";
-        return s + rest;
     }
 }

@@ -19,17 +19,12 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
 import org.apache.maven.plugin.surefire.SurefireProperties;
+import org.apache.maven.surefire.booter.AbstractPathConfiguration;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
-import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.KeyValueSource;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
-import org.apache.maven.surefire.booter.SystemPropertyManager;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
@@ -39,8 +34,40 @@ import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.RunOrder;
 
-// CHECKSTYLE_OFF: imports
-import static org.apache.maven.surefire.booter.BooterConstants.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+import static org.apache.maven.surefire.booter.AbstractPathConfiguration.CHILD_DELEGATION;
+import static org.apache.maven.surefire.booter.AbstractPathConfiguration.CLASSPATH;
+import static org.apache.maven.surefire.booter.AbstractPathConfiguration.ENABLE_ASSERTIONS;
+import static org.apache.maven.surefire.booter.AbstractPathConfiguration.SUREFIRE_CLASSPATH;
+import static org.apache.maven.surefire.booter.BooterConstants.EXCLUDES_PROPERTY_PREFIX;
+import static org.apache.maven.surefire.booter.BooterConstants.FAIL_FAST_COUNT;
+import static org.apache.maven.surefire.booter.BooterConstants.FAILIFNOTESTS;
+import static org.apache.maven.surefire.booter.BooterConstants.FORKTESTSET;
+import static org.apache.maven.surefire.booter.BooterConstants.FORKTESTSET_PREFER_TESTS_FROM_IN_STREAM;
+import static org.apache.maven.surefire.booter.BooterConstants.INCLUDES_PROPERTY_PREFIX;
+import static org.apache.maven.surefire.booter.BooterConstants.ISTRIMSTACKTRACE;
+import static org.apache.maven.surefire.booter.BooterConstants.MAIN_CLI_OPTIONS;
+import static org.apache.maven.surefire.booter.BooterConstants.PLUGIN_PID;
+import static org.apache.maven.surefire.booter.BooterConstants.PROVIDER_CONFIGURATION;
+import static org.apache.maven.surefire.booter.BooterConstants.REPORTSDIRECTORY;
+import static org.apache.maven.surefire.booter.BooterConstants.REQUESTEDTEST;
+import static org.apache.maven.surefire.booter.BooterConstants.RERUN_FAILING_TESTS_COUNT;
+import static org.apache.maven.surefire.booter.BooterConstants.RUN_ORDER;
+import static org.apache.maven.surefire.booter.BooterConstants.RUN_STATISTICS_FILE;
+import static org.apache.maven.surefire.booter.BooterConstants.SHUTDOWN;
+import static org.apache.maven.surefire.booter.BooterConstants.SOURCE_DIRECTORY;
+import static org.apache.maven.surefire.booter.BooterConstants.SPECIFIC_TEST_PROPERTY_PREFIX;
+import static org.apache.maven.surefire.booter.BooterConstants.SYSTEM_EXIT_TIMEOUT;
+import static org.apache.maven.surefire.booter.BooterConstants.TEST_CLASSES_DIRECTORY;
+import static org.apache.maven.surefire.booter.BooterConstants.TEST_SUITE_XML_FILES;
+import static org.apache.maven.surefire.booter.BooterConstants.TESTARTIFACT_CLASSIFIER;
+import static org.apache.maven.surefire.booter.BooterConstants.TESTARTIFACT_VERSION;
+import static org.apache.maven.surefire.booter.BooterConstants.USEMANIFESTONLYJAR;
+import static org.apache.maven.surefire.booter.BooterConstants.USESYSTEMCLASSLOADER;
+import static org.apache.maven.surefire.booter.SystemPropertyManager.writePropertiesFile;
 
 /**
  * Knows how to serialize and deserialize the booter configuration.
@@ -78,11 +105,11 @@ class BooterSerializer
 
         properties.setProperty( PLUGIN_PID, pid );
 
-        ClasspathConfiguration cp = providerConfiguration.getClasspathConfiguration();
-        properties.setClasspath( ClasspathConfiguration.CLASSPATH, cp.getTestClasspath() );
-        properties.setClasspath( ClasspathConfiguration.SUREFIRE_CLASSPATH, cp.getProviderClasspath() );
-        properties.setProperty( ClasspathConfiguration.ENABLE_ASSERTIONS, String.valueOf( cp.isEnableAssertions() ) );
-        properties.setProperty( ClasspathConfiguration.CHILD_DELEGATION, String.valueOf( cp.isChildDelegation() ) );
+        AbstractPathConfiguration cp = providerConfiguration.getClasspathConfiguration();
+        properties.setClasspath( CLASSPATH, cp.getTestClasspath() );
+        properties.setClasspath( SUREFIRE_CLASSPATH, cp.getProviderClasspath() );
+        properties.setProperty( ENABLE_ASSERTIONS, toString( cp.isEnableAssertions() ) );
+        properties.setProperty( CHILD_DELEGATION, toString( cp.isChildDelegation() ) );
 
         TestArtifactInfo testNg = booterConfiguration.getTestArtifact();
         if ( testNg != null )
@@ -101,18 +128,17 @@ class BooterSerializer
             properties.addList( testSuiteDefinition.getSuiteXmlFiles(), TEST_SUITE_XML_FILES );
             TestListResolver testFilter = testSuiteDefinition.getTestListResolver();
             properties.setProperty( REQUESTEDTEST, testFilter == null ? "" : testFilter.getPluginParameterTest() );
-            properties.setNullableProperty( RERUN_FAILING_TESTS_COUNT,
-                                            String.valueOf( testSuiteDefinition.getRerunFailingTestsCount() ) );
+            int rerunFailingTestsCount = testSuiteDefinition.getRerunFailingTestsCount();
+            properties.setNullableProperty( RERUN_FAILING_TESTS_COUNT, toString( rerunFailingTestsCount ) );
         }
 
         DirectoryScannerParameters directoryScannerParameters = booterConfiguration.getDirScannerParams();
         if ( directoryScannerParameters != null )
         {
-            properties.setProperty( FAILIFNOTESTS, String.valueOf( directoryScannerParameters.isFailIfNoTests() ) );
+            properties.setProperty( FAILIFNOTESTS, toString( directoryScannerParameters.isFailIfNoTests() ) );
             properties.addList( directoryScannerParameters.getIncludes(), INCLUDES_PROPERTY_PREFIX );
             properties.addList( directoryScannerParameters.getExcludes(), EXCLUDES_PROPERTY_PREFIX );
             properties.addList( directoryScannerParameters.getSpecificTests(), SPECIFIC_TEST_PROPERTY_PREFIX );
-
             properties.setProperty( TEST_CLASSES_DIRECTORY, directoryScannerParameters.getTestClassesDirectory() );
         }
 
@@ -124,46 +150,40 @@ class BooterSerializer
         }
 
         ReporterConfiguration reporterConfiguration = booterConfiguration.getReporterConfiguration();
-
         boolean rep = reporterConfiguration.isTrimStackTrace();
         properties.setProperty( ISTRIMSTACKTRACE, rep );
         properties.setProperty( REPORTSDIRECTORY, reporterConfiguration.getReportsDirectory() );
         ClassLoaderConfiguration classLoaderConfig = providerConfiguration.getClassLoaderConfiguration();
-        properties.setProperty( USESYSTEMCLASSLOADER, String.valueOf( classLoaderConfig.isUseSystemClassLoader() ) );
-        properties.setProperty( USEMANIFESTONLYJAR, String.valueOf( classLoaderConfig.isUseManifestOnlyJar() ) );
-        properties.setProperty( FAILIFNOTESTS, String.valueOf( booterConfiguration.isFailIfNoTests() ) );
+        properties.setProperty( USESYSTEMCLASSLOADER, toString( classLoaderConfig.isUseSystemClassLoader() ) );
+        properties.setProperty( USEMANIFESTONLYJAR, toString( classLoaderConfig.isUseManifestOnlyJar() ) );
+        properties.setProperty( FAILIFNOTESTS, toString( booterConfiguration.isFailIfNoTests() ) );
         properties.setProperty( PROVIDER_CONFIGURATION, providerConfiguration.getProviderClassName() );
-        properties.setProperty( FAIL_FAST_COUNT, String.valueOf( booterConfiguration.getSkipAfterFailureCount() ) );
+        properties.setProperty( FAIL_FAST_COUNT, toString( booterConfiguration.getSkipAfterFailureCount() ) );
         properties.setProperty( SHUTDOWN, booterConfiguration.getShutdown().name() );
         List<CommandLineOption> mainCliOptions = booterConfiguration.getMainCliOptions();
         if ( mainCliOptions != null )
         {
             properties.addList( mainCliOptions, MAIN_CLI_OPTIONS );
         }
+        properties.setNullableProperty( SYSTEM_EXIT_TIMEOUT, toString( booterConfiguration.getSystemExitTimeout() ) );
 
-        properties.setNullableProperty( SYSTEM_EXIT_TIMEOUT,
-                                              String.valueOf( booterConfiguration.getSystemExitTimeout() ) );
-
-        return SystemPropertyManager.writePropertiesFile( properties, forkConfiguration.getTempDirectory(),
-                                                          "surefire", forkConfiguration.isDebug() );
+        File surefireTmpDir = forkConfiguration.getTempDirectory();
+        boolean debug = forkConfiguration.isDebug();
+        return writePropertiesFile( properties, surefireTmpDir, "surefire", debug );
     }
 
-    private String getTypeEncoded( Object value )
+    private static String getTypeEncoded( Object value )
     {
         if ( value == null )
         {
             return null;
         }
-        String valueToUse;
-        if ( value instanceof Class )
-        {
-            valueToUse = ( (Class<?>) value ).getName();
-        }
-        else
-        {
-            valueToUse = value.toString();
-        }
+        String valueToUse = value instanceof Class ? ( (Class<?>) value ).getName() : value.toString();
         return value.getClass().getName() + "|" + valueToUse;
     }
 
+    private static String toString( Object o )
+    {
+        return String.valueOf( o );
+    }
 }

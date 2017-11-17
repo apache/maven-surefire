@@ -35,8 +35,7 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.shared.utils.cli.CommandLineCallable;
 import org.apache.maven.shared.utils.cli.CommandLineException;
-import org.apache.maven.surefire.booter.Classpath;
-import org.apache.maven.surefire.booter.ClasspathConfiguration;
+import org.apache.maven.surefire.booter.AbstractPathConfiguration;
 import org.apache.maven.surefire.booter.KeyValueSource;
 import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
@@ -88,7 +87,6 @@ import static org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Tes
 import static org.apache.maven.shared.utils.cli.CommandLineUtils.executeCommandLineAsCallable;
 import static org.apache.maven.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
 import static org.apache.maven.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
-import static org.apache.maven.surefire.booter.Classpath.join;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.writePropertiesFile;
 import static org.apache.maven.surefire.suite.RunResult.SUCCESS;
 import static org.apache.maven.surefire.suite.RunResult.failure;
@@ -552,13 +550,11 @@ public class ForkStarter
         {
             tempDir = forkConfiguration.getTempDirectory().getCanonicalPath();
             BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
-
+            Long pluginPid = forkConfiguration.getPluginPlatform().getPluginPid();
             surefireProperties = booterSerializer.serialize( providerProperties, providerConfiguration,
-                                                                   startupConfiguration, testSet,
-                                                                   readTestsFromInStream,
-                                                                   forkConfiguration.getPluginPlatform().getPid() );
+                    startupConfiguration, testSet, readTestsFromInStream, pluginPid );
 
-            log.debug( "Determined Maven Process ID " + forkConfiguration.getPluginPlatform().getPid() );
+            log.debug( "Determined Maven Process ID " + pluginPid );
 
             if ( effectiveSystemProperties != null )
             {
@@ -579,20 +575,9 @@ public class ForkStarter
             throw new SurefireBooterForkException( "Error creating properties files for forking", e );
         }
 
-        // this could probably be simplified further
-        final Classpath bootClasspathConfiguration = startupConfiguration.isProviderMainClass()
-            ? startupConfiguration.getClasspathConfiguration().getProviderClasspath()
-            : forkConfiguration.getBootClasspath();
 
-        Classpath bootClasspath = join(
-            join( bootClasspathConfiguration, startupConfiguration.getClasspathConfiguration().getTestClasspath() ),
-            startupConfiguration.getClasspathConfiguration().getProviderClasspath() );
 
-        log.debug( bootClasspath.getLogMessage( "boot" ) );
-        log.debug( bootClasspath.getCompactLogMessage( "boot(compact)" ) );
-
-        OutputStreamFlushableCommandline cli =
-            forkConfiguration.createCommandLine( bootClasspath.getClassPath(), startupConfiguration, forkNumber );
+        OutputStreamFlushableCommandline cli = forkConfiguration.createCommandLine( startupConfiguration, forkNumber );
 
         if ( testProvidingInputStream != null )
         {
@@ -701,7 +686,7 @@ public class ForkStarter
     {
         try
         {
-            final ClasspathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
+            AbstractPathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
             ClassLoader unifiedClassLoader = classpathConfiguration.createMergedClassLoader();
 
             CommonReflector commonReflector = new CommonReflector( unifiedClassLoader );

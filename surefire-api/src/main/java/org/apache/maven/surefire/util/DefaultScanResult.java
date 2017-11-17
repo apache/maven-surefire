@@ -32,33 +32,33 @@ import java.util.Set;
 public class DefaultScanResult
     implements ScanResult
 {
-    private final List<String> files;
+    private final List<String> classes;
 
     private static final String SCAN_RESULT_NUMBER = "tc.";
 
-    public DefaultScanResult( List<String> files )
+    public DefaultScanResult( List<String> classes )
     {
-        this.files = Collections.unmodifiableList( files );
+        this.classes = Collections.unmodifiableList( classes );
     }
 
     @Override
     public int size()
     {
-        return files.size();
+        return classes.size();
     }
 
     @Override
     public String getClassName( int index )
     {
-        return files.get( index );
+        return classes.get( index );
     }
 
     @Override
     public void writeTo( Map<String, String> properties )
     {
-        for ( int i = 0, size = files.size(); i < size; i++ )
+        for ( int i = 0, size = classes.size(); i < size; i++ )
         {
-            properties.put( SCAN_RESULT_NUMBER + i, files.get( i ) );
+            properties.put( SCAN_RESULT_NUMBER + i, classes.get( i ) );
         }
     }
 
@@ -79,12 +79,12 @@ public class DefaultScanResult
 
     public boolean isEmpty()
     {
-        return files.isEmpty();
+        return classes.isEmpty();
     }
 
-    public List getFiles()
+    public List<String> getClasses()
     {
-        return files;
+        return classes;
     }
 
     @Override
@@ -145,8 +145,8 @@ public class DefaultScanResult
     {
         if ( other != null )
         {
-            List<String> src = new ArrayList<String>( files );
-            src.addAll( other.files );
+            List<String> src = new ArrayList<String>( classes );
+            src.addAll( other.classes );
             return new DefaultScanResult( src );
         }
         else

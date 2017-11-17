@@ -191,34 +191,25 @@ public class Classpath implements Iterable<String>
 
     public String getLogMessage( String descriptor )
     {
-        StringBuilder result = new StringBuilder();
-        result.append( descriptor ).append( " classpath:" );
+        StringBuilder result = new StringBuilder( descriptor );
         for ( String element : unmodifiableElements )
         {
-            result.append( "  " ).append( element );
+            result.append( "  " )
+                    .append( element );
         }
         return result.toString();
     }
 
     public String getCompactLogMessage( String descriptor )
     {
-        StringBuilder result = new StringBuilder();
-        result.append( descriptor ).append( " classpath:" );
+        StringBuilder result = new StringBuilder( descriptor );
         for ( String element : unmodifiableElements )
         {
             result.append( "  " );
             if ( element != null )
             {
                 int pos = element.lastIndexOf( File.separatorChar );
-                if ( pos >= 0 )
-                {
-                    result.append( element.substring( pos + 1 ) );
-                }
-                else
-                {
-                    result.append( element );
-                }
-
+                result.append( pos == -1 ? element : element.substring( pos + 1 ) );
             }
             else
             {
