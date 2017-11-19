@@ -49,10 +49,9 @@ public class SystemPropertyManager
             Properties p = new Properties();
             p.load( inStream );
             Map<String, String> map = new ConcurrentHashMap<String, String>( p.size() );
-            // @todo use .stringPropertyNames() JDK6 instead of .keySet()
-            for ( Map.Entry<?, ?> entry : p.entrySet() )
+            for ( String key : p.stringPropertyNames() )
             {
-                map.put( (String) entry.getKey(), (String) entry.getValue() );
+                map.put( key, p.getProperty( key ) );
             }
             return new PropertiesWrapper( map );
         }
