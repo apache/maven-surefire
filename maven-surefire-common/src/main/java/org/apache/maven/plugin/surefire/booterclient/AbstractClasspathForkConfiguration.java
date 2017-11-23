@@ -35,9 +35,6 @@ import java.util.Properties;
 abstract class AbstractClasspathForkConfiguration
         extends DefaultForkConfiguration
 {
-    private static final String ADD_MODULES = "--add-modules";
-    private static final String ADD_MODULES_VALUE = "java.se.ee";
-    private static final String ALL_JAVA_API = ADD_MODULES + " " + ADD_MODULES_VALUE;
 
     @SuppressWarnings( "checkstyle:parameternumber" )
     public AbstractClasspathForkConfiguration( @Nonnull Classpath bootClasspath,
@@ -61,13 +58,6 @@ abstract class AbstractClasspathForkConfiguration
     @Nonnull
     protected String extendJvmArgLine( @Nonnull String jvmArgLine )
     {
-        if ( getJdkForTests().isJava9AtLeast() && !jvmArgLine.contains( ADD_MODULES ) )
-        {
-            return jvmArgLine.isEmpty() ? ALL_JAVA_API : ALL_JAVA_API + " " + jvmArgLine;
-        }
-        else
-        {
-            return jvmArgLine;
-        }
+        return jvmArgLine;
     }
 }

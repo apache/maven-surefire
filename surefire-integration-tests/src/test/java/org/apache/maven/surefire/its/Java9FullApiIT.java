@@ -43,12 +43,13 @@ public class Java9FullApiIT
                                             .setForkJvm()
                                             .debugLogging()
                                             .execute( "verify" )
-                                            .verifyErrorFree( 2 );
+                                            .verifyErrorFree( 1 );
 
         validator.verifyTextInLog( "loaded class java.sql.SQLException" )
                 .verifyTextInLog( "loaded class javax.xml.ws.Holder" )
                 .verifyTextInLog( "loaded class javax.xml.bind.JAXBException" )
-                .verifyTextInLog( "loaded class org.omg.CORBA.BAD_INV_ORDER" )
+                .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
+                .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
                 .verifyTextInLog( "java.specification.version=9" );
     }
 
@@ -60,12 +61,13 @@ public class Java9FullApiIT
                                             .debugLogging()
                                             .sysProp( JDK_HOME_KEY, new File( JDK_HOME ).getCanonicalPath() )
                                             .execute( "verify" )
-                                            .verifyErrorFree( 2 );
+                                            .verifyErrorFree( 1 );
 
         validator.verifyTextInLog( "loaded class java.sql.SQLException" )
                 .verifyTextInLog( "loaded class javax.xml.ws.Holder" )
                 .verifyTextInLog( "loaded class javax.xml.bind.JAXBException" )
-                .verifyTextInLog( "loaded class org.omg.CORBA.BAD_INV_ORDER" )
+                .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
+                .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
                 .verifyTextInLog( "java.specification.version=9" );
     }
 
@@ -78,12 +80,13 @@ public class Java9FullApiIT
                                             .addGoal( "--toolchains" )
                                             .addGoal( System.getProperty( "maven.toolchains.file" ) )
                                             .execute( "verify" )
-                                            .verifyErrorFree( 2 );
+                                            .verifyErrorFree( 1 );
 
         validator.verifyTextInLog( "loaded class java.sql.SQLException" )
                 .verifyTextInLog( "loaded class javax.xml.ws.Holder" )
                 .verifyTextInLog( "loaded class javax.xml.bind.JAXBException" )
-                .verifyTextInLog( "loaded class org.omg.CORBA.BAD_INV_ORDER" )
+                .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
+                .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
                 .verifyTextInLog( "java.specification.version=9" );
     }
 
