@@ -26,6 +26,7 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -47,18 +48,21 @@ public final class JarManifestForkConfiguration
     extends AbstractClasspathForkConfiguration
 {
     @SuppressWarnings( "checkstyle:parameternumber" )
-    public JarManifestForkConfiguration( Classpath bootClasspath, File tempDirectory, String debugLine,
-                                         File workingDirectory, Properties modelProperties, String argLine,
-                                         Map<String, String> environmentVariables, boolean debug, int forkCount,
-                                         boolean reuseForks, Platform pluginPlatform, ConsoleLogger log )
+    public JarManifestForkConfiguration( @Nonnull Classpath bootClasspath, @Nonnull File tempDirectory,
+                                         @Nullable String debugLine, @Nonnull File workingDirectory,
+                                         @Nonnull Properties modelProperties, @Nullable String argLine,
+                                         @Nonnull Map<String, String> environmentVariables, boolean debug,
+                                         int forkCount, boolean reuseForks, @Nonnull Platform pluginPlatform,
+                                         @Nonnull ConsoleLogger log )
     {
         super( bootClasspath, tempDirectory, debugLine, workingDirectory, modelProperties, argLine,
                 environmentVariables, debug, forkCount, reuseForks, pluginPlatform, log );
     }
 
     @Override
-    protected void resolveClasspath( OutputStreamFlushableCommandline cli, String booterThatHasMainMethod,
-                                     StartupConfiguration config )
+    protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+                                     @Nonnull String booterThatHasMainMethod,
+                                     @Nonnull StartupConfiguration config )
             throws SurefireBooterForkException
     {
         try

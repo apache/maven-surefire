@@ -854,6 +854,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
+    @Nonnull
     protected final PluginConsoleLogger getConsoleLogger()
     {
         if ( consoleLogger == null )
@@ -876,6 +877,7 @@ public abstract class AbstractSurefireMojo
         toolchain = getToolchain();
     }
 
+    @Nonnull
     private DefaultScanResult scanForTestClasses()
         throws MojoFailureException
     {
@@ -960,7 +962,7 @@ public abstract class AbstractSurefireMojo
         return true;
     }
 
-    private void executeAfterPreconditionsChecked( DefaultScanResult scanResult )
+    private void executeAfterPreconditionsChecked( @Nonnull DefaultScanResult scanResult )
         throws MojoExecutionException, MojoFailureException
     {
         List<ProviderInfo> providers = createProviders();
@@ -1076,7 +1078,7 @@ public abstract class AbstractSurefireMojo
         }
         if ( getConsoleLogger().isDebugEnabled() )
         {
-            showToLog( result, getConsoleLogger(), "system property" );
+            showToLog( result, getConsoleLogger() );
         }
         return result;
     }
@@ -1100,16 +1102,17 @@ public abstract class AbstractSurefireMojo
         return intersection;
     }
 
-    private void showToLog( SurefireProperties props, ConsoleLogger log, String setting )
+    private void showToLog( SurefireProperties props, ConsoleLogger log )
     {
         for ( Object key : props.getStringKeySet() )
         {
             String value = props.getProperty( (String) key );
-            log.debug( "Setting " + setting + " [" + key + "]=[" + value + "]" );
+            log.debug( "Setting system property [" + key + "]=[" + value + "]" );
         }
     }
 
-    private RunResult executeProvider( ProviderInfo provider, DefaultScanResult scanResult )
+    @Nonnull
+    private RunResult executeProvider( @Nonnull ProviderInfo provider, @Nonnull DefaultScanResult scanResult )
         throws MojoExecutionException, MojoFailureException, SurefireExecutionException, SurefireBooterForkException,
         TestSetFailedException
     {
@@ -1676,9 +1679,9 @@ public abstract class AbstractSurefireMojo
         return new File( getBasedir(), ".surefire-" + configurationHash );
     }
 
-    private StartupConfiguration createStartupConfiguration( ProviderInfo provider, boolean isInprocess,
-                                                             ClassLoaderConfiguration classLoaderConfiguration,
-                                                             DefaultScanResult scanResult )
+    private StartupConfiguration createStartupConfiguration( @Nonnull ProviderInfo provider, boolean isInprocess,
+                                                             @Nonnull ClassLoaderConfiguration classLoaderConfiguration,
+                                                             @Nonnull DefaultScanResult scanResult )
         throws MojoExecutionException, MojoFailureException
     {
         try
@@ -1725,8 +1728,8 @@ public abstract class AbstractSurefireMojo
     }
 
     private StartupConfiguration newStartupConfigForNonModularClasspath(
-            ClassLoaderConfiguration classLoaderConfiguration, Classpath providerClasspath, Classpath inprocClasspath,
-            String providerName )
+            @Nonnull ClassLoaderConfiguration classLoaderConfiguration, @Nonnull Classpath providerClasspath,
+            @Nonnull Classpath inprocClasspath, @Nonnull String providerName )
             throws MojoExecutionException, MojoFailureException, InvalidVersionSpecificationException,
             AbstractArtifactResolutionException
     {
@@ -1744,9 +1747,9 @@ public abstract class AbstractSurefireMojo
                 false );
     }
 
-    private StartupConfiguration newStartupConfigForModularClasspath( ClassLoaderConfiguration classLoaderConfiguration,
-                                                              Classpath providerClasspath, String providerName,
-                                                              File moduleDescriptor, DefaultScanResult scanResult )
+    private StartupConfiguration newStartupConfigForModularClasspath(
+            @Nonnull ClassLoaderConfiguration classLoaderConfiguration, @Nonnull Classpath providerClasspath,
+            @Nonnull String providerName, @Nonnull File moduleDescriptor, @Nonnull DefaultScanResult scanResult )
             throws MojoExecutionException, MojoFailureException, InvalidVersionSpecificationException,
             AbstractArtifactResolutionException, IOException
     {
@@ -2024,10 +2027,10 @@ public abstract class AbstractSurefireMojo
         return getProjectArtifactMap().get( "junit:junit-dep" );
     }
 
-    private ForkStarter createForkStarter( ProviderInfo provider, ForkConfiguration forkConfiguration,
-                                           ClassLoaderConfiguration classLoaderConfiguration,
-                                           RunOrderParameters runOrderParameters, ConsoleLogger log,
-                                           DefaultScanResult scanResult )
+    private ForkStarter createForkStarter( @Nonnull ProviderInfo provider, @Nonnull ForkConfiguration forkConfiguration,
+                                           @Nonnull ClassLoaderConfiguration classLoaderConfiguration,
+                                           @Nonnull RunOrderParameters runOrderParameters, @Nonnull ConsoleLogger log,
+                                           @Nonnull DefaultScanResult scanResult )
         throws MojoExecutionException, MojoFailureException
     {
         StartupConfiguration startupConfiguration =
@@ -2039,10 +2042,10 @@ public abstract class AbstractSurefireMojo
                                 getForkedProcessTimeoutInSeconds(), startupReportConfiguration, log );
     }
 
-    private InPluginVMSurefireStarter createInprocessStarter( ProviderInfo provider,
-                                                              ClassLoaderConfiguration classLoaderConfiguration,
-                                                              RunOrderParameters runOrderParameters,
-                                                              DefaultScanResult scanResult )
+    private InPluginVMSurefireStarter createInprocessStarter( @Nonnull ProviderInfo provider,
+                                                             @Nonnull ClassLoaderConfiguration classLoaderConfiguration,
+                                                              @Nonnull RunOrderParameters runOrderParameters,
+                                                              @Nonnull DefaultScanResult scanResult )
         throws MojoExecutionException, MojoFailureException
     {
         StartupConfiguration startupConfiguration =
@@ -2054,6 +2057,7 @@ public abstract class AbstractSurefireMojo
                                               getConsoleLogger() );
     }
 
+    @Nonnull
     private ForkConfiguration getForkConfiguration() throws MojoFailureException
     {
         File tmpDir = getSurefireTempDir();
@@ -2359,6 +2363,7 @@ public abstract class AbstractSurefireMojo
         return false;
     }
 
+    @Nonnull
     protected ClassLoaderConfiguration getClassLoaderConfiguration()
     {
         return isForking()
@@ -2776,6 +2781,7 @@ public abstract class AbstractSurefireMojo
         }
 
         @Override
+        @Nonnull
         public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
@@ -2806,6 +2812,7 @@ public abstract class AbstractSurefireMojo
         }
 
         @Override
+        @Nonnull
         public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
@@ -2848,6 +2855,7 @@ public abstract class AbstractSurefireMojo
         }
 
         @Override
+        @Nonnull
         public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
@@ -2897,6 +2905,7 @@ public abstract class AbstractSurefireMojo
         }
 
         @Override
+        @Nonnull
         public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
@@ -2946,6 +2955,7 @@ public abstract class AbstractSurefireMojo
         }
 
         @Override
+        @Nonnull
         public Classpath getProviderClasspath()
             throws ArtifactResolutionException, ArtifactNotFoundException
         {

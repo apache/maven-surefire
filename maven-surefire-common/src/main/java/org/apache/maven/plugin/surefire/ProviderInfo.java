@@ -36,6 +36,7 @@ public interface ProviderInfo
 
     boolean isApplicable();
 
+    @Nonnull
     Classpath getProviderClasspath()
         throws ArtifactResolutionException, ArtifactNotFoundException;
 

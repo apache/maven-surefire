@@ -32,6 +32,7 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -96,8 +97,9 @@ public class DefaultForkConfigurationTest
         {
 
             @Override
-            protected void resolveClasspath( OutputStreamFlushableCommandline cli, String booterThatHasMainMethod,
-                                             StartupConfiguration config ) throws SurefireBooterForkException
+            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+                                             @Nonnull String booterThatHasMainMethod,
+                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
             {
 
             }
@@ -120,8 +122,9 @@ public class DefaultForkConfigurationTest
         {
 
             @Override
-            protected void resolveClasspath( OutputStreamFlushableCommandline cli, String booterThatHasMainMethod,
-                                             StartupConfiguration config ) throws SurefireBooterForkException
+            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+                                             @Nonnull String booterThatHasMainMethod,
+                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
             {
 
             }
@@ -144,8 +147,9 @@ public class DefaultForkConfigurationTest
         {
 
             @Override
-            protected void resolveClasspath( OutputStreamFlushableCommandline cli, String booterThatHasMainMethod,
-                                             StartupConfiguration config ) throws SurefireBooterForkException
+            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+                                             @Nonnull String booterThatHasMainMethod,
+                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
             {
 
             }
@@ -168,8 +172,9 @@ public class DefaultForkConfigurationTest
         {
 
             @Override
-            protected void resolveClasspath( OutputStreamFlushableCommandline cli, String booterThatHasMainMethod,
-                                             StartupConfiguration config ) throws SurefireBooterForkException
+            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+                                             @Nonnull String booterThatHasMainMethod,
+                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
             {
 
             }
@@ -193,8 +198,9 @@ public class DefaultForkConfigurationTest
         {
 
             @Override
-            protected void resolveClasspath( OutputStreamFlushableCommandline cli, String booterThatHasMainMethod,
-                                             StartupConfiguration config ) throws SurefireBooterForkException
+            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+                                             @Nonnull String booterThatHasMainMethod,
+                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
             {
 
             }
@@ -217,8 +223,9 @@ public class DefaultForkConfigurationTest
         {
 
             @Override
-            protected void resolveClasspath( OutputStreamFlushableCommandline cli, String booterThatHasMainMethod,
-                                             StartupConfiguration config ) throws SurefireBooterForkException
+            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+                                             @Nonnull String booterThatHasMainMethod,
+                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
             {
 
             }
@@ -241,8 +248,9 @@ public class DefaultForkConfigurationTest
         {
 
             @Override
-            protected void resolveClasspath( OutputStreamFlushableCommandline cli, String booterThatHasMainMethod,
-                                             StartupConfiguration config ) throws SurefireBooterForkException
+            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+                                             @Nonnull String booterThatHasMainMethod,
+                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
             {
 
             }
@@ -265,8 +273,9 @@ public class DefaultForkConfigurationTest
         {
 
             @Override
-            protected void resolveClasspath( OutputStreamFlushableCommandline cli, String booterThatHasMainMethod,
-                                             StartupConfiguration config ) throws SurefireBooterForkException
+            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+                                             @Nonnull String booterThatHasMainMethod,
+                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
             {
 
             }

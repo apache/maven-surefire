@@ -19,6 +19,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -41,13 +42,13 @@ import static org.apache.maven.surefire.util.internal.UrlUtils.toURL;
  *
  * @author Kristian Rosenvold
  */
-public class Classpath implements Iterable<String>
+public final class Classpath implements Iterable<String>
 {
     private final List<String> unmodifiableElements;
 
     public static Classpath join( Classpath firstClasspath, Classpath secondClasspath )
     {
-        LinkedHashSet<String> accumulated =  new LinkedHashSet<String>(  );
+        LinkedHashSet<String> accumulated =  new LinkedHashSet<String>();
         if ( firstClasspath != null )
         {
             firstClasspath.addTo( accumulated );
@@ -59,26 +60,24 @@ public class Classpath implements Iterable<String>
         return new Classpath( accumulated );
     }
 
-
-    private void addTo( Collection<String> c )
+    private void addTo( @Nonnull Collection<String> c )
     {
         c.addAll( unmodifiableElements );
     }
 
     private Classpath()
     {
-        this.unmodifiableElements = Collections.emptyList();
+        unmodifiableElements = Collections.emptyList();
     }
 
-
-    public Classpath( Classpath other, String additionalElement )
+    public Classpath( @Nonnull Classpath other, @Nonnull String additionalElement )
     {
         ArrayList<String> elems = new ArrayList<String>( other.unmodifiableElements );
         elems.add( additionalElement );
         unmodifiableElements = Collections.unmodifiableList( elems );
     }
 
-    public Classpath( Collection<String> elements )
+    public Classpath( @Nonnull Collection<String> elements )
     {
         List<String> newCp = new ArrayList<String>( elements.size() );
         for ( String element : elements )
@@ -106,6 +105,7 @@ public class Classpath implements Iterable<String>
         return !unmodifiableElements.contains( path ) ? new Classpath( this, path ) : this;
     }
 
+    @Nonnull
     public List<String> getClassPath()
     {
         return unmodifiableElements;
@@ -131,7 +131,7 @@ public class Classpath implements Iterable<String>
         return urls;
     }
 
-    public void writeToSystemProperty( String propertyName )
+    public void writeToSystemProperty( @Nonnull String propertyName )
     {
         StringBuilder sb = new StringBuilder();
         for ( String element : unmodifiableElements )
@@ -159,7 +159,7 @@ public class Classpath implements Iterable<String>
         return unmodifiableElements.equals( classpath.unmodifiableElements );
     }
 
-    public ClassLoader createClassLoader( boolean childDelegation, boolean enableAssertions, String roleName )
+    public ClassLoader createClassLoader( boolean childDelegation, boolean enableAssertions, @Nonnull String roleName )
         throws SurefireExecutionException
     {
         try
@@ -189,7 +189,7 @@ public class Classpath implements Iterable<String>
         return unmodifiableElements.hashCode();
     }
 
-    public String getLogMessage( String descriptor )
+    public String getLogMessage( @Nonnull String descriptor )
     {
         StringBuilder result = new StringBuilder( descriptor );
         for ( String element : unmodifiableElements )
@@ -200,7 +200,7 @@ public class Classpath implements Iterable<String>
         return result.toString();
     }
 
-    public String getCompactLogMessage( String descriptor )
+    public String getCompactLogMessage( @Nonnull String descriptor )
     {
         StringBuilder result = new StringBuilder( descriptor );
         for ( String element : unmodifiableElements )

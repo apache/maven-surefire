@@ -37,7 +37,7 @@ import java.util.Properties;
  */
 public abstract class ForkConfiguration
 {
-    public static final String DEFAULT_PROVIDER_CLASS = ForkedBooter.class.getName();
+    static final String DEFAULT_PROVIDER_CLASS = ForkedBooter.class.getName();
 
     @Nonnull public abstract File getTempDirectory();
     @Nullable protected abstract String getDebugLine();

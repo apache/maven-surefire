@@ -19,6 +19,8 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import javax.annotation.Nonnull;
+
 /**
  * Configuration that is used by the SurefireStarter but does not make it into the provider itself.
  *
@@ -34,8 +36,9 @@ public class StartupConfiguration
     private final boolean isForkRequested;
     private final boolean isInForkedVm;
 
-    public StartupConfiguration( String providerClassName, AbstractPathConfiguration classpathConfiguration,
-                                 ClassLoaderConfiguration classLoaderConfiguration, boolean isForkRequested,
+    public StartupConfiguration( @Nonnull String providerClassName,
+                                 @Nonnull AbstractPathConfiguration classpathConfiguration,
+                                 @Nonnull ClassLoaderConfiguration classLoaderConfiguration, boolean isForkRequested,
                                  boolean inForkedVm )
     {
         this.classpathConfiguration = classpathConfiguration;

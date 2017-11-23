@@ -19,6 +19,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
@@ -39,8 +40,9 @@ public final class ModularClasspath
     private final Collection<String> packages;
     private final File patchFile;
 
-    public ModularClasspath( File moduleDescriptor, List<String> modulePath, Collection<String> packages,
-                             File patchFile )
+    public ModularClasspath( @Nonnull File moduleDescriptor, @Nonnull List<String> modulePath,
+                             @Nonnull Collection<String> packages,
+                             @Nonnull File patchFile )
     {
         this.moduleDescriptor = moduleDescriptor;
         this.modulePath = modulePath;
@@ -48,21 +50,25 @@ public final class ModularClasspath
         this.patchFile = patchFile;
     }
 
+    @Nonnull
     public File getModuleDescriptor()
     {
         return moduleDescriptor;
     }
 
+    @Nonnull
     public List<String> getModulePath()
     {
         return unmodifiableList( modulePath );
     }
 
+    @Nonnull
     public Collection<String> getPackages()
     {
         return unmodifiableCollection( packages );
     }
 
+    @Nonnull
     public File getPatchFile()
     {
         return patchFile;

@@ -31,6 +31,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ModuleVisitor;
 
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.BufferedWriter;
@@ -65,7 +66,7 @@ public class ModularClasspathForkConfiguration
                                               @Nullable String argLine,
                                               @Nonnull Map<String, String> environmentVariables,
                                               boolean debug,
-                                              int forkCount,
+                                              @Nonnegative int forkCount,
                                               boolean reuseForks,
                                               @Nonnull Platform pluginPlatform,
                                               @Nonnull ConsoleLogger log )
@@ -75,8 +76,8 @@ public class ModularClasspathForkConfiguration
     }
 
     @Override
-    protected void resolveClasspath( OutputStreamFlushableCommandline cli, String startClass,
-                                     StartupConfiguration config )
+    protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli, @Nonnull String startClass,
+                                     @Nonnull StartupConfiguration config )
             throws SurefireBooterForkException
     {
         try
@@ -96,7 +97,6 @@ public class ModularClasspathForkConfiguration
 
             File argsFile = createArgsFile( descriptor, modulePath, classpath, packages, patchFile, startClass );
 
-            //todo what if path have spaces
             cli.createArg().setValue( "@" + escapeToPlatformPath( argsFile.getAbsolutePath() ) );
         }
         catch ( IOException e )
@@ -105,8 +105,10 @@ public class ModularClasspathForkConfiguration
         }
     }
 
-    File createArgsFile( File moduleDescriptor, List<String> modulePath, List<String> classPath,
-                         Collection<String> packages, File patchFile, String startClassName )
+    @Nonnull
+    File createArgsFile( @Nonnull File moduleDescriptor, @Nonnull List<String> modulePath,
+                         @Nonnull List<String> classPath, @Nonnull Collection<String> packages,
+                         @Nonnull File patchFile, @Nonnull String startClassName )
             throws IOException
     {
         File surefireArgs = createTempFile( "surefireargs", "", getTempDirectory() );
@@ -120,7 +122,7 @@ public class ModularClasspathForkConfiguration
         {
             writer = new BufferedWriter( new FileWriter( surefireArgs ) );
 
-            if ( modulePath != null && !modulePath.isEmpty() )
+            if ( !modulePath.isEmpty() )
             {
                 writer.write( "--module-path" );
                 writer.newLine();
@@ -137,7 +139,7 @@ public class ModularClasspathForkConfiguration
                 writer.newLine();
             }
 
-            if ( classPath != null && !classPath.isEmpty() )
+            if ( !classPath.isEmpty() )
             {
                 writer.write( "--class-path" );
                 writer.newLine();
@@ -153,7 +155,6 @@ public class ModularClasspathForkConfiguration
                 writer.newLine();
             }
 
-            //todo may return null
             final String moduleName = toModuleName( moduleDescriptor );
 
             writer.write( "--patch-module" );
@@ -206,11 +207,12 @@ public class ModularClasspathForkConfiguration
         return surefireArgs;
     }
 
-    private static String toModuleName( File moduleDescriptor ) throws IOException
+    @Nonnull
+    String toModuleName( @Nonnull File moduleDescriptor ) throws IOException
     {
-        if ( moduleDescriptor == null || !moduleDescriptor.isFile() )
+        if ( !moduleDescriptor.isFile() )
         {
-            return null;
+            throw new IOException( "No such Jigsaw module-descriptor exists " + moduleDescriptor.getAbsolutePath() );
         }
 
         final StringBuilder sb = new StringBuilder();

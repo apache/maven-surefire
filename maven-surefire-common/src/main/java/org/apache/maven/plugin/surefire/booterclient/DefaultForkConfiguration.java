@@ -93,8 +93,9 @@ public abstract class DefaultForkConfiguration
         this.log = log;
     }
 
-    protected abstract void resolveClasspath( OutputStreamFlushableCommandline cli, String booterThatHasMainMethod,
-                                              StartupConfiguration config )
+    protected abstract void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+                                              @Nonnull String booterThatHasMainMethod,
+                                              @Nonnull StartupConfiguration config )
             throws SurefireBooterForkException;
 
     @Nonnull
@@ -144,6 +145,7 @@ public abstract class DefaultForkConfiguration
         return cli;
     }
 
+    @Nonnull
     protected List<String> toCompleteClasspath( StartupConfiguration conf ) throws SurefireBooterForkException
     {
         AbstractPathConfiguration pathConfig = conf.getClasspathConfiguration();
@@ -152,11 +154,9 @@ public abstract class DefaultForkConfiguration
             throw new SurefireBooterForkException( "Could not find class-path config nor modular class-path either." );
         }
 
-        //todo this could probably be simplified further
-        Classpath bootClasspath = conf.isProviderMainClass() ? pathConfig.getProviderClasspath() : getBooterClasspath();
+        Classpath bootClasspath = getBooterClasspath();
         Classpath testClasspath = pathConfig.getTestClasspath();
         Classpath providerClasspath = pathConfig.getProviderClasspath();
-
         Classpath completeClasspath = join( join( bootClasspath, testClasspath ), providerClasspath );
 
         log.debug( completeClasspath.getLogMessage( "boot classpath:" ) );

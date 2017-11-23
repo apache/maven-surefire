@@ -111,7 +111,7 @@ public class SurefireDependencyResolver
     }
 
 
-    public ArtifactResolutionResult resolveArtifact( @Nullable Artifact filteredArtifact, Artifact providerArtifact )
+    private ArtifactResolutionResult resolveArtifact( Artifact filteredArtifact, Artifact providerArtifact )
         throws ArtifactResolutionException, ArtifactNotFoundException
     {
         ArtifactFilter filter = null;
@@ -128,6 +128,7 @@ public class SurefireDependencyResolver
                                                      filter );
     }
 
+    @Nonnull
     public Classpath getProviderClasspath( String provider, String version, Artifact filteredArtifact )
         throws ArtifactNotFoundException, ArtifactResolutionException
     {

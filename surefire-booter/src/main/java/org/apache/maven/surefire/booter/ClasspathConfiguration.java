@@ -19,6 +19,8 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import javax.annotation.Nonnull;
+
 import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 
 /**
@@ -43,14 +45,15 @@ public class ClasspathConfiguration extends AbstractPathConfiguration
         this( emptyClasspath(), emptyClasspath(), emptyClasspath(), enableAssertions, childDelegation );
     }
 
-    ClasspathConfiguration( PropertiesWrapper properties )
+    ClasspathConfiguration( @Nonnull PropertiesWrapper properties )
     {
         this( properties.getClasspath( CLASSPATH ), properties.getClasspath( SUREFIRE_CLASSPATH ), emptyClasspath(),
               properties.getBooleanProperty( ENABLE_ASSERTIONS ), properties.getBooleanProperty( CHILD_DELEGATION ) );
     }
 
-    public ClasspathConfiguration( Classpath testClasspathUrls, Classpath surefireClassPathUrls,
-                                   Classpath inprocClasspath, boolean enableAssertions, boolean childDelegation )
+    public ClasspathConfiguration( @Nonnull Classpath testClasspathUrls, @Nonnull Classpath surefireClassPathUrls,
+                                   @Nonnull Classpath inprocClasspath, boolean enableAssertions,
+                                   boolean childDelegation )
     {
         super( surefireClassPathUrls, enableAssertions, childDelegation );
         this.testClasspathUrls = testClasspathUrls;

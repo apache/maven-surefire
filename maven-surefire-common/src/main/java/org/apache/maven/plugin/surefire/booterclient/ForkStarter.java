@@ -50,6 +50,7 @@ import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.DefaultScanResult;
 
+import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -232,7 +233,7 @@ public class ForkStarter
         triggerTimeoutCheck();
     }
 
-    public RunResult run( SurefireProperties effectiveSystemProperties, DefaultScanResult scanResult )
+    public RunResult run( @Nonnull SurefireProperties effectiveSystemProperties, @Nonnull DefaultScanResult scanResult )
         throws SurefireBooterForkException, SurefireExecutionException
     {
         try

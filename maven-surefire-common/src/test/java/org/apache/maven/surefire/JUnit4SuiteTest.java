@@ -30,6 +30,7 @@ import org.apache.maven.plugin.surefire.booterclient.BooterDeserializerStartupCo
 import org.apache.maven.plugin.surefire.booterclient.DefaultForkConfigurationTest;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfigurationTest;
 import org.apache.maven.plugin.surefire.booterclient.ForkingRunListenerTest;
+import org.apache.maven.plugin.surefire.booterclient.ModularClasspathForkConfigurationTest;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStreamBuilderTest;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStreamTest;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactoryTest;
@@ -76,7 +77,8 @@ import org.junit.runners.Suite;
     SurefireReflectorTest.class,
     SurefireHelperTest.class,
     AbstractSurefireMojoTest.class,
-    DefaultForkConfigurationTest.class
+    DefaultForkConfigurationTest.class,
+    ModularClasspathForkConfigurationTest.class
 } )
 @RunWith( Suite.class )
 public class JUnit4SuiteTest

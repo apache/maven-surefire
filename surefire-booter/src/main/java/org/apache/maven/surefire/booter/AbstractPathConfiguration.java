@@ -19,6 +19,8 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import javax.annotation.Nonnull;
+
 import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 import static org.apache.maven.surefire.booter.Classpath.join;
 
@@ -47,10 +49,10 @@ public abstract class AbstractPathConfiguration
     // todo: @deprecated because the IsolatedClassLoader is really isolated - no parent.
     private final boolean childDelegation;
 
-    protected AbstractPathConfiguration( Classpath surefireClasspathUrls,
+    protected AbstractPathConfiguration( @Nonnull Classpath surefireClasspathUrls,
                                          boolean enableAssertions, boolean childDelegation )
     {
-        if ( !( isClassPathConfig() ^ isModularPathConfig() ) )
+        if ( isClassPathConfig() == isModularPathConfig() )
         {
             throw new IllegalStateException( "modular path and class path should be exclusive" );
         }

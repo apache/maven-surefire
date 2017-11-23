@@ -19,6 +19,8 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import javax.annotation.Nonnull;
+
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.21.0.Jigsaw
@@ -28,8 +30,10 @@ public class ModularClasspathConfiguration extends AbstractPathConfiguration
     private final ModularClasspath modularClasspath;
     private final Classpath testClasspathUrls;
 
-    public ModularClasspathConfiguration( ModularClasspath modularClasspath, Classpath testClasspathUrls,
-                                          Classpath surefireClasspathUrls, boolean enableAssertions,
+    public ModularClasspathConfiguration( @Nonnull ModularClasspath modularClasspath,
+                                          @Nonnull Classpath testClasspathUrls,
+                                          @Nonnull Classpath surefireClasspathUrls,
+                                          boolean enableAssertions,
                                           boolean childDelegation )
     {
         super( surefireClasspathUrls, enableAssertions, childDelegation );
