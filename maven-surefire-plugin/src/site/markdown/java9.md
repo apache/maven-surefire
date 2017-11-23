@@ -23,8 +23,43 @@ Java 9 in JAVA_HOME
     $ export JAVA_HOME=/path/to/jdk9
     $ mvn test
 
-The plugin will automatically add `--add-modules java.se.ee` on JVM argument in CLI (unless already specified by user)
-and all Java 9 API is provided to run your tests.
+Using JDK Deprecated Modules
+========================
+
+Since Java 9 some modules previously bundled with the JDK are disabled by default.
+
+Version 2.20.1 of the plugin added automatically "--add-modules java.se.ee" option to the command line of forked JVMs (unless already specified by user) in order to ease the transition of applications to Java 9.
+
+From 2.21 onwards the plugin will not add that option: the recommended way of using those modules is to add explicit dependencies of the maintained versions of such libraries.
+
+This is a reference of the versions which were bundled with Java 8:
+
+**Commons Annotations**
+
+javax.annotation:javax.annotation-api:1.3.1
+
+**JavaBeans Activation Framework**
+
+javax.activation:javax.activation-api:1.2.0
+
+**Java Transaction API**
+
+javax.transaction:javax.transaction-api:1.2
+
+**JAXB**
+
+javax.xml.bind:jaxb-api:2.3.0
+
+org.glassfish.jaxb:jaxb-runtime:2.3.0 (implementation)
+
+**JAX-WS**
+
+javax.xml.ws:jaxws-api:2.3.0
+
+com.sun.xml.ws:jaxws-rt:2.3.0 (implementation)
+
+The source code for each of these is maintained at [https://github.com/javaee](https://github.com/javaee)
+
 
 
 Java 9 in configuration of plugin
