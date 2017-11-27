@@ -59,7 +59,7 @@ public class SurefireProperties
     {
         if ( source != null )
         {
-            this.putAll( source );
+            putAll( source );
         }
     }
 
@@ -68,6 +68,15 @@ public class SurefireProperties
         if ( source != null )
         {
             source.copyTo( this );
+        }
+    }
+
+    @Override
+    public synchronized void putAll( Map<?, ?> t )
+    {
+        for ( Map.Entry<?, ?> entry : t.entrySet() )
+        {
+            put( entry.getKey(), entry.getValue() );
         }
     }
 
