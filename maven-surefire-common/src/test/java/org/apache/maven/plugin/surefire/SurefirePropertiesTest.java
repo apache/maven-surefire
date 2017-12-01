@@ -19,10 +19,13 @@ package org.apache.maven.plugin.surefire;
  */
 
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Properties;
 
 import junit.framework.TestCase;
 import org.apache.maven.surefire.booter.KeyValueSource;
+
+import static java.util.Collections.list;
 
 /**
  * Tests the insertion-order preserving properties collection
@@ -70,9 +73,36 @@ public class SurefirePropertiesTest
         src.setProperty( "b", "2" );
         SurefireProperties orderedProperties = new SurefireProperties( src );
         // Cannot make assumptions about insertion order
-        assertEquals( 2, orderedProperties.size() );
+        // keys() uses the items property, more reliable to test than size(),
+        // which is based on the Properties class
+        // see https://issues.apache.org/jira/browse/SUREFIRE-1445
+        assertEquals( src.size(), list( orderedProperties.keys() ).size() );
+        assertEquals( src.size(), size( orderedProperties.getStringKeySet().iterator() ) );
+    }
 
+    public void testPutAll()
+    {
+        Properties src = new Properties();
+        src.setProperty( "a", "1" );
+        src.setProperty( "b", "2" );
+        SurefireProperties orderedProperties = new SurefireProperties();
+        orderedProperties.putAll( src );
+        // Cannot make assumptions about insertion order
+        // keys() uses the items property, more reliable to test than size(),
+        // which is based on the Properties class
+        // see https://issues.apache.org/jira/browse/SUREFIRE-1445
+        assertEquals( src.size(), list( orderedProperties.keys() ).size() );
+        assertEquals( src.size(), size( orderedProperties.getStringKeySet().iterator() ) );
+    }
 
+    private static int size( Iterator<?> iterator )
+    {
+        int count = 0;
+        while ( iterator.hasNext() ) {
+            iterator.next();
+            count++;
+        }
+        return count;
     }
 
 }
