@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
+import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ForkedBooter;
 import org.apache.maven.surefire.booter.ModularClasspath;
@@ -50,6 +51,7 @@ import static org.fest.assertions.Assertions.assertThat;
 public class ModularClasspathForkConfigurationTest
 {
     @Test
+    @SuppressWarnings( "ResultOfMethodCallIgnored" )
     public void shouldCreateModularArgsFile() throws Exception
     {
         Classpath booter = new Classpath( asList( "booter.jar", "non-modular.jar" ) );
@@ -105,8 +107,9 @@ public class ModularClasspathForkConfigurationTest
         ModularClasspathConfiguration modularClasspathConfiguration =
                 new ModularClasspathConfiguration( modularClasspath, testClasspathUrls, surefireClasspathUrls,
                         true, true );
+        ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
         StartupConfiguration startupConfiguration =
-                new StartupConfiguration( "JUnitCoreProvider", modularClasspathConfiguration, null, true, true );
+                new StartupConfiguration( "JUnitCoreProvider", modularClasspathConfiguration, clc, true, true );
         OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
         config.resolveClasspath( cli, ForkedBooter.class.getName(), startupConfiguration );
 

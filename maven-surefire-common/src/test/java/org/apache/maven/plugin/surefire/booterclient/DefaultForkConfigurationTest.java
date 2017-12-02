@@ -22,7 +22,9 @@ package org.apache.maven.plugin.surefire.booterclient;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.util.Relocator;
+import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.ForkedBooter;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
@@ -291,8 +293,10 @@ public class DefaultForkConfigurationTest
     @Test
     public void shouldRelocateBooterClassWhenShadefire() throws Exception
     {
+        ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
+        ClasspathConfiguration cc = new ClasspathConfiguration( true, true );
         StartupConfiguration conf =
-                new StartupConfiguration( "org.apache.maven.surefire.shadefire.MyProvider", null, null, false, false );
+                new StartupConfiguration( "org.apache.maven.surefire.shadefire.MyProvider", cc, clc, false, false );
         StartupConfiguration confMock = spy( conf );
         mockStatic( Relocator.class );
         when( Relocator.relocate( anyString() ) ).thenCallRealMethod();
@@ -310,8 +314,10 @@ public class DefaultForkConfigurationTest
     @Test
     public void shouldNotRelocateBooterClass() throws Exception
     {
+        ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
+        ClasspathConfiguration cc = new ClasspathConfiguration( true, true );
         StartupConfiguration conf =
-                new StartupConfiguration( "org.apache.maven.surefire.MyProvider", null, null, false, false );
+                new StartupConfiguration( "org.apache.maven.surefire.MyProvider", cc, clc, false, false );
         StartupConfiguration confMock = spy( conf );
         mockStatic( Relocator.class );
         when( Relocator.relocate( anyString() ) ).thenCallRealMethod();

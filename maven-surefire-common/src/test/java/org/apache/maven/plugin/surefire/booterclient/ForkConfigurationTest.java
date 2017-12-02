@@ -26,6 +26,7 @@ import org.apache.maven.plugin.surefire.JdkAttributes;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.cli.Commandline;
+import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
@@ -46,7 +47,11 @@ import static org.junit.Assert.fail;
 
 public class ForkConfigurationTest
 {
-    private static final StartupConfiguration STARTUP_CONFIG = new StartupConfiguration( "", null, null, false, false );
+    private static final StartupConfiguration STARTUP_CONFIG = new StartupConfiguration( "",
+            new ClasspathConfiguration( true, true ),
+            new ClassLoaderConfiguration( true, true ),
+            false,
+            false );
 
     @Test
     public void testCreateCommandLine_UseSystemClassLoaderForkOnce_ShouldConstructManifestOnlyJar()
@@ -56,8 +61,10 @@ public class ForkConfigurationTest
         File cpElement = getTempClasspathFile();
 
         List<String> cp = singletonList( cpElement.getAbsolutePath() );
-        ClasspathConfiguration cpConfig = new ClasspathConfiguration( new Classpath( cp ), null, null, true, true );
-        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, null, false, false );
+        ClasspathConfiguration cpConfig = new ClasspathConfiguration( new Classpath( cp ), emptyClasspath(),
+                emptyClasspath(), true, true );
+        ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
+        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false );
 
         Commandline cli = config.createCommandLine( startup, 1 );
 
@@ -74,8 +81,10 @@ public class ForkConfigurationTest
         File cpElement = getTempClasspathFile();
 
         List<String> cp = singletonList( cpElement.getAbsolutePath() );
-        ClasspathConfiguration cpConfig = new ClasspathConfiguration( new Classpath( cp ), null, null, true, true );
-        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, null, false, false );
+        ClasspathConfiguration cpConfig = new ClasspathConfiguration( new Classpath( cp ), emptyClasspath(),
+                emptyClasspath(), true, true );
+        ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
+        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false );
 
         Commandline commandLine = config.createCommandLine( startup, 1 );
         assertTrue( commandLine.toString().contains( "abc def" ) );
@@ -93,9 +102,11 @@ public class ForkConfigurationTest
 
         File cwd = new File( baseDir, "fork_${surefire.forkNumber}" );
 
-        ClasspathConfiguration cpConfig = new ClasspathConfiguration( emptyClasspath(), null, null, true, true );
-        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, null, false, false );
-        ForkConfiguration config = getForkConfiguration( null, cwd.getCanonicalFile() );
+        ClasspathConfiguration cpConfig = new ClasspathConfiguration( emptyClasspath(), emptyClasspath(),
+                emptyClasspath(), true, true );
+        ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
+        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false );
+        ForkConfiguration config = getForkConfiguration( cwd.getCanonicalFile() );
         Commandline commandLine = config.createCommandLine( startup, 1 );
 
         File forkDirectory = new File( baseDir, "fork_1" );
@@ -119,7 +130,7 @@ public class ForkConfigurationTest
         FileUtils.touch( cwd );
         cwd.deleteOnExit();
 
-        ForkConfiguration config = getForkConfiguration( null, cwd.getCanonicalFile() );
+        ForkConfiguration config = getForkConfiguration( cwd.getCanonicalFile() );
 
         try
         {
@@ -149,7 +160,7 @@ public class ForkConfigurationTest
         // NULL is invalid for JDK starting from 1.7.60 - https://github.com/openjdk-mirror/jdk/commit/e5389115f3634d25d101e2dcc71f120d4fd9f72f
         // ? character is invalid on Windows, seems to be imposable to create invalid directory using Java on Linux
         File cwd = new File( baseDir, "?\u0000InvalidDirectoryName" );
-        ForkConfiguration config = getForkConfiguration( null, cwd.getAbsoluteFile() );
+        ForkConfiguration config = getForkConfiguration( cwd.getAbsoluteFile() );
 
         try
         {
@@ -161,7 +172,7 @@ public class ForkConfigurationTest
             return;
         }
 
-        if ( SystemUtils.IS_OS_WINDOWS || isJavaVersionAtLeast( 7, 60 ) )
+        if ( SystemUtils.IS_OS_WINDOWS || isJavaVersionAtLeast7u60() )
         {
             fail();
         }
@@ -175,24 +186,18 @@ public class ForkConfigurationTest
         return cpElement;
     }
 
-    public static ForkConfiguration getForkConfiguration( File javaExec )
-            throws IOException
-    {
-        return getForkConfiguration( null, javaExec.getAbsolutePath(), new File( "." ).getCanonicalFile() );
-    }
-
-    public static ForkConfiguration getForkConfiguration( String argLine )
+    static ForkConfiguration getForkConfiguration( String argLine )
         throws IOException
     {
         File jvm = new File( new File( System.getProperty( "java.home" ), "bin" ), "java" );
         return getForkConfiguration( argLine, jvm.getAbsolutePath(), new File( "." ).getCanonicalFile() );
     }
 
-    public static ForkConfiguration getForkConfiguration( String argLine, File cwd )
+    private static ForkConfiguration getForkConfiguration( File cwd )
             throws IOException
     {
         File jvm = new File( new File( System.getProperty( "java.home" ), "bin" ), "java" );
-        return getForkConfiguration( argLine, jvm.getAbsolutePath(), cwd );
+        return getForkConfiguration( null, jvm.getAbsolutePath(), cwd );
     }
 
     private static ForkConfiguration getForkConfiguration( String argLine, String jvm, File cwd )
@@ -200,23 +205,17 @@ public class ForkConfigurationTest
     {
         Platform platform = new Platform().withJdkExecAttributesForTests( new JdkAttributes( jvm, false ) );
         File tmpDir = File.createTempFile( "target", "surefire" );
-        tmpDir.delete();
-        tmpDir.mkdirs();
+        assertTrue( tmpDir.delete() );
+        assertTrue( tmpDir.mkdirs() );
         return new JarManifestForkConfiguration( emptyClasspath(), tmpDir, null,
                 cwd, new Properties(), argLine, Collections.<String, String>emptyMap(), false, 1, false,
                 platform, new NullConsoleLogger() );
-
-        /*
-        return new ClasspathForkConfiguration( emptyClasspath(), null, null,
-                cwd, new Properties(), argLine, null, false, 1, false, platform, new NullConsoleLogger() );
-                */
     }
 
     // based on http://stackoverflow.com/questions/2591083/getting-version-of-java-in-runtime
-    private boolean isJavaVersionAtLeast( int major, int update )
+    private static boolean isJavaVersionAtLeast7u60()
     {
         String[] javaVersionElements = System.getProperty( "java.runtime.version" ).split( "\\.|_|-b" );
-        return Integer.valueOf( javaVersionElements[1] ) >= major
-            && Integer.valueOf( javaVersionElements[3] ) >= update;
+        return Integer.valueOf( javaVersionElements[1] ) >= 7 && Integer.valueOf( javaVersionElements[3] ) >= 60;
     }
 }
