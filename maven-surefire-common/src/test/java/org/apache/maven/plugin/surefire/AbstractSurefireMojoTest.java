@@ -57,9 +57,8 @@ import java.util.Set;
 import static java.io.File.separatorChar;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
-import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
-import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
+import static org.apache.maven.surefire.booter.SystemUtils.isBuiltInJava7AtLeast;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -326,7 +325,7 @@ public class AbstractSurefireMojoTest
     @Test
     public void shouldHaveTmpDirectory() throws IOException
     {
-        assumeTrue( isJavaVersionAtLeast( JAVA_1_7 ) );
+        assumeTrue( isBuiltInJava7AtLeast() );
 
         Path path = ( Path ) AbstractSurefireMojo.createTmpDirectoryWithJava7( "surefire" );
 
@@ -348,7 +347,7 @@ public class AbstractSurefireMojoTest
     @Test
     public void shouldHaveTmpDirectoryName() throws IOException
     {
-        assumeTrue( isJavaVersionAtLeast( JAVA_1_7 ) );
+        assumeTrue( isBuiltInJava7AtLeast() );
 
         String dir = AbstractSurefireMojo.createTmpDirectoryNameWithJava7( "surefire" );
 

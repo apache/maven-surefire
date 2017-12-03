@@ -18,8 +18,6 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
-import org.apache.commons.lang3.JavaVersion;
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.PrintStreamLogger;
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
@@ -32,7 +30,6 @@ import java.util.Locale;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-import static org.apache.commons.lang3.SystemUtils.JAVA_SPECIFICATION_VERSION;
 import static org.junit.Assume.assumeTrue;
 
 @SuppressWarnings( { "JavaDoc" } )
@@ -168,9 +165,10 @@ public class HelperAssertions
         }
     }
 
-    public static void assumeJavaVersion( JavaVersion version )
+    public static void assumeJavaVersion( double expectedVersion )
     {
-        assumeTrue( "java.specification.version: " + JAVA_SPECIFICATION_VERSION,
-                SystemUtils.isJavaVersionAtLeast( version ) );
+        String thisVersion = System.getProperty( "java.specification.version" );
+        assumeTrue( "java.specification.version: " + thisVersion,
+                Double.valueOf( thisVersion ) >= expectedVersion );
     }
 }

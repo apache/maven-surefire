@@ -23,7 +23,6 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.apache.commons.lang3.JavaVersion.JAVA_1_6;
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 
 /**
@@ -41,7 +40,7 @@ public class JUnit47WithCucumberIT
     @Before
     public void assumeJdk16()
     {
-        assumeJavaVersion( JAVA_1_6 );
+        assumeJavaVersion( 1.6d );
     }
 
     @Test

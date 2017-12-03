@@ -22,13 +22,13 @@ package org.apache.maven.surefire.booter;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.math.BigDecimal;
 
 import static java.io.File.separator;
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
@@ -40,12 +40,12 @@ import static org.apache.commons.lang3.SystemUtils.IS_OS_OPEN_BSD;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyDouble;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
+import static org.powermock.reflect.Whitebox.invokeMethod;
 
 /**
  * Test of {@link SystemUtils}.
@@ -58,6 +58,15 @@ public class SystemUtilsTest
 {
     public static class PlainUnitTests
     {
+
+        @Test
+        public void shouldMatchJavaSpecVersion() throws Exception
+        {
+            BigDecimal actual = invokeMethod( SystemUtils.class, "getJavaSpecificationVersion" );
+            BigDecimal expected = new BigDecimal( System.getProperty( "java.specification.version" ) );
+            assertThat( actual ).isEqualTo( expected );
+            assertThat( SystemUtils.JAVA_SPECIFICATION_VERSION ).isEqualTo( expected );
+        }
 
         @Test
         public void shouldParseProprietaryReleaseFile() throws IOException
@@ -169,9 +178,9 @@ public class SystemUtilsTest
         @Test
         public void shouldBeJavaVersion()
         {
-            assertThat( SystemUtils.isJava9AtLeast( (Double) null ) ).isFalse();
-            assertThat( SystemUtils.isJava9AtLeast( 1.8d ) ).isFalse();
-            assertThat( SystemUtils.isJava9AtLeast( 9.0d ) ).isTrue();
+            assertThat( SystemUtils.isJava9AtLeast( (BigDecimal ) null ) ).isFalse();
+            assertThat( SystemUtils.isJava9AtLeast( new BigDecimal( "1.8" ) ) ).isFalse();
+            assertThat( SystemUtils.isJava9AtLeast( new BigDecimal( 9 ) ) ).isTrue();
         }
 
         @Test
@@ -328,7 +337,7 @@ public class SystemUtilsTest
             when( SystemUtils.toJdkVersionFromReleaseFile( any( File.class ) ) )
                     .thenCallRealMethod();
 
-            when( SystemUtils.isJava9AtLeast( anyDouble() ) )
+            when( SystemUtils.isJava9AtLeast( any( BigDecimal.class ) ) )
                     .thenCallRealMethod();
 
             if ( JAVA_RECENT.atLeast( JAVA_9 ) )

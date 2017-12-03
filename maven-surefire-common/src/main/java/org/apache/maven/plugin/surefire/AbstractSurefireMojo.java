@@ -96,6 +96,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -115,18 +116,17 @@ import static java.lang.Thread.currentThread;
 import static java.util.Arrays.asList;
 import static java.util.Collections.addAll;
 import static java.util.Collections.singletonMap;
-import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
-import static org.apache.commons.lang3.JavaVersion.JAVA_9;
-import static org.apache.commons.lang3.JavaVersion.JAVA_RECENT;
 import static org.apache.commons.lang3.StringUtils.substringBeforeLast;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
-import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.maven.shared.utils.StringUtils.capitalizeFirstLetter;
 import static org.apache.maven.shared.utils.StringUtils.isEmpty;
 import static org.apache.maven.shared.utils.StringUtils.isNotBlank;
 import static org.apache.maven.shared.utils.StringUtils.isNotEmpty;
 import static org.apache.maven.shared.utils.StringUtils.split;
+import static org.apache.maven.surefire.booter.SystemUtils.JAVA_SPECIFICATION_VERSION;
 import static org.apache.maven.surefire.booter.SystemUtils.endsWithJavaPath;
+import static org.apache.maven.surefire.booter.SystemUtils.isBuiltInJava7AtLeast;
+import static org.apache.maven.surefire.booter.SystemUtils.isBuiltInJava9AtLeast;
 import static org.apache.maven.surefire.booter.SystemUtils.isJava9AtLeast;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkHomeFromJvmExec;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkVersionFromReleaseFile;
@@ -2208,7 +2208,7 @@ public abstract class AbstractSurefireMojo
             }
 
             File jdkHome = toJdkHomeFromJvmExec( pathToJava.getPath() );
-            Double version = jdkHome == null ? null : toJdkVersionFromReleaseFile( jdkHome );
+            BigDecimal version = jdkHome == null ? null : toJdkVersionFromReleaseFile( jdkHome );
             boolean javaVersion9 = version == null ? isJava9AtLeast( pathToJava.getPath() ) : isJava9AtLeast( version );
             return new JdkAttributes( pathToJava.getPath(), javaVersion9 );
         }
@@ -2238,9 +2238,10 @@ public abstract class AbstractSurefireMojo
 
         // use the same JVM as the one used to run Maven (the "java.home" one)
         String jvmToUse = System.getProperty( "java.home" ) + File.separator + "bin" + File.separator + "java";
-        getConsoleLogger().debug( "Using JVM: " + jvmToUse + " with Java version " + JAVA_RECENT.toString() );
+        getConsoleLogger().debug( "Using JVM: " + jvmToUse + " with Java version "
+                + JAVA_SPECIFICATION_VERSION.toPlainString() );
 
-        return new JdkAttributes( jvmToUse, isJavaVersionAtLeast( JAVA_9 ) );
+        return new JdkAttributes( jvmToUse, isBuiltInJava9AtLeast() );
     }
 
     private Artifact getSurefireBooterArtifact()
@@ -3043,7 +3044,7 @@ public abstract class AbstractSurefireMojo
     // todo use Java7 java.nio.file.Files.createTempDirectory()
     File createSurefireBootDirectoryInTemp()
     {
-        if ( isJavaVersionAtLeast( JAVA_1_7 ) )
+        if ( isBuiltInJava7AtLeast() )
         {
             try
             {

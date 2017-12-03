@@ -24,7 +24,6 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
-import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -43,7 +42,7 @@ public class Surefire1177TestngParallelSuitesIT
     public void shouldRunTwoSuitesInParallel()
         throws VerificationException
     {
-        assumeJavaVersion( JAVA_1_7 );
+        assumeJavaVersion( 1.7d );
 
         unpack().executeTest()
             .verifyErrorFree( 2 )

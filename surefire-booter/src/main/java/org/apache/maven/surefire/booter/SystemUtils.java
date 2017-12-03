@@ -29,19 +29,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import static java.lang.Character.isDigit;
 import static java.lang.Thread.currentThread;
 import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.apache.commons.lang3.JavaVersion.JAVA_9;
-import static org.apache.commons.lang3.JavaVersion.JAVA_RECENT;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_FREE_BSD;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_NET_BSD;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_OPEN_BSD;
-import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodChain;
 import static org.apache.maven.surefire.util.ReflectionUtils.tryLoadClass;
 import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
@@ -54,7 +53,11 @@ import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull
  */
 public final class SystemUtils
 {
-    private static final double JIGSAW_JAVA_VERSION = 9.0d;
+    public static final BigDecimal JAVA_SPECIFICATION_VERSION = getJavaSpecificationVersion();
+
+    private static final BigDecimal JAVA_VERSION_7 = new BigDecimal( "1.7" );
+
+    private static final BigDecimal JIGSAW_JAVA_VERSION = new BigDecimal( 9 );
 
     private static final int PROC_STATUS_PID_FIRST_CHARS = 20;
 
@@ -127,7 +130,7 @@ public final class SystemUtils
         return "jre".equals( pathToJreOrJdk.getName() ) ? pathToJreOrJdk.getParentFile() : pathToJreOrJdk;
     }
 
-    public static Double toJdkVersionFromReleaseFile( File jdkHome )
+    public static BigDecimal toJdkVersionFromReleaseFile( File jdkHome )
     {
         File release = new File( requireNonNull( jdkHome ).getAbsoluteFile(), "release" );
         if ( !release.isFile() )
@@ -158,7 +161,7 @@ public final class SystemUtils
                 return null;
             }
 
-            return Double.valueOf( javaVersion );
+            return new BigDecimal( javaVersion );
         }
         catch ( IOException e )
         {
@@ -170,6 +173,43 @@ public final class SystemUtils
         }
     }
 
+    /**
+     * Safely extracts major and minor version as fractional number from
+     * <pre>
+     *     $MAJOR.$MINOR.$SECURITY
+     * </pre>.
+     * <br>
+     *     The security version is usually not needed to know.
+     *     It can be applied to not certified JRE.
+     *
+     * @return major.minor version derived from java specification version of <em>this</em> JVM, e.g. 1.8, 9, etc.
+     */
+    private static BigDecimal getJavaSpecificationVersion()
+    {
+        StringBuilder fractionalVersion = new StringBuilder( "0" );
+        for ( char c : org.apache.commons.lang3.SystemUtils.JAVA_SPECIFICATION_VERSION.toCharArray() )
+        {
+            if ( isDigit( c ) )
+            {
+                fractionalVersion.append( c );
+            }
+            else if ( c == '.' )
+            {
+                if ( fractionalVersion.indexOf( "." ) == -1 )
+                {
+                    fractionalVersion.append( '.' );
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        String majorMinorVersion = fractionalVersion.toString();
+        return new BigDecimal( majorMinorVersion.endsWith( "." ) ? majorMinorVersion + "0" : majorMinorVersion )
+                .stripTrailingZeros();
+    }
+
     public static boolean isJava9AtLeast( String jvmExecutablePath )
     {
         File externalJavaHome = toJdkHomeFromJvmExec( jvmExecutablePath );
@@ -178,23 +218,32 @@ public final class SystemUtils
         {
             return isBuiltInJava9AtLeast();
         }
-        Double releaseFileVersion = externalJavaHome == null ? null : toJdkVersionFromReleaseFile( externalJavaHome );
-        return SystemUtils.isJava9AtLeast( releaseFileVersion );
+        else
+        {
+            BigDecimal releaseFileVersion =
+                    externalJavaHome == null ? null : toJdkVersionFromReleaseFile( externalJavaHome );
+            return isJava9AtLeast( releaseFileVersion );
+        }
     }
 
-    static boolean isBuiltInJava9AtLeast()
+    public static boolean isBuiltInJava9AtLeast()
     {
-        return isJavaVersionAtLeast( JAVA_9 );
+        return JAVA_SPECIFICATION_VERSION.compareTo( JIGSAW_JAVA_VERSION ) >= 0;
     }
 
-    public static boolean isJava9AtLeast( Double version )
+    public static boolean isBuiltInJava7AtLeast()
     {
-        return version != null && version >= JIGSAW_JAVA_VERSION;
+        return JAVA_SPECIFICATION_VERSION.compareTo( JAVA_VERSION_7 ) >= 0;
+    }
+
+    public static boolean isJava9AtLeast( BigDecimal version )
+    {
+        return version != null && version.compareTo( JIGSAW_JAVA_VERSION ) >= 0;
     }
 
     public static ClassLoader platformClassLoader()
     {
-        if ( JAVA_RECENT.atLeast( JAVA_9 ) )
+        if ( isBuiltInJava9AtLeast() )
         {
             return reflectClassLoader( ClassLoader.class, "getPlatformClassLoader" );
         }
@@ -203,7 +252,7 @@ public final class SystemUtils
 
     public static Long pid()
     {
-        if ( JAVA_RECENT.atLeast( JAVA_9 ) )
+        if ( isBuiltInJava9AtLeast() )
         {
             Long pid = pidOnJava9();
             if ( pid != null )

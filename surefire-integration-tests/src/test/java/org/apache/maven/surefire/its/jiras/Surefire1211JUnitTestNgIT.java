@@ -23,7 +23,6 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
-import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 
 /**
@@ -38,7 +37,7 @@ public class Surefire1211JUnitTestNgIT
     @Test
     public void withJUnit()
     {
-        assumeJavaVersion( JAVA_1_7 );
+        assumeJavaVersion( 1.7d );
 
         unpack().threadCount( 1 )
                 .executeTest()
@@ -48,7 +47,7 @@ public class Surefire1211JUnitTestNgIT
     @Test
     public void withoutJUnit()
     {
-        assumeJavaVersion( JAVA_1_7 );
+        assumeJavaVersion( 1.7d );
 
         unpack().threadCount( 1 )
                 .sysProp( "junit", "false" )

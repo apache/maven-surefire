@@ -29,8 +29,6 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import static org.apache.commons.lang3.JavaVersion.JAVA_9;
-import static org.apache.commons.lang3.JavaVersion.JAVA_RECENT;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
@@ -52,7 +50,7 @@ public abstract class AbstractJigsawIT
     protected SurefireLauncher assumeJigsaw() throws IOException
     {
         assumeTrue( "There's no JDK 9 provided.",
-                          JAVA_RECENT.atLeast( JAVA_9 ) || JDK_HOME != null && isExtJava9AtLeast() );
+                          isJavaVersion9AtLeast() || JDK_HOME != null && isExtJavaVerion9AtLeast() );
         // fail( JDK_HOME_KEY + " was provided with value " + JDK_HOME + " but it is not Jigsaw Java 9." );
 
         SurefireLauncher launcher = unpack();
@@ -67,7 +65,7 @@ public abstract class AbstractJigsawIT
 
     protected SurefireLauncher assumeJava9Property() throws IOException
     {
-        assumeTrue( "There's no JDK 9 provided.", JDK_HOME != null && isExtJava9AtLeast() );
+        assumeTrue( "There's no JDK 9 provided.", JDK_HOME != null && isExtJavaVerion9AtLeast() );
         return unpack();
     }
 
@@ -76,7 +74,12 @@ public abstract class AbstractJigsawIT
         return unpack( getProjectDirectoryName() );
     }
 
-    private static boolean isExtJava9AtLeast() throws IOException
+    private static boolean isJavaVersion9AtLeast()
+    {
+        return Double.valueOf( System.getProperty( "java.specification.version" ) ) >= JIGSAW_JAVA_VERSION;
+    }
+
+    private static boolean isExtJavaVerion9AtLeast() throws IOException
     {
         File release = new File( JDK_HOME, "release" );
 
