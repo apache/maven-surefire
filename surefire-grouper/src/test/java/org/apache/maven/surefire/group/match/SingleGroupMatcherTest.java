@@ -37,6 +37,13 @@ public class SingleGroupMatcherTest
         assertTrue( matcher.enabled( SingleGroupMatcher.class ) );
     }
 
+    public void testMatchUnknownClass()
+    {
+        SingleGroupMatcher matcher = new SingleGroupMatcher( "BadClass" );
+        matcher.loadGroupClasses( Thread.currentThread().getContextClassLoader() );
+        assertTrue( matcher.enabled( "BadClass" ) );
+    }
+
     public void testMatchClassNameWithoutPackage()
     {
         SingleGroupMatcher matcher = new SingleGroupMatcher( SingleGroupMatcher.class.getSimpleName() );
