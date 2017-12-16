@@ -218,58 +218,62 @@ public final class StringUtils
     }
 
     /**
-     * Escapes the bytes in the array {@code str} to contain only 'printable' bytes.
-     * <p>
+     * Escapes the bytes in the array {@code input} to contain only 'printable' bytes.
+     * <br>
      * Escaping is done by encoding the non-nicely printable bytes to {@code '\' + upperCaseHexBytes(byte)}.
-     * <p>
-     * A save length of {@code out} is {@code len * 3 + outoff}.
-     * <p>
+     * <br>
      * The reverse-method is {@link #unescapeBytes(String, String)}.
+     * <br>
+     * The returned byte array is started with aligned sequence {@code header} and finished by {@code \n}.
      *
-     * @param out output buffer
-     * @param outoff offset in the output buffer
+     * @param header prefix header
      * @param input input buffer
      * @param off offset in the input buffer
      * @param len number of bytes to copy from the input buffer
      * @return number of bytes written to {@code out}
+     * @throws NullPointerException if the specified parameter {@code header} or {@code input} is null
+     * @throws IndexOutOfBoundsException if {@code off} or {@code len} is out of range
+     *         ({@code off < 0 || len < 0 || off >= input.length || len > input.length || off > len})
      */
     @SuppressWarnings( "checkstyle:magicnumber" )
-    public static int escapeBytesToPrintable( byte[] out, int outoff, byte[] input, int off, int len )
+    public static EncodedArray escapeBytesToPrintable( final byte[] header, final byte[] input, final int off,
+                                                       final int len )
     {
-        if ( out == null )
+        if ( off < 0 || len < 0 || off >= input.length || len > input.length || off > len )
         {
-            throw new IllegalArgumentException( "The output array must not be null" );
+            throw new IndexOutOfBoundsException(
+                    "off < 0 || len < 0 || off >= input.length || len > input.length || off > len" );
         }
-        if ( input == null || input.length == 0 )
-        {
-            return 0;
-        }
-        int outputPos = outoff;
-        int end = off + len;
+        // Hex-escaping can be up to 3 times length of a regular byte. Last character is '\n', see (+1).
+        final byte[] encodeBytes = new byte[header.length + 3 * len + 1];
+        System.arraycopy( header, 0, encodeBytes, 0, header.length );
+        int outputPos = header.length;
+        final int end = off + len;
         for ( int i = off; i < end; i++ )
         {
-            byte b = input[i];
+            final byte b = input[i];
 
             // handle non-nicely printable bytes
             if ( b < 32 || b > 126 || b == '\\' || b == ',' )
             {
-                int upper = ( 0xF0 & b ) >> 4;
-                int lower = ( 0x0F & b );
-                out[outputPos++] = '\\';
-                out[outputPos++] = HEX_CHARS[upper];
-                out[outputPos++] = HEX_CHARS[lower];
+                final int upper = ( 0xF0 & b ) >> 4;
+                final int lower = ( 0x0F & b );
+                encodeBytes[outputPos++] = '\\';
+                encodeBytes[outputPos++] = HEX_CHARS[upper];
+                encodeBytes[outputPos++] = HEX_CHARS[lower];
             }
             else
             {
-                out[outputPos++] = b;
+                encodeBytes[outputPos++] = b;
             }
         }
+        encodeBytes[outputPos++] = (byte) '\n';
 
-        return outputPos - outoff;
+        return new EncodedArray( encodeBytes, outputPos );
     }
 
     /**
-     * Reverses the effect of {@link #escapeBytesToPrintable(byte[], int, byte[], int, int)}.
+     * Reverses the effect of {@link #escapeBytesToPrintable(byte[], byte[], int, int)}.
      *
      * @param str the input String
      * @param charsetName the charset name
@@ -347,6 +351,31 @@ public final class StringUtils
                 }
             }
             return true;
+        }
+    }
+
+    /**
+     * Escaped string to byte array with offset 0 and certain length.
+     */
+    public static final class EncodedArray
+    {
+        private final byte[] array;
+        private final int size;
+
+        private EncodedArray( byte[] array, int size )
+        {
+            this.array = array;
+            this.size = size;
+        }
+
+        public byte[] getArray()
+        {
+            return array;
+        }
+
+        public int getSize()
+        {
+            return size;
         }
     }
 }

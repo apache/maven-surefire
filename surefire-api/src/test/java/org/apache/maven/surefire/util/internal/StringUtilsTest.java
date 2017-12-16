@@ -19,9 +19,13 @@ package org.apache.maven.surefire.util.internal;
  * under the License.
  */
 
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
 import junit.framework.TestCase;
+import org.apache.maven.surefire.util.internal.StringUtils.EncodedArray;
+
+import static org.junit.Assert.assertArrayEquals;
 
 /**
  * @author Andreas Gudian
@@ -76,21 +80,34 @@ public class StringUtilsTest
             input[i] = b;
         }
 
-        byte[] escaped = new byte[input.length * 3];
+        EncodedArray encodedArray = StringUtils.escapeBytesToPrintable( new byte[0], input, 0, input.length );
 
-        int escapedBytes = StringUtils.escapeBytesToPrintable( escaped, 0, input, 0, input.length );
+        String escapedString = new String( encodedArray.getArray(), 0, encodedArray.getSize() );
 
-        String escapedString = new String( escaped, 0, escapedBytes );
+        assertEquals( encodedArray.getSize(), escapedString.length() );
 
-        assertEquals( escapedBytes, escapedString.length() );
+        ByteBuffer unescaped = StringUtils.unescapeBytes( escapedString, Charset.defaultCharset().name() );
 
-        java.nio.ByteBuffer unescaped = StringUtils.unescapeBytes( escapedString, Charset.defaultCharset().name() );
-
-        assertEquals( input.length, unescaped.remaining() - unescaped.position() );
+        assertEquals( input.length + 1, unescaped.remaining() - unescaped.position() );
 
         for ( int i = 0; i < input.length; i++ )
         {
             assertEquals( "At position " + i, input[i], unescaped.get() );
         }
+    }
+
+    public void testEscapeWithHeader()
+    {
+        byte[] header = { (byte) 'a' };
+        byte[] input = { (byte) '1' };
+
+        EncodedArray encodedArray = StringUtils.escapeBytesToPrintable( header, input, 0, input.length );
+        assertEquals( 3, encodedArray.getSize() );
+
+        byte[] expectedResult = new byte[] { (byte) 'a', (byte) '1', (byte) '\n' };
+        byte[] actualResult = new byte[encodedArray.getSize()];
+        System.arraycopy( encodedArray.getArray(), 0, actualResult, 0, encodedArray.getSize() );
+
+        assertArrayEquals( expectedResult, actualResult );
     }
 }

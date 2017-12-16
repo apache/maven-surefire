@@ -29,6 +29,7 @@ import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.report.TestSetReportEntry;
+import org.apache.maven.surefire.util.internal.StringUtils.EncodedArray;
 
 import java.io.PrintStream;
 import java.util.Map.Entry;
@@ -188,7 +189,7 @@ public class ForkingRunListener
         encodeAndWriteToTarget( toString( BOOTERCODE_STOP_ON_NEXT_TEST, new SimpleReportEntry(), testSetChannelId ) );
     }
 
-    void sendProps()
+    private void sendProps()
     {
         for ( Entry<String, String> entry : systemProps().entrySet() )
         {
@@ -200,18 +201,11 @@ public class ForkingRunListener
     @Override
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
-        byte[] header = stdout ? stdOutHeader : stdErrHeader;
-        byte[] content =
-            new byte[buf.length * 3 + 1]; // Hex-escaping can be up to 3 times length of a regular byte.
-        int i = escapeBytesToPrintable( content, 0, buf, off, len );
-        content[i++] = (byte) '\n';
-        byte[] encodeBytes = new byte[header.length + i];
-        System.arraycopy( header, 0, encodeBytes, 0, header.length );
-        System.arraycopy( content, 0, encodeBytes, header.length, i );
+        EncodedArray encodedArray = escapeBytesToPrintable( stdout ? stdOutHeader : stdErrHeader, buf, off, len );
 
         synchronized ( target ) // See notes about synchronization/thread safety in class javadoc
         {
-            target.write( encodeBytes, 0, encodeBytes.length );
+            target.write( encodedArray.getArray(), 0, encodedArray.getSize() );
             target.flush();
             if ( target.checkError() )
             {
@@ -361,28 +355,19 @@ public class ForkingRunListener
         stringBuilder.append( "," );
     }
 
-    private ForkingRunListener append( StringBuilder stringBuilder, String message )
+    private void append( StringBuilder stringBuilder, String message )
     {
         stringBuilder.append( encode( message ) );
-        return this;
     }
 
-    private ForkingRunListener append( StringBuilder stringBuilder, byte b )
+    private void append( StringBuilder stringBuilder, byte b )
     {
         stringBuilder.append( (char) b );
-        return this;
     }
 
     private void nullableEncoding( StringBuilder stringBuilder, Integer source )
     {
-        if ( source == null )
-        {
-            stringBuilder.append( "null" );
-        }
-        else
-        {
-            stringBuilder.append( source.toString() );
-        }
+        stringBuilder.append( source == null ? "null" : source.toString() );
     }
 
     private String encode( String source )
