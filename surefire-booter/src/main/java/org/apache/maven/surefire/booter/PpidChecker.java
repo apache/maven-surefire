@@ -54,8 +54,9 @@ final class PpidChecker
 
     /**
      * The etime is in the form of [[dd-]hh:]mm:ss on Unix like systems.
+     * See the workaround https://issues.apache.org/jira/browse/SUREFIRE-1451.
      */
-    static final Pattern UNIX_CMD_OUT_PATTERN = compile( "^(((\\d+)-)?(\\d{2}):)?(\\d{2}):(\\d{2})$" );
+    static final Pattern UNIX_CMD_OUT_PATTERN = compile( "^(((\\d+)-)?(\\d{1,2}):)?(\\d{1,2}):(\\d{1,2})$" );
 
     private final long pluginPid;
 

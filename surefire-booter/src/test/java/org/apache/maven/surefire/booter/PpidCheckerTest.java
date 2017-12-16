@@ -144,5 +144,13 @@ public class PpidCheckerTest
         assertThat( PpidChecker.fromHours( m ) ).isEqualTo( 3600L );
         assertThat( PpidChecker.fromMinutes( m ) ).isEqualTo( 300L );
         assertThat( PpidChecker.fromSeconds( m ) ).isEqualTo( 38L );
+
+        m = PpidChecker.UNIX_CMD_OUT_PATTERN.matcher( "02-1:5:3" );
+        assertThat( m.matches() )
+                .isTrue();
+        assertThat( PpidChecker.fromDays( m ) ).isEqualTo( 2 * 24 * 3600L );
+        assertThat( PpidChecker.fromHours( m ) ).isEqualTo( 3600L );
+        assertThat( PpidChecker.fromMinutes( m ) ).isEqualTo( 300L );
+        assertThat( PpidChecker.fromSeconds( m ) ).isEqualTo( 3L );
     }
 }
