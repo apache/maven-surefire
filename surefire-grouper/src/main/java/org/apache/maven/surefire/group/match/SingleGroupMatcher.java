@@ -139,7 +139,8 @@ public class SingleGroupMatcher
         }
         catch ( ClassNotFoundException e )
         {
-            throw new RuntimeException( "Unable to load category: " + enabled, e );
+            // class is not available at runtime, for instance this would happen in reactor projects
+            // in which not all modules have the required class on the classpath/module path
         }
     }
 }

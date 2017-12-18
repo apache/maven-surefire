@@ -47,14 +47,49 @@ public class JUnit48TestCategoriesIT
     public void testCategoriesABForkAlways()
         throws Exception
     {
-        runAB( unpacked() );
+        runAB( unpacked().forkAlways() );
     }
 
     @Test
-    public void testCategoriesAC()
+    public void testCategoriesACFullyQualifiedClassName()
         throws Exception
     {
-        runAC( unpacked() );
+        runACFullyQualifiedClassName( unpacked() );
+    }
+
+    @Test
+    public void testCategoriesACFullyQualifiedClassNameForkAlways()
+        throws Exception
+    {
+        runACFullyQualifiedClassName( unpacked().forkAlways() );
+    }
+
+    @Test
+    public void testCategoriesACClassNameSuffix()
+        throws Exception
+    {
+        runACClassNameSuffix( unpacked() );
+    }
+
+    @Test
+    public void testCategoriesACClassNameSuffixForkAlways()
+        throws Exception
+    {
+        runACClassNameSuffix( unpacked().forkAlways() );
+    }
+
+    @Test
+    public void testCategoriesBadCategory()
+        throws Exception
+    {
+        runBadCategory( unpacked() );
+    }
+
+    @Test
+    public void testBadCategoryForkAlways()
+        throws Exception
+    {
+        runBadCategory( unpacked().forkAlways() );
     }
 
     private void runAB( SurefireLauncher unpacked )
@@ -64,24 +99,34 @@ public class JUnit48TestCategoriesIT
                 "catA: 1" ).verifyTextInLog( "catB: 1" ).verifyTextInLog( "catC: 0" ).verifyTextInLog( "catNone: 0" );
     }
 
-    @Test
-    public void testCategoriesACForkAlways()
+    private void runACClassNameSuffix( SurefireLauncher unpacked )
         throws Exception
     {
-        runAC( unpacked().forkAlways() );
+        unpacked.groups(
+            "CategoryA,CategoryC" ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 6, 0, 0, 0 ).verifyTextInLog(
+            "catA: 1" ).verifyTextInLog( "catB: 0" ).verifyTextInLog( "catC: 1" ).verifyTextInLog(
+            "catNone: 0" ).verifyTextInLog( "mA: 1" ).verifyTextInLog(
+            "mB: 1" ) // This seems questionable !? The class is annotated with category C and method with B
+            .verifyTextInLog( "mC: 1" ).verifyTextInLog( "CatNone: 1" );
     }
 
-
-    private void runAC( SurefireLauncher surefireLauncher )
+    private void runACFullyQualifiedClassName( SurefireLauncher unpacked )
         throws Exception
     {
-        surefireLauncher.groups(
+        unpacked.groups(
             "junit4.CategoryA,junit4.CategoryC" ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 6, 0, 0,
                                                                                                              0 ).verifyTextInLog(
             "catA: 1" ).verifyTextInLog( "catB: 0" ).verifyTextInLog( "catC: 1" ).verifyTextInLog(
             "catNone: 0" ).verifyTextInLog( "mA: 1" ).verifyTextInLog(
             "mB: 1" ) // This seems questionable !? The class is annotated with category C and method with B
             .verifyTextInLog( "mC: 1" ).verifyTextInLog( "CatNone: 1" );
+    }
+
+    private void runBadCategory( SurefireLauncher unpacked )
+        throws Exception
+    {
+        unpacked.failIfNoTests(false).groups(
+            "BadCategory" ).executeTest().verifyErrorFreeLog();
     }
 
     private SurefireLauncher unpacked()
