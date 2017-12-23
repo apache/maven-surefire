@@ -28,6 +28,7 @@ import java.util.Set;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import org.junit.runner.Description;
+import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.Failure;
 
 import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
@@ -168,4 +169,8 @@ public final class JUnit4ProviderUtil
         return isBlank( s ) ? null : s;
     }
 
+    public static Filter createMatchDescriptionsFilter( Iterable<Description> descriptions )
+    {
+        return new MatchDescriptions( descriptions );
+    }
 }
