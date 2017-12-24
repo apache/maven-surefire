@@ -26,6 +26,7 @@ import org.junit.runner.notification.Failure;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,6 +71,34 @@ public class JUnit4ProviderUtilTest
         assertEquals( expectedResultForT1, resultForT1 );
         assertEquals( expectedResultForT2, resultForT2 );
     }
+
+    public void testGenerateFailingTestDescriptions() throws TestSetFailedException
+    {
+        List<Failure> failures = new ArrayList<Failure>(  );
+
+        Description test1Description = Description.createTestDescription( T1.class, "testOne" );
+        Description test2Description = Description.createTestDescription( T1.class, "testTwo" );
+        Description test3Description = Description.createTestDescription( T2.class, "testThree" );
+        Description test4Description = Description.createTestDescription( T2.class, "testFour" );
+        Description test5Description = Description.createSuiteDescription( "Test mechanism" );
+
+        failures.add( new Failure( test1Description, new AssertionError() ) );
+        failures.add( new Failure( test2Description, new AssertionError() ) );
+        failures.add( new Failure( test3Description, new RuntimeException() ) );
+        failures.add( new Failure( test4Description, new AssertionError() ) );
+        failures.add( new Failure( test5Description, new RuntimeException() ) );
+
+        Set<Description> result =  generateFailingTestDescriptions( failures );
+
+        assertEquals( 4, result.size() );
+
+        assertTrue( result.contains( test1Description) );
+        assertTrue( result.contains( test2Description) );
+        assertTrue( result.contains( test3Description) );
+        assertTrue( result.contains( test4Description) );
+
+    }
+
 
     public void testIllegalTestDescription$NegativeTest()
     {

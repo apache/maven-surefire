@@ -23,10 +23,10 @@ import org.apache.maven.surefire.group.match.GroupMatcher;
 import org.apache.maven.surefire.group.parse.GroupMatcherParser;
 import org.apache.maven.surefire.group.parse.ParseException;
 import org.apache.maven.surefire.testset.TestListResolver;
+import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
 
 import java.util.Map;
-import java.util.Set;
 
 import static org.apache.maven.surefire.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
 import static org.apache.maven.surefire.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
@@ -118,9 +118,9 @@ public class FilterFactory
         return new MethodFilter( resolver );
     }
 
-    public Filter createFailingMethodFilter( Map<Class<?>, Set<String>> failingClassMethodMap )
+    public Filter createMatchDescriptionsFilter(Iterable<Description> descriptions )
     {
-        return new FailingMethodFilter( failingClassMethodMap );
+        return new MatchDescriptions( descriptions );
     }
 
     public Filter and( Filter filter1, Filter filter2 )
