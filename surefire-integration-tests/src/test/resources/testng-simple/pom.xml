@@ -74,6 +74,7 @@
 
   <properties>
     <surefire.testng.verbose>0</surefire.testng.verbose>
+    <argLine/>
   </properties>
 
   <build>
@@ -92,6 +93,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire.version}</version>
         <configuration>
+          <argLine>${argLine} ${jacoco.agent}</argLine>
           <runOrder>reversealphabetical</runOrder>
           <properties>
             <property>

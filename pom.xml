@@ -433,7 +433,7 @@
           <configuration>
             <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
             <useSystemClassLoader>false</useSystemClassLoader>
-            <argLine>-Xms128m -Xmx128m</argLine>
+            <argLine>-Xms128m -Xmx144m ${jacoco.agent}</argLine>
           </configuration>
         </plugin>
         <plugin>
@@ -463,14 +463,6 @@
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
           <version>0.7.9</version>
-          <configuration>
-            <includes>
-              <include>**/failsafe/*</include>
-              <include>**/failsafe/**/*</include>
-              <include>**/surefire/*</include>
-              <include>**/surefire/**/*</include>
-            </includes>
-          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -480,6 +472,31 @@
       </plugins>
     </pluginManagement>
     <plugins>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>jacoco-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <propertyName>jacoco.agent</propertyName>
+          <append>true</append>
+          <inclNoLocationClasses>true</inclNoLocationClasses>
+          <haltOnFailure>false</haltOnFailure>
+          <jmx>false</jmx>
+          <includes>
+            <include>**/failsafe/*</include>
+            <include>**/failsafe/**/*</include>
+            <include>**/surefire/*</include>
+            <include>**/surefire/**/*</include>
+          </includes>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
@@ -688,34 +705,6 @@
               <mojoExecutions>
                 <mojoExecution>org.apache.maven.plugins:maven-resources-plugin::</mojoExecution>
               </mojoExecutions>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>jenkins</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>jacoco-agent</id>
-                <goals>
-                  <goal>prepare-agent</goal>
-                </goals>
-                <configuration>
-                  <propertyName>jacoco.agent</propertyName>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <argLine>-Xms128m -Xmx144m ${jacoco.agent}</argLine>
             </configuration>
           </plugin>
         </plugins>

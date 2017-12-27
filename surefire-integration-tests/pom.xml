@@ -117,6 +117,7 @@
             <testBuildDirectory>${project.build.testOutputDirectory}</testBuildDirectory>
             <verifier.forkMode>${verifier.forkMode}</verifier.forkMode>
             <jdk.home>${jdk.home}</jdk.home>
+            <jacoco.agent>${jacoco-it.agent}</jacoco.agent>
           </systemPropertyVariables>
           <redirectTestOutputToFile>false</redirectTestOutputToFile>
         </configuration>
@@ -163,6 +164,27 @@
         </configuration>
       </plugin>
       <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>jacoco-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>jacoco-agent-it</id>
+            <goals>
+              <goal>prepare-agent-integration</goal>
+            </goals>
+            <configuration>
+              <propertyName>jacoco-it.agent</propertyName>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-install-plugin</artifactId>
         <configuration>
           <skip>true</skip>
@@ -207,37 +229,6 @@
       <properties>
         <verifier.forkMode>auto</verifier.forkMode>
       </properties>
-    </profile>
-    <profile>
-      <id>jenkins</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>jacoco-agent</id>
-                <goals>
-                  <goal>prepare-agent</goal>
-                </goals>
-                <configuration>
-                  <skip>true</skip>
-                </configuration>
-              </execution>
-              <execution>
-                <id>jacoco-agent-it</id>
-                <goals>
-                  <goal>prepare-agent-integration</goal>
-                </goals>
-                <configuration>
-                  <propertyName>argLine</propertyName>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
   </profiles>
 </project>

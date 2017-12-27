@@ -23,9 +23,8 @@ import org.apache.maven.it.VerificationException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-
-import static java.util.Collections.singletonList;
 
 /**
  * Encapsulate all needed features to start a surefire run
@@ -119,7 +118,17 @@ public final class SurefireLauncher
 
     private List<String> getInitialGoals()
     {
-        return singletonList( "-Dsurefire.version=" + surefireVersion );
+        List<String> goals = new ArrayList<>();
+
+        goals.add( "-Dsurefire.version=" + surefireVersion );
+
+        String jacocoAgent = System.getProperty( "jacoco.agent", "" );
+        if ( !jacocoAgent.isEmpty() )
+        {
+            goals.add( "-Djacoco.agent=" + jacocoAgent );
+        }
+
+        return goals;
     }
 
     public SurefireLauncher showErrorStackTraces()

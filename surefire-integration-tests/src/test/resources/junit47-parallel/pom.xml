@@ -26,11 +26,13 @@
     <version>1.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
+
   <groupId>org.apache.maven.plugins.surefire</groupId>
   <artifactId>junit47-parallel</artifactId>
   <version>1.0-SNAPSHOT</version>
   <name>junit47-parallel</name>
   <url>http://maven.apache.org</url>
+
   <developers>
     <developer>
       <id>tibordigana</id>
@@ -49,6 +51,11 @@
       <version>4.8.1</version>
     </dependency>
   </dependencies>
+
+  <properties>
+    <argLine/>
+  </properties>
+
   <build>
     <plugins>
       <plugin>
@@ -60,6 +67,9 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>${argLine} ${jacoco.agent}</argLine>
+        </configuration>
       </plugin>
     </plugins>
   </build>
