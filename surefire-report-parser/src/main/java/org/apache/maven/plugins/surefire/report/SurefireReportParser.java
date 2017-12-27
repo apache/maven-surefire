@@ -204,24 +204,20 @@ public final class SurefireReportParser
 
     public List<ReportTestCase> getFailureDetails( List<ReportTestSuite> testSuites )
     {
-        List<ReportTestCase> failureDetailList = new ArrayList<ReportTestCase>();
+        List<ReportTestCase> failureDetails = new ArrayList<ReportTestCase>();
 
         for ( ReportTestSuite suite : testSuites )
         {
-            List<ReportTestCase> testCases = suite.getTestCases();
-            if ( testCases != null )
+            for ( ReportTestCase tCase : suite.getTestCases() )
             {
-                for ( ReportTestCase tCase : testCases )
+                if ( !tCase.isSuccessful() )
                 {
-                    if ( tCase.hasFailure() )
-                    {
-                        failureDetailList.add( tCase );
-                    }
+                    failureDetails.add( tCase );
                 }
             }
         }
 
-        return failureDetailList;
+        return failureDetails;
     }
 
     /**

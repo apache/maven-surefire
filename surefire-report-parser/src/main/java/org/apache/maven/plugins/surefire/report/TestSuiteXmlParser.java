@@ -197,13 +197,13 @@ public final class TestSuiteXmlParser
                 }
                 else if ( "error".equals( qName ) )
                 {
-                    testCase.setFailure( attributes.getValue( "message" ), attributes.getValue( "type" ) );
+                    testCase.setError( attributes.getValue( "message" ), attributes.getValue( "type" ) );
                     currentSuite.incrementNumberOfErrors();
                 }
                 else if ( "skipped".equals( qName ) )
                 {
-                    final String message = attributes.getValue( "message" );
-                    testCase.setFailure( message != null ? message : "skipped", "skipped" );
+                    String message = attributes.getValue( "message" );
+                    testCase.setSkipped( message != null ? message : "skipped" );
                     currentSuite.incrementNumberOfSkipped();
                 }
                 else if ( "flakyFailure".equals( qName ) || "flakyError".equals( qName ) )

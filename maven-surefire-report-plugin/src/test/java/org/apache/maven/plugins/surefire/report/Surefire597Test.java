@@ -118,7 +118,6 @@ public class Surefire597Test
                 + "<tr class=\"a\">\n"
                 + "<td></td>\n"
                 + "<td>\n"
-                + "<div id=\"testerror\">surefire.MyTest:13</div></td></tr></table>" ) ) );
-
+                + "<div id=\"test-error\">surefire.MyTest:13</div></td></tr></table>" ) ) );
     }
 }

@@ -188,6 +188,7 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 0 ).getFailureMessage(), is( "<" ) );
         assertThat( tests.get( 0 ).getFullName(), is( "wellFormedXmlFailures.TestSurefire3.testLower" ) );
         assertThat( tests.get( 0 ).getFailureType(), is( "junit.framework.AssertionFailedError" ) );
+        assertThat( tests.get( 0 ).hasError(), is( false ) );
 
         assertThat( tests.get( 1 ).getFullClassName(), is( "wellFormedXmlFailures.TestSurefire3" ) );
         assertThat( tests.get( 1 ).getName(), is( "testU0000" ) );
@@ -201,6 +202,7 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 1 ).getFailureMessage(), is( "&0#;" ) );
         assertThat( tests.get( 1 ).getFullName(), is( "wellFormedXmlFailures.TestSurefire3.testU0000" ) );
         assertThat( tests.get( 1 ).getFailureType(), is( "junit.framework.AssertionFailedError" ) );
+        assertThat( tests.get( 1 ).hasError(), is( false ) );
 
         assertThat( tests.get( 2 ).getFullClassName(), is( "wellFormedXmlFailures.TestSurefire3" ) );
         assertThat( tests.get( 2 ).getName(), is( "testGreater" ) );
@@ -214,6 +216,7 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 2 ).getFailureMessage(), is( ">" ) );
         assertThat( tests.get( 2 ).getFullName(), is( "wellFormedXmlFailures.TestSurefire3.testGreater" ) );
         assertThat( tests.get( 2 ).getFailureType(), is( "junit.framework.AssertionFailedError" ) );
+        assertThat( tests.get( 2 ).hasError(), is( false ) );
 
         assertThat( tests.get( 3 ).getFullClassName(), is( "wellFormedXmlFailures.TestSurefire3" ) );
         assertThat( tests.get( 3 ).getName(), is( "testQuote" ) );
@@ -227,6 +230,7 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 3 ).getFailureMessage(), is( "\"" ) );
         assertThat( tests.get( 3 ).getFullName(), is( "wellFormedXmlFailures.TestSurefire3.testQuote" ) );
         assertThat( tests.get( 3 ).getFailureType(), is( "junit.framework.AssertionFailedError" ) );
+        assertThat( tests.get( 3 ).hasError(), is( false ) );
     }
 
     @Test
@@ -267,7 +271,7 @@ public class TestSuiteXmlParserTest
         assertThat( suite.getPackageName(), is( "umlautTest" ) );
         assertThat( suite.getName(), is( "BasicTest" ) );
         ReportTestCase test = suite.getTestCases().iterator().next();
-        assertFalse( test.hasFailure() );
+        assertTrue( test.isSuccessful() );
         assertNull( test.getFailureDetail() );
         assertNull( test.getFailureErrorLine() );
         assertNull( test.getFailureType() );
@@ -375,7 +379,7 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 0 ).getPackageName(), is( "surefire" ) );
         assertThat( tests.get( 0 ).getNumberOfTests(), is( 1 ) );
         assertThat( tests.get( 0 ).getTestCases().size(), is( 1 ) );
-        assertTrue( tests.get( 0 ).getTestCases().get( 0 ).hasFailure() );
+        assertFalse( tests.get( 0 ).getTestCases().get( 0 ).isSuccessful() );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureErrorLine(), is( "13" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureType(), is( "java.lang.RuntimeException" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFullClassName(), is( "surefire.MyTest" ) );
@@ -420,6 +424,7 @@ public class TestSuiteXmlParserTest
         + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
         + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
         + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)" ) );
+        assertThat( tests.get( 0 ).getTestCases().get( 0 ).hasError(), is( true ) );
     }
 
     @Test
@@ -439,7 +444,7 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 0 ).getPackageName(), is( "surefire" ) );
         assertThat( tests.get( 0 ).getNumberOfTests(), is( 1 ) );
         assertThat( tests.get( 0 ).getTestCases().size(), is( 1 ) );
-        assertTrue( tests.get( 0 ).getTestCases().get( 0 ).hasFailure() );
+        assertFalse( tests.get( 0 ).getTestCases().get( 0 ).isSuccessful() );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureErrorLine(), is( "45" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureType(),
                     is( "java.lang.RuntimeException" ) );
@@ -496,6 +501,7 @@ public class TestSuiteXmlParserTest
         + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
         + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
         + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)\n" ) );
+        assertThat( tests.get( 0 ).getTestCases().get( 0 ).hasError(), is( true ) );
     }
 
     @Test
@@ -515,7 +521,7 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 0 ).getPackageName(), is( "surefire" ) );
         assertThat( tests.get( 0 ).getNumberOfTests(), is( 1 ) );
         assertThat( tests.get( 0 ).getTestCases().size(), is( 1 ) );
-        assertTrue( tests.get( 0 ).getTestCases().get( 0 ).hasFailure() );
+        assertFalse( tests.get( 0 ).getTestCases().get( 0 ).isSuccessful() );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureErrorLine(), is( "45" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureType(),
                     is( "java.lang.RuntimeException" ) );
@@ -538,6 +544,7 @@ public class TestSuiteXmlParserTest
                             + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
                             + "\tat surefire.MyTest.access$200(MyTest.java:9)\n"
                             + "\tat surefire.MyTest$A.t(MyTest.java:45)\n" ) );
+        assertThat( tests.get( 0 ).getTestCases().get( 0 ).hasError(), is( true ) );
     }
 
     @Test
@@ -557,7 +564,7 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 0 ).getPackageName(), is( "surefire" ) );
         assertThat( tests.get( 0 ).getNumberOfTests(), is( 1 ) );
         assertThat( tests.get( 0 ).getTestCases().size(), is( 1 ) );
-        assertTrue( tests.get( 0 ).getTestCases().get( 0 ).hasFailure() );
+        assertFalse( tests.get( 0 ).getTestCases().get( 0 ).isSuccessful() );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureErrorLine(), is( "13" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureType(),
                     is( "java.lang.RuntimeException" ) );
@@ -605,6 +612,7 @@ public class TestSuiteXmlParserTest
         + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
         + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
         + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)" ) );
+        assertThat( tests.get( 0 ).getTestCases().get( 0 ).hasError(), is( true ) );
     }
 
     @Test
@@ -624,7 +632,7 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 0 ).getPackageName(), is( "surefire" ) );
         assertThat( tests.get( 0 ).getNumberOfTests(), is( 1 ) );
         assertThat( tests.get( 0 ).getTestCases().size(), is( 1 ) );
-        assertTrue( tests.get( 0 ).getTestCases().get( 0 ).hasFailure() );
+        assertFalse( tests.get( 0 ).getTestCases().get( 0 ).isSuccessful() );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureErrorLine(), is( "13" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureType(),
                     is( "java.lang.RuntimeException" ) );
@@ -648,6 +656,7 @@ public class TestSuiteXmlParserTest
                             + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
                             + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
                             + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)" ) );
+        assertThat( tests.get( 0 ).getTestCases().get( 0 ).hasError(), is( true ) );
     }
 
     @Test

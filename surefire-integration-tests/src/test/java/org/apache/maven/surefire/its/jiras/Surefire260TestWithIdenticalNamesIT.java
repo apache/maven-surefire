@@ -31,6 +31,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -59,8 +60,10 @@ public class Surefire260TestWithIdenticalNamesIT
         final HtmlPage page = webClient.getPage( uri.toURL() );
 
         final HtmlAnchor a =
-            (HtmlAnchor) page.getByXPath( "//a[@href = \"javascript:toggleDisplay('surefire260.TestB.testDup');\"]" ).get( 0 );
-        final HtmlDivision content = (HtmlDivision) page.getElementById( "surefire260.TestB.testDuperror" );
+            (HtmlAnchor) page.getByXPath( "//a[@href = \"javascript:toggleDisplay('surefire260.TestB.testDup');\"]" )
+                    .get( 0 );
+        final HtmlDivision content = (HtmlDivision) page.getElementById( "surefire260.TestB.testDup-failure" );
+        assertNotNull( content );
         assertTrue( content.getAttribute( "style" ).contains( "none" ) );
         a.click();
         assertFalse( content.getAttribute( "style" ).contains( "none" ) );

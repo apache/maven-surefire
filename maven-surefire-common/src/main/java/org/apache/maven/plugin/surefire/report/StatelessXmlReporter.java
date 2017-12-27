@@ -392,9 +392,9 @@ public class StatelessXmlReporter
             {
                 if ( t.getMessage() != null )
                 {
-                    ppw.addAttribute( "type", ( stackTrace.contains( ":" )
-                        ? stackTrace.substring( 0, stackTrace.indexOf( ":" ) )
-                        : stackTrace ) );
+                    int delimiter = stackTrace.indexOf( ":" );
+                    String type = delimiter == -1 ? stackTrace : stackTrace.substring( 0, delimiter );
+                    ppw.addAttribute( "type", type );
                 }
                 else
                 {
