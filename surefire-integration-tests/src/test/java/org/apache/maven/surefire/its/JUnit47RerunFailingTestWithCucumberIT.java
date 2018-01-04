@@ -19,7 +19,6 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
@@ -40,7 +39,7 @@ public class JUnit47RerunFailingTestWithCucumberIT
 
     @Before
     public void assumeJdk17() {
-        assumeJavaVersion(JAVA_1_7);
+        assumeJavaVersion(1.7d);
     }
 
 
