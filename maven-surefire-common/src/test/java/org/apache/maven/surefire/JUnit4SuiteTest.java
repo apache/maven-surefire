@@ -70,7 +70,7 @@ public class JUnit4SuiteTest extends TestCase
         suite.addTestSuite( SurefirePropertiesTest.class );
         suite.addTestSuite( SpecificFileFilterTest.class );
         suite.addTest( new JUnit4TestAdapter( DirectoryScannerTest.class ) );
-        suite.addTestSuite( DependenciesScannerTest.class );
+        suite.addTest( new JUnit4TestAdapter( DependenciesScannerTest.class ) );
         suite.addTestSuite( RunEntryStatisticsMapTest.class );
         suite.addTestSuite( WrappedReportEntryTest.class );
         suite.addTestSuite( StatelessXmlReporterTest.class );

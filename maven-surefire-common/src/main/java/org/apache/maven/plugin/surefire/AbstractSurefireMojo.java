@@ -714,12 +714,28 @@ public abstract class AbstractSurefireMojo
     /**
      * List of dependencies to scan for test classes to include in the test run.
      * The child elements of this element must be &lt;dependency&gt; elements, and the
-     * contents of each of these elements must be a string which follows the format:
-     * <br>
-     * <i>groupId:artifactId</i>. For example: <i>org.acme:project-a</i>.
-     * <br>
-     * Since version 2.22.0 you can scan for test classes from a project
-     * dependency of your multi-module project.
+     * contents of each of these elements must be a string which follows the general form:
+     *
+     * <p>{@code groupId[:artifactId[:type[:classifier][:version]]]}</p>
+     *
+     * <p>The wildcard character <code>*</code> can be used within the sub parts of those composite identifiers to
+     * do glob-like pattern matching. The classifier may be omitted when matching dependencies without a classifier.</p>
+     *
+     * <p>Examples:</p>
+     *
+     * <ul>
+     *     <li>{@code group} or, equivalently, {@code group:*}</li>
+     *     <li>{@code g*p:*rtifac*}</li>
+     *     <li>{@code group:*:jar}</li>
+     *     <li>{@code group:artifact:*:1.0.0} (no classifier)</li>
+     *     <li>{@code group:*:test-jar:tests}</li>
+     *     <li>{@code *:artifact:*:*:1.0.0}</li>
+     * </ul>
+     *
+     * <p>Since version 2.22.0 you can scan for test classes from a project
+     * dependency of your multi-module project.</p>
+     *
+     * <p>In versions before 3.0.0-M4, only <code>groupId:artifactId</code> is supported.</p>
      *
      * @since 2.15
      */

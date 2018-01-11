@@ -1,0 +1,66 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>surefire-1004-RunTestFromDependencyJarsTypeAndClassifier</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+
+    <groupId>org.apache.maven.plugins.surefire.dependency-jar</groupId>
+    <artifactId>surefire-1004-module1</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.1</version>
+            <type>jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.maven.plugins.surefire.dependency-jar</groupId>
+            <artifactId>surefire-1004-testjar</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.plugins.surefire.dependency-jar</groupId>
+            <artifactId>surefire-1004-testjar</artifactId>
+            <version>${project.version}</version>
+            <classifier>othertests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.plugins.surefire.dependency-jar</groupId>
+            <artifactId>surefire-1004-testjar</artifactId>
+            <version>${project.version}</version>
+            <classifier>classifiedtests</classifier>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>*TestA*</include>
+                    </includes>
+                    <!-- Tests from othertests should not run -->
+                    <dependenciesToScan>
+                        <dependency>org.apache.maven.plugins.surefire.dependency-jar:surefire-1004-testjar:test-jar</dependency>
+                        <dependency>org.apache.maven.plugins.surefire.dependency-jar:surefire-1004-testjar:*:classifiedtests</dependency>
+                    </dependenciesToScan>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -209,4 +209,44 @@ Inclusions and Exclusions of Tests
   Multiple formats can be additionally combined.
   This syntax can be used in parameters: <<<test>>>, <<<includes>>>, <<<excludes>>>, <<<includesFile>>>, <<<excludesFile>>>.
 
+* Tests from dependencies
+
+  By default, ${thisPlugin} will only scan for test classes to execute in the configured <<<testSourceDirectory>>>. To
+  have the plugin scan dependencies to find test classes to execute, use the <<<dependenciesToScan>>> configuration.
+  Dependencies can be specified using the <<<groupId[:artifactId[:type[:classifier][:version]]]>>> format, and must already
+  be <<<dependency>>> elements in scope.
+  
+  <Note:> Support for version, type and classifier was introduced in version <<<3.0.0-M4>>>. When using earlier versions,
+  ${thisPlugin} will fail with an <<<IllegalArgumentException>>> if more than groupId and artifactId are specified.
+  
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <dependenciesToScan>
+            <dependency>org.acme:project-a</dependency>
+            <dependency>org.acme:project-b:test-jar</dependency>
+            <dependency>org.acme:project-c:*:tests-jdk15</dependency>
+          </dependenciesToScan>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+
+
+  The configuration above will search for test classes in:
+
+    * All dependencies with the groupId <<<org.acme>>> and artifactId <<<project-a>>>
+
+    * All dependencies with the groupId <<<org.acme>>> and artifactId <<<project-b>>> and type <<<test-jar>>>
+
+    * All dependencies with the groupId <<<org.acme>>> and artifactId <<<project-c>>> and classifier <<<tests-jdk15>>>
 

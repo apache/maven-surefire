@@ -19,12 +19,17 @@ package org.apache.maven.plugin.surefire.util;
  * under the License.
  */
 
-import static org.apache.maven.plugin.surefire.util.ScannerUtil.convertJarFileResourceToJavaClassName;
-import static org.apache.maven.plugin.surefire.util.ScannerUtil.isJavaClassFile;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
+import org.apache.maven.surefire.testset.TestFilter;
+import org.apache.maven.surefire.testset.TestListResolver;
+import org.apache.maven.surefire.util.DefaultScanResult;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -32,11 +37,8 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.surefire.testset.TestFilter;
-import org.apache.maven.surefire.testset.TestListResolver;
-import org.apache.maven.surefire.util.DefaultScanResult;
+import static org.apache.maven.plugin.surefire.util.ScannerUtil.convertJarFileResourceToJavaClassName;
+import static org.apache.maven.plugin.surefire.util.ScannerUtil.isJavaClassFile;
 
 /**
  * Scans dependencies looking for tests.
@@ -93,28 +95,29 @@ public class DependencyScanner
         }
     }
 
-    public static List<Artifact> filter( List<Artifact> artifacts, List<String> groupArtifactIds )
+    /**
+     *
+     * @param artifacts a list to filter
+     * @param artifactPatterns a list of strings in the form
+     *                         <pre>groupId[:artifactId[:type[:classifier][:version]]]</pre>
+     * @return list of items from <code>artifacts</code> that match any of the filters in <code>groupArtifactIds</code>,
+     * empty if none match
+     */
+    public static List<Artifact> filter( List<Artifact> artifacts, List<String> artifactPatterns )
     {
-        List<Artifact> matches = new ArrayList<>();
-        if ( groupArtifactIds == null || artifacts == null )
+        if ( artifactPatterns == null || artifacts == null || artifacts.isEmpty() )
         {
-            return matches;
+            return Collections.emptyList();
         }
+
+        PatternIncludesArtifactFilter artifactFilter = new PatternIncludesArtifactFilter( artifactPatterns );
+
+        List<Artifact> matches = new ArrayList<>();
         for ( Artifact artifact : artifacts )
         {
-            for ( String groups : groupArtifactIds )
+            if ( artifactFilter.include( artifact ) )
             {
-                String[] groupArtifact = groups.split( ":" );
-                if ( groupArtifact.length != 2 )
-                {
-                    throw new IllegalArgumentException( "dependencyToScan argument should be in format"
-                        + " 'groupid:artifactid': " + groups );
-                }
-                if ( artifact.getGroupId().matches( groupArtifact[0] )
-                    && artifact.getArtifactId().matches( groupArtifact[1] ) )
-                {
-                    matches.add( artifact );
-                }
+                matches.add( artifact );
             }
         }
         return matches;
