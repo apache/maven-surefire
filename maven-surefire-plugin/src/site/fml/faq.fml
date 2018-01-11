@@ -44,9 +44,8 @@ under the License.
       <answer>
         <p>
           Visit this link for your reference,
-          <a href="http://maven.apache.org/guides/mini/guide-attached-tests.html">
-         |   Attaching tests
-          </a>
+          <a href="http://maven.apache.org/guides/mini/guide-attached-tests.html"> Attaching tests</a>.
+          Also see the examples for <a href="examples/inclusion-exclusion.html">Inclusions and Exclusions of Tests</a>.
         </p>
       </answer>
     </faq>

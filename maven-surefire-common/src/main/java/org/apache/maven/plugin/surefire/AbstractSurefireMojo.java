@@ -732,7 +732,8 @@ public abstract class AbstractSurefireMojo
      * The child elements of this element must be &lt;dependency&gt; elements, and the
      * contents of each of these elements must be a string which follows the format:
      *
-     * <i>groupId:artifactId</i>. For example: <i>org.acme:project-a</i>.
+     * <i>groupId:artifactId[:version[:type[:classifier]]]</i>. For example: <i>org.acme:project-a</i>,
+     * <i>org.acme:project-a::test-jar</i>, <i>org.acme:project-a:::tests-jdk15</i>
      *
      * @since 2.15
      */

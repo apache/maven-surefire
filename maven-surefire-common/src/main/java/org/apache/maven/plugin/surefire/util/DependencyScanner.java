@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.surefire.testset.TestFilter;
@@ -111,19 +112,46 @@ public class DependencyScanner
         {
             for ( String groups : groupArtifactIds )
             {
+                // groupId:artifactId[:version[:type[:classifier]]]
                 String[] groupArtifact = groups.split( ":" );
-                if ( groupArtifact.length != 2 )
+                if ( groupArtifact.length < 2 || groupArtifact.length > 5 )
                 {
                     throw new IllegalArgumentException( "dependencyToScan argument should be in format"
-                        + " 'groupid:artifactid': " + groups );
+                        + " 'groupid:artifactid[:version[:type[:classifier]]]': " + groups );
                 }
-                if ( artifact.getGroupId().matches( groupArtifact[0] )
-                    && artifact.getArtifactId().matches( groupArtifact[1] ) )
+                if ( artifactMatchesGavtc( artifact, groupArtifact ) )
                 {
                     matches.add( artifact.getFile() );
                 }
             }
         }
         return matches;
+    }
+    
+    private static boolean artifactMatchesGavtc( Artifact artifact, String[] gavtc )
+    {
+        boolean match = false;
+        if ( artifact.getGroupId().matches( gavtc[0] ) && artifact.getArtifactId().matches( gavtc[1] ) )
+        {
+            match = true;
+            // Check version
+            if ( match && gavtc.length > 2 )
+            {
+                match = StringUtils.isBlank( gavtc[2] ) || artifact.getVersion().equals( gavtc[2] );
+                // Check type
+                if ( match && gavtc.length > 3 )
+                {
+                    match = StringUtils.isBlank( gavtc[3] )
+                        || ( artifact.getType() != null && artifact.getType().equals( gavtc[3] ) );
+                    // Check classifier
+                    if ( match && gavtc.length > 4 )
+                    {
+                        match = StringUtils.isBlank( gavtc[4] )
+                            || ( artifact.getClassifier() != null && artifact.getClassifier().matches( gavtc[4] ) );
+                    }
+                }
+            }
+        }
+        return match;
     }
 }

@@ -8,6 +8,7 @@ build
 .classpath
 .project
 .settings
+.checkstyle
 .idea
 .surefire-*
 .DS_Store
