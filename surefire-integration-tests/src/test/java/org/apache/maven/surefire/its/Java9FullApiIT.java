@@ -23,7 +23,12 @@ import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.IOException;
+
+import static org.apache.maven.surefire.its.fixture.SurefireLauncher.EXT_JDK_HOME;
+import static org.apache.maven.surefire.its.fixture.SurefireLauncher.EXT_JDK_HOME_KEY;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.is;
 
 /**
  * Running Surefire on the top of JDK 9 and should be able to load
@@ -37,7 +42,7 @@ public class Java9FullApiIT
 {
 
     @Test
-    public void shouldLoadMultipleJavaModules_JavaHome() throws IOException
+    public void shouldLoadMultipleJavaModules_JavaHome() throws Exception
     {
         OutputValidator validator = assumeJigsaw()
                                             .setForkJvm()
@@ -50,16 +55,18 @@ public class Java9FullApiIT
                 .verifyTextInLog( "loaded class javax.xml.bind.JAXBException" )
                 .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
                 .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
-                .verifyTextInLog( "java.specification.version=9" );
+                .assertThatLogLine( anyOf( is( "java.specification.version=9" ),
+                                           is( "java.specification.version=10" ) ),
+                                    greaterThanOrEqualTo( 1 ) );
     }
 
     @Test
-    public void shouldLoadMultipleJavaModules_JvmParameter() throws IOException
+    public void shouldLoadMultipleJavaModules_JvmParameter() throws Exception
     {
         OutputValidator validator = assumeJava9Property()
                                             .setForkJvm()
                                             .debugLogging()
-                                            .sysProp( JDK_HOME_KEY, new File( JDK_HOME ).getCanonicalPath() )
+                                            .sysProp( EXT_JDK_HOME_KEY, new File( EXT_JDK_HOME ).getCanonicalPath() )
                                             .execute( "verify" )
                                             .verifyErrorFree( 1 );
 
@@ -68,11 +75,13 @@ public class Java9FullApiIT
                 .verifyTextInLog( "loaded class javax.xml.bind.JAXBException" )
                 .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
                 .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
-                .verifyTextInLog( "java.specification.version=9" );
+                .assertThatLogLine( anyOf( is( "java.specification.version=9" ),
+                                           is( "java.specification.version=10" ) ),
+                                    greaterThanOrEqualTo( 1 ) );
     }
 
     @Test
-    public void shouldLoadMultipleJavaModules_ToolchainsXML() throws IOException
+    public void shouldLoadMultipleJavaModules_ToolchainsXML() throws Exception
     {
         OutputValidator validator = assumeJava9Property()
                                             .setForkJvm()
@@ -87,7 +96,9 @@ public class Java9FullApiIT
                 .verifyTextInLog( "loaded class javax.xml.bind.JAXBException" )
                 .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
                 .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
-                .verifyTextInLog( "java.specification.version=9" );
+                .assertThatLogLine( anyOf( is( "java.specification.version=9" ),
+                                           is( "java.specification.version=10" ) ),
+                                    greaterThanOrEqualTo( 1 ) );
     }
 
     @Override

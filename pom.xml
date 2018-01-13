@@ -97,8 +97,8 @@
     <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
     <!-- Override with Jigsaw JRE 9 -->
     <jdk.home>${java.home}/..</jdk.home>
-    <maven.compiler.testSource>1.8</maven.compiler.testSource>
-    <maven.compiler.testTarget>1.8</maven.compiler.testTarget>
+    <maven.compiler.testSource>1.7</maven.compiler.testSource>
+    <maven.compiler.testTarget>1.7</maven.compiler.testTarget>
   </properties>
 
   <dependencyManagement>
@@ -263,7 +263,7 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>2.10.0</version>
+        <version>2.13.0</version>
         <exclusions>
           <exclusion>
             <groupId>org.hamcrest</groupId>
@@ -434,6 +434,7 @@
             <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
             <useSystemClassLoader>false</useSystemClassLoader>
             <argLine>-Xms128m -Xmx144m ${jacoco.agent}</argLine>
+            <useFile>false</useFile>
           </configuration>
         </plugin>
         <plugin>

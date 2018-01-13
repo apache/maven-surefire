@@ -29,8 +29,10 @@
   <name>Test for checking environment variables into forks</name>
 
     <properties>
-          <forkMode>always</forkMode>
-          <useSystemClassLoader>false</useSystemClassLoader>
+      <forkMode>always</forkMode>
+      <useSystemClassLoader>false</useSystemClassLoader>
+      <maven.compiler.source>1.7</maven.compiler.source>
+      <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
   <dependencies>
     <dependency>
@@ -54,14 +56,6 @@
             <EMPTY_VAR></EMPTY_VAR>
             <UNSET_VAR />
           </environmentVariables>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
         </configuration>
       </plugin>
     </plugins>

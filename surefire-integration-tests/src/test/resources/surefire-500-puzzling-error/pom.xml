@@ -8,9 +8,9 @@
   <name>surefire-500-puzzling-error</name>
   <url>http://maven.apache.org</url>
   <properties>
-    <java.source.version>1.5</java.source.version>
-    <java.target.version>1.5</java.target.version>
     <junit.version>4.4</junit.version>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
   </properties>
   <dependencies>
     <dependency>
@@ -24,16 +24,6 @@
     <pluginManagement>
       <plugins>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <inherited>true</inherited>
-          <configuration>
-            <source>${java.source.version}</source>
-            <target>${java.target.version}</target>
-          </configuration>
-        </plugin>
-        
-        <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${surefire.version}</version>
             <configuration>
@@ -41,7 +31,6 @@
                 <useFile>true</useFile>
             </configuration>
         </plugin>
-
       </plugins>
     </pluginManagement>
   </build>        

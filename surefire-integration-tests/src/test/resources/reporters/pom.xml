@@ -21,14 +21,6 @@
      <plugins>
         <plugin>
            <groupId>org.apache.maven.plugins</groupId>
-           <artifactId>maven-compiler-plugin</artifactId>
-           <configuration>
-              <source>1.5</source>
-              <target>1.5</target>
-           </configuration>
-        </plugin>
-        <plugin>
-           <groupId>org.apache.maven.plugins</groupId>
            <artifactId>maven-surefire-plugin</artifactId>
            <version>${surefire.version}</version>
            <configuration>
@@ -51,5 +43,7 @@
       <redirect.to.file>true</redirect.to.file>
       <forkMode>once</forkMode>
       <printSummary>true</printSummary>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
 </project>

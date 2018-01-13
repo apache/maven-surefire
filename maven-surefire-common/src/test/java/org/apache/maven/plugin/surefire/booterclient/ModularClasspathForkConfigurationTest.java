@@ -39,6 +39,7 @@ import java.util.Properties;
 
 import static java.io.File.separator;
 import static java.io.File.pathSeparator;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.readAllLines;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
@@ -84,7 +85,7 @@ public class ModularClasspathForkConfigurationTest
                 config.createArgsFile( descriptor, modulePath, classPath, packages, patchFile, startClassName );
 
         assertThat( jigsawArgsFile ).isNotNull();
-        List<String> argsFileLines = readAllLines( jigsawArgsFile.toPath() );
+        List<String> argsFileLines = readAllLines( jigsawArgsFile.toPath(), UTF_8 );
         assertThat( argsFileLines ).hasSize( 13 );
         assertThat( argsFileLines.get( 0 ) ).isEqualTo( "--module-path" );
         assertThat( argsFileLines.get( 1 ) ).isEqualTo( "modular.jar" + pathSeparator + "target/classes" );
@@ -118,7 +119,7 @@ public class ModularClasspathForkConfigurationTest
         assertThat( cli.getArguments()[0] ).startsWith( "@" );
         File argFile = new File( cli.getArguments()[0].substring( 1 ) );
         assertThat( argFile ).isFile();
-        List<String> argsFileLines2 = readAllLines( argFile.toPath() );
+        List<String> argsFileLines2 = readAllLines( argFile.toPath(), UTF_8 );
         assertThat( argsFileLines2 ).hasSize( 13 );
         for ( int i = 0; i < argsFileLines2.size(); i++ )
         {

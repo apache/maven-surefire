@@ -28,6 +28,12 @@
   <version>1.0-SNAPSHOT</version>
   <name>Test for aggregator whose modules are in ../child</name>
   <packaging>pom</packaging>
+
+  <properties>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
+  </properties>
+
   <modules>
     <module>../child1</module>
     <module>../child2</module>

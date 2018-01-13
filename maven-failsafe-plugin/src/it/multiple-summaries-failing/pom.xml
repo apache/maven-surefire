@@ -25,6 +25,12 @@
   <artifactId>working-directory-test</artifactId>
   <version>1.0</version>
   <name>Run tests multiple times</name>
+
+  <properties>
+    <maven.compiler.source>1.6</maven.compiler.source>
+    <maven.compiler.target>1.6</maven.compiler.target>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>

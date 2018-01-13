@@ -63,7 +63,7 @@ public class SystemUtilsTest
         public void shouldMatchJavaSpecVersion() throws Exception
         {
             BigDecimal actual = invokeMethod( SystemUtils.class, "getJavaSpecificationVersion" );
-            BigDecimal expected = new BigDecimal( System.getProperty( "java.specification.version" ) );
+            BigDecimal expected = new BigDecimal( System.getProperty( "java.specification.version" ) ).stripTrailingZeros();
             assertThat( actual ).isEqualTo( expected );
             assertThat( SystemUtils.JAVA_SPECIFICATION_VERSION ).isEqualTo( expected );
         }
@@ -84,7 +84,7 @@ public class SystemUtilsTest
         }
 
         @Test
-        public void incorrectJdkPath() throws IOException
+        public void incorrectJdkPath()
         {
             File jre = new File( System.getProperty( "java.home" ) );
             File jdk = jre.getParentFile();
@@ -285,6 +285,7 @@ public class SystemUtilsTest
                     .isEqualTo( expectedPid );
         }
 
+        @SuppressWarnings( "unused" )
         public static ClassLoader getPlatformClassLoader()
         {
             return ClassLoader.getSystemClassLoader();
@@ -313,7 +314,7 @@ public class SystemUtilsTest
             }
         }
 
-        private static void testIsJava9AtLeast( File pathInJdk ) throws IOException
+        private static void testIsJava9AtLeast( File pathInJdk )
         {
             File path = new File( pathInJdk, "bin" + separator + "java" );
 

@@ -28,21 +28,18 @@
   <version>1.0-SNAPSHOT</version>
   <name>Test for forkMode</name>
 
+  <properties>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
+  </properties>
+
   <build>
     <plugins>
       <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
-        </configuration>
-      </plugin>
-      <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-	<version>${surefire.version}</version>
+	    <version>${surefire.version}</version>
         <configuration>
           <forkMode>${forkMode}</forkMode>
-
         </configuration>
       </plugin>
     </plugins>

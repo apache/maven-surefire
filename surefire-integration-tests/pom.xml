@@ -34,9 +34,6 @@
 
   <properties>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <it.settings.showPasswords>false</it.settings.showPasswords>
-    <surefire.threadcount>5</surefire.threadcount>
-    <useInterpolatedSettings>false</useInterpolatedSettings>
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
   </properties>
@@ -76,8 +73,10 @@
       <artifactId>commons-io</artifactId>
     </dependency>
     <dependency>
+      <!-- Java 9 requires version 3.6+ (todo use in parent POM. Note: versions 3.6, 3.7 are compiled with Java 7) -->
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
+      <version>3.7</version>
     </dependency>
   </dependencies>
 
@@ -93,11 +92,12 @@
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
         <configuration>
+          <jvm>${jdk.home}/bin/java</jvm>
           <runOrder>alphabetical</runOrder>
           <threadCount>1</threadCount>
           <perCoreThreadCount>false</perCoreThreadCount>
-          <forkMode>never</forkMode>
-          <argLine>${argLine}</argLine>
+          <forkMode>once</forkMode>
+          <argLine>-server -Xmx64m -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true</argLine>
           <includes>
             <include>org/apache/**/*IT*.java</include>
           </includes>
@@ -113,13 +113,14 @@
             <maven.repo.local>${project.basedir}/../surefire-setup-integration-tests/target/it-repo</maven.repo.local>
             <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>
             <user.localRepository>${settings.localRepository}</user.localRepository>
-            <useInterpolatedSettings>${useInterpolatedSettings}</useInterpolatedSettings>
+            <useInterpolatedSettings>false</useInterpolatedSettings>
             <testBuildDirectory>${project.build.testOutputDirectory}</testBuildDirectory>
-            <verifier.forkMode>${verifier.forkMode}</verifier.forkMode>
+            <verifier.forkMode>forked</verifier.forkMode>
             <jdk.home>${jdk.home}</jdk.home>
             <jacoco.agent>${jacoco-it.agent}</jacoco.agent>
           </systemPropertyVariables>
           <redirectTestOutputToFile>false</redirectTestOutputToFile>
+          <useFile>false</useFile>
         </configuration>
         <dependencies>
           <dependency>
@@ -198,37 +199,4 @@
       </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>parallel</id>
-      <properties>
-        <useInterpolatedSettings>false</useInterpolatedSettings>
-      </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-failsafe-plugin</artifactId>
-            <configuration>
-              <parallel>classes</parallel>
-              <threadCount>${surefire.threadcount}</threadCount>
-              <argLine>${argLine} -Xmx512m -XX:MaxPermSize=356m</argLine>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>embedded</id>
-      <activation>
-        <file>
-          <!--  This employs that the basedir expression is only recognized by Maven 3.x (see MNG-2363) -->
-          <exists>${basedir}</exists>
-        </file>
-      </activation>
-      <properties>
-        <verifier.forkMode>auto</verifier.forkMode>
-      </properties>
-    </profile>
-  </profiles>
 </project>

@@ -28,6 +28,11 @@
   <version>1.0-SNAPSHOT</version>
   <name>Test for aggregated child2</name>
 
+  <properties>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.maven.plugins.surefire.its.sibling-aggregator</groupId>

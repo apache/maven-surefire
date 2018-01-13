@@ -83,7 +83,6 @@ public class RunOrderIT
     }
 
     private OutputValidator executeWithRunOrder( String runOrder )
-        throws IOException, VerificationException
     {
         return unpack().forkMode( getForkMode() ).runOrder( runOrder ).executeTest().verifyErrorFree( 3 );
     }

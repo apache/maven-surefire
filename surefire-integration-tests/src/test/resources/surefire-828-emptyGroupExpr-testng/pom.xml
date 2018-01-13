@@ -17,6 +17,12 @@
     <artifactId>testng-group-expressions</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>TestNG group expressions tests</name>
+
+    <properties>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.testng</groupId>
@@ -36,15 +42,6 @@
                 <configuration>
                   <groups>${groups}</groups>
                   <excludedGroups>${excludedGroups}</excludedGroups>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <groups>${groups}</groups>
-                    <source>1.5</source>
-                    <target>1.5</target>
                 </configuration>
             </plugin>
       </plugins>

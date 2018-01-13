@@ -27,9 +27,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
-import static org.apache.commons.lang.SystemUtils.IS_OS_LINUX;
-import static org.apache.commons.lang.SystemUtils.IS_OS_MAC_OSX;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_MAC_OSX;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -51,7 +52,7 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
     }
 
     @Test
-    public void crashInFork() throws VerificationException
+    public void crashInFork() throws VerificationException, InterruptedException
     {
         SurefireLauncher launcher = unpack( "crash-during-test" );
 
@@ -59,7 +60,7 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
     }
 
     @Test
-    public void crashInSingleUseFork() throws VerificationException
+    public void crashInSingleUseFork() throws VerificationException, InterruptedException
     {
         SurefireLauncher launcher = unpack( "crash-during-test" )
                                             .forkCount( 1 )
@@ -69,7 +70,7 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
     }
 
     @Test
-    public void crashInReusableFork() throws VerificationException
+    public void crashInReusableFork() throws VerificationException, InterruptedException
     {
         SurefireLauncher launcher = unpack( "crash-during-test" )
                                             .forkPerThread()
@@ -80,14 +81,14 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
     }
 
     private static void checkCrashTypes( SurefireLauncher launcher )
-            throws VerificationException
+            throws VerificationException, InterruptedException
     {
         checkCrash( launcher.addGoal( "-DcrashType=exit" ) );
         checkCrash( launcher.addGoal( "-DcrashType=abort" ) );
         checkCrash( launcher.addGoal( "-DcrashType=segfault" ) );
     }
 
-    private static void checkCrash( SurefireLauncher launcher ) throws VerificationException
+    private static void checkCrash( SurefireLauncher launcher ) throws VerificationException, InterruptedException
     {
         OutputValidator validator = launcher.maven()
                                             .withFailure()
@@ -96,6 +97,10 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
                                                                       + "goodbye. VM crash or System.exit called?"
                                             )
                                             .verifyTextInLog( "Crashed tests:" );
+
+        // Cannot flush log.txt stream because it is consumed internally by Verifier.
+        // Waiting for the stream to become flushed on disk.
+        TimeUnit.SECONDS.sleep( 1L );
 
         for ( Iterator<String> it = validator.loadLogLines().iterator(); it.hasNext(); )
         {

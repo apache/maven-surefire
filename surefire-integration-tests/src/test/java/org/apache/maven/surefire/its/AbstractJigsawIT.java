@@ -29,6 +29,8 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import static org.apache.maven.surefire.its.fixture.SurefireLauncher.EXT_JDK_HOME;
+import static org.apache.maven.surefire.its.fixture.SurefireLauncher.EXT_JDK_HOME_KEY;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
@@ -41,8 +43,6 @@ import static org.junit.Assume.assumeTrue;
 public abstract class AbstractJigsawIT
         extends SurefireJUnit4IntegrationTestCase
 {
-    protected static final String JDK_HOME_KEY = "jdk.home";
-    protected static final String JDK_HOME = System.getProperty( JDK_HOME_KEY );
     private static final double JIGSAW_JAVA_VERSION = 9.0d;
 
     protected abstract String getProjectDirectoryName();
@@ -50,22 +50,17 @@ public abstract class AbstractJigsawIT
     protected SurefireLauncher assumeJigsaw() throws IOException
     {
         assumeTrue( "There's no JDK 9 provided.",
-                          isJavaVersion9AtLeast() || JDK_HOME != null && isExtJavaVerion9AtLeast() );
-        // fail( JDK_HOME_KEY + " was provided with value " + JDK_HOME + " but it is not Jigsaw Java 9." );
+                          isJavaVersion9AtLeast() || EXT_JDK_HOME != null && isExtJavaVerion9AtLeast() );
+        // fail( EXT_JDK_HOME_KEY + " was provided with value " + EXT_JDK_HOME + " but it is not Jigsaw Java 9." );
 
         SurefireLauncher launcher = unpack();
 
-        if ( JDK_HOME != null )
-        {
-            launcher.setLauncherJavaHome( JDK_HOME );
-        }
-
-        return launcher;
+        return EXT_JDK_HOME == null ? launcher : launcher.setLauncherJavaHome( EXT_JDK_HOME );
     }
 
     protected SurefireLauncher assumeJava9Property() throws IOException
     {
-        assumeTrue( "There's no JDK 9 provided.", JDK_HOME != null && isExtJavaVerion9AtLeast() );
+        assumeTrue( "There's no JDK 9 provided.", EXT_JDK_HOME != null && isExtJavaVerion9AtLeast() );
         return unpack();
     }
 
@@ -81,12 +76,12 @@ public abstract class AbstractJigsawIT
 
     private static boolean isExtJavaVerion9AtLeast() throws IOException
     {
-        File release = new File( JDK_HOME, "release" );
+        File release = new File( EXT_JDK_HOME, "release" );
 
         if ( !release.isFile() )
         {
-            fail( JDK_HOME_KEY + " was provided with value " + JDK_HOME + " but file does not exist "
-                          + JDK_HOME + File.separator + "release"
+            fail( EXT_JDK_HOME_KEY + " was provided with value " + EXT_JDK_HOME + " but file does not exist "
+                          + EXT_JDK_HOME + File.separator + "release"
             );
         }
 

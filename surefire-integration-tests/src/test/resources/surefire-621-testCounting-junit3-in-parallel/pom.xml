@@ -9,6 +9,8 @@
     <url>http://maven.apache.org</url>
     <properties>
         <junit.version>4.8.1</junit.version>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
     <dependencies>
         <dependency>
@@ -20,16 +22,6 @@
 
     <build>
         <testSourceDirectory>src/it/java</testSourceDirectory>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
-                </configuration>
-            </plugin>
-        </plugins>
     </build>
 
     <profiles>

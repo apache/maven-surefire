@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 /**
  * Encapsulate all needed features to start a surefire run
  * <br>
@@ -36,6 +38,12 @@ import java.util.List;
  */
 public final class SurefireLauncher
 {
+    public static final String EXT_JDK_HOME_KEY = "jdk.home";
+
+    public static final String EXT_JDK_HOME = System.getProperty( EXT_JDK_HOME_KEY );
+
+    private static final File JAVA_HOME = javaHome();
+
     private final MavenLauncher mavenLauncher;
 
     private final String surefireVersion = System.getProperty( "surefire.version" );
@@ -66,25 +74,38 @@ public final class SurefireLauncher
         setInProcessJavaHome();
     }
 
-    public SurefireLauncher setInProcessJavaHome()
+    private static File javaHome()
     {
-        String javaHome = System.getenv( "JAVA_HOME" );
-        if ( javaHome != null && !javaHome.isEmpty() )
+        String javaHome = isBlank( EXT_JDK_HOME ) ? System.getenv( "JAVA_HOME" ) : EXT_JDK_HOME;
+        if ( isBlank( javaHome ) )
         {
-            try
+            javaHome = System.getProperty( "java.home" );
+            File jre = new File( javaHome );
+            if ( "jre".equals( jre.getName() ) )
             {
-                File javaHomeAsDir = new File( javaHome ).getCanonicalFile();
-                if ( javaHomeAsDir.isDirectory() )
-                {
-                    setLauncherJavaHome( javaHomeAsDir.getPath() );
-                }
-            }
-            catch ( IOException e )
-            {
-                throw new RuntimeException( e );
+                javaHome = jre.getParent();
             }
         }
-        return this;
+
+        try
+        {
+            File javaHomeAsDir = new File( javaHome ).getCanonicalFile();
+            if ( !javaHomeAsDir.isDirectory() )
+            {
+                throw new RuntimeException( javaHomeAsDir.getAbsolutePath() + " is not a JAVA_HOME directory." );
+            }
+            System.out.println( "Using JAVA_HOME=" + javaHomeAsDir.getAbsolutePath() + " in forked launcher." );
+            return javaHomeAsDir;
+        }
+        catch ( IOException e )
+        {
+            throw new RuntimeException( e );
+        }
+    }
+
+    private void setInProcessJavaHome()
+    {
+        setLauncherJavaHome( JAVA_HOME.getPath() );
     }
 
     public SurefireLauncher setLauncherJavaHome( String javaHome )
@@ -123,10 +144,7 @@ public final class SurefireLauncher
         goals.add( "-Dsurefire.version=" + surefireVersion );
 
         String jacocoAgent = System.getProperty( "jacoco.agent", "" );
-        if ( !jacocoAgent.isEmpty() )
-        {
-            goals.add( "-Djacoco.agent=" + jacocoAgent );
-        }
+        goals.add( "-Djacoco.agent=" + jacocoAgent );
 
         return goals;
     }

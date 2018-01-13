@@ -180,9 +180,11 @@ public abstract class AbstractTestMultipleMethodPatterns
             .verifyTextInLog( "jiras.surefire745.BasicTest#testSuccessTwo" );
     }
 
+    /**
+     * This method name was shorten because it cause 261 character long path on Windows with Jenkins Pipeline.
+     */
     @Test
-    public void shouldMatchSimpleClassNameAndMethodWithJavaExt()
-        throws Exception
+    public void matchSimpleClassAndMethodWithJavaExt()
     {
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
         prepare( "BasicTest.java#testSuccessTwo" )
@@ -192,9 +194,11 @@ public abstract class AbstractTestMultipleMethodPatterns
             .verifyTextInLog( "jiras.surefire745.BasicTest#testSuccessTwo" );
     }
 
+    /**
+     * This method name was shorten because it cause 261 character long path on Windows with Jenkins Pipeline.
+     */
     @Test
-    public void shouldMatchSimpleClassNameAndMethodWithWildcardPkg()
-        throws Exception
+    public void matchSimpleClassAndMethodWithWildcardPkg()
     {
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
         prepare( "**/BasicTest#testSuccessTwo" )
@@ -204,9 +208,11 @@ public abstract class AbstractTestMultipleMethodPatterns
             .verifyTextInLog( "jiras.surefire745.BasicTest#testSuccessTwo" );
     }
 
+    /**
+     * This method name was shorten because it cause 261 character long path on Windows with Jenkins Pipeline.
+     */
     @Test
-    public void shouldMatchSimpleClassNameAndMethodWithJavaExtWildcardPkg()
-        throws Exception
+    public void matchSimpleClassAndMethodWithJavaExtWildcardPkg()
     {
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
         prepare( "**/BasicTest.java#testSuccessTwo" )

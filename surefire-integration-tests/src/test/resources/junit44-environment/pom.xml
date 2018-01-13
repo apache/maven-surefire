@@ -28,6 +28,11 @@
   <version>1.0-SNAPSHOT</version>
   <name>Test for setting environment variables</name>
 
+  <properties>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -46,14 +51,6 @@
           <environmentVariables>
             <DUMMY_ENV_VAR>foo</DUMMY_ENV_VAR>
           </environmentVariables>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
         </configuration>
       </plugin>
     </plugins>
