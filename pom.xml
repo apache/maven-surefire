@@ -61,7 +61,7 @@
     <module>maven-failsafe-plugin</module>
     <module>maven-surefire-report-plugin</module>
     <module>surefire-setup-integration-tests</module>
-    <module>surefire-integration-tests</module>
+    <module>surefire-its</module>
   </modules>
 
   <scm>

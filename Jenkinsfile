@@ -116,11 +116,11 @@ oses.eachWithIndex { os, indexOfOs ->
 //                                zip(zipFile: "it--maven-failsafe-plugin--${stageKey}.zip", dir: 'build/maven-failsafe-plugin/target/it', archive: true)
 //                            }
 //
-//                            if (fileExists('build/surefire-integration-tests/target') {
-//                                zip(zipFile: "it--surefire-integration-tests--${stageKey}.zip", dir: 'build/surefire-integration-tests/target', archive: true)
+//                            if (fileExists('build/surefire-its/target') {
+//                                zip(zipFile: "it--surefire-its--${stageKey}.zip", dir: 'build/surefire-its/target', archive: true)
 //                            }
 
-//                            archiveArtifacts(artifacts: 'build/surefire-integration-tests/target/**/log.txt', allowEmptyArchive: true, fingerprint: true, onlyIfSuccessful: false)
+//                            archiveArtifacts(artifacts: 'build/surefire-its/target/**/log.txt', allowEmptyArchive: true, fingerprint: true, onlyIfSuccessful: false)
 
                             stage("cleanup ${stageKey}") {
                                 // clean up after ourselves to reduce disk space
@@ -214,12 +214,12 @@ oses.eachWithIndex { os, indexOfOs ->
 //                                zip(zipFile: "it--maven-failsafe-plugin--${stageKey}.zip", dir: 'build/maven-failsafe-plugin/target/it', archive: true)
 //                            }
 //
-//                            if (fileExists('build/surefire-integration-tests/target') {
-//                                zip(zipFile: "it--surefire-integration-tests--${stageKey}.zip", dir: 'build/surefire-integration-tests/target', archive: true)
+//                            if (fileExists('build/surefire-its/target') {
+//                                zip(zipFile: "it--surefire-its--${stageKey}.zip", dir: 'build/surefire-its/target', archive: true)
 //                            }
 //
 //                            sh 'tar czvf it1.tgz build/maven-failsafe-plugin/target/it'
-//                            sh 'tar czvf it2.tgz build/surefire-integration-tests/target'
+//                            sh 'tar czvf it2.tgz build/surefire-its/target'
 //                            archiveArtifacts(artifacts: '**/*.tgz', allowEmptyArchive: true, fingerprint: true, onlyIfSuccessful: false)
 //                            archiveArtifacts(artifacts: '*.tgz', allowEmptyArchive: true, fingerprint: true, onlyIfSuccessful: false)
 
@@ -303,7 +303,7 @@ def sourcesPatternCsv() {
             '**/surefire-api/src/main/java,' +
             '**/surefire-booter/src/main/java,' +
             '**/surefire-grouper/src/main/java,' +
-            '**/surefire-integration-tests/src/main/java,' +
+            '**/surefire-its/src/main/java,' +
             '**/surefire-logger-api/src/main/java,' +
             '**/surefire-providers/**/src/main/java,' +
             '**/surefire-report-parser/src/main/java'
@@ -318,7 +318,7 @@ def classPatternCsv() {
             '**/surefire-api/target/classes,' +
             '**/surefire-booter/target/classes,' +
             '**/surefire-grouper/target/classes,' +
-            '**/surefire-integration-tests/target/classes,' +
+            '**/surefire-its/target/classes,' +
             '**/surefire-logger-api/target/classes,' +
             '**/surefire-providers/**/target/classes,' +
             '**/surefire-report-parser/target/classes'
@@ -349,9 +349,9 @@ def testReportsPatternCsv() {
             '**/surefire-api/target/surefire-reports/*.xml,' +
             '**/surefire-booter/target/surefire-reports/*.xml,' +
             '**/surefire-grouper/target/surefire-reports/*.xml,' +
-            '**/surefire-integration-tests/target/surefire-reports/*.xml,' +
+            '**/surefire-its/target/surefire-reports/*.xml,' +
             '**/surefire-logger-api/target/surefire-reports/*.xml,' +
             '**/surefire-providers/**/target/surefire-reports/*.xml,' +
             '**/surefire-report-parser/target/surefire-reports/*.xml,' +
-            '**/surefire-integration-tests/target/failsafe-reports/*.xml'
+            '**/surefire-its/target/failsafe-reports/*.xml'
 }
