@@ -1,4 +1,4 @@
-package junit44.environment;
+package org.apache.maven.plugins.surefire.report;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,34 +19,28 @@ package junit44.environment;
  * under the License.
  */
 
-import static org.junit.Assert.*;
-import org.junit.Test;
-import uk.me.mjt.CrashJvm;
+import junit.framework.JUnit4TestAdapter;
+import junit.framework.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
-public class BasicTest
+/**
+ * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
+ *
+ * @author Tibor Digana (tibor17)
+ * @since 2.21.0
+ */
+@Suite.SuiteClasses( {
+        ReportTestCaseTest.class,
+        ReportTestSuiteTest.class,
+        SurefireReportParserTest.class,
+        TestSuiteXmlParserTest.class
+} )
+@RunWith( Suite.class )
+public class JUnit4SuiteTest
 {
-    @Test
-    public void testCrashJvm()
+    public static Test suite()
     {
-        assertTrue(CrashJvm.loadedOk());
-        
-        String crashType = System.getProperty("crashType");
-        assertNotNull(crashType);
-        if ( crashType.equals( "exit" ) )
-        {
-            CrashJvm.exit();
-        }
-        else if ( crashType.equals( "abort" ) )
-        {
-            CrashJvm.abort();
-        }
-        else if (crashType.equals( "segfault" ))
-        {
-            CrashJvm.segfault();
-        }
-        else
-        {
-            fail("Don't recognise crashType " + crashType);
-        }
+        return new JUnit4TestAdapter( JUnit4SuiteTest.class );
     }
 }

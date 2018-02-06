@@ -19,21 +19,25 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.experimental.theories.DataPoints;
+import org.junit.experimental.theories.FromDataPoints;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 
 import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_MAC_OSX;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS_7;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS_8;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS_10;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * https://issues.apache.org/jira/browse/SUREFIRE-1295
@@ -42,67 +46,72 @@ import static org.junit.Assume.assumeTrue;
  * @author michaeltandy
  * @since 2.20
  */
+@RunWith( Theories.class )
 public class Surefire1295AttributeJvmCrashesToTestsIT
         extends SurefireJUnit4IntegrationTestCase
 {
-    @Before
-    public void skipWindows()
+    public enum ForkMode
     {
-        assumeTrue( IS_OS_LINUX || IS_OS_MAC_OSX );
+        DEFAULT,
+        ONE_FORK_NO_REUSE,
+        ONE_FORK_REUSE
     }
 
-    @Test
-    public void crashInFork() throws VerificationException, InterruptedException
-    {
-        SurefireLauncher launcher = unpack( "crash-during-test" );
+    @DataPoints( "crashStyle" )
+    public static String[] crashStyle = { "exit", "abort", "segfault" };
 
-        checkCrashTypes( launcher );
+    @DataPoints( "forkStyle" )
+    public static ForkMode[] forkStyle = ForkMode.values();
+
+    @Theory
+    public void test( @FromDataPoints( "crashStyle" ) String crashStyle,
+                      @FromDataPoints( "forkStyle" ) ForkMode forkStyle )
+            throws Exception
+    {
+        // JUnit Assumptions not supported by Theories runner.
+        if ( !IS_OS_LINUX && !IS_OS_MAC_OSX && !( IS_OS_WINDOWS_7 || IS_OS_WINDOWS_8 || IS_OS_WINDOWS_10 ) )
+        {
+            return;
+        }
+
+        SurefireLauncher launcher =
+                unpack( "crash-during-test", "_" + crashStyle + "_" + forkStyle.ordinal() )
+                .setForkJvm();
+
+        switch ( forkStyle )
+        {
+            case DEFAULT:
+                break;
+            case ONE_FORK_NO_REUSE:
+                launcher.forkCount( 1 )
+                        .reuseForks( false );
+                break;
+            case ONE_FORK_REUSE:
+                launcher.forkPerThread()
+                        .reuseForks( true )
+                        .threadCount( 1 );
+                break;
+            default:
+                fail();
+        }
+
+        checkCrash( launcher.addGoal( "-DcrashType=" + crashStyle ) );
     }
 
-    @Test
-    public void crashInSingleUseFork() throws VerificationException, InterruptedException
-    {
-        SurefireLauncher launcher = unpack( "crash-during-test" )
-                                            .forkCount( 1 )
-                                            .reuseForks( false );
-
-        checkCrashTypes( launcher );
-    }
-
-    @Test
-    public void crashInReusableFork() throws VerificationException, InterruptedException
-    {
-        SurefireLauncher launcher = unpack( "crash-during-test" )
-                                            .forkPerThread()
-                                            .reuseForks( true )
-                                            .threadCount( 1 );
-
-        checkCrashTypes( launcher );
-    }
-
-    private static void checkCrashTypes( SurefireLauncher launcher )
-            throws VerificationException, InterruptedException
-    {
-        checkCrash( launcher.addGoal( "-DcrashType=exit" ) );
-        checkCrash( launcher.addGoal( "-DcrashType=abort" ) );
-        checkCrash( launcher.addGoal( "-DcrashType=segfault" ) );
-    }
-
-    private static void checkCrash( SurefireLauncher launcher ) throws VerificationException, InterruptedException
+    private static void checkCrash( SurefireLauncher launcher ) throws Exception
     {
         OutputValidator validator = launcher.maven()
-                                            .withFailure()
-                                            .executeTest()
-                                            .verifyTextInLog( "The forked VM terminated without properly saying "
-                                                                      + "goodbye. VM crash or System.exit called?"
-                                            )
-                                            .verifyTextInLog( "Crashed tests:" );
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog( "The forked VM terminated without properly saying "
+                        + "goodbye. VM crash or System.exit called?" )
+                .verifyTextInLog( "Crashed tests:" );
 
         // Cannot flush log.txt stream because it is consumed internally by Verifier.
         // Waiting for the stream to become flushed on disk.
-        TimeUnit.SECONDS.sleep( 1L );
+        SECONDS.sleep( 1L );
 
-        for ( Iterator<String> it = validator.loadLogLines().iterator(); it.hasNext(); )
+        for ( Iterator< String > it = validator.loadLogLines().iterator(); it.hasNext(); )
         {
             String line = it.next();
             if ( line.contains( "Crashed tests:" ) )
@@ -110,7 +119,8 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
                 line = it.next();
                 if ( it.hasNext() )
                 {
-                    assertThat( line ).contains( "junit44.environment.BasicTest" );
+                    assertThat( line )
+                            .contains( "junit44.environment.Test1CrashedTest" );
                 }
                 else
                 {
@@ -118,8 +128,5 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
                 }
             }
         }
-
     }
-
-
 }

@@ -19,21 +19,26 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import junit.framework.JUnit4TestAdapter;
+import junit.framework.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
 /**
- * @author Kristian Rosenvold
+ * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
+ *
+ * @author Tibor Digana (tibor17)
+ * @since 2.21.0
  */
-public class SurefireLauncherTest
+@Suite.SuiteClasses( {
+        MavenLauncherTest.class,
+        SurefireLauncherTest.class
+} )
+@RunWith( Suite.class )
+public class JUnit4SuiteTest
 {
-    @Test
-    public void launcherGetsProperMethodName()
+    public static Test suite()
     {
-        MavenLauncher mavenLauncher = new MavenLauncher( SurefireLauncherTest.class, "foo", "" );
-        String method = new SurefireLauncher( mavenLauncher ).getTestMethodName();
-        assertEquals( "launcherGetsProperMethodName", method );
-
+        return new JUnit4TestAdapter( JUnit4SuiteTest.class );
     }
 }

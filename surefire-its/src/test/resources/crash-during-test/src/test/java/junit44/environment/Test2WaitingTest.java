@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.its.fixture;
+package junit44.environment;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,19 +21,14 @@ package org.apache.maven.surefire.its.fixture;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-/**
- * @author Kristian Rosenvold
- */
-public class SurefireLauncherTest
+public class Test2WaitingTest
 {
     @Test
-    public void launcherGetsProperMethodName()
+    public void nonCrashingTest()
+            throws InterruptedException
     {
-        MavenLauncher mavenLauncher = new MavenLauncher( SurefireLauncherTest.class, "foo", "" );
-        String method = new SurefireLauncher( mavenLauncher ).getTestMethodName();
-        assertEquals( "launcherGetsProperMethodName", method );
-
+        MILLISECONDS.sleep( 1500L );
     }
 }

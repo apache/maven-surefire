@@ -40,25 +40,30 @@ public class UmlautDirIT
     public void testUmlaut()
         throws Exception
     {
-        specialUnpack().executeTest().verifyErrorFreeLog().assertTestSuiteResults( 1, 0, 0, 0 );
+        specialUnpack( "1" )
+                .executeTest()
+                .verifyErrorFreeLog()
+                .assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
     @Test
     public void testUmlautIsolatedClassLoader()
         throws Exception
     {
-        specialUnpack().useSystemClassLoader( false ).executeTest().assertTestSuiteResults( 1, 0, 0, 0 );
+        specialUnpack( "2" )
+                .useSystemClassLoader( false )
+                .executeTest()
+                .assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
-    SurefireLauncher specialUnpack()
-        throws VerificationException, IOException
+    SurefireLauncher specialUnpack( String postfix )
+        throws IOException
     {
         SurefireLauncher unpack = unpack( "junit-pathWithUmlaut" );
         MavenLauncher maven = unpack.maven();
 
-        File dest = new File( maven.getUnpackedAt().getParentFile().getPath(), "/junit-pathWith\u00DCmlaut" );
+        File dest = new File( maven.getUnpackedAt().getParentFile().getPath(), "/junit-pathWith\u00DCmlaut_" + postfix );
         maven.moveUnpackTo( dest );
         return unpack;
     }
-
 }

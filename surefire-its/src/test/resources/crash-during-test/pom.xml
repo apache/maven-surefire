@@ -51,12 +51,25 @@
   </dependencies>
 
   <build>
+    <pluginManagement>
+      <plugins>
+        <!--
+        mvn clean is called beforehand.
+        The German word Umlaut which is not ASCII must be deleted the same on all M3 versions.
+        -->
+        <plugin>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire.version}</version>
         <configuration>
           <forkMode>once</forkMode>
+          <runOrder>alphabetical</runOrder>
         </configuration>
       </plugin>
     </plugins>

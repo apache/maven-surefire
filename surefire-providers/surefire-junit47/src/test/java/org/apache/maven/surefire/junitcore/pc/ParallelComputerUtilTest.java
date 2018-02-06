@@ -32,7 +32,6 @@ import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.rules.ExpectedException;
-import org.junit.rules.Stopwatch;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
@@ -46,7 +45,6 @@ import static org.apache.maven.surefire.junitcore.pc.ParallelComputerUtil.*;
 import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.*;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * Testing an algorithm in {@link ParallelComputerUtil} which configures
@@ -69,9 +67,6 @@ public final class ParallelComputerUtilTest
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
-
-    @Rule
-    public final Stopwatch stopwatch = new Stopwatch() {};
 
     @BeforeClass
     public static void beforeClass()
@@ -968,7 +963,6 @@ public final class ParallelComputerUtilTest
 
     @Test
     public void withoutShutdown()
-        throws TestSetFailedException, ExecutionException, InterruptedException
     {
         Map<String, String> properties = new HashMap<String, String>();
         properties.put(PARALLEL_KEY, "methods");
@@ -976,9 +970,12 @@ public final class ParallelComputerUtilTest
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( logger, params );
         ParallelComputer pc = pcBuilder.buildComputer();
-        Result result = new JUnitCore().run( pc, TestClass.class );
-        long timeSpent = stopwatch.runtime( MILLISECONDS );
-        long deltaTime = 500L;
+        final JUnitCore core = new JUnitCore();
+        final long t1 = System.currentTimeMillis();
+        final Result result = core.run( pc, TestClass.class );
+        final long t2 = System.currentTimeMillis();
+        long timeSpent = t2 - t1;
+        final long deltaTime = 500L;
 
         assertTrue( result.wasSuccessful() );
         assertThat( result.getRunCount(), is( 3 ) );
@@ -989,7 +986,7 @@ public final class ParallelComputerUtilTest
 
     @Test
     public void shutdown()
-        throws TestSetFailedException, ExecutionException, InterruptedException
+        throws TestSetFailedException
     {
         // The JUnitCore returns after 2.5s.
         // The test-methods in TestClass are NOT interrupted, and return normally after 5s.
@@ -1000,9 +997,12 @@ public final class ParallelComputerUtilTest
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( logger, params );
         ParallelComputer pc = pcBuilder.buildComputer();
-        new JUnitCore().run( pc, TestClass.class );
-        long timeSpent = stopwatch.runtime( MILLISECONDS );
-        long deltaTime = 500L;
+        final JUnitCore core = new JUnitCore();
+        final long t1 = System.currentTimeMillis();
+        core.run( pc, TestClass.class );
+        final long t2 = System.currentTimeMillis();
+        final long timeSpent = t2 - t1;
+        final long deltaTime = 500L;
 
         assertEquals( 5000L, timeSpent, deltaTime );
         String description = pc.describeElapsedTimeout();
@@ -1013,19 +1013,22 @@ public final class ParallelComputerUtilTest
 
     @Test
     public void forcedShutdown()
-        throws TestSetFailedException, ExecutionException, InterruptedException
+        throws TestSetFailedException
     {
         // The JUnitCore returns after 2.5s, and the test-methods in TestClass are interrupted.
         Map<String, String> properties = new HashMap<String, String>();
         properties.put(PARALLEL_KEY, "methods");
         properties.put(THREADCOUNTMETHODS_KEY, "2");
-        properties.put(PARALLEL_TIMEOUTFORCED_KEY, Double.toString(2.5d));
+        properties.put(PARALLEL_TIMEOUTFORCED_KEY, Double.toString( 2.5d ));
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( logger, params );
         ParallelComputer pc = pcBuilder.buildComputer();
-        new JUnitCore().run( pc, TestClass.class );
-        long timeSpent = stopwatch.runtime( MILLISECONDS );
-        long deltaTime = 500L;
+        final JUnitCore core = new JUnitCore();
+        final long t1 = System.currentTimeMillis();
+        core.run( pc, TestClass.class );
+        final long t2 = System.currentTimeMillis();
+        final long timeSpent = t2 - t1;
+        final long deltaTime = 500L;
 
         assertEquals( 2500L, timeSpent, deltaTime );
         String description = pc.describeElapsedTimeout();
@@ -1036,7 +1039,7 @@ public final class ParallelComputerUtilTest
 
     @Test
     public void timeoutAndForcedShutdown()
-        throws TestSetFailedException, ExecutionException, InterruptedException
+        throws TestSetFailedException
     {
         // The JUnitCore returns after 3.5s and the test-methods in TestClass are timed out after 2.5s.
         // No new test methods are scheduled for execution after 2.5s.
@@ -1044,14 +1047,17 @@ public final class ParallelComputerUtilTest
         Map<String, String> properties = new HashMap<String, String>();
         properties.put(PARALLEL_KEY, "methods");
         properties.put(THREADCOUNTMETHODS_KEY, "2");
-        properties.put(PARALLEL_TIMEOUT_KEY, Double.toString(2.5d));
-        properties.put(PARALLEL_TIMEOUTFORCED_KEY, Double.toString(3.5d));
+        properties.put(PARALLEL_TIMEOUT_KEY, Double.toString( 2.5d ));
+        properties.put(PARALLEL_TIMEOUTFORCED_KEY, Double.toString( 3.5d ));
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( logger, params );
         ParallelComputer pc = pcBuilder.buildComputer();
-        new JUnitCore().run( pc, TestClass.class );
-        long timeSpent = stopwatch.runtime( MILLISECONDS );
-        long deltaTime = 500L;
+        final JUnitCore core = new JUnitCore();
+        final long t1 = System.currentTimeMillis();
+        core.run( pc, TestClass.class );
+        final long t2 = System.currentTimeMillis();
+        final long timeSpent = t2 - t1;
+        final long deltaTime = 500L;
 
         assertEquals( 3500L, timeSpent, deltaTime );
         String description = pc.describeElapsedTimeout();
@@ -1073,9 +1079,12 @@ public final class ParallelComputerUtilTest
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( logger, params );
         ParallelComputer pc = pcBuilder.buildComputer();
-        new JUnitCore().run( pc, TestClass.class );
-        long timeSpent = stopwatch.runtime( MILLISECONDS );
-        long deltaTime = 500L;
+        final JUnitCore core = new JUnitCore();
+        final long t1 = System.currentTimeMillis();
+        core.run( pc, TestClass.class );
+        final long t2 = System.currentTimeMillis();
+        final long timeSpent = t2 - t1;
+        final long deltaTime = 500L;
 
         assertEquals( 3500L, timeSpent, deltaTime );
         String description = pc.describeElapsedTimeout();

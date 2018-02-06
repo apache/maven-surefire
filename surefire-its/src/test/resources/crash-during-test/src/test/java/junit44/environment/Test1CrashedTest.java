@@ -1,4 +1,3 @@
-
 package junit44.environment;
 
 /*
@@ -20,9 +19,34 @@ package junit44.environment;
  * under the License.
  */
 
+import static org.junit.Assert.*;
 import org.junit.Test;
+import uk.me.mjt.CrashJvm;
 
-public class SomeOtherTest {
+public class Test1CrashedTest
+{
     @Test
-    public void nonCrashingTest() {}
+    public void testCrashJvm()
+    {
+        assertTrue(CrashJvm.loadedOk());
+        
+        String crashType = System.getProperty("crashType");
+        assertNotNull(crashType);
+        if ( crashType.equals( "exit" ) )
+        {
+            CrashJvm.exit();
+        }
+        else if ( crashType.equals( "abort" ) )
+        {
+            CrashJvm.abort();
+        }
+        else if (crashType.equals( "segfault" ))
+        {
+            CrashJvm.segfault();
+        }
+        else
+        {
+            fail("Don't recognise crashType " + crashType);
+        }
+    }
 }

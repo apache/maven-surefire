@@ -57,6 +57,10 @@
       <classifier>site-source</classifier>
     </dependency>
     <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-shared-utils</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
     </dependency>
@@ -284,6 +288,7 @@
                   <goals>
                     <goal>clean</goal>
                     <goal>verify</goal>
+                    <goal>-nsu</goal>
                   </goals>
                   <setupIncludes>
                     <setupInclude>dummy-*/pom.xml</setupInclude>

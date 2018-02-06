@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.its.fixture;
+package junit44.environment;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,19 +21,10 @@ package org.apache.maven.surefire.its.fixture;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-
-/**
- * @author Kristian Rosenvold
- */
-public class SurefireLauncherTest
+public class Test3FastTest
 {
     @Test
-    public void launcherGetsProperMethodName()
+    public void emptyTest()
     {
-        MavenLauncher mavenLauncher = new MavenLauncher( SurefireLauncherTest.class, "foo", "" );
-        String method = new SurefireLauncher( mavenLauncher ).getTestMethodName();
-        assertEquals( "launcherGetsProperMethodName", method );
-
     }
 }
