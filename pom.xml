@@ -89,7 +89,7 @@
     <mavenVersion>2.2.1</mavenVersion>
     <!-- <shadedVersion>2.12.4</shadedVersion> commented out due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
     <mavenPluginPluginVersion>3.5</mavenPluginPluginVersion>
-    <commonsLang3Version>3.5</commonsLang3Version>
+    <commonsLang3Version>3.7</commonsLang3Version>
     <commonsIoVersion>2.5</commonsIoVersion>
     <mavenSharedUtilsVersion>0.9</mavenSharedUtilsVersion>
     <powermockVersion>2.0.0-beta.5</powermockVersion>
