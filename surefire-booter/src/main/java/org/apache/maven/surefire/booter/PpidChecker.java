@@ -185,7 +185,9 @@ final class PpidChecker
         };
         String pid = String.valueOf( pluginPid );
         return reader.execute( "CMD", "/A", "/X", "/C",
-                                     "wmic process where (ProcessId=" + pid + ") get " + WMIC_CREATION_DATE
+                                     "%SystemRoot%\\System32\\Wbem\\wmic " 
+                                         + "process where (ProcessId=" + pid + ") " 
+                                         + "get " + WMIC_CREATION_DATE
         );
     }
 
