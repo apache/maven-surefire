@@ -99,7 +99,6 @@
     <jdk.home>${java.home}/..</jdk.home>
     <maven.compiler.testSource>1.8</maven.compiler.testSource>
     <maven.compiler.testTarget>1.8</maven.compiler.testTarget>
-    <javaVersion>7</javaVersion>
   </properties>
 
   <dependencyManagement>
