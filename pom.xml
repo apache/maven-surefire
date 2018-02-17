@@ -711,25 +711,5 @@
         </plugins>
       </build>
     </profile>
-    <profile>
-      <id>jdk10</id>
-      <activation>
-        <jdk>10</jdk>
-      </activation>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <!-- remove when jacoco will support jdk10  https://github.com/jacoco/jacoco/issues/629 -->
-            <plugin>
-              <groupId>org.jacoco</groupId>
-              <artifactId>jacoco-maven-plugin</artifactId>
-              <configuration>
-                <skip>true</skip>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
-    </profile>
   </profiles>
 </project>
