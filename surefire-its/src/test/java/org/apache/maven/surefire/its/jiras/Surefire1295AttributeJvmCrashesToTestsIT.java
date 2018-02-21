@@ -22,22 +22,27 @@ package org.apache.maven.surefire.its.jiras;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.experimental.theories.DataPoints;
-import org.junit.experimental.theories.FromDataPoints;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 import java.util.Iterator;
 
+import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_MAC_OSX;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS_7;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS_8;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS_10;
+import static org.apache.maven.surefire.its.jiras.Surefire1295AttributeJvmCrashesToTestsIT.ForkMode.DEFAULT;
+import static org.apache.maven.surefire.its.jiras.Surefire1295AttributeJvmCrashesToTestsIT.ForkMode.ONE_FORK_NO_REUSE;
+import static org.apache.maven.surefire.its.jiras.Surefire1295AttributeJvmCrashesToTestsIT.ForkMode.ONE_FORK_REUSE;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * https://issues.apache.org/jira/browse/SUREFIRE-1295
@@ -46,7 +51,7 @@ import static org.junit.Assert.fail;
  * @author michaeltandy
  * @since 2.20
  */
-@RunWith( Theories.class )
+@RunWith( Parameterized.class )
 public class Surefire1295AttributeJvmCrashesToTestsIT
         extends SurefireJUnit4IntegrationTestCase
 {
@@ -57,22 +62,33 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
         ONE_FORK_REUSE
     }
 
-    @DataPoints( "crashStyle" )
-    public static String[] crashStyle = { "exit", "abort", "segfault" };
+    @Parameters
+    public static Iterable<Object[]> parameters()
+    {
+        return asList(new Object[][] {
+                { "exit", DEFAULT },
+                { "exit", ONE_FORK_NO_REUSE },
+                { "exit", ONE_FORK_REUSE },
+                { "abort", DEFAULT },
+                { "abort", ONE_FORK_NO_REUSE },
+                { "abort", ONE_FORK_REUSE },
+                { "segfault", DEFAULT },
+                { "segfault", ONE_FORK_NO_REUSE },
+                { "segfault", ONE_FORK_REUSE }
+        });
+    }
 
-    @DataPoints( "forkStyle" )
-    public static ForkMode[] forkStyle = ForkMode.values();
+    @Parameter( 0 )
+    public static String crashStyle;
 
-    @Theory
-    public void test( @FromDataPoints( "crashStyle" ) String crashStyle,
-                      @FromDataPoints( "forkStyle" ) ForkMode forkStyle )
+    @Parameter( 1 )
+    public static ForkMode forkStyle;
+
+    @Test
+    public void test()
             throws Exception
     {
-        // JUnit Assumptions not supported by Theories runner.
-        if ( !IS_OS_LINUX && !IS_OS_MAC_OSX && !( IS_OS_WINDOWS_7 || IS_OS_WINDOWS_8 || IS_OS_WINDOWS_10 ) )
-        {
-            return;
-        }
+        assumeTrue( IS_OS_LINUX || IS_OS_MAC_OSX || IS_OS_WINDOWS_7 || IS_OS_WINDOWS_8 || IS_OS_WINDOWS_10 );
 
         SurefireLauncher launcher =
                 unpack( "crash-during-test", "_" + crashStyle + "_" + forkStyle.ordinal() )
