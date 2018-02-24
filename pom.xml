@@ -596,6 +596,7 @@
                 <exclude>DEPENDENCIES</exclude>
                 <exclude>.m2/**</exclude>
                 <exclude>.m2</exclude>
+                <exclude>.travis.yml</exclude>
               </excludes>
             </configuration>
           </execution>
