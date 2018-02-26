@@ -41,6 +41,8 @@
   <properties>
     <thisPlugin>Failsafe</thisPlugin>
     <thatPlugin>Surefire</thatPlugin>
+    <failsafe-integration-test-port>8084</failsafe-integration-test-port>
+    <failsafe-integration-test-stop-port>8085</failsafe-integration-test-stop-port>
   </properties>
 
   <dependencies>
@@ -301,6 +303,10 @@
                   <skipInvocation>${skipTests}</skipInvocation>
                   <streamLogs>false</streamLogs>
                   <showErrors>true</showErrors>
+                  <properties>
+                    <integration-test-port>${failsafe-integration-test-port}</integration-test-port>
+                    <integration-test-stop-port>${failsafe-integration-test-stop-port}</integration-test-stop-port>
+                  </properties>
                 </configuration>
               </execution>
             </executions>

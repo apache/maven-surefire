@@ -26,42 +26,45 @@ properties(
     ]
 )
 
-final String NIX_LABEL = 'ubuntu-1||ubuntu-4||ubuntu-6||H19||H20'
-final String WIN_LABEL = 'windows-2016-1'
-
 final def oses = ['linux', 'windows']
-final def mavens = ['3.2.x', '3.3.x', '3.5.x'] // env.BRANCH_NAME == 'master' ? ['3.2.x', '3.3.x', '3.5.x'] : ['3.5.x']
-final def jdks = ['7', '8', '9', '10'] // env.BRANCH_NAME == 'master' ? ['7', '8', '9', '10'] : ['10']
+final def mavens = env.BRANCH_NAME == 'master' ? ['3.2.x', '3.3.x', '3.5.x'] : ['3.5.x']
+final def jdks = env.BRANCH_NAME == 'master' ? [7, 8, 9, 10] : [9, 10]
 
-final def cmd = ['mvn']
-final def options = ['-e', '-V', '-nsu', '-P', 'run-its']
+final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
 final def goals = ['clean', 'install', 'jacoco:report']
 final Map stages = [:]
 
 oses.eachWithIndex { os, indexOfOs ->
-    stages[os] = {
-        mavens.eachWithIndex { maven, indexOfMaven ->
-            jdks.eachWithIndex { jdk, indexOfJdk ->
-                final String label = jenkinsEnv.labelForOS(os);
-                final String jdkTestName = jenkinsEnv.jdkFromVersion(os, jdk)
-                final String jdkName = jenkinsEnv.jdkFromVersion(os, '8')
-                final String mvnName = jenkinsEnv.mvnFromVersion(os, maven)
-                final String stageKey = "${os}-jdk${jdk}-maven${maven}"
+    mavens.eachWithIndex { maven, indexOfMaven ->
+        jdks.eachWithIndex { jdk, indexOfJdk ->
+            final String label = jenkinsEnv.labelForOS(os);
+            final String jdkTestName = jenkinsEnv.jdkFromVersion(os, jdk.toString())
+            final String jdkName = jenkinsEnv.jdkFromVersion(os, '8')
+            final String mvnName = jenkinsEnv.mvnFromVersion(os, maven)
+            final String stageKey = "${os}-jdk${jdk}-maven${maven}"
 
-                if (label == null || jdkTestName == null || mvnName == null) {
-                    println "Skipping ${stageKey} as unsupported by Jenkins Environment."
-                    return;
-                }
+            def mavenOpts = '-server -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseNUMA \
+-Xms64m -Djava.awt.headless=true'
+            if (jdk > 7) {
+                mavenOpts += ' -XX:+UseStringDeduplication'
+            }
+            mavenOpts += (os == 'linux' ? ' -Xmx1g' : ' -Xmx256m')
 
-                println "${stageKey}  ==>  Label: ${label}, JDK: ${jdkTestName}, Maven: ${mvnName}."
-                if (os == 'windows') {
-                    node(WIN_LABEL) {
-                        buildProcess(stageKey, jdkName, jdkTestName, mvnName, cmd, options, goals, false)
-                    }
-                } else {
-                    node(NIX_LABEL) {
-                        boolean makeReports = indexOfMaven == mavens.size() - 1 && jdk == '9'
-                        buildProcess(stageKey, jdkName, jdkTestName, mvnName, cmd, options, goals, makeReports)
+            if (label == null || jdkTestName == null || mvnName == null) {
+                println "Skipping ${stageKey} as unsupported by Jenkins Environment."
+                return;
+            }
+
+            println "${stageKey}  ==>  Label: ${label}, JDK: ${jdkTestName}, Maven: ${mvnName}."
+
+            stages[stageKey] = {
+                node(label) {
+                    timestamps {
+                        //https://github.com/jacoco/jacoco/issues/629
+                        def boolean makeReports = os == 'linux' && indexOfMaven == mavens.size() - 1 && jdk == 9
+                        def failsafeItPort = 8000 + 100 * indexOfMaven + 10 * indexOfJdk
+                        def allOptions = options + ["-Dfailsafe-integration-test-port=${failsafeItPort}", "-Dfailsafe-integration-test-stop-port=${1 + failsafeItPort}"]
+                        buildProcess(stageKey, jdkName, jdkTestName, mvnName, goals, allOptions, mavenOpts, makeReports)
                     }
                 }
             }
@@ -69,7 +72,7 @@ oses.eachWithIndex { os, indexOfOs ->
     }
 }
 
-timeout(time: 24, unit: 'HOURS') {
+timeout(time: 10, unit: 'HOURS') {
     try {
         parallel(stages)
         // JENKINS-34376 seems to make it hard to detect the aborted builds
@@ -102,7 +105,7 @@ timeout(time: 24, unit: 'HOURS') {
     }
 }
 
-def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvnName, cmd, options, goals, boolean makeReports) {
+def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvnName, goals, options, mavenOpts, boolean makeReports) {
     cleanWs()
     try {
         if (isUnix()) {
@@ -110,38 +113,41 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
         } else {
             bat 'mkdir .m2'
         }
+
         def mvnLocalRepoDir = null
         dir('.m2') {
             mvnLocalRepoDir = "${pwd()}"
         }
-
         println "Maven Local Repository = ${mvnLocalRepoDir}."
-        assert mvnLocalRepoDir != null: 'Local Maven Repository is undefined.'
+        assert mvnLocalRepoDir != null : 'Local Maven Repository is undefined.'
 
         stage("checkout ${stageKey}") {
             checkout scm
         }
 
-        def jdkTestHome = resolveToolNameToJavaPath(jdkTestName, mvnName)
-        //https://github.com/jacoco/jacoco/issues/629
-        def properties = ["\"-Djdk.home=${jdkTestHome}\"", "-Djacoco.skip=${!makeReports}"]
-        println("Setting JDK for testing ${properties[0]}")
-        def mavenOpts = '-server -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Xms64m -Xmx1g -Djava.awt.headless=true'
+        def properties = ["-Djacoco.skip=${!makeReports}", "\"-Dmaven.repo.local=${mvnLocalRepoDir}\""]
+        println "Setting JDK for testing ${jdkName}"
+        def cmd = ['mvn'] + goals + options + properties
 
         stage("build ${stageKey}") {
-            withMaven(jdk: jdkName, maven: mvnName,
-                    mavenLocalRepo: mvnLocalRepoDir, mavenOpts: mavenOpts,
-                    options: [
-                            findbugsPublisher(disabled: !makeReports),
-                            openTasksPublisher(disabled: true),
-                            junitPublisher(disabled: true),
-                            artifactsPublisher(disabled: true),
-                            invokerPublisher(disabled: true)
-                    ]) {
-                def script = cmd + options + goals + properties
-                if (isUnix()) {
+            if (isUnix()) {
+                withEnv(["JAVA_HOME=${tool(jdkName)}",
+                         "JAVA_HOME_IT=${tool(jdkTestName)}",
+                         "MAVEN_OPTS=${mavenOpts}",
+                         "PATH+MAVEN=${tool(mvnName)}/bin:${env.JAVA_HOME}/bin"
+                ]) {
+                    sh 'echo JAVA_HOME=$JAVA_HOME, JAVA_HOME_IT=$JAVA_HOME_IT'
+                    def script = cmd + ['\"-Djdk.home=$JAVA_HOME_IT\"']
                     sh script.join(' ')
-                } else {
+                }
+            } else {
+                withEnv(["JAVA_HOME=${tool(jdkName)}",
+                         "JAVA_HOME_IT=${tool(jdkTestName)}",
+                         "MAVEN_OPTS=${mavenOpts}",
+                         "PATH+MAVEN=${tool(mvnName)}\\bin;${env.JAVA_HOME}\\bin"
+                ]) {
+                    bat 'echo JAVA_HOME=%JAVA_HOME%, JAVA_HOME_IT=%JAVA_HOME_IT%'
+                    def script = cmd + ['\"-Djdk.home=%JAVA_HOME_IT%\"']
                     bat script.join(' ')
                 }
             }
@@ -167,28 +173,15 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
                 }
             }
 
-            if (isUnix()) {
-                if (fileExists('maven-failsafe-plugin/target/it')) {
-                    sh "tar czf failsafe-its-${stageKey}.tgz maven-failsafe-plugin/target/it"
-                }
-
-                if (fileExists('surefire-its/target')) {
-                    sh "tar czf surefire-its-${stageKey}.tgz surefire-its/target"
-                }
-//              println(readFile('target/rat.txt'))
-//              Wait for INFRA installation of Pipeline Utils, use fileExists()
-//              if (fileExists('maven-failsafe-plugin/target/it')) {
-//                  zip(zipFile: "it--maven-failsafe-plugin--${stageKey}.zip", dir: 'maven-failsafe-plugin/target/it', archive: true)
-//              }
-//
-//              if (fileExists('surefire-its/target')) {
-//                  zip(zipFile: "it--surefire-its--${stageKey}.zip", dir: 'surefire-its/target', archive: true)
-//              }
-//
-//              archiveArtifacts(artifacts: 'surefire-its/target/**/log.txt', allowEmptyArchive: true, fingerprint: true, onlyIfSuccessful: false)
-
-                archive includes: '*.tgz'
+            if (fileExists('maven-failsafe-plugin/target/it')) {
+                zip(zipFile: "it--maven-failsafe-plugin--${stageKey}.zip", dir: 'maven-failsafe-plugin/target/it', archive: true)
             }
+
+            if (fileExists('surefire-its/target')) {
+                zip(zipFile: "it--surefire-its--${stageKey}.zip", dir: 'surefire-its/target', archive: true)
+            }
+
+            archiveArtifacts(artifacts: '*.zip', allowEmptyArchive: true, onlyIfSuccessful: false)
         }
 
         stage("cleanup ${stageKey}") {
@@ -196,32 +189,6 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
             cleanWs()
         }
     }
-}
-
-/**
- * It is used instead of tool(${jdkTestName}).
- */
-def resolveToolNameToJavaPath(jdkToolName, mvnName) {
-    def javaHome = null
-    try {
-        withMaven(jdk: jdkToolName, maven: mvnName) {
-            javaHome = isUnix() ? sh(script: 'echo -en $JAVA_HOME', returnStdout: true) : bat(script: '@echo %JAVA_HOME%', returnStdout: true)
-        }
-
-        if (javaHome != null) {
-            javaHome = javaHome.trim()
-            def exec = javaHome + (isUnix() ? '/bin/java' : '\\bin\\java.exe')
-            if (!fileExists(exec)) {
-                println "The ${exec} does not exist in jdkToolName=${jdkToolName}."
-                javaHome = null
-            }
-        }
-    } catch(e) {
-        println "Caught an exception while resolving 'jdkToolName' ${jdkToolName} via 'mvnName' ${mvnName}: ${e}"
-        javaHome = null;
-    }
-    assert javaHome != null : "Could not resolve ${jdkToolName} to JAVA_HOME."
-    return javaHome
 }
 
 @NonCPS
