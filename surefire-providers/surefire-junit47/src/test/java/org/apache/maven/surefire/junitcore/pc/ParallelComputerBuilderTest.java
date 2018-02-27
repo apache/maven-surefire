@@ -137,9 +137,9 @@ public class ParallelComputerBuilderTest
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = System.currentTimeMillis();
+        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final Result result = core.run( computer, TestSuite.class );
-        final long t2 = System.currentTimeMillis();
+        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final long timeSpent = t2 - t1;
 
         assertThat( computer.getSuites().size(), is( 1 ) );
@@ -175,9 +175,9 @@ public class ParallelComputerBuilderTest
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = System.currentTimeMillis();
+        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final Result result = core.run( computer, TestSuite.class, Class1.class );
-        final long t2 = System.currentTimeMillis();
+        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final long timeSpent = t2 - t1;
 
         assertThat( computer.getSuites().size(), is( 1 ) );
@@ -204,9 +204,9 @@ public class ParallelComputerBuilderTest
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = System.currentTimeMillis();
+        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final Result result = core.run( computer, TestSuite.class, Class1.class );
-        final long t2 = System.currentTimeMillis();
+        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final long timeSpent = t2 - t1;
 
         assertThat( computer.getSuites().size(), is( 1 ) );
@@ -239,9 +239,9 @@ public class ParallelComputerBuilderTest
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = System.currentTimeMillis();
+        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final Result result = core.run( computer, TestSuite.class );
-        final long t2 = System.currentTimeMillis();
+        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final long timeSpent = t2 - t1;
 
         assertThat( computer.getSuites().size(), is( 1 ) );
@@ -266,9 +266,9 @@ public class ParallelComputerBuilderTest
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = System.currentTimeMillis();
+        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final Result result = core.run( computer, TestSuite.class );
-        final long t2 = System.currentTimeMillis();
+        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final long timeSpent = t2 - t1;
 
         assertThat( computer.getSuites().size(), is( 1 ) );
@@ -296,9 +296,9 @@ public class ParallelComputerBuilderTest
         // Each group takes 0.5s.
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = System.currentTimeMillis();
+        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final Result result = core.run( computer, TestSuite.class, Class1.class );
-        final long t2 = System.currentTimeMillis();
+        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final long timeSpent = t2 - t1;
 
         assertThat( computer.getSuites().size(), is( 1 ) );
@@ -323,9 +323,9 @@ public class ParallelComputerBuilderTest
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = System.currentTimeMillis();
+        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final Result result = core.run( computer, TestSuite.class, Class1.class );
-        final long t2 = System.currentTimeMillis();
+        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final long timeSpent = t2 - t1;
 
         assertThat( computer.getSuites().size(), is( 1 ) );
@@ -342,9 +342,9 @@ public class ParallelComputerBuilderTest
     @Test( timeout = 2000 )
     public void shutdown()
     {
-        final long t1 = System.currentTimeMillis();
+        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final Result result = new ShutdownTest().run( false );
-        final long t2 = System.currentTimeMillis();
+        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final long timeSpent = t2 - t1;
         assertTrue( result.wasSuccessful() );
         assertTrue( beforeShutdown );
@@ -354,9 +354,9 @@ public class ParallelComputerBuilderTest
     @Test( timeout = 2000 )
     public void shutdownWithInterrupt()
     {
-        final long t1 = System.currentTimeMillis();
+        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         new ShutdownTest().run( true );
-        final long t2 = System.currentTimeMillis();
+        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final long timeSpent = t2 - t1;
         assertTrue( beforeShutdown );
         assertThat( timeSpent, between( 450, 1250 ) );

@@ -40,9 +40,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.maven.surefire.junitcore.pc.ParallelComputerUtil.*;
 import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.*;
+import static org.apache.maven.surefire.junitcore.pc.RangeMatcher.between;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
@@ -971,9 +973,9 @@ public final class ParallelComputerUtilTest
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( logger, params );
         ParallelComputer pc = pcBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = System.currentTimeMillis();
+        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final Result result = core.run( pc, TestClass.class );
-        final long t2 = System.currentTimeMillis();
+        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         long timeSpent = t2 - t1;
         final long deltaTime = 500L;
 
@@ -981,6 +983,7 @@ public final class ParallelComputerUtilTest
         assertThat( result.getRunCount(), is( 3 ) );
         assertThat( result.getFailureCount(), is( 0 ) );
         assertThat( result.getIgnoreCount(), is( 0 ) );
+        //assertThat( timeSpent, between (timeSpent - deltaTime, timeSpent + deltaTime + 2000L ) );
         assertEquals( 10000L, timeSpent, deltaTime );
     }
 
@@ -998,9 +1001,9 @@ public final class ParallelComputerUtilTest
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( logger, params );
         ParallelComputer pc = pcBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = System.currentTimeMillis();
+        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         core.run( pc, TestClass.class );
-        final long t2 = System.currentTimeMillis();
+        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final long timeSpent = t2 - t1;
         final long deltaTime = 500L;
 
@@ -1024,9 +1027,9 @@ public final class ParallelComputerUtilTest
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( logger, params );
         ParallelComputer pc = pcBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = System.currentTimeMillis();
+        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         core.run( pc, TestClass.class );
-        final long t2 = System.currentTimeMillis();
+        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final long timeSpent = t2 - t1;
         final long deltaTime = 500L;
 
@@ -1053,9 +1056,9 @@ public final class ParallelComputerUtilTest
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( logger, params );
         ParallelComputer pc = pcBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = System.currentTimeMillis();
+        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         core.run( pc, TestClass.class );
-        final long t2 = System.currentTimeMillis();
+        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final long timeSpent = t2 - t1;
         final long deltaTime = 500L;
 
@@ -1080,9 +1083,9 @@ public final class ParallelComputerUtilTest
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( logger, params );
         ParallelComputer pc = pcBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = System.currentTimeMillis();
+        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         core.run( pc, TestClass.class );
-        final long t2 = System.currentTimeMillis();
+        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
         final long timeSpent = t2 - t1;
         final long deltaTime = 500L;
 
@@ -1099,14 +1102,14 @@ public final class ParallelComputerUtilTest
         public void a()
             throws InterruptedException
         {
-            long t1 = System.currentTimeMillis();
+            long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
             try
             {
                 Thread.sleep( 5000L );
             }
             finally
             {
-                System.out.println( getClass().getSimpleName() + "#a() spent " + ( System.currentTimeMillis() - t1 ) );
+                System.out.println( getClass().getSimpleName() + "#a() spent " + ( TimeUnit.NANOSECONDS.toMillis( System.nanoTime()) - t1 ) );
             }
         }
 
@@ -1114,14 +1117,14 @@ public final class ParallelComputerUtilTest
         public void b()
             throws InterruptedException
         {
-            long t1 = System.currentTimeMillis();
+            long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
             try
             {
                 Thread.sleep( 5000L );
             }
             finally
             {
-                System.out.println( getClass().getSimpleName() + "#b() spent " + ( System.currentTimeMillis() - t1 ) );
+                System.out.println( getClass().getSimpleName() + "#b() spent " + ( TimeUnit.NANOSECONDS.toMillis( System.nanoTime()) - t1 ) );
             }
         }
 
@@ -1129,14 +1132,14 @@ public final class ParallelComputerUtilTest
         public void c()
             throws InterruptedException
         {
-            long t1 = System.currentTimeMillis();
+            long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
             try
             {
                 Thread.sleep( 5000L );
             }
             finally
             {
-                System.out.println( getClass().getSimpleName() + "#c() spent " + ( System.currentTimeMillis() - t1 ) );
+                System.out.println( getClass().getSimpleName() + "#c() spent " + ( TimeUnit.NANOSECONDS.toMillis( System.nanoTime()) - t1 ) );
             }
         }
     }
