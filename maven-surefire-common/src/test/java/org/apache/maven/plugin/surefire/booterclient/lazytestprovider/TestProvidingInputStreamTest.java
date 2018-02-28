@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
@@ -140,7 +140,7 @@ public class TestProvidingInputStreamTest
     public void shouldDecodeTwoCommands()
             throws IOException
     {
-        TestProvidingInputStream pluginIs = new TestProvidingInputStream( new ConcurrentLinkedDeque<String>() );
+        TestProvidingInputStream pluginIs = new TestProvidingInputStream( new ConcurrentLinkedQueue<String>() );
         pluginIs.acknowledgeByeEventReceived();
         pluginIs.noop();
         DataInputStream is = new DataInputStream( pluginIs );

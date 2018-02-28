@@ -619,7 +619,7 @@ public class ForkStarter
             {
                 runResult = timeout( forkClient.getDefaultReporterFactory().getGlobalRunStatistics().getRunResult() );
             }
-            else if ( result != SUCCESS )
+            else if ( result == null || result != SUCCESS )
             {
                 booterForkException =
                         new SurefireBooterForkException( "Error occurred in starting fork, check output in log" );

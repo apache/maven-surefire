@@ -21,6 +21,9 @@ package org.apache.maven.surefire;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+import org.apache.maven.plugin.surefire.AbstractSurefireMojoJava7PlusTest;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojoTest;
 import org.apache.maven.plugin.surefire.SurefireHelperTest;
 import org.apache.maven.plugin.surefire.SurefireReflectorTest;
@@ -45,8 +48,9 @@ import org.apache.maven.surefire.report.FileReporterTest;
 import org.apache.maven.surefire.report.RunStatisticsTest;
 import org.apache.maven.surefire.spi.SPITest;
 import org.apache.maven.surefire.util.RelocatorTest;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
+import static org.apache.commons.lang3.JavaVersion.JAVA_RECENT;
 
 /**
  * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
@@ -54,37 +58,39 @@ import org.junit.runners.Suite;
  * @author Tibor Digana (tibor17)
  * @since 2.19
  */
-@Suite.SuiteClasses( {
-    RelocatorTest.class,
-    RunStatisticsTest.class,
-    FileReporterTest.class,
-    ConsoleOutputFileReporterTest.class,
-    SurefirePropertiesTest.class,
-    SpecificFileFilterTest.class,
-    DirectoryScannerTest.class,
-    DependenciesScannerTest.class,
-    RunEntryStatisticsMapTest.class,
-    WrappedReportEntryTest.class,
-    StatelessXmlReporterTest.class,
-    DefaultReporterFactoryTest.class,
-    ForkingRunListenerTest.class,
-    ForkConfigurationTest.class,
-    BooterDeserializerStartupConfigurationTest.class,
-    BooterDeserializerProviderConfigurationTest.class,
-    TestProvidingInputStreamTest.class,
-    TestLessInputStreamBuilderTest.class,
-    SPITest.class,
-    SurefireReflectorTest.class,
-    SurefireHelperTest.class,
-    AbstractSurefireMojoTest.class,
-    DefaultForkConfigurationTest.class,
-    ModularClasspathForkConfigurationTest.class
-} )
-@RunWith( Suite.class )
-public class JUnit4SuiteTest
+public class JUnit4SuiteTest extends TestCase
 {
     public static Test suite()
     {
-        return new JUnit4TestAdapter( JUnit4SuiteTest.class );
+        TestSuite suite = new TestSuite();
+        suite.addTestSuite( RelocatorTest.class );
+        suite.addTestSuite( RunStatisticsTest.class );
+        suite.addTestSuite( FileReporterTest.class );
+        suite.addTestSuite( ConsoleOutputFileReporterTest.class );
+        suite.addTestSuite( SurefirePropertiesTest.class );
+        suite.addTestSuite( SpecificFileFilterTest.class );
+        suite.addTest( new JUnit4TestAdapter( DirectoryScannerTest.class ) );
+        suite.addTestSuite( DependenciesScannerTest.class );
+        suite.addTestSuite( RunEntryStatisticsMapTest.class );
+        suite.addTestSuite( WrappedReportEntryTest.class );
+        suite.addTestSuite( StatelessXmlReporterTest.class );
+        suite.addTestSuite( DefaultReporterFactoryTest.class );
+        suite.addTestSuite( ForkingRunListenerTest.class );
+        suite.addTest( new JUnit4TestAdapter( ForkConfigurationTest.class ) );
+        suite.addTestSuite( BooterDeserializerStartupConfigurationTest.class );
+        suite.addTestSuite( BooterDeserializerProviderConfigurationTest.class );
+        suite.addTest( new JUnit4TestAdapter( TestProvidingInputStreamTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( TestLessInputStreamBuilderTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( SPITest.class ) );
+        suite.addTest( new JUnit4TestAdapter( SurefireReflectorTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( SurefireHelperTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( DefaultForkConfigurationTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( ModularClasspathForkConfigurationTest.class ) );
+        if ( JAVA_RECENT.atLeast( JAVA_1_7 ) )
+        {
+            suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoJava7PlusTest.class ) );
+        }
+        return suite;
     }
 }

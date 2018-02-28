@@ -34,8 +34,6 @@
 
   <properties>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
   </properties>
 
   <dependencies>
@@ -73,10 +71,8 @@
       <artifactId>commons-io</artifactId>
     </dependency>
     <dependency>
-      <!-- Java 9 requires version 3.6+ (todo use in parent POM. Note: versions 3.6, 3.7 are compiled with Java 7) -->
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.7</version>
     </dependency>
   </dependencies>
 

@@ -97,8 +97,8 @@
     <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
     <!-- Override with Jigsaw JRE 9 -->
     <jdk.home>${java.home}/..</jdk.home>
-    <maven.compiler.testSource>1.7</maven.compiler.testSource>
-    <maven.compiler.testTarget>1.7</maven.compiler.testTarget>
+    <maven.compiler.testSource>1.6</maven.compiler.testSource>
+    <maven.compiler.testTarget>1.6</maven.compiler.testTarget>
     <jvm.args.tests>-server -XX:+UseG1GC -Xms128m -Xmx144m -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true</jvm.args.tests>
   </properties>
 

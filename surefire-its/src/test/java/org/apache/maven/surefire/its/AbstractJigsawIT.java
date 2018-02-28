@@ -77,19 +77,13 @@ public abstract class AbstractJigsawIT
     private static boolean isExtJavaVerion9AtLeast() throws IOException
     {
         File release = new File( EXT_JDK_HOME, "release" );
-
-        if ( !release.isFile() )
-        {
-            fail( EXT_JDK_HOME_KEY + " was provided with value " + EXT_JDK_HOME + " but file does not exist "
-                          + EXT_JDK_HOME + File.separator + "release"
-            );
-        }
+        assumeTrue( EXT_JDK_HOME_KEY + " was provided with value " + EXT_JDK_HOME + " but file does not exist "
+                + EXT_JDK_HOME + File.separator + "release", release.exists() );
 
         Properties properties = new Properties();
-        try ( InputStream is = new FileInputStream( release ) )
-        {
-            properties.load( is );
-        }
+        InputStream is = new FileInputStream( release );
+        properties.load( is );
+        is.close();
         String javaVersion = properties.getProperty( "JAVA_VERSION" ).replace( "\"", "" );
         StringTokenizer versions = new StringTokenizer( javaVersion, "._" );
 
