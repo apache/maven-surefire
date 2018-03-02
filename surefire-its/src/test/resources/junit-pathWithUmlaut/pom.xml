@@ -43,6 +43,18 @@
   </dependencies>
 
   <build>
+    <pluginManagement>
+      <plugins>
+        <!--
+        mvn clean is called beforehand.
+        The German word Umlaut which is not ASCII must be deleted the same on all M3 versions.
+        -->
+        <plugin>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
