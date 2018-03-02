@@ -20,9 +20,9 @@ Usage of [maven-surefire-plugin], [maven-failsafe-plugin], [maven-surefire-repor
 
 # Build Status
 
-[![dependencies](https://www.versioneye.com/java/org.apache.maven.plugins:maven-surefire-plugin/badge.svg?style=plastic)](https://builds.apache.org/job/maven-surefire/depgraph-view/) Maven 2.2.1 Plugin API
+[![dependencies](https://www.versioneye.com/java/org.apache.maven.plugins:maven-surefire-plugin/badge.svg?style=plastic)](https://builds.apache.org/job/maven-wip/job/maven-surefire/depgraph-view/) Maven 2.2.1 Plugin API
 
-[![license](http://img.shields.io/:license-apache-red.svg?style=plastic)](http://www.apache.org/licenses/LICENSE-2.0.html) [![tests](https://img.shields.io/jenkins/t/https/builds.apache.org/view/M-R/view/Maven/job/maven-surefire-pipeline/job/master.svg?style=plastic)](https://builds.apache.org/view/M-R/view/Maven/job/maven-surefire-pipeline/job/master/lastBuild/testReport/) [![Build Status](https://builds.apache.org/view/M-R/view/Maven/job/maven-surefire-pipeline/job/master/badge/icon?style=plastic)](https://builds.apache.org/view/M-R/view/Maven/job/maven-surefire-pipeline/job/master/)
+[![license](http://img.shields.io/:license-apache-red.svg?style=plastic)](http://www.apache.org/licenses/LICENSE-2.0.html) [![tests](https://img.shields.io/jenkins/t/https/builds.apache.org/job/maven-wip/job/maven-surefire/job/master.svg?style=plastic)](https://builds.apache.org/job/maven-wip/job/maven-surefire/job/master/lastBuild/testReport/) [![Build Status](https://builds.apache.org/job/maven-wip/job/maven-surefire/job/master/badge/icon?style=plastic)](https://builds.apache.org/job/maven-wip/job/maven-surefire/job/master/)
 
 # Development Information
 
