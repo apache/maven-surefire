@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junitcore;
+package org.apache.maven.plugin.failsafe;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,40 +21,26 @@ package org.apache.maven.surefire.junitcore;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
-import org.apache.maven.surefire.junitcore.pc.OptimizedParallelComputerTest;
-import org.apache.maven.surefire.junitcore.pc.ParallelComputerBuilderTest;
-import org.apache.maven.surefire.junitcore.pc.ParallelComputerUtilTest;
-import org.apache.maven.surefire.junitcore.pc.SchedulingStrategiesTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 /**
- * Adapt the JUnit47 tests which use only annotations to the JUnit3 test suite.
+ * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
  *
  * @author Tibor Digana (tibor17)
- * @since 2.16
+ * @since 2.21.0
  */
-@Suite.SuiteClasses( {
-    Surefire746Test.class,
-    Surefire813IncorrectResultTest.class,
-    ParallelComputerUtilTest.class,
-    ParallelComputerBuilderTest.class,
-    SchedulingStrategiesTest.class,
-    OptimizedParallelComputerTest.class,
-    ConcurrentRunListenerTest.class,
-    ConfigurableParallelComputerTest.class,
-    JUnit4Reflector481Test.class,
-    JUnitCoreParametersTest.class,
-    JUnitCoreRunListenerTest.class,
-    MavenSurefireJUnit47RunnerTest.class,
-    MavenSurefireJUnit48RunnerTest.class,
-    TestMethodTest.class
+@SuiteClasses( {
+        IntegrationTestMojoTest.class,
+        MarshallerUnmarshallerTest.class,
+        RunResultTest.class
 } )
 @RunWith( Suite.class )
-public class JUnit47SuiteTest
+public class JUnit4SuiteTest
 {
     public static Test suite()
     {
-        return new JUnit4TestAdapter( JUnit47SuiteTest.class );
+        return new JUnit4TestAdapter( JUnit4SuiteTest.class );
     }
 }
