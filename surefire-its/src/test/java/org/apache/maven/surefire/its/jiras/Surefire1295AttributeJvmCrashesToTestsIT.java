@@ -66,9 +66,11 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
     public static Iterable<Object[]> parameters()
     {
         return asList(new Object[][] {
-                { "exit", DEFAULT },
-                { "exit", ONE_FORK_NO_REUSE },
-                { "exit", ONE_FORK_REUSE },
+//                unused, exit() does not stop all Threads immediately,
+//                see https://github.com/michaeltandy/crashjvm/issues/1
+//                { "exit", DEFAULT },
+//                { "exit", ONE_FORK_NO_REUSE },
+//                { "exit", ONE_FORK_REUSE },
                 { "abort", DEFAULT },
                 { "abort", ONE_FORK_NO_REUSE },
                 { "abort", ONE_FORK_REUSE },
@@ -127,7 +129,7 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
         // Waiting for the stream to become flushed on disk.
         SECONDS.sleep( 1L );
 
-        for ( Iterator< String > it = validator.loadLogLines().iterator(); it.hasNext(); )
+        for ( Iterator<String> it = validator.loadLogLines().iterator(); it.hasNext(); )
         {
             String line = it.next();
             if ( line.contains( "Crashed tests:" ) )
