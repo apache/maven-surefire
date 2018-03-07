@@ -24,7 +24,6 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 import org.apache.maven.doxia.markup.HtmlMarkup;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.sink.SinkEventAttributeSet;
@@ -40,7 +39,6 @@ import static org.apache.maven.doxia.sink.SinkEventAttributes.ID;
 import static org.apache.maven.doxia.sink.SinkEventAttributes.NAME;
 import static org.apache.maven.doxia.sink.SinkEventAttributes.STYLE;
 import static org.apache.maven.doxia.sink.SinkEventAttributes.TYPE;
-import static org.apache.maven.shared.utils.StringUtils.isEmpty;
 
 /**
  * This generator creates HTML Report from Surefire and Failsafe XML Report.
@@ -48,35 +46,23 @@ import static org.apache.maven.shared.utils.StringUtils.isEmpty;
 public final class SurefireReportGenerator
 {
     private static final int LEFT = JUSTIFY_LEFT;
-
     private static final Object[] TAG_TYPE_START = { HtmlMarkup.TAG_TYPE_START };
-
     private static final Object[] TAG_TYPE_END = { HtmlMarkup.TAG_TYPE_END };
 
     private final SurefireReportParser report;
-
     private final boolean showSuccess;
-
     private final String xrefLocation;
-    private final String title;
     private List<ReportTestSuite> testSuites;
-
-    public SurefireReportGenerator( List<File> reportsDirectories, Locale locale, boolean showSuccess,
-                                    String xrefLocation, ConsoleLogger consoleLogger, String title )
-    {
-        report = new SurefireReportParser( reportsDirectories, locale, consoleLogger );
-        this.showSuccess = showSuccess;
-        this.xrefLocation = xrefLocation;
-        this.title = title;
-    }
 
     public SurefireReportGenerator( List<File> reportsDirectories, Locale locale, boolean showSuccess,
                                     String xrefLocation, ConsoleLogger consoleLogger )
     {
-        this( reportsDirectories, locale, showSuccess, xrefLocation, consoleLogger, null );
+        report = new SurefireReportParser( reportsDirectories, locale, consoleLogger );
+        this.showSuccess = showSuccess;
+        this.xrefLocation = xrefLocation;
     }
 
-    public void doGenerateReport( ResourceBundle bundle, Sink sink )
+    public void doGenerateReport( LocalizedProperties bundle, Sink sink )
         throws MavenReportException
     {
         testSuites = report.parseXMLReportFiles();
@@ -84,7 +70,7 @@ public final class SurefireReportGenerator
         sink.head();
 
         sink.title();
-        sink.text( isEmpty( title ) ? bundle.getString( "report.surefire.header" ) : title );
+        sink.text( bundle.getReportHeader() );
         sink.title_();
 
         sink.head_();
@@ -99,7 +85,7 @@ public final class SurefireReportGenerator
 
         sink.section1();
         sink.sectionTitle1();
-        sink.text( isEmpty( title ) ? bundle.getString( "report.surefire.header" ) : title );
+        sink.text( bundle.getReportHeader() );
         sink.sectionTitle1_();
         sink.section1_();
 
@@ -129,13 +115,13 @@ public final class SurefireReportGenerator
         sink.close();
     }
 
-    private void constructSummarySection( ResourceBundle bundle, Sink sink )
+    private void constructSummarySection( LocalizedProperties bundle, Sink sink )
     {
         Map<String, String> summary = report.getSummary( testSuites );
 
         sink.section1();
         sink.sectionTitle1();
-        sink.text( bundle.getString( "report.surefire.label.summary" ) );
+        sink.text( bundle.getReportLabelSummary() );
         sink.sectionTitle1_();
 
         sinkAnchor( sink, "Summary" );
@@ -150,17 +136,17 @@ public final class SurefireReportGenerator
 
         sink.tableRow();
 
-        sinkHeader( sink, bundle.getString( "report.surefire.label.tests" ) );
+        sinkHeader( sink, bundle.getReportLabelTests() );
 
-        sinkHeader( sink, bundle.getString( "report.surefire.label.errors" ) );
+        sinkHeader( sink, bundle.getReportLabelErrors() );
 
-        sinkHeader( sink, bundle.getString( "report.surefire.label.failures" ) );
+        sinkHeader( sink, bundle.getReportLabelFailures() );
 
-        sinkHeader( sink, bundle.getString( "report.surefire.label.skipped" ) );
+        sinkHeader( sink, bundle.getReportLabelSkipped() );
 
-        sinkHeader( sink, bundle.getString( "report.surefire.label.successrate" ) );
+        sinkHeader( sink, bundle.getReportLabelSuccessRate() );
 
-        sinkHeader( sink, bundle.getString( "report.surefire.label.time" ) );
+        sinkHeader( sink, bundle.getReportLabelTime() );
 
         sink.tableRow_();
 
@@ -187,7 +173,7 @@ public final class SurefireReportGenerator
         sink.lineBreak();
 
         sink.paragraph();
-        sink.text( bundle.getString( "report.surefire.text.note1" ) );
+        sink.text( bundle.getReportTextNode1() );
         sink.paragraph_();
 
         sinkLineBreak( sink );
@@ -195,14 +181,14 @@ public final class SurefireReportGenerator
         sink.section1_();
     }
 
-    private void constructPackagesSection( ResourceBundle bundle, Sink sink,
+    private void constructPackagesSection( LocalizedProperties bundle, Sink sink,
                                            Map<String, List<ReportTestSuite>> suitePackages )
     {
         NumberFormat numberFormat = report.getNumberFormat();
 
         sink.section1();
         sink.sectionTitle1();
-        sink.text( bundle.getString( "report.surefire.label.packagelist" ) );
+        sink.text( bundle.getReportLabelPackageList() );
         sink.sectionTitle1_();
 
         sinkAnchor( sink, "Package_List" );
@@ -217,19 +203,19 @@ public final class SurefireReportGenerator
 
         sink.tableRow();
 
-        sinkHeader( sink, bundle.getString( "report.surefire.label.package" ) );
+        sinkHeader( sink, bundle.getReportLabelPackage() );
 
-        sinkHeader( sink, bundle.getString( "report.surefire.label.tests" ) );
+        sinkHeader( sink, bundle.getReportLabelTests() );
 
-        sinkHeader( sink, bundle.getString( "report.surefire.label.errors" ) );
+        sinkHeader( sink, bundle.getReportLabelErrors() );
 
-        sinkHeader( sink, bundle.getString( "report.surefire.label.failures" ) );
+        sinkHeader( sink, bundle.getReportLabelFailures() );
 
-        sinkHeader( sink, bundle.getString( "report.surefire.label.skipped" ) );
+        sinkHeader( sink, bundle.getReportLabelSkipped() );
 
-        sinkHeader( sink, bundle.getString( "report.surefire.label.successrate" ) );
+        sinkHeader( sink, bundle.getReportLabelSuccessRate() );
 
-        sinkHeader( sink, bundle.getString( "report.surefire.label.time" ) );
+        sinkHeader( sink, bundle.getReportLabelTime() );
 
         sink.tableRow_();
 
@@ -267,7 +253,7 @@ public final class SurefireReportGenerator
         sink.lineBreak();
 
         sink.paragraph();
-        sink.text( bundle.getString( "report.surefire.text.note2" ) );
+        sink.text( bundle.getReportTextNode2() );
         sink.paragraph_();
 
         for ( Map.Entry<String, List<ReportTestSuite>> entry : suitePackages.entrySet() )
@@ -305,19 +291,19 @@ public final class SurefireReportGenerator
 
                 sinkHeader( sink, "" );
 
-                sinkHeader( sink, bundle.getString( "report.surefire.label.class" ) );
+                sinkHeader( sink, bundle.getReportLabelClass() );
 
-                sinkHeader( sink, bundle.getString( "report.surefire.label.tests" ) );
+                sinkHeader( sink, bundle.getReportLabelTests() );
 
-                sinkHeader( sink, bundle.getString( "report.surefire.label.errors" ) );
+                sinkHeader( sink, bundle.getReportLabelErrors() );
 
-                sinkHeader( sink, bundle.getString( "report.surefire.label.failures" ) );
+                sinkHeader( sink, bundle.getReportLabelFailures() );
 
-                sinkHeader( sink, bundle.getString( "report.surefire.label.skipped" ) );
+                sinkHeader( sink, bundle.getReportLabelSkipped() );
 
-                sinkHeader( sink, bundle.getString( "report.surefire.label.successrate" ) );
+                sinkHeader( sink, bundle.getReportLabelSuccessRate() );
 
-                sinkHeader( sink, bundle.getString( "report.surefire.label.time" ) );
+                sinkHeader( sink, bundle.getReportLabelTime() );
 
                 sink.tableRow_();
 
@@ -390,13 +376,13 @@ public final class SurefireReportGenerator
         sink.tableRow_();
     }
 
-    private void constructTestCasesSection( ResourceBundle bundle, Sink sink )
+    private void constructTestCasesSection( LocalizedProperties bundle, Sink sink )
     {
         NumberFormat numberFormat = report.getNumberFormat();
 
         sink.section1();
         sink.sectionTitle1();
-        sink.text( bundle.getString( "report.surefire.label.testcases" ) );
+        sink.text( bundle.getReportLabelTestCases() );
         sink.sectionTitle1_();
 
         sinkAnchor( sink, "Test_Cases" );
@@ -562,11 +548,11 @@ public final class SurefireReportGenerator
         return DoxiaUtils.isValidId( id ) ? id : DoxiaUtils.encodeId( id, true );
     }
 
-    private void constructFailureDetails( Sink sink, ResourceBundle bundle, List<ReportTestCase> failures )
+    private void constructFailureDetails( Sink sink, LocalizedProperties bundle, List<ReportTestCase> failures )
     {
         sink.section1();
         sink.sectionTitle1();
-        sink.text( bundle.getString( "report.surefire.label.failuredetails" ) );
+        sink.text( bundle.getReportLabelFailureDetails() );
         sink.sectionTitle1_();
 
         sinkAnchor( sink, "Failure_Details" );
@@ -647,22 +633,22 @@ public final class SurefireReportGenerator
         sink.section1_();
     }
 
-    private void constructHotLinks( Sink sink, ResourceBundle bundle )
+    private void constructHotLinks( Sink sink, LocalizedProperties bundle )
     {
         if ( !testSuites.isEmpty() )
         {
             sink.paragraph();
 
             sink.text( "[" );
-            sinkLink( sink, bundle.getString( "report.surefire.label.summary" ), "#Summary" );
+            sinkLink( sink, bundle.getReportLabelSummary(), "#Summary" );
             sink.text( "]" );
 
             sink.text( " [" );
-            sinkLink( sink, bundle.getString( "report.surefire.label.packagelist" ), "#Package_List" );
+            sinkLink( sink, bundle.getReportLabelPackageList(), "#Package_List" );
             sink.text( "]" );
 
             sink.text( " [" );
-            sinkLink( sink, bundle.getString( "report.surefire.label.testcases" ), "#Test_Cases" );
+            sinkLink( sink, bundle.getReportLabelTestCases(), "#Test_Cases" );
             sink.text( "]" );
 
             sink.paragraph_();

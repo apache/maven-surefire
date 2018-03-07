@@ -92,6 +92,34 @@ public class FailsafeReportMojo
     }
 
     @Override
+    protected LocalizedProperties getBundle( Locale locale, ClassLoader resourceBundleClassLoader )
+    {
+        ResourceBundle bundle = ResourceBundle.getBundle( "surefire-report", locale, resourceBundleClassLoader );
+        return new LocalizedProperties( bundle ) {
+            @Override
+            public String getReportName()
+            {
+                return isEmpty( FailsafeReportMojo.this.getTitle() )
+                        ? toLocalizedValue( "report.failsafe.name" ) : FailsafeReportMojo.this.getTitle();
+            }
+
+            @Override
+            public String getReportDescription()
+            {
+                return isEmpty( FailsafeReportMojo.this.getDescription() )
+                        ? toLocalizedValue( "report.failsafe.description" ) : FailsafeReportMojo.this.getDescription();
+            }
+
+            @Override
+            public String getReportHeader()
+            {
+                return isEmpty( FailsafeReportMojo.this.getTitle() )
+                        ? toLocalizedValue( "report.failsafe.header" ) : FailsafeReportMojo.this.getTitle();
+            }
+        };
+    }
+
+    @Override
     protected boolean isSkipped()
     {
         return skipFailsafeReport;
@@ -125,36 +153,5 @@ public class FailsafeReportMojo
     public String getDescription()
     {
         return description;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getName( Locale locale )
-    {
-        return isEmpty( getTitle() )
-                ? getBundle( locale ).getString( "report.failsafe.name" )
-                : getTitle();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getDescription( Locale locale )
-    {
-        return isEmpty( getDescription() )
-                ? getDescription()
-                : getBundle( locale ).getString( "report.failsafe.description" );
-    }
-
-    /*
-    * This is currently a copy of the getBundle() method of the AbstractSurefireReportMojo class,
-    * cause the failsafe report only different in two names for the bundles.
-    */
-    private ResourceBundle getBundle( Locale locale )
-    {
-        return ResourceBundle.getBundle( "surefire-report", locale, getClass().getClassLoader() );
     }
 }

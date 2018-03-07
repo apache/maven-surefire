@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.ResourceBundle;
 import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -36,7 +35,6 @@ import org.apache.maven.shared.utils.PathTool;
 import static java.util.Collections.addAll;
 import static org.apache.maven.plugins.surefire.report.SurefireReportParser.hasReportFiles;
 import static org.apache.maven.shared.utils.StringUtils.isEmpty;
-import static org.apache.maven.shared.utils.StringUtils.isNotEmpty;
 
 /**
  * Abstract base class for reporting test results using Surefire.
@@ -136,7 +134,7 @@ public abstract class AbstractSurefireReportMojo
         }
 
         new SurefireReportGenerator( getReportsDirectories(), locale, showSuccess, determineXrefLocation(),
-                                           getConsoleLogger(), isNotEmpty( getTitle() ) ? getTitle() : null )
+                                           getConsoleLogger() )
                 .doGenerateReport( getBundle( locale ), getSink() );
     }
 
@@ -311,9 +309,7 @@ public abstract class AbstractSurefireReportMojo
     @Override
     public String getName( Locale locale )
     {
-        return isEmpty( getTitle() )
-                ? getBundle( locale ).getString( "report.surefire.name" )
-                : getTitle();
+        return getBundle( locale ).getReportName();
     }
 
     /**
@@ -322,9 +318,7 @@ public abstract class AbstractSurefireReportMojo
     @Override
     public String getDescription( Locale locale )
     {
-        return isEmpty( getDescription() )
-                ? getBundle( locale ).getString( "report.surefire.description" )
-                : getDescription();
+        return getBundle( locale ).getReportDescription();
     }
 
     /**
@@ -333,13 +327,15 @@ public abstract class AbstractSurefireReportMojo
     @Override
     public abstract String getOutputName();
 
-    private ResourceBundle getBundle( Locale locale )
-    {
-        return ResourceBundle.getBundle( "surefire-report", locale, getClass().getClassLoader() );
-    }
+    protected abstract LocalizedProperties getBundle( Locale locale, ClassLoader resourceBundleClassLoader );
 
     protected final ConsoleLogger getConsoleLogger()
     {
         return new PluginConsoleLogger( getLog() );
+    }
+
+    final LocalizedProperties getBundle( Locale locale )
+    {
+        return getBundle( locale, getClass().getClassLoader() );
     }
 }
