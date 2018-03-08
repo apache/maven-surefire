@@ -53,7 +53,7 @@ public class TestFile
     public TestFile( File file, Charset charset, OutputValidator surefireVerifier )
     {
         this.file = file;
-        this.encoding = charset;
+        this.encoding = charset == null ? Charset.defaultCharset() : charset;
         this.surefireVerifier = surefireVerifier;
     }
 

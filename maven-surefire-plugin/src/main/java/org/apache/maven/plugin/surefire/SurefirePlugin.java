@@ -237,6 +237,16 @@ public class SurefirePlugin
     private boolean useManifestOnlyJar;
 
     /**
+     * The character encoding scheme to be applied while generating test report
+     * files (see target/surefire-reports/yourTestName.txt).
+     * The report output files (*-out.txt) are still encoded with JVM's encoding used in standard out/err pipes.
+     *
+     * @since 3.0.0-M1
+     */
+    @Parameter( property = "surefire.encoding", defaultValue = "${project.reporting.outputEncoding}" )
+    private String encoding;
+
+    /**
      * (JUnit 4+ providers)
      * The number of times each failing test will be rerun. If set larger than 0, rerun failing tests immediately after
      * they fail. If a failing test passes in any of those reruns, it will be marked as pass and reported as a "flake".
@@ -511,6 +521,18 @@ public class SurefirePlugin
     public void setUseManifestOnlyJar( boolean useManifestOnlyJar )
     {
         this.useManifestOnlyJar = useManifestOnlyJar;
+    }
+
+    @Override
+    public String getEncoding()
+    {
+        return encoding;
+    }
+
+    @Override
+    public void setEncoding( String encoding )
+    {
+        this.encoding = encoding;
     }
 
     @Override

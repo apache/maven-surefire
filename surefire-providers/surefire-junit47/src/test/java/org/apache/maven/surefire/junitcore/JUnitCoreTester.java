@@ -19,6 +19,8 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.StartupReportConfiguration;
+import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
@@ -29,6 +31,7 @@ import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
@@ -40,7 +43,6 @@ import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture
  */
 public class JUnitCoreTester
 {
-
     private final Computer computer;
 
     public JUnitCoreTester()
@@ -56,7 +58,7 @@ public class JUnitCoreTester
     public Result run( boolean parallelClasses, Class<?>... classes )
         throws TestSetFailedException, ExecutionException
     {
-        ReporterFactory reporterManagerFactory = DefaultReporterFactory.defaultNoXml();
+        ReporterFactory reporterManagerFactory = defaultNoXml();
 
         try
         {
@@ -83,5 +85,26 @@ public class JUnitCoreTester
         }
     }
 
+    /**
+     * For testing purposes only.
+     *
+     * @return DefaultReporterFactory for testing purposes
+     */
+    public static DefaultReporterFactory defaultNoXml()
+    {
+        return new DefaultReporterFactory( defaultStartupReportConfiguration(), new NullConsoleLogger() );
+    }
 
+    /**
+     * For testing purposes only.
+     *
+     * @return StartupReportConfiguration fo testing purposes
+     */
+    private static StartupReportConfiguration defaultStartupReportConfiguration()
+    {
+        File target = new File( "./target" );
+        File statisticsFile = new File( target, "TESTHASHxXML" );
+        return new StartupReportConfiguration( true, true, "PLAIN", false, true, target, false, null, statisticsFile,
+                false, 0, null, null );
+    }
 }

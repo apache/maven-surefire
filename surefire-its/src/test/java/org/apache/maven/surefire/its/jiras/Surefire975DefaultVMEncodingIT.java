@@ -23,6 +23,8 @@ import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.convertUnicodeToUTF8;
+
 public class Surefire975DefaultVMEncodingIT
     extends SurefireJUnit4IntegrationTestCase
 {
@@ -34,7 +36,8 @@ public class Surefire975DefaultVMEncodingIT
         OutputValidator outputValidator =
             unpack( "surefire-975-wrong-encoding" ).setMavenOpts( "-Dfile.encoding=windows-1251" ).executeTest();
         outputValidator.getSurefireReportsXmlFile( "TEST-EncodingInReportTest.xml" ).assertContainsText(
-            "\u043A\u0438\u0440\u0438\u043B\u043B\u0438\u0446\u0435" );
+                // see project.build.sourceEncoding=UTF-8 in src/test/resources/surefire-975-wrong-encoding/pom.xml
+                convertUnicodeToUTF8( "\u043A\u0438\u0440\u0438\u043B\u043B\u0438\u0446\u0435" ) );
     }
 
 }

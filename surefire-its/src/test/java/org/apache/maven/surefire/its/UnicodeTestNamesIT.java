@@ -27,6 +27,8 @@ import org.junit.Test;
 
 import java.io.File;
 
+import static org.apache.commons.io.Charsets.UTF_8;
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.convertUnicodeToUTF8;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
@@ -37,6 +39,7 @@ import static org.junit.Assume.assumeFalse;
 public class UnicodeTestNamesIT
         extends SurefireJUnit4IntegrationTestCase
 {
+    private static final String REPORT_FILE_CONTENT = "junit.twoTestCases.\u800C\u7D22\u5176\u60C5Test";
     private static final String TXT_REPORT = "junit.twoTestCases.\u800C\u7D22\u5176\u60C5Test.txt";
     private static final String XML_REPORT = "TEST-junit.twoTestCases.\u800C\u7D22\u5176\u60C5Test.xml";
 
@@ -62,14 +65,17 @@ public class UnicodeTestNamesIT
                 unpacked.executeTest()
                         .assertTestSuiteResults( 2, 0, 0, 0 );
 
-        TestFile surefireReportFile = outputValidator.getSurefireReportsFile( TXT_REPORT );
+        TestFile surefireReportFile = outputValidator.getSurefireReportsFile( TXT_REPORT, UTF_8 );
         assertTrue( surefireReportFile.exists() );
-        surefireReportFile.assertContainsText( "junit.twoTestCases.????Test" );
+
+        // See src/test/resources/unicode-testnames/pom.xml and property project.build.sourceEncoding set to UTF-8.
+        surefireReportFile.assertContainsText( convertUnicodeToUTF8( REPORT_FILE_CONTENT ) );
 
         TestFile surefireXmlReportFile = outputValidator.getSurefireReportsXmlFile( XML_REPORT );
         assertTrue( surefireXmlReportFile.exists() );
         assertFalse( surefireXmlReportFile.readFileToString().isEmpty() );
-        surefireXmlReportFile.assertContainsText( "junit.twoTestCases.\u800C\u7D22\u5176\u60C5Test" );
-    }
 
+        // See src/test/resources/unicode-testnames/pom.xml and property project.build.sourceEncoding set to UTF-8.
+        surefireXmlReportFile.assertContainsText( convertUnicodeToUTF8( REPORT_FILE_CONTENT ) );
+    }
 }

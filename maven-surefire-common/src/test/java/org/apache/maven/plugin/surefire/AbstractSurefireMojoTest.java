@@ -494,6 +494,18 @@ public class AbstractSurefireMojoTest
         }
 
         @Override
+        public String getEncoding()
+        {
+            return null;
+        }
+
+        @Override
+        public void setEncoding( String encoding )
+        {
+
+        }
+
+        @Override
         public Boolean getFailIfNoSpecifiedTests()
         {
             return null;

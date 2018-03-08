@@ -256,10 +256,11 @@ public class IntegrationTestMojo
     private boolean useManifestOnlyJar;
 
     /**
-     * The character encoding scheme to be applied.
-     * Deprecated since 2.20.1 and used encoding UTF-8 in <tt>failsafe-summary.xml</tt>.
+     * The character encoding scheme to be applied while generating test report
+     * files (see target/surefire-reports/yourTestName.txt).
+     * The report output files (*-out.txt) are still encoded with JVM's encoding used in standard out/err pipes.
      *
-     * @deprecated since of 2.20.1
+     * @since 3.0.0-M1
      */
     @Parameter( property = "encoding", defaultValue = "${project.reporting.outputEncoding}" )
     private String encoding;
@@ -701,6 +702,18 @@ public class IntegrationTestMojo
     public void setUseManifestOnlyJar( boolean useManifestOnlyJar )
     {
         this.useManifestOnlyJar = useManifestOnlyJar;
+    }
+
+    @Override
+    public String getEncoding()
+    {
+        return encoding;
+    }
+
+    @Override
+    public void setEncoding( String encoding )
+    {
+        this.encoding = encoding;
     }
 
     // the following will be refactored out once the common code is all in one place

@@ -20,9 +20,15 @@ package org.apache.maven.surefire.report;
  */
 
 import java.io.File;
+import java.io.IOException;
+
 import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
 
 import junit.framework.TestCase;
+import org.apache.maven.shared.utils.io.FileUtils;
+
+import static org.apache.maven.surefire.util.internal.StringUtils.US_ASCII;
+import static org.fest.assertions.Assertions.assertThat;
 
 public class ConsoleOutputFileReporterTest
     extends TestCase
@@ -32,42 +38,52 @@ public class ConsoleOutputFileReporterTest
 
     private ReportEntry reportEntry;
 
-    private static final String testName = "org.apache.maven.surefire.report.ConsoleOutputFileReporterTest";
+    private static final String testName = ConsoleOutputFileReporterTest.class.getName();
 
     /*
      * Test method for 'org.codehaus.surefire.report.ConsoleOutputFileReporter.testSetCompleted(ReportEntry report)'
      */
-    public void testFileNameWithoutSuffix()
+    public void testFileNameWithoutSuffix() throws IOException
     {
-        File reportDir = new File( System.getProperty( "java.io.tmpdir" ) );
-        reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
+        File reportDir = new File( new File( System.getProperty( "user.dir" ), "target" ), "tmp" );
+        //noinspection ResultOfMethodCallIgnored
+        reportDir.mkdirs();
+        reportEntry = new SimpleReportEntry( getClass().getName(), testName );
         reporter = new ConsoleOutputFileReporter( reportDir, null );
         reporter.testSetStarting( reportEntry );
-        reporter.writeTestOutput( "some text".getBytes(), 0, 5, true );
+        reporter.writeTestOutput( "some text".getBytes( US_ASCII ), 0, 5, true );
         reporter.testSetCompleted( reportEntry );
+        reporter.close();
 
         File expectedReportFile = new File( reportDir, testName + "-output.txt" );
         assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
                     expectedReportFile.exists() );
+        assertThat( FileUtils.fileRead( expectedReportFile, US_ASCII.name() ) ).contains( "some " );
+        //noinspection ResultOfMethodCallIgnored
         expectedReportFile.delete();
     }
 
     /*
      * Test method for 'org.codehaus.surefire.report.ConsoleOutputFileReporter.testSetCompleted(ReportEntry report)'
      */
-    public void testFileNameWithSuffix()
+    public void testFileNameWithSuffix() throws IOException
     {
-        File reportDir = new File( System.getProperty( "java.io.tmpdir" ) );
+        File reportDir = new File( new File( System.getProperty( "user.dir" ), "target" ), "tmp" );
+        //noinspection ResultOfMethodCallIgnored
+        reportDir.mkdirs();
         String suffixText = "sampleSuffixText";
-        reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
+        reportEntry = new SimpleReportEntry( getClass().getName(), testName );
         reporter = new ConsoleOutputFileReporter( reportDir, suffixText );
         reporter.testSetStarting( reportEntry );
-        reporter.writeTestOutput( "some text".getBytes(), 0, 5, true );
+        reporter.writeTestOutput( "some text".getBytes( US_ASCII ), 0, 5, true );
         reporter.testSetCompleted( reportEntry );
+        reporter.close();
 
         File expectedReportFile = new File( reportDir, testName + "-" + suffixText + "-output.txt" );
         assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
                     expectedReportFile.exists() );
+        assertThat( FileUtils.fileRead( expectedReportFile, US_ASCII.name() ) ).contains( "some " );
+        //noinspection ResultOfMethodCallIgnored
         expectedReportFile.delete();
     }
 

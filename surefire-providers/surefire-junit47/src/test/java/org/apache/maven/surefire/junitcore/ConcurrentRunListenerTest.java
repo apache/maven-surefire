@@ -382,7 +382,7 @@ public class ConcurrentRunListenerTest
 
     private DefaultReporterFactory createReporterFactory()
     {
-        return DefaultReporterFactory.defaultNoXml();
+        return JUnitCoreTester.defaultNoXml();
     }
 
 

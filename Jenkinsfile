@@ -27,8 +27,8 @@ properties(
 )
 
 final def oses = ['linux', 'windows']
-final def mavens = ['3.2.x', '3.3.x', '3.5.x']//env.BRANCH_NAME == 'master' ? ['3.2.x', '3.3.x', '3.5.x'] : ['3.5.x']
-final def jdks = [7, 8, 9, 10]//env.BRANCH_NAME == 'master' ? [7, 8, 9, 10] : [9, 10]
+final def mavens = ['3.2.x', '3.3.x', '3.5.x'] // env.BRANCH_NAME == 'master' ? ['3.2.x', '3.3.x', '3.5.x'] : ['3.2.x', '3.5.x']
+final def jdks = [7, 8, 9, 10] // env.BRANCH_NAME == 'master' ? [7, 8, 9, 10] : [7, 10]
 
 final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
 final def goals = ['clean', 'install', 'jacoco:report']

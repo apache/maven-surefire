@@ -182,10 +182,15 @@ public class OutputValidator
         return new TestFile( new File( targetDir, fileName ), this );
     }
 
-    public TestFile getSurefireReportsFile( String fileName )
+    public TestFile getSurefireReportsFile( String fileName, Charset charset )
     {
         File targetDir = getSurefireReportsDirectory();
-        return new TestFile( new File( targetDir, fileName ), this );
+        return new TestFile( new File( targetDir, fileName ), charset, this );
+    }
+
+    public TestFile getSurefireReportsFile( String fileName )
+    {
+        return getSurefireReportsFile( fileName, null );
     }
 
     public TestFile getSurefireReportsXmlFile( String fileName )

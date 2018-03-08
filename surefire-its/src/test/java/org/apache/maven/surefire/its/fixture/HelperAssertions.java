@@ -30,6 +30,7 @@ import java.util.Locale;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
+import static org.apache.commons.io.Charsets.UTF_8;
 import static org.junit.Assume.assumeTrue;
 
 @SuppressWarnings( { "JavaDoc" } )
@@ -170,5 +171,10 @@ public class HelperAssertions
         String thisVersion = System.getProperty( "java.specification.version" );
         assumeTrue( "java.specification.version: " + thisVersion,
                 Double.valueOf( thisVersion ) >= expectedVersion );
+    }
+
+    public static String convertUnicodeToUTF8( String unicode )
+    {
+        return new String( unicode.getBytes( UTF_8 ), UTF_8 );
     }
 }

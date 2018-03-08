@@ -21,7 +21,6 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.booter.BaseProviderFactory;
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
@@ -87,7 +86,7 @@ public class Surefire746Test
     public void surefireIsConfused_ByMultipleIgnore_OnClassLevel()
         throws Exception
     {
-        ReporterFactory reporterFactory = DefaultReporterFactory.defaultNoXml();
+        ReporterFactory reporterFactory = JUnitCoreTester.defaultNoXml();
         BaseProviderFactory providerParameters = new BaseProviderFactory( reporterFactory, true );
 
         providerParameters.setReporterConfiguration( new ReporterConfiguration( new File( "" ), false ) );

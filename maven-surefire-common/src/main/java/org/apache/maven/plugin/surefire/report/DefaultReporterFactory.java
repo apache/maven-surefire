@@ -22,7 +22,6 @@ package org.apache.maven.plugin.surefire.report;
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.Level;
-import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.shared.utils.logging.MessageBuilder;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -205,16 +204,6 @@ public class DefaultReporterFactory
     {
         mergeTestHistoryResult();
         return globalStats;
-    }
-
-    /**
-     * For testing purposes only.
-     *
-     * @return DefaultReporterFactory for testing purposes
-     */
-    public static DefaultReporterFactory defaultNoXml()
-    {
-        return new DefaultReporterFactory( StartupReportConfiguration.defaultNoXml(), new NullConsoleLogger() );
     }
 
     /**

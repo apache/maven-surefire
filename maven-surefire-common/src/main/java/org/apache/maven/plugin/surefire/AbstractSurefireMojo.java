@@ -1807,7 +1807,7 @@ public abstract class AbstractSurefireMojo
                                                isRedirectTestOutputToFile(), isDisableXmlReport(),
                                                getReportsDirectory(), isTrimStackTrace(), getReportNameSuffix(),
                                                getStatisticsFile( configChecksum ), requiresRunHistory(),
-                                               getRerunFailingTestsCount(), getReportSchemaLocation() );
+                                               getRerunFailingTestsCount(), getReportSchemaLocation(), getEncoding() );
     }
 
     private boolean isSpecificTestSpecified()
@@ -2337,6 +2337,7 @@ public abstract class AbstractSurefireMojo
         checksum.add( isDisableXmlReport() );
         checksum.add( isUseSystemClassLoader() );
         checksum.add( isUseManifestOnlyJar() );
+        checksum.add( getEncoding() );
         checksum.add( isEnableAssertions() );
         checksum.add( getObjectFactory() );
         checksum.add( getFailIfNoTests() );

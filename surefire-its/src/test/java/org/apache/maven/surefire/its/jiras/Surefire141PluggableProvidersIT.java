@@ -155,25 +155,11 @@ public class Surefire141PluggableProvidersIT
         try
         {
             validator.verifyTextInLog( errorText );
-            return  true;
+            return true;
         }
         catch ( SurefireVerifierException e )
         {
             return false;
         }
     }
-
-    private static boolean verifiedErrorInDump( OutputValidator validator, String errorText )
-    {
-        try
-        {
-            assertErrorMessage( validator, errorText );
-            return true;
-        }
-        catch ( AssertionError e )
-        {
-            return false;
-        }
-    }
-
 }

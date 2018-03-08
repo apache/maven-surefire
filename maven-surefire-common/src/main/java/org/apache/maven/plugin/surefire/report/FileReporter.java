@@ -24,9 +24,12 @@ import org.apache.maven.surefire.report.ReporterException;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.List;
 
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
@@ -41,13 +44,14 @@ import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
 public class FileReporter
 {
     private final File reportsDirectory;
-
     private final String reportNameSuffix;
+    private final Charset encoding;
 
-    public FileReporter( File reportsDirectory, String reportNameSuffix )
+    public FileReporter( File reportsDirectory, String reportNameSuffix, Charset encoding )
     {
         this.reportsDirectory = reportsDirectory;
         this.reportNameSuffix = reportNameSuffix;
+        this.encoding = encoding;
     }
 
     private PrintWriter testSetStarting( ReportEntry report )
@@ -61,7 +65,9 @@ public class FileReporter
 
         try
         {
-            PrintWriter writer = new PrintWriter( new BufferedWriter( new FileWriter( reportFile ), 16 * 1024 ) );
+            Writer encodedStream = new OutputStreamWriter( new FileOutputStream( reportFile ), encoding );
+
+            PrintWriter writer = new PrintWriter( new BufferedWriter( encodedStream, 16 * 1024 ) );
 
             writer.println( "-------------------------------------------------------------------------------" );
 
