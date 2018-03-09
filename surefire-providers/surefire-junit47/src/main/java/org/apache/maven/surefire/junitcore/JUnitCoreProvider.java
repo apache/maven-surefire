@@ -122,11 +122,11 @@ public class JUnitCoreProvider
 
         final ConsoleStream consoleStream = providerParameters.getConsoleLogger();
 
-        Filter filter = jUnit48Reflector.isJUnit48Available() ? createJUnit48Filter() : null;
-
         Notifier notifier =
             new Notifier( createRunListener( reporterFactory, consoleStream ), getSkipAfterFailureCount() );
         // startCapture() called in createRunListener() in prior to setTestsToRun()
+
+        Filter filter = jUnit48Reflector.isJUnit48Available() ? createJUnit48Filter() : null;
 
         if ( testsToRun == null )
         {
