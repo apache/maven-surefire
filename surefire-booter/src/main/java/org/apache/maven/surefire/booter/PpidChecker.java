@@ -35,11 +35,14 @@ import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.regex.Pattern.compile;
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_UNIX;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.surefire.booter.ProcessInfo.ERR_PROCESS_INFO;
 import static org.apache.maven.surefire.booter.ProcessInfo.INVALID_PROCESS_INFO;
+import static org.apache.maven.surefire.booter.ProcessInfo.unixProcessInfo;
+import static org.apache.maven.surefire.booter.ProcessInfo.windowsProcessInfo;
 
 /**
  * Recognizes PID of Plugin process and determines lifetime.
@@ -63,30 +66,30 @@ final class PpidChecker
      */
     static final Pattern UNIX_CMD_OUT_PATTERN = compile( "^(((\\d+)-)?(\\d{1,2}):)?(\\d{1,2}):(\\d{1,2})$" );
 
-    private final long pluginPid;
+    private final long ppid;
 
-    private volatile ProcessInfo pluginProcessInfo;
+    private volatile ProcessInfo parentProcessInfo;
     private volatile boolean stopped;
 
-    PpidChecker( long pluginPid )
+    PpidChecker( long ppid )
     {
-        this.pluginPid = pluginPid;
+        this.ppid = ppid;
         //todo WARN logger (after new logger is finished) that (IS_OS_UNIX && canExecuteUnixPs()) is false
     }
 
     boolean canUse()
     {
-        return pluginProcessInfo == null
-                       ? IS_OS_WINDOWS || IS_OS_UNIX && canExecuteUnixPs()
-                       : pluginProcessInfo.isValid() && !pluginProcessInfo.isError();
+        final ProcessInfo ppi = parentProcessInfo;
+        return ppi == null ? IS_OS_WINDOWS || IS_OS_UNIX && canExecuteUnixPs() : ppi.canUse();
     }
 
     /**
      * This method can be called only after {@link #canUse()} has returned {@code true}.
      *
      * @return {@code true} if parent process is alive; {@code false} otherwise
-     * @throws IllegalStateException if {@link #canUse()} returns {@code false}
-     *                               or the object has been {@link #destroyActiveCommands() destroyed}
+     * @throws IllegalStateException if {@link #canUse()} returns {@code false}, error to read process
+     *                               or this object has been {@link #destroyActiveCommands() destroyed}
+     * @throws NullPointerException if extracted e-time is null
      */
     @SuppressWarnings( "unchecked" )
     boolean isProcessAlive()
@@ -96,35 +99,65 @@ final class PpidChecker
             throw new IllegalStateException( "irrelevant to call isProcessAlive()" );
         }
 
-        if ( IS_OS_WINDOWS )
+        final ProcessInfo previousInfo = parentProcessInfo;
+        try
         {
-            ProcessInfo previousPluginProcessInfo = pluginProcessInfo;
-            pluginProcessInfo = windows();
-            if ( isStopped() || pluginProcessInfo.isError() )
+            if ( IS_OS_WINDOWS )
             {
-                throw new IllegalStateException( "error to read process" );
-            }
-            // let's compare creation time, should be same unless killed or PID is reused by OS into another process
-            return pluginProcessInfo.isValid()
-                           && ( previousPluginProcessInfo == null
-                                        || pluginProcessInfo.isTimeEqualTo( previousPluginProcessInfo ) );
-        }
-        else if ( IS_OS_UNIX )
-        {
-            ProcessInfo previousPluginProcessInfo = pluginProcessInfo;
-            pluginProcessInfo = unix();
-            if ( isStopped() || pluginProcessInfo.isError() )
-            {
-                throw new IllegalStateException( "error to read process" );
-            }
-            // let's compare elapsed time, should be greater or equal if parent process is the same and still alive
-            return pluginProcessInfo.isValid()
-                           && ( previousPluginProcessInfo == null
-                                        || pluginProcessInfo.isTimeEqualTo( previousPluginProcessInfo )
-                                        || pluginProcessInfo.isTimeAfter( previousPluginProcessInfo ) );
-        }
+                parentProcessInfo = windows();
 
-        throw new IllegalStateException();
+                if ( isStopped() )
+                {
+                    throw new IllegalStateException( "error [STOPPED] to read process " + ppid );
+                }
+
+                if ( parentProcessInfo.isError() )
+                {
+                    throw new IllegalStateException( "error to read process " + ppid );
+                }
+
+                if ( !parentProcessInfo.canUse() )
+                {
+                    throw new IllegalStateException( "Cannot use PPID " + ppid + " process information. "
+                            + "Going to use NOOP events." );
+                }
+
+                // let's compare creation time, should be same unless killed or PID is reused by OS into another process
+                return previousInfo == null || parentProcessInfo.isTimeEqualTo( previousInfo );
+            }
+            else if ( IS_OS_UNIX )
+            {
+                parentProcessInfo = unix();
+
+                if ( isStopped() )
+                {
+                    throw new IllegalStateException( "error [STOPPED] to read process " + ppid );
+                }
+
+                if ( parentProcessInfo.isError() )
+                {
+                    throw new IllegalStateException( "error to read process " + ppid );
+                }
+
+                if ( !parentProcessInfo.canUse() )
+                {
+                    throw new IllegalStateException( "Cannot use PPID " + ppid + " process information. "
+                            + "Going to use NOOP events." );
+                }
+
+                // let's compare elapsed time, should be greater or equal if parent process is the same and still alive
+                return previousInfo == null || !parentProcessInfo.isTimeBefore( previousInfo );
+            }
+
+            throw new IllegalStateException( "unknown platform or you did not call canUse() before isProcessAlive()" );
+        }
+        finally
+        {
+            if ( parentProcessInfo == null )
+            {
+                parentProcessInfo = INVALID_PROCESS_INFO;
+            }
+        }
     }
 
     // https://www.freebsd.org/cgi/man.cgi?ps(1)
@@ -139,9 +172,9 @@ final class PpidChecker
         ProcessInfoConsumer reader = new ProcessInfoConsumer( Charset.defaultCharset().name() )
         {
             @Override
-            ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo )
+            ProcessInfo consumeLine( String line, ProcessInfo previousOutputLine )
             {
-                if ( !previousProcessInfo.isValid() )
+                if ( previousOutputLine.isInvalid() )
                 {
                     Matcher matcher = UNIX_CMD_OUT_PATTERN.matcher( line );
                     if ( matcher.matches() )
@@ -150,14 +183,14 @@ final class PpidChecker
                                                  + fromHours( matcher )
                                                  + fromMinutes( matcher )
                                                  + fromSeconds( matcher );
-                        return ProcessInfo.unixProcessInfo( pluginPid, pidUptime );
+                        previousOutputLine = unixProcessInfo( ppid, pidUptime );
                     }
                 }
-                return previousProcessInfo;
+                return previousOutputLine;
             }
         };
 
-        return reader.execute( "/bin/sh", "-c", unixPathToPS() + " -o etime= -p " + pluginPid );
+        return reader.execute( "/bin/sh", "-c", unixPathToPS() + " -o etime= -p " + ppid );
     }
 
     ProcessInfo windows()
@@ -167,9 +200,9 @@ final class PpidChecker
             private boolean hasHeader;
 
             @Override
-            ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo )
+            ProcessInfo consumeLine( String line, ProcessInfo previousOutputLine )
             {
-                if ( !previousProcessInfo.isValid() )
+                if ( previousOutputLine.isInvalid() )
                 {
                     StringTokenizer args = new StringTokenizer( line );
                     if ( args.countTokens() == 1 )
@@ -177,7 +210,10 @@ final class PpidChecker
                         if ( hasHeader )
                         {
                             String startTimestamp = args.nextToken();
-                            return ProcessInfo.windowsProcessInfo( pluginPid, startTimestamp );
+                            previousOutputLine =
+                                    isBlank( startTimestamp )
+                                            ? INVALID_PROCESS_INFO
+                                            : windowsProcessInfo( ppid, startTimestamp.trim() );
                         }
                         else
                         {
@@ -185,10 +221,10 @@ final class PpidChecker
                         }
                     }
                 }
-                return previousProcessInfo;
+                return previousOutputLine;
             }
         };
-        String pid = String.valueOf( pluginPid );
+        String pid = String.valueOf( ppid );
         String wmicPath = hasWmicStandardSystemPath() ? SYSTEM_PATH_TO_WMIC : "";
         return reader.execute( "CMD", "/A", "/X", "/C",
                 wmicPath + "wmic process where (ProcessId=" + pid + ") get " + WMIC_CREATION_DATE
@@ -285,7 +321,7 @@ final class PpidChecker
             this.charset = charset;
         }
 
-        abstract ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo );
+        abstract ProcessInfo consumeLine( String line, ProcessInfo previousOutputLine );
 
         ProcessInfo execute( String... command )
         {

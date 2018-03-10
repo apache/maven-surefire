@@ -181,14 +181,14 @@ public final class ForkedBooter
         }
     }
 
-    private PingScheduler listenToShutdownCommands( Long pluginPid )
+    private PingScheduler listenToShutdownCommands( Long ppid )
     {
         commandReader.addShutdownListener( createExitHandler() );
         AtomicBoolean pingDone = new AtomicBoolean( true );
         commandReader.addNoopListener( createPingHandler( pingDone ) );
 
         PingScheduler pingMechanisms = new PingScheduler( createPingScheduler(),
-                                                          pluginPid == null ? null : new PpidChecker( pluginPid ) );
+                                                          ppid == null ? null : new PpidChecker( ppid ) );
         if ( pingMechanisms.pluginProcessChecker != null )
         {
             Runnable checkerJob = processCheckerJob( pingMechanisms );
@@ -220,7 +220,7 @@ public final class ForkedBooter
                 catch ( Exception e )
                 {
                     DumpErrorSingleton.getSingleton()
-                            .dumpText( "System.exit() or native command error interrupted process checker." );
+                            .dumpException( e, "System.exit() or native command error interrupted process checker." );
                 }
             }
         };
