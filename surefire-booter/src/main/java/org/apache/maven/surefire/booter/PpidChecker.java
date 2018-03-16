@@ -36,6 +36,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.regex.Pattern.compile;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_HP_UX;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_UNIX;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.surefire.booter.ProcessInfo.ERR_PROCESS_INFO;
@@ -295,6 +296,10 @@ final class PpidChecker
             ProcessInfo processInfo = INVALID_PROCESS_INFO;
             try
             {
+                if ( IS_OS_HP_UX ) // force to run shell commands in UNIX Standard mode on HP-UX
+                {
+                    processBuilder.environment().put( "UNIX95", "1" );
+                }
                 process = processBuilder.start();
                 destroyableCommands.add( process );
                 Scanner scanner = new Scanner( process.getInputStream(), charset );
