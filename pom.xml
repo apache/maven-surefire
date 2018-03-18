@@ -35,7 +35,7 @@
   <name>Apache Maven Surefire</name>
   <description>Surefire is a test framework project.
     This is the aggregator POM in Apache Maven Surefire project.</description>
-  <url>http://maven.apache.org/surefire/</url>
+  <url>https://maven.apache.org/surefire/</url>
   <inceptionYear>2004</inceptionYear>
 
   <contributors>
@@ -93,7 +93,7 @@
     <commonsIoVersion>2.5</commonsIoVersion>
     <mavenSharedUtilsVersion>0.9</mavenSharedUtilsVersion>
     <powermockVersion>2.0.0-beta.5</powermockVersion>
-    <maven.surefire.scm.devConnection>scm:git:https://git-wip-us.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
+    <maven.surefire.scm.devConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
     <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
     <!-- Override with Jigsaw JRE 9 -->
     <jdk.home>${java.home}/..</jdk.home>
