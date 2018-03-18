@@ -23,9 +23,9 @@ package org.apache.maven.surefire.booter;
  * Immutable object which encapsulates PID and elapsed time (Unix) or start time (Windows).
  * <br>
  * Methods
- * ({@link #getPID()}, {@link #getTime()}, {@link #isTimeAfter(ProcessInfo)}, {@link #isTimeEqualTo(ProcessInfo)})
+ * ({@link #getPID()}, {@link #getTime()}, {@link #isTimeBefore(ProcessInfo)}, {@link #isTimeEqualTo(ProcessInfo)})
  * throw {@link IllegalStateException}
- * if {@link #isValid()} returns {@code false} or {@link #isError()} returns {@code true}.
+ * if {@link #canUse()} returns {@code false} or {@link #isError()} returns {@code true}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20.1
@@ -59,9 +59,14 @@ final class ProcessInfo
         this.time = time;
     }
 
-    boolean isValid()
+    boolean canUse()
     {
-        return this != INVALID_PROCESS_INFO;
+        return !isInvalid() && !isError();
+    }
+
+    boolean isInvalid()
+    {
+        return this == INVALID_PROCESS_INFO;
     }
 
     boolean isError()
@@ -90,16 +95,16 @@ final class ProcessInfo
     }
 
     @SuppressWarnings( "unchecked" )
-    boolean isTimeAfter( ProcessInfo that )
+    boolean isTimeBefore( ProcessInfo that )
     {
         checkValid();
         that.checkValid();
-        return this.time.compareTo( that.time ) > 0;
+        return this.time.compareTo( that.time ) < 0;
     }
 
     private void checkValid()
     {
-        if ( !isValid() || isError() )
+        if ( !canUse() )
         {
             throw new IllegalStateException( "invalid process info" );
         }
