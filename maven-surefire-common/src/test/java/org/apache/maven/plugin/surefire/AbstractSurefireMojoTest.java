@@ -27,40 +27,26 @@ import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
-import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.util.DefaultScanResult;
-import org.codehaus.plexus.languages.java.jpms.LocationManager;
-import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
-import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
-import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult.ModuleNameSource;
 import org.codehaus.plexus.logging.Logger;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.nio.file.Path;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static java.io.File.separatorChar;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
-import static org.apache.maven.surefire.booter.SystemUtils.isBuiltInJava7AtLeast;
 import static org.fest.assertions.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -70,33 +56,18 @@ import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.doNothing;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.spy;
 import static org.powermock.api.mockito.PowerMockito.verifyPrivate;
-import static org.powermock.api.mockito.PowerMockito.verifyStatic;
-import static org.powermock.api.support.membermodification.MemberMatcher.field;
 import static org.powermock.reflect.Whitebox.invokeMethod;
 
 /**
  * Test for {@link AbstractSurefireMojo}.
  */
 @RunWith( PowerMockRunner.class )
-@PrepareForTest( { AbstractSurefireMojo.class, ResolvePathsRequest.class } )
+@PrepareForTest( AbstractSurefireMojo.class )
 public class AbstractSurefireMojoTest
 {
-    private Mojo mojo;
-
-    @Mock
-    private LocationManager locationManager;
-
-    @Before
-    public void initMojo() throws IllegalAccessException
-    {
-        mojo = new Mojo();
-        Field f = field( AbstractSurefireMojo.class, "locationManager" );
-        f.setAccessible( true );
-        f.set( mojo, locationManager );
-    }
+    private final Mojo mojo = new Mojo();
 
     @Test
     public void shouldGenerateTestClasspath() throws Exception
@@ -231,175 +202,46 @@ public class AbstractSurefireMojoTest
     }
 
     @Test
-    public void shouldHaveStartupConfigForModularClasspath()
-            throws Exception
+    public void shouldExistTmpDirectory() throws IOException
     {
-        AbstractSurefireMojo mojo = spy( this.mojo );
+        String systemTmpDir = System.getProperty( "java.io.tmpdir" );
+        String usrDir = new File( System.getProperty( "user.dir" ) ).getCanonicalPath();
 
-        Classpath testClasspath = new Classpath( asList( "non-modular.jar", "modular.jar",
-                "target" + separatorChar + "classes", "junit.jar", "hamcrest.jar" ) );
+        String tmpDir = "surefireX" + System.currentTimeMillis();
 
-        doReturn( testClasspath ).when( mojo, "generateTestClasspath" );
-        doReturn( 1 ).when( mojo, "getEffectiveForkCount" );
-        doReturn( true ).when( mojo, "effectiveIsEnableAssertions" );
-        when( mojo.isChildDelegation() ).thenReturn( false );
-        when( mojo.getTestClassesDirectory() ).thenReturn( new File( "target" + separatorChar + "test-classes" ) );
+        //noinspection ResultOfMethodCallIgnored
+        new File( systemTmpDir, tmpDir ).delete();
 
-        DefaultScanResult scanResult = mock( DefaultScanResult.class );
-        when( scanResult.getClasses() ).thenReturn( asList( "org.apache.A", "org.apache.B" ) );
+        File targetDir = new File( usrDir, "target" );
+        //noinspection ResultOfMethodCallIgnored
+        new File( targetDir, tmpDir ).delete();
 
-        ClassLoaderConfiguration classLoaderConfiguration = new ClassLoaderConfiguration( false, true );
-
-        Classpath providerClasspath = new Classpath( singleton( "surefire-provider.jar" ) );
-
-        File moduleInfo = new File( "target" + separatorChar + "classes" + separatorChar + "module-info.class" );
-
-        @SuppressWarnings( "unchecked" )
-        ResolvePathsRequest<String> req = mock( ResolvePathsRequest.class );
-        mockStatic( ResolvePathsRequest.class );
-        when( ResolvePathsRequest.withStrings( eq( testClasspath.getClassPath() ) ) ).thenReturn( req );
-        when( req.setMainModuleDescriptor( eq( moduleInfo.getAbsolutePath() ) ) ).thenReturn( req );
-
-        @SuppressWarnings( "unchecked" )
-        ResolvePathsResult<String> res = mock( ResolvePathsResult.class );
-        when( res.getClasspathElements() ).thenReturn( asList( "non-modular.jar", "junit.jar", "hamcrest.jar" ) );
-        Map<String, ModuleNameSource> mod = new LinkedHashMap<String, ModuleNameSource>();
-        mod.put( "modular.jar", null );
-        mod.put( "target" + separatorChar + "classes", null );
-        when( res.getModulepathElements() ).thenReturn( mod );
-        when( locationManager.resolvePaths( eq( req ) ) ).thenReturn( res );
-
-        Logger logger = mock( Logger.class );
-        when( logger.isDebugEnabled() ).thenReturn( true );
-        doNothing().when( logger ).debug( anyString() );
-        when( mojo.getConsoleLogger() ).thenReturn( new PluginConsoleLogger( logger ) );
-
-        StartupConfiguration conf = invokeMethod( mojo, "newStartupConfigForModularClasspath",
-                classLoaderConfiguration, providerClasspath, "org.asf.Provider", moduleInfo, scanResult );
-
-        verify( mojo, times( 1 ) ).effectiveIsEnableAssertions();
-        verify( mojo, times( 1 ) ).isChildDelegation();
-        verifyPrivate( mojo, times( 1 ) ).invoke( "generateTestClasspath" );
-        verify( mojo, times( 1 ) ).getEffectiveForkCount();
-        verify( mojo, times( 1 ) ).getTestClassesDirectory();
-        verify( scanResult, times( 1 ) ).getClasses();
-        verifyStatic( ResolvePathsRequest.class, times( 1 ) );
-        ResolvePathsRequest.withStrings( eq( testClasspath.getClassPath() ) );
-        verify( req, times( 1 ) ).setMainModuleDescriptor( eq( moduleInfo.getAbsolutePath() ) );
-        verify( res, times( 1 ) ).getClasspathElements();
-        verify( res, times( 1 ) ).getModulepathElements();
-        verify( locationManager, times( 1 ) ).resolvePaths( eq( req ) );
-        ArgumentCaptor<String> argument = ArgumentCaptor.forClass( String.class );
-        verify( logger, times( 6 ) ).debug( argument.capture() );
-        assertThat( argument.getAllValues() )
-                .containsExactly( "test classpath:  non-modular.jar  junit.jar  hamcrest.jar",
-                        "test modulepath:  modular.jar  target" + separatorChar + "classes",
-                        "provider classpath:  surefire-provider.jar",
-                        "test(compact) classpath:  non-modular.jar  junit.jar  hamcrest.jar",
-                        "test(compact) modulepath:  modular.jar  classes",
-                        "provider(compact) classpath:  surefire-provider.jar"
-                );
-
-        assertThat( conf ).isNotNull();
-        assertThat( conf.isShadefire() ).isFalse();
-        assertThat( conf.isProviderMainClass() ).isFalse();
-        assertThat( conf.isManifestOnlyJarRequestedAndUsable() ).isFalse();
-        assertThat( conf.getClassLoaderConfiguration() ).isSameAs( classLoaderConfiguration );
-        assertThat( conf.getProviderClassName() ).isEqualTo( "org.asf.Provider" );
-        assertThat( conf.getActualClassName() ).isEqualTo( "org.asf.Provider" );
-        assertThat( conf.getClasspathConfiguration() ).isNotNull();
-        assertThat( ( Object ) conf.getClasspathConfiguration().getTestClasspath() )
-                .isEqualTo( new Classpath( res.getClasspathElements() ) );
-        assertThat( ( Object ) conf.getClasspathConfiguration().getProviderClasspath() ).isSameAs( providerClasspath );
-        assertThat( conf.getClasspathConfiguration() ).isInstanceOf( ModularClasspathConfiguration.class );
-        ModularClasspathConfiguration mcc = ( ModularClasspathConfiguration ) conf.getClasspathConfiguration();
-        assertThat( mcc.getModularClasspath().getModuleDescriptor() ).isEqualTo( moduleInfo );
-        assertThat( mcc.getModularClasspath().getPackages() ).containsOnly( "org.apache" );
-        assertThat( mcc.getModularClasspath().getPatchFile() )
-                .isEqualTo( new File( "target" + separatorChar + "test-classes" ) );
-        assertThat( mcc.getModularClasspath().getModulePath() )
-                .containsExactly( "modular.jar", "target" + separatorChar + "classes" );
-        assertThat( ( Object ) mcc.getTestClasspath() ).isEqualTo( new Classpath( res.getClasspathElements() ) );
-    }
-
-    @Test
-    public void shouldHaveTmpDirectory() throws IOException
-    {
-        assumeTrue( isBuiltInJava7AtLeast() );
-
-        Path path = ( Path ) AbstractSurefireMojo.createTmpDirectoryWithJava7( "surefire" );
-
-        assertThat( path )
-                .isNotNull();
-
-        assertThat( path.startsWith( System.getProperty( "java.io.tmpdir" ) ) )
-                .isTrue();
-
-        String dir = path.getName( path.getNameCount() - 1 ).toString();
-
-        assertThat( dir )
-                .startsWith( "surefire" );
-
-        assertThat( dir )
-                .matches( "^surefire[\\d]+$" );
-    }
-
-    @Test
-    public void shouldHaveTmpDirectoryName() throws IOException
-    {
-        assumeTrue( isBuiltInJava7AtLeast() );
-
-        String dir = AbstractSurefireMojo.createTmpDirectoryNameWithJava7( "surefire" );
-
-        assertThat( dir )
-                .isNotNull();
-
-        assertThat( dir )
-                .startsWith( "surefire" );
-
-        assertThat( dir )
-                .matches( "^surefire[\\d]+$" );
-    }
-
-    @Test
-    public void shouldExistTmpDirectory()
-    {
         AbstractSurefireMojo mojo = mock( AbstractSurefireMojo.class );
-        when( mojo.getTempDir() ).thenReturn( "surefireX" );
-        when( mojo.getProjectBuildDirectory() ).thenReturn( new File( System.getProperty( "user.dir" ), "target" ) );
+        when( mojo.getTempDir() ).thenReturn( tmpDir );
+        when( mojo.getProjectBuildDirectory() ).thenReturn( targetDir );
         when( mojo.createSurefireBootDirectoryInTemp() ).thenCallRealMethod();
         when( mojo.createSurefireBootDirectoryInBuild() ).thenCallRealMethod();
         when( mojo.getSurefireTempDir() ).thenCallRealMethod();
 
-        File tmp = mojo.createSurefireBootDirectoryInTemp();
-        assertThat( tmp ).isNotNull();
-        assertThat( tmp ).exists();
-        assertThat( tmp.getAbsolutePath() )
-                .startsWith( System.getProperty( "java.io.tmpdir" ) );
-        assertThat( tmp.getName() )
-                .startsWith( "surefireX" );
+        File bootDir = mojo.createSurefireBootDirectoryInTemp();
+        assertThat( bootDir ).isNotNull();
+        assertThat( bootDir ).isDirectory();
 
-        tmp = mojo.createSurefireBootDirectoryInBuild();
-        assertThat( tmp ).isNotNull();
-        assertThat( tmp ).exists();
-        assertThat( tmp.getAbsolutePath() ).startsWith( System.getProperty( "user.dir" ) );
-        assertThat( tmp.getName() ).isEqualTo( "surefireX" );
+        assertThat( new File( systemTmpDir, bootDir.getName() ) ).isDirectory();
+        assertThat( bootDir.getName() )
+                .startsWith( tmpDir );
 
-        tmp = mojo.getSurefireTempDir();
+        File buildTmp = mojo.createSurefireBootDirectoryInBuild();
+        assertThat( buildTmp ).isNotNull();
+        assertThat( buildTmp ).isDirectory();
+        assertThat( buildTmp.getParentFile().getCanonicalFile().getParent() ).isEqualTo( usrDir );
+        assertThat( buildTmp.getName() ).isEqualTo( tmpDir );
+
+        File tmp = mojo.getSurefireTempDir();
         assertThat( tmp ).isNotNull();
-        assertThat( tmp ).exists();
-        assertThat( tmp.getAbsolutePath() )
-                .startsWith(
-                        IS_OS_WINDOWS ? System.getProperty( "java.io.tmpdir" ) : System.getProperty( "user.dir" ) );
-        if ( IS_OS_WINDOWS )
-        {
-            assertThat( tmp.getName() )
-                    .startsWith( "surefireX" );
-        } else
-        {
-            assertThat( tmp.getName() )
-                    .isEqualTo( "surefireX" );
-        }
+        assertThat( tmp ).isDirectory();
+        assertThat( IS_OS_WINDOWS ? new File( systemTmpDir, bootDir.getName() ) : new File( targetDir, tmpDir ) )
+                .isDirectory();
     }
 
     public static class Mojo
@@ -647,6 +489,18 @@ public class AbstractSurefireMojoTest
 
         @Override
         public void setUseManifestOnlyJar( boolean useManifestOnlyJar )
+        {
+
+        }
+
+        @Override
+        public String getEncoding()
+        {
+            return null;
+        }
+
+        @Override
+        public void setEncoding( String encoding )
         {
 
         }

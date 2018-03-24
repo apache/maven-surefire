@@ -35,6 +35,7 @@ import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.regex.Pattern.compile;
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_UNIX;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.surefire.booter.ProcessInfo.ERR_PROCESS_INFO;
@@ -49,6 +50,10 @@ import static org.apache.maven.surefire.booter.ProcessInfo.INVALID_PROCESS_INFO;
 final class PpidChecker
 {
     private static final String WMIC_CREATION_DATE = "CreationDate";
+    private static final String WINDOWS_SYSTEM_ROOT_ENV = "SystemRoot";
+    private static final String RELATIVE_PATH_TO_WMIC = "System32\\Wbem";
+    private static final String SYSTEM_PATH_TO_WMIC =
+            "%" + WINDOWS_SYSTEM_ROOT_ENV + "%\\" + RELATIVE_PATH_TO_WMIC + "\\";
 
     private final Queue<Process> destroyableCommands = new ConcurrentLinkedQueue<Process>();
 
@@ -184,10 +189,9 @@ final class PpidChecker
             }
         };
         String pid = String.valueOf( pluginPid );
+        String wmicPath = hasWmicStandardSystemPath() ? SYSTEM_PATH_TO_WMIC : "";
         return reader.execute( "CMD", "/A", "/X", "/C",
-                                     "%SystemRoot%\\System32\\Wbem\\wmic " 
-                                         + "process where (ProcessId=" + pid + ") " 
-                                         + "get " + WMIC_CREATION_DATE
+                wmicPath + "wmic process where (ProcessId=" + pid + ") get " + WMIC_CREATION_DATE
         );
     }
 
@@ -223,6 +227,12 @@ final class PpidChecker
     private static boolean canExecuteStandardUnixPs()
     {
         return new File( "/bin/ps" ).canExecute();
+    }
+
+    private static boolean hasWmicStandardSystemPath()
+    {
+        String systemRoot = System.getenv( WINDOWS_SYSTEM_ROOT_ENV );
+        return isNotBlank( systemRoot ) && new File( systemRoot, RELATIVE_PATH_TO_WMIC + "\\wmic.exe" ).isFile();
     }
 
     static long fromDays( Matcher matcher )

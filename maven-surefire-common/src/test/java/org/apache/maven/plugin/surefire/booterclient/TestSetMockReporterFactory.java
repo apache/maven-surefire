@@ -19,11 +19,12 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.surefire.report.RunListener;
 
-import static org.apache.maven.plugin.surefire.StartupReportConfiguration.defaultValue;
+import java.io.File;
 
 /**
  * Internal tests use only.
@@ -42,5 +43,19 @@ public class TestSetMockReporterFactory
     public RunListener createReporter()
     {
         return new MockReporter();
+    }
+
+
+    /**
+     * For testing purposes only.
+     *
+     * @return StartupReportConfiguration fo testing purposes
+     */
+    private static StartupReportConfiguration defaultValue()
+    {
+        File target = new File( "./target" );
+        File statisticsFile = new File( target, "TESTHASH" );
+        return new StartupReportConfiguration( true, true, "PLAIN", false, false, target, false, null, statisticsFile,
+                false, 0, null, null );
     }
 }

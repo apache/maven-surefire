@@ -20,11 +20,16 @@ package org.apache.maven.plugins.surefire.report;
  */
 
 import java.io.File;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+
+import static org.apache.maven.shared.utils.StringUtils.isEmpty;
 
 /**
  * Creates a nicely formatted Surefire Test Report in html format.
@@ -84,6 +89,34 @@ public class SurefireReportMojo
     public String getOutputName()
     {
         return outputName;
+    }
+
+    @Override
+    protected LocalizedProperties getBundle( Locale locale, ClassLoader resourceBundleClassLoader )
+    {
+        ResourceBundle bundle = ResourceBundle.getBundle( "surefire-report", locale, resourceBundleClassLoader );
+        return new LocalizedProperties( bundle ) {
+            @Override
+            public String getReportName()
+            {
+                return isEmpty( SurefireReportMojo.this.getTitle() )
+                        ? toLocalizedValue( "report.surefire.name" ) : SurefireReportMojo.this.getTitle();
+            }
+
+            @Override
+            public String getReportDescription()
+            {
+                return isEmpty( SurefireReportMojo.this.getDescription() )
+                        ? toLocalizedValue( "report.surefire.description" ) : SurefireReportMojo.this.getDescription();
+            }
+
+            @Override
+            public String getReportHeader()
+            {
+                return isEmpty( SurefireReportMojo.this.getTitle() )
+                        ? toLocalizedValue( "report.surefire.header" ) : SurefireReportMojo.this.getTitle();
+            }
+        };
     }
 
     @Override

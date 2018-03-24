@@ -21,13 +21,19 @@ package org.apache.maven.surefire.booter;
 
 import org.junit.Test;
 
+import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.util.regex.Matcher;
 
 import static org.apache.commons.lang3.SystemUtils.IS_OS_UNIX;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assume.assumeThat;
 import static org.junit.Assume.assumeTrue;
+import static org.powermock.reflect.Whitebox.invokeMethod;
 
 /**
  * Testing {@link PpidChecker} on a platform.
@@ -152,5 +158,17 @@ public class PpidCheckerTest
         assertThat( PpidChecker.fromHours( m ) ).isEqualTo( 3600L );
         assertThat( PpidChecker.fromMinutes( m ) ).isEqualTo( 300L );
         assertThat( PpidChecker.fromSeconds( m ) ).isEqualTo( 3L );
+    }
+
+    @Test
+    public void shouldHaveSystemPathToWmicOnWindows() throws Exception
+    {
+        assumeTrue( IS_OS_WINDOWS );
+        assumeThat( System.getenv( "SystemRoot" ), is( notNullValue() ) );
+        assumeThat( System.getenv( "SystemRoot" ), is( not( "" ) ) );
+        assumeTrue( new File( System.getenv( "SystemRoot" ), "System32\\Wbem" ).isDirectory() );
+        assumeTrue( new File( System.getenv( "SystemRoot" ), "System32\\Wbem\\wmic.exe" ).isFile() );
+        assertThat( (Boolean) invokeMethod( PpidChecker.class, "hasWmicStandardSystemPath" ) ).isTrue();
+        assertThat( new File( System.getenv( "SystemRoot" ), "System32\\Wbem\\wmic.exe" ) ).isFile();
     }
 }

@@ -333,7 +333,7 @@ public final class ParallelComputerBuilder
         }
 
         @Override
-        boolean shutdownThreadPoolsAwaitingKilled()
+        protected boolean shutdownThreadPoolsAwaitingKilled()
         {
             boolean notInterrupted = notThreadSafeTests.shutdownThreadPoolsAwaitingKilled();
             final Scheduler m = master;

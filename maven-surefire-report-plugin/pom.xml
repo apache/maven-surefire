@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire</artifactId>
-    <version>2.21.0-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.maven.plugins</groupId>
@@ -168,6 +168,7 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <useSystemClassLoader>true</useSystemClassLoader>
           <classpathDependencyExcludes>
             <classpathDependencyExclude>org.fusesource.jansi:jansi</classpathDependencyExclude>
           </classpathDependencyExcludes>

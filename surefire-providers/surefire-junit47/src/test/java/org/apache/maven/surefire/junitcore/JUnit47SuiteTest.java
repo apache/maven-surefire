@@ -40,7 +40,6 @@ import org.junit.runners.Suite;
     ParallelComputerUtilTest.class,
     ParallelComputerBuilderTest.class,
     SchedulingStrategiesTest.class,
-    JUnitCoreParametersTest.class,
     OptimizedParallelComputerTest.class,
     ConcurrentRunListenerTest.class,
     ConfigurableParallelComputerTest.class,

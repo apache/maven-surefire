@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one
+  ~ or more contributor license agreements.  See the NOTICE file
+  ~ distributed with this work for additional information
+  ~ regarding copyright ownership.  The ASF licenses this file
+  ~ to you under the Apache License, Version 2.0 (the
+  ~ "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apache.maven.surefire</groupId>
+    <artifactId>surefire</artifactId>
+    <version>3.0.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>surefire-its</artifactId>
+
+  <name>Maven Surefire Integration Tests</name>
+  <description>Used internally testing MOJOs. The project is not deployed.</description>
+
+  <properties>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>surefire-report-parser</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-verifier</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-settings</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.sourceforge.htmlunit</groupId>
+      <artifactId>htmlunit</artifactId>
+      <version>2.8</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-artifact</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-shared-utils</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.surefire</groupId>
+            <artifactId>surefire-shadefire</artifactId>
+            <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+          </dependency>
+        </dependencies>
+        <configuration>
+          <includes>
+            <include>org/apache/maven/surefire/its/fixture/JUnit4SuiteTest.java</include>
+          </includes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+        <configuration>
+          <jvm>${jdk.home}/bin/java</jvm>
+          <runOrder>alphabetical</runOrder>
+          <threadCount>1</threadCount>
+          <perCoreThreadCount>false</perCoreThreadCount>
+          <forkMode>once</forkMode>
+          <argLine>-server -Xmx64m -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true</argLine>
+          <includes>
+            <include>org/apache/**/*IT*.java</include>
+          </includes>
+          <!-- Pass current surefire version to the main suite so that it -->
+          <!-- can forward to all integration test projects. SUREFIRE-513 -->
+          <systemPropertyVariables>
+            <surefire.version>${project.version}</surefire.version>
+            <maven.home>${maven.home}</maven.home>
+            <maven.settings.file>${project.basedir}/../surefire-setup-integration-tests/target/private/it-settings.xml
+            </maven.settings.file>
+            <maven.toolchains.file>${project.basedir}/../surefire-setup-integration-tests/target/private/toolchains.xml
+            </maven.toolchains.file>
+            <maven.repo.local>${project.basedir}/../surefire-setup-integration-tests/target/it-repo</maven.repo.local>
+            <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>
+            <user.localRepository>${settings.localRepository}</user.localRepository>
+            <useInterpolatedSettings>false</useInterpolatedSettings>
+            <testBuildDirectory>${project.build.testOutputDirectory}</testBuildDirectory>
+            <verifier.forkMode>forked</verifier.forkMode>
+            <jdk.home>${jdk.home}</jdk.home>
+            <jacoco.agent>${jacoco-it.agent}</jacoco.agent>
+          </systemPropertyVariables>
+          <redirectTestOutputToFile>false</redirectTestOutputToFile>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.surefire</groupId>
+            <artifactId>surefire-junit47</artifactId>
+            <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>require-maven-2.1.0</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <!-- Some plugin features require a recent Maven runtime to work (e.g. SystemPropertiesTest) -->
+                  <version>[2.1.0,)</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <!-- todo dont skip since of failsafe:2.19 internal use if having src/main/java/... -->
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>jacoco-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>jacoco-agent-it</id>
+            <goals>
+              <goal>prepare-agent-integration</goal>
+            </goals>
+            <configuration>
+              <propertyName>jacoco-it.agent</propertyName>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-install-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

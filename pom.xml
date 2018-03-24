@@ -29,13 +29,13 @@
 
   <groupId>org.apache.maven.surefire</groupId>
   <artifactId>surefire</artifactId>
-  <version>2.21.0-SNAPSHOT</version>
+  <version>3.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Apache Maven Surefire</name>
   <description>Surefire is a test framework project.
     This is the aggregator POM in Apache Maven Surefire project.</description>
-  <url>http://maven.apache.org/surefire/</url>
+  <url>https://maven.apache.org/surefire/</url>
   <inceptionYear>2004</inceptionYear>
 
   <contributors>
@@ -50,8 +50,8 @@
 
   <modules>
     <module>surefire-logger-api</module>
-    <module>surefire-shadefire</module>
     <module>surefire-api</module>
+    <module>surefire-shadefire</module>
     <module>surefire-booter</module>
     <module>surefire-grouper</module>
     <module>surefire-providers</module>
@@ -61,7 +61,7 @@
     <module>maven-failsafe-plugin</module>
     <module>maven-surefire-report-plugin</module>
     <module>surefire-setup-integration-tests</module>
-    <module>surefire-integration-tests</module>
+    <module>surefire-its</module>
   </modules>
 
   <scm>
@@ -76,7 +76,7 @@
   </issueManagement>
   <ciManagement>
     <system>Jenkins</system>
-    <url>https://builds.apache.org/view/M-R/view/Maven/job/maven-surefire-pipeline/job/master/</url>
+    <url>https://builds.apache.org/job/maven-box/job/maven-surefire</url>
   </ciManagement>
   <distributionManagement>
     <site>
@@ -89,17 +89,17 @@
     <mavenVersion>2.2.1</mavenVersion>
     <!-- <shadedVersion>2.12.4</shadedVersion> commented out due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
     <mavenPluginPluginVersion>3.5</mavenPluginPluginVersion>
-    <commonsLang3Version>3.7</commonsLang3Version>
+    <commonsLang3Version>3.5</commonsLang3Version>
     <commonsIoVersion>2.5</commonsIoVersion>
     <mavenSharedUtilsVersion>0.9</mavenSharedUtilsVersion>
     <powermockVersion>2.0.0-beta.5</powermockVersion>
-    <maven.surefire.scm.devConnection>scm:git:https://git-wip-us.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
+    <maven.surefire.scm.devConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
     <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
     <!-- Override with Jigsaw JRE 9 -->
     <jdk.home>${java.home}/..</jdk.home>
-    <maven.compiler.testSource>1.8</maven.compiler.testSource>
-    <maven.compiler.testTarget>1.8</maven.compiler.testTarget>
-    <javaVersion>7</javaVersion>
+    <maven.compiler.testSource>1.6</maven.compiler.testSource>
+    <maven.compiler.testTarget>1.6</maven.compiler.testTarget>
+    <jvm.args.tests>-server -XX:+UseG1GC -Xms128m -Xmx144m -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true</jvm.args.tests>
   </properties>
 
   <dependencyManagement>
@@ -264,7 +264,7 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>2.10.0</version>
+        <version>2.13.0</version>
         <exclusions>
           <exclusion>
             <groupId>org.hamcrest</groupId>
@@ -434,7 +434,10 @@
           <configuration>
             <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
             <useSystemClassLoader>false</useSystemClassLoader>
-            <argLine>-Xms128m -Xmx144m ${jacoco.agent}</argLine>
+            <argLine>${jvm.args.tests} ${jacoco.agent}</argLine>
+            <useFile>false</useFile>
+            <redirectTestOutputToFile>false</redirectTestOutputToFile>
+            <jvm>${jdk.home}/bin/java</jvm>
           </configuration>
         </plugin>
         <plugin>
@@ -469,6 +472,10 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
           <version>3.4</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>2.8.2</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -546,50 +553,61 @@
                   </excludes>
                 </enforceBytecodeVersion>
               </rules>
-              <fail>true</fail>
             </configuration>
           </execution>
         </executions>
+        <configuration>
+          <fail>true</fail>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
       </plugin>
-        <plugin>
-          <groupId>org.apache.rat</groupId>
-          <artifactId>apache-rat-plugin</artifactId>
-          <version>0.12</version>
-          <executions>
-            <execution>
-              <id>rat-check</id>
-              <goals>
-                <goal>check</goal>
-              </goals>
-              <configuration>
-                <excludes combine.children="append">
-                  <exclude>Jenkinsfile</exclude>
-                  <exclude>README.md</exclude>
-                  <exclude>.gitignore</exclude>
-                  <exclude>.git/**/*</exclude>
-                  <exclude>**/.idea</exclude>
-                  <exclude>**/.svn/**/*</exclude>
-                  <exclude>**/*.iml</exclude>
-                  <exclude>**/*.ipr</exclude>
-                  <exclude>**/*.iws</exclude>
-                  <exclude>**/*.versionsBackup</exclude>
-                  <exclude>**/dependency-reduced-pom.xml</exclude>
-                  <exclude>.repository/**</exclude> <!-- jenkins with local maven repository -->
-                  <exclude>src/test/resources/**/*</exclude>
-                  <exclude>src/test/resources/**/*.css</exclude>
-                  <exclude>**/*.jj</exclude>
-                  <exclude>src/main/resources/META-INF/services/org.apache.maven.surefire.providerapi.SurefireProvider
-                  </exclude>
-                  <exclude>DEPENDENCIES</exclude>
-                </excludes>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <version>0.12</version>
+        <executions>
+          <execution>
+            <id>rat-check</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <excludes combine.children="append">
+                <exclude>Jenkinsfile</exclude>
+                <exclude>README.md</exclude>
+                <exclude>.gitignore</exclude>
+                <exclude>.git/**/*</exclude>
+                <exclude>**/.idea</exclude>
+                <exclude>**/.svn/**/*</exclude>
+                <exclude>**/*.iml</exclude>
+                <exclude>**/*.ipr</exclude>
+                <exclude>**/*.iws</exclude>
+                <exclude>**/*.versionsBackup</exclude>
+                <exclude>**/dependency-reduced-pom.xml</exclude>
+                <exclude>.repository/**</exclude> <!-- jenkins with local maven repository -->
+                <exclude>src/test/resources/**/*</exclude>
+                <exclude>src/test/resources/**/*.css</exclude>
+                <exclude>**/*.jj</exclude>
+                <exclude>src/main/resources/META-INF/services/org.apache.maven.surefire.providerapi.SurefireProvider
+                </exclude>
+                <exclude>DEPENDENCIES</exclude>
+                <exclude>.m2/**</exclude>
+                <exclude>.m2</exclude>
+                <exclude>.travis.yml</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <deployAtEnd>true</deployAtEnd>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 

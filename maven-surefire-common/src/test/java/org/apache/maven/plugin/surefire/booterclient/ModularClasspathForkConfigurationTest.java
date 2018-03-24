@@ -27,6 +27,7 @@ import org.apache.maven.surefire.booter.ForkedBooter;
 import org.apache.maven.surefire.booter.ModularClasspath;
 import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
+import org.junit.Before;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -37,12 +38,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
+import static org.apache.commons.lang3.JavaVersion.JAVA_RECENT;
 import static java.io.File.separator;
 import static java.io.File.pathSeparator;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.readAllLines;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.fest.assertions.Assertions.assertThat;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -50,6 +55,12 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public class ModularClasspathForkConfigurationTest
 {
+    @Before
+    public void withJava7orHigher()
+    {
+        assumeTrue( JAVA_RECENT.atLeast( JAVA_1_7 ) );
+    }
+
     @Test
     @SuppressWarnings( "ResultOfMethodCallIgnored" )
     public void shouldCreateModularArgsFile() throws Exception
@@ -84,7 +95,7 @@ public class ModularClasspathForkConfigurationTest
                 config.createArgsFile( descriptor, modulePath, classPath, packages, patchFile, startClassName );
 
         assertThat( jigsawArgsFile ).isNotNull();
-        List<String> argsFileLines = readAllLines( jigsawArgsFile.toPath() );
+        List<String> argsFileLines = readAllLines( jigsawArgsFile.toPath(), UTF_8 );
         assertThat( argsFileLines ).hasSize( 13 );
         assertThat( argsFileLines.get( 0 ) ).isEqualTo( "--module-path" );
         assertThat( argsFileLines.get( 1 ) ).isEqualTo( "modular.jar" + pathSeparator + "target/classes" );
@@ -118,7 +129,7 @@ public class ModularClasspathForkConfigurationTest
         assertThat( cli.getArguments()[0] ).startsWith( "@" );
         File argFile = new File( cli.getArguments()[0].substring( 1 ) );
         assertThat( argFile ).isFile();
-        List<String> argsFileLines2 = readAllLines( argFile.toPath() );
+        List<String> argsFileLines2 = readAllLines( argFile.toPath(), UTF_8 );
         assertThat( argsFileLines2 ).hasSize( 13 );
         for ( int i = 0; i < argsFileLines2.size(); i++ )
         {

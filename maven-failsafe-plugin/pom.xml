@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire</artifactId>
-    <version>2.21.0-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.maven.plugins</groupId>
@@ -41,6 +41,8 @@
   <properties>
     <thisPlugin>Failsafe</thisPlugin>
     <thatPlugin>Surefire</thatPlugin>
+    <failsafe-integration-test-port>8084</failsafe-integration-test-port>
+    <failsafe-integration-test-stop-port>8085</failsafe-integration-test-stop-port>
   </properties>
 
   <dependencies>
@@ -55,6 +57,10 @@
       <scope>provided</scope>
       <type>zip</type>
       <classifier>site-source</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-shared-utils</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -104,6 +110,11 @@
             <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
           </dependency>
         </dependencies>
+        <configuration>
+          <includes>
+            <include>**/JUnit4SuiteTest.java</include>
+          </includes>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -284,6 +295,7 @@
                   <goals>
                     <goal>clean</goal>
                     <goal>verify</goal>
+                    <goal>-nsu</goal>
                   </goals>
                   <setupIncludes>
                     <setupInclude>dummy-*/pom.xml</setupInclude>
@@ -296,10 +308,15 @@
                   <skipInvocation>${skipTests}</skipInvocation>
                   <streamLogs>false</streamLogs>
                   <showErrors>true</showErrors>
+                  <properties>
+                    <integration-test-port>${failsafe-integration-test-port}</integration-test-port>
+                    <integration-test-stop-port>${failsafe-integration-test-stop-port}</integration-test-stop-port>
+                  </properties>
                 </configuration>
               </execution>
             </executions>
             <configuration>
+              <javaHome>${jdk.home}</javaHome>
               <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
             </configuration>
           </plugin>

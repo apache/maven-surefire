@@ -118,6 +118,10 @@ public interface SurefireExecutionParameters
 
     void setUseManifestOnlyJar( boolean useManifestOnlyJar );
 
+    String getEncoding();
+
+    void setEncoding( String encoding );
+
     Boolean getFailIfNoSpecifiedTests();
 
     void setFailIfNoSpecifiedTests( boolean failIfNoSpecifiedTests );

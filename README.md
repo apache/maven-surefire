@@ -20,9 +20,9 @@ Usage of [maven-surefire-plugin], [maven-failsafe-plugin], [maven-surefire-repor
 
 # Build Status
 
-[![dependencies](https://www.versioneye.com/java/org.apache.maven.plugins:maven-surefire-plugin/badge.svg?style=plastic)](https://builds.apache.org/job/maven-surefire/depgraph-view/) Maven 2.2.1 Plugin API
+[![dependencies](https://www.versioneye.com/java/org.apache.maven.plugins:maven-surefire-plugin/badge.svg?style=plastic)](https://builds.apache.org/job/maven-wip/job/maven-surefire/depgraph-view/) Maven 2.2.1 Plugin API
 
-[![license](http://img.shields.io/:license-apache-red.svg?style=plastic)](http://www.apache.org/licenses/LICENSE-2.0.html) [![tests](https://img.shields.io/jenkins/t/https/builds.apache.org/view/M-R/view/Maven/job/maven-surefire-pipeline/job/master.svg?style=plastic)](https://builds.apache.org/view/M-R/view/Maven/job/maven-surefire-pipeline/job/master/lastBuild/testReport/) [![Build Status](https://builds.apache.org/view/M-R/view/Maven/job/maven-surefire-pipeline/job/master/badge/icon?style=plastic)](https://builds.apache.org/view/M-R/view/Maven/job/maven-surefire-pipeline/job/master/)
+[![license](http://img.shields.io/:license-apache-red.svg?style=plastic)](http://www.apache.org/licenses/LICENSE-2.0.html) [![tests](https://img.shields.io/jenkins/t/https/builds.apache.org/job/maven-wip/job/maven-surefire/job/master.svg?style=plastic)](https://builds.apache.org/job/maven-wip/job/maven-surefire/job/master/lastBuild/testReport/) [![Build Status](https://builds.apache.org/job/maven-wip/job/maven-surefire/job/master/badge/icon?style=plastic)](https://builds.apache.org/job/maven-wip/job/maven-surefire/job/master/)
 
 # Development Information
 
@@ -31,10 +31,12 @@ In order to build Surefire project use **Maven 3.1.0+** and **JDK 1.8**.
 But in order to run IT tests, you can do:   
 
 * In order to run tests for a release check during the vote the following memory requirements are needed:   
-  **(on Linux/Unix)** *export MAVEN_OPTS="-Xmx768m -XX:MaxMetaspaceSize=864m -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true"*  
-  **(on Windows)** *set MAVEN_OPTS="-Xmx768m -XX:MaxMetaspaceSize=864m -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true"*    
+  **(on Linux/Unix)** *export MAVEN_OPTS="-server -Xmx512m -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=384m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Dhttps.protocols=TLSv1"*  
+  **(on Windows)** *set MAVEN_OPTS="-server -Xmx256m -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=384m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Dhttps.protocols=TLSv1"*    
 * In order to run the build with **JDK 9** **on Windows** (**on Linux/Unix modify system property jdk.home**):  
-  *mvn install site site:stage -P reporting,run-its "-Djdk.home=e:\Program Files\Java\jdk9\"* 
+  *mvn install site site:stage -P reporting,run-its "-Djdk.home=e:\Program Files\Java\jdk9\"*
+* In order to run the build with **JDK 10** disable JaCoCo due to a [bug in JaCoCo](https://github.com/jacoco/jacoco/issues/629)
+  *mvn install site site:stage -P reporting,run-its -Djacoco.skip=true "-Djdk.home=e:\Program Files\Java\jdk10\"*
   
 ### Deploying web site
 

@@ -30,12 +30,14 @@ import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.maven.plugin.surefire.report.ConsoleReporter.BRIEF;
 import static org.apache.maven.plugin.surefire.report.ConsoleReporter.PLAIN;
+import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 /**
  * All the parameters used to construct reporters
@@ -80,6 +82,8 @@ public final class StartupReportConfiguration
     private final Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistory
         = new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>();
 
+    private final Charset encoding;
+
     private StatisticsReporter statisticsReporter;
 
     @SuppressWarnings( "checkstyle:parameternumber" )
@@ -87,7 +91,7 @@ public final class StartupReportConfiguration
                                        boolean redirectTestOutputToFile, boolean disableXmlReport,
                                        @Nonnull File reportsDirectory, boolean trimStackTrace, String reportNameSuffix,
                                        File statisticsFile, boolean requiresRunHistory,
-                                       int rerunFailingTestsCount, String xsdSchemaLocation )
+                                       int rerunFailingTestsCount, String xsdSchemaLocation, String encoding )
     {
         this.useFile = useFile;
         this.printSummary = printSummary;
@@ -103,32 +107,8 @@ public final class StartupReportConfiguration
         this.originalSystemErr = System.err;
         this.rerunFailingTestsCount = rerunFailingTestsCount;
         this.xsdSchemaLocation = xsdSchemaLocation;
-    }
-
-    /**
-     * For testing purposes only.
-     *
-     * @return StartupReportConfiguration fo testing purposes
-     */
-    public static StartupReportConfiguration defaultValue()
-    {
-        File target = new File( "./target" );
-        File statisticsFile = new File( target, "TESTHASH" );
-        return new StartupReportConfiguration( true, true, "PLAIN", false, false, target, false, null, statisticsFile,
-                                               false, 0, null );
-    }
-
-    /**
-     * For testing purposes only.
-     *
-     * @return StartupReportConfiguration fo testing purposes
-     */
-    public static StartupReportConfiguration defaultNoXml()
-    {
-        File target = new File( "./target" );
-        File statisticsFile = new File( target, "TESTHASHxXML" );
-        return new StartupReportConfiguration( true, true, "PLAIN", false, true, target, false, null, statisticsFile,
-                                               false, 0, null );
+        String charset = trimToNull( encoding );
+        this.encoding = charset == null ? Charset.defaultCharset() : Charset.forName( charset );
     }
 
     public boolean isUseFile()
@@ -182,7 +162,7 @@ public final class StartupReportConfiguration
     public FileReporter instantiateFileReporter()
     {
         return isUseFile() && isBriefOrPlainFormat()
-            ? new FileReporter( reportsDirectory, getReportNameSuffix() )
+            ? new FileReporter( reportsDirectory, getReportNameSuffix(), encoding )
             : null;
     }
 
@@ -231,5 +211,10 @@ public final class StartupReportConfiguration
     public String getXsdSchemaLocation()
     {
         return xsdSchemaLocation;
+    }
+
+    public Charset getEncoding()
+    {
+        return encoding;
     }
 }

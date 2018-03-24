@@ -1,0 +1,17 @@
+language: java
+jdk:
+  - oraclejdk8
+#  - oraclejdk9
+
+script: "rm -rf .repository && mvn --show-version --errors --batch-mode -Prun-its clean install -Dmaven.repo.local=.repository -Denforcer.skip=true -e"
+
+install: true
+
+branches:
+    except:
+        - gh-pages
+
+
+notifications:
+    email:
+        - olamy@apache.org

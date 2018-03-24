@@ -55,9 +55,9 @@ public final class SystemUtils
 {
     public static final BigDecimal JAVA_SPECIFICATION_VERSION = getJavaSpecificationVersion();
 
-    private static final BigDecimal JAVA_VERSION_7 = new BigDecimal( "1.7" );
+    private static final BigDecimal JAVA_VERSION_7 = new BigDecimal( "1.7" ).stripTrailingZeros();
 
-    private static final BigDecimal JIGSAW_JAVA_VERSION = new BigDecimal( 9 );
+    private static final BigDecimal JIGSAW_JAVA_VERSION = new BigDecimal( 9 ).stripTrailingZeros();
 
     private static final int PROC_STATUS_PID_FIRST_CHARS = 20;
 

@@ -745,8 +745,9 @@ public abstract class AbstractSurefireMojo
     @Component
     private ToolchainManager toolchainManager;
 
-    @Component
-    private LocationManager locationManager;
+    // todo use in 3.0.0 with java 1.7 and substitute new LocationManager() with component in underneath code
+    // @Component
+    // private LocationManager locationManager;
 
     private Artifact surefireBooterArtifact;
 
@@ -1747,6 +1748,11 @@ public abstract class AbstractSurefireMojo
                 false );
     }
 
+    private Object getLocationManager()
+    {
+        return new LocationManager();
+    }
+
     private StartupConfiguration newStartupConfigForModularClasspath(
             @Nonnull ClassLoaderConfiguration classLoaderConfiguration, @Nonnull Classpath providerClasspath,
             @Nonnull String providerName, @Nonnull File moduleDescriptor, @Nonnull DefaultScanResult scanResult )
@@ -1756,7 +1762,7 @@ public abstract class AbstractSurefireMojo
         ResolvePathsRequest<String> req = ResolvePathsRequest.withStrings( generateTestClasspath().getClassPath() )
                 .setMainModuleDescriptor( moduleDescriptor.getAbsolutePath() );
 
-        ResolvePathsResult<String> result = locationManager.resolvePaths( req );
+        ResolvePathsResult<String> result = ( (LocationManager) getLocationManager() ).resolvePaths( req );
 
         Classpath testClasspath = new Classpath( result.getClasspathElements() );
         Classpath testModulepath = new Classpath( result.getModulepathElements().keySet() );
@@ -1801,7 +1807,7 @@ public abstract class AbstractSurefireMojo
                                                isRedirectTestOutputToFile(), isDisableXmlReport(),
                                                getReportsDirectory(), isTrimStackTrace(), getReportNameSuffix(),
                                                getStatisticsFile( configChecksum ), requiresRunHistory(),
-                                               getRerunFailingTestsCount(), getReportSchemaLocation() );
+                                               getRerunFailingTestsCount(), getReportSchemaLocation(), getEncoding() );
     }
 
     private boolean isSpecificTestSpecified()
@@ -2331,6 +2337,7 @@ public abstract class AbstractSurefireMojo
         checksum.add( isDisableXmlReport() );
         checksum.add( isUseSystemClassLoader() );
         checksum.add( isUseManifestOnlyJar() );
+        checksum.add( getEncoding() );
         checksum.add( isEnableAssertions() );
         checksum.add( getObjectFactory() );
         checksum.add( getFailIfNoTests() );
@@ -3061,6 +3068,7 @@ public abstract class AbstractSurefireMojo
             {
                 File tmp = File.createTempFile( getTempDir(), null );
                 //noinspection ResultOfMethodCallIgnored
+                tmp.delete();
                 return tmp.mkdirs() ? tmp : createSurefireBootDirectoryInBuild();
             }
             catch ( IOException e )

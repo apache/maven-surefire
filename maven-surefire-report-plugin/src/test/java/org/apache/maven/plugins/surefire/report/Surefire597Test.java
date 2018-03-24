@@ -26,7 +26,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.StringWriter;
-import java.util.ResourceBundle;
 
 import static java.util.Collections.singletonList;
 import static java.util.Locale.ENGLISH;
@@ -47,15 +46,14 @@ public class Surefire597Test
         File report = new File( basedir, "target/test-classes/surefire-597" );
         ConsoleLogger log = new NullConsoleLogger();
         SurefireReportGenerator gen = new SurefireReportGenerator( singletonList( report ), ENGLISH, true, null, log );
-        ResourceBundle resourceBundle = ResourceBundle.getBundle( "surefire-report", ENGLISH );
         StringWriter writer = new StringWriter();
-        gen.doGenerateReport( resourceBundle, new XhtmlSink( writer ) {} );
+        gen.doGenerateReport( new SurefireReportMojo().getBundle( ENGLISH ), new XhtmlSink( writer ) {} );
         String xml = writer.toString();
         assertThat( xml, containsString( toSystemNewLine(
             "<table border=\"1\" class=\"bodyTable\">\n"
                 + "<tr class=\"a\">\n"
                 + "<th>Tests</th>\n"
-                + "<th>Errors </th>\n"
+                + "<th>Errors</th>\n"
                 + "<th>Failures</th>\n"
                 + "<th>Skipped</th>\n"
                 + "<th>Success Rate</th>\n"
@@ -74,7 +72,7 @@ public class Surefire597Test
                 + "<tr class=\"a\">\n"
                 + "<th>Package</th>\n"
                 + "<th>Tests</th>\n"
-                + "<th>Errors </th>\n"
+                + "<th>Errors</th>\n"
                 + "<th>Failures</th>\n"
                 + "<th>Skipped</th>\n"
                 + "<th>Success Rate</th>\n"
@@ -93,7 +91,7 @@ public class Surefire597Test
                 + "<th></th>\n"
                 + "<th>Class</th>\n"
                 + "<th>Tests</th>\n"
-                + "<th>Errors </th>\n"
+                + "<th>Errors</th>\n"
                 + "<th>Failures</th>\n"
                 + "<th>Skipped</th>\n"
                 + "<th>Success Rate</th>\n"

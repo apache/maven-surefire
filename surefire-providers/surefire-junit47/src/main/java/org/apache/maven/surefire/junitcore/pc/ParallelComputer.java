@@ -67,7 +67,7 @@ public abstract class ParallelComputer
 
     protected abstract ShutdownResult describeStopped( boolean shutdownNow );
 
-    abstract boolean shutdownThreadPoolsAwaitingKilled();
+    protected abstract boolean shutdownThreadPoolsAwaitingKilled();
 
     protected final void beforeRunQuietly()
     {
@@ -249,19 +249,23 @@ public abstract class ParallelComputer
     {
         if ( testsBeforeShutdown != null )
         {
-            for ( final Description test : testsBeforeShutdown.get().getTriggeredTests() )
+            final ShutdownResult shutdownResult = testsBeforeShutdown.get();
+            if ( shutdownResult != null )
             {
-                if ( test != null && test.getDisplayName() != null )
+                for ( final Description test : shutdownResult.getTriggeredTests() )
                 {
-                    executedTests.add( test.getDisplayName() );
+                    if ( test != null && test.getDisplayName() != null )
+                    {
+                        executedTests.add( test.getDisplayName() );
+                    }
                 }
-            }
 
-            for ( final Description test : testsBeforeShutdown.get().getIncompleteTests() )
-            {
-                if ( test != null && test.getDisplayName() != null )
+                for ( final Description test : shutdownResult.getIncompleteTests() )
                 {
-                    incompleteTests.add( test.getDisplayName() );
+                    if ( test != null && test.getDisplayName() != null )
+                    {
+                        incompleteTests.add( test.getDisplayName() );
+                    }
                 }
             }
         }

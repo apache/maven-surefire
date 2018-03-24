@@ -20,6 +20,7 @@ package org.apache.maven.surefire.report;
  */
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import org.apache.maven.plugin.surefire.report.FileReporter;
 import org.apache.maven.plugin.surefire.report.ReportEntryType;
@@ -44,12 +45,13 @@ public class FileReporterTest
         reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
         WrappedReportEntry wrappedReportEntry =
             new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null );
-        reporter = new FileReporter( reportDir, null );
+        reporter = new FileReporter( reportDir, null, Charset.defaultCharset() );
         reporter.testSetCompleted( wrappedReportEntry, createTestSetStats(), new ArrayList<String>() );
 
         File expectedReportFile = new File( reportDir, testName + ".txt" );
         assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
                     expectedReportFile.exists() );
+        //noinspection ResultOfMethodCallIgnored
         expectedReportFile.delete();
     }
 
@@ -65,13 +67,13 @@ public class FileReporterTest
         reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
         WrappedReportEntry wrappedReportEntry =
             new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null );
-        reporter = new FileReporter( reportDir, suffixText );
+        reporter = new FileReporter( reportDir, suffixText, Charset.defaultCharset() );
         reporter.testSetCompleted( wrappedReportEntry, createTestSetStats(), new ArrayList<String>() );
 
         File expectedReportFile = new File( reportDir, testName + "-" + suffixText + ".txt" );
         assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
                     expectedReportFile.exists() );
+        //noinspection ResultOfMethodCallIgnored
         expectedReportFile.delete();
     }
-
 }
