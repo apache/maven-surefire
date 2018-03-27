@@ -21,14 +21,18 @@
 
 properties(
     [
-        buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '0', daysToKeepStr: env.BRANCH_NAME == 'master' ? '30' : '7', numToKeepStr: '5')),
+        buildDiscarder(logRotator(artifactDaysToKeepStr: env.BRANCH_NAME == 'master' ? '30' : '7',
+                                  artifactNumToKeepStr: '10',
+                                  daysToKeepStr: env.BRANCH_NAME == 'master' ? '30' : '7',
+                                  numToKeepStr: '10')
+        ),
         disableConcurrentBuilds()
     ]
 )
 
 final def oses = ['linux', 'windows']
-final def mavens = ['3.2.x', '3.3.x', '3.5.x'] // env.BRANCH_NAME == 'master' ? ['3.2.x', '3.3.x', '3.5.x'] : ['3.2.x', '3.5.x']
-final def jdks = [7, 8, 9, 10] // env.BRANCH_NAME == 'master' ? [7, 8, 9, 10] : [7, 10]
+final def mavens = env.BRANCH_NAME == 'master' ? ['3.2.x', '3.3.x', '3.5.x'] : ['3.5.x']
+final def jdks = env.BRANCH_NAME == 'master' ? [7, 8, 9, 10] : [7, 10]
 
 final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
 final def goals = ['clean', 'install', 'jacoco:report']
@@ -72,31 +76,35 @@ oses.eachWithIndex { os, indexOfOs ->
     }
 }
 
-timeout(time: 10, unit: 'HOURS') {
+timeout(time: 12, unit: 'HOURS') {
     try {
         parallel(stages)
         // JENKINS-34376 seems to make it hard to detect the aborted builds
     } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
+        println "org.jenkinsci.plugins.workflow.steps.FlowInterruptedException: ${e}"
         // this ambiguous condition means a user probably aborted
         if (e.causes.size() == 0) {
-            currentBuild.result = "ABORTED"
+            currentBuild.result = 'ABORTED'
         } else {
-            currentBuild.result = "FAILURE"
+            currentBuild.result = 'FAILURE'
         }
         throw e
     } catch (hudson.AbortException e) {
+        println "hudson.AbortException: ${e}"
         // this ambiguous condition means during a shell step, user probably aborted
         if (e.getMessage().contains('script returned exit code 143')) {
-            currentBuild.result = "ABORTED"
+            currentBuild.result = 'ABORTED'
         } else {
-            currentBuild.result = "FAILURE"
+            currentBuild.result = 'FAILURE'
         }
         throw e
     } catch (InterruptedException e) {
-        currentBuild.result = "ABORTED"
+        println "InterruptedException: ${e}"
+        currentBuild.result = 'ABORTED'
         throw e
     } catch (Throwable e) {
-        currentBuild.result = "FAILURE"
+        println "Throwable: ${e}"
+        currentBuild.result = 'FAILURE'
         throw e
     } finally {
         stage("notifications") {
@@ -108,16 +116,15 @@ timeout(time: 10, unit: 'HOURS') {
 def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvnName, goals, options, mavenOpts, boolean makeReports) {
     cleanWs()
     try {
+        def mvnLocalRepoDir = null
         if (isUnix()) {
             sh 'mkdir -p .m2'
+            mvnLocalRepoDir = "${pwd()}/.m2"
         } else {
             bat 'mkdir .m2'
+            mvnLocalRepoDir = "${pwd()}\\.m2"
         }
 
-        def mvnLocalRepoDir = null
-        dir('.m2') {
-            mvnLocalRepoDir = "${pwd()}"
-        }
         println "Maven Local Repository = ${mvnLocalRepoDir}."
         assert mvnLocalRepoDir != null : 'Local Maven Repository is undefined.'
 
@@ -174,14 +181,14 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
             }
 
             if (fileExists('maven-failsafe-plugin/target/it')) {
-                zip(zipFile: "it--maven-failsafe-plugin--${stageKey}.zip", dir: 'maven-failsafe-plugin/target/it', archive: true)
+                zip(zipFile: "maven-failsafe-plugin--${stageKey}.zip", dir: 'maven-failsafe-plugin/target/it', archive: true)
             }
 
             if (fileExists('surefire-its/target')) {
-                zip(zipFile: "it--surefire-its--${stageKey}.zip", dir: 'surefire-its/target', archive: true)
+                zip(zipFile: "surefire-its--${stageKey}.zip", dir: 'surefire-its/target', archive: true)
             }
 
-            archiveArtifacts(artifacts: '*.zip', allowEmptyArchive: true, onlyIfSuccessful: false)
+            archiveArtifacts(artifacts: "*--${stageKey}.zip", allowEmptyArchive: true, onlyIfSuccessful: false)
         }
 
         stage("cleanup ${stageKey}") {
