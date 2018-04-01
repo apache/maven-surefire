@@ -46,11 +46,15 @@ public class Test1
     {
         String fileName = test.getName() + "-pid";
         File target = new File( "target" ).getCanonicalFile();  // getCanonicalFile required for embedded mode
-        if ( !( target.exists() && target.isDirectory() ) )
+        if ( !target.exists() )
         {
-            target = new File( "." );
+            target.mkdirs();
         }
         File pidFile = new File( target, fileName );
+        if ( pidFile.exists() )
+        {
+            pidFile.delete();
+        }
         FileWriter fw = new FileWriter( pidFile );
         // DGF little known trick... this is guaranteed to be unique to the PID
         // In fact, it usually contains the pid and the local host name!
