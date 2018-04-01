@@ -59,6 +59,8 @@ import static org.junit.Assert.*;
  */
 public class ParallelComputerBuilderTest
 {
+    private static final int DELAY_MULTIPLIER = 7;
+
     private static final Object class1Lock = new Object();
 
     private static volatile boolean beforeShutdown;
@@ -137,9 +139,9 @@ public class ParallelComputerBuilderTest
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t1 = systemMillis();
         final Result result = core.run( computer, TestSuite.class );
-        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t2 = systemMillis();
         final long timeSpent = t2 - t1;
 
         assertThat( computer.getSuites().size(), is( 1 ) );
@@ -151,11 +153,11 @@ public class ParallelComputerBuilderTest
         assertTrue( result.wasSuccessful() );
         if ( Class1.maxConcurrentMethods == 1 )
         {
-            assertThat( timeSpent, between( 1950, 2250 ) );
+            assertThat( timeSpent, between( 2000 * DELAY_MULTIPLIER - 50, 2250 * DELAY_MULTIPLIER ) );
         }
         else if ( Class1.maxConcurrentMethods == 2 )
         {
-            assertThat( timeSpent, between( 1450, 1750 ) );
+            assertThat( timeSpent, between( 1500 * DELAY_MULTIPLIER - 50, 1750 * DELAY_MULTIPLIER ) );
         }
         else
         {
@@ -175,9 +177,9 @@ public class ParallelComputerBuilderTest
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t1 = systemMillis();
         final Result result = core.run( computer, TestSuite.class, Class1.class );
-        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t2 = systemMillis();
         final long timeSpent = t2 - t1;
 
         assertThat( computer.getSuites().size(), is( 1 ) );
@@ -188,7 +190,11 @@ public class ParallelComputerBuilderTest
         assertThat( computer.getPoolCapacity(), is( 5 ) );
         assertTrue( result.wasSuccessful() );
         assertThat( Class1.maxConcurrentMethods, is( 2 ) );
-        assertThat( timeSpent, anyOf( between( 1450, 1750 ), between( 1950, 2250 ), between( 2450, 2750 ) ) );
+        assertThat( timeSpent, anyOf(
+                between( 1500 * DELAY_MULTIPLIER - 50, 1750 * DELAY_MULTIPLIER ),
+                between( 2000 * DELAY_MULTIPLIER - 50, 2250 * DELAY_MULTIPLIER ),
+                between( 2500 * DELAY_MULTIPLIER - 50, 2750 * DELAY_MULTIPLIER )
+        ) );
     }
 
     @Test
@@ -204,9 +210,9 @@ public class ParallelComputerBuilderTest
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t1 = systemMillis();
         final Result result = core.run( computer, TestSuite.class, Class1.class );
-        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t2 = systemMillis();
         final long timeSpent = t2 - t1;
 
         assertThat( computer.getSuites().size(), is( 1 ) );
@@ -217,7 +223,7 @@ public class ParallelComputerBuilderTest
         assertThat( computer.getPoolCapacity(), is( 8 ) );
         assertTrue( result.wasSuccessful() );
         assertThat( Class1.maxConcurrentMethods, is( 4 ) );
-        assertThat( timeSpent, between( 950, 1250 ) );
+        assertThat( timeSpent, between( 1000 * DELAY_MULTIPLIER - 50, 1250 * DELAY_MULTIPLIER ) );
     }
 
     @Test
@@ -239,9 +245,9 @@ public class ParallelComputerBuilderTest
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t1 = systemMillis();
         final Result result = core.run( computer, TestSuite.class );
-        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t2 = systemMillis();
         final long timeSpent = t2 - t1;
 
         assertThat( computer.getSuites().size(), is( 1 ) );
@@ -252,7 +258,7 @@ public class ParallelComputerBuilderTest
         assertThat( computer.getPoolCapacity(), is( 3 ) );
         assertTrue( result.wasSuccessful() );
         assertThat( Class1.maxConcurrentMethods, is( 1 ) );
-        assertThat( timeSpent, between( 1950, 2250 ) );
+        assertThat( timeSpent, between( 2000 * DELAY_MULTIPLIER - 50, 2250 * DELAY_MULTIPLIER ) );
     }
 
     @Test
@@ -266,9 +272,9 @@ public class ParallelComputerBuilderTest
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t1 = systemMillis();
         final Result result = core.run( computer, TestSuite.class );
-        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t2 = systemMillis();
         final long timeSpent = t2 - t1;
 
         assertThat( computer.getSuites().size(), is( 1 ) );
@@ -279,7 +285,7 @@ public class ParallelComputerBuilderTest
         assertThat( computer.getPoolCapacity(), is( ParallelComputerBuilder.TOTAL_POOL_SIZE_UNDEFINED ) );
         assertTrue( result.wasSuccessful() );
         assertThat( Class1.maxConcurrentMethods, is( 3 ) );
-        assertThat( timeSpent, between( 950, 1250 ) );
+        assertThat( timeSpent, between( 1000 * DELAY_MULTIPLIER - 50, 1250 * DELAY_MULTIPLIER ) );
     }
 
     @Test
@@ -296,9 +302,9 @@ public class ParallelComputerBuilderTest
         // Each group takes 0.5s.
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t1 = systemMillis();
         final Result result = core.run( computer, TestSuite.class, Class1.class );
-        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t2 = systemMillis();
         final long timeSpent = t2 - t1;
 
         assertThat( computer.getSuites().size(), is( 1 ) );
@@ -309,7 +315,7 @@ public class ParallelComputerBuilderTest
         assertThat( computer.getPoolCapacity(), is( ParallelComputerBuilder.TOTAL_POOL_SIZE_UNDEFINED ) );
         assertTrue( result.wasSuccessful() );
         assertThat( Class1.maxConcurrentMethods, is( 3 ) );
-        assertThat( timeSpent, between( 950, 1250 ) );
+        assertThat( timeSpent, between( 1000 * DELAY_MULTIPLIER - 50, 1250 * DELAY_MULTIPLIER ) );
     }
 
     @Test
@@ -323,9 +329,9 @@ public class ParallelComputerBuilderTest
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t1 = systemMillis();
         final Result result = core.run( computer, TestSuite.class, Class1.class );
-        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t2 = systemMillis();
         final long timeSpent = t2 - t1;
 
         assertThat( computer.getSuites().size(), is( 1 ) );
@@ -336,30 +342,30 @@ public class ParallelComputerBuilderTest
         assertThat( computer.getPoolCapacity(), is( ParallelComputerBuilder.TOTAL_POOL_SIZE_UNDEFINED ) );
         assertTrue( result.wasSuccessful() );
         assertThat( Class1.maxConcurrentMethods, is( 2 ) );
-        assertThat( timeSpent, between( 1450, 1750 ) );
+        assertThat( timeSpent, between( 1500 * DELAY_MULTIPLIER - 50, 1750 * DELAY_MULTIPLIER ) );
     }
 
-    @Test( timeout = 2000 )
+    @Test( timeout = 2000 * DELAY_MULTIPLIER )
     public void shutdown()
     {
-        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t1 = systemMillis();
         final Result result = new ShutdownTest().run( false );
-        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t2 = systemMillis();
         final long timeSpent = t2 - t1;
         assertTrue( result.wasSuccessful() );
         assertTrue( beforeShutdown );
-        assertThat( timeSpent, between( 450, 1250 ) );
+        assertThat( timeSpent, between( 500 * DELAY_MULTIPLIER - 50, 1250 * DELAY_MULTIPLIER ) );
     }
 
-    @Test( timeout = 2000 )
+    @Test( timeout = 2000 * DELAY_MULTIPLIER )
     public void shutdownWithInterrupt()
     {
-        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t1 = systemMillis();
         new ShutdownTest().run( true );
-        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t2 = systemMillis();
         final long timeSpent = t2 - t1;
         assertTrue( beforeShutdown );
-        assertThat( timeSpent, between( 450, 1250 ) );
+        assertThat( timeSpent, between( 500 * DELAY_MULTIPLIER - 50, 1250 * DELAY_MULTIPLIER ) );
     }
 
     @Test
@@ -568,7 +574,7 @@ public class ParallelComputerBuilderTest
         for ( int i = 0; i < 5; i++ )
         {
             System.gc();
-            TimeUnit.MILLISECONDS.sleep( 500 );
+            TimeUnit.MILLISECONDS.sleep( 500L );
         }
         Collection<Thread> expectedThreads = jvmThreads();
         ParallelComputerBuilder parallelComputerBuilder = new ParallelComputerBuilder( logger );
@@ -580,7 +586,7 @@ public class ParallelComputerBuilderTest
         for ( int i = 0; i < 5 && expectedThreads.size() != jvmThreads().size(); i++ )
         {
             System.gc();
-            TimeUnit.MILLISECONDS.sleep( 500 );
+            TimeUnit.MILLISECONDS.sleep( 500L );
         }
         assertThat( jvmThreads(), is( expectedThreads ) );
     }
@@ -643,7 +649,7 @@ public class ParallelComputerBuilderTest
             synchronized ( class1Lock )
             {
                 ++concurrentMethods;
-                class1Lock.wait( 500 );
+                class1Lock.wait( DELAY_MULTIPLIER * 500L );
                 maxConcurrentMethods = Math.max( maxConcurrentMethods, concurrentMethods-- );
             }
         }
@@ -744,7 +750,7 @@ public class ParallelComputerBuilderTest
     {
         private final Class<?> testClass;
         private final Description suiteDescription;
-        private Description myTestMethodDescr;
+        private final Description myTestMethodDescr;
 
         @SuppressWarnings( "unchecked" )
         public ReportOneTestAtRuntimeRunner( Class<?> testClass ) throws InitializationError
@@ -928,7 +934,7 @@ public class ParallelComputerBuilderTest
             throws InterruptedException
         {
             System.out.println( new Date() + " BEG: beforeClass" );
-            TimeUnit.SECONDS.sleep( 1 );
+            sleepSeconds( 1 );
             System.out.println( new Date() + " END: beforeClass" );
         }
 
@@ -937,7 +943,7 @@ public class ParallelComputerBuilderTest
             throws InterruptedException
         {
             System.out.println( new Date() + " BEG: before" );
-            TimeUnit.SECONDS.sleep( 1 );
+            sleepSeconds( 1 );
             System.out.println( new Date() + " END: before" );
         }
 
@@ -946,7 +952,7 @@ public class ParallelComputerBuilderTest
             throws InterruptedException
         {
             System.out.println( new Date() + " BEG: test" );
-            TimeUnit.SECONDS.sleep( 1 );
+            sleepSeconds( 1 );
             System.out.println( new Date() + " END: test" );
         }
 
@@ -955,7 +961,7 @@ public class ParallelComputerBuilderTest
             throws InterruptedException
         {
             System.out.println( new Date() + " BEG: after" );
-            TimeUnit.SECONDS.sleep( 1 );
+            sleepSeconds( 1 );
             System.out.println( new Date() + " END: after" );
         }
 
@@ -964,8 +970,19 @@ public class ParallelComputerBuilderTest
             throws InterruptedException
         {
             System.out.println( new Date() + " BEG: afterClass" );
-            TimeUnit.SECONDS.sleep( 1 );
+            sleepSeconds( 1 );
             System.out.println( new Date() + " END: afterClass" );
         }
+    }
+
+    private static long systemMillis()
+    {
+        return TimeUnit.NANOSECONDS.toMillis( System.nanoTime() );
+    }
+
+    private static void sleepSeconds( int seconds )
+            throws InterruptedException
+    {
+        TimeUnit.SECONDS.sleep( seconds );
     }
 }
