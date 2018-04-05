@@ -19,7 +19,9 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
@@ -31,6 +33,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 import static org.junit.Assume.assumeTrue;
 import static org.powermock.reflect.Whitebox.invokeMethod;
@@ -43,6 +46,9 @@ import static org.powermock.reflect.Whitebox.invokeMethod;
  */
 public class PpidCheckerTest
 {
+    @Rule
+    public final ExpectedException exceptions = ExpectedException.none();
+
     @Test
     public void shouldHavePpidAsWindows()
     {
@@ -102,14 +108,19 @@ public class PpidCheckerTest
     @Test
     public void shouldNotFindSuchPID()
     {
-        PpidChecker checker = new PpidChecker( 1000000L );
+        long ppid = 1000000L;
+
+        PpidChecker checker = new PpidChecker( ppid );
+
         assertThat( checker.canUse() )
                 .isTrue();
 
-        boolean isAlive = checker.isProcessAlive();
+        exceptions.expect( IllegalStateException.class );
+        exceptions.expectMessage( "Cannot use PPID " + ppid + " process information. Going to use NOOP events." );
 
-        assertThat( isAlive )
-                .isFalse();
+        checker.isProcessAlive();
+
+        fail( "this test should throw exception" );
     }
 
     @Test
