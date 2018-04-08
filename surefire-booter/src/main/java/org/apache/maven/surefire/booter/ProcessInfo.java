@@ -19,8 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
-
 /**
  * Immutable object which encapsulates PID and elapsed time (Unix) or start time (Windows).
  * <br>
@@ -47,9 +45,9 @@ final class ProcessInfo
         return new ProcessInfo( pid, etime );
     }
 
-    static ProcessInfo windowsProcessInfo( long pid, String startTimestamp )
+    static ProcessInfo windowsProcessInfo( long pid, long startTimestamp )
     {
-        return new ProcessInfo( pid, requireNonNull( startTimestamp, "startTimestamp is NULL" ) );
+        return new ProcessInfo( pid, startTimestamp );
     }
 
     private final Long pid;
