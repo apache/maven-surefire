@@ -239,6 +239,10 @@ public final class StringUtils
     public static EncodedArray escapeBytesToPrintable( final byte[] header, final byte[] input, final int off,
                                                        final int len )
     {
+        if ( input.length == 0 )
+        {
+            return EncodedArray.EMPTY;
+        }
         if ( off < 0 || len < 0 || off >= input.length || len > input.length || off > len )
         {
             throw new IndexOutOfBoundsException(
@@ -359,6 +363,8 @@ public final class StringUtils
      */
     public static final class EncodedArray
     {
+        private static final EncodedArray EMPTY = new EncodedArray( new byte[]{}, 0 );
+
         private final byte[] array;
         private final int size;
 

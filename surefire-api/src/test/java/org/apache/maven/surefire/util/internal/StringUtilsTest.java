@@ -110,4 +110,13 @@ public class StringUtilsTest
 
         assertArrayEquals( expectedResult, actualResult );
     }
+
+    public void testEmptyByteArray()
+    {
+        byte[] header = { (byte) 'a' };
+        byte[] input = {};
+        EncodedArray encodedArray = StringUtils.escapeBytesToPrintable( header, input, 0, input.length );
+        assertEquals( 0, encodedArray.getSize() );
+        assertEquals( 0, encodedArray.getArray().length );
+    }
 }
