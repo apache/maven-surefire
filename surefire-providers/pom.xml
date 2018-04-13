@@ -41,6 +41,7 @@
     <module>surefire-junit3</module>
     <module>surefire-junit4</module>
     <module>surefire-junit47</module>
+    <module>surefire-junit-platform</module>
     <module>surefire-testng-utils</module>
     <module>surefire-testng</module>
   </modules>
