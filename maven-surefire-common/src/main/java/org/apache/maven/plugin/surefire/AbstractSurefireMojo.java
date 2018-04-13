@@ -488,6 +488,15 @@ public abstract class AbstractSurefireMojo
     private String junitArtifactName;
 
     /**
+     * Allows you to specify the name of the JUnit Platform artifact.
+     * If not set, {@code org.junit.platform:junit-platform-engine} will be used.
+     *
+     * @since 2.22.0
+     */
+    @Parameter( property = "junitPlatformArtifactName", defaultValue = "org.junit.platform:junit-platform-engine" )
+    private String junitPlatformArtifactName;
+
+    /**
      * Allows you to specify the name of the TestNG artifact. If not set, {@code org.testng:testng} will be used.
      *
      * @since 2.3.1
@@ -1057,6 +1066,7 @@ public abstract class AbstractSurefireMojo
         Artifact junitDepArtifact = getJunitDepArtifact();
         return new ProviderList( new DynamicProviderInfo( null ),
                               new TestNgProviderInfo( getTestNgArtifact() ),
+                              new JUnitPlatformProviderInfo( getJunitPlatformArtifact() ),
                               new JUnitCoreProviderInfo( getJunitArtifact(), junitDepArtifact ),
                               new JUnit4ProviderInfo( getJunitArtifact(), junitDepArtifact ),
                               new JUnit3ProviderInfo() )
@@ -1575,7 +1585,7 @@ public abstract class AbstractSurefireMojo
         return dependencyResolver.isWithinVersionSpec( artifact, "[4.0,)" );
     }
 
-    static boolean isForkModeNever( String forkMode )
+    private static boolean isForkModeNever( String forkMode )
     {
         return FORK_NEVER.equals( forkMode );
     }
@@ -2066,6 +2076,21 @@ public abstract class AbstractSurefireMojo
     private Artifact getJunitDepArtifact()
     {
         return getProjectArtifactMap().get( "junit:junit-dep" );
+    }
+
+
+    private Artifact getJunitPlatformArtifact()
+    {
+        Artifact artifact = getProjectArtifactMap().get( getJunitPlatformArtifactName() );
+        Artifact projectArtifact = project.getArtifact();
+        String projectArtifactName = projectArtifact.getGroupId() + ":" + projectArtifact.getArtifactId();
+
+        if ( artifact == null && projectArtifactName.equals( getJunitPlatformArtifactName() ) )
+        {
+            artifact = projectArtifact;
+        }
+
+        return artifact;
     }
 
     private ForkStarter createForkStarter( @Nonnull ProviderInfo provider, @Nonnull ForkConfiguration forkConfiguration,
@@ -2695,7 +2720,8 @@ public abstract class AbstractSurefireMojo
             {
                 Artifact junitArtifact = getJunitArtifact();
                 boolean junit47Compatible = isJunit47Compatible( junitArtifact );
-                if ( !junit47Compatible )
+                boolean junit5PlatformCompatible = getJunitPlatformArtifact() != null;
+                if ( !junit47Compatible && !junit5PlatformCompatible )
                 {
                     if ( junitArtifact != null )
                     {
@@ -2704,8 +2730,8 @@ public abstract class AbstractSurefireMojo
                                                             + "Check your dependency:tree to see if your project "
                                                             + "is picking up an old junit version" );
                     }
-                    throw new MojoFailureException( "groups/excludedGroups require TestNG or JUnit48+ on project test "
-                                                        + "classpath" );
+                    throw new MojoFailureException( "groups/excludedGroups require TestNG, JUnit48+ or JUnit 5 "
+                            + "on project test classpath" );
                 }
             }
 
@@ -2906,6 +2932,40 @@ public abstract class AbstractSurefireMojo
                                                             null );
         }
 
+    }
+
+    final class JUnitPlatformProviderInfo
+        implements ProviderInfo
+    {
+        private final Artifact junitArtifact;
+
+        JUnitPlatformProviderInfo( Artifact junitArtifact )
+        {
+            this.junitArtifact = junitArtifact;
+        }
+
+        @Nonnull public String getProviderName()
+        {
+            return "org.apache.maven.surefire.junitplatform.JUnitPlatformProvider";
+        }
+
+        public boolean isApplicable()
+        {
+            return junitArtifact != null;
+        }
+
+        public void addProviderProperties() throws MojoExecutionException
+        {
+            convertGroupParameters();
+        }
+
+        public Classpath getProviderClasspath()
+            throws ArtifactResolutionException, ArtifactNotFoundException
+        {
+            return dependencyResolver.getProviderClasspath( "surefire-junit-platform",
+                                                            surefireBooterArtifact.getBaseVersion(),
+                                                            null );
+        }
     }
 
     final class JUnitCoreProviderInfo
@@ -3362,6 +3422,17 @@ public abstract class AbstractSurefireMojo
     public void setJunitArtifactName( String junitArtifactName )
     {
         this.junitArtifactName = junitArtifactName;
+    }
+
+    public String getJunitPlatformArtifactName()
+    {
+        return junitPlatformArtifactName;
+    }
+
+    @SuppressWarnings( "UnusedDeclaration" )
+    public void setJunitPlatformArtifactName( String junitPlatformArtifactName )
+    {
+        this.junitPlatformArtifactName = junitPlatformArtifactName;
     }
 
     public String getTestNGArtifactName()

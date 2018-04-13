@@ -143,25 +143,6 @@
         </executions>
       </plugin>
       <plugin>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>require-maven-2.1.0</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <requireMavenVersion>
-                  <!-- Some plugin features require a recent Maven runtime to work (e.g. SystemPropertiesTest) -->
-                  <version>[2.1.0,)</version>
-                </requireMavenVersion>
-              </rules>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <artifactId>maven-jar-plugin</artifactId>
         <!-- todo dont skip since of failsafe:2.19 internal use if having src/main/java/... -->
         <configuration>

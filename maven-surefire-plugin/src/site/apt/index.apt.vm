@@ -141,6 +141,8 @@ mvn verify
 
   * {{{./examples/testng.html}Using TestNG}}
 
+  * {{{./examples/junit-platform.html}Using JUnit 5 Platform}}
+
   * {{{./examples/junit.html}Using JUnit}}
 
   * {{{./examples/pojo-test.html}Using POJO Tests}}

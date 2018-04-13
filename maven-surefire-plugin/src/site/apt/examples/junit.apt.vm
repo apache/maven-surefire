@@ -71,7 +71,9 @@ Using JUnit
    If nothing is configured, Surefire detects which JUnit version to use by the following algorithm:
 
 +---+
-if the JUnit version in the project >= 4.7 and the parallel attribute has ANY value
+if the JUnit 5 Platform Engine is present in the project
+    use junit-platform
+if the JUnit version in the project >= 4.7 and the <<<parallel>>> configuration parameter has ANY value
     use junit47 provider
 if JUnit >= 4.0 is present
     use junit4 provider
@@ -256,11 +258,12 @@ else
 <plugins>
 [...]
     <plugin>
-      <artifactId>maven-surefire-plugin</artifactId>
-      <version>2.11</version>
-      <configuration>
-        <groups>com.mycompany.SlowTests</groups>
-      </configuration>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+            <groups>com.mycompany.SlowTests</groups>
+        </configuration>
     </plugin>
 [...]
 </plugins>

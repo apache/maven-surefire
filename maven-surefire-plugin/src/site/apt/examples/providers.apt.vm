@@ -35,7 +35,7 @@ Selecting Providers
   override such a selection. This can be done by adding the required provider as a dependency to
   the surefire-plugin.
 
-  The following example shows how to force usage of the Junit 4.7 provider:
+  The following example shows how to force usage of the JUnit 4.7 provider:
 
 +---+
 <plugins>
@@ -56,7 +56,8 @@ Selecting Providers
 </plugins>
 +---+
 
-  The providers supplied with Surefire are <<<surefire-junit3>>>, <<<surefire-junit4>>>, <<<surefire-junit47>>> and <<<surefire-testng>>>.
+  The providers supplied with Surefire are <<<surefire-junit3>>>, <<<surefire-junit4>>>, <<<surefire-junit47>>>,
+  <<<surefire-junit-platform>>> and <<<surefire-testng>>>.
   Please note that forcing a provider still requires that the test framework is properly set up on your project classpath.
 
   You can also specify multiple providers as dependencies, and they will all be run and produce a common report.
