@@ -1,4 +1,4 @@
-package junit4;
+package junitplatform;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,19 +19,21 @@ package junit4;
  * under the License.
  */
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class BasicTest
 {
-    private static boolean tearDownCalled = false;
 
-    private boolean setUpCalled = false;
+    private boolean setUpCalled;
 
-    @Before
+    private static boolean tearDownCalled;
+
+    @BeforeEach
     public void setUp()
     {
         setUpCalled = true;
@@ -39,7 +41,7 @@ public class BasicTest
         System.out.println( "Called setUp" );
     }
 
-    @After
+    @AfterEach
     public void tearDown()
     {
         setUpCalled = false;
@@ -50,14 +52,14 @@ public class BasicTest
     @Test
     public void testSetUp()
     {
-        Assert.assertTrue( "setUp was not called", setUpCalled );
+        assertTrue( setUpCalled, "setUp was not called" );
     }
-  
 
-    @AfterClass
+
+    @AfterAll
     public static void oneTimeTearDown()
     {
-        
+        assertTrue( tearDownCalled );
     }
 
 }

@@ -104,7 +104,9 @@
           <forkMode>once</forkMode>
           <argLine>-server -Xmx64m -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true</argLine>
           <includes>
-            <include>org/apache/**/*IT*.java</include>
+            <include>org/apache/**/JUnit4VersionsIT.java</include>
+            <include>org/apache/**/JUnit5IT.java</include>
+            <include>org/apache/**/JUnitPlatformIT.java</include>
           </includes>
           <!-- Pass current surefire version to the main suite so that it -->
           <!-- can forward to all integration test projects. SUREFIRE-513 -->
@@ -139,25 +141,6 @@
               <goal>integration-test</goal>
               <goal>verify</goal>
             </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>require-maven-2.1.0</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <requireMavenVersion>
-                  <!-- Some plugin features require a recent Maven runtime to work (e.g. SystemPropertiesTest) -->
-                  <version>[2.1.0,)</version>
-                </requireMavenVersion>
-              </rules>
-            </configuration>
           </execution>
         </executions>
       </plugin>

@@ -1,4 +1,4 @@
-package junit4;
+package junit5;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -25,24 +25,26 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class BasicTest
+/**
+ * A test using the JUnit 4 API, which should be executed by JUnit vintage enigne
+ */
+public class JUnit4Test
 {
-    private static boolean tearDownCalled = false;
 
-    private boolean setUpCalled = false;
+    private boolean setUpCalled;
+
+    private static boolean tearDownCalled;
 
     @Before
     public void setUp()
     {
         setUpCalled = true;
-        tearDownCalled = false;
         System.out.println( "Called setUp" );
     }
 
     @After
     public void tearDown()
     {
-        setUpCalled = false;
         tearDownCalled = true;
         System.out.println( "Called tearDown" );
     }
@@ -52,12 +54,11 @@ public class BasicTest
     {
         Assert.assertTrue( "setUp was not called", setUpCalled );
     }
-  
 
     @AfterClass
     public static void oneTimeTearDown()
     {
-        
+        Assert.assertTrue( "tearDown was not called", tearDownCalled );
     }
 
 }
