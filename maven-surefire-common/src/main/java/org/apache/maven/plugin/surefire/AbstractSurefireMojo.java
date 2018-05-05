@@ -115,9 +115,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import static java.lang.Thread.currentThread;
 import static java.util.Arrays.asList;
 import static java.util.Collections.addAll;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.apache.commons.lang3.StringUtils.substringBeforeLast;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
+import static org.apache.maven.plugin.surefire.util.DependencyScanner.filter;
 import static org.apache.maven.shared.utils.StringUtils.capitalizeFirstLetter;
 import static org.apache.maven.shared.utils.StringUtils.isEmpty;
 import static org.apache.maven.shared.utils.StringUtils.isNotBlank;
@@ -731,8 +733,11 @@ public abstract class AbstractSurefireMojo
      * List of dependencies to scan for test classes to include in the test run.
      * The child elements of this element must be &lt;dependency&gt; elements, and the
      * contents of each of these elements must be a string which follows the format:
-     *
+     * <br>
      * <i>groupId:artifactId</i>. For example: <i>org.acme:project-a</i>.
+     * <br>
+     * Since version 2.22.0 you can scan for test classes from a project
+     * dependency of your multi-module project.
      *
      * @since 2.15
      */
@@ -894,7 +899,13 @@ public abstract class AbstractSurefireMojo
         return scanner.scan();
     }
 
-    private DefaultScanResult scanDependencies()
+    @SuppressWarnings( "unchecked" )
+    List<Artifact> getProjectTestArtifacts()
+    {
+        return project.getTestArtifacts();
+    }
+
+    DefaultScanResult scanDependencies() throws MojoFailureException
     {
         if ( getDependenciesToScan() == null )
         {
@@ -904,16 +915,40 @@ public abstract class AbstractSurefireMojo
         {
             try
             {
-                // @TODO noinspection unchecked, check MavenProject 3.x for Generics in surefire:3.0
-                @SuppressWarnings( "unchecked" )
-                List<File> dependenciesToScan =
-                    DependencyScanner.filter( project.getTestArtifacts(), asList( getDependenciesToScan() ) );
-                DependencyScanner scanner = new DependencyScanner( dependenciesToScan, getIncludedAndExcludedTests() );
-                return scanner.scan();
+                DefaultScanResult result = null;
+
+                List<Artifact> dependenciesToScan =
+                        filter( getProjectTestArtifacts(), asList( getDependenciesToScan() ) );
+
+                for ( Artifact artifact : dependenciesToScan )
+                {
+                    String type = artifact.getType();
+                    File out = artifact.getFile();
+                    if ( out == null || !out.exists()
+                            || !( "jar".equals( type ) || out.isDirectory() || out.getName().endsWith( ".jar" ) ) )
+                    {
+                        continue;
+                    }
+
+                    if ( out.isFile() )
+                    {
+                        DependencyScanner scanner =
+                                new DependencyScanner( singletonList( out ), getIncludedAndExcludedTests() );
+                        result = result == null ? scanner.scan() : result.append( scanner.scan() );
+                    }
+                    else if ( out.isDirectory() )
+                    {
+                        DirectoryScanner scanner =
+                                new DirectoryScanner( out, getIncludedAndExcludedTests() );
+                        result = result == null ? scanner.scan() : result.append( scanner.scan() );
+                    }
+                }
+
+                return result;
             }
             catch ( Exception e )
             {
-                throw new RuntimeException( e );
+                throw new MojoFailureException( e.getLocalizedMessage(), e );
             }
         }
     }

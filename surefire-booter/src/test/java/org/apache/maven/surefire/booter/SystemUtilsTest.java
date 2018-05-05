@@ -299,13 +299,13 @@ public class SystemUtilsTest
     {
 
         @Test
-        public void shouldBeDifferentJdk9() throws IOException
+        public void shouldBeDifferentJdk9()
         {
             testIsJava9AtLeast( new File( System.getProperty( "java.home" ) ) );
         }
 
         @Test
-        public void shouldBeSameJdk9() throws IOException
+        public void shouldBeSameJdk9()
         {
             // PowerMockJUnit44RunnerDelegateImpl does not work with Assumptions: assumeFalse
             if ( !JAVA_RECENT.atLeast( JAVA_9 ) )

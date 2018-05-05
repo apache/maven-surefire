@@ -19,36 +19,37 @@ package org.apache.maven.plugin.surefire.util;
  * under the License.
  */
 
-import org.apache.commons.lang3.StringUtils;
-import javax.annotation.Nonnull;
+import org.junit.Test;
 
-final class ScannerUtil
+import static org.fest.assertions.Assertions.assertThat;
+
+/**
+ * Unit test for {@link ScannerUtil}
+ */
+public class ScannerUtilTest
 {
 
-    private ScannerUtil()
+    @Test
+    public void shouldConvertJarFileResourceToJavaClassName()
     {
-        throw new IllegalStateException( "not instantiable constructor" );
+        String className = ScannerUtil.convertJarFileResourceToJavaClassName( "org/apache/pkg/MyService.class" );
+
+        assertThat( className )
+                .isEqualTo( "org.apache.pkg.MyService" );
+
+        className = ScannerUtil.convertJarFileResourceToJavaClassName( "META-INF/MANIFEST.MF" );
+
+        assertThat( className )
+                .isEqualTo( "META-INF.MANIFEST.MF" );
     }
 
-    @Deprecated
-    private static final String FS = System.getProperty( "file.separator" );
-
-    @Deprecated
-    private static final boolean IS_NON_UNIX_FS = ( !FS.equals( "/" ) );
-
-    @Nonnull public static String convertJarFileResourceToJavaClassName( @Nonnull String test )
+    @Test
+    public void shouldBeClassFile()
     {
-        return StringUtils.removeEnd( test, ".class" ).replace( "/", "." );
-    }
+        assertThat( ScannerUtil.isJavaClassFile( "META-INF/MANIFEST.MF" ) )
+                .isFalse();
 
-    public static boolean isJavaClassFile( String file )
-    {
-        return file.endsWith( ".class" );
-    }
-
-    @Deprecated
-    @Nonnull public static String convertSlashToSystemFileSeparator( @Nonnull String path )
-    {
-        return ( IS_NON_UNIX_FS ? path.replace( "/", FS ) : path );
+        assertThat( ScannerUtil.isJavaClassFile( "org/apache/pkg/MyService.class" ) )
+                .isTrue();
     }
 }

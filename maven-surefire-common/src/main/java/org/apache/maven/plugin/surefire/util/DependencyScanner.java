@@ -20,6 +20,7 @@ package org.apache.maven.plugin.surefire.util;
  */
 
 import static org.apache.maven.plugin.surefire.util.ScannerUtil.convertJarFileResourceToJavaClassName;
+import static org.apache.maven.plugin.surefire.util.ScannerUtil.isJavaClassFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,13 +61,16 @@ public class DependencyScanner
         Set<String> classes = new LinkedHashSet<String>();
         for ( File artifact : dependenciesToScan )
         {
-            try
+            if ( artifact != null && artifact.isFile() && artifact.getName().endsWith( ".jar" ) )
             {
-                scanArtifact( artifact, filter, classes );
-            }
-            catch ( IOException e )
-            {
-                throw new MojoExecutionException( "Could not scan dependency " + artifact.toString(), e );
+                try
+                {
+                    scanArtifact( artifact, filter, classes );
+                }
+                catch ( IOException e )
+                {
+                    throw new MojoExecutionException( "Could not scan dependency " + artifact.toString(), e );
+                }
             }
         }
         return new DefaultScanResult( new ArrayList<String>( classes ) );
@@ -75,34 +79,32 @@ public class DependencyScanner
     private static void scanArtifact( File artifact, TestFilter<String, String> filter, Set<String> classes )
         throws IOException
     {
-        if ( artifact != null && artifact.isFile() )
+        JarFile jar = null;
+        try
         {
-            JarFile jar = null;
-            try
+            jar = new JarFile( artifact );
+            for ( Enumeration<JarEntry> entries = jar.entries(); entries.hasMoreElements(); )
             {
-                jar = new JarFile( artifact );
-                for ( Enumeration<JarEntry> entries = jar.entries(); entries.hasMoreElements(); )
+                JarEntry entry = entries.nextElement();
+                String path = entry.getName();
+                if ( !entry.isDirectory() && isJavaClassFile( path ) && filter.shouldRun( path, null ) )
                 {
-                    JarEntry entry = entries.nextElement();
-                    if ( filter.shouldRun( entry.getName(), null ) )
-                    {
-                        classes.add( convertJarFileResourceToJavaClassName( entry.getName() ) );
-                    }
+                    classes.add( convertJarFileResourceToJavaClassName( path ) );
                 }
             }
-            finally
+        }
+        finally
+        {
+            if ( jar != null )
             {
-                if ( jar != null )
-                {
-                    jar.close();
-                }
+                jar.close();
             }
         }
     }
 
-    public static List<File> filter( List<Artifact> artifacts, List<String> groupArtifactIds )
+    public static List<Artifact> filter( List<Artifact> artifacts, List<String> groupArtifactIds )
     {
-        List<File> matches = new ArrayList<File>();
+        List<Artifact> matches = new ArrayList<Artifact>();
         if ( groupArtifactIds == null || artifacts == null )
         {
             return matches;
@@ -120,7 +122,7 @@ public class DependencyScanner
                 if ( artifact.getGroupId().matches( groupArtifact[0] )
                     && artifact.getArtifactId().matches( groupArtifact[1] ) )
                 {
-                    matches.add( artifact.getFile() );
+                    matches.add( artifact );
                 }
             }
         }

@@ -25,6 +25,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojoJava7PlusTest;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojoTest;
+import org.apache.maven.plugin.surefire.MojoMocklessTest;
 import org.apache.maven.plugin.surefire.SurefireHelperTest;
 import org.apache.maven.plugin.surefire.SurefireReflectorTest;
 import org.apache.maven.plugin.surefire.SurefirePropertiesTest;
@@ -42,6 +43,7 @@ import org.apache.maven.plugin.surefire.report.WrappedReportEntryTest;
 import org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMapTest;
 import org.apache.maven.plugin.surefire.util.DependenciesScannerTest;
 import org.apache.maven.plugin.surefire.util.DirectoryScannerTest;
+import org.apache.maven.plugin.surefire.util.ScannerUtilTest;
 import org.apache.maven.plugin.surefire.util.SpecificFileFilterTest;
 import org.apache.maven.surefire.report.ConsoleOutputFileReporterTest;
 import org.apache.maven.surefire.report.FileReporterTest;
@@ -91,6 +93,8 @@ public class JUnit4SuiteTest extends TestCase
         {
             suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoJava7PlusTest.class ) );
         }
+        suite.addTest( new JUnit4TestAdapter( ScannerUtilTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( MojoMocklessTest.class ) );
         return suite;
     }
 }

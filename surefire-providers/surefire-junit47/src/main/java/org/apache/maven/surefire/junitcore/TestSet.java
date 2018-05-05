@@ -70,13 +70,13 @@ public class TestSet
 
                 target.testSetStarting( report );
 
-                long startTile = 0;
+                long startTime = 0;
                 long endTime = 0;
                 for ( TestMethod testMethod : testMethods )
                 {
-                    if ( startTile == 0 || testMethod.getStartTime() < startTile )
+                    if ( startTime == 0 || testMethod.getStartTime() < startTime )
                     {
-                        startTile = testMethod.getStartTime();
+                        startTime = testMethod.getStartTime();
                     }
 
                     if ( endTime == 0 || testMethod.getEndTime() > endTime )
@@ -87,7 +87,7 @@ public class TestSet
                     testMethod.replay( target );
                 }
 
-                int elapsed = (int) ( endTime - startTile );
+                int elapsed = (int) ( endTime - startTime );
 
                 report = createReportEntryCompleted( elapsed );
 
