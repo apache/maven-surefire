@@ -30,7 +30,7 @@ properties(
     ]
 )
 
-final def oses = ['linux', 'windows']
+final def oses = ['linux':'ubuntu', 'windows':'Windows && !windows-2012-3']
 final def mavens = env.BRANCH_NAME == 'master' ? ['3.2.x', '3.3.x', '3.5.x'] : ['3.5.x']
 final def jdks = [7, 8, 9, 10]
 
@@ -38,10 +38,11 @@ final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
 final def goals = ['clean', 'install', 'jacoco:report']
 final Map stages = [:]
 
-oses.eachWithIndex { os, indexOfOs ->
+oses.eachWithIndex { osMapping, indexOfOs ->
     mavens.eachWithIndex { maven, indexOfMaven ->
         jdks.eachWithIndex { jdk, indexOfJdk ->
-            final String label = jenkinsEnv.labelForOS(os);
+            def os = osMapping.key
+            def label = osMapping.value
             final String jdkTestName = jenkinsEnv.jdkFromVersion(os, jdk.toString())
             final String jdkName = jenkinsEnv.jdkFromVersion(os, '8')
             final String mvnName = jenkinsEnv.mvnFromVersion(os, maven)
