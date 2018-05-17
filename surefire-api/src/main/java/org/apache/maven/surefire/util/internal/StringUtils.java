@@ -233,7 +233,7 @@ public final class StringUtils
      * @return number of bytes written to {@code out}
      * @throws NullPointerException if the specified parameter {@code header} or {@code input} is null
      * @throws IndexOutOfBoundsException if {@code off} or {@code len} is out of range
-     *         ({@code off < 0 || len < 0 || off >= input.length || len > input.length || off > len})
+     *         ({@code off < 0 || len < 0 || off >= input.length || len > input.length || off + len > input.length})
      */
     @SuppressWarnings( "checkstyle:magicnumber" )
     public static EncodedArray escapeBytesToPrintable( final byte[] header, final byte[] input, final int off,
@@ -243,10 +243,10 @@ public final class StringUtils
         {
             return EncodedArray.EMPTY;
         }
-        if ( off < 0 || len < 0 || off >= input.length || len > input.length || off > len )
+        if ( off < 0 || len < 0 || off >= input.length || len > input.length || off + len > input.length )
         {
             throw new IndexOutOfBoundsException(
-                    "off < 0 || len < 0 || off >= input.length || len > input.length || off > len" );
+                    "off < 0 || len < 0 || off >= input.length || len > input.length || off + len > input.length" );
         }
         // Hex-escaping can be up to 3 times length of a regular byte. Last character is '\n', see (+1).
         final byte[] encodeBytes = new byte[header.length + 3 * len + 1];
