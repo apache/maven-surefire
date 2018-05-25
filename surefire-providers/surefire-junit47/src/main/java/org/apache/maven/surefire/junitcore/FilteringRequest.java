@@ -32,7 +32,7 @@ final class FilteringRequest
 {
     private Runner filteredRunner;
 
-    public FilteringRequest( Request req, Filter filter )
+    FilteringRequest( Request req, Filter filter )
     {
         try
         {

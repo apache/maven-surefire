@@ -502,7 +502,7 @@ public class StatelessXmlReporter
 
         private int c2;
 
-        public EncodingOutputStream( OutputStream out )
+        EncodingOutputStream( OutputStream out )
         {
             super( out );
         }

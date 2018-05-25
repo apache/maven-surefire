@@ -19,15 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.io.File;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLoggerDecorator;
 import org.apache.maven.surefire.cli.CommandLineOption;
@@ -44,16 +35,23 @@ import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.surefire.util.SurefireReflectionException;
 
 import javax.annotation.Nonnull;
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.Collections.checkedList;
-
 import static org.apache.maven.surefire.util.ReflectionUtils.getConstructor;
 import static org.apache.maven.surefire.util.ReflectionUtils.getMethod;
+import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
+import static org.apache.maven.surefire.util.ReflectionUtils.instantiateTwoArgs;
 import static org.apache.maven.surefire.util.ReflectionUtils.invokeGetter;
 import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray;
-import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
 import static org.apache.maven.surefire.util.ReflectionUtils.invokeSetter;
-import static org.apache.maven.surefire.util.ReflectionUtils.instantiateTwoArgs;
 import static org.apache.maven.surefire.util.ReflectionUtils.newInstance;
 
 /**
@@ -160,7 +158,7 @@ public class SurefireReflector
         /**
          * @param delegate a target
          */
-        public ClassLoaderProxy( Object delegate )
+        ClassLoaderProxy( Object delegate )
         {
             this.target = delegate;
         }

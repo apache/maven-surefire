@@ -162,7 +162,7 @@ public class ForkStarter
 
         private final Thread inputStreamCloserHook;
 
-        public CloseableCloser( int jvmRun, Closeable... testProvidingInputStream )
+        CloseableCloser( int jvmRun, Closeable... testProvidingInputStream )
         {
             this.jvmRun = jvmRun;
             this.testProvidingInputStream = new ConcurrentLinkedQueue<Closeable>();
