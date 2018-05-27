@@ -19,12 +19,13 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
-import java.io.File;
-import java.util.Locale;
-import java.util.ResourceBundle;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+
+import java.io.File;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 import static org.apache.maven.shared.utils.StringUtils.isEmpty;
 
@@ -95,7 +96,8 @@ public class FailsafeReportMojo
     protected LocalizedProperties getBundle( Locale locale, ClassLoader resourceBundleClassLoader )
     {
         ResourceBundle bundle = ResourceBundle.getBundle( "surefire-report", locale, resourceBundleClassLoader );
-        return new LocalizedProperties( bundle ) {
+        return new LocalizedProperties( bundle )
+        {
             @Override
             public String getReportName()
             {

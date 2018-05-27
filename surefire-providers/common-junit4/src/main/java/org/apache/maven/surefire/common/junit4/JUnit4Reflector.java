@@ -19,17 +19,17 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 import org.apache.maven.surefire.util.SurefireReflectionException;
 import org.junit.Ignore;
 import org.junit.runner.Description;
 import org.junit.runner.Request;
 
-import static org.apache.maven.surefire.util.ReflectionUtils.tryGetMethod;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray;
+import static org.apache.maven.surefire.util.ReflectionUtils.tryGetMethod;
 
 /**
  * JUnit4 reflection helper
@@ -114,12 +114,12 @@ public final class JUnit4Reflector
     {
         private final String value;
 
-        public IgnoredWithUserError( String value )
+        IgnoredWithUserError( String value )
         {
             this.value = value;
         }
 
-        public IgnoredWithUserError()
+        IgnoredWithUserError()
         {
             this( "" );
         }
