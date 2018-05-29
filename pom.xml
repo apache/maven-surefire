@@ -97,8 +97,9 @@
     <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
     <!-- Override with Jigsaw JRE 9 -->
     <jdk.home>${java.home}/..</jdk.home>
-    <maven.compiler.testSource>1.6</maven.compiler.testSource>
-    <maven.compiler.testTarget>1.6</maven.compiler.testTarget>
+    <javaVersion>6</javaVersion>
+    <maven.compiler.testSource>1.${javaVersion}</maven.compiler.testSource>
+    <maven.compiler.testTarget>1.${javaVersion}</maven.compiler.testTarget>
     <jvm.args.tests>-server -XX:+UseG1GC -Xms128m -Xmx144m -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true</jvm.args.tests>
   </properties>
 
@@ -419,6 +420,7 @@
                 <excludeDependencies>
                   <param>org.codehaus.plexus:plexus-java</param>
                   <param>org.ow2.asm:asm</param>
+                  <param>org.junit.platform:junit-platform-commons</param>
                 </excludeDependencies>
                 <ignores>
                   <param>org.objectweb.asm.*</param>
@@ -550,6 +552,7 @@
                   <excludes>
                     <exclude>org.codehaus.plexus:plexus-java</exclude>
                     <exclude>org.ow2.asm:asm</exclude>
+                    <exclude>org.junit.platform:junit-platform-commons</exclude>
                   </excludes>
                 </enforceBytecodeVersion>
               </rules>

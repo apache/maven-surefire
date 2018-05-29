@@ -1,4 +1,4 @@
-package junit4;
+package org.apache.maven.surefire.its;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,45 +19,27 @@ package junit4;
  * under the License.
  */
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
-public class BasicTest
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
+
+/**
+ * Basic suite test currently only running against JUnit 5 M2
+ *
+ * @author <a href="mailto:britter@apache.org">Benedikt Ritter</a>
+ */
+public class JUnit5IT
+    extends SurefireJUnit4IntegrationTestCase
 {
-    private static boolean tearDownCalled = false;
-
-    private boolean setUpCalled = false;
-
-    @Before
-    public void setUp()
-    {
-        setUpCalled = true;
-        tearDownCalled = false;
-        System.out.println( "Called setUp" );
-    }
-
-    @After
-    public void tearDown()
-    {
-        setUpCalled = false;
-        tearDownCalled = true;
-        System.out.println( "Called tearDown" );
-    }
 
     @Test
-    public void testSetUp()
+    public void test()
     {
-        Assert.assertTrue( "setUp was not called", setUpCalled );
-    }
-  
+        assumeJavaVersion( 1.8d );
 
-    @AfterClass
-    public static void oneTimeTearDown()
-    {
-        
+        unpack( "/junit5" )
+                .executeTest()
+                .verifyErrorFree( 2 );
     }
-
 }

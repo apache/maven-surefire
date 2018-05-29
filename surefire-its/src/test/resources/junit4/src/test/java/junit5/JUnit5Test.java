@@ -1,4 +1,4 @@
-package junit4;
+package junit5;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,30 +19,32 @@ package junit4;
  * under the License.
  */
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class BasicTest
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/**
+ * A test using the JUnit 5 API, which should be executed by JUnit jupiter enigne
+ */
+public class JUnit5Test
 {
-    private static boolean tearDownCalled = false;
+    private static boolean tearDownCalled;
 
-    private boolean setUpCalled = false;
+    private boolean setUpCalled;
 
-    @Before
+    @BeforeEach
     public void setUp()
     {
         setUpCalled = true;
-        tearDownCalled = false;
         System.out.println( "Called setUp" );
     }
 
-    @After
+    @AfterEach
     public void tearDown()
     {
-        setUpCalled = false;
         tearDownCalled = true;
         System.out.println( "Called tearDown" );
     }
@@ -50,14 +52,13 @@ public class BasicTest
     @Test
     public void testSetUp()
     {
-        Assert.assertTrue( "setUp was not called", setUpCalled );
+        assertTrue( setUpCalled, "setUp was not called" );
     }
-  
 
-    @AfterClass
+    @AfterAll
     public static void oneTimeTearDown()
     {
-        
+        assertTrue( tearDownCalled, "tearDown was not called" );
     }
 
 }

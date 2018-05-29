@@ -1,4 +1,4 @@
-package junit4;
+package org.apache.maven.surefire.its;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,45 +19,29 @@ package junit4;
  * under the License.
  */
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
-public class BasicTest
+import static java.lang.System.getProperty;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeThat;
+
+public class JUnitPlatformIT
+    extends SurefireJUnit4IntegrationTestCase
 {
-    private static boolean tearDownCalled = false;
-
-    private boolean setUpCalled = false;
-
-    @Before
-    public void setUp()
+    private SurefireLauncher unpack()
     {
-        setUpCalled = true;
-        tearDownCalled = false;
-        System.out.println( "Called setUp" );
-    }
-
-    @After
-    public void tearDown()
-    {
-        setUpCalled = false;
-        tearDownCalled = true;
-        System.out.println( "Called tearDown" );
+        return unpack( "/junit-platform" );
     }
 
     @Test
-    public void testSetUp()
+    public void test40()
     {
-        Assert.assertTrue( "setUp was not called", setUpCalled );
-    }
-  
+        assumeThat( "java.specification.version: ",
+                getProperty( "java.specification.version" ), is( greaterThanOrEqualTo( "1.8" ) ) );
 
-    @AfterClass
-    public static void oneTimeTearDown()
-    {
-        
+        unpack().executeTest().verifyErrorFree( 1 );
     }
-
 }
