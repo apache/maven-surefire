@@ -140,6 +140,7 @@
               <goal>shade</goal>
             </goals>
             <configuration>
+              <minimizeJar>true</minimizeJar>
               <artifactSet>
                 <includes>
                   <include>org.apache.maven.surefire:common-junit3</include>
