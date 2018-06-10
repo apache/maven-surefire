@@ -60,8 +60,8 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
+import org.junit.Test;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
@@ -77,21 +77,20 @@ import org.mockito.InOrder;
  *
  * @since 2.22.0
  */
-class JUnitPlatformProviderTests
+public class JUnitPlatformProviderTests
 {
 
     @Test
-    void getSuitesReturnsScannedClasses()
+    public void getSuitesReturnsScannedClasses()
     {
-        ProviderParameters providerParameters =
-                        providerParametersMock( TestClass1.class, TestClass2.class );
+        ProviderParameters providerParameters = providerParametersMock( TestClass1.class, TestClass2.class );
         JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
-
-        assertThat( provider.getSuites() ).containsOnly( TestClass1.class, TestClass2.class );
+        assertThat( provider.getSuites() )
+                .containsOnly( TestClass1.class, TestClass2.class );
     }
 
     @Test
-    void invokeThrowsForWrongForkTestSet()
+    public void invokeThrowsForWrongForkTestSet()
     {
         ProviderParameters providerParameters = providerParametersMock( Integer.class );
         JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
@@ -100,7 +99,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void allGivenTestsToRunAreInvoked()
+    public void allGivenTestsToRunAreInvoked()
                     throws Exception
     {
         Launcher launcher = LauncherFactory.create();
@@ -127,7 +126,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void singleTestClassIsInvoked()
+    public void singleTestClassIsInvoked()
                     throws Exception
     {
         Launcher launcher = LauncherFactory.create();
@@ -149,7 +148,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void allDiscoveredTestsAreInvokedForNullArgument()
+    public void allDiscoveredTestsAreInvokedForNullArgument()
                     throws Exception
     {
         RunListener runListener = runListenerMock();
@@ -204,7 +203,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void outputIsCaptured()
+    public void outputIsCaptured()
                     throws Exception
     {
         Launcher launcher = LauncherFactory.create();
@@ -226,7 +225,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void onlyGroupsIsDeclared()
+    public void onlyGroupsIsDeclared()
     {
         Map<String, String> properties = singletonMap( TESTNG_GROUPS_PROP, "groupOne, groupTwo" );
 
@@ -239,7 +238,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void onlyExcludeTagsIsDeclared()
+    public void onlyExcludeTagsIsDeclared()
     {
         Map<String, String> properties = singletonMap( TESTNG_EXCLUDEDGROUPS_PROP, "tagOne, tagTwo" );
 
@@ -252,7 +251,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void noFiltersAreCreatedIfTagsAreEmpty()
+    public void noFiltersAreCreatedIfTagsAreEmpty()
     {
         Map<String, String> properties = singletonMap( TESTNG_GROUPS_PROP, "" );
 
@@ -264,7 +263,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void filtersWithEmptyTagsAreNotRegistered()
+    public void filtersWithEmptyTagsAreNotRegistered()
     {
         // Here only tagOne is registered as a valid tag and other tags are ignored as they are empty
         Map<String, String> properties = singletonMap( TESTNG_EXCLUDEDGROUPS_PROP, "tagOne," );
@@ -277,7 +276,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void bothIncludeAndExcludeAreAllowed()
+    public void bothIncludeAndExcludeAreAllowed()
     {
         Map<String, String> properties = new HashMap<>();
         properties.put( TESTNG_GROUPS_PROP, "tagOne, tagTwo" );
@@ -292,7 +291,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void tagExpressionsAreSupportedForIncludeTagsContainingVerticalBar()
+    public void tagExpressionsAreSupportedForIncludeTagsContainingVerticalBar()
     {
         Map<String, String> properties = new HashMap<>();
         properties.put( TESTNG_GROUPS_PROP, "tagOne | tagTwo" );
@@ -307,7 +306,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void tagExpressionsAreSupportedForIncludeTagsContainingAmpersand()
+    public void tagExpressionsAreSupportedForIncludeTagsContainingAmpersand()
     {
         Map<String, String> properties = new HashMap<>();
         properties.put( TESTNG_GROUPS_PROP, "tagOne & !tagTwo" );
@@ -322,7 +321,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void noFiltersAreCreatedIfNoPropertiesAreDeclared()
+    public void noFiltersAreCreatedIfNoPropertiesAreDeclared()
     {
         ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
 
@@ -332,7 +331,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void defaultConfigurationParametersAreEmpty()
+    public void defaultConfigurationParametersAreEmpty()
     {
         ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
         when( providerParameters.getProviderProperties() ).thenReturn( emptyMap() );
@@ -343,7 +342,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void parsesConfigurationParameters()
+    public void parsesConfigurationParameters()
     {
         ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
         when( providerParameters.getProviderProperties() )
@@ -360,7 +359,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void executesSingleTestIncludedByName()
+    public void executesSingleTestIncludedByName()
                     throws Exception
     {
         // following is equivalent of adding '-Dtest=TestClass3#prefix1Suffix1'
@@ -371,7 +370,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void executesMultipleTestsIncludedByName()
+    public void executesMultipleTestsIncludedByName()
                     throws Exception
     {
         // following is equivalent of adding '-Dtest=TestClass3#prefix1Suffix1+prefix2Suffix1'
@@ -383,7 +382,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void executesMultipleTestsIncludedByNamePattern()
+    public void executesMultipleTestsIncludedByNamePattern()
                     throws Exception
     {
         // following is equivalent of adding '-Dtest=TestClass3#prefix1*'
@@ -395,7 +394,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void executesMultipleTestsIncludedByNamePatternWithQuestionMark()
+    public void executesMultipleTestsIncludedByNamePatternWithQuestionMark()
                     throws Exception
     {
         // following is equivalent of adding '-Dtest=TestClass3#prefix?Suffix2'
@@ -407,7 +406,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void doesNotExecuteTestsExcludedByName()
+    public void doesNotExecuteTestsExcludedByName()
                     throws Exception
     {
         // following is equivalent of adding '-Dtest=!TestClass3#prefix1Suffix2'
@@ -419,7 +418,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void doesNotExecuteTestsExcludedByNamePattern()
+    public void doesNotExecuteTestsExcludedByNamePattern()
                     throws Exception
     {
         // following is equivalent of adding '-Dtest=!TestClass3#prefix2*'
@@ -506,12 +505,11 @@ class JUnitPlatformProviderTests
     private static Set<String> failedTestDisplayNames( TestExecutionSummary summary )
     {
         // @formatter:off
-        return summary
-                        .getFailures()
-                        .stream()
-                        .map( Failure::getTestIdentifier )
-                        .map( TestIdentifier::getDisplayName )
-                        .collect( toSet() );
+        return summary.getFailures()
+                .stream()
+                .map( Failure::getTestIdentifier )
+                .map( TestIdentifier::getDisplayName )
+                .collect( toSet() );
         // @formatter:on
     }
 
@@ -571,23 +569,23 @@ class JUnitPlatformProviderTests
 
         static final int TESTS_FAILED = 1;
 
-        @Test
+        @org.junit.jupiter.api.Test
         void test1()
         {
         }
 
-        @Test
+        @org.junit.jupiter.api.Test
         void test2()
         {
         }
 
         @Disabled
-        @Test
+        @org.junit.jupiter.api.Test
         void test3()
         {
         }
 
-        @Test
+        @org.junit.jupiter.api.Test
         void test4()
         {
             throw new RuntimeException();
@@ -609,18 +607,18 @@ class JUnitPlatformProviderTests
 
         static final int TESTS_FAILED = 1;
 
-        @Test
+        @org.junit.jupiter.api.Test
         void test1()
         {
         }
 
-        @Test
+        @org.junit.jupiter.api.Test
         void test2()
         {
             throw new RuntimeException();
         }
 
-        @Test
+        @org.junit.jupiter.api.Test
         void test3()
         {
             assumeTrue( false );
@@ -629,7 +627,7 @@ class JUnitPlatformProviderTests
 
     static class VerboseTestClass
     {
-        @Test
+        @org.junit.jupiter.api.Test
         void test()
         {
             System.out.println( "stdout" );
@@ -638,7 +636,7 @@ class JUnitPlatformProviderTests
     }
 
     @Test
-    void usesClassNamesForXmlReport()
+    public void usesClassNamesForXmlReport()
                     throws TestSetFailedException
     {
         String[] classNames = { Sub1Tests.class.getName(), Sub2Tests.class.getName() };
@@ -661,7 +659,7 @@ class JUnitPlatformProviderTests
 
     static class AbstractTestClass
     {
-        @Test
+        @org.junit.jupiter.api.Test
         void test()
         {
         }
@@ -679,25 +677,25 @@ class JUnitPlatformProviderTests
 
     static class TestClass3
     {
-        @Test
+        @org.junit.jupiter.api.Test
         void prefix1Suffix1()
         {
             throw new RuntimeException();
         }
 
-        @Test
+        @org.junit.jupiter.api.Test
         void prefix2Suffix1()
         {
             throw new RuntimeException();
         }
 
-        @Test
+        @org.junit.jupiter.api.Test
         void prefix1Suffix2()
         {
             throw new RuntimeException();
         }
 
-        @Test
+        @org.junit.jupiter.api.Test
         void prefix2Suffix2()
         {
             throw new RuntimeException();

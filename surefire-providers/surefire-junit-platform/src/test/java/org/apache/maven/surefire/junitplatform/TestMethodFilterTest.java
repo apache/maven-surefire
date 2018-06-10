@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Method;
 
 import org.apache.maven.surefire.testset.TestListResolver;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.jupiter.engine.descriptor.ClassTestDescriptor;
 import org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor;
 import org.junit.platform.engine.FilterResult;
@@ -39,15 +39,14 @@ import org.junit.platform.engine.UniqueId;
  *
  * @since 2.22.0
  */
-class TestMethodFilterTests
+public class TestMethodFilterTest
 {
-
     private final TestListResolver resolver = mock( TestListResolver.class );
 
     private final TestMethodFilter filter = new TestMethodFilter( this.resolver );
 
     @Test
-    void includesBasedOnTestListResolver()
+    public void includesBasedOnTestListResolver()
                     throws Exception
     {
         when( resolver.shouldRun( toClassFileName( TestClass.class ), "testMethod" ) ).thenReturn( true );
@@ -59,7 +58,7 @@ class TestMethodFilterTests
     }
 
     @Test
-    void excludesBasedOnTestListResolver()
+    public void excludesBasedOnTestListResolver()
                     throws Exception
     {
         when( resolver.shouldRun( toClassFileName( TestClass.class ), "testMethod" ) ).thenReturn( false );
@@ -71,8 +70,7 @@ class TestMethodFilterTests
     }
 
     @Test
-    void includesTestDescriptorWithClassSource()
-                    throws Exception
+    public void includesTestDescriptorWithClassSource()
     {
         FilterResult result = filter.apply( newClassTestDescriptor() );
 
@@ -90,7 +88,6 @@ class TestMethodFilterTests
     }
 
     private static ClassTestDescriptor newClassTestDescriptor()
-                    throws Exception
     {
         UniqueId uniqueId = UniqueId.forEngine( "class" );
         return new ClassTestDescriptor( uniqueId, TestClass.class );

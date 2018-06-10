@@ -26,9 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.junit.Test;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.launcher.core.LauncherFactory;
@@ -38,53 +38,52 @@ import org.junit.platform.launcher.core.LauncherFactory;
  *
  * @since 2.22.0
  */
-class TestPlanScannerFilterTests
+public class TestPlanScannerFilterTest
 {
 
     @Test
-    void emptyClassIsNotAccepted()
+    public void emptyClassIsNotAccepted()
     {
         assertFalse( newFilter().accept( EmptyClass.class ), "does not accept empty class" );
     }
 
     @Test
-    void classWithNoTestMethodsIsNotAccepted()
+    public void classWithNoTestMethodsIsNotAccepted()
     {
-        assertFalse(
-                        newFilter().accept( ClassWithMethods.class ), "does not accept class with no @Test methods" );
+        assertFalse( newFilter().accept( ClassWithMethods.class ), "does not accept class with no @Test methods" );
     }
 
     @Test
-    void classWithTestMethodsIsAccepted()
+    public void classWithTestMethodsIsAccepted()
     {
         assertTrue( newFilter().accept( ClassWithTestMethods.class ) );
     }
 
     @Test
-    void classWithNestedTestClassIsAccepted()
+    public void classWithNestedTestClassIsAccepted()
     {
         assertTrue( newFilter().accept( ClassWithNestedTestClass.class ) );
     }
 
     @Test
-    void classWithDeeplyNestedTestClassIsAccepted()
+    public void classWithDeeplyNestedTestClassIsAccepted()
     {
         assertTrue( newFilter().accept( ClassWithDeeplyNestedTestClass.class ) );
     }
 
     @Test
-    void classWithTestFactoryIsAccepted()
+    public void classWithTestFactoryIsAccepted()
     {
         assertTrue( newFilter().accept( ClassWithTestFactory.class ) );
     }
 
     @Test
-    void classWithNestedTestFactoryIsAccepted()
+    public void classWithNestedTestFactoryIsAccepted()
     {
         assertTrue( newFilter().accept( ClassWithNestedTestFactory.class ) );
     }
 
-    private TestPlanScannerFilter newFilter()
+    private static TestPlanScannerFilter newFilter()
     {
         return new TestPlanScannerFilter( LauncherFactory.create(), new Filter<?>[0] );
     }
@@ -113,7 +112,7 @@ class TestPlanScannerFilterTests
         {
         }
 
-        @Test
+        @org.junit.jupiter.api.Test
         public void test2()
         {
         }
@@ -130,7 +129,7 @@ class TestPlanScannerFilterTests
         class TestClass
         {
 
-            @Test
+            @org.junit.jupiter.api.Test
             void test1()
             {
             }
@@ -152,7 +151,7 @@ class TestPlanScannerFilterTests
                 class TestClass
                 {
 
-                    @Test
+                    @org.junit.jupiter.api.Test
                     void test1()
                     {
                     }

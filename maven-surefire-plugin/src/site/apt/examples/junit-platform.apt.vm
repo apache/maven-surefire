@@ -143,11 +143,11 @@ else
 
 * Filtering by Tags
 
-You can use JUnit5 Tags and filter tests by tags or tag expressions.
+   You can use JUnit5 Tags and filter tests by tags or tag expressions.
 
-    * to include <<<tags>>> or <<<tag expressions>>>, use <<<groups>>>.
+    * To include <<<tags>>> or <<<tag expressions>>>, use <<<groups>>>.
 
-    * to exclude <<<tags>>> or <<<tag expressions>>>, use either <<<excludedGroups>>>.
+    * To exclude <<<tags>>> or <<<tag expressions>>>, use either <<<excludedGroups>>>.
 
 +---+
 ...
