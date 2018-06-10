@@ -59,6 +59,7 @@
       <item name="Using Console Logs" href="examples/logging.html"/>
       <item name="Shutdown of Forked JVM" href="examples/shutdown.html"/>
       <item name="Run tests with Java 9" href="java9.html"/>
+      <item name="Run tests in Docker" href="docker.html"/>
     </menu>
   </body>
 </project>
