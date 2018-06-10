@@ -77,7 +77,7 @@ import org.mockito.InOrder;
  *
  * @since 2.22.0
  */
-public class JUnitPlatformProviderTests
+public class JUnitPlatformProviderTest
 {
 
     @Test
