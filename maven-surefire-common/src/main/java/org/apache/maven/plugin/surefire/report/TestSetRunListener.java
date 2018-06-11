@@ -160,12 +160,12 @@ public class TestSetRunListener
             {
                 testStdErr.write( buf, off, len );
             }
+            consoleOutputReceiver.writeTestOutput( buf, off, len, stdout );
         }
         catch ( IOException e )
         {
             throw new RuntimeException( e );
         }
-        consoleOutputReceiver.writeTestOutput( buf, off, len, stdout );
     }
 
     @Override
@@ -176,7 +176,7 @@ public class TestSetRunListener
         consoleOutputReceiver.testSetStarting( report );
     }
 
-    public void clearCapture()
+    private void clearCapture()
     {
         testStdOut = initDeferred( "stdout" );
         testStdErr = initDeferred( "stderr" );
@@ -248,7 +248,6 @@ public class TestSetRunListener
     public void testSkipped( ReportEntry reportEntry )
     {
         WrappedReportEntry wrapped = wrap( reportEntry, SKIPPED );
-
         detailsForThis.testSkipped( wrapped );
         statisticsReporter.testSkipped( reportEntry );
         clearCapture();
@@ -267,21 +266,11 @@ public class TestSetRunListener
 
     private WrappedReportEntry wrap( ReportEntry other, ReportEntryType reportEntryType )
     {
-        final int estimatedElapsed;
+        int estimatedElapsed = 0;
         if ( reportEntryType != SKIPPED )
         {
-            if ( other.getElapsed() != null )
-            {
-                estimatedElapsed = other.getElapsed();
-            }
-            else
-            {
-                estimatedElapsed = detailsForThis.getElapsedSinceLastStart();
-            }
-        }
-        else
-        {
-            estimatedElapsed = 0;
+            Integer etime = other.getElapsed();
+            estimatedElapsed = etime == null ? detailsForThis.getElapsedSinceLastStart() : etime;
         }
 
         return new WrappedReportEntry( other, reportEntryType, estimatedElapsed, testStdOut, testStdErr );
@@ -299,7 +288,7 @@ public class TestSetRunListener
         consoleOutputReceiver.close();
     }
 
-    public void  addTestMethodStats()
+    private void addTestMethodStats()
     {
         for ( WrappedReportEntry reportEntry : detailsForThis.getReportEntries() )
         {
@@ -315,7 +304,7 @@ public class TestSetRunListener
         return testMethodStats;
     }
 
-    public static String trimTrailingNewLine( final String message )
+    private static String trimTrailingNewLine( final String message )
     {
         final int e = message == null ? 0 : lineBoundSymbolWidth( message );
         return message != null && e != 0 ? message.substring( 0, message.length() - e ) : message;

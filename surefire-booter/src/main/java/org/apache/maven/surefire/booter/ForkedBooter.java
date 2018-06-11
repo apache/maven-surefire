@@ -213,11 +213,13 @@ public final class ForkedBooter
                                  && !pingMechanism.pluginProcessChecker.isProcessAlive()
                                  && !pingMechanism.pingScheduler.isShutdown() )
                     {
-                        DumpErrorSingleton.getSingleton().dumpText( "Killing self fork JVM. Maven process died." );
+                        DumpErrorSingleton.getSingleton()
+                                .dumpText( "Killing self fork JVM. Maven process died." );
+
                         kill();
                     }
                 }
-                catch ( Exception e )
+                catch ( RuntimeException e )
                 {
                     DumpErrorSingleton.getSingleton()
                             .dumpException( e, "System.exit() or native command error interrupted process checker." );
@@ -276,7 +278,9 @@ public final class ForkedBooter
                     boolean hasPing = pingDone.getAndSet( false );
                     if ( !hasPing )
                     {
-                        DumpErrorSingleton.getSingleton().dumpText( "Killing self fork JVM. PING timeout elapsed." );
+                        DumpErrorSingleton.getSingleton()
+                                .dumpText( "Killing self fork JVM. PING timeout elapsed." );
+
                         kill();
                     }
                 }

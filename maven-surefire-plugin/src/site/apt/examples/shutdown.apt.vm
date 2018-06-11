@@ -105,7 +105,7 @@ Shutdown of Forked JVM
 
 * Shutdown of forked JVM after certain timeout
 
-  Using parammeter <<<forkedProcessTimeoutInSeconds>>> forked JVMs
+  Using parameter <<<forkedProcessTimeoutInSeconds>>> forked JVMs
   are killed separately after every individual process elapsed certain
   amount of time and the whole plugin fails with the error message:
 

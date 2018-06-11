@@ -100,7 +100,7 @@ public class HelperAssertions
         return parseReportList( reports );
     }
 
-    public static IntegrationTestSuiteResults parseIntegrationTestResults( File... testDirs )
+    private static IntegrationTestSuiteResults parseIntegrationTestResults( File... testDirs )
     {
         List<ReportTestSuite> reports = extractITReports( testDirs );
         return parseReportList( reports );
@@ -145,7 +145,7 @@ public class HelperAssertions
         }
     }
 
-    public static List<ReportTestSuite> extractITReports( File... testDirs )
+    private static List<ReportTestSuite> extractITReports( File... testDirs )
     {
         List<File> reportsDirs = new ArrayList<File>();
         for ( File testDir : testDirs )

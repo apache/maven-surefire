@@ -19,8 +19,8 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 
 import static java.lang.System.setErr;
@@ -31,7 +31,7 @@ import static org.apache.maven.surefire.util.internal.StringUtils.NL;
  * Deals with system.out/err.
  * <br>
  */
-public class ConsoleOutputCapture
+public final class ConsoleOutputCapture
 {
     public static void startCapture( ConsoleOutputReceiver target )
     {
@@ -39,7 +39,7 @@ public class ConsoleOutputCapture
         setErr( new ForwardingPrintStream( false, target ) );
     }
 
-    private static class ForwardingPrintStream
+    private static final class ForwardingPrintStream
         extends PrintStream
     {
         private final boolean isStdout;
@@ -47,7 +47,7 @@ public class ConsoleOutputCapture
 
         ForwardingPrintStream( boolean stdout, ConsoleOutputReceiver target )
         {
-            super( new ByteArrayOutputStream() );
+            super( new NullOutputStream() );
             isStdout = stdout;
             this.target = target;
         }
@@ -70,11 +70,9 @@ public class ConsoleOutputCapture
         @Override
         public void write( int b )
         {
-            byte[] buf = new byte[1];
-            buf[0] = (byte) b;
             try
             {
-                write( buf );
+                write( new byte[] { (byte) b } );
             }
             catch ( IOException e )
             {
@@ -104,4 +102,13 @@ public class ConsoleOutputCapture
         }
     }
 
+    private static final class NullOutputStream
+            extends OutputStream
+    {
+        @Override
+        public void write( int b ) throws IOException
+        {
+
+        }
+    }
 }
