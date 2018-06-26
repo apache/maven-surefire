@@ -561,6 +561,19 @@ public abstract class AbstractSurefireMojo
     private boolean useUnlimitedThreads;
 
     /**
+     * Indicates that only a subset of tests will be executed. The assumptions is that there is an external system
+     * which launches JVMs - probably in different machines, to parallelize the testing work.
+     */
+    @Parameter( property = "numberOfBuckets", defaultValue = "0" )
+    private int numberOfBuckets;
+
+    /**
+     * The id of the bucket, this should between 0 and numberOfBuckets.
+     */
+    @Parameter( property = "bucketId", defaultValue = "0" )
+    private int bucketId;
+
+    /**
      * (TestNG provider) When you use the parameter {@code parallel}, TestNG will try to run all your test methods
      * in separate threads, except for methods that depend on each other, which will be run in the same thread in order
      * to respect their order of execution.
@@ -898,7 +911,7 @@ public abstract class AbstractSurefireMojo
     {
         DefaultScanResult scan = scanDirectories();
         DefaultScanResult scanDeps = scanDependencies();
-        return scan.append( scanDeps );
+        return bucketing( scan.append( scanDeps ) );
     }
 
     private DefaultScanResult scanDirectories()
@@ -960,6 +973,36 @@ public abstract class AbstractSurefireMojo
                 throw new MojoFailureException( e.getLocalizedMessage(), e );
             }
         }
+    }
+
+    DefaultScanResult bucketing ( DefaultScanResult scanResult )
+    {
+        if ( scanResult == null )
+        {
+            return null;
+        }
+        if ( numberOfBuckets > 1 )
+        {
+            getConsoleLogger().info( "Bucket " + bucketId + " of " + numberOfBuckets );
+            List<String> cls = scanResult.getClasses();
+            final int pageSize = Math.max( cls.size() / numberOfBuckets, 1 );
+            final int start = pageSize * bucketId;
+            final int end = Math.min( pageSize * ( bucketId + 1 ), cli.size() + 1 );
+            final List<String> bucket = cls.subList( start, end );
+            getConsoleLogger().debug( "Page size is " + pageSize + ", range is  " + start + "  to "
+                + end + ", picked files: " + bucket );
+            if ( bucket.size() > 0 )
+            {
+                getConsoleLogger().info( "Number of class files for this bucket: " + bucket.size() );
+                return new DefaultScanResult( bucket );
+            } 
+            else
+            {
+                getConsoleLogger().info( "No test case for this bucket" );
+                return new DefaultScanResult( Collections.<String>emptyList() );
+            }
+        }
+        return scanResult;
     }
 
     boolean verifyParameters()
