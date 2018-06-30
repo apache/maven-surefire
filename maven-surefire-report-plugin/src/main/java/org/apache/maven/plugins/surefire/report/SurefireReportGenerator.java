@@ -78,7 +78,7 @@ public final class SurefireReportGenerator
         sink.body();
 
         SinkEventAttributeSet atts = new SinkEventAttributeSet();
-        atts.addAttribute( TYPE, "text/javascript" );
+        atts.addAttribute( TYPE, "application/javascript" );
         sink.unknown( "script", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
         sink.unknown( "cdata", new Object[]{ HtmlMarkup.CDATA_TYPE, javascriptToggleDisplayCode() }, null );
         sink.unknown( "script", new Object[]{ HtmlMarkup.TAG_TYPE_END }, null );
