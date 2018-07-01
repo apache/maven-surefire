@@ -112,6 +112,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.lang.Boolean.TRUE;
 import static java.lang.Thread.currentThread;
 import static java.util.Arrays.asList;
 import static java.util.Collections.addAll;
@@ -754,6 +755,14 @@ public abstract class AbstractSurefireMojo
     private String[] dependenciesToScan;
 
     /**
+     * Disables Java 9 modular classpath even if module-info.java is enabled
+     *
+     * @since 2.22.1
+     */
+    @Parameter( property = "disableModules" )
+    private Boolean disableModules;
+
+    /**
      *
      */
     @Component
@@ -985,7 +994,7 @@ public abstract class AbstractSurefireMojo
         if ( !getTestClassesDirectory().exists()
             && ( getDependenciesToScan() == null || getDependenciesToScan().length == 0 ) )
         {
-            if ( Boolean.TRUE.equals( getFailIfNoTests() ) )
+            if ( TRUE.equals( getFailIfNoTests() ) )
             {
                 throw new MojoFailureException( "No tests to run!" );
             }
@@ -2135,7 +2144,7 @@ public abstract class AbstractSurefireMojo
 
         Platform platform = PLATFORM.withJdkExecAttributesForTests( getEffectiveJvm() );
 
-        if ( platform.getJdkExecAttributesForTests().isJava9AtLeast() && existsModuleDescriptor() )
+        if ( platform.getJdkExecAttributesForTests().isJava9AtLeast() && modulesEnabled() && existsModuleDescriptor() )
         {
             return new ModularClasspathForkConfiguration( bootClasspath,
                     tmpDir,
@@ -3669,6 +3678,21 @@ public abstract class AbstractSurefireMojo
     public void setDependenciesToScan( String[] dependenciesToScan )
     {
         this.dependenciesToScan = dependenciesToScan;
+    }
+
+    private boolean modulesEnabled()
+    {
+        return !TRUE.equals( getDisableModules() );
+    }
+
+    public Boolean getDisableModules()
+    {
+        return disableModules;
+    }
+
+    public void setDisableModules( Boolean disableModules )
+    {
+        this.disableModules = disableModules;
     }
 
     public PluginDescriptor getPluginDescriptor()
