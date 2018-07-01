@@ -560,6 +560,18 @@ public class AbstractSurefireMojoJava7PlusTest
         }
 
         @Override
+        protected boolean useJigsawModules()
+        {
+            return false;
+        }
+
+        @Override
+        protected void setUseJigsawModules( boolean useJigsawModules )
+        {
+
+        }
+
+        @Override
         protected Artifact getMojoArtifact()
         {
             return null;
