@@ -49,7 +49,7 @@ Usage
   When <<<mvn site>>> is invoked, the report will automatically be
   included in the Project Reports menu as shown in the figure below.
 
-[images/surefire-sample1.PNG] Sample Surefire Report
+[images/surefire-sample1.png] Sample Surefire Report
 
 * Generate the Report in a Standalone Fashion
 
@@ -61,5 +61,5 @@ mvn surefire-report:report
 
   A HTML report should be generated in <<<$\{basedir\}/target/site/surefire-report.html>>>.
 
-[images/surefire-sample2.PNG] Sample standalone surefire-report
+[images/surefire-sample2.png] Sample standalone surefire-report
 
