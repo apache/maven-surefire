@@ -25,6 +25,7 @@ import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoR
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.booter.SurefireReflector;
+import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.util.SurefireReflectionException;
 
 import javax.annotation.Nonnull;
@@ -46,13 +47,17 @@ public class CommonReflector
     private final Class<?> consoleOutputReporter;
     private final Class<?> statelessTestsetInfoReporter;
     private final ClassLoader surefireClassLoader;
+    private final Class<?> runOrderParametersClass;
+    private final SurefireReflector surefireReflector;
 
     public CommonReflector( @Nonnull ClassLoader surefireClassLoader )
     {
         this.surefireClassLoader = surefireClassLoader;
+        this.surefireReflector = new SurefireReflector( surefireClassLoader );
 
         try
         {
+            runOrderParametersClass = surefireClassLoader.loadClass( RunOrderParameters.class.getName() );
             startupReportConfiguration = surefireClassLoader.loadClass( StartupReportConfiguration.class.getName() );
             consoleLogger = surefireClassLoader.loadClass( ConsoleLogger.class.getName() );
             statelessTestsetReporter = surefireClassLoader.loadClass( SurefireStatelessReporter.class.getName() );
@@ -78,12 +83,20 @@ public class CommonReflector
 
     private Object createStartupReportConfiguration( @Nonnull StartupReportConfiguration reporterConfiguration )
     {
-        Constructor<?> constructor = getConstructor( startupReportConfiguration, boolean.class, boolean.class,
-                                                     String.class, boolean.class, File.class,
-                                                     boolean.class, String.class, File.class, boolean.class,
-                                                     int.class, String.class, String.class, boolean.class,
-                                                     statelessTestsetReporter, consoleOutputReporter,
-                                                     statelessTestsetInfoReporter );
+        Constructor<?> constructor = getConstructor(
+                startupReportConfiguration, boolean.class, boolean.class,
+                String.class, boolean.class, File.class,
+                boolean.class, String.class, File.class, boolean.class,
+                int.class, String.class, String.class, boolean.class,
+                statelessTestsetReporter, consoleOutputReporter,
+                statelessTestsetInfoReporter,
+                String.class, runOrderParametersClass
+        );
+
+        Object runOrderParameters = surefireReflector.createRunOrderParameters(
+                reporterConfiguration.getRunOrderParameters()
+        );
+
         //noinspection BooleanConstructorCall
         Object[] params = { reporterConfiguration.isUseFile(), reporterConfiguration.isPrintSummary(),
             reporterConfiguration.getReportFormat(), reporterConfiguration.isRedirectTestOutputToFile(),
@@ -94,7 +107,8 @@ public class CommonReflector
             reporterConfiguration.getEncoding().name(), reporterConfiguration.isForkMode(),
             reporterConfiguration.getXmlReporter().clone( surefireClassLoader ),
             reporterConfiguration.getConsoleOutputReporter().clone( surefireClassLoader ),
-            reporterConfiguration.getTestsetReporter().clone( surefireClassLoader )
+            reporterConfiguration.getTestsetReporter().clone( surefireClassLoader ),
+            reporterConfiguration.getPluginName(), runOrderParameters
         };
         return newInstance( constructor, params );
     }

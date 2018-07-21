@@ -1,22 +1,22 @@
 package org.apache.maven.surefire.booter;
 /*
-* Licensed to the Apache Software Foundation (ASF) under one
-* or more contributor license agreements.  See the NOTICE file
-* distributed with this work for additional information
-* regarding copyright ownership.  The ASF licenses this file
-* to you under the Apache License, Version 2.0 (the
-* "License"); you may not use this file except in compliance
-* with the License.  You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an
-* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-* KIND, either express or implied.  See the License for the
-* specific language governing permissions and limitations
-* under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 import junit.framework.TestCase;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
@@ -29,7 +29,9 @@ import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
+import org.apache.maven.surefire.util.Randomizer;
 import org.apache.maven.surefire.util.RunOrder;
+import org.apache.maven.surefire.util.RunOrders;
 import org.mockito.ArgumentCaptor;
 
 import java.io.File;
@@ -44,16 +46,16 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class SurefireReflectorTest
-        extends TestCase
+public class SurefireReflectorTest extends TestCase
 {
     public void testCreateConsoleLogger()
     {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         ConsoleLogger consoleLogger = mock( ConsoleLogger.class );
-        ConsoleLogger decorator = (ConsoleLogger) SurefireReflector.createConsoleLogger( consoleLogger, cl );
-        assertThat( decorator )
-        .isNotSameAs( consoleLogger );
+        ConsoleLogger decorator = ( ConsoleLogger ) SurefireReflector.createConsoleLogger(
+                consoleLogger, cl
+        );
+        assertThat( decorator ).isNotSameAs( consoleLogger );
 
         assertThat( decorator.isDebugEnabled() ).isFalse();
         when( consoleLogger.isDebugEnabled() ).thenReturn( true );
@@ -86,7 +88,7 @@ public class SurefireReflectorTest
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         SurefireReflector reflector = new SurefireReflector( cl );
         BaseProviderFactory baseProviderFactory =
-                (BaseProviderFactory) reflector.createBooterConfiguration( cl, factory, true );
+                ( BaseProviderFactory ) reflector.createBooterConfiguration( cl, factory, true );
         assertNotNull( baseProviderFactory.getReporterFactory() );
         assertSame( factory, baseProviderFactory.getReporterFactory() );
     }
@@ -96,9 +98,11 @@ public class SurefireReflectorTest
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
 
-        DirectoryScannerParameters directoryScannerParameters =
-                new DirectoryScannerParameters( new File( "ABC" ), new ArrayList<String>(), new ArrayList<String>(),
-                        new ArrayList<String>(), false, "hourly" );
+        DirectoryScannerParameters directoryScannerParameters = new DirectoryScannerParameters(
+                new File( "ABC" ), new ArrayList<String>(),
+                new ArrayList<String>(), new ArrayList<String>(),
+                false, new RunOrders( RunOrder.HOURLY )
+        );
         surefireReflector.setDirectoryScannerParameters( foo, directoryScannerParameters );
         assertTrue( isCalled( foo ) );
     }
@@ -108,7 +112,10 @@ public class SurefireReflectorTest
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
 
-        RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, new File( "." ) );
+        RunOrderParameters runOrderParameters = new RunOrderParameters(
+                new RunOrders( RunOrder.DEFAULT ),
+                null, new File( "." )
+        );
         surefireReflector.setRunOrderParameters( foo, runOrderParameters );
         assertTrue( isCalled( foo ) );
     }
@@ -168,6 +175,23 @@ public class SurefireReflectorTest
         assertTrue( isCalled( foo ) );
     }
 
+    public void testCreateRunOrderParameters()
+    {
+        // given
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        SurefireReflector reflector = new SurefireReflector( cl );
+        RunOrders runOrders = new RunOrders( RunOrder.RANDOM );
+        Randomizer randomizer = new Randomizer();
+        File statisticsFile = new File( "." );
+        RunOrderParameters parameters = new RunOrderParameters( runOrders, randomizer, statisticsFile );
+
+        // when
+        Object created = reflector.createRunOrderParameters( parameters );
+
+        assertTrue( created instanceof RunOrderParameters );
+        assertNotSame( parameters, created );
+    }
+
     private SurefireReflector getReflector()
     {
         return new SurefireReflector( this.getClass().getClassLoader() );
@@ -184,11 +208,12 @@ public class SurefireReflectorTest
         try
         {
             isCalled = foo.getClass().getMethod( "isCalled" );
-            return (Boolean) isCalled.invoke( foo );
+            return ( Boolean ) isCalled.invoke( foo );
         }
         catch ( ReflectiveOperationException e )
         {
             throw new RuntimeException( e );
         }
     }
+
 }

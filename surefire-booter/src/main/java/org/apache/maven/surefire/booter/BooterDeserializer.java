@@ -19,21 +19,27 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.List;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
+import org.apache.maven.surefire.util.Randomizer;
+import org.apache.maven.surefire.util.RunOrderMapper;
+import org.apache.maven.surefire.util.RunOrders;
+import org.apache.maven.surefire.util.internal.RandomizerSerializer;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.List;
 
 // CHECKSTYLE_OFF: imports
 import static org.apache.maven.surefire.booter.BooterConstants.*;
-import static org.apache.maven.surefire.cli.CommandLineOption.*;
+import static org.apache.maven.surefire.cli.CommandLineOption.fromStrings;
 
 /**
  * Knows how to serialize and deserialize the booter configuration.
@@ -51,6 +57,8 @@ import static org.apache.maven.surefire.cli.CommandLineOption.*;
 public class BooterDeserializer
 {
     private final PropertiesWrapper properties;
+
+    private final RunOrderMapper runOrderMapper = new RunOrderMapper();
 
     public BooterDeserializer( InputStream inputStream )
         throws IOException
@@ -86,16 +94,27 @@ public class BooterDeserializer
         final List<String> testSuiteXmlFiles = properties.getStringList( TEST_SUITE_XML_FILES );
         final File testClassesDirectory = properties.getFileProperty( TEST_CLASSES_DIRECTORY );
         final String runOrder = properties.getProperty( RUN_ORDER );
-        final String runStatisticsFile = properties.getProperty( RUN_STATISTICS_FILE );
+        final String randomSeed = properties.getProperty( RANDOM_SEED );
+        final RunOrders runOrders = runOrderMapper.fromString( runOrder );
+        final String runStatisticsFileName = properties.getProperty( RUN_STATISTICS_FILE );
 
         final int rerunFailingTestsCount = properties.getIntProperty( RERUN_FAILING_TESTS_COUNT );
 
         DirectoryScannerParameters dirScannerParams =
-            new DirectoryScannerParameters( testClassesDirectory, includes, excludes, specificTests,
-                                            properties.getBooleanProperty( FAILIFNOTESTS ), runOrder );
+            new DirectoryScannerParameters(
+                    testClassesDirectory,
+                    includes,
+                    excludes,
+                    specificTests,
+                    properties.getBooleanProperty( FAILIFNOTESTS ),
+                    runOrders
+            );
 
-        RunOrderParameters runOrderParameters
-                = new RunOrderParameters( runOrder, runStatisticsFile == null ? null : new File( runStatisticsFile ) );
+
+        Randomizer randomizer = getRandomizer( randomSeed );
+        RunOrderParameters runOrderParameters = new RunOrderParameters(
+                runOrders, randomizer, asFile( runStatisticsFileName )
+        );
 
         TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testArtifactClassifier );
         TestRequest testSuiteDefinition =
@@ -120,6 +139,20 @@ public class BooterDeserializer
                                           testSuiteDefinition, properties.getProperties(), typeEncodedTestForFork,
                                           preferTestsFromInStream, fromStrings( cli ), failFastCount, shutdown,
                                           systemExitTimeout );
+    }
+
+    @Nullable
+    private File asFile( @Nullable String fileName )
+    {
+        return fileName != null
+                ? new File( fileName )
+                : null;
+    }
+
+    private Randomizer getRandomizer( String randomSeed )
+    {
+
+        return RandomizerSerializer.deserialize( randomSeed );
     }
 
     public StartupConfiguration getProviderConfiguration()

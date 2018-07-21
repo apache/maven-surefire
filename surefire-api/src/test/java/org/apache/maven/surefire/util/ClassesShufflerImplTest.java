@@ -21,36 +21,46 @@ package org.apache.maven.surefire.util;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import java.util.List;
 
-public class RunOrderTest
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+
+/**
+ * @author <a href="mailto:krzysztof.suszynski@wavesoftware.pl">Krzysztof Suszynski</a>
+ * @since 2018-06-13
+ */
+public class ClassesShufflerImplTest
 {
 
     @Test
-    public void testShouldReturnRunOrderForLowerCaseName()
+    public void testShuffle()
     {
-        assertEquals( RunOrder.HOURLY, RunOrder.valueOf( "hourly" ) );
+        // given
+        String seed = "123456";
+        Randomizer randomizer = new Randomizer( seed );
+        ClassesShuffler shuffler = new ClassesShufflerImpl( randomizer );
+        List<Class<?>> list = asList( A.class, B.class, C.class );
+
+        // when
+        shuffler.shuffle( list );
+
+        // then
+        assertEquals( asList( C.class, B.class, A.class ), list );
     }
 
-    @Test
-    public void testShouldThrowExceptionForInvalidName()
+    private static final class A
     {
-        try
-        {
-            RunOrder.valueOf( "arbitraryName" );
-            fail( "IllegalArgumentException not thrown." );
-        }
-        catch ( IllegalArgumentException expected )
-        {
-            assertTrue( expected.getMessage().contains( "Please use one of the following RunOrders" ) );
-        }
+
     }
 
-    @Test
-    public void testShouldReturnStringRepr()
+    private static final class B
     {
-        assertEquals( "hourly", RunOrder.HOURLY.toString() );
+
+    }
+
+    private static final class C
+    {
+
     }
 }

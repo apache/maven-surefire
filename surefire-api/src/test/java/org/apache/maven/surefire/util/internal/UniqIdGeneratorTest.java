@@ -1,4 +1,4 @@
-package testng.suiteXml;
+package org.apache.maven.surefire.util.internal;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,33 +19,32 @@ package testng.suiteXml;
  * under the License.
  */
 
-import org.testng.annotations.Test;
+import org.junit.Test;
 
-import java.nio.charset.Charset;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import static org.junit.Assert.assertTrue;
 
 /**
- * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19
+ * @author <a href="mailto:krzysztof.suszynski@wavesoftware.pl">Krzysztof Suszynski</a>
+ * @since 2016-04-02
  */
-public class TestNGSuiteTest {
-	private static final AtomicInteger COUNTER = new AtomicInteger();
+public class UniqIdGeneratorTest
+{
 
-	@Test
-	public void shouldRunAndPrintItself()
-		throws Exception
-	{
-        String message = String.format(
-                "%s#shouldRunAndPrintItself() %d.",
-                getClass().getSimpleName(),
-                COUNTER.incrementAndGet()
-        );
-
-        synchronized ( System.out )
+    @Test
+    public void testGenerateUniqId()
+    {
+        // given
+        int lower = 5;
+        int upper = 10;
+        UniqIdGenerator uniqIdGenerator = new UniqIdGenerator( lower, upper );
+        int times = ( upper - lower ) * 10;
+        for ( int i = 0; i < times; i++ )
         {
-            System.out.println( message );
-            TimeUnit.SECONDS.sleep( 2 );
+            // when
+            long id = uniqIdGenerator.generateUniqId();
+            // then
+            assertTrue( id >= lower );
+            assertTrue( id < upper );
         }
     }
 }

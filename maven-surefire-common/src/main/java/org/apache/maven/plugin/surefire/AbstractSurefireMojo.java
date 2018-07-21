@@ -24,13 +24,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.model.Dependency;
-import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter;
-import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
-import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
-import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
@@ -38,24 +31,32 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
+import org.apache.maven.plugin.surefire.booterclient.ClasspathForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
-import org.apache.maven.plugin.surefire.booterclient.ClasspathForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.ModularClasspathForkConfiguration;
 import org.apache.maven.plugin.surefire.booterclient.Platform;
 import org.apache.maven.plugin.surefire.booterclient.ProviderDetector;
+import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter;
+import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
+import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.runorder.RunOrderProcessor;
 import org.apache.maven.plugin.surefire.util.DependencyScanner;
 import org.apache.maven.plugin.surefire.util.DirectoryScanner;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.shared.utils.io.FileUtils;
@@ -83,13 +84,14 @@ import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultScanResult;
 import org.apache.maven.surefire.util.RunOrder;
+import org.apache.maven.surefire.util.RunOrders;
 import org.apache.maven.toolchain.DefaultToolchain;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
-import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.languages.java.jpms.LocationManager;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
+import org.codehaus.plexus.logging.Logger;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -123,8 +125,8 @@ import static org.apache.commons.lang3.StringUtils.substringBeforeLast;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.artifact.ArtifactUtils.artifactMapByVersionlessId;
 import static org.apache.maven.plugin.surefire.SurefireDependencyResolver.isWithinVersionSpec;
-import static org.apache.maven.plugin.surefire.util.DependencyScanner.filter;
 import static org.apache.maven.plugin.surefire.SurefireHelper.replaceThreadNumberPlaceholders;
+import static org.apache.maven.plugin.surefire.util.DependencyScanner.filter;
 import static org.apache.maven.shared.utils.StringUtils.capitalizeFirstLetter;
 import static org.apache.maven.shared.utils.StringUtils.isEmpty;
 import static org.apache.maven.shared.utils.StringUtils.isNotBlank;
@@ -857,6 +859,8 @@ public abstract class AbstractSurefireMojo
 
     private volatile PluginConsoleLogger consoleLogger;
 
+    private RunOrderProcessor runOrderProcessor = new RunOrderProcessor();
+
     @Override
     public void execute()
         throws MojoExecutionException, MojoFailureException
@@ -1177,8 +1181,9 @@ public abstract class AbstractSurefireMojo
         SurefireProperties effectiveProperties = setupProperties();
         ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration();
         provider.addProviderProperties();
-        RunOrderParameters runOrderParameters =
-            new RunOrderParameters( getRunOrder(), getStatisticsFile( getConfigChecksum() ) );
+        File statisticsFile = getStatisticsFile( getConfigChecksum() );
+        RunOrderParameters runOrderParameters = runOrderProcessor
+                .createRunOrderParameters( getRunOrders(), statisticsFile );
 
         Platform platform = PLATFORM.withJdkExecAttributesForTests( getEffectiveJvm() );
         if ( isNotForking() )
@@ -1627,16 +1632,9 @@ public abstract class AbstractSurefireMojo
         return getEffectiveForkMode( forkMode1 );
     }
 
-    private List<RunOrder> getRunOrders()
-    {
-        String runOrderString = getRunOrder();
-        RunOrder[] runOrder = runOrderString == null ? RunOrder.DEFAULT : RunOrder.valueOfMulti( runOrderString );
-        return asList( runOrder );
-    }
-
     private boolean requiresRunHistory()
     {
-        final List<RunOrder> runOrders = getRunOrders();
+        final RunOrders runOrders = getRunOrders();
         return runOrders.contains( RunOrder.BALANCED ) || runOrders.contains( RunOrder.FAILEDFIRST );
     }
 
@@ -1709,9 +1707,15 @@ public abstract class AbstractSurefireMojo
             // Collections.emptyList(); behaves same
             List<String> specificTests = Collections.emptyList();
 
+            RunOrders runOrders = getRunOrders();
             directoryScannerParameters =
-                new DirectoryScannerParameters( getTestClassesDirectory(), actualIncludes, actualExcludes,
-                                                specificTests, actualFailIfNoTests, getRunOrder() );
+                new DirectoryScannerParameters( getTestClassesDirectory(),
+                        actualIncludes,
+                        actualExcludes,
+                        specificTests,
+                        actualFailIfNoTests,
+                        runOrders
+                );
         }
 
         Map<String, String> providerProperties = toStringProperties( getProperties() );
@@ -1779,6 +1783,11 @@ public abstract class AbstractSurefireMojo
         {
             throw new MojoExecutionException( e.getMessage(), e );
         }
+    }
+
+    private RunOrders getRunOrders()
+    {
+        return runOrderProcessor.readRunOrders( getRunOrder() );
     }
 
     private StartupConfiguration newStartupConfigWithClasspath(
@@ -1950,7 +1959,9 @@ public abstract class AbstractSurefireMojo
         return getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-shadefire" );
     }
 
-    private StartupReportConfiguration getStartupReportConfiguration( String configChecksum, boolean isForkMode )
+    private StartupReportConfiguration getStartupReportConfiguration( String configChecksum,
+                                                                      boolean isForkMode,
+                                                                      RunOrderParameters runOrderParameters )
     {
         SurefireStatelessReporter xmlReporter =
                 statelessTestsetReporter == null
@@ -1966,12 +1977,26 @@ public abstract class AbstractSurefireMojo
                 statelessTestsetInfoReporter == null
                         ? new SurefireStatelessTestsetInfoReporter() : statelessTestsetInfoReporter;
 
-        return new StartupReportConfiguration( isUseFile(), isPrintSummary(), getReportFormat(),
-                                               isRedirectTestOutputToFile(),
-                                               getReportsDirectory(), isTrimStackTrace(), getReportNameSuffix(),
-                                               getStatisticsFile( configChecksum ), requiresRunHistory(),
-                                               getRerunFailingTestsCount(), getReportSchemaLocation(), getEncoding(),
-                                               isForkMode, xmlReporter, outReporter, testsetReporter );
+        return new StartupReportConfiguration(
+                isUseFile(),
+                isPrintSummary(),
+                getReportFormat(),
+                isRedirectTestOutputToFile(),
+                getReportsDirectory(),
+                isTrimStackTrace(),
+                getReportNameSuffix(),
+                getStatisticsFile( configChecksum ),
+                requiresRunHistory(),
+                getRerunFailingTestsCount(),
+                getReportSchemaLocation(),
+                getEncoding(),
+                isForkMode,
+                xmlReporter,
+                outReporter,
+                testsetReporter,
+                getPluginName(),
+                runOrderParameters
+        );
     }
 
     private boolean isSpecificTestSpecified()
@@ -2227,7 +2252,9 @@ public abstract class AbstractSurefireMojo
         StartupConfiguration startupConfiguration = createStartupConfiguration( provider, false,
                 classLoaderConfiguration, scanResult, platform, testClasspathWrapper );
         String configChecksum = getConfigChecksum();
-        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum, true );
+        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration(
+                configChecksum, true, runOrderParameters
+        );
         ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );
         return new ForkStarter( providerConfiguration, startupConfiguration, forkConfiguration,
                                 getForkedProcessTimeoutInSeconds(), startupReportConfiguration, log );
@@ -2244,7 +2271,9 @@ public abstract class AbstractSurefireMojo
         StartupConfiguration startupConfiguration = createStartupConfiguration( provider, true, classLoaderConfig,
                 scanResult, platform, testClasspathWrapper );
         String configChecksum = getConfigChecksum();
-        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum, false );
+        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration(
+                configChecksum, false, runOrderParameters
+        );
         ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );
         return new InPluginVMSurefireStarter( startupConfiguration, providerConfiguration, startupReportConfiguration,
                                               getConsoleLogger() );

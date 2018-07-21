@@ -1,4 +1,4 @@
-package testng.suiteXml;
+package org.apache.maven.surefire.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,33 +19,33 @@ package testng.suiteXml;
  * under the License.
  */
 
-import org.testng.annotations.Test;
-
-import java.nio.charset.Charset;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
- * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19
+ * Represents a Run Order with attached arguments.
+ *
+ * @author <a href="mailto:krzysztof.suszynski@wavesoftware.pl">Krzysztof Suszynski</a>
  */
-public class TestNGSuiteTest {
-	private static final AtomicInteger COUNTER = new AtomicInteger();
+@ParametersAreNonnullByDefault
+public final class RunOrderWithArguments
+{
+    private final RunOrder runOrder;
+    private final RunOrderArguments runOrderArguments;
 
-	@Test
-	public void shouldRunAndPrintItself()
-		throws Exception
-	{
-        String message = String.format(
-                "%s#shouldRunAndPrintItself() %d.",
-                getClass().getSimpleName(),
-                COUNTER.incrementAndGet()
-        );
+    public RunOrderWithArguments( RunOrder runOrder,
+                                  RunOrderArguments runOrderArguments )
+    {
+        this.runOrder = runOrder;
+        this.runOrderArguments = runOrderArguments;
+    }
 
-        synchronized ( System.out )
-        {
-            System.out.println( message );
-            TimeUnit.SECONDS.sleep( 2 );
-        }
+    public RunOrder getRunOrder()
+    {
+        return runOrder;
+    }
+
+    public RunOrderArguments getRunOrderArguments()
+    {
+        return runOrderArguments;
     }
 }

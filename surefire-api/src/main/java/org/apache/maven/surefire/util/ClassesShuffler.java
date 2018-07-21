@@ -1,4 +1,4 @@
-package testng.suiteXml;
+package org.apache.maven.surefire.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,33 +19,13 @@ package testng.suiteXml;
  * under the License.
  */
 
-import org.testng.annotations.Test;
-
-import java.nio.charset.Charset;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.List;
 
 /**
- * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19
+ * @author <a href="mailto:krzysztof.suszynski@wavesoftware.pl">Krzysztof Suszynski</a>
+ * @since 2018-06-13
  */
-public class TestNGSuiteTest {
-	private static final AtomicInteger COUNTER = new AtomicInteger();
-
-	@Test
-	public void shouldRunAndPrintItself()
-		throws Exception
-	{
-        String message = String.format(
-                "%s#shouldRunAndPrintItself() %d.",
-                getClass().getSimpleName(),
-                COUNTER.incrementAndGet()
-        );
-
-        synchronized ( System.out )
-        {
-            System.out.println( message );
-            TimeUnit.SECONDS.sleep( 2 );
-        }
-    }
+public interface ClassesShuffler
+{
+    void shuffle( List<Class<?>> classes );
 }

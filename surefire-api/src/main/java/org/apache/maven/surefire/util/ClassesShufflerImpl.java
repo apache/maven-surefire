@@ -19,38 +19,36 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
-import org.junit.Test;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-public class RunOrderTest
+/**
+ * @author <a href="mailto:krzysztof.suszynski@wavesoftware.pl">Krzysztof Suszynski</a>
+ * @since 2018-06-13
+ */
+final class ClassesShufflerImpl implements ClassesShuffler
 {
+    private final Randomizer randomizer;
 
-    @Test
-    public void testShouldReturnRunOrderForLowerCaseName()
+    ClassesShufflerImpl( Randomizer randomizer )
     {
-        assertEquals( RunOrder.HOURLY, RunOrder.valueOf( "hourly" ) );
+        this.randomizer = randomizer;
     }
 
-    @Test
-    public void testShouldThrowExceptionForInvalidName()
+    @Override
+    public void shuffle( List<Class<?>> classes )
     {
-        try
-        {
-            RunOrder.valueOf( "arbitraryName" );
-            fail( "IllegalArgumentException not thrown." );
-        }
-        catch ( IllegalArgumentException expected )
-        {
-            assertTrue( expected.getMessage().contains( "Please use one of the following RunOrders" ) );
-        }
+        Collections.sort( classes, new ClassNameComparator() );
+        Collections.shuffle( classes, randomizer.getRandom() );
     }
 
-    @Test
-    public void testShouldReturnStringRepr()
+    private static final class ClassNameComparator implements Comparator<Class<?>>
     {
-        assertEquals( "hourly", RunOrder.HOURLY.toString() );
+        @Override
+        public int compare( Class<?> cls1, Class<?> cls2 )
+        {
+            return cls1.getName().compareTo( cls2.getName() );
+        }
     }
 }

@@ -31,6 +31,7 @@ import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
+import org.apache.maven.surefire.testset.RunOrderParameters;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -54,6 +55,8 @@ import static org.apache.maven.plugin.surefire.report.ConsoleReporter.PLAIN;
  */
 public final class StartupReportConfiguration
 {
+    public static final String DEFAULT_PLUGIN_NAME = "surefire";
+
     private final PrintStream originalSystemOut;
 
     private final PrintStream originalSystemErr;
@@ -80,7 +83,8 @@ public final class StartupReportConfiguration
 
     private final String xsdSchemaLocation;
 
-    private final Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory = new ConcurrentHashMap<>();
+    private final Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory
+        = new ConcurrentHashMap<>();
 
     private final Charset encoding;
 
@@ -92,6 +96,10 @@ public final class StartupReportConfiguration
 
     private final SurefireStatelessTestsetInfoReporter testsetReporter;
 
+    private final String pluginName;
+
+    private final RunOrderParameters runOrderParameters;
+
     private StatisticsReporter statisticsReporter;
 
     @SuppressWarnings( "checkstyle:parameternumber" )
@@ -101,7 +109,8 @@ public final class StartupReportConfiguration
                File statisticsFile, boolean requiresRunHistory, int rerunFailingTestsCount,
                String xsdSchemaLocation, String encoding, boolean isForkMode,
                SurefireStatelessReporter xmlReporter, SurefireConsoleOutputReporter consoleOutputReporter,
-               SurefireStatelessTestsetInfoReporter testsetReporter )
+               SurefireStatelessTestsetInfoReporter testsetReporter,
+               String pluginName, RunOrderParameters runOrderParameters )
     {
         this.useFile = useFile;
         this.printSummary = printSummary;
@@ -122,6 +131,8 @@ public final class StartupReportConfiguration
         this.xmlReporter = xmlReporter;
         this.consoleOutputReporter = consoleOutputReporter;
         this.testsetReporter = testsetReporter;
+        this.pluginName = pluginName;
+        this.runOrderParameters = runOrderParameters;
     }
 
     public boolean isUseFile()
@@ -271,5 +282,15 @@ public final class StartupReportConfiguration
     private boolean shouldReportToConsole()
     {
         return isUseFile() ? isPrintSummary() : isRedirectTestOutputToFile() || isBriefOrPlainFormat();
+    }
+
+    public String getPluginName()
+    {
+        return pluginName;
+    }
+
+    public RunOrderParameters getRunOrderParameters()
+    {
+        return runOrderParameters;
     }
 }

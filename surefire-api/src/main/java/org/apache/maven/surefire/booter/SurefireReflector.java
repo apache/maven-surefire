@@ -31,9 +31,13 @@ import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
-import org.apache.maven.surefire.util.RunOrder;
+import org.apache.maven.surefire.util.Randomizer;
+import org.apache.maven.surefire.util.ReflectionUtils;
+import org.apache.maven.surefire.util.RunOrderMapper;
+import org.apache.maven.surefire.util.RunOrders;
 import org.apache.maven.surefire.util.SurefireReflectionException;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -101,6 +105,15 @@ public class SurefireReflector
 
     private final Class<Enum> shutdownClass;
 
+    private final Class<?> randomizerClass;
+
+    private final Class<?> runOrdersClass;
+
+    private final Class<?> runOrderMapperClass;
+
+    private final RunOrderMapper runOrderMapper = new RunOrderMapper();
+
+
     @SuppressWarnings( "unchecked" )
     public SurefireReflector( ClassLoader surefireClassLoader )
     {
@@ -127,6 +140,9 @@ public class SurefireReflector
             commandLineOptionsClass = (Class<Enum>) surefireClassLoader.loadClass( CommandLineOption.class.getName() );
             shutdownAwareClass = surefireClassLoader.loadClass( ShutdownAware.class.getName() );
             shutdownClass = (Class<Enum>) surefireClassLoader.loadClass( Shutdown.class.getName() );
+            randomizerClass = surefireClassLoader.loadClass( Randomizer.class.getName() );
+            runOrdersClass = surefireClassLoader.loadClass( RunOrders.class.getName() );
+            runOrderMapperClass = surefireClassLoader.loadClass( RunOrderMapper.class.getName() );
         }
         catch ( ClassNotFoundException e )
         {
@@ -186,28 +202,60 @@ public class SurefireReflector
             return null;
         }
         //Can't use the constructor with the RunOrder parameter. Using it causes some integration tests to fail.
-        Class<?>[] arguments = { File.class, List.class, List.class, List.class, boolean.class, String.class };
+        Class<?>[] arguments = { File.class, List.class, List.class, List.class, boolean.class, runOrdersClass };
         Constructor constructor = getConstructor( this.directoryScannerParameters, arguments );
+        Object runOrders = createRunOrders( directoryScannerParameters.getRunOrders() );
         return newInstance( constructor,
                             directoryScannerParameters.getTestClassesDirectory(),
                             directoryScannerParameters.getIncludes(),
                             directoryScannerParameters.getExcludes(),
                             directoryScannerParameters.getSpecificTests(),
                             directoryScannerParameters.isFailIfNoTests(),
-                            RunOrder.asString( directoryScannerParameters.getRunOrder() ) );
+                            runOrders );
     }
 
-    private Object createRunOrderParameters( RunOrderParameters runOrderParameters )
+
+    public Object createRunOrderParameters( RunOrderParameters runOrderParameters )
     {
         if ( runOrderParameters == null )
         {
             return null;
         }
         //Can't use the constructor with the RunOrder parameter. Using it causes some integration tests to fail.
-        Class<?>[] arguments = { String.class, File.class };
+        Class<?>[] arguments = { runOrdersClass, randomizerClass, File.class };
         Constructor constructor = getConstructor( this.runOrderParameters, arguments );
         File runStatisticsFile = runOrderParameters.getRunStatisticsFile();
-        return newInstance( constructor, RunOrder.asString( runOrderParameters.getRunOrder() ), runStatisticsFile );
+        Object randomizer = createRandomizer( runOrderParameters.getRandomizer() );
+        Object runOrders = createRunOrders( runOrderParameters.getRunOrders() );
+        return newInstance(
+                constructor,
+                runOrders,
+                randomizer,
+                runStatisticsFile
+        );
+    }
+
+    private Object createRunOrders( RunOrders runOrders )
+    {
+        String repr = runOrderMapper.asString( runOrders );
+        Object mapper = newInstance( getConstructor( runOrderMapperClass ) );
+        Method fromStringMethod = getMethod( runOrderMapperClass, "fromString", String.class );
+        return invokeMethodWithArray( mapper, fromStringMethod, repr );
+    }
+
+    private Object createRandomizer( @Nullable Randomizer randomizer )
+    {
+        if ( randomizer == null )
+        {
+            return null;
+        }
+        Constructor<?> constructor = ReflectionUtils.getConstructor( randomizerClass,
+                String.class, long.class
+        );
+        Object[] params = {
+                randomizer.getGivenSeed(), randomizer.getSeed()
+        };
+        return ReflectionUtils.newInstance( constructor, params );
     }
 
     private Object createTestArtifactInfo( TestArtifactInfo testArtifactInfo )

@@ -19,15 +19,20 @@ package org.apache.maven.surefire.testset;
  * under the License.
  */
 
+import org.apache.maven.surefire.util.RunOrder;
+import org.apache.maven.surefire.util.RunOrderMapper;
+import org.apache.maven.surefire.util.RunOrders;
+
 import java.io.File;
 import java.util.List;
-import org.apache.maven.surefire.util.RunOrder;
 
 /**
  * @author Kristian Rosenvold
  */
 public class DirectoryScannerParameters
 {
+    private static final RunOrderMapper RUN_ORDER_MAPPER = new RunOrderMapper();
+
     private final File testClassesDirectory;
 
     @Deprecated
@@ -41,25 +46,21 @@ public class DirectoryScannerParameters
 
     private final boolean failIfNoTests;
 
-    private final RunOrder[] runOrder;
+    private final RunOrders runOrders;
 
-    private DirectoryScannerParameters( File testClassesDirectory, List<String> includes, List<String> excludes,
-                                        List<String> specificTests, boolean failIfNoTests, RunOrder[] runOrder )
+    public DirectoryScannerParameters( File testClassesDirectory,
+                                       @Deprecated List<String> includes,
+                                       @Deprecated List<String> excludes,
+                                       @Deprecated List<String> specificTests,
+                                       boolean failIfNoTests,
+                                       RunOrders runOrders )
     {
         this.testClassesDirectory = testClassesDirectory;
         this.includes = includes;
         this.excludes = excludes;
         this.specificTests = specificTests;
         this.failIfNoTests = failIfNoTests;
-        this.runOrder = runOrder;
-    }
-
-    public DirectoryScannerParameters( File testClassesDirectory, @Deprecated List<String> includes,
-                                       @Deprecated List<String> excludes, @Deprecated List<String> specificTests,
-                                       boolean failIfNoTests, String runOrder )
-    {
-        this( testClassesDirectory, includes, excludes, specificTests, failIfNoTests,
-              runOrder == null ? RunOrder.DEFAULT : RunOrder.valueOfMulti( runOrder ) );
+        this.runOrders = runOrders;
     }
 
     @Deprecated
@@ -110,8 +111,15 @@ public class DirectoryScannerParameters
         return failIfNoTests;
     }
 
-    public RunOrder[] getRunOrder()
+    public RunOrders getRunOrders()
     {
-        return runOrder;
+        return runOrders;
+    }
+
+    private static RunOrders readRunOrders( String runOrder )
+    {
+        return runOrder == null
+                ? new RunOrders( RunOrder.DEFAULT )
+                : RUN_ORDER_MAPPER.fromString( runOrder );
     }
 }

@@ -32,7 +32,9 @@ import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
-import org.apache.maven.surefire.util.RunOrder;
+import org.apache.maven.surefire.util.Randomizer;
+import org.apache.maven.surefire.util.RunOrderMapper;
+import org.apache.maven.surefire.util.internal.RandomizerSerializer;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,6 +56,7 @@ import static org.apache.maven.surefire.booter.BooterConstants.ISTRIMSTACKTRACE;
 import static org.apache.maven.surefire.booter.BooterConstants.MAIN_CLI_OPTIONS;
 import static org.apache.maven.surefire.booter.BooterConstants.PLUGIN_PID;
 import static org.apache.maven.surefire.booter.BooterConstants.PROVIDER_CONFIGURATION;
+import static org.apache.maven.surefire.booter.BooterConstants.RANDOM_SEED;
 import static org.apache.maven.surefire.booter.BooterConstants.REPORTSDIRECTORY;
 import static org.apache.maven.surefire.booter.BooterConstants.REQUESTEDTEST;
 import static org.apache.maven.surefire.booter.BooterConstants.RERUN_FAILING_TESTS_COUNT;
@@ -89,6 +92,7 @@ import static org.apache.maven.surefire.booter.SystemPropertyManager.writeProper
 class BooterSerializer
 {
     private final ForkConfiguration forkConfiguration;
+    private final RunOrderMapper runOrderMapper = new RunOrderMapper();
 
     BooterSerializer( ForkConfiguration forkConfiguration )
     {
@@ -154,7 +158,12 @@ class BooterSerializer
         final RunOrderParameters runOrderParameters = booterConfiguration.getRunOrderParameters();
         if ( runOrderParameters != null )
         {
-            properties.setProperty( RUN_ORDER, RunOrder.asString( runOrderParameters.getRunOrder() ) );
+            properties.setProperty( RUN_ORDER, runOrderMapper.asString( runOrderParameters.getRunOrders() ) );
+            Randomizer randomizer = runOrderParameters.getRandomizer();
+            String seed = randomizer != null
+                    ? RandomizerSerializer.serialize( randomizer )
+                    : Randomizer.DEFAULT_SEED;
+            properties.setProperty( RANDOM_SEED, seed );
             properties.setProperty( RUN_STATISTICS_FILE, runOrderParameters.getRunStatisticsFile() );
         }
 

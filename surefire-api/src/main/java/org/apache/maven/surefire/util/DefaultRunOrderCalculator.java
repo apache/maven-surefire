@@ -37,9 +37,11 @@ import java.util.List;
 public class DefaultRunOrderCalculator
     implements RunOrderCalculator
 {
+    private static final int INITIAL_CAPACITY = 512;
+
     private final Comparator<Class> sortOrder;
 
-    private final RunOrder[] runOrder;
+    private final RunOrders runOrders;
 
     private final RunOrderParameters runOrderParameters;
 
@@ -49,30 +51,33 @@ public class DefaultRunOrderCalculator
     {
         this.runOrderParameters = runOrderParameters;
         this.threadCount = threadCount;
-        this.runOrder = runOrderParameters.getRunOrder();
-        this.sortOrder = this.runOrder.length > 0 ? getSortOrderComparator( this.runOrder[0] ) : null;
+        this.runOrders = runOrderParameters.getRunOrders();
+        this.sortOrder = this.runOrders.any() ? getSortOrderComparator( this.runOrders ) : null;
     }
 
     @Override
-    @SuppressWarnings( "checkstyle:magicnumber" )
     public TestsToRun orderTestClasses( TestsToRun scannedClasses )
     {
-        List<Class<?>> result = new ArrayList<>( 512 );
+        List<Class<?>> result = new ArrayList<Class<?>>( INITIAL_CAPACITY );
 
         for ( Class<?> scannedClass : scannedClasses )
         {
             result.add( scannedClass );
         }
 
-        orderTestClasses( result, runOrder.length != 0 ? runOrder[0] : null );
-        return new TestsToRun( new LinkedHashSet<>( result ) );
+        orderTestClasses(
+                result,
+                runOrders.any() ? runOrders.firstAsType() : null
+        );
+        return new TestsToRun( new LinkedHashSet<Class<?>>( result ) );
     }
 
     private void orderTestClasses( List<Class<?>> testClasses, RunOrder runOrder )
     {
         if ( RunOrder.RANDOM.equals( runOrder ) )
         {
-            Collections.shuffle( testClasses );
+            ClassesShuffler shuffler = new ClassesShufflerImpl( runOrderParameters.getRandomizer() );
+            shuffler.shuffle( testClasses );
         }
         else if ( RunOrder.FAILEDFIRST.equals( runOrder ) )
         {
@@ -96,8 +101,9 @@ public class DefaultRunOrderCalculator
         }
     }
 
-    private Comparator<Class> getSortOrderComparator( RunOrder runOrder )
+    private Comparator<Class> getSortOrderComparator( RunOrders runOrders )
     {
+        RunOrder runOrder = runOrders.firstAsType();
         if ( RunOrder.ALPHABETICAL.equals( runOrder ) )
         {
             return getAlphabeticalComparator();
