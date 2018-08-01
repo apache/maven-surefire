@@ -21,6 +21,10 @@ package org.apache.maven.surefire.report;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
 
@@ -33,32 +37,29 @@ import static org.fest.assertions.Assertions.assertThat;
 public class ConsoleOutputFileReporterTest
     extends TestCase
 {
-
-    private ConsoleOutputFileReporter reporter;
-
-    private ReportEntry reportEntry;
-
-    private static final String testName = ConsoleOutputFileReporterTest.class.getName();
-
     /*
      * Test method for 'org.codehaus.surefire.report.ConsoleOutputFileReporter.testSetCompleted(ReportEntry report)'
      */
     public void testFileNameWithoutSuffix() throws IOException
     {
-        File reportDir = new File( new File( System.getProperty( "user.dir" ), "target" ), "tmp" );
+        File reportDir = new File( new File( System.getProperty( "user.dir" ), "target" ), "tmp1" );
         //noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
-        reportEntry = new SimpleReportEntry( getClass().getName(), testName );
-        reporter = new ConsoleOutputFileReporter( reportDir, null );
+        ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), getClass().getName() );
+        ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, null );
         reporter.testSetStarting( reportEntry );
         reporter.writeTestOutput( "some text".getBytes( US_ASCII ), 0, 5, true );
         reporter.testSetCompleted( reportEntry );
         reporter.close();
 
-        File expectedReportFile = new File( reportDir, testName + "-output.txt" );
+        File expectedReportFile = new File( reportDir, getClass().getName() + "-output.txt" );
+
         assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
                     expectedReportFile.exists() );
-        assertThat( FileUtils.fileRead( expectedReportFile, US_ASCII.name() ) ).contains( "some " );
+
+        assertThat( FileUtils.fileRead( expectedReportFile, US_ASCII.name() ) )
+                .contains( "some " );
+
         //noinspection ResultOfMethodCallIgnored
         expectedReportFile.delete();
     }
@@ -68,23 +69,94 @@ public class ConsoleOutputFileReporterTest
      */
     public void testFileNameWithSuffix() throws IOException
     {
-        File reportDir = new File( new File( System.getProperty( "user.dir" ), "target" ), "tmp" );
+        File reportDir = new File( new File( System.getProperty( "user.dir" ), "target" ), "tmp2" );
         //noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
         String suffixText = "sampleSuffixText";
-        reportEntry = new SimpleReportEntry( getClass().getName(), testName );
-        reporter = new ConsoleOutputFileReporter( reportDir, suffixText );
+        ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), getClass().getName() );
+        ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, suffixText );
         reporter.testSetStarting( reportEntry );
         reporter.writeTestOutput( "some text".getBytes( US_ASCII ), 0, 5, true );
         reporter.testSetCompleted( reportEntry );
         reporter.close();
 
-        File expectedReportFile = new File( reportDir, testName + "-" + suffixText + "-output.txt" );
+        File expectedReportFile = new File( reportDir, getClass().getName() + "-" + suffixText + "-output.txt" );
+
         assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
                     expectedReportFile.exists() );
-        assertThat( FileUtils.fileRead( expectedReportFile, US_ASCII.name() ) ).contains( "some " );
+
+        assertThat( FileUtils.fileRead( expectedReportFile, US_ASCII.name() ) )
+                .contains( "some " );
+
         //noinspection ResultOfMethodCallIgnored
         expectedReportFile.delete();
     }
 
+    public void testNullReportFile() throws IOException
+    {
+        File reportDir = new File( new File( System.getProperty( "user.dir" ), "target" ), "tmp3" );
+        //noinspection ResultOfMethodCallIgnored
+        reportDir.mkdirs();
+        ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, null );
+        reporter.writeTestOutput( "some text".getBytes( US_ASCII ), 0, 5, true );
+        reporter.testSetCompleted( new SimpleReportEntry( getClass().getName(), getClass().getName() ) );
+        reporter.close();
+
+        File expectedReportFile = new File( reportDir, "null-output.txt" );
+
+        assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
+                expectedReportFile.exists() );
+
+        assertThat( FileUtils.fileRead( expectedReportFile, US_ASCII.name() ) )
+                .contains( "some " );
+
+        //noinspection ResultOfMethodCallIgnored
+        expectedReportFile.delete();
+    }
+
+    public void testConcurrentAccessReportFile() throws Exception
+    {
+        File reportDir = new File( new File( System.getProperty( "user.dir" ), "target" ), "tmp4" );
+        //noinspection ResultOfMethodCallIgnored
+        reportDir.mkdirs();
+        final ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, null );
+        reporter.testSetStarting( new SimpleReportEntry( getClass().getName(), getClass().getName() ) );
+        ExecutorService scheduler = Executors.newFixedThreadPool( 10 );
+        final ArrayList<Callable<Void>> jobs = new ArrayList<Callable<Void>>();
+        for ( int i = 0; i < 10; i++ )
+        {
+            jobs.add( new Callable<Void>() {
+                @Override
+                public Void call()
+                {
+                    byte[] stream = "some text\n".getBytes( US_ASCII );
+                    reporter.writeTestOutput( stream, 0, stream.length, true );
+                    return null;
+                }
+            } );
+        }
+        scheduler.invokeAll( jobs );
+        scheduler.shutdown();
+        reporter.close();
+
+        File expectedReportFile = new File( reportDir, getClass().getName() + "-output.txt" );
+
+        assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
+                expectedReportFile.exists() );
+
+        assertThat( FileUtils.fileRead( expectedReportFile, US_ASCII.name() ) )
+                .contains( "some text" );
+
+        StringBuilder expectedText = new StringBuilder();
+        for ( int i = 0; i < 10; i++ )
+        {
+            expectedText.append( "some text\n" );
+        }
+
+        assertThat( FileUtils.fileRead( expectedReportFile, US_ASCII.name() ) )
+                .isEqualTo( expectedText.toString() );
+
+        //noinspection ResultOfMethodCallIgnored
+        expectedReportFile.delete();
+    }
 }

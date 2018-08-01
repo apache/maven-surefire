@@ -54,6 +54,7 @@
         <configuration>
           <runOrder>alphabetical</runOrder>
           <forkMode>once</forkMode><!--override to default value in order to enable forkCount-->
+          <argLine>-Xms16m -Xmx32m</argLine>
         </configuration>
       </plugin>
     </plugins>

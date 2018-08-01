@@ -41,6 +41,11 @@ final class ScannerUtil
         return StringUtils.removeEnd( test, ".class" ).replace( "/", "." );
     }
 
+    public static boolean isJavaClassFile( String file )
+    {
+        return file.endsWith( ".class" );
+    }
+
     @Deprecated
     @Nonnull public static String convertSlashToSystemFileSeparator( @Nonnull String path )
     {

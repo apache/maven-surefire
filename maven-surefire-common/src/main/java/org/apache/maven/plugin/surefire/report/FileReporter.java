@@ -83,7 +83,7 @@ public class FileReporter
         }
     }
 
-    public static File getReportFile( File reportsDirectory, String reportEntryName, String reportNameSuffix,
+    static File getReportFile( File reportsDirectory, String reportEntryName, String reportNameSuffix,
                                       String fileExtension )
     {
         String fileName =

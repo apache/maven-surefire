@@ -39,12 +39,10 @@ import org.junit.runner.RunWith;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.maven.surefire.junitcore.pc.ParallelComputerUtil.*;
 import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.*;
-import static org.apache.maven.surefire.junitcore.pc.RangeMatcher.between;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
@@ -973,9 +971,9 @@ public final class ParallelComputerUtilTest
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( logger, params );
         ParallelComputer pc = pcBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t1 = systemMillis();
         final Result result = core.run( pc, TestClass.class );
-        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t2 = systemMillis();
         long timeSpent = t2 - t1;
         final long deltaTime = 500L;
 
@@ -996,14 +994,14 @@ public final class ParallelComputerUtilTest
         Map<String, String> properties = new HashMap<String, String>();
         properties.put(PARALLEL_KEY, "methods");
         properties.put(THREADCOUNTMETHODS_KEY, "2");
-        properties.put(PARALLEL_TIMEOUT_KEY, Double.toString(2.5d));
+        properties.put(PARALLEL_TIMEOUT_KEY, Double.toString( 2.5d ));
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( logger, params );
         ParallelComputer pc = pcBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t1 = systemMillis();
         core.run( pc, TestClass.class );
-        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t2 = systemMillis();
         final long timeSpent = t2 - t1;
         final long deltaTime = 500L;
 
@@ -1027,9 +1025,9 @@ public final class ParallelComputerUtilTest
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( logger, params );
         ParallelComputer pc = pcBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t1 = systemMillis();
         core.run( pc, TestClass.class );
-        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t2 = systemMillis();
         final long timeSpent = t2 - t1;
         final long deltaTime = 500L;
 
@@ -1056,9 +1054,9 @@ public final class ParallelComputerUtilTest
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( logger, params );
         ParallelComputer pc = pcBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t1 = systemMillis();
         core.run( pc, TestClass.class );
-        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t2 = systemMillis();
         final long timeSpent = t2 - t1;
         final long deltaTime = 500L;
 
@@ -1071,21 +1069,21 @@ public final class ParallelComputerUtilTest
 
     @Test
     public void forcedTimeoutAndShutdown()
-        throws TestSetFailedException, ExecutionException, InterruptedException
+        throws Exception
     {
         // The JUnitCore returns after 3.5s and the test-methods in TestClass are interrupted after 3.5s.
         Map<String, String> properties = new HashMap<String, String>();
         properties.put(PARALLEL_KEY, "methods");
         properties.put(THREADCOUNTMETHODS_KEY, "2");
-        properties.put(PARALLEL_TIMEOUTFORCED_KEY, Double.toString(3.5d));
-        properties.put(PARALLEL_TIMEOUT_KEY, Double.toString(4.0d));
+        properties.put(PARALLEL_TIMEOUTFORCED_KEY, Double.toString( 3.5d ) );
+        properties.put(PARALLEL_TIMEOUT_KEY, Double.toString( 4.0d ) );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         ParallelComputerBuilder pcBuilder = new ParallelComputerBuilder( logger, params );
         ParallelComputer pc = pcBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t1 = systemMillis();
         core.run( pc, TestClass.class );
-        final long t2 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+        final long t2 = systemMillis();
         final long timeSpent = t2 - t1;
         final long deltaTime = 500L;
 
@@ -1102,14 +1100,14 @@ public final class ParallelComputerUtilTest
         public void a()
             throws InterruptedException
         {
-            long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+            long t1 = systemMillis();
             try
             {
                 Thread.sleep( 5000L );
             }
             finally
             {
-                System.out.println( getClass().getSimpleName() + "#a() spent " + ( TimeUnit.NANOSECONDS.toMillis( System.nanoTime()) - t1 ) );
+                System.out.println( getClass().getSimpleName() + "#a() spent " + ( systemMillis() - t1 ) );
             }
         }
 
@@ -1117,14 +1115,14 @@ public final class ParallelComputerUtilTest
         public void b()
             throws InterruptedException
         {
-            long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+            long t1 = systemMillis();
             try
             {
                 Thread.sleep( 5000L );
             }
             finally
             {
-                System.out.println( getClass().getSimpleName() + "#b() spent " + ( TimeUnit.NANOSECONDS.toMillis( System.nanoTime()) - t1 ) );
+                System.out.println( getClass().getSimpleName() + "#b() spent " + ( systemMillis() - t1 ) );
             }
         }
 
@@ -1132,15 +1130,20 @@ public final class ParallelComputerUtilTest
         public void c()
             throws InterruptedException
         {
-            long t1 = TimeUnit.NANOSECONDS.toMillis( System.nanoTime());
+            long t1 = systemMillis();
             try
             {
                 Thread.sleep( 5000L );
             }
             finally
             {
-                System.out.println( getClass().getSimpleName() + "#c() spent " + ( TimeUnit.NANOSECONDS.toMillis( System.nanoTime()) - t1 ) );
+                System.out.println( getClass().getSimpleName() + "#c() spent " + ( systemMillis() - t1 ) );
             }
         }
+    }
+
+    private static long systemMillis()
+    {
+        return TimeUnit.NANOSECONDS.toMillis( System.nanoTime() );
     }
 }

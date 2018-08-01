@@ -40,6 +40,7 @@
     <menu name="Examples">
       <item name="Using TestNG" href="examples/testng.html"/>
       <item name="Using JUnit" href="examples/junit.html"/>
+      <item name="Using JUnit 5 Platform" href="examples/junit-platform.html"/>
       <item name="Using POJO Tests" href="examples/pojo-test.html"/>
       <item name="Using Cucumber" href="examples/cucumber.html"/>
       <item name="Skipping Tests" href="examples/skipping-tests.html"/>
@@ -58,6 +59,7 @@
       <item name="Using Console Logs" href="examples/logging.html"/>
       <item name="Shutdown of Forked JVM" href="examples/shutdown.html"/>
       <item name="Run tests with Java 9" href="java9.html"/>
+      <item name="Run tests in Docker" href="docker.html"/>
     </menu>
   </body>
 </project>

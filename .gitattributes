@@ -10,3 +10,4 @@
 *.css    text
 *.js     text
 *.sql    text
+*.png    binary

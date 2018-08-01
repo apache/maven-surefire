@@ -25,10 +25,12 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
-import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
+import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+
+import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
 
 /**
  * Executes a JUnit3 test class
@@ -51,7 +53,7 @@ public class PojoTestSet
 
     private Method tearDownMethod;
 
-    public PojoTestSet( Class<?> testClass )
+    public PojoTestSet( final Class<?> testClass )
         throws TestSetFailedException
     {
         if ( testClass == null )
@@ -114,19 +116,12 @@ public class PojoTestSet
             throw new NullPointerException();
         }
 
-        String userFriendlyMethodName = method.getName() + '(';
+        final String testClassName = getTestClass().getName();
+        final String methodName = method.getName();
+        final String userFriendlyMethodName = methodName + '(' + ( args.length == 0 ? "" : "Reporter" ) + ')';
+        final String testName = getTestName( userFriendlyMethodName );
 
-        if ( args.length != 0 )
-        {
-            userFriendlyMethodName += "Reporter";
-        }
-
-        userFriendlyMethodName += ')';
-
-        ReportEntry report =
-            new SimpleReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ) );
-
-        reportManager.testStarting( report );
+        reportManager.testStarting( new SimpleReportEntry( testClassName, testName ) );
 
         try
         {
@@ -134,12 +129,8 @@ public class PojoTestSet
         }
         catch ( Throwable e )
         {
-            report =
-                SimpleReportEntry.withException( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
-                                                 new LegacyPojoStackTraceWriter( testObject.getClass().getName(),
-                                                                                 method.getName(), e ) );
-
-            reportManager.testFailed( report );
+            StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( testClassName, methodName, e );
+            reportManager.testFailed( withException( testClassName, testName, stackTraceWriter ) );
 
             // A return value of true indicates to this class's executeTestMethods
             // method that it should abort and not attempt to execute
@@ -153,32 +144,20 @@ public class PojoTestSet
         try
         {
             method.invoke( testObject, args );
-
-            report = new SimpleReportEntry( testObject.getClass().getName(), getTestName( userFriendlyMethodName ) );
-
-            reportManager.testSucceeded( report );
+            reportManager.testSucceeded( new SimpleReportEntry( testClassName, testName ) );
         }
-        catch ( InvocationTargetException ite )
+        catch ( InvocationTargetException e )
         {
-            Throwable t = ite.getTargetException();
-
-            report =
-                SimpleReportEntry.withException( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
-                                                 new LegacyPojoStackTraceWriter( testObject.getClass().getName(),
-                                                                                 method.getName(), t ) );
-
-            reportManager.testFailed( report );
+            Throwable t = e.getTargetException();
+            StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( testClassName, methodName, t );
+            reportManager.testFailed( withException( testClassName, testName, stackTraceWriter ) );
             // Don't return  here, because tearDownFixture should be called even
             // if the test method throws an exception.
         }
         catch ( Throwable t )
         {
-            report =
-                SimpleReportEntry.withException( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
-                                                 new LegacyPojoStackTraceWriter( testObject.getClass().getName(),
-                                                                                 method.getName(), t ) );
-
-            reportManager.testFailed( report );
+            StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( testClassName, methodName, t );
+            reportManager.testFailed( withException( testClassName, testName, stackTraceWriter ) );
             // Don't return  here, because tearDownFixture should be called even
             // if the test method throws an exception.
         }
@@ -189,13 +168,9 @@ public class PojoTestSet
         }
         catch ( Throwable t )
         {
+            StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( testClassName, methodName, t );
             // Treat any exception from tearDownFixture as a failure of the test.
-            report =
-                SimpleReportEntry.withException( testObject.getClass().getName(), getTestName( userFriendlyMethodName ),
-                                                 new LegacyPojoStackTraceWriter( testObject.getClass().getName(),
-                                                                                 method.getName(), t ) );
-
-            reportManager.testFailed( report );
+            reportManager.testFailed( withException( testClassName, testName, stackTraceWriter ) );
 
             // A return value of true indicates to this class's executeTestMethods
             // method that it should abort and not attempt to execute
@@ -293,10 +268,10 @@ public class PojoTestSet
     @Override
     public String getName()
     {
-        return testClass.getName();
+        return getTestClass().getName();
     }
 
-    public Class<?> getTestClass()
+    private Class<?> getTestClass()
     {
         return testClass;
     }

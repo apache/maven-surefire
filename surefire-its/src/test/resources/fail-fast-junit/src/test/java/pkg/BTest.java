@@ -2,7 +2,8 @@ package pkg;
 
 import org.junit.Test;
 
-import java.util.concurrent.TimeUnit;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static pkg.ATest.DELAY_MULTIPLIER;
 
 public class BTest
 {
@@ -11,7 +12,7 @@ public class BTest
         throws InterruptedException
     {
         // checking processros # due to very slow Windows Jenkins machines
-        TimeUnit.MILLISECONDS.sleep( Runtime.getRuntime().availableProcessors() == 1 ? 9000 : 3750 );
+        MILLISECONDS.sleep( DELAY_MULTIPLIER * ( Runtime.getRuntime().availableProcessors() == 1 ? 9000L : 3750L ) );
         throw new RuntimeException();
     }
 

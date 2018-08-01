@@ -93,19 +93,16 @@ public class TestSetStats
         lastStartAt = testStartAt;
     }
 
-    private long finishTest( WrappedReportEntry reportEntry )
+    private void finishTest( WrappedReportEntry reportEntry )
     {
         reportEntries.add( reportEntry );
         incrementCompletedCount();
-        long testEndAt = System.currentTimeMillis();
         // SUREFIRE-398 skipped tests call endTest without calling testStarting
         // if startTime = 0, set it to endTime, so the diff will be 0
         if ( testStartAt == 0 )
         {
-            testStartAt = testEndAt;
+            testStartAt = System.currentTimeMillis();
         }
-        Integer elapsedTime = reportEntry.getElapsed();
-        return elapsedTime != null ? elapsedTime : testEndAt - testStartAt;
     }
 
     public void testSucceeded( WrappedReportEntry reportEntry )
@@ -165,11 +162,6 @@ public class TestSetStats
     public int getSkipped()
     {
         return skipped;
-    }
-
-    public String elapsedTimeAsString( long runTime )
-    {
-        return ReporterUtils.formatElapsedTime( runTime );
     }
 
     private void incrementCompletedCount()
@@ -284,6 +276,7 @@ public class TestSetStats
                 result.add( testResult.getElapsedTimeSummary() );
             }
         }
+        // This should be Map with an enum and the enums will be displayed with colors on console.
         return result;
     }
 
@@ -300,7 +293,7 @@ public class TestSetStats
      * @param report     report whose test set is starting
      * @return the message
      */
-    public static String concatenateWithTestGroup( MessageBuilder builder, ReportEntry report )
+    static String concatenateWithTestGroup( MessageBuilder builder, ReportEntry report )
     {
         final String testClass = report.getNameWithGroup();
         int delimiter = testClass.lastIndexOf( '.' );

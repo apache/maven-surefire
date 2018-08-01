@@ -20,10 +20,13 @@ package org.apache.maven.surefire.common.junit3;
  */
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import org.apache.maven.surefire.NonAbstractClassFilter;
-import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.ScannerFilter;
+
+import static java.lang.reflect.Modifier.isPublic;
+import static java.lang.reflect.Modifier.isStatic;
+import static org.apache.maven.surefire.util.ReflectionUtils.tryGetMethod;
+import static org.apache.maven.surefire.util.ReflectionUtils.tryLoadClass;
 
 /**
  * Missing tests ? This class is basically a subset of the JUnit4TestChecker, which is tested
@@ -36,17 +39,15 @@ import org.apache.maven.surefire.util.ScannerFilter;
 public class JUnit3TestChecker
     implements ScannerFilter
 {
-    private final Class<?> junitClass;
-
     private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
 
+    private final Class<?> junitClass;
 
     private final NonAbstractClassFilter nonAbstractClassFilter = new NonAbstractClassFilter();
 
-
     public JUnit3TestChecker( ClassLoader testClassLoader )
     {
-        junitClass = ReflectionUtils.tryLoadClass( testClassLoader, "junit.framework.Test" );
+        junitClass = tryLoadClass( testClassLoader, "junit.framework.Test" );
     }
 
     @Override
@@ -60,14 +61,13 @@ public class JUnit3TestChecker
         return junitClass != null && ( junitClass.isAssignableFrom( testClass ) || isSuiteOnly( testClass ) );
     }
 
-    public boolean isSuiteOnly( Class testClass )
+    private boolean isSuiteOnly( Class testClass )
     {
-        final Method suite = ReflectionUtils.tryGetMethod( testClass, "suite", EMPTY_CLASS_ARRAY );
+        final Method suite = tryGetMethod( testClass, "suite", EMPTY_CLASS_ARRAY );
         if ( suite != null )
         {
-
             final int modifiers = suite.getModifiers();
-            if ( Modifier.isPublic( modifiers ) && Modifier.isStatic( modifiers ) )
+            if ( isPublic( modifiers ) && isStatic( modifiers ) )
             {
                 return junit.framework.Test.class.isAssignableFrom( suite.getReturnType() );
             }

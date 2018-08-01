@@ -141,6 +141,8 @@ mvn verify
 
   * {{{./examples/testng.html}Using TestNG}}
 
+  * {{{./examples/junit-platform.html}Using JUnit 5 Platform}}
+
   * {{{./examples/junit.html}Using JUnit}}
 
   * {{{./examples/pojo-test.html}Using POJO Tests}}
@@ -170,5 +172,9 @@ mvn verify
   * {{{./examples/logging.html}Using Console Logs}}
 
   * {{{./examples/shutdown.html}Shutdown of Forked JVM}}
+
+  * {{{./java9.html}Run tests with Java 9}}
+
+  * {{{./docker.html}Run tests in Docker}}
 
   []

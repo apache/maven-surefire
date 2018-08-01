@@ -24,6 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.apache.maven.surefire.providerapi.SurefireProvider;
+import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
@@ -151,7 +152,7 @@ public class ProviderFactory
 
         @Override
         public RunResult invoke( Object forkTestSet )
-            throws TestSetFailedException, InvocationTargetException
+            throws TestSetFailedException, ReporterException, InvocationTargetException
         {
             ClassLoader current = swapClassLoader( testsClassLoader );
             try
@@ -167,7 +168,6 @@ public class ProviderFactory
                     Thread.currentThread().setContextClassLoader( current );
                 }
             }
-
         }
 
         private ClassLoader swapClassLoader( ClassLoader newClassLoader )

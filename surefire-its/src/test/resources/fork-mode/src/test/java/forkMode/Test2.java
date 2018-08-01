@@ -27,7 +27,9 @@ public class Test2
     extends TestCase
 {
 
-    public void test2() throws IOException {
+    public void test2() throws Exception {
+        int sleepLength = Integer.valueOf( System.getProperty( "sleepLength", "750" ) );
+        Thread.sleep( sleepLength );
         Test1.dumpPidFile(this);
     }
 

@@ -117,7 +117,7 @@ public final class DumpFileUtils
     private static Writer createWriter( File dumpFile ) throws IOException
     {
         return new OutputStreamWriter( new FileOutputStream( dumpFile, true ), UTF_8 )
-                       .append( "# Created on " )
+                       .append( "# Created at " )
                        .append( new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSS" ).format( new Date() ) )
                        .append( StringUtils.NL );
     }

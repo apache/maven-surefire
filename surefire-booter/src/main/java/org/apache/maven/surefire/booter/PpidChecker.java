@@ -22,13 +22,15 @@ package org.apache.maven.surefire.booter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.Queue;
 import java.util.Scanner;
-import java.util.StringTokenizer;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.HOURS;
@@ -36,8 +38,11 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.regex.Pattern.compile;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_HP_UX;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_UNIX;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
+import static org.apache.maven.surefire.booter.ProcessInfo.unixProcessInfo;
+import static org.apache.maven.surefire.booter.ProcessInfo.windowsProcessInfo;
 import static org.apache.maven.surefire.booter.ProcessInfo.ERR_PROCESS_INFO;
 import static org.apache.maven.surefire.booter.ProcessInfo.INVALID_PROCESS_INFO;
 
@@ -49,6 +54,12 @@ import static org.apache.maven.surefire.booter.ProcessInfo.INVALID_PROCESS_INFO;
  */
 final class PpidChecker
 {
+    private static final int MINUTES_TO_MILLIS = 60 * 1000;
+    // 25 chars https://superuser.com/questions/937380/get-creation-time-of-file-in-milliseconds/937401#937401
+    private static final int WMIC_CREATION_DATE_VALUE_LENGTH = 25;
+    private static final int WMIC_CREATION_DATE_TIMESTAMP_LENGTH = 18;
+    private static final SimpleDateFormat WMIC_CREATION_DATE_FORMAT =
+            IS_OS_WINDOWS ? createWindowsCreationDateFormat() : null;
     private static final String WMIC_CREATION_DATE = "CreationDate";
     private static final String WINDOWS_SYSTEM_ROOT_ENV = "SystemRoot";
     private static final String RELATIVE_PATH_TO_WMIC = "System32\\Wbem";
@@ -63,30 +74,30 @@ final class PpidChecker
      */
     static final Pattern UNIX_CMD_OUT_PATTERN = compile( "^(((\\d+)-)?(\\d{1,2}):)?(\\d{1,2}):(\\d{1,2})$" );
 
-    private final long pluginPid;
+    private final long ppid;
 
-    private volatile ProcessInfo pluginProcessInfo;
+    private volatile ProcessInfo parentProcessInfo;
     private volatile boolean stopped;
 
-    PpidChecker( long pluginPid )
+    PpidChecker( long ppid )
     {
-        this.pluginPid = pluginPid;
+        this.ppid = ppid;
         //todo WARN logger (after new logger is finished) that (IS_OS_UNIX && canExecuteUnixPs()) is false
     }
 
     boolean canUse()
     {
-        return pluginProcessInfo == null
-                       ? IS_OS_WINDOWS || IS_OS_UNIX && canExecuteUnixPs()
-                       : pluginProcessInfo.isValid() && !pluginProcessInfo.isError();
+        final ProcessInfo ppi = parentProcessInfo;
+        return ppi == null ? IS_OS_WINDOWS || IS_OS_UNIX && canExecuteUnixPs() : ppi.canUse();
     }
 
     /**
      * This method can be called only after {@link #canUse()} has returned {@code true}.
      *
      * @return {@code true} if parent process is alive; {@code false} otherwise
-     * @throws IllegalStateException if {@link #canUse()} returns {@code false}
-     *                               or the object has been {@link #destroyActiveCommands() destroyed}
+     * @throws IllegalStateException if {@link #canUse()} returns {@code false}, error to read process
+     *                               or this object has been {@link #destroyActiveCommands() destroyed}
+     * @throws NullPointerException if extracted e-time is null
      */
     @SuppressWarnings( "unchecked" )
     boolean isProcessAlive()
@@ -96,35 +107,54 @@ final class PpidChecker
             throw new IllegalStateException( "irrelevant to call isProcessAlive()" );
         }
 
-        if ( IS_OS_WINDOWS )
+        final ProcessInfo previousInfo = parentProcessInfo;
+        try
         {
-            ProcessInfo previousPluginProcessInfo = pluginProcessInfo;
-            pluginProcessInfo = windows();
-            if ( isStopped() || pluginProcessInfo.isError() )
+            if ( IS_OS_WINDOWS )
             {
-                throw new IllegalStateException( "error to read process" );
+                parentProcessInfo = windows();
+                checkProcessInfo();
+
+                // let's compare creation time, should be same unless killed or PID is reused by OS into another process
+                return previousInfo == null || parentProcessInfo.isTimeEqualTo( previousInfo );
             }
-            // let's compare creation time, should be same unless killed or PID is reused by OS into another process
-            return pluginProcessInfo.isValid()
-                           && ( previousPluginProcessInfo == null
-                                        || pluginProcessInfo.isTimeEqualTo( previousPluginProcessInfo ) );
+            else if ( IS_OS_UNIX )
+            {
+                parentProcessInfo = unix();
+                checkProcessInfo();
+
+                // let's compare elapsed time, should be greater or equal if parent process is the same and still alive
+                return previousInfo == null || !parentProcessInfo.isTimeBefore( previousInfo );
+            }
+
+            throw new IllegalStateException( "unknown platform or you did not call canUse() before isProcessAlive()" );
         }
-        else if ( IS_OS_UNIX )
+        finally
         {
-            ProcessInfo previousPluginProcessInfo = pluginProcessInfo;
-            pluginProcessInfo = unix();
-            if ( isStopped() || pluginProcessInfo.isError() )
+            if ( parentProcessInfo == null )
             {
-                throw new IllegalStateException( "error to read process" );
+                parentProcessInfo = INVALID_PROCESS_INFO;
             }
-            // let's compare elapsed time, should be greater or equal if parent process is the same and still alive
-            return pluginProcessInfo.isValid()
-                           && ( previousPluginProcessInfo == null
-                                        || pluginProcessInfo.isTimeEqualTo( previousPluginProcessInfo )
-                                        || pluginProcessInfo.isTimeAfter( previousPluginProcessInfo ) );
+        }
+    }
+
+    private void checkProcessInfo()
+    {
+        if ( isStopped() )
+        {
+            throw new IllegalStateException( "error [STOPPED] to read process " + ppid );
         }
 
-        throw new IllegalStateException();
+        if ( parentProcessInfo.isError() )
+        {
+            throw new IllegalStateException( "error to read process " + ppid );
+        }
+
+        if ( !parentProcessInfo.canUse() )
+        {
+            throw new IllegalStateException( "Cannot use PPID " + ppid + " process information. "
+                    + "Going to use NOOP events." );
+        }
     }
 
     // https://www.freebsd.org/cgi/man.cgi?ps(1)
@@ -139,9 +169,9 @@ final class PpidChecker
         ProcessInfoConsumer reader = new ProcessInfoConsumer( Charset.defaultCharset().name() )
         {
             @Override
-            ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo )
+            ProcessInfo consumeLine( String line, ProcessInfo previousOutputLine )
             {
-                if ( !previousProcessInfo.isValid() )
+                if ( previousOutputLine.isInvalid() )
                 {
                     Matcher matcher = UNIX_CMD_OUT_PATTERN.matcher( line );
                     if ( matcher.matches() )
@@ -150,14 +180,14 @@ final class PpidChecker
                                                  + fromHours( matcher )
                                                  + fromMinutes( matcher )
                                                  + fromSeconds( matcher );
-                        return ProcessInfo.unixProcessInfo( pluginPid, pidUptime );
+                        return unixProcessInfo( ppid, pidUptime );
                     }
                 }
-                return previousProcessInfo;
+                return previousOutputLine;
             }
         };
 
-        return reader.execute( "/bin/sh", "-c", unixPathToPS() + " -o etime= -p " + pluginPid );
+        return reader.execute( "/bin/sh", "-c", unixPathToPS() + " -o etime= -p " + ppid );
     }
 
     ProcessInfo windows()
@@ -167,31 +197,36 @@ final class PpidChecker
             private boolean hasHeader;
 
             @Override
-            ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo )
+            ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo ) throws Exception
             {
-                if ( !previousProcessInfo.isValid() )
+                if ( previousProcessInfo.isInvalid() && !line.isEmpty() )
                 {
-                    StringTokenizer args = new StringTokenizer( line );
-                    if ( args.countTokens() == 1 )
+                    if ( hasHeader )
                     {
-                        if ( hasHeader )
+                        // now the line is CreationDate, e.g. 20180406142327.741074+120
+                        if ( line.length() != WMIC_CREATION_DATE_VALUE_LENGTH )
                         {
-                            String startTimestamp = args.nextToken();
-                            return ProcessInfo.windowsProcessInfo( pluginPid, startTimestamp );
+                            throw new IllegalStateException( "WMIC CreationDate should have 25 characters "
+                                    + line );
                         }
-                        else
-                        {
-                            hasHeader = WMIC_CREATION_DATE.equals( args.nextToken() );
-                        }
+                        String startTimestamp = line.substring( 0, WMIC_CREATION_DATE_TIMESTAMP_LENGTH );
+                        int indexOfTimeZone = WMIC_CREATION_DATE_VALUE_LENGTH - 4;
+                        long startTimestampMillisUTC =
+                                WMIC_CREATION_DATE_FORMAT.parse( startTimestamp ).getTime()
+                                        - parseInt( line.substring( indexOfTimeZone ) ) * MINUTES_TO_MILLIS;
+                        return windowsProcessInfo( ppid, startTimestampMillisUTC );
+                    }
+                    else
+                    {
+                        hasHeader = WMIC_CREATION_DATE.equals( line );
                     }
                 }
                 return previousProcessInfo;
             }
         };
-        String pid = String.valueOf( pluginPid );
         String wmicPath = hasWmicStandardSystemPath() ? SYSTEM_PATH_TO_WMIC : "";
         return reader.execute( "CMD", "/A", "/X", "/C",
-                wmicPath + "wmic process where (ProcessId=" + pid + ") get " + WMIC_CREATION_DATE
+                wmicPath + "wmic process where (ProcessId=" + ppid + ") get " + WMIC_CREATION_DATE
         );
     }
 
@@ -209,7 +244,7 @@ final class PpidChecker
         return stopped;
     }
 
-    static String unixPathToPS()
+    private static String unixPathToPS()
     {
         return canExecuteLocalUnixPs() ? "/usr/bin/ps" : "/bin/ps";
     }
@@ -270,6 +305,20 @@ final class PpidChecker
     }
 
     /**
+     * The beginning part of Windows WMIC format yyyymmddHHMMSS.xxx <br>
+     * https://technet.microsoft.com/en-us/library/ee198928.aspx <br>
+     * We use UTC time zone which avoids DST changes, see SUREFIRE-1512.
+     *
+     * @return Windows WMIC format yyyymmddHHMMSS.xxx
+     */
+    private static SimpleDateFormat createWindowsCreationDateFormat()
+    {
+        SimpleDateFormat formatter = new SimpleDateFormat( "yyyyMMddHHmmss'.'SSS" );
+        formatter.setTimeZone( TimeZone.getTimeZone( "UTC" ) );
+        return formatter;
+    }
+
+    /**
      * Reads standard output from {@link Process}.
      * <br>
      * The artifact maven-shared-utils has non-daemon Threads which is an issue in Surefire to satisfy System.exit.
@@ -285,7 +334,7 @@ final class PpidChecker
             this.charset = charset;
         }
 
-        abstract ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo );
+        abstract ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo ) throws Exception;
 
         ProcessInfo execute( String... command )
         {
@@ -295,6 +344,10 @@ final class PpidChecker
             ProcessInfo processInfo = INVALID_PROCESS_INFO;
             try
             {
+                if ( IS_OS_HP_UX ) // force to run shell commands in UNIX Standard mode on HP-UX
+                {
+                    processBuilder.environment().put( "UNIX95", "1" );
+                }
                 process = processBuilder.start();
                 destroyableCommands.add( process );
                 Scanner scanner = new Scanner( process.getInputStream(), charset );
@@ -307,14 +360,11 @@ final class PpidChecker
                 int exitCode = process.waitFor();
                 return exitCode == 0 ? processInfo : INVALID_PROCESS_INFO;
             }
-            catch ( IOException e )
+            catch ( Exception e )
             {
-                DumpErrorSingleton.getSingleton().dumpException( e );
-                return ERR_PROCESS_INFO;
-            }
-            catch ( InterruptedException e )
-            {
-                DumpErrorSingleton.getSingleton().dumpException( e );
+                DumpErrorSingleton.getSingleton()
+                        .dumpException( e );
+
                 return ERR_PROCESS_INFO;
             }
             finally

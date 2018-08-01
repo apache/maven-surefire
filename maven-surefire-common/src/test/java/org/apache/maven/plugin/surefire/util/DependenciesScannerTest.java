@@ -56,9 +56,14 @@ public class DependenciesScannerTest
         include.add( "**/*A.java" );
         List<String> exclude = new ArrayList<String>();
 
+        List<File> dependenciesToScan = new ArrayList<File>();
+        for ( Artifact a : DependencyScanner.filter( Collections.singletonList( artifact ), scanDependencies ) )
+        {
+            dependenciesToScan.add( a.getFile() );
+        }
+
         DependencyScanner scanner =
-            new DependencyScanner( DependencyScanner.filter( Collections.singletonList( artifact ), scanDependencies ),
-                                   new TestListResolver( include, exclude ) );
+            new DependencyScanner( dependenciesToScan, new TestListResolver( include, exclude ) );
 
         ScanResult classNames = scanner.scan();
         assertNotNull( classNames );

@@ -122,7 +122,7 @@ public abstract class ConcurrentRunListener
     public void testExecutionSkippedByUser()
     {
         // cannot guarantee proper call to all listeners
-        reporterManagerThreadLocal.get().testExecutionSkippedByUser();
+        getRunListener().testExecutionSkippedByUser();
     }
 
     @Override

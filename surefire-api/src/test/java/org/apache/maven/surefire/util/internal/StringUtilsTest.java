@@ -110,4 +110,33 @@ public class StringUtilsTest
 
         assertArrayEquals( expectedResult, actualResult );
     }
+
+    public void testEmptyByteArray()
+    {
+        byte[] header = { (byte) 'a' };
+        byte[] input = {};
+        EncodedArray encodedArray = StringUtils.escapeBytesToPrintable( header, input, 0, input.length );
+        assertEquals( 0, encodedArray.getSize() );
+        assertEquals( 0, encodedArray.getArray().length );
+    }
+
+    public void testSubstringSmall()
+    {
+        byte[] header = { (byte) 'a' };
+        byte[] input = "PleaseLookAfterThisBear".getBytes();
+        EncodedArray encodedArray = StringUtils.escapeBytesToPrintable( header, input,
+                "Please".length(), "Look".length() );
+        assertEquals( "Look",
+                new String( encodedArray.getArray(), 1, encodedArray.getArray().length-1).trim() );
+    }
+
+    public void testSubstringLarge()
+    {
+        byte[] header = { (byte) 'a' };
+        byte[] input = "TheQuickBrownFoxJumpsOverTheLazyDog".getBytes();
+        EncodedArray encodedArray = StringUtils.escapeBytesToPrintable( header, input,
+                "The".length(), "QuickBrownFoxJumpsOverTheLazy".length() );
+        assertEquals( "QuickBrownFoxJumpsOverTheLazy",
+                new String( encodedArray.getArray(), 1, encodedArray.getArray().length-1).trim() );
+    }
 }

@@ -37,18 +37,18 @@ abstract class AbstractClasspathForkConfiguration
 {
 
     @SuppressWarnings( "checkstyle:parameternumber" )
-    public AbstractClasspathForkConfiguration( @Nonnull Classpath bootClasspath,
-                                               @Nonnull File tempDirectory,
-                                               @Nullable String debugLine,
-                                               @Nonnull File workingDirectory,
-                                               @Nonnull Properties modelProperties,
-                                               @Nullable String argLine,
-                                               @Nonnull Map<String, String> environmentVariables,
-                                               boolean debug,
-                                               int forkCount,
-                                               boolean reuseForks,
-                                               @Nonnull Platform pluginPlatform,
-                                               @Nonnull ConsoleLogger log )
+    AbstractClasspathForkConfiguration( @Nonnull Classpath bootClasspath,
+                                        @Nonnull File tempDirectory,
+                                        @Nullable String debugLine,
+                                        @Nonnull File workingDirectory,
+                                        @Nonnull Properties modelProperties,
+                                        @Nullable String argLine,
+                                        @Nonnull Map<String, String> environmentVariables,
+                                        boolean debug,
+                                        int forkCount,
+                                        boolean reuseForks,
+                                        @Nonnull Platform pluginPlatform,
+                                        @Nonnull ConsoleLogger log )
     {
         super( bootClasspath, tempDirectory, debugLine, workingDirectory, modelProperties, argLine,
                 environmentVariables, debug, forkCount, reuseForks, pluginPlatform, log );

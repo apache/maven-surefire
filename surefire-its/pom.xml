@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>2.22.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>surefire-its</artifactId>
@@ -139,25 +139,6 @@
               <goal>integration-test</goal>
               <goal>verify</goal>
             </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>require-maven-2.1.0</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <requireMavenVersion>
-                  <!-- Some plugin features require a recent Maven runtime to work (e.g. SystemPropertiesTest) -->
-                  <version>[2.1.0,)</version>
-                </requireMavenVersion>
-              </rules>
-            </configuration>
           </execution>
         </executions>
       </plugin>

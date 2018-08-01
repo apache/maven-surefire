@@ -57,7 +57,7 @@ import static org.apache.maven.surefire.junitcore.pc.Type.METHODS;
 import static org.apache.maven.surefire.junitcore.pc.Type.SUITES;
 
 @SuppressWarnings( { "javadoc", "checkstyle:javadoctype" } )
-/**
+/*
  * Executing suites, classes and methods with defined concurrency. In this example the threads which completed
  * the suites and classes can be reused in parallel methods.
  * <pre>
@@ -403,11 +403,8 @@ public final class ParallelComputerBuilder
         private void determineThreadCounts( long suites, long classes, long methods )
             throws TestSetFailedException
         {
-            RunnerCounter counts = null;
-            if ( ParallelComputerBuilder.this.optimize )
-            {
-                counts = new RunnerCounter( suites, classes, methods );
-            }
+            RunnerCounter counts =
+                    ParallelComputerBuilder.this.optimize ? new RunnerCounter( suites, classes, methods ) : null;
             Concurrency concurrency =
                     resolveConcurrency( ParallelComputerBuilder.this.parameters, counts );
             allGroups.put( SUITES, concurrency.suites );

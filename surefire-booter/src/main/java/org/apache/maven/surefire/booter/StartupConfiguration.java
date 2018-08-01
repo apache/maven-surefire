@@ -98,7 +98,7 @@ public class StartupConfiguration
      * @param strip the String to remove
      * @return the stripped String
      */
-    public static String stripEnd( String str, String strip )
+    private static String stripEnd( String str, String strip )
     {
         if ( str == null )
         {

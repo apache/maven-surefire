@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import static java.util.Collections.unmodifiableMap;
+import static org.apache.maven.plugin.surefire.report.ReporterUtils.formatElapsedTime;
 import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 
 /**
@@ -131,12 +132,7 @@ public class WrappedReportEntry
 
     public String elapsedTimeAsString()
     {
-        return elapsedTimeAsString( getElapsed() );
-    }
-
-    String elapsedTimeAsString( long runTime )
-    {
-        return ReporterUtils.formatElapsedTime( runTime );
+        return formatElapsedTime( getElapsed() );
     }
 
     public String getReportName()

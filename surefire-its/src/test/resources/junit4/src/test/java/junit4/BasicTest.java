@@ -25,14 +25,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-
 public class BasicTest
 {
+    private static boolean tearDownCalled = false;
 
     private boolean setUpCalled = false;
 
-    private static boolean tearDownCalled = false;
-    
     @Before
     public void setUp()
     {
