@@ -48,8 +48,10 @@ oses.eachWithIndex { osMapping, indexOfOs ->
             final String mvnName = jenkinsEnv.mvnFromVersion(os, maven)
             final String stageKey = "${os}-jdk${jdk}-maven${maven}"
 
+// Referenses for TLS:
+// https://central.sonatype.org/articles/2018/May/04/discontinued-support-for-tlsv11-and-below/?__hstc=31049440.ab2fd229e7f8b6176196d9f78621e1f5.1534324377408.1534324377408.1534324377408.1&__hssc=31049440.1.1534324377409&__hsfp=2729160845
             def mavenOpts = '-server -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseNUMA \
--Xms64m -Djava.awt.headless=true'
+-Xms64m -Djava.awt.headless=true -Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2'
             if (jdk > 7) {
                 mavenOpts += ' -XX:+UseStringDeduplication'
             }
