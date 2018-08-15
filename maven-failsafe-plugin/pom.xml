@@ -318,6 +318,7 @@
             <configuration>
               <javaHome>${jdk.home}</javaHome>
               <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+              <mavenOpts>-Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2</mavenOpts>
             </configuration>
           </plugin>
         </plugins>
