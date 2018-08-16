@@ -30,7 +30,7 @@ properties(
     ]
 )
 
-final def oses = ['linux':'ubuntu', 'windows':'Windows && !windows-2012-3']
+final def oses = ['linux':'ubuntu', 'windows':'Windows']
 final def mavens = env.BRANCH_NAME == 'master' ? ['3.2.x', '3.3.x', '3.5.x'] : ['3.5.x']
 final def jdks = [7, 8, 9, 10]
 
