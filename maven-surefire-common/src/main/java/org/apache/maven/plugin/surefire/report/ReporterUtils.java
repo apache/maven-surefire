@@ -37,9 +37,12 @@ final class ReporterUtils
         throw new IllegalStateException( "non instantiable constructor" );
     }
 
-    public static String formatElapsedTime( double runTime )
+    static String formatElapsedTime( double runTime )
     {
         NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH );
+        numberFormat.setGroupingUsed( true );
+        numberFormat.setMinimumFractionDigits( 0 );
+        numberFormat.setMaximumFractionDigits( 3 );
         return numberFormat.format( runTime / MS_PER_SEC );
     }
 }
