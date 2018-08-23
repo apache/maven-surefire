@@ -65,11 +65,11 @@ Source Code Cross Reference
   In the figure below the code that caused the failure is
   <com.test.proj.AppTest:36>
 
-[../images/failure-details.PNG] Failure Details
+[../images/failure-details.png] Failure Details
 
   The link will redirect you to the source by clicking it.
 
-[../images/xref.PNG] The source
+[../images/xref.png] The source
 
 * Disabling the Cross Reference Link
 

@@ -103,6 +103,12 @@
       <version>1.2</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.xmlunit</groupId>
+      <artifactId>xmlunit-core</artifactId>
+      <version>2.6.0</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
