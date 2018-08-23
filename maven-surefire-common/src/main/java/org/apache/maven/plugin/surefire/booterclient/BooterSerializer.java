@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import static org.apache.maven.surefire.booter.AbstractPathConfiguration.CHILD_DELEGATION;
 import static org.apache.maven.surefire.booter.AbstractPathConfiguration.CLASSPATH;
@@ -180,14 +181,71 @@ class BooterSerializer
         return writePropertiesFile( properties, surefireTmpDir, "surefire", debug );
     }
 
+    /**
+     * This method is complementary to
+     * {@link org.apache.maven.surefire.booter.TypeEncodedValue#getDecodedValue(ClassLoader)}.
+     *
+     * @param value a value to encode
+     * @return encoded value
+     */
     private static String getTypeEncoded( Object value )
     {
         if ( value == null )
         {
             return null;
         }
-        String valueToUse = value instanceof Class ? ( (Class<?>) value ).getName() : value.toString();
-        return value.getClass().getName() + "|" + valueToUse;
+        Class<?> type = value.getClass();
+        final String valueToUse;
+        if ( type == Class.class )
+        {
+            valueToUse = ( (Class<?>) value ).getName();
+        }
+        else if ( type == String.class )
+        {
+            valueToUse = (String) value;
+        }
+        else if ( type == File.class )
+        {
+            valueToUse = ( (File) value ).getAbsolutePath();
+        }
+        else if ( type == File[].class )
+        {
+            StringBuilder paths = new StringBuilder();
+            File[] files = (File[]) value;
+            for ( int i = 0; i < files.length; i++ )
+            {
+                paths.append( files[i].getAbsolutePath() );
+                if ( i != files.length - 1 )
+                {
+                    paths.append( '|' );
+                }
+            }
+            valueToUse = paths.toString();
+        }
+        else if ( type == Boolean.class || type == boolean.class
+                || type == Integer.class || type == int.class )
+        {
+            valueToUse = value.toString();
+        }
+        else if ( type == Properties.class )
+        {
+            StringBuilder stream = new StringBuilder();
+            Properties p = (Properties) value;
+            for ( String key : p.stringPropertyNames() )
+            {
+                String val = p.getProperty( key );
+                stream.append( key )
+                        .append( '=' )
+                        .append( val == null ? "" : val )
+                        .append( '\n' );
+            }
+            valueToUse = stream.toString();
+        }
+        else
+        {
+            valueToUse = value.toString();
+        }
+        return type.getCanonicalName() + "|" + valueToUse;
     }
 
     private static String toString( Object o )

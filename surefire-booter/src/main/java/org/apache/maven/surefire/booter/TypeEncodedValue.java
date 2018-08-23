@@ -22,10 +22,14 @@ package org.apache.maven.surefire.booter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+import java.util.StringTokenizer;
 
 import static org.apache.maven.surefire.util.ReflectionUtils.loadClass;
 import static org.apache.maven.surefire.util.internal.StringUtils.ISO_8859_1;
+import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
 
 /**
  * @author Kristian Rosenvold
@@ -41,7 +45,7 @@ public class TypeEncodedValue
         this.value = value;
     }
 
-    public boolean isTypeClass()
+    private boolean isTypeClass()
     {
         return Class.class.getName().equals( type );
     }
@@ -68,6 +72,19 @@ public class TypeEncodedValue
         else if ( type.equals( File.class.getName() ) )
         {
             return new File( value );
+        }
+        else if ( type.equals( File[].class.getCanonicalName() ) )
+        {
+            List<File> suites = new ArrayList<File>();
+            for ( StringTokenizer tokenizer = new StringTokenizer( value, "|" ); tokenizer.hasMoreTokens(); )
+            {
+                String file = tokenizer.nextToken();
+                if ( isNotBlank( file ) )
+                {
+                    suites.add( new File( file ) );
+                }
+            }
+            return suites;
         }
         else if ( type.equals( Boolean.class.getName() ) )
         {

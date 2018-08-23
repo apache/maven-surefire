@@ -104,7 +104,7 @@
           <forkMode>once</forkMode>
           <argLine>-server -Xmx64m -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true</argLine>
           <includes>
-            <include>org/apache/**/*IT*.java</include>
+            <include>org/apache/**/*1535*.java</include>
           </includes>
           <!-- Pass current surefire version to the main suite so that it -->
           <!-- can forward to all integration test projects. SUREFIRE-513 -->

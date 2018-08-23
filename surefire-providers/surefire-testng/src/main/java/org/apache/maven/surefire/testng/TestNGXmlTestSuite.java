@@ -42,7 +42,7 @@ final class TestNGXmlTestSuite
 
     private List<String> suiteFilePaths;
 
-    private final String testSourceDirectory;
+    private final File testSourceDirectory;
 
     private final Map<String, String> options;
 
@@ -54,7 +54,7 @@ final class TestNGXmlTestSuite
      * Creates a testng testset to be configured by the specified
      * xml file(s). The XML files are suite definitions files according to TestNG DTD.
      */
-    TestNGXmlTestSuite( List<File> suiteFiles, String testSourceDirectory, Map<String, String> confOptions,
+    TestNGXmlTestSuite( List<File> suiteFiles, File testSourceDirectory, Map<String, String> confOptions,
                         File reportsDirectory, int skipAfterFailureCount )
     {
         this.suiteFiles = suiteFiles;

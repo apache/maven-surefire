@@ -106,7 +106,7 @@ public class PropertiesWrapper
     /**
      * Retrieves as single object that is persisted with type encoding
      *
-     * @param key The key for the propery
+     * @param key The key for the property
      * @return The object, of a supported type
      */
     public TypeEncodedValue getTypeEncodedValue( String key )
@@ -114,7 +114,7 @@ public class PropertiesWrapper
         String typeEncoded = getProperty( key );
         if ( typeEncoded != null )
         {
-            int typeSep = typeEncoded.indexOf( "|" );
+            int typeSep = typeEncoded.indexOf( '|' );
             String type = typeEncoded.substring( 0, typeSep );
             String value = typeEncoded.substring( typeSep + 1 );
             return new TypeEncodedValue( type, value );

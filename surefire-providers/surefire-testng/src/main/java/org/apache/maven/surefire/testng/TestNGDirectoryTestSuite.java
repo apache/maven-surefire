@@ -50,7 +50,7 @@ final class TestNGDirectoryTestSuite
 
     private final Map<String, String> junitOptions;
 
-    private final String testSourceDirectory;
+    private final File testSourceDirectory;
 
     private final File reportsDirectory;
 
@@ -66,7 +66,7 @@ final class TestNGDirectoryTestSuite
 
     private final int skipAfterFailureCount;
 
-    TestNGDirectoryTestSuite( String testSourceDirectory, Map<String, String> confOptions, File reportsDirectory,
+    TestNGDirectoryTestSuite( File testSourceDirectory, Map<String, String> confOptions, File reportsDirectory,
                               TestListResolver methodFilter, List<CommandLineOption> mainCliOptions,
                               int skipAfterFailureCount )
     {

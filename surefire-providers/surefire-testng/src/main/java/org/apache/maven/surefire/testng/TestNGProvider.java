@@ -43,6 +43,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.apache.maven.surefire.booter.CommandReader.getReader;
 import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.testset.TestListResolver.getEmptyTestListResolver;
@@ -100,22 +102,29 @@ public class TestNGProvider
 
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
         final RunListener reporter = reporterFactory.createReporter();
-        /**
+        /*
          * {@link org.apache.maven.surefire.report.ConsoleOutputCapture#startCapture(ConsoleOutputReceiver)}
          * called in prior to initializing variable {@link #testsToRun}
          */
         startCapture( (ConsoleOutputReceiver) reporter );
 
-        RunResult runResult;
+        final RunResult runResult;
         try
         {
-            if ( isTestNGXmlTestSuite( testRequest ) )
+            final Class<?> forkTestSetType = forkTestSet.getClass();
+
+            final boolean isXmlSuite =
+                    forkTestSetType == File.class || forkTestSetType.getComponentType() == File.class;
+
+            final List<File> suiteXmlFiles = isXmlSuite ? toXmlSuiteFiles( forkTestSetType, forkTestSet ) : null;
+
+            if ( suiteXmlFiles != null )
             {
                 if ( commandsReader != null )
                 {
                     commandsReader.awaitStarted();
                 }
-                TestNGXmlTestSuite testNGXmlTestSuite = newXmlSuite();
+                TestNGXmlTestSuite testNGXmlTestSuite = newXmlSuite( suiteXmlFiles );
                 testNGXmlTestSuite.locateTestSets();
                 testNGXmlTestSuite.execute( reporter );
             }
@@ -153,9 +162,13 @@ public class TestNGProvider
         return runResult;
     }
 
-    boolean isTestNGXmlTestSuite( TestRequest testSuiteDefinition )
+    private boolean isTestNGXmlTestSuite( TestRequest testSuiteDefinition )
     {
-        Collection<File> suiteXmlFiles = testSuiteDefinition.getSuiteXmlFiles();
+        return isTestNGXmlTestSuite( testSuiteDefinition.getSuiteXmlFiles() );
+    }
+
+    private boolean isTestNGXmlTestSuite( Collection<File> suiteXmlFiles )
+    {
         return !suiteXmlFiles.isEmpty() && !hasSpecificTests();
     }
 
@@ -195,15 +208,15 @@ public class TestNGProvider
 
     private TestNGDirectoryTestSuite newDirectorySuite()
     {
-        return new TestNGDirectoryTestSuite( testRequest.getTestSourceDirectory().toString(), providerProperties,
+        return new TestNGDirectoryTestSuite( testRequest.getTestSourceDirectory(), providerProperties,
                                              reporterConfiguration.getReportsDirectory(), getTestFilter(),
                                              mainCliOptions, getSkipAfterFailureCount() );
     }
 
-    private TestNGXmlTestSuite newXmlSuite()
+    private TestNGXmlTestSuite newXmlSuite( List<File> suiteXmlFiles )
     {
-        return new TestNGXmlTestSuite( testRequest.getSuiteXmlFiles(),
-                                       testRequest.getTestSourceDirectory().toString(),
+        return new TestNGXmlTestSuite( suiteXmlFiles,
+                                       testRequest.getTestSourceDirectory(),
                                        providerProperties,
                                        reporterConfiguration.getReportsDirectory(), getSkipAfterFailureCount() );
     }
@@ -216,7 +229,7 @@ public class TestNGProvider
         {
             try
             {
-                return newXmlSuite().locateTestSets();
+                return newXmlSuite( testRequest.getSuiteXmlFiles() ).locateTestSets();
             }
             catch ( TestSetFailedException e )
             {
@@ -246,5 +259,10 @@ public class TestNGProvider
     {
         TestListResolver filter = optionallyWildcardFilter( testRequest.getTestListResolver() );
         return filter.isWildcard() ? getEmptyTestListResolver() : filter;
+    }
+
+    private static List<File> toXmlSuiteFiles( Class<?> forkTestSetType, Object forkTestSet )
+    {
+        return forkTestSetType.isArray() ? asList( (File[]) forkTestSet ) : singletonList( (File) forkTestSet );
     }
 }

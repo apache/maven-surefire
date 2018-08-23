@@ -37,6 +37,7 @@ import org.testng.xml.XmlSuite;
 import org.testng.xml.XmlTest;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -76,7 +77,7 @@ final class TestNGExecutor
     }
 
     @SuppressWarnings( "checkstyle:parameternumbercheck" )
-    static void run( Iterable<Class<?>> testClasses, String testSourceDirectory,
+    static void run( Iterable<Class<?>> testClasses, File testSourceDirectory,
                             Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
                             RunListener reportManager, File reportsDirectory,
                             TestListResolver methodFilter, List<CommandLineOption> mainCliOptions,
@@ -269,7 +270,7 @@ final class TestNGExecutor
         return xms;
     }
 
-    static void run( List<String> suiteFiles, String testSourceDirectory,
+    static void run( List<String> suiteFiles, File testSourceDirectory,
                             Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
                             RunListener reportManager, File reportsDirectory, int skipAfterFailureCount )
         throws TestSetFailedException
@@ -303,8 +304,9 @@ final class TestNGExecutor
         }
     }
 
-    private static void postConfigure( TestNG testNG, String sourcePath, final RunListener reportManager,
+    private static void postConfigure( TestNG testNG, File sourcePath, final RunListener reportManager,
                                        File reportsDirectory, int skipAfterFailureCount, int verboseLevel )
+            throws TestSetFailedException
     {
         // 0 (default): turn off all TestNG output
         testNG.setVerbose( verboseLevel );
@@ -320,10 +322,16 @@ final class TestNGExecutor
             testNG.addListener( new FailFastListener( createStoppable( reportManager, skipAfterFailureCount ) ) );
         }
 
-        // FIXME: use classifier to decide if we need to pass along the source dir (only for JDK14)
         if ( sourcePath != null )
         {
-            testNG.setSourcePath( sourcePath );
+            try
+            {
+                testNG.setSourcePath( sourcePath.getCanonicalPath() );
+            }
+            catch ( IOException e )
+            {
+                throw new TestSetFailedException( e.getLocalizedMessage(), e );
+            }
         }
 
         testNG.setOutputDirectory( reportsDirectory.getAbsolutePath() );
