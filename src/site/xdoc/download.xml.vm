@@ -108,7 +108,7 @@ under the License.
           <tr>
             <td>${project.name} ${project.version} (Source zip)</td>
             <td><a href="[preferred]maven/surefire/${project.artifactId}-${project.version}-source-release.zip">maven/surefire/${project.artifactId}-${project.version}-source-release.zip</a></td>
-            <td><a href="https://www.apache.org/dist/maven/surefire/${project.artifactId}-${project.version}-source-release.zip.sha1">maven/surefire/${project.artifactId}-${project.version}-source-release.zip.sha1</a></td>
+            <td><a href="https://www.apache.org/dist/maven/surefire/${project.artifactId}-${project.version}-source-release.zip.sha512">maven/surefire/${project.artifactId}-${project.version}-source-release.zip.sha512</a></td>
             <td><a href="https://www.apache.org/dist/maven/surefire/${project.artifactId}-${project.version}-source-release.zip.asc">maven/surefire/${project.artifactId}-${project.version}-source-release.zip.asc</a></td>
           </tr>
         </tbody>
