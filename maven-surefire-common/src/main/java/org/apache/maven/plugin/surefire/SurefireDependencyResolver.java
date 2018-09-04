@@ -37,6 +37,9 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 
@@ -129,7 +132,8 @@ public class SurefireDependencyResolver
     }
 
     @Nonnull
-    public Classpath getProviderClasspath( String provider, String version, Artifact filteredArtifact )
+    public Classpath getProviderClasspath( String provider, String version, Artifact filteredArtifact,
+                                           MavenProject project )
         throws ArtifactNotFoundException, ArtifactResolutionException
     {
         Classpath classPath = ClasspathCache.getCachedClassPath( provider );
@@ -146,6 +150,57 @@ public class SurefireDependencyResolver
             {
                 Artifact artifact = (Artifact) o;
 
+                final List plugins = project.getBuildPlugins();
+                if ( plugins != null ) // try to override the version from the plugin dependencies first (forced)
+                {
+                    for ( Object pluginRef : plugins )
+                    {
+                        Plugin plugin = (Plugin) pluginRef;
+                        if ( !( "maven-surefire-plugin".equals( plugin.getArtifactId() )
+                                && "org.apache.maven.plugins".equals( plugin.getGroupId() ) ) )
+                        {
+                            continue;
+                        }
+
+                        boolean found = false;
+                        for ( Dependency dependency : plugin.getDependencies() )
+                        {
+                            if ( artifact.getGroupId().equals( dependency.getGroupId() )
+                                    && artifact.getArtifactId().equals( dependency.getArtifactId() )
+                                    && ( ( artifact.getClassifier() != null
+                                        && artifact.getClassifier().equals( dependency.getClassifier() ) )
+                                        || ( artifact.getClassifier() == null && dependency.getClassifier() == null ) )
+                            )
+                            {
+                                final Artifact pluginArtifact = artifactFactory.createDependencyArtifact(
+                                        dependency.getGroupId(),
+                                        dependency.getArtifactId(),
+                                        VersionRange.createFromVersion( dependency.getVersion() ),
+                                        dependency.getType(),
+                                        dependency.getClassifier(),
+                                        Artifact.SCOPE_TEST );
+                                artifactResolver.resolve( pluginArtifact, remoteRepositories, localRepository );
+                                artifact = pluginArtifact;
+                                found = true;
+                                break;
+                            }
+                        }
+                        if ( found )
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                if ( artifact == o )  // if we kept the same instance we will try to override it from the project deps
+                {
+                    Artifact projectOverride = (Artifact) project.getArtifactMap()
+                            .get( artifact.getGroupId() + ":" + artifact.getArtifactId() );
+                    if ( projectOverride != null )
+                    {
+                        artifact = projectOverride;
+                    }
+                }
                 log.debug(
                     "Adding to " + pluginName + " test classpath: " + artifact.getFile().getAbsolutePath() + " Scope: "
                         + artifact.getScope() );

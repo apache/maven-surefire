@@ -2856,7 +2856,7 @@ public abstract class AbstractSurefireMojo
         {
             Artifact surefireArtifact = getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-booter" );
             return dependencyResolver.getProviderClasspath( "surefire-testng", surefireArtifact.getBaseVersion(),
-                                                            testNgArtifact );
+                                                            testNgArtifact, project );
         }
     }
 
@@ -2888,7 +2888,7 @@ public abstract class AbstractSurefireMojo
             // add the JUnit provider as default - it doesn't require JUnit to be present,
             // since it supports POJO tests.
             return dependencyResolver.getProviderClasspath( "surefire-junit3", surefireBooterArtifact.getBaseVersion(),
-                                                            null );
+                                                            null, project );
 
         }
     }
@@ -2929,7 +2929,7 @@ public abstract class AbstractSurefireMojo
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
             return dependencyResolver.getProviderClasspath( "surefire-junit4", surefireBooterArtifact.getBaseVersion(),
-                                                            null );
+                                                            null, project );
         }
 
     }
@@ -2964,7 +2964,7 @@ public abstract class AbstractSurefireMojo
         {
             return dependencyResolver.getProviderClasspath( "surefire-junit-platform",
                                                             surefireBooterArtifact.getBaseVersion(),
-                                                            null );
+                                                            null, project );
         }
     }
 
@@ -3013,7 +3013,7 @@ public abstract class AbstractSurefireMojo
             throws ArtifactResolutionException, ArtifactNotFoundException
         {
             return dependencyResolver.getProviderClasspath( "surefire-junit47", surefireBooterArtifact.getBaseVersion(),
-                                                            null );
+                                                            null, project );
         }
     }
 
