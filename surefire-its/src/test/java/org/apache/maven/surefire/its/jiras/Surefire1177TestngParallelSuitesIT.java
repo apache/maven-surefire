@@ -20,6 +20,7 @@ package org.apache.maven.surefire.its.jiras;
  */
 
 import org.apache.maven.it.VerificationException;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
@@ -38,18 +39,41 @@ import static org.hamcrest.Matchers.startsWith;
 public class Surefire1177TestngParallelSuitesIT
     extends SurefireJUnit4IntegrationTestCase
 {
+    private static final String EXPECTED_LINE = "TestNGSuiteTest#shouldRunAndPrintItself()";
+    private static final String UNEXPECTED_LINE = "ShouldNotRunTest#shouldNotRun()";
+
     @Test
-    public void shouldRunTwoSuitesInParallel()
+    public void twoSuitesInParallel()
         throws VerificationException
     {
         assumeJavaVersion( 1.7d );
 
-        unpack().executeTest()
-            .verifyErrorFree( 2 )
-            .assertThatLogLine( containsString( "ShouldNotRunTest#shouldNotRun()" ), is( 0 ) )
-            .assertThatLogLine( startsWith( "TestNGSuiteTest#shouldRunAndPrintItself()" ), is( 2 ) )
-            .assertThatLogLine( is( "TestNGSuiteTest#shouldRunAndPrintItself() 1." ), is( 1 ) )
-            .assertThatLogLine( is( "TestNGSuiteTest#shouldRunAndPrintItself() 2." ), is( 1 ) );
+        OutputValidator validator = unpack()
+                .forkMode( "never" )
+                .executeTest()
+                .verifyErrorFree( 2 );
+
+        validator.assertThatLogLine( startsWith( EXPECTED_LINE ), is( 2 ) );
+        validator.assertThatLogLine( is( EXPECTED_LINE + " 1." ), is( 1 ) );
+        validator.assertThatLogLine( is( EXPECTED_LINE + " 2." ), is( 1 ) );
+        validator.assertThatLogLine( containsString( UNEXPECTED_LINE ), is( 0 ) );
+    }
+
+    @Test
+    public void twoSuitesInParallelForked()
+            throws VerificationException
+    {
+        assumeJavaVersion( 1.7d );
+
+        OutputValidator validator = unpack()
+                .forkMode( "once" )
+                .executeTest()
+                .verifyErrorFree( 2 );
+
+        validator.assertThatLogLine( startsWith( EXPECTED_LINE ), is( 2 ) );
+        validator.assertThatLogLine( is( EXPECTED_LINE + " 1." ), is( 1 ) );
+        validator.assertThatLogLine( is( EXPECTED_LINE + " 2." ), is( 1 ) );
+        validator.assertThatLogLine( containsString( UNEXPECTED_LINE ), is( 0 ) );
     }
 
     private SurefireLauncher unpack()

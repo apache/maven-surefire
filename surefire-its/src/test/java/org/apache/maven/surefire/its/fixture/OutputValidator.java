@@ -105,7 +105,7 @@ public class OutputValidator
         return this;
     }
 
-    public Collection<String> loadLogLines()
+    public List<String> loadLogLines()
         throws VerificationException
     {
         return verifier.loadFile( verifier.getBasedir(), verifier.getLogFileName(), false );

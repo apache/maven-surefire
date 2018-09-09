@@ -148,7 +148,7 @@ public class TestSetRunListener
     }
 
     @Override
-    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    public synchronized void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
         try
         {
