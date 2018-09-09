@@ -275,8 +275,7 @@ public class DefaultReporterFactory
         // Merge all the stats for tests from listeners
         for ( TestSetRunListener listener : listeners )
         {
-            List<TestMethodStats> testMethodStats = listener.getTestMethodStats();
-            for ( TestMethodStats methodStats : testMethodStats )
+            for ( TestMethodStats methodStats : listener.getTestMethodStats() )
             {
                 List<TestMethodStats> currentMethodStats =
                     mergedTestHistoryResult.get( methodStats.getTestClassMethodName() );

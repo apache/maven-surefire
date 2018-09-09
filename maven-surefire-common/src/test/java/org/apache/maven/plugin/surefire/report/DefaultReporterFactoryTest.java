@@ -20,8 +20,10 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import java.io.File;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
 import junit.framework.TestCase;
 
@@ -73,7 +75,7 @@ public class DefaultReporterFactoryTest
         DefaultReporterFactory factory = new DefaultReporterFactory( reportConfig, reporter );
 
         // First run, four tests failed and one passed
-        List<TestMethodStats> firstRunStats = new ArrayList<TestMethodStats>();
+        Queue<TestMethodStats> firstRunStats = new ArrayDeque<TestMethodStats>();
         firstRunStats.add( new TestMethodStats( TEST_ONE, ReportEntryType.ERROR, new DummyStackTraceWriter( ERROR ) ) );
         firstRunStats.add( new TestMethodStats( TEST_TWO, ReportEntryType.ERROR, new DummyStackTraceWriter( ERROR ) ) );
         firstRunStats.add(
@@ -84,7 +86,7 @@ public class DefaultReporterFactoryTest
             new TestMethodStats( TEST_FIVE, ReportEntryType.SUCCESS, null ) );
 
         // Second run, two tests passed
-        List<TestMethodStats> secondRunStats = new ArrayList<TestMethodStats>();
+        Queue<TestMethodStats> secondRunStats = new ArrayDeque<TestMethodStats>();
         secondRunStats.add(
             new TestMethodStats( TEST_ONE, ReportEntryType.FAILURE, new DummyStackTraceWriter( ASSERTION_FAIL ) ) );
         secondRunStats.add( new TestMethodStats( TEST_TWO, ReportEntryType.SUCCESS, null ) );
@@ -93,7 +95,7 @@ public class DefaultReporterFactoryTest
         secondRunStats.add( new TestMethodStats( TEST_FOUR, ReportEntryType.SUCCESS, null ) );
 
         // Third run, another test passed
-        List<TestMethodStats> thirdRunStats = new ArrayList<TestMethodStats>();
+        Queue<TestMethodStats> thirdRunStats = new ArrayDeque<TestMethodStats>();
         thirdRunStats.add( new TestMethodStats( TEST_ONE, ReportEntryType.SUCCESS, null ) );
         thirdRunStats.add(
             new TestMethodStats( TEST_THREE, ReportEntryType.ERROR, new DummyStackTraceWriter( ERROR ) ) );
