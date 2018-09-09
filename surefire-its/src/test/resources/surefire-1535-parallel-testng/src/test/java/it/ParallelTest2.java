@@ -22,13 +22,13 @@ package it;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-@Test
-public class ParallelTest2 extends ParallelTest
-{
+import java.util.concurrent.TimeUnit;
 
+@Test
+public class ParallelTest2
+{
     public void test() throws Exception
     {
-        Assert.assertTrue( deleteFile() );
+        TimeUnit.SECONDS.sleep( 1L );
     }
-
 }
