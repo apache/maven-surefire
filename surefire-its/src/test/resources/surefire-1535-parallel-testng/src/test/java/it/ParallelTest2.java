@@ -29,6 +29,7 @@ public class ParallelTest2
 {
     public void test() throws Exception
     {
+        System.out.println( "test 2" );
         TimeUnit.SECONDS.sleep( 1L );
     }
 }

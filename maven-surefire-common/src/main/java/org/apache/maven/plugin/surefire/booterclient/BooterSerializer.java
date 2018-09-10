@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import static org.apache.maven.plugin.surefire.SurefireHelper.replaceForkThreadsInPath;
 import static org.apache.maven.surefire.booter.AbstractPathConfiguration.CHILD_DELEGATION;
 import static org.apache.maven.surefire.booter.AbstractPathConfiguration.CLASSPATH;
 import static org.apache.maven.surefire.booter.AbstractPathConfiguration.ENABLE_ASSERTIONS;
@@ -99,7 +100,7 @@ class BooterSerializer
      */
     File serialize( KeyValueSource sourceProperties, ProviderConfiguration booterConfiguration,
                     StartupConfiguration providerConfiguration, Object testSet, boolean readTestsFromInStream,
-                    Long pid )
+                    Long pid, int forkNumber )
         throws IOException
     {
         SurefireProperties properties = new SurefireProperties( sourceProperties );
@@ -159,8 +160,9 @@ class BooterSerializer
 
         ReporterConfiguration reporterConfiguration = booterConfiguration.getReporterConfiguration();
         boolean rep = reporterConfiguration.isTrimStackTrace();
+        File reportsDirectory = replaceForkThreadsInPath( reporterConfiguration.getReportsDirectory(), forkNumber );
         properties.setProperty( ISTRIMSTACKTRACE, rep );
-        properties.setProperty( REPORTSDIRECTORY, reporterConfiguration.getReportsDirectory() );
+        properties.setProperty( REPORTSDIRECTORY, reportsDirectory );
         ClassLoaderConfiguration classLoaderConfig = providerConfiguration.getClassLoaderConfiguration();
         properties.setProperty( USESYSTEMCLASSLOADER, toString( classLoaderConfig.isUseSystemClassLoader() ) );
         properties.setProperty( USEMANIFESTONLYJAR, toString( classLoaderConfig.isUseManifestOnlyJar() ) );

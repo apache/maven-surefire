@@ -120,6 +120,7 @@ import static java.util.Collections.singletonMap;
 import static org.apache.commons.lang3.StringUtils.substringBeforeLast;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.plugin.surefire.util.DependencyScanner.filter;
+import static org.apache.maven.plugin.surefire.SurefireHelper.replaceThreadNumberPlaceholders;
 import static org.apache.maven.shared.utils.StringUtils.capitalizeFirstLetter;
 import static org.apache.maven.shared.utils.StringUtils.isEmpty;
 import static org.apache.maven.shared.utils.StringUtils.isNotBlank;
@@ -769,19 +770,6 @@ public abstract class AbstractSurefireMojo
 
     private int effectiveForkCount = -1;
 
-    /**
-     * The placeholder that is replaced by the executing thread's running number. The thread number
-     * range starts with 1
-     * Deprecated.
-     */
-    public static final String THREAD_NUMBER_PLACEHOLDER = "${surefire.threadNumber}";
-
-    /**
-     * The placeholder that is replaced by the executing fork's running number. The fork number
-     * range starts with 1
-     */
-    public static final String FORK_NUMBER_PLACEHOLDER = "${surefire.forkNumber}";
-
     protected abstract String getPluginName();
 
     protected abstract int getRerunFailingTestsCount();
@@ -1215,16 +1203,12 @@ public abstract class AbstractSurefireMojo
         SurefireProperties effectiveSystemProperties, int threadNumber )
     {
         SurefireProperties filteredProperties = new SurefireProperties( ( KeyValueSource) effectiveSystemProperties );
-        String threadNumberString = String.valueOf( threadNumber );
         for ( Entry<Object, Object> entry : effectiveSystemProperties.entrySet() )
         {
             if ( entry.getValue() instanceof String )
             {
                 String value = (String) entry.getValue();
-                value = value.replace( THREAD_NUMBER_PLACEHOLDER, threadNumberString );
-                value = value.replace( FORK_NUMBER_PLACEHOLDER, threadNumberString );
-
-                filteredProperties.put( entry.getKey(), value );
+                filteredProperties.put( entry.getKey(), replaceThreadNumberPlaceholders( value, threadNumber ) );
             }
         }
         return filteredProperties;
@@ -1846,13 +1830,14 @@ public abstract class AbstractSurefireMojo
         return getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-api" );
     }
 
-    private StartupReportConfiguration getStartupReportConfiguration( String configChecksum )
+    private StartupReportConfiguration getStartupReportConfiguration( String configChecksum, boolean isForkMode )
     {
         return new StartupReportConfiguration( isUseFile(), isPrintSummary(), getReportFormat(),
                                                isRedirectTestOutputToFile(), isDisableXmlReport(),
                                                getReportsDirectory(), isTrimStackTrace(), getReportNameSuffix(),
                                                getStatisticsFile( configChecksum ), requiresRunHistory(),
-                                               getRerunFailingTestsCount(), getReportSchemaLocation(), getEncoding() );
+                                               getRerunFailingTestsCount(), getReportSchemaLocation(), getEncoding(),
+                                               isForkMode );
     }
 
     private boolean isSpecificTestSpecified()
@@ -2102,7 +2087,7 @@ public abstract class AbstractSurefireMojo
         StartupConfiguration startupConfiguration =
                 createStartupConfiguration( provider, false, classLoaderConfiguration, scanResult );
         String configChecksum = getConfigChecksum();
-        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum );
+        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum, true );
         ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );
         return new ForkStarter( providerConfiguration, startupConfiguration, forkConfiguration,
                                 getForkedProcessTimeoutInSeconds(), startupReportConfiguration, log );
@@ -2117,7 +2102,7 @@ public abstract class AbstractSurefireMojo
         StartupConfiguration startupConfiguration =
                 createStartupConfiguration( provider, true, classLoaderConfiguration, scanResult );
         String configChecksum = getConfigChecksum();
-        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum );
+        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum, false );
         ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );
         return new InPluginVMSurefireStarter( startupConfiguration, providerConfiguration, startupReportConfiguration,
                                               getConsoleLogger() );

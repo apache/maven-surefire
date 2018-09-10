@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire;
 
 import org.junit.Test;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,15 +38,36 @@ import static org.junit.Assume.assumeTrue;
 public class SurefireHelperTest
 {
     @Test
+    public void shouldReplaceForkNumberPath()
+    {
+        File root = new File( System.getProperty( "user.dir", "" ) );
+        File pathWithPlaceholder = new File( root, "${surefire.forkNumber}" );
+        File changed = SurefireHelper.replaceForkThreadsInPath( pathWithPlaceholder, 5 );
+        assertThat( changed.getPath() )
+                .isEqualTo( new File( root, "5" ).getPath() );
+    }
+
+    @Test
+    public void shouldReplaceLongForkNumberPath()
+    {
+        File root = new File( System.getProperty( "user.dir", "" ) );
+        File subDir = new File( root, "reports-${surefire.forkNumber}" );
+        File pathWithPlaceholder = new File( subDir, "subfolder" );
+        File changed = SurefireHelper.replaceForkThreadsInPath( pathWithPlaceholder, 5 );
+        assertThat( changed.getPath() )
+                .isEqualTo( new File( new File( root, "reports-5" ), "subfolder" ).getPath() );
+    }
+
+    @Test
     public void shouldBeThreeDumpFiles()
     {
         String[] dumps = SurefireHelper.getDumpFilesToPrint();
-        assertThat( dumps ).hasSize( 3 );
+        assertThat( dumps ).hasSize( 4 );
         assertThat( dumps ).doesNotHaveDuplicates();
         List<String> onlyStrings = new ArrayList<String>();
         addAll( onlyStrings, dumps );
         onlyStrings.removeAll( singleton( (String) null ) );
-        assertThat( onlyStrings ).hasSize( 3 );
+        assertThat( onlyStrings ).hasSize( 4 );
     }
 
     @Test

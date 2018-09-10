@@ -31,8 +31,10 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 
 import junit.framework.Assert;
+import org.hamcrest.Matcher;
 
 import static junit.framework.Assert.assertTrue;
+import static org.hamcrest.Matchers.containsString;
 
 /**
  * @author Kristian Rosenvold
@@ -52,9 +54,16 @@ public class TestFile
 
     public TestFile( File file, Charset charset, OutputValidator surefireVerifier )
     {
-        this.file = file;
-        this.encoding = charset == null ? Charset.defaultCharset() : charset;
-        this.surefireVerifier = surefireVerifier;
+        try
+        {
+            this.file = file.getCanonicalFile();
+            this.encoding = charset == null ? Charset.defaultCharset() : charset;
+            this.surefireVerifier = surefireVerifier;
+        }
+        catch ( IOException e )
+        {
+            throw new IllegalArgumentException( file.getPath() );
+        }
     }
 
     public OutputValidator assertFileExists()
@@ -129,18 +138,23 @@ public class TestFile
         return file.isFile();
     }
 
-    public TestFile assertContainsText( String text )
+    public TestFile assertContainsText( Matcher<String> matcher )
     {
         final List<String> list = surefireVerifier.loadFile( file, encoding );
         for ( String line : list )
         {
-            if ( line.contains( text ) )
+            if ( matcher.matches( line ) )
             {
                 return this;
             }
         }
         Assert.fail( "Did not find expected message in log" );
         return null;
+    }
+
+    public TestFile assertContainsText( String text )
+    {
+        return assertContainsText( containsString( text ) );
     }
 
     public URI toURI()

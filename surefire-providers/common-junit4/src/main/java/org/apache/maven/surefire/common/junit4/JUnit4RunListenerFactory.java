@@ -19,7 +19,7 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.maven.shared.utils.StringUtils;
@@ -34,7 +34,7 @@ public class JUnit4RunListenerFactory
 {
     public static List<RunListener> createCustomListeners( String listeners )
     {
-        List<RunListener> result = new LinkedList<RunListener>();
+        List<RunListener> result = new ArrayList<RunListener>();
         if ( StringUtils.isNotBlank( listeners ) )
         {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();

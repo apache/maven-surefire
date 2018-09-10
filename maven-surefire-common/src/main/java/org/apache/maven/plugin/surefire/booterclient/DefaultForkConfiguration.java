@@ -37,9 +37,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.FORK_NUMBER_PLACEHOLDER;
-import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.THREAD_NUMBER_PLACEHOLDER;
+import static org.apache.maven.plugin.surefire.SurefireHelper.replaceForkThreadsInPath;
 import static org.apache.maven.plugin.surefire.util.Relocator.relocate;
+import static org.apache.maven.plugin.surefire.SurefireHelper.replaceThreadNumberPlaceholders;
 import static org.apache.maven.surefire.booter.Classpath.join;
 
 /**
@@ -169,7 +169,7 @@ public abstract class DefaultForkConfiguration
     private File getWorkingDirectory( int forkNumber )
             throws SurefireBooterForkException
     {
-        File cwd = new File( replaceThreadNumberPlaceholder( getWorkingDirectory().getAbsolutePath(), forkNumber ) );
+        File cwd = replaceForkThreadsInPath( getWorkingDirectory(), forkNumber );
 
         if ( !cwd.exists() && !cwd.mkdirs() )
         {
@@ -182,14 +182,6 @@ public abstract class DefaultForkConfiguration
                     "WorkingDirectory " + cwd.getAbsolutePath() + " exists and is not a directory" );
         }
         return cwd;
-    }
-
-    @Nonnull
-    private static String replaceThreadNumberPlaceholder( @Nonnull String argLine, int threadNumber )
-    {
-        String threadNumberAsString = String.valueOf( threadNumber );
-        return argLine.replace( THREAD_NUMBER_PLACEHOLDER, threadNumberAsString )
-                .replace( FORK_NUMBER_PLACEHOLDER, threadNumberAsString );
     }
 
     /**
@@ -331,7 +323,7 @@ public abstract class DefaultForkConfiguration
     private String newJvmArgLine( int forks )
     {
         String interpolatedArgs = stripNewLines( interpolateArgLineWithPropertyExpressions() );
-        String argsWithReplacedForkNumbers = replaceThreadNumberPlaceholder( interpolatedArgs, forks );
+        String argsWithReplacedForkNumbers = replaceThreadNumberPlaceholders( interpolatedArgs, forks );
         return extendJvmArgLine( argsWithReplacedForkNumbers );
     }
 

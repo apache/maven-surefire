@@ -19,14 +19,15 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.util.internal.DumpFileUtils;
 
 import java.io.File;
 
 import static java.lang.String.format;
+import static org.apache.maven.plugin.surefire.SurefireHelper.DUMP_FILENAME;
+import static org.apache.maven.plugin.surefire.SurefireHelper.DUMP_FILENAME_FORMATTER;
+import static org.apache.maven.plugin.surefire.SurefireHelper.DUMPSTREAM_FILENAME;
 import static org.apache.maven.plugin.surefire.SurefireHelper.DUMPSTREAM_FILENAME_FORMATTER;
-import static org.apache.maven.surefire.booter.DumpErrorSingleton.DUMPSTREAM_FILE_EXT;
 
 /**
  * Reports errors to dump file.
@@ -35,8 +36,6 @@ import static org.apache.maven.surefire.booter.DumpErrorSingleton.DUMPSTREAM_FIL
 public final class InPluginProcessDumpSingleton
 {
     private static final InPluginProcessDumpSingleton SINGLETON = new InPluginProcessDumpSingleton();
-
-    private final String creationDate = DumpFileUtils.newFormattedDateFileName();
 
     private InPluginProcessDumpSingleton()
     {
@@ -47,45 +46,59 @@ public final class InPluginProcessDumpSingleton
         return SINGLETON;
     }
 
-    public synchronized File dumpException( Throwable t, String msg, DefaultReporterFactory defaultReporterFactory,
-                                            int jvmRun )
+    public synchronized File dumpStreamException( Throwable t, String msg, File reportsDirectory, int jvmRun )
     {
-        File dump = newDumpFile( defaultReporterFactory, jvmRun );
+        File dump = newDumpStreamFile( reportsDirectory, jvmRun );
         DumpFileUtils.dumpException( t, msg == null ? "null" : msg, dump );
         return dump;
     }
 
-    public synchronized void dumpException( Throwable t, String msg, DefaultReporterFactory defaultReporterFactory )
+    public synchronized void dumpStreamException( Throwable t, String msg, File reportsDirectory )
     {
-        DumpFileUtils.dumpException( t, msg == null ? "null" : msg, newDumpFile( defaultReporterFactory ) );
+        DumpFileUtils.dumpException( t, msg == null ? "null" : msg, newDumpStreamFile( reportsDirectory ) );
     }
 
-    public synchronized void dumpException( Throwable t, DefaultReporterFactory defaultReporterFactory )
+    public synchronized File dumpStreamText( String msg, File reportsDirectory, int jvmRun )
     {
-        DumpFileUtils.dumpException( t, newDumpFile( defaultReporterFactory ) );
-    }
-
-    public synchronized File dumpText( String msg, DefaultReporterFactory defaultReporterFactory, int jvmRun )
-    {
-        File dump = newDumpFile( defaultReporterFactory, jvmRun );
+        File dump = newDumpStreamFile( reportsDirectory, jvmRun );
         DumpFileUtils.dumpText( msg == null ? "null" : msg, dump );
         return dump;
     }
 
-    public synchronized void dumpText( String msg, DefaultReporterFactory defaultReporterFactory )
+    public synchronized void dumpStreamText( String msg, File reportsDirectory )
     {
-        DumpFileUtils.dumpText( msg == null ? "null" : msg, newDumpFile( defaultReporterFactory ) );
+        DumpFileUtils.dumpText( msg == null ? "null" : msg, newDumpStreamFile( reportsDirectory ) );
     }
 
-    private File newDumpFile( DefaultReporterFactory defaultReporterFactory )
+    public synchronized void dumpException( Throwable t, String msg, File reportsDirectory, int jvmRun )
     {
-        File reportsDirectory = defaultReporterFactory.getReportsDirectory();
-        return new File( reportsDirectory, creationDate + DUMPSTREAM_FILE_EXT );
+        File dump = newDumpFile( reportsDirectory, jvmRun );
+        DumpFileUtils.dumpException( t, msg == null ? "null" : msg, dump );
     }
 
-    private static File newDumpFile( DefaultReporterFactory defaultReporterFactory, int jvmRun )
+    public synchronized void dumpException( Throwable t, String msg, File reportsDirectory )
     {
-        File reportsDirectory = defaultReporterFactory.getReportsDirectory();
+        File dump = newDumpFile( reportsDirectory );
+        DumpFileUtils.dumpException( t, msg == null ? "null" : msg, dump );
+    }
+
+    private File newDumpStreamFile( File reportsDirectory )
+    {
+        return new File( reportsDirectory, DUMPSTREAM_FILENAME );
+    }
+
+    private static File newDumpStreamFile( File reportsDirectory, int jvmRun )
+    {
         return new File( reportsDirectory, format( DUMPSTREAM_FILENAME_FORMATTER, jvmRun ) );
+    }
+
+    private static File newDumpFile( File reportsDirectory, int jvmRun )
+    {
+        return new File( reportsDirectory, format( DUMP_FILENAME_FORMATTER, jvmRun ) );
+    }
+
+    private static File newDumpFile( File reportsDirectory )
+    {
+        return new File( reportsDirectory, DUMP_FILENAME );
     }
 }

@@ -68,7 +68,7 @@ public class DefaultReporterFactoryTest
         File reportsDirectory = new File("target");
         StartupReportConfiguration reportConfig =
                 new StartupReportConfiguration( true, true, "PLAIN", false, false, reportsDirectory, false, null,
-                                                      new File( reportsDirectory, "TESTHASH" ), false, 1, null, null );
+                        new File( reportsDirectory, "TESTHASH" ), false, 1, null, null, false );
 
         DummyTestReporter reporter = new DummyTestReporter();
 

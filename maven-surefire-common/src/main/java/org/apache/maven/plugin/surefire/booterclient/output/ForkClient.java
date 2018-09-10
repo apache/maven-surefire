@@ -107,6 +107,8 @@ public class ForkClient
      */
     private final AtomicBoolean printedErrorStream;
 
+    private final int forkNumber;
+
     /**
      * Used by single Thread started by {@link ThreadedStreamConsumer} and therefore does not need to be volatile.
      */
@@ -119,15 +121,14 @@ public class ForkClient
 
     private volatile StackTraceWriter errorInFork;
 
-    private volatile int forkNumber;
-
     public ForkClient( DefaultReporterFactory defaultReporterFactory, NotifiableTestStream notifiableTestStream,
-                       ConsoleLogger log, AtomicBoolean printedErrorStream )
+                       ConsoleLogger log, AtomicBoolean printedErrorStream, int forkNumber )
     {
         this.defaultReporterFactory = defaultReporterFactory;
         this.notifiableTestStream = notifiableTestStream;
         this.log = log;
         this.printedErrorStream = printedErrorStream;
+        this.forkNumber = forkNumber;
     }
 
     protected void stopOnNextTest()
@@ -317,10 +318,11 @@ public class ForkClient
             String msg = "Corrupted STDOUT by directly writing to native stream in forked JVM " + forkNumber + ".";
 
             InPluginProcessDumpSingleton util = InPluginProcessDumpSingleton.getSingleton();
+            File reportsDir = defaultReporterFactory.getReportsDirectory();
             File dump =
                     e == null
-                    ? util.dumpText( msg + " Stream '" + event + "'.", defaultReporterFactory, forkNumber )
-                    : util.dumpException( e, msg + " Stream '" + event + "'.", defaultReporterFactory, forkNumber );
+                    ? util.dumpStreamText( msg + " Stream '" + event + "'.", reportsDir, forkNumber )
+                    : util.dumpStreamException( e, msg + " Stream '" + event + "'.", reportsDir, forkNumber );
 
             if ( printedErrorStream.compareAndSet( false, true ) )
             {
@@ -489,12 +491,6 @@ public class ForkClient
     public boolean hasTestsInProgress()
     {
         return !testsInProgress.isEmpty();
-    }
-
-    public void setForkNumber( int forkNumber )
-    {
-        assert this.forkNumber == 0;
-        this.forkNumber = forkNumber;
     }
 
     private static final class OperationalData

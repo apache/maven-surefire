@@ -197,8 +197,9 @@ public class ForkStarter
                     // if tests failed, but if this does not happen then printing warning to console is the only way to
                     // inform the users.
                     String msg = "ForkStarter IOException: " + e.getLocalizedMessage() + ".";
+                    File reportsDir = defaultReporterFactory.getReportsDirectory();
                     File dump = InPluginProcessDumpSingleton.getSingleton()
-                                        .dumpException( e, msg, defaultReporterFactory, jvmRun );
+                                        .dumpStreamException( e, msg, reportsDir, jvmRun );
                     log.warning( msg + " See the dump file " + dump.getAbsolutePath() );
                 }
             }
@@ -264,21 +265,25 @@ public class ForkStarter
     private RunResult run( SurefireProperties effectiveSystemProperties, Map<String, String> providerProperties )
             throws SurefireBooterForkException
     {
-        DefaultReporterFactory forkedReporterFactory = new DefaultReporterFactory( startupReportConfiguration, log );
-        defaultReporterFactories.add( forkedReporterFactory );
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
         PropertiesWrapper props = new PropertiesWrapper( providerProperties );
         TestLessInputStream stream = builder.build();
-        ForkClient forkClient = new ForkClient( forkedReporterFactory, stream, log, new AtomicBoolean() );
         Thread shutdown = createImmediateShutdownHookThread( builder, providerConfiguration.getShutdown() );
         ScheduledFuture<?> ping = triggerPingTimerForShutdown( builder );
+        int forkNumber = drawNumber();
         try
         {
             addShutDownHook( shutdown );
-            return fork( null, props, forkClient, effectiveSystemProperties, stream, false );
+            DefaultReporterFactory forkedReporterFactory =
+                    new DefaultReporterFactory( startupReportConfiguration, log, forkNumber );
+            defaultReporterFactories.add( forkedReporterFactory );
+            ForkClient forkClient =
+                    new ForkClient( forkedReporterFactory, stream, log, new AtomicBoolean(), forkNumber );
+            return fork( null, props, forkClient, effectiveSystemProperties, forkNumber, stream, false );
         }
         finally
         {
+            returnNumber( forkNumber );
             removeShutdownHook( shutdown );
             ping.cancel( true );
             builder.removeStream( stream );
@@ -344,10 +349,12 @@ public class ForkStarter
                     public RunResult call()
                         throws Exception
                     {
-                        DefaultReporterFactory reporter = new DefaultReporterFactory( startupReportConfiguration, log );
+                        int forkNumber = drawNumber();
+                        DefaultReporterFactory reporter =
+                                new DefaultReporterFactory( startupReportConfiguration, log, forkNumber );
                         defaultReporterFactories.add( reporter );
-                        ForkClient forkClient =
-                                new ForkClient( reporter, testProvidingInputStream, log, printedErrorStream )
+                        ForkClient forkClient = new ForkClient( reporter, testProvidingInputStream, log,
+                                printedErrorStream, forkNumber )
                         {
                             @Override
                             protected void stopOnNextTest()
@@ -358,9 +365,16 @@ public class ForkStarter
                                 }
                             }
                         };
-
-                        return fork( null, new PropertiesWrapper( providerConfiguration.getProviderProperties() ),
-                                 forkClient, effectiveSystemProperties, testProvidingInputStream, true );
+                        Map<String, String> providerProperties = providerConfiguration.getProviderProperties();
+                        try
+                        {
+                            return fork( null, new PropertiesWrapper( providerProperties ), forkClient,
+                                    effectiveSystemProperties, forkNumber, testProvidingInputStream, true );
+                        }
+                        finally
+                        {
+                            returnNumber( forkNumber );
+                        }
                     }
                 };
                 results.add( executorService.submit( pf ) );
@@ -408,11 +422,12 @@ public class ForkStarter
                     public RunResult call()
                         throws Exception
                     {
+                        int forkNumber = drawNumber();
                         DefaultReporterFactory forkedReporterFactory =
-                            new DefaultReporterFactory( startupReportConfiguration, log );
+                            new DefaultReporterFactory( startupReportConfiguration, log, forkNumber );
                         defaultReporterFactories.add( forkedReporterFactory );
                         ForkClient forkClient = new ForkClient( forkedReporterFactory, builder.getImmediateCommands(),
-                                log, printedErrorStream )
+                                log, printedErrorStream, forkNumber )
                         {
                             @Override
                             protected void stopOnNextTest()
@@ -428,10 +443,11 @@ public class ForkStarter
                         {
                             return fork( testSet,
                                          new PropertiesWrapper( providerConfiguration.getProviderProperties() ),
-                                         forkClient, effectiveSystemProperties, stream, false );
+                                         forkClient, effectiveSystemProperties, forkNumber, stream, false );
                         }
                         finally
                         {
+                            returnNumber( forkNumber );
                             builder.removeStream( stream );
                         }
                     }
@@ -522,24 +538,6 @@ public class ForkStarter
     }
 
     private RunResult fork( Object testSet, KeyValueSource providerProperties, ForkClient forkClient,
-                            SurefireProperties effectiveSystemProperties,
-                            AbstractForkInputStream testProvidingInputStream, boolean readTestsFromInStream )
-        throws SurefireBooterForkException
-    {
-        int forkNumber = drawNumber();
-        forkClient.setForkNumber( forkNumber );
-        try
-        {
-            return fork( testSet, providerProperties, forkClient, effectiveSystemProperties, forkNumber,
-                         testProvidingInputStream, readTestsFromInStream );
-        }
-        finally
-        {
-            returnNumber( forkNumber );
-        }
-    }
-
-    private RunResult fork( Object testSet, KeyValueSource providerProperties, ForkClient forkClient,
                             SurefireProperties effectiveSystemProperties, int forkNumber,
                             AbstractForkInputStream testProvidingInputStream, boolean readTestsFromInStream )
         throws SurefireBooterForkException
@@ -553,7 +551,7 @@ public class ForkStarter
             BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
             Long pluginPid = forkConfiguration.getPluginPlatform().getPluginPid();
             surefireProperties = booterSerializer.serialize( providerProperties, providerConfiguration,
-                    startupConfiguration, testSet, readTestsFromInStream, pluginPid );
+                    startupConfiguration, testSet, readTestsFromInStream, pluginPid, forkNumber );
 
             log.debug( "Determined Maven Process ID " + pluginPid );
 

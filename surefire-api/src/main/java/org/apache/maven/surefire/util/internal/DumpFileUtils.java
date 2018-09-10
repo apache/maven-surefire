@@ -19,8 +19,6 @@ package org.apache.maven.surefire.util.internal;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReporterConfiguration;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -49,12 +47,12 @@ public final class DumpFileUtils
     /**
      * New dump file. Synchronized object appears in main memory and perfectly visible in other threads.
      *
+     * @param reportsDir    only report directory
      * @param dumpFileName    dump file name
-     * @param configuration    only report directory
      */
-    public static synchronized File newDumpFile( String dumpFileName, ReporterConfiguration configuration )
+    public static synchronized File newDumpFile( File reportsDir, String dumpFileName )
     {
-        return new File( configuration.getReportsDirectory(), dumpFileName );
+        return new File( reportsDir, dumpFileName );
     }
 
     public static void dumpException( Throwable t, File dumpFile )

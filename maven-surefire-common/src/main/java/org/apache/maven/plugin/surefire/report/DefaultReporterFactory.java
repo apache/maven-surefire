@@ -63,9 +63,10 @@ import static org.apache.maven.surefire.util.internal.ObjectUtils.useNonNull;
 public class DefaultReporterFactory
     implements ReporterFactory
 {
+    private final Collection<TestSetRunListener> listeners = new ConcurrentLinkedQueue<TestSetRunListener>();
     private final StartupReportConfiguration reportConfiguration;
     private final ConsoleLogger consoleLogger;
-    private final Collection<TestSetRunListener> listeners;
+    private final Integer forkNumber;
 
     private RunStatistics globalStats = new RunStatistics();
 
@@ -80,9 +81,15 @@ public class DefaultReporterFactory
 
     public DefaultReporterFactory( StartupReportConfiguration reportConfiguration, ConsoleLogger consoleLogger )
     {
+        this( reportConfiguration, consoleLogger, null );
+    }
+
+    public DefaultReporterFactory( StartupReportConfiguration reportConfiguration, ConsoleLogger consoleLogger,
+                                   Integer forkNumber )
+    {
         this.reportConfiguration = reportConfiguration;
         this.consoleLogger = consoleLogger;
-        listeners = new ConcurrentLinkedQueue<TestSetRunListener>();
+        this.forkNumber = forkNumber;
     }
 
     @Override
@@ -113,26 +120,24 @@ public class DefaultReporterFactory
 
     private FileReporter createFileReporter()
     {
-        final FileReporter fileReporter = reportConfiguration.instantiateFileReporter();
+        FileReporter fileReporter = reportConfiguration.instantiateFileReporter( forkNumber );
         return useNonNull( fileReporter, NullFileReporter.INSTANCE );
     }
 
     private StatelessXmlReporter createSimpleXMLReporter()
     {
-        final StatelessXmlReporter xmlReporter = reportConfiguration.instantiateStatelessXmlReporter();
+        StatelessXmlReporter xmlReporter = reportConfiguration.instantiateStatelessXmlReporter( forkNumber );
         return useNonNull( xmlReporter, NullStatelessXmlReporter.INSTANCE );
     }
 
     private TestcycleConsoleOutputReceiver createConsoleOutputReceiver()
     {
-        final TestcycleConsoleOutputReceiver consoleOutputReceiver =
-                reportConfiguration.instantiateConsoleOutputFileReporter();
-        return useNonNull( consoleOutputReceiver, NullConsoleOutputReceiver.INSTANCE );
+        return reportConfiguration.instantiateConsoleOutputFileReporter( forkNumber );
     }
 
     private StatisticsReporter createStatisticsReporter()
     {
-        final StatisticsReporter statisticsReporter = reportConfiguration.getStatisticsReporter();
+        StatisticsReporter statisticsReporter = reportConfiguration.getStatisticsReporter();
         return useNonNull( statisticsReporter, NullStatisticsReporter.INSTANCE );
     }
 
@@ -147,10 +152,7 @@ public class DefaultReporterFactory
     {
         for ( DefaultReporterFactory factory : factories )
         {
-            for ( TestSetRunListener listener : factory.listeners )
-            {
-                listeners.add( listener );
-            }
+            listeners.addAll( factory.listeners );
         }
     }
 

@@ -19,6 +19,9 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
+import org.apache.maven.surefire.report.ReportEntry;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,9 +29,6 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicStampedReference;
 import java.util.concurrent.locks.ReentrantLock;
-
-import org.apache.maven.surefire.booter.DumpErrorSingleton;
-import org.apache.maven.surefire.report.ReportEntry;
 
 import static org.apache.maven.plugin.surefire.report.FileReporter.getReportFile;
 
@@ -48,6 +48,7 @@ public class ConsoleOutputFileReporter
 
     private final File reportsDirectory;
     private final String reportNameSuffix;
+    private final Integer forkNumber;
 
     private final AtomicStampedReference<FilterOutputStream> fileOutputStream =
             new AtomicStampedReference<FilterOutputStream>( null, OPEN );
@@ -56,10 +57,11 @@ public class ConsoleOutputFileReporter
 
     private volatile String reportEntryName;
 
-    public ConsoleOutputFileReporter( File reportsDirectory, String reportNameSuffix )
+    public ConsoleOutputFileReporter( File reportsDirectory, String reportNameSuffix, Integer forkNumber )
     {
         this.reportsDirectory = reportsDirectory;
         this.reportNameSuffix = reportNameSuffix;
+        this.forkNumber = forkNumber;
     }
 
     @Override
@@ -124,9 +126,7 @@ public class ConsoleOutputFileReporter
         }
         catch ( IOException e )
         {
-            DumpErrorSingleton.getSingleton()
-                    .dumpException( e );
-
+            dumpException( e );
             throw new RuntimeException( e );
         }
         finally
@@ -143,10 +143,9 @@ public class ConsoleOutputFileReporter
             // close null-output.txt report file
             close( true );
         }
-        catch ( IOException ignored )
+        catch ( IOException e )
         {
-            DumpErrorSingleton.getSingleton()
-                    .dumpException( ignored );
+            dumpException( e );
         }
         finally
         {
@@ -162,10 +161,9 @@ public class ConsoleOutputFileReporter
         {
             close( false );
         }
-        catch ( IOException ignored )
+        catch ( IOException e )
         {
-            DumpErrorSingleton.getSingleton()
-                    .dumpException( ignored );
+            dumpException( e );
         }
     }
 
@@ -181,6 +179,20 @@ public class ConsoleOutputFileReporter
             {
                 os.close();
             }
+        }
+    }
+
+    private void dumpException( IOException e )
+    {
+        if ( forkNumber == null )
+        {
+            InPluginProcessDumpSingleton.getSingleton()
+                    .dumpException( e, e.getLocalizedMessage(), reportsDirectory );
+        }
+        else
+        {
+            InPluginProcessDumpSingleton.getSingleton()
+                    .dumpException( e, e.getLocalizedMessage(), reportsDirectory, forkNumber );
         }
     }
 }

@@ -74,5 +74,21 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>parallel-one-fork</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <useUnlimitedThreads>true</useUnlimitedThreads>
+              <forkCount>1</forkCount>
+              <parallel>classes</parallel>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>

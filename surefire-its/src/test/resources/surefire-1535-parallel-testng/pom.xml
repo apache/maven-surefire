@@ -33,33 +33,30 @@
         <maven.compiler.target>1.6</maven.compiler.target>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>5.7</version>
+            <classifier>jdk15</classifier>
+        </dependency>
+    </dependencies>
+
     <profiles>
         <profile>
-            <id>testng-old</id>
-            <activation>
-                <property><name>testNgClassifier</name></property>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.testng</groupId>
-                    <artifactId>testng</artifactId>
-                    <version>${testNgVersion}</version>
-                    <classifier>${testNgClassifier}</classifier>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>testng-new</id>
-            <activation>
-                <property><name>!testNgClassifier</name></property>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.testng</groupId>
-                    <artifactId>testng</artifactId>
-                    <version>${testNgVersion}</version>
-                </dependency>
-            </dependencies>
+            <id>forked-reports-directory</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <configuration>
+                                <reportsDirectory>target/surefire-reports-${surefire.forkNumber}</reportsDirectory>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
         </profile>
     </profiles>
 
@@ -69,7 +66,6 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire.version}</version>
                 <configuration>
-                    <forkCount>2</forkCount>
                     <reuseForks>false</reuseForks>
                     <suiteXmlFiles>
                         <suiteXmlFile>src/test/resources/Suite1.xml</suiteXmlFile>

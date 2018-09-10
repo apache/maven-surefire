@@ -130,6 +130,7 @@ under the License.
         <![CDATA[ [date]-jvmRun[N].dump]]><br/>
         <![CDATA[ [date]-jvmRun[N].dumpstream]]><br/>
         <![CDATA[ [date].dumpstream]]><br/>
+        <![CDATA[ [date].dump]]><br/>
         </code>
 
         Forked JVM process and plugin process communicate via std/out. If this channel is corrupted, for a whatever

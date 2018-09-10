@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.maven.plugin.surefire.SurefireHelper.replaceForkThreadsInPath;
 import static org.apache.maven.plugin.surefire.report.ConsoleReporter.BRIEF;
 import static org.apache.maven.plugin.surefire.report.ConsoleReporter.PLAIN;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
@@ -47,10 +48,6 @@ import static org.apache.commons.lang3.StringUtils.trimToNull;
  */
 public final class StartupReportConfiguration
 {
-    public static final String BRIEF_REPORT_FORMAT = BRIEF;
-
-    public static final String PLAIN_REPORT_FORMAT = PLAIN;
-
     private final PrintStream originalSystemOut;
 
     private final PrintStream originalSystemErr;
@@ -84,14 +81,16 @@ public final class StartupReportConfiguration
 
     private final Charset encoding;
 
+    private boolean isForkMode;
+
     private StatisticsReporter statisticsReporter;
 
     @SuppressWarnings( "checkstyle:parameternumber" )
     public StartupReportConfiguration( boolean useFile, boolean printSummary, String reportFormat,
                                        boolean redirectTestOutputToFile, boolean disableXmlReport,
                                        @Nonnull File reportsDirectory, boolean trimStackTrace, String reportNameSuffix,
-                                       File statisticsFile, boolean requiresRunHistory,
-                                       int rerunFailingTestsCount, String xsdSchemaLocation, String encoding )
+                                       File statisticsFile, boolean requiresRunHistory, int rerunFailingTestsCount,
+                                       String xsdSchemaLocation, String encoding, boolean isForkMode )
     {
         this.useFile = useFile;
         this.printSummary = printSummary;
@@ -109,6 +108,7 @@ public final class StartupReportConfiguration
         this.xsdSchemaLocation = xsdSchemaLocation;
         String charset = trimToNull( encoding );
         this.encoding = charset == null ? Charset.defaultCharset() : Charset.forName( charset );
+        this.isForkMode = isForkMode;
     }
 
     public boolean isUseFile()
@@ -151,31 +151,43 @@ public final class StartupReportConfiguration
         return rerunFailingTestsCount;
     }
 
-    public StatelessXmlReporter instantiateStatelessXmlReporter()
+    @Deprecated // rename to stateful
+    public StatelessXmlReporter instantiateStatelessXmlReporter( Integer forkNumber )
     {
+        assert forkNumber == null || isForkMode;
+
+        // If forking TestNG the suites have same name 'TestSuite' and tend to override report statistics in stateful
+        // reporter, see Surefire1535TestNGParallelSuitesIT. The testClassMethodRunHistory should be isolated.
+        // In the in-plugin execution of parallel JUnit4.7 with rerun the map must be shared because reports and
+        // listeners are in ThreadLocal, see Surefire1122ParallelAndFlakyTestsIT.
+        Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistory
+                = isForkMode
+                ? new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>()
+                : this.testClassMethodRunHistory;
+
         return isDisableXmlReport()
             ? null
-            : new StatelessXmlReporter( reportsDirectory, reportNameSuffix, trimStackTrace, rerunFailingTestsCount,
-                                        testClassMethodRunHistory, xsdSchemaLocation );
+            : new StatelessXmlReporter( resolveReportsDirectory( forkNumber ), reportNameSuffix, trimStackTrace,
+                rerunFailingTestsCount, testClassMethodRunHistory, xsdSchemaLocation );
     }
 
-    public FileReporter instantiateFileReporter()
+    public FileReporter instantiateFileReporter( Integer forkNumber )
     {
         return isUseFile() && isBriefOrPlainFormat()
-            ? new FileReporter( reportsDirectory, getReportNameSuffix(), encoding )
+            ? new FileReporter( resolveReportsDirectory( forkNumber ), reportNameSuffix, encoding )
             : null;
     }
 
     public boolean isBriefOrPlainFormat()
     {
         String fmt = getReportFormat();
-        return BRIEF_REPORT_FORMAT.equals( fmt ) || PLAIN_REPORT_FORMAT.equals( fmt );
+        return BRIEF.equals( fmt ) || PLAIN.equals( fmt );
     }
 
-    public TestcycleConsoleOutputReceiver instantiateConsoleOutputFileReporter()
+    public TestcycleConsoleOutputReceiver instantiateConsoleOutputFileReporter( Integer forkNumber )
     {
         return isRedirectTestOutputToFile()
-            ? new ConsoleOutputFileReporter( reportsDirectory, getReportNameSuffix() )
+            ? new ConsoleOutputFileReporter( resolveReportsDirectory( forkNumber ), reportNameSuffix, forkNumber )
             : new DirectConsoleOutput( originalSystemOut, originalSystemErr );
     }
 
@@ -183,7 +195,7 @@ public final class StartupReportConfiguration
     {
         if ( statisticsReporter == null )
         {
-            statisticsReporter = requiresRunHistory ? new StatisticsReporter( getStatisticsFile() ) : null;
+            statisticsReporter = requiresRunHistory ? new StatisticsReporter( statisticsFile ) : null;
         }
         return statisticsReporter;
     }
@@ -216,5 +228,15 @@ public final class StartupReportConfiguration
     public Charset getEncoding()
     {
         return encoding;
+    }
+
+    public boolean isForkMode()
+    {
+        return isForkMode;
+    }
+
+    private File resolveReportsDirectory( Integer forkNumber )
+    {
+        return forkNumber == null ? reportsDirectory : replaceForkThreadsInPath( reportsDirectory, forkNumber );
     }
 }

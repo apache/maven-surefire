@@ -125,8 +125,8 @@ public class BooterDeserializerStartupConfigurationTest
         PropertiesWrapper props = new PropertiesWrapper( new HashMap<String, String>() );
         BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
         String aTest = "aTest";
-        final File propsTest =
-            booterSerializer.serialize( props, getProviderConfiguration(), startupConfiguration, aTest, false, null );
+        File propsTest = booterSerializer.serialize( props, getProviderConfiguration(), startupConfiguration, aTest,
+                false, null, 1 );
         BooterDeserializer booterDeserializer = new BooterDeserializer( new FileInputStream( propsTest ) );
         assertNull( booterDeserializer.getPluginPid() );
         return booterDeserializer.getProviderConfiguration();

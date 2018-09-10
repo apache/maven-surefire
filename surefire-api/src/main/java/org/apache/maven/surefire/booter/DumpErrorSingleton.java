@@ -19,7 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.util.internal.DumpFileUtils;
 
 import java.io.File;
@@ -51,10 +50,10 @@ public final class DumpErrorSingleton
         return SINGLETON;
     }
 
-    public synchronized void init( String dumpFileName, ReporterConfiguration configuration )
+    public synchronized void init( File reportsDir, String dumpFileName )
     {
-        dumpFile = createDumpFile( dumpFileName, configuration );
-        dumpStreamFile = createDumpStreamFile( dumpFileName, configuration );
+        dumpFile = createDumpFile( reportsDir, dumpFileName );
+        dumpStreamFile = createDumpStreamFile( reportsDir, dumpFileName );
     }
 
     public synchronized void dumpException( Throwable t, String msg )
@@ -87,13 +86,13 @@ public final class DumpErrorSingleton
         DumpFileUtils.dumpText( msg == null ? "null" : msg, dumpStreamFile );
     }
 
-    private File createDumpFile( String dumpFileName, ReporterConfiguration configuration )
+    private File createDumpFile( File reportsDir, String dumpFileName )
     {
-        return newDumpFile( dumpFileName + DUMP_FILE_EXT, configuration );
+        return newDumpFile( reportsDir, dumpFileName + DUMP_FILE_EXT );
     }
 
-    private File createDumpStreamFile( String dumpFileName, ReporterConfiguration configuration )
+    private File createDumpStreamFile( File reportsDir, String dumpFileName )
     {
-        return newDumpFile( dumpFileName + DUMPSTREAM_FILE_EXT, configuration );
+        return newDumpFile( reportsDir, dumpFileName + DUMPSTREAM_FILE_EXT );
     }
 }

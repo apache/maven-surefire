@@ -72,7 +72,7 @@ public class CommonReflector
         Constructor<?> constructor = getConstructor( startupReportConfiguration, boolean.class, boolean.class,
                                                            String.class, boolean.class, boolean.class, File.class,
                                                            boolean.class, String.class, File.class, boolean.class,
-                                                           int.class, String.class, String.class );
+                                                           int.class, String.class, String.class, boolean.class );
         //noinspection BooleanConstructorCall
         Object[] params = { reporterConfiguration.isUseFile(), reporterConfiguration.isPrintSummary(),
             reporterConfiguration.getReportFormat(), reporterConfiguration.isRedirectTestOutputToFile(),
@@ -80,7 +80,7 @@ public class CommonReflector
             reporterConfiguration.isTrimStackTrace(), reporterConfiguration.getReportNameSuffix(),
             reporterConfiguration.getStatisticsFile(), reporterConfiguration.isRequiresRunHistory(),
             reporterConfiguration.getRerunFailingTestsCount(), reporterConfiguration.getXsdSchemaLocation(),
-            reporterConfiguration.getEncoding().name() };
+            reporterConfiguration.getEncoding().name(), reporterConfiguration.isForkMode() };
         return newInstance( constructor, params );
     }
 

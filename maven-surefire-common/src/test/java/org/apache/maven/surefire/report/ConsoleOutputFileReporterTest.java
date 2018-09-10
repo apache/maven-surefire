@@ -46,7 +46,7 @@ public class ConsoleOutputFileReporterTest
         //noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
         ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), getClass().getName() );
-        ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, null );
+        ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, null, null );
         reporter.testSetStarting( reportEntry );
         reporter.writeTestOutput( "some text".getBytes( US_ASCII ), 0, 5, true );
         reporter.testSetCompleted( reportEntry );
@@ -74,7 +74,7 @@ public class ConsoleOutputFileReporterTest
         reportDir.mkdirs();
         String suffixText = "sampleSuffixText";
         ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), getClass().getName() );
-        ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, suffixText );
+        ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, suffixText, null );
         reporter.testSetStarting( reportEntry );
         reporter.writeTestOutput( "some text".getBytes( US_ASCII ), 0, 5, true );
         reporter.testSetCompleted( reportEntry );
@@ -97,7 +97,7 @@ public class ConsoleOutputFileReporterTest
         File reportDir = new File( new File( System.getProperty( "user.dir" ), "target" ), "tmp3" );
         //noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
-        ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, null );
+        ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, null, null );
         reporter.writeTestOutput( "some text".getBytes( US_ASCII ), 0, 5, true );
         reporter.testSetCompleted( new SimpleReportEntry( getClass().getName(), getClass().getName() ) );
         reporter.close();
@@ -119,7 +119,7 @@ public class ConsoleOutputFileReporterTest
         File reportDir = new File( new File( System.getProperty( "user.dir" ), "target" ), "tmp4" );
         //noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
-        final ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, null );
+        final ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, null, null );
         reporter.testSetStarting( new SimpleReportEntry( getClass().getName(), getClass().getName() ) );
         ExecutorService scheduler = Executors.newFixedThreadPool( 10 );
         final ArrayList<Callable<Void>> jobs = new ArrayList<Callable<Void>>();
