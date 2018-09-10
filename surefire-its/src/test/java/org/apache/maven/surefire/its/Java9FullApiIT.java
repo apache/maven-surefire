@@ -56,7 +56,8 @@ public class Java9FullApiIT
                 .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
                 .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
                 .assertThatLogLine( anyOf( is( "java.specification.version=9" ),
-                                           is( "java.specification.version=10" ) ),
+                                           is( "java.specification.version=10" ),
+                                           is( "java.specification.version=11" ) ),
                                     greaterThanOrEqualTo( 1 ) );
     }
 
@@ -76,7 +77,8 @@ public class Java9FullApiIT
                 .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
                 .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
                 .assertThatLogLine( anyOf( is( "java.specification.version=9" ),
-                                           is( "java.specification.version=10" ) ),
+                                           is( "java.specification.version=10" ),
+                                           is( "java.specification.version=11" ) ),
                                     greaterThanOrEqualTo( 1 ) );
     }
 
@@ -97,7 +99,8 @@ public class Java9FullApiIT
                 .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
                 .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
                 .assertThatLogLine( anyOf( is( "java.specification.version=9" ),
-                                           is( "java.specification.version=10" ) ),
+                                           is( "java.specification.version=10" ),
+                                           is( "java.specification.version=11" ) ),
                                     greaterThanOrEqualTo( 1 ) );
     }
 

@@ -260,12 +260,12 @@
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-java</artifactId>
-        <version>0.9.8</version>
+        <version>0.9.9</version>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>2.13.0</version>
+        <version>2.21.0</version>
         <exclusions>
           <exclusion>
             <groupId>org.hamcrest</groupId>
@@ -273,7 +273,7 @@
           </exclusion>
         </exclusions>
       </dependency>
-      <!-- PowerMock@Java9
+      <!-- PowerMock@Java9 and Java11
       org.powermock for java9, see https://github.com/powermock/powermock/issues/783
       These dependencies substitute org.powermock:powermock-mockito-release-full:jar:full:1.6.4 in java9.
       -->
@@ -282,6 +282,26 @@
         <artifactId>powermock-core</artifactId>
         <version>${powermockVersion}</version>
         <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>net.bytebuddy</groupId>
+        <artifactId>byte-buddy</artifactId>
+        <version>1.8.17</version>
+      </dependency>
+      <dependency>
+        <groupId>net.bytebuddy</groupId>
+        <artifactId>byte-buddy-agent</artifactId>
+        <version>1.8.17</version>
       </dependency>
       <dependency>
         <groupId>org.powermock</groupId>
@@ -440,7 +460,7 @@
           <configuration>
             <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
             <useSystemClassLoader>false</useSystemClassLoader>
-            <argLine>${jvm.args.tests} ${jacoco.agent}</argLine>
+            <argLine>${jvm.args.tests} ${jacoco.agent} -Dnet.bytebuddy.experimental=true</argLine>
             <useFile>false</useFile>
             <redirectTestOutputToFile>false</redirectTestOutputToFile>
             <jvm>${jdk.home}/bin/java</jvm>
@@ -472,7 +492,7 @@
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.1</version>
+          <version>0.8.2</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>

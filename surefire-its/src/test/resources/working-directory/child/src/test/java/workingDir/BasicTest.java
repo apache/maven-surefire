@@ -31,8 +31,9 @@ public class BasicTest
     public void testWorkingDir()
         throws Exception
     {
-        File target = new File( "target" ).getAbsoluteFile();
+        File target = new File( System.getProperty( "user.dir" ), "target" ).getAbsoluteFile();
         File outFile = new File( target, "out.txt" );
+        assertTrue( outFile.createNewFile() );
         FileOutputStream os = new FileOutputStream( outFile );
         String userDir = System.getProperty( "user.dir" );
         Properties p = new Properties();

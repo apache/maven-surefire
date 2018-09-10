@@ -126,15 +126,15 @@ public final class SurefireLauncher
         return mavenLauncher.getSubProjectValidator( subProject );
     }
 
-    public SurefireLauncher addEnvVar( String key, String value )
+    private SurefireLauncher addEnvVar( String key, String value )
     {
         mavenLauncher.addEnvVar( key, value );
         return this;
     }
 
-    public SurefireLauncher setMavenOpts(String opts){
-        addEnvVar( "MAVEN_OPTS", opts );
-        return this;
+    public SurefireLauncher setMavenOpts(String opts)
+    {
+        return addEnvVar( "MAVEN_OPTS", opts );
     }
 
     private List<String> getInitialGoals()

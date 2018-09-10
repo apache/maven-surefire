@@ -170,7 +170,7 @@ public class HelperAssertions
     {
         String thisVersion = System.getProperty( "java.specification.version" );
         assumeTrue( "java.specification.version: " + thisVersion,
-                Double.valueOf( thisVersion ) >= expectedVersion );
+                Double.parseDouble( thisVersion ) >= expectedVersion );
     }
 
     public static String convertUnicodeToUTF8( String unicode )
