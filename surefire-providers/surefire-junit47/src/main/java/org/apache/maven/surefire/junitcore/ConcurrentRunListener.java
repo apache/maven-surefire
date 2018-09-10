@@ -78,12 +78,18 @@ public abstract class ConcurrentRunListener
     @Override
     public void testSetCompleted( TestSetReportEntry result )
     {
-        final RunListener reporterManager = getRunListener();
-        for ( TestSet testSet : classMethodCounts.values() )
+        try
         {
-            testSet.replay( reporterManager );
+            final RunListener reporterManager = getRunListener();
+            for ( TestSet testSet : classMethodCounts.values() )
+            {
+                testSet.replay( reporterManager );
+            }
         }
-        reporterManagerThreadLocal.remove();
+        finally
+        {
+            reporterManagerThreadLocal.remove();
+        }
     }
 
     @Override
