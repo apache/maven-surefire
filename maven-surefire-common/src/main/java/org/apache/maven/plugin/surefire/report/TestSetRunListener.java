@@ -301,7 +301,7 @@ public class TestSetRunListener
 
     private static int lineBoundSymbolWidth( String message )
     {
-        return message.endsWith( "\n" ) || message.endsWith( "\r" ) ? 1 : ( message.endsWith( "\r\n" ) ? 2 : 0 );
+        return message.endsWith( "\r\n" ) ? 2 : ( message.endsWith( "\n" ) || message.endsWith( "\r" ) ? 1 : 0 );
     }
 
     private static Utf8RecodingDeferredFileOutputStream initDeferred( String channel )
