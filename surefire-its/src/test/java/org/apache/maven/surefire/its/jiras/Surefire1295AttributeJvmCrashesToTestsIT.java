@@ -66,11 +66,11 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
     public static Iterable<Object[]> parameters()
     {
         return asList(new Object[][] {
-//                unused, exit() does not stop all Threads immediately,
+//                exit() does not stop all Threads immediately,
 //                see https://github.com/michaeltandy/crashjvm/issues/1
-//                { "exit", DEFAULT },
-//                { "exit", ONE_FORK_NO_REUSE },
-//                { "exit", ONE_FORK_REUSE },
+                { "exit", DEFAULT },
+                { "exit", ONE_FORK_NO_REUSE },
+                { "exit", ONE_FORK_REUSE },
                 { "abort", DEFAULT },
                 { "abort", ONE_FORK_NO_REUSE },
                 { "abort", ONE_FORK_REUSE },

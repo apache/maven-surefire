@@ -19,6 +19,7 @@ package junit44.environment;
  * under the License.
  */
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import uk.me.mjt.CrashJvm;
@@ -26,8 +27,10 @@ import uk.me.mjt.CrashJvm;
 public class Test1CrashedTest
 {
     @Test
-    public void testCrashJvm()
+    public void testCrashJvm() throws Exception
     {
+        MILLISECONDS.sleep( 1500L );
+
         assertTrue(CrashJvm.loadedOk());
         
         String crashType = System.getProperty("crashType");
