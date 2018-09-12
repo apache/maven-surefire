@@ -404,9 +404,21 @@ public class StatelessXmlReporter
             }
         }
 
+        boolean hasNestedElements = createOutErrElementsInside & stackTrace != null;
+
         if ( stackTrace != null )
         {
+            if ( hasNestedElements )
+            {
+                ppw.startElement( "stackTrace" );
+            }
+
             ppw.writeText( extraEscape( stackTrace, false ) );
+
+            if ( hasNestedElements )
+            {
+                ppw.endElement();
+            }
         }
 
         if ( createOutErrElementsInside )
