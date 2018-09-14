@@ -84,7 +84,6 @@ public class ClasspathConfiguration extends AbstractPathConfiguration
     }
 
     public void trickClassPathWhenManifestOnlyClasspath()
-        throws SurefireExecutionException
     {
         System.setProperty( "surefire.real.class.path", System.getProperty( "java.class.path" ) );
         getTestClasspath().writeToSystemProperty( "java.class.path" );

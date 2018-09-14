@@ -20,9 +20,9 @@ package org.apache.maven.plugin.surefire;
  */
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
@@ -33,23 +33,29 @@ import org.codehaus.plexus.logging.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static java.io.File.separatorChar;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
+import static org.apache.maven.artifact.versioning.VersionRange.createFromVersion;
+import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
@@ -67,7 +73,73 @@ import static org.powermock.reflect.Whitebox.invokeMethod;
 @PrepareForTest( AbstractSurefireMojo.class )
 public class AbstractSurefireMojoTest
 {
+    @Mock
+    private ArtifactHandler handler;
+
     private final Mojo mojo = new Mojo();
+
+    @Test
+    public void shouldRetainInPluginArtifacts() throws Exception
+    {
+        Artifact provider = new DefaultArtifact( "g", "a", createFromVersionSpec( "1" ), "compile", "jar", "", null );
+        Artifact common = new DefaultArtifact( "g", "c", createFromVersionSpec( "1" ), "compile", "jar", "", null );
+        Artifact api = new DefaultArtifact( "g", "a", createFromVersionSpec( "1" ), "compile", "jar", "", null );
+
+        Set<Artifact> providerArtifacts = singleton( provider );
+        Artifact[] inPluginArtifacts = { common, api };
+        Set<Artifact> inPluginClasspath = invokeMethod( AbstractSurefireMojo.class,
+                "retainInProcArtifactsUnique", providerArtifacts, inPluginArtifacts );
+
+        assertThat( inPluginClasspath )
+                .containsOnly( common );
+    }
+
+    @Test
+    public void shouldRetainInProcArtifactsUnique() throws Exception
+    {
+        Artifact provider = new DefaultArtifact( "g", "p", createFromVersionSpec( "1" ), "compile", "jar", "", null );
+        Artifact common = new DefaultArtifact( "g", "c", createFromVersionSpec( "1" ), "compile", "jar", "", null );
+        Artifact api = new DefaultArtifact( "g", "a", createFromVersionSpec( "1" ), "compile", "jar", "", null );
+
+        Set<Artifact> providerArtifacts = singleton( provider );
+        Artifact[] inPluginArtifacts = { common, api };
+        Set<Artifact> inPluginClasspath = invokeMethod( AbstractSurefireMojo.class,
+                "retainInProcArtifactsUnique", providerArtifacts, inPluginArtifacts );
+
+        assertThat( inPluginClasspath )
+                .containsOnly( common, api );
+    }
+
+    @Test
+    public void shouldCreateInProcClasspath() throws Exception
+    {
+        Artifact provider = new DefaultArtifact( "g", "p", createFromVersionSpec( "1" ), "compile", "jar", "", null );
+        provider.setFile( mockFile( "provider.jar" ) );
+
+        Artifact common = new DefaultArtifact( "g", "c", createFromVersionSpec( "1" ), "compile", "jar", "", null );
+        common.setFile( mockFile( "maven-surefire-common.jar" ) );
+
+        Artifact api = new DefaultArtifact( "g", "a", createFromVersionSpec( "1" ), "compile", "jar", "", null );
+        api.setFile( mockFile( "surefire-api.jar" ) );
+
+        Set<Artifact> newArtifacts = new LinkedHashSet<Artifact>();
+        newArtifacts.add( common );
+        newArtifacts.add( api );
+
+        Classpath providerClasspath = new Classpath( singleton( provider.getFile().getAbsolutePath() ) );
+
+        Classpath inPluginClasspath = invokeMethod( AbstractSurefireMojo.class,
+                "createInProcClasspath", providerClasspath, newArtifacts );
+
+        Classpath expectedClasspath =
+                new Classpath( asList( provider.getFile().getAbsolutePath(),
+                                       common.getFile().getAbsolutePath(),
+                                       api.getFile().getAbsolutePath() ) );
+
+        assertThat( (Object ) inPluginClasspath )
+                .isEqualTo( expectedClasspath );
+
+    }
 
     @Test
     public void shouldGenerateTestClasspath() throws Exception
@@ -79,7 +151,6 @@ public class AbstractSurefireMojoTest
         when( mojo.getClasspathDependencyScopeExclude() ).thenReturn( "runtime" );
         when( mojo.getClasspathDependencyExcludes() ).thenReturn( new String[]{ "g3:a3" } );
         doReturn( mock( Artifact.class ) ).when( mojo, "getTestNgArtifact" );
-        doNothing().when( mojo, "addTestNgUtilsArtifacts", any() );
 
         Set<Artifact> artifacts = new HashSet<Artifact>();
 
@@ -121,21 +192,19 @@ public class AbstractSurefireMojoTest
         when( project.getArtifacts() ).thenReturn( artifacts );
         when( mojo.getProject() ).thenReturn( project );
 
-        Classpath cp = invokeMethod( mojo, "generateTestClasspath" );
+        TestClassPath cp = invokeMethod( mojo, "generateTestClasspath" );
 
         verifyPrivate( mojo, times( 1 ) ).invoke( "generateTestClasspath" );
         verify( mojo, times( 1 ) ).getClassesDirectory();
         verify( mojo, times( 1 ) ).getTestClassesDirectory();
         verify( mojo, times( 3 ) ).getClasspathDependencyScopeExclude();
         verify( mojo, times( 2 ) ).getClasspathDependencyExcludes();
-        verify( artifactHandler, times( 1 ) ).isAddedToClasspath();
-        verifyPrivate( mojo, times( 1 ) ).invoke( "getTestNgArtifact" );
-        verifyPrivate( mojo, times( 1 ) ).invoke( "addTestNgUtilsArtifacts", eq( cp.getClassPath() ) );
+        verify( mojo, times( 1 ) ).getAdditionalClasspathElements();
 
-        assertThat( cp.getClassPath() ).hasSize( 3 );
-        assertThat( cp.getClassPath().get( 0 ) ).endsWith( "test-classes" );
-        assertThat( cp.getClassPath().get( 1 ) ).endsWith( "classes" );
-        assertThat( cp.getClassPath().get( 2 ) ).endsWith( "a2-2.jar" );
+        assertThat( cp.toClasspath().getClassPath() ).hasSize( 3 );
+        assertThat( cp.toClasspath().getClassPath().get( 0 ) ).endsWith( "test-classes" );
+        assertThat( cp.toClasspath().getClassPath().get( 1 ) ).endsWith( "classes" );
+        assertThat( cp.toClasspath().getClassPath().get( 2 ) ).endsWith( "a2-2.jar" );
     }
 
     @Test
@@ -143,7 +212,37 @@ public class AbstractSurefireMojoTest
             throws Exception
     {
         AbstractSurefireMojo mojo = spy( this.mojo );
-        Classpath testClasspath = new Classpath( asList( "junit.jar", "hamcrest.jar" ) );
+
+        Artifact common = new DefaultArtifact( "org.apache.maven.surefire", "maven-surefire-common",
+                createFromVersion( "1" ), "runtime", "jar", "", handler );
+        common.setFile( mockFile( "maven-surefire-common.jar" ) );
+
+
+        Artifact api = new DefaultArtifact( "org.apache.maven.surefire", "surefire-api",
+                createFromVersion( "1" ), "runtime", "jar", "", handler );
+        api.setFile( mockFile( "surefire-api.jar" ) );
+
+        Map<String, Artifact> providerArtifactsMap = new HashMap<String, Artifact>();
+        providerArtifactsMap.put( "org.apache.maven.surefire:maven-surefire-common", common );
+        providerArtifactsMap.put( "org.apache.maven.surefire:surefire-api", api );
+
+        when( mojo.getPluginArtifactMap() )
+                .thenReturn( providerArtifactsMap );
+
+        when( handler.isAddedToClasspath() ).thenReturn( true );
+
+        VersionRange v1 = createFromVersion( "4.12" );
+        Artifact junit = new DefaultArtifact( "junit", "junit", v1, "test", "jar", "", handler );
+        junit.setFile( mockFile( "junit.jar" ) );
+
+        VersionRange v2 = createFromVersion( "1.3.0" );
+        Artifact hamcrest = new DefaultArtifact( "org.hamcrest", "hamcrest-core", v2, "test", "jar", "", handler );
+        hamcrest.setFile( mockFile( "hamcrest.jar" ) );
+
+        File classesDir = mockFile( "classes" );
+        File testClassesDir = mockFile( "test-classes" );
+        TestClassPath testClasspath =
+                new TestClassPath( asList( junit, hamcrest ), classesDir, testClassesDir, null, null );
 
         doReturn( testClasspath ).when( mojo, "generateTestClasspath" );
         doReturn( 1 ).when( mojo, "getEffectiveForkCount" );
@@ -152,41 +251,48 @@ public class AbstractSurefireMojoTest
 
         ClassLoaderConfiguration classLoaderConfiguration = new ClassLoaderConfiguration( false, true );
 
-        Classpath providerClasspath = new Classpath( singleton( "surefire-provider.jar" ) );
-
-        Classpath inprocClasspath =
-                new Classpath( asList( "surefire-api.jar", "surefire-common.jar", "surefire-provider.jar" ) );
+        VersionRange v3 = createFromVersion( "1" );
+        Artifact provider = new DefaultArtifact( "x", "surefire-provider", v3, "runtime", "jar", "", handler );
+        provider.setFile( mockFile( "surefire-provider.jar" ) );
+        Set<Artifact> providerArtifacts = singleton( provider );
 
         Logger logger = mock( Logger.class );
         when( logger.isDebugEnabled() ).thenReturn( true );
         doNothing().when( logger ).debug( anyString() );
         when( mojo.getConsoleLogger() ).thenReturn( new PluginConsoleLogger( logger ) );
 
-        StartupConfiguration conf = invokeMethod( mojo, "newStartupConfigForNonModularClasspath",
-                classLoaderConfiguration, providerClasspath, inprocClasspath, "org.asf.Provider" );
+        StartupConfiguration conf = invokeMethod( mojo, "newStartupConfigWithClasspath",
+                classLoaderConfiguration, providerArtifacts, "org.asf.Provider" );
 
         verify( mojo, times( 1 ) ).effectiveIsEnableAssertions();
         verify( mojo, times( 1 ) ).isChildDelegation();
         verifyPrivate( mojo, times( 1 ) ).invoke( "generateTestClasspath" );
         verify( mojo, times( 1 ) ).getEffectiveForkCount();
-        verify( logger, times( 4 ) ).isDebugEnabled();
+        verify( logger, times( 6 ) ).isDebugEnabled();
         ArgumentCaptor<String> argument = ArgumentCaptor.forClass( String.class );
-        verify( logger, times( 4 ) ).debug( argument.capture() );
+        verify( logger, times( 6 ) ).debug( argument.capture() );
         assertThat( argument.getAllValues() )
-                .containsExactly( "test classpath:  junit.jar  hamcrest.jar",
-                        "provider classpath:  surefire-provider.jar",
-                        "test(compact) classpath:  junit.jar  hamcrest.jar",
-                        "provider(compact) classpath:  surefire-provider.jar"
+                .containsExactly( "test classpath:  test-classes  classes  junit.jar  hamcrest.jar",
+                "provider classpath:  surefire-provider.jar",
+                "test(compact) classpath:  test-classes  classes  junit.jar  hamcrest.jar",
+                "provider(compact) classpath:  surefire-provider.jar",
+                "in-process classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-api.jar",
+                "in-process(compact) classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-api.jar"
                 );
 
         assertThat( conf.getClassLoaderConfiguration() )
                 .isSameAs( classLoaderConfiguration );
 
         assertThat( ( Object ) conf.getClasspathConfiguration().getTestClasspath() )
-                .isSameAs( testClasspath );
+                .isEqualTo( testClasspath.toClasspath() );
 
+        Collection<String> files = new ArrayList<String>();
+        for ( Artifact providerArtifact : providerArtifacts )
+        {
+            files.add( providerArtifact.getFile().getAbsolutePath() );
+        }
         assertThat( ( Object ) conf.getClasspathConfiguration().getProviderClasspath() )
-                .isSameAs( providerClasspath );
+                .isEqualTo( new Classpath( files ) );
 
         assertThat( ( Object ) conf.getClasspathConfiguration().isClassPathConfig() )
                 .isEqualTo( true );
@@ -573,7 +679,6 @@ public class AbstractSurefireMojoTest
 
         @Override
         protected void handleSummary( RunResult summary, Exception firstForkException )
-                throws MojoExecutionException, MojoFailureException
         {
 
         }
@@ -601,5 +706,12 @@ public class AbstractSurefireMojoTest
         {
             return null;
         }
+    }
+
+    private static File mockFile( String absolutePath )
+    {
+        File f = mock( File.class );
+        when( f.getAbsolutePath() ).thenReturn( absolutePath );
+        return f;
     }
 }

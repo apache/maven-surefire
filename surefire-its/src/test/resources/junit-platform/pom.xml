@@ -26,7 +26,7 @@
     <groupId>org.apache.maven.plugins.surefire</groupId>
     <artifactId>junit-platform-1.0.0</artifactId>
     <version>1.0</version>
-    <name>Test for JUnit 5: Platform 1.0.0 + Jupiter 5.0.0</name>
+    <name>Test for JUnit 5: Platform + Jupiter</name>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -43,7 +43,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.0.0</version>
+            <version>${jupiter.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -57,4 +57,17 @@
             </plugin>
         </plugins>
     </build>
+
+    <repositories>
+        <repository>
+            <id>oss-sonatype</id>
+            <name>oss-sonatype</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>ignore</checksumPolicy>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>

@@ -19,10 +19,6 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
@@ -37,11 +33,19 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static java.util.Collections.singleton;
+import static org.apache.maven.artifact.Artifact.SCOPE_TEST;
+import static org.apache.maven.artifact.versioning.VersionRange.createFromVersion;
 
 /**
  * Does dependency resolution and artifact handling for the surefire plugin.
@@ -123,65 +127,55 @@ public class SurefireDependencyResolver
 
         Artifact originatingArtifact = artifactFactory.createBuildArtifact( "dummy", "dummy", "1.0", "jar" );
 
-        return artifactResolver.resolveTransitively( Collections.singleton( providerArtifact ), originatingArtifact,
+        return artifactResolver.resolveTransitively( singleton( providerArtifact ), originatingArtifact,
                                                      localRepository, remoteRepositories, artifactMetadataSource,
                                                      filter );
     }
 
     @Nonnull
-    public Classpath getProviderClasspath( String provider, String version, Artifact filteredArtifact )
+    @SuppressWarnings( "unchecked" )
+    public Set<Artifact> getProviderClasspath( String provider, String version, Artifact filteredArtifact )
         throws ArtifactNotFoundException, ArtifactResolutionException
     {
-        Classpath classPath = ClasspathCache.getCachedClassPath( provider );
-        if ( classPath == null )
-        {
-            Artifact providerArtifact = artifactFactory.createDependencyArtifact( "org.apache.maven.surefire", provider,
-                                                                                  VersionRange.createFromVersion(
-                                                                                      version ), "jar", null,
-                                                                                  Artifact.SCOPE_TEST );
-            ArtifactResolutionResult result = resolveArtifact( filteredArtifact, providerArtifact );
-            List<String> files = new ArrayList<String>();
+        Artifact providerArtifact = artifactFactory.createDependencyArtifact( "org.apache.maven.surefire",
+                provider, createFromVersion( version ), "jar", null, SCOPE_TEST );
 
+        ArtifactResolutionResult result = resolveArtifact( filteredArtifact, providerArtifact );
+
+        if ( log.isDebugEnabled() )
+        {
             for ( Object o : result.getArtifacts() )
             {
                 Artifact artifact = (Artifact) o;
-
-                log.debug(
-                    "Adding to " + pluginName + " test classpath: " + artifact.getFile().getAbsolutePath() + " Scope: "
-                        + artifact.getScope() );
-
-                files.add( artifact.getFile().getAbsolutePath() );
+                String artifactPath = artifact.getFile().getAbsolutePath();
+                String scope = artifact.getScope();
+                log.debug( "Adding to " + pluginName + " test classpath: " + artifactPath + " Scope: " + scope );
             }
-            classPath = new Classpath( files );
-            ClasspathCache.setCachedClasspath( provider, classPath );
         }
-        return classPath;
+
+        return result.getArtifacts();
     }
 
-    public Classpath addProviderToClasspath( Map<String, Artifact> pluginArtifactMap, Artifact surefireArtifact )
+    public Set<Artifact> addProviderToClasspath( Map<String, Artifact> pluginArtifactMap, Artifact surefireArtifact )
         throws ArtifactResolutionException, ArtifactNotFoundException
     {
-        List<String> files = new ArrayList<String>();
+        Set<Artifact> providerArtifacts = new LinkedHashSet<Artifact>();
         if ( surefireArtifact != null )
         {
-            final ArtifactResolutionResult artifactResolutionResult = resolveArtifact( null, surefireArtifact );
+            ArtifactResolutionResult artifactResolutionResult = resolveArtifact( null, surefireArtifact );
             for ( Artifact artifact : pluginArtifactMap.values() )
             {
                 if ( !artifactResolutionResult.getArtifacts().contains( artifact ) )
                 {
-                    files.add( artifact.getFile().getAbsolutePath() );
+                    providerArtifacts.add( artifact );
                 }
             }
         }
         else
         {
             // Bit of a brute force strategy if not found. Should probably be improved
-            for ( Artifact artifact : pluginArtifactMap.values() )
-            {
-                files.add( artifact.getFile().getPath() );
-            }
+            providerArtifacts.addAll( pluginArtifactMap.values() );
         }
-        return new Classpath( files );
+        return providerArtifacts;
     }
-
 }

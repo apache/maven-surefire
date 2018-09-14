@@ -19,7 +19,12 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.surefire.booter.Classpath;
 
 import javax.annotation.Nonnull;
@@ -40,5 +45,17 @@ public class ClasspathCache
     public static void setCachedClasspath( @Nonnull String key, @Nonnull Classpath classpath )
     {
         CLASSPATHS.put( key, classpath );
+    }
+
+    public static Classpath setCachedClasspath( @Nonnull String key, @Nonnull Set<Artifact> artifacts )
+    {
+        Collection<String> files = new ArrayList<String>();
+        for ( Artifact artifact : artifacts )
+        {
+            files.add( artifact.getFile().getAbsolutePath() );
+        }
+        Classpath classpath = new Classpath( files );
+        setCachedClasspath( key, classpath );
+        return classpath;
     }
 }
