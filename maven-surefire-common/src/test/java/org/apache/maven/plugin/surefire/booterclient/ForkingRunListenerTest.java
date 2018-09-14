@@ -378,6 +378,7 @@ public class ForkingRunListenerTest
             final ReportEntry firstData = getFirstData();
             assertEquals( expected.getSourceName(), firstData.getSourceName() );
             assertEquals( expected.getName(), firstData.getName() );
+            assertEquals( expected.getDisplayName(), firstData.getDisplayName() );
             //noinspection deprecation
             assertEquals( expected.getElapsed(), firstData.getElapsed() );
             assertEquals( expected.getGroup(), firstData.getGroup() );

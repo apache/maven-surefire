@@ -101,6 +101,12 @@ public class WrappedReportEntry
         return original.getName();
     }
 
+    @Override
+    public String getDisplayName()
+    {
+        return original.getDisplayName();
+    }
+
     public String getClassMethodName()
     {
         return getSourceName() + "." + getName();

@@ -40,6 +40,13 @@ public interface ReportEntry
     String getName();
 
     /**
+     * The display name of the test case
+     *
+     * @return An arbitrary string used for display
+     */
+    String getDisplayName();
+
+    /**
      * The group/category of the testcase
      *
      * @return A string

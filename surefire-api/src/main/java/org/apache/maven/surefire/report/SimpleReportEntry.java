@@ -36,6 +36,8 @@ public class SimpleReportEntry
 
     private final String name;
 
+    private final String displayName;
+
     private final StackTraceWriter stackTraceWriter;
 
     private final Integer elapsed;
@@ -69,11 +71,17 @@ public class SimpleReportEntry
 
     public SimpleReportEntry( String source, String name, String message )
     {
-        this( source, name, null, null, message, Collections.<String, String>emptyMap() );
+        this( source, name, null, null, message, Collections.<String, String>emptyMap(), name );
     }
 
     protected SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed,
                                  String message, Map<String, String> systemProperties )
+    {
+        this( source, name, null, null, message, Collections.<String, String>emptyMap(), name );
+    }
+
+    protected SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed,
+                                 String message, Map<String, String> systemProperties, String displayName )
     {
         if ( source == null )
         {
@@ -87,6 +95,8 @@ public class SimpleReportEntry
         this.source = source;
 
         this.name = name;
+
+        this.displayName = displayName;
 
         this.stackTraceWriter = stackTraceWriter;
 
@@ -105,7 +115,7 @@ public class SimpleReportEntry
     public SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed,
                               Map<String, String> systemProperties )
     {
-        this( source, name, stackTraceWriter, elapsed, safeGetMessage( stackTraceWriter ), systemProperties );
+        this( source, name, stackTraceWriter, elapsed, safeGetMessage( stackTraceWriter ), systemProperties, name );
     }
 
     public static SimpleReportEntry assumption( String source, String name, String message )
@@ -146,6 +156,12 @@ public class SimpleReportEntry
     public String getName()
     {
         return name;
+    }
+
+    @Override
+    public String getDisplayName()
+    {
+        return displayName;
     }
 
     @Override
