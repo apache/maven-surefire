@@ -19,12 +19,12 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.surefire.booter.Classpath;
 
 import javax.annotation.Nonnull;
+import java.util.Set;
 
 /**
  * @author Kristian Rosenvold
@@ -37,8 +37,8 @@ public interface ProviderInfo
     boolean isApplicable();
 
     @Nonnull
-    Classpath getProviderClasspath()
-        throws ArtifactResolutionException, ArtifactNotFoundException;
+    Set<Artifact> getProviderClasspath()
+        throws AbstractArtifactResolutionException;
 
     void addProviderProperties() throws MojoExecutionException;
 }

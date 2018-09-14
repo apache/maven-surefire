@@ -86,7 +86,7 @@ public final class ForkedBooter
 
     private void setupBooter( String tmpDir, String dumpFileName, String surefirePropsFileName,
                               String effectiveSystemPropertiesFileName )
-            throws IOException, SurefireExecutionException
+            throws IOException
     {
         BooterDeserializer booterDeserializer =
                 new BooterDeserializer( createSurefirePropertiesIfFileExists( tmpDir, surefirePropsFileName ) );

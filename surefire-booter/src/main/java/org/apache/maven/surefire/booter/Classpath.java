@@ -42,7 +42,7 @@ import static org.apache.maven.surefire.util.internal.UrlUtils.toURL;
  *
  * @author Kristian Rosenvold
  */
-public final class Classpath implements Iterable<String>
+public final class Classpath implements Iterable<String>, Cloneable
 {
     private final List<String> unmodifiableElements;
 
@@ -223,5 +223,11 @@ public final class Classpath implements Iterable<String>
     public Iterator<String> iterator()
     {
         return unmodifiableElements.iterator();
+    }
+
+    @Override
+    public Classpath clone()
+    {
+        return new Classpath( unmodifiableElements );
     }
 }
