@@ -476,6 +476,10 @@
           </configuration>
         </plugin>
         <plugin>
+          <artifactId>maven-invoker-plugin</artifactId>
+          <version>3.0.1</version>
+        </plugin>
+        <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
           <version>0.8.2</version>
