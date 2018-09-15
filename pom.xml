@@ -23,7 +23,7 @@
   <parent>
     <artifactId>maven-parent</artifactId>
     <groupId>org.apache.maven</groupId>
-    <version>32</version>
+    <version>33</version>
   </parent>
 
   <groupId>org.apache.maven.surefire</groupId>
