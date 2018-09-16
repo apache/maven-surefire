@@ -78,9 +78,9 @@ public final class SurefireReportGenerator
         sink.body();
 
         SinkEventAttributeSet atts = new SinkEventAttributeSet();
-        atts.addAttribute( TYPE, "text/javascript" );
+        atts.addAttribute( TYPE, "application/javascript" );
         sink.unknown( "script", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
-        sink.unknown( "cdata", new Object[]{ HtmlMarkup.CDATA_TYPE, javascriptToggleDisplayCode() }, null );
+        sink.unknown( "pcdata", new Object[]{ HtmlMarkup.PCDATA_TYPE, javascriptToggleDisplayCode() }, null );
         sink.unknown( "script", new Object[]{ HtmlMarkup.TAG_TYPE_END }, null );
 
         sink.section1();
@@ -745,8 +745,8 @@ public final class SurefireReportGenerator
     private static String javascriptToggleDisplayCode()
     {
 
-        // the javascript code is emitted within a commented CDATA section
-        // so we have to start with a newline and comment the CDATA closing in the end
+        // the javascript code is emitted within a commented PCDATA section
+        // so we have to start with a newline and comment the PCDATA closing in the end
 
         return "\n" + "function toggleDisplay(elementId) {\n"
                 + " var elm = document.getElementById(elementId + '-error');\n"
