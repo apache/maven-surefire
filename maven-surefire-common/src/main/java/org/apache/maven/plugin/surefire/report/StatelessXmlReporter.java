@@ -33,10 +33,14 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
@@ -164,8 +168,11 @@ public class StatelessXmlReporter
                             case error:
                             case failure:
                                 // When rerunFailingTestsCount is set to larger than 0
+                                int lastRunTimeMS = methodEntryList.get( methodEntryList.size() - 1 ).getElapsed();
+                                String lastRunTimeS = NumberFormat.getInstance( Locale.ENGLISH ).format(
+                                                (double) lastRunTimeMS / 1000 );
                                 startTestElement( ppw, methodEntryList.get( 0 ), reportNameSuffix,
-                                                  methodEntryList.get( 0 ).elapsedTimeAsString() );
+                                                  lastRunTimeS );
                                 boolean firstRun = true;
                                 for ( WrappedReportEntry singleRunEntry : methodEntryList )
                                 {
@@ -401,6 +408,7 @@ public class StatelessXmlReporter
                 {
                     ppw.addAttribute( "type", new StringTokenizer( stackTrace ).nextToken() );
                 }
+                ppw.addAttribute( "time", report.elapsedTimeAsString() );
             }
         }
 
