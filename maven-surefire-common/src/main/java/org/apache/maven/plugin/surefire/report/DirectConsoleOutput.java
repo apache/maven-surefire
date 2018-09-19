@@ -20,13 +20,15 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import java.io.PrintStream;
-import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
 
 import org.apache.maven.surefire.report.ReportEntry;
 
+import static java.nio.ByteBuffer.wrap;
 import static java.nio.charset.Charset.defaultCharset;
+import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
 
 /**
  * Outputs test system out/system err directly to the console
@@ -39,29 +41,34 @@ import static java.nio.charset.Charset.defaultCharset;
 public class DirectConsoleOutput
     implements TestcycleConsoleOutputReceiver
 {
+    private static final Charset STANDARD_CHARSET = defaultCharset();
+
     private final PrintStream sout;
 
     private final PrintStream serr;
 
     public DirectConsoleOutput( PrintStream sout, PrintStream serr )
     {
-        this.sout = sout;
-        this.serr = serr;
+        this.sout = requireNonNull( sout );
+        this.serr = requireNonNull( serr );
     }
-
 
     @Override
     public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
     {
-        final PrintStream stream = stdout ? sout : serr;
-        try
+        PrintStream stream = stdout ? sout : serr;
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        synchronized ( stream )
         {
-            CharBuffer decode = defaultCharset().newDecoder().decode( ByteBuffer.wrap( buf, off, len ) );
-            stream.append( decode );
-        }
-        catch ( CharacterCodingException e )
-        {
-            stream.write( buf, off, len );
+            try
+            {
+                CharBuffer decode = STANDARD_CHARSET.newDecoder().decode( wrap( buf, off, len ) );
+                stream.append( decode );
+            }
+            catch ( CharacterCodingException e )
+            {
+                stream.write( buf, off, len );
+            }
         }
     }
 

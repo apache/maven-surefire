@@ -36,6 +36,13 @@ public class Surefire1535TestNGParallelSuitesIT
         extends SurefireJUnit4IntegrationTestCase
 {
     private static final Charset UTF8 = Charset.forName( "UTF-8" );
+    private static final String TEST_RESULT_1 = platformEncoding( "Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, " );
+    private static final String TEST_RESULT_2 = platformEncoding( "Tests run: 2, Failures: 0, Errors: 0, Skipped: 0" );
+    private static final String SUITE1 = platformEncoding( "Suite1.xml" );
+    private static final String SUITE2 = platformEncoding( "Suite2.xml" );
+    private static final String TEST1 = platformEncoding( "test 1" );
+    private static final String TEST2 = platformEncoding( "test 2" );
+    private static final String TEST_SUITE = platformEncoding( "Running TestSuite" );
 
     @Test
     public void forks2() throws VerificationException
@@ -53,13 +60,13 @@ public class Surefire1535TestNGParallelSuitesIT
         testFile.assertFileExists();
         testFile.assertContainsText( "<testcase name=\"test\" classname=\"it.ParallelTest" );
 
-        validator.assertThatLogLine( containsString( "Tests run: 2, Failures: 0, Errors: 0, Skipped: 0" ), is( 1 ) )
-                .assertThatLogLine( containsString( "Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, " ), is( 2 ) )
-                .assertThatLogLine( containsString( "Suite1.xml" ), is( 1 ) )
-                .assertThatLogLine( containsString( "Suite2.xml" ), is( 1 ) )
-                .assertThatLogLine( containsString( "test 1" ), is( 1 ) )
-                .assertThatLogLine( containsString( "test 2" ), is( 1 ) )
-                .assertThatLogLine( containsString( "Running TestSuite" ), is( 2 ) );
+        validator.assertThatLogLine( containsString( TEST_RESULT_2 ), is( 1 ) )
+                .assertThatLogLine( containsString( TEST_RESULT_1 ), is( 2 ) )
+                .assertThatLogLine( containsString( SUITE1 ), is( 1 ) )
+                .assertThatLogLine( containsString( SUITE2 ), is( 1 ) )
+                .assertThatLogLine( containsString( TEST1 ), is( 1 ) )
+                .assertThatLogLine( containsString( TEST2 ), is( 1 ) )
+                .assertThatLogLine( containsString( TEST_SUITE ), is( 2 ) );
     }
 
     @Test
@@ -79,19 +86,19 @@ public class Surefire1535TestNGParallelSuitesIT
         testFile.assertFileExists();
         testFile.assertContainsText( "<testcase name=\"test\" classname=\"it.ParallelTest" );
 
-        validator.assertThatLogLine( containsString( "Tests run: 2, Failures: 0, Errors: 0, Skipped: 0" ), is( 1 ) )
-                .assertThatLogLine( containsString( "Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, " ), is( 2 ) )
-                .assertThatLogLine( containsString( "Running TestSuite" ), is( 2 ) );
+        validator.assertThatLogLine( containsString( TEST_RESULT_2 ), is( 1 ) )
+                .assertThatLogLine( containsString( TEST_RESULT_1 ), is( 2 ) )
+                .assertThatLogLine( containsString( TEST_SUITE ), is( 2 ) );
 
         TestFile outFile = validator.getSurefireReportsFile( "../surefire-reports-1/TestSuite-output.txt" );
         outFile.assertFileExists();
-        outFile.assertContainsText( anyOf( containsString( "Suite1.xml" ), containsString( "Suite2.xml" ) ) );
-        outFile.assertContainsText( anyOf( containsString( "test 1" ), containsString( "test 2" ) ) );
+        outFile.assertContainsText( anyOf( containsString( SUITE1 ), containsString( SUITE2 ) ) );
+        outFile.assertContainsText( anyOf( containsString( TEST1 ), containsString( TEST2 ) ) );
 
         outFile = validator.getSurefireReportsFile( "../surefire-reports-2/TestSuite-output.txt" );
         outFile.assertFileExists();
-        outFile.assertContainsText( anyOf( containsString( "Suite1.xml" ), containsString( "Suite2.xml" ) ) );
-        outFile.assertContainsText( anyOf( containsString( "test 1" ), containsString( "test 2" ) ) );
+        outFile.assertContainsText( anyOf( containsString( SUITE1 ), containsString( SUITE2 ) ) );
+        outFile.assertContainsText( anyOf( containsString( TEST1 ), containsString( TEST2 ) ) );
     }
 
     @Test
@@ -106,11 +113,11 @@ public class Surefire1535TestNGParallelSuitesIT
         testFile.assertContainsText( "<testcase name=\"test\" classname=\"it.ParallelTest1\"" );
         testFile.assertContainsText( "<testcase name=\"test\" classname=\"it.ParallelTest2\"" );
 
-        validator.assertThatLogLine( containsString( "Suite1.xml" ), is( 1 ) )
-                .assertThatLogLine( containsString( "Suite2.xml" ), is( 1 ) )
-                .assertThatLogLine( containsString( "test 1" ), is( 1 ) )
-                .assertThatLogLine( containsString( "test 2" ), is( 1 ) )
-                .assertThatLogLine( containsString( "Running TestSuite" ), is( 1 ) );
+        validator.assertThatLogLine( containsString( SUITE1 ), is( 1 ) )
+                .assertThatLogLine( containsString( SUITE2 ), is( 1 ) )
+                .assertThatLogLine( containsString( TEST1 ), is( 1 ) )
+                .assertThatLogLine( containsString( TEST2 ), is( 1 ) )
+                .assertThatLogLine( containsString( TEST_SUITE ), is( 1 ) );
     }
 
     @Test
@@ -126,18 +133,23 @@ public class Surefire1535TestNGParallelSuitesIT
         testFile.assertContainsText( "<testcase name=\"test\" classname=\"it.ParallelTest1\"" );
         testFile.assertContainsText( "<testcase name=\"test\" classname=\"it.ParallelTest2\"" );
 
-        validator.assertThatLogLine( containsString( "Running TestSuite" ), is( 1 ) );
+        validator.assertThatLogLine( containsString( TEST_SUITE ), is( 1 ) );
 
         TestFile outFile = validator.getSurefireReportsFile( "TestSuite-output.txt" );
         outFile.assertFileExists();
-        outFile.assertContainsText( "Suite1.xml" );
-        outFile.assertContainsText( "Suite1.xml" );
-        outFile.assertContainsText( "test 1" );
-        outFile.assertContainsText( "test 2" );
+        outFile.assertContainsText( SUITE1 );
+        outFile.assertContainsText( SUITE2 );
+        outFile.assertContainsText( TEST1 );
+        outFile.assertContainsText( TEST2 );
     }
 
     private SurefireLauncher unpack()
     {
         return unpack("/surefire-1535-parallel-testng");
+    }
+
+    private static String platformEncoding( String text )
+    {
+        return new String( text.getBytes( UTF8 ) );
     }
 }
