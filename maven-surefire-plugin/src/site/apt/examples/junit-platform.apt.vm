@@ -40,7 +40,7 @@ Using JUnit 5 Platform
     <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-engine</artifactId>
-        <version>5.2.0</version>
+        <version>5.3.1</version>
         <scope>test</scope>
     </dependency>
     [...]
@@ -55,7 +55,7 @@ Using JUnit 5 Platform
   (e.g., <<<src/test/java>>>).
 
   If you want to write and execute JUnit 3 or 4 tests via the JUnit Platform add the Vintage Engine to the
-  dependencies:
+  dependencies, which transitively pulls in (and requires) <<<junit:junit:4.12>>>:
 
 +---+
 <dependencies>
@@ -63,12 +63,16 @@ Using JUnit 5 Platform
     <dependency>
         <groupId>org.junit.vintage</groupId>
         <artifactId>junit-vintage-engine</artifactId>
-        <version>5.2.0</version>
+        <version>5.3.1</version>
         <scope>test</scope>
     </dependency>
     [...]
 </dependencies>
 +---+
+
+  For more information on using JUnit 5, that is the JUnit Platform, JUnit Jupiter, and JUnit Vintage,
+  see the {{{https://junit.org/junit5/}JUnit 5 web site}}
+  and the {{{https://junit.org/junit5/docs/current/user-guide/}JUnit 5 User Guide}}.
 
 * Provider Selection
 
@@ -147,7 +151,7 @@ else
 
     * To include <<<tags>>> or <<<tag expressions>>>, use <<<groups>>>.
 
-    * To exclude <<<tags>>> or <<<tag expressions>>>, use either <<<excludedGroups>>>.
+    * To exclude <<<tags>>> or <<<tag expressions>>>, use <<<excludedGroups>>>.
 
 +---+
 ...
@@ -190,6 +194,7 @@ else
                         junit.jupiter.conditions.deactivate = *
                         junit.jupiter.extensions.autodetection.enabled = true
                         junit.jupiter.testinstance.lifecycle.default = per_class
+                        junit.jupiter.execution.parallel.enabled = true
                     </configurationParameters>
                 </properties>
             </configuration>
