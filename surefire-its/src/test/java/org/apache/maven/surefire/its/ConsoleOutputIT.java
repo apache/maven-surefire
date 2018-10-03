@@ -97,10 +97,10 @@ public class ConsoleOutputIT
 
     @Test
     public void largerSoutThanMemory()
-        throws Exception
     {
-        unpack( "consoleoutput-noisy" ).setMavenOpts( "-Xmx64m" ).sysProp( "thousand", "32000" ).executeTest();
+        unpack( "consoleoutput-noisy" )
+                .setMavenOpts( "-Xmx64m" )
+                .sysProp( "thousand", "32000" )
+                .executeTest();
     }
-
-
 }

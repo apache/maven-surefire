@@ -46,6 +46,7 @@
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-verifier</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -61,22 +62,45 @@
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-artifact</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-shared-utils</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <directory>src/test/resources</directory>
+        <targetPath>${project.build.outputDirectory}</targetPath>
+        <excludes>
+          <exclude>settings.xml</exclude>
+          <exclude>toolchains.xml</exclude>
+        </excludes>
+      </resource>
+      <resource>
+        <directory>src/test/resources</directory>
+        <filtering>true</filtering>
+        <targetPath>${project.build.directory}/private</targetPath>
+        <includes>
+          <include>settings.xml</include>
+          <include>toolchains.xml</include>
+        </includes>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -111,15 +135,9 @@
           <systemPropertyVariables>
             <surefire.version>${project.version}</surefire.version>
             <maven.home>${maven.home}</maven.home>
-            <maven.settings.file>${project.basedir}/../surefire-setup-integration-tests/target/private/it-settings.xml
-            </maven.settings.file>
-            <maven.toolchains.file>${project.basedir}/../surefire-setup-integration-tests/target/private/toolchains.xml
-            </maven.toolchains.file>
-            <maven.repo.local>${project.basedir}/../surefire-setup-integration-tests/target/it-repo</maven.repo.local>
+            <maven.settings.file>${project.build.directory}/private/settings.xml</maven.settings.file>
+            <maven.toolchains.file>${project.build.directory}/private/toolchains.xml</maven.toolchains.file>
             <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>
-            <user.localRepository>${settings.localRepository}</user.localRepository>
-            <useInterpolatedSettings>false</useInterpolatedSettings>
-            <testBuildDirectory>${project.build.testOutputDirectory}</testBuildDirectory>
             <verifier.forkMode>forked</verifier.forkMode>
             <jdk.home>${jdk.home}</jdk.home>
             <jacoco.agent>${jacoco-it.agent}</jacoco.agent>

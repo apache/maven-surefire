@@ -64,7 +64,7 @@ public abstract class AbstractFailFastIT
 
     protected abstract String withProvider();
 
-    protected final OutputValidator prepare( String description, String profile, Map<String, String> properties )
+    private OutputValidator prepare( String description, String profile, Map<String, String> properties )
     {
         MavenLauncher launcher = unpack( "/fail-fast-" + withProvider(), "_" + description )
             .maven();
@@ -82,12 +82,7 @@ public abstract class AbstractFailFastIT
         return launcher.sysProp( properties ).executeTest();
     }
 
-    protected final OutputValidator prepare( String description, Map<String, String> properties )
-    {
-        return prepare( description, null, properties );
-    }
-
-    protected static Map<String, String> props( int forkCount, int skipAfterFailureCount, boolean reuseForks )
+    static Map<String, String> props( int forkCount, int skipAfterFailureCount, boolean reuseForks )
     {
         Map<String, String> props = new HashMap<String, String>( 3 );
         props.put( "surefire.skipAfterFailureCount", "" + skipAfterFailureCount );

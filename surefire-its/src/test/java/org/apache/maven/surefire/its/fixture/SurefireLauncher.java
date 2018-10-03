@@ -115,7 +115,6 @@ public final class SurefireLauncher
     }
 
     public SurefireLauncher getSubProjectLauncher( String subProject )
-        throws VerificationException
     {
         return new SurefireLauncher( mavenLauncher.getSubProjectLauncher( subProject ) );
     }
@@ -194,11 +193,9 @@ public final class SurefireLauncher
     }
 
     public OutputValidator executeInstall()
-        throws VerificationException
     {
         return mavenLauncher.execute( "install" );
     }
-
 
     public FailsafeOutputValidator executeVerify()
     {
@@ -319,12 +316,6 @@ public final class SurefireLauncher
     {
         mavenLauncher.activateProfile( profile );
         return this;
-    }
-
-
-    protected String getSurefireVersion()
-    {
-        return surefireVersion;
     }
 
     public SurefireLauncher disablePerCoreThreadCount()
@@ -477,7 +468,7 @@ public final class SurefireLauncher
 
     private String getReportPluginGoal( String goal )
     {
-        return "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":" + goal;
+        return "org.apache.maven.plugins:maven-surefire-report-plugin:" + surefireVersion + ":" + goal;
     }
 
     public SurefireLauncher setTestToRun( String basicTest )

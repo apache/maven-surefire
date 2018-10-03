@@ -19,7 +19,6 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireVerifierException;
@@ -41,7 +40,6 @@ public class Surefire141PluggableProvidersIT
 {
     @BeforeClass
     public static void installProvider()
-        throws VerificationException
     {
         unpack( Surefire141PluggableProvidersIT.class, "surefire-141-pluggableproviders-provider", "prov" )
             .executeInstall();
@@ -49,7 +47,6 @@ public class Surefire141PluggableProvidersIT
 
     @Test
     public void pluggableProviderPresent()
-        throws Exception
     {
         unpack( "surefire-141-pluggableproviders" )
             .setForkJvm()
@@ -64,7 +61,6 @@ public class Surefire141PluggableProvidersIT
 
     @Test
     public void invokeRuntimeException()
-        throws Exception
     {
         final String errorText = "Let's fail with a runtimeException";
 
@@ -87,7 +83,6 @@ public class Surefire141PluggableProvidersIT
 
     @Test
     public void invokeReporterException()
-        throws Exception
     {
         final String errorText = "Let's fail with a reporterexception";
 
@@ -110,7 +105,6 @@ public class Surefire141PluggableProvidersIT
 
     @Test
     public void constructorRuntimeException()
-        throws Exception
     {
         final String errorText = "Let's fail with a runtimeException";
 

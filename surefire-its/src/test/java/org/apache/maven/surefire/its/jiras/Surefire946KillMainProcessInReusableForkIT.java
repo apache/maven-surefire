@@ -26,34 +26,29 @@ import org.junit.Test;
 public class Surefire946KillMainProcessInReusableForkIT
     extends SurefireJUnit4IntegrationTestCase
 {
-
     // there are 10 test classes that each would wait 2 seconds.
     private static final int TEST_SLEEP_TIME = 2000;
 
     @BeforeClass
     public static void installSelfdestructPlugin()
-        throws Exception
     {
         unpack( Surefire946KillMainProcessInReusableForkIT.class, "surefire-946-self-destruct-plugin", "plugin" ).executeInstall();
     }
 
     @Test( timeout = 30000 )
     public void testHalt()
-        throws Exception
     {
         doTest( "halt" );
     }
 
     @Test( timeout = 30000 )
     public void testExit()
-        throws Exception
     {
         doTest( "exit" );
     }
 
     @Test( timeout = 30000 )
     public void testInterrupt()
-        throws Exception
     {
         doTest( "interrupt" );
     }

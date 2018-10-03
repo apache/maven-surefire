@@ -19,7 +19,6 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
-import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.it.util.ResourceExtractor;
@@ -42,7 +41,7 @@ import static java.util.Collections.unmodifiableList;
  *
  * @author Kristian Rosenvold
  */
-public class MavenLauncher
+public final class MavenLauncher
 {
     private final List<String> cliOptions = new ArrayList<String>();
 
@@ -66,7 +65,7 @@ public class MavenLauncher
 
     private boolean expectFailure;
 
-    public MavenLauncher( Class testClass, String resourceName, String suffix, String[] cli )
+    MavenLauncher( Class testClass, String resourceName, String suffix, String[] cli )
     {
         this.testCaseBeingRun = testClass;
         this.resourceName = resourceName;
@@ -76,7 +75,7 @@ public class MavenLauncher
         resetCliOptions();
     }
 
-    public MavenLauncher( Class testClass, String resourceName, String suffix )
+    MavenLauncher( Class testClass, String resourceName, String suffix )
     {
         this( testClass, resourceName, suffix, null );
     }
@@ -104,17 +103,15 @@ public class MavenLauncher
         unpackedAt = dest;
     }
 
-    public void resetGoals()
+    private void resetGoals()
     {
         goals.clear();
     }
 
-    void addCliOption( String cliOption )
+    private void addCliOption( String cliOption )
     {
         cliOptions.add( cliOption );
     }
-
-
 
     private StackTraceElement findTopElemenent( StackTraceElement[] stackTrace, Class testClassToLookFor )
     {
@@ -129,7 +126,7 @@ public class MavenLauncher
         return bestmatch;
     }
 
-    StackTraceElement[] getStackTraceElements()
+    private static StackTraceElement[] getStackTraceElements()
     {
         try
         {
@@ -153,7 +150,6 @@ public class MavenLauncher
     }
 
     public MavenLauncher getSubProjectLauncher( String subProject )
-        throws VerificationException
     {
         MavenLauncher mavenLauncher =
             new MavenLauncher( testCaseBeingRun, resourceName + File.separator + subProject, suffix, cli );
@@ -167,7 +163,6 @@ public class MavenLauncher
         final File subFile = getValidator().getSubFile( subProject );
         return new OutputValidator( new Verifier( subFile.getAbsolutePath() ) );
     }
-
 
     public MavenLauncher addEnvVar( String key, String value )
     {
@@ -279,15 +274,13 @@ public class MavenLauncher
             throw new RuntimeException( "Expecting build failure, got none!" );
         }
         return verify;
-
     }
 
     public MavenLauncher withFailure()
     {
-        this.expectFailure = true;
+        expectFailure = true;
         return this;
     }
-
 
     public OutputValidator execute( String goal )
     {
@@ -297,67 +290,27 @@ public class MavenLauncher
 
     public OutputValidator executeCurrentGoals()
     {
-
-        String userLocalRepo = System.getProperty( "user.localRepository" );
-        String testBuildDirectory = System.getProperty( "testBuildDirectory" );
-        boolean useInterpolatedSettings = Boolean.getBoolean( "useInterpolatedSettings" );
-
         try
         {
-            if ( useInterpolatedSettings )
-            {
-                File interpolatedSettings = new File( testBuildDirectory, "interpolated-settings" );
-
-                if ( !interpolatedSettings.exists() )
-                {
-                    // hack "a la" invoker plugin to download dependencies from local repo
-                    // and not download from central
-
-                    Map<String, String> values = new HashMap<String, String>( 1 );
-                    values.put( "localRepositoryUrl", toUrl( userLocalRepo ) );
-                    StrSubstitutor strSubstitutor = new StrSubstitutor( values );
-
-                    String fileContent = FileUtils.fileRead( new File( testBuildDirectory, "settings.xml" ) );
-
-                    String filtered = strSubstitutor.replace( fileContent );
-
-                    FileUtils.fileWrite( interpolatedSettings.getAbsolutePath(), filtered );
-
-                }
-
-                addCliOption( "-s " + interpolatedSettings.getCanonicalPath() );
-            }
+            File generatedSettings = new File( System.getProperty( "maven.settings.file" ) ).getCanonicalFile();
+            String generatedSettingsPath = generatedSettings.getAbsolutePath();
+            addCliOption( "-s " + generatedSettingsPath );
             getVerifier().setCliOptions( cliOptions );
-
             getVerifier().executeGoals( goals, envvars );
             return getValidator();
         }
         catch ( IOException e )
         {
-            throw new SurefireVerifierException( e.getMessage(), e );
+            throw new SurefireVerifierException( e.getLocalizedMessage(), e );
         }
         catch ( VerificationException e )
         {
-            throw new SurefireVerifierException( e.getMessage(), e );
+            throw new SurefireVerifierException( e.getLocalizedMessage(), e );
         }
         finally
         {
             getVerifier().resetStreams();
         }
-    }
-
-    private static String toUrl( String filename )
-    {
-        /*
-         * NOTE: Maven fails to properly handle percent-encoded "file:" URLs (WAGON-111) so don't use File.toURI() here
-         * as-is but use the decoded path component in the URL.
-         */
-        String url = "file://" + new File( filename ).toURI().getPath();
-        if ( url.endsWith( "/" ) )
-        {
-            url = url.substring( 0, url.length() - 1 );
-        }
-        return url;
     }
 
     public MavenLauncher activateProfile( String profile )
@@ -417,7 +370,7 @@ public class MavenLauncher
     {
         if ( validator == null )
         {
-            this.validator = new OutputValidator( getVerifier() );
+            validator = new OutputValidator( getVerifier() );
         }
         return validator;
     }
@@ -436,6 +389,9 @@ public class MavenLauncher
                     cli == null
                     ? new Verifier( ensureUnpacked().getAbsolutePath(), null, false )
                     : new Verifier( ensureUnpacked().getAbsolutePath(), null, false, cli );
+
+                verifier.getVerifierProperties()
+                        .setProperty( "use.mavenRepoLocal", "false" );
             }
             catch ( VerificationException e )
             {
@@ -469,10 +425,9 @@ public class MavenLauncher
         {
             throw new RuntimeException( e );
         }
-
     }
 
-    File getUnpackDir()
+    private File getUnpackDir()
     {
         String tempDirPath = System.getProperty( "maven.test.tmpdir", System.getProperty( "java.io.tmpdir" ) );
         return new File( tempDirPath,
