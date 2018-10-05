@@ -30,6 +30,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlDivision;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.junit.Test;
 
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -47,26 +48,32 @@ public class Surefire260TestWithIdenticalNamesIT
     public void testWithIdenticalNames()
         throws IOException
     {
-        SurefireLauncher surefireLauncher = unpack( "surefire-260-testWithIdenticalNames" ).failNever();
-        surefireLauncher.executeTest();
-        surefireLauncher.reset();
-        OutputValidator validator = surefireLauncher.addSurefireReportGoal().executeCurrentGoals();
+        assumeJavaVersion( 1.8d );
+        OutputValidator validator = unpack( "surefire-260-testWithIdenticalNames" )
+                .failNever()
+                .addGoal( "site" )
+                .addSurefireReportGoal()
+                .executeCurrentGoals();
 
         TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
         final URI uri = siteFile.toURI();
 
-        final WebClient webClient = new WebClient();
-        webClient.setJavaScriptEnabled( true );
-        final HtmlPage page = webClient.getPage( uri.toURL() );
-
-        final HtmlAnchor a =
-            (HtmlAnchor) page.getByXPath( "//a[@href = \"javascript:toggleDisplay('surefire260.TestB.testDup');\"]" )
+        WebClient webClient = new WebClient();
+        try
+        {
+            HtmlPage page = webClient.getPage( uri.toURL() );
+            HtmlAnchor a = ( HtmlAnchor ) page.getByXPath(
+                    "//a[@href = \"javascript:toggleDisplay('surefire260.TestB.testDup');\"]" )
                     .get( 0 );
-        final HtmlDivision content = (HtmlDivision) page.getElementById( "surefire260.TestB.testDup-failure" );
-        assertNotNull( content );
-        assertTrue( content.getAttribute( "style" ).contains( "none" ) );
-        a.click();
-        assertFalse( content.getAttribute( "style" ).contains( "none" ) );
-        webClient.closeAllWindows();
+            HtmlDivision content = ( HtmlDivision ) page.getElementById( "surefire260.TestB.testDup-failure" );
+            assertNotNull( content );
+            assertTrue( content.getAttribute( "style" ).contains( "none" ) );
+            a.click();
+            assertFalse( content.getAttribute( "style" ).contains( "none" ) );
+        }
+        finally
+        {
+            webClient.close();
+        }
     }
 }
