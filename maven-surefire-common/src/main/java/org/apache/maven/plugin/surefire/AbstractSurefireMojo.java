@@ -1777,8 +1777,23 @@ public abstract class AbstractSurefireMojo
                                                          Artifact... inPluginArtifacts )
     {
         Set<Artifact> result = new LinkedHashSet<Artifact>();
-        addAll( result, inPluginArtifacts );
-        result.removeAll( providerArtifacts );
+        for ( Artifact inPluginArtifact : inPluginArtifacts )
+        {
+            boolean contains = false;
+            for ( Artifact providerArtifact : providerArtifacts )
+            {
+                if ( providerArtifact.getGroupId().equals( inPluginArtifact.getGroupId() )
+                        && providerArtifact.getArtifactId().equals( inPluginArtifact.getArtifactId() ) )
+                {
+                    contains = true;
+                    break;
+                }
+            }
+            if ( !contains )
+            {
+                result.add( inPluginArtifact );
+            }
+        }
         return result;
     }
 
