@@ -27,8 +27,7 @@ import static java.lang.Integer.numberOfLeadingZeros;
 import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
 
 /**
- * Wrapper logger of miscellaneous (Maven 2.2.1 or 3.1) implementations of {@link Log}.
- * Calling {@link Log#isInfoEnabled()} before {@link Log#info(CharSequence)} due to Maven 2.2.1.
+ * Wrapper logger of miscellaneous implementations of {@link Log}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20
@@ -53,18 +52,12 @@ final class PluginConsoleLogger
     @Override
     public void debug( String message )
     {
-        if ( mojoLogger.isDebugEnabled() )
-        {
-            mojoLogger.debug( createAnsiBuilder( message ).debug( message ).toString() );
-        }
+        mojoLogger.debug( createAnsiBuilder( message ).a( message ).toString() );
     }
 
     public void debug( CharSequence content, Throwable error )
     {
-        if ( mojoLogger.isDebugEnabled() )
-        {
-            mojoLogger.debug( content, error );
-        }
+        mojoLogger.debug( content, error );
     }
 
     @Override
@@ -76,10 +69,7 @@ final class PluginConsoleLogger
     @Override
     public void info( String message )
     {
-        if ( mojoLogger.isInfoEnabled() )
-        {
-            mojoLogger.info( createAnsiBuilder( message ).info( message ).toString() );
-        }
+        mojoLogger.info( createAnsiBuilder( message ).a( message ).toString() );
     }
 
     @Override
@@ -91,18 +81,12 @@ final class PluginConsoleLogger
     @Override
     public void warning( String message )
     {
-        if ( mojoLogger.isWarnEnabled() )
-        {
-            mojoLogger.warn( createAnsiBuilder( message ).warning( message ).toString() );
-        }
+        mojoLogger.warn( createAnsiBuilder( message ).warning( message ).toString() );
     }
 
     public void warn( CharSequence content, Throwable error )
     {
-        if ( mojoLogger.isWarnEnabled() )
-        {
-            mojoLogger.warn( content, error );
-        }
+        mojoLogger.warn( content, error );
     }
 
     @Override
@@ -114,28 +98,19 @@ final class PluginConsoleLogger
     @Override
     public void error( String message )
     {
-        if ( mojoLogger.isErrorEnabled() )
-        {
-            mojoLogger.error( createAnsiBuilder( message ).error( message ).toString() );
-        }
+        mojoLogger.error( createAnsiBuilder( message ).failure( message ).toString() );
     }
 
     @Override
     public void error( String message, Throwable t )
     {
-        if ( mojoLogger.isErrorEnabled() )
-        {
-            mojoLogger.error( message, t );
-        }
+        mojoLogger.error( message, t );
     }
 
     @Override
     public void error( Throwable t )
     {
-        if ( mojoLogger.isErrorEnabled() )
-        {
-            mojoLogger.error( t );
-        }
+        mojoLogger.error( t );
     }
 
     private static MessageBuilder createAnsiBuilder( CharSequence message )

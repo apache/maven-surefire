@@ -31,7 +31,7 @@
 Maven ${thisPlugin} Plugin
 
 
-  Requirements: Maven 2.2.1 or 3.x, and JDK 1.6 or higher. Due to wrong formatting of console text messages
+  Requirements: Maven 3.x and JDK 1.7 or higher. Due to wrong formatting of console text messages
   in Maven Version prior to 3.1.0 it is highly recommended to use Maven 3.1.0 or higher.
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")

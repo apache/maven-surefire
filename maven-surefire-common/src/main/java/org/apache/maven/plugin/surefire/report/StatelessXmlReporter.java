@@ -19,6 +19,7 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.shared.utils.xml.PrettyPrintXMLWriter;
 import org.apache.maven.shared.utils.xml.XMLWriter;
 import org.apache.maven.surefire.report.ReportEntry;
@@ -238,6 +239,14 @@ public class StatelessXmlReporter
             }
             ppw.endElement(); // TestSuite
         }
+        catch ( IOException e )
+        {
+            // It's not a test error.
+            // This method must be sail-safe and errors are in a dump log.
+            // The control flow must not be broken in TestSetRunListener#testSetCompleted.
+            InPluginProcessDumpSingleton.getSingleton()
+                    .dumpException( e, e.getLocalizedMessage(), reportsDirectory );
+        }
         finally
         {
             closeQuietly( fw );
@@ -324,7 +333,7 @@ public class StatelessXmlReporter
     }
 
     private static void startTestElement( XMLWriter ppw, WrappedReportEntry report, String reportNameSuffix,
-                                          String timeAsString )
+                                          String timeAsString ) throws IOException
     {
         ppw.startElement( "testcase" );
         ppw.addAttribute( "name", report.getReportName() );
@@ -347,7 +356,7 @@ public class StatelessXmlReporter
     }
 
     private void createTestSuiteElement( XMLWriter ppw, WrappedReportEntry report, TestSetStats testSetStats,
-                                         String timeAsString )
+                                         String timeAsString ) throws IOException
     {
         ppw.startElement( "testsuite" );
 
@@ -374,7 +383,7 @@ public class StatelessXmlReporter
 
     private static void getTestProblems( OutputStreamWriter outputStreamWriter, XMLWriter ppw,
                                          WrappedReportEntry report, boolean trimStackTrace, OutputStream fw,
-                                         String testErrorType, boolean createOutErrElementsInside )
+                                         String testErrorType, boolean createOutErrElementsInside ) throws IOException
     {
         ppw.startElement( testErrorType );
 
@@ -431,7 +440,7 @@ public class StatelessXmlReporter
 
     // Create system-out and system-err elements
     private static void createOutErrElements( OutputStreamWriter outputStreamWriter, XMLWriter ppw,
-                                              WrappedReportEntry report, OutputStream fw )
+                                              WrappedReportEntry report, OutputStream fw ) throws IOException
     {
         EncodingOutputStream eos = new EncodingOutputStream( fw );
         addOutputStreamElement( outputStreamWriter, eos, ppw, report.getStdout(), "system-out" );
@@ -441,7 +450,7 @@ public class StatelessXmlReporter
     private static void addOutputStreamElement( OutputStreamWriter outputStreamWriter,
                                          EncodingOutputStream eos, XMLWriter xmlWriter,
                                          Utf8RecodingDeferredFileOutputStream utf8RecodingDeferredFileOutputStream,
-                                         String name )
+                                         String name ) throws IOException
     {
         if ( utf8RecodingDeferredFileOutputStream != null && utf8RecodingDeferredFileOutputStream.getByteCount() > 0 )
         {
@@ -471,7 +480,7 @@ public class StatelessXmlReporter
      *
      * @param xmlWriter The test suite to report to
      */
-    private static void showProperties( XMLWriter xmlWriter, Map<String, String> systemProperties )
+    private static void showProperties( XMLWriter xmlWriter, Map<String, String> systemProperties ) throws IOException
     {
         xmlWriter.startElement( "properties" );
         for ( final Entry<String, String> entry : systemProperties.entrySet() )

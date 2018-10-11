@@ -24,6 +24,7 @@ import java.util.Map;
 import org.apache.maven.surefire.report.ConsoleStream;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.junit.runner.notification.RunListener.ThreadSafe;
 
 /**
  * @author Kristian Rosenvold

@@ -86,7 +86,7 @@ public class JUnitPlatformEnginesIT
     {
         OutputValidator validator = unpack( "junit-platform", '-' + platform )
                 .sysProp( "jupiter.version", jupiter )
-                .addGoal( "-X" )
+                .debugLogging()
                 .executeTest()
                 .verifyErrorFree( 1 );
 
@@ -111,9 +111,10 @@ public class JUnitPlatformEnginesIT
 
         String providerClasspath = "[DEBUG] provider(compact) classpath:"
                 + "  surefire-junit-platform-*.jar"
-                + "  junit-platform-launcher-1.3.1.jar"
                 + "  surefire-api-*.jar"
-                + "  surefire-logger-api-*.jar";
+                + "  surefire-logger-api-*.jar"
+                + "  common-java5-*.jar"
+                + "  junit-platform-launcher-1.3.1.jar";
 
         lines = validator.loadLogLines( startsWith( "[DEBUG] provider(compact) classpath" ) );
 

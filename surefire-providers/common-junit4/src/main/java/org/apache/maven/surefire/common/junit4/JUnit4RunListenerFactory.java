@@ -22,10 +22,11 @@ package org.apache.maven.surefire.common.junit4;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.surefire.util.ReflectionUtils;
 
 import org.junit.runner.notification.RunListener;
+
+import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
 
 /**
  * @author Kristian Rosenvold
@@ -35,12 +36,12 @@ public class JUnit4RunListenerFactory
     public static List<RunListener> createCustomListeners( String listeners )
     {
         List<RunListener> result = new ArrayList<RunListener>();
-        if ( StringUtils.isNotBlank( listeners ) )
+        if ( isNotBlank( listeners ) )
         {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
             for ( String listener : listeners.split( "," ) )
             {
-                if ( StringUtils.isNotBlank( listener ) )
+                if ( isNotBlank( listener ) )
                 {
                     result.add( ReflectionUtils.instantiate( cl, listener, RunListener.class ) );
                 }

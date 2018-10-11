@@ -520,7 +520,7 @@ public class SurefireReportMojoTest
         + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)\n"
         + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
         + "\tat surefire.MyTest.access$200(MyTest.java:9)\n"
-        + "\tat surefire.MyTest$A.t(MyTest.java:45)"
+        + "\tat surefire.MyTest$A.t(MyTest.java:45)\n"
         + "</pre>" ) ) );
     }
 
@@ -614,7 +614,8 @@ public class SurefireReportMojoTest
                 + "\tat surefire.MyTest.failure(MyTest.java:33)\n" + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
                 + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
                 + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
-                + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)" + "</pre>" ) ) );
+                + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)\n"
+                + "</pre>" ) ) );
     }
 
     /**

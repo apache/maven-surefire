@@ -84,11 +84,12 @@
   </distributionManagement>
 
   <properties>
-    <mavenVersion>2.2.1</mavenVersion>
+    <mavenVersion>3.0</mavenVersion>
     <!-- <shadedVersion>2.12.4</shadedVersion> commented out due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
     <commonsLang3Version>3.5</commonsLang3Version>
     <commonsIoVersion>2.5</commonsIoVersion>
-    <mavenSharedUtilsVersion>0.9</mavenSharedUtilsVersion>
+    <!-- maven-shared-utils:3.2.0+ another behavior - broke Surefire performance - end of subprocess notification not arrived in ForkStarter -->
+    <mavenSharedUtilsVersion>3.1.0</mavenSharedUtilsVersion>
     <powermockVersion>2.0.0-beta.5</powermockVersion>
     <maven.surefire.scm.devConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
     <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
@@ -102,11 +103,6 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.apache.maven.surefire</groupId>
-        <artifactId>surefire-api</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
         <version>${commonsLang3Version}</version>
@@ -117,68 +113,14 @@
         <version>${commonsIoVersion}</version>
       </dependency>
       <dependency>
-        <groupId>org.apache.maven.surefire</groupId>
-        <artifactId>surefire-booter</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.surefire</groupId>
-        <artifactId>surefire-logger-api</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.surefire</groupId>
-        <artifactId>surefire-grouper</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.surefire</groupId>
-        <artifactId>maven-surefire-common</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.apache.maven.reporting</groupId>
         <artifactId>maven-reporting-api</artifactId>
-        <version>3.0</version>
+        <version>${mavenVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-core</artifactId>
         <version>${mavenVersion}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.apache.maven.wagon</groupId>
-            <artifactId>wagon-file</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.maven.wagon</groupId>
-            <artifactId>wagon-webdav</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.maven.wagon</groupId>
-            <artifactId>wagon-http-lightweight</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.maven.wagon</groupId>
-            <artifactId>wagon-ssh</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.maven.wagon</groupId>
-            <artifactId>wagon-ssh-external</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.maven.doxia</groupId>
-            <artifactId>doxia-sink-api</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commons-cli</groupId>
-            <artifactId>commons-cli</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.codehaus.plexus</groupId>
-            <artifactId>plexus-interactivity-api</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
@@ -189,21 +131,16 @@
         <groupId>org.apache.maven.plugin-tools</groupId>
         <artifactId>maven-plugin-annotations</artifactId>
         <version>${mavenPluginToolsVersion}</version>
-        <scope>compile</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-artifact</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-artifact</artifactId>
-        <version>${mavenVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-plugin-descriptor</artifactId>
-        <version>${mavenVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-project</artifactId>
         <version>${mavenVersion}</version>
       </dependency>
       <dependency>
@@ -213,7 +150,7 @@
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
-        <artifactId>maven-toolchain</artifactId>
+        <artifactId>maven-compat</artifactId>
         <version>${mavenVersion}</version>
       </dependency>
       <dependency>
@@ -227,21 +164,56 @@
         <version>${mavenSharedUtilsVersion}</version>
         <exclusions>
           <exclusion>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
       <dependency>
+        <groupId>org.apache.maven.reporting</groupId>
+        <artifactId>maven-reporting-impl</artifactId>
+        <version>3.0.0</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-plugin-api</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-toolchain</artifactId>
+        <version>3.0-alpha-2</version>
+      </dependency>
+      <dependency>
         <groupId>org.apache.maven.shared</groupId>
         <artifactId>maven-common-artifact-filters</artifactId>
-        <version>1.3</version>
+        <version>3.0.1</version>
         <exclusions>
           <exclusion>
             <groupId>org.apache.maven.shared</groupId>
             <artifactId>maven-plugin-testing-harness</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.plugin-testing</groupId>
+        <artifactId>maven-plugin-testing-harness</artifactId>
+        <version>2.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.xmlunit</groupId>
+        <artifactId>xmlunit-core</artifactId>
+        <version>2.6.0</version>
+      </dependency>
+      <dependency>
+        <groupId>net.sourceforge.htmlunit</groupId>
+        <artifactId>htmlunit</artifactId>
+        <version>2.33</version>
       </dependency>
       <dependency>
         <groupId>org.fusesource.jansi</groupId>
@@ -257,6 +229,16 @@
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-java</artifactId>
         <version>0.9.10</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-launcher</artifactId>
+        <version>1.3.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>5.3.1</version>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
@@ -277,7 +259,6 @@
         <groupId>org.powermock</groupId>
         <artifactId>powermock-core</artifactId>
         <version>${powermockVersion}</version>
-        <scope>test</scope>
         <exclusions>
           <exclusion>
             <groupId>net.bytebuddy</groupId>
@@ -303,13 +284,11 @@
         <groupId>org.powermock</groupId>
         <artifactId>powermock-module-junit4</artifactId>
         <version>${powermockVersion}</version>
-        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-api-mockito2</artifactId>
         <version>${powermockVersion}</version>
-        <scope>test</scope>
       </dependency>
       <!-- END: PowerMock@Java9 -->
       <dependency>
@@ -514,7 +493,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.0.0-M1</version>
+        <version>3.0.0-M2</version>
         <executions>
           <execution>
             <id>enforce-java</id>
@@ -525,7 +504,7 @@
               <rules>
                 <requireJavaVersion>
                   <!-- We use JDK 1.8 to check -Xdoclint:all at compile time but with javac -source 1.6 -target 1.6 -->
-                  <!-- enforcer:1.3.1 fails on jdk9. 3.0.0-M1 does not but surefire:12.2.4 crashes later. -->
+                  <!-- enforcer:1.3.1 fails on jdk9. 3.0.0-M2 does not but surefire:12.2.4 crashes later. -->
                   <version>[1.8, 1.9)</version>
                 </requireJavaVersion>
               </rules>
@@ -630,28 +609,6 @@
   <profiles>
     <profile>
       <id>reporting</id>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <!-- Moving to a profile, since these dependencies won't exist the first
-                 time a new snapshot version is built. This prevents the first
-                 snapshot build from proceeding beyond the build for the top-level 
-                 Surefire parent POM.
-            -->
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-site-plugin</artifactId>
-              <dependencies>
-                <!-- dependency>
-                  <groupId>org.apache.maven.surefire</groupId>
-                  <artifactId>surefire-shadefire</artifactId>
-                  <version>${project.version}</version>
-                </dependency -->
-              </dependencies>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
       <reporting>
         <plugins>
           <plugin>
@@ -670,38 +627,6 @@
           </plugin>
         </plugins>
       </reporting>
-    </profile>
-    <profile>
-      <id>m2e</id>
-      <properties>
-        <m2BuildDirectory>target</m2BuildDirectory>
-      </properties>
-      <activation>
-        <property>
-          <name>m2e.version</name>
-        </property>
-      </activation>
-      <build>
-        <directory>${m2BuildDirectory}</directory>
-        <plugins>
-          <plugin>
-            <groupId>org.maven.ide.eclipse</groupId>
-            <artifactId>lifecycle-mapping</artifactId>
-            <version>0.10.0</version>
-            <configuration>
-              <mappingId>customizable</mappingId>
-              <configurators>
-                <configurator id="org.maven.ide.eclipse.jdt.javaConfigurator" />
-                <configurator id="org.maven.ide.eclipse.modello.modelloConfigurator" />
-                <configurator id="org.maven.ide.eclipse.plexus.annotations.plexusConfigurator" />
-              </configurators>
-              <mojoExecutions>
-                <mojoExecution>org.apache.maven.plugins:maven-resources-plugin::</mojoExecution>
-              </mojoExecutions>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
   </profiles>
 </project>

@@ -35,6 +35,7 @@
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-logger-api</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
@@ -65,7 +66,6 @@
         </dependencies>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
@@ -83,7 +83,7 @@
               <relocations>
                 <relocation>
                   <pattern>org.apache.maven.shared</pattern>
-                  <shadedPattern>org.apache.maven.surefire.shade.org.apache.maven.shared</shadedPattern>
+                  <shadedPattern>org.apache.maven.surefire.shade.api.org.apache.maven.shared</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>

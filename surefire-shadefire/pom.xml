@@ -63,9 +63,7 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>1.4</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -73,7 +71,6 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-              <!-- minimizeJar>true</minimizeJar -->
               <artifactSet>
                 <includes>
                   <include>org.apache.maven.surefire:surefire-api</include>

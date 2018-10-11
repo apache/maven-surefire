@@ -35,6 +35,7 @@
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-api</artifactId>
+      <version>${project.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.apache.maven.shared</groupId>
@@ -126,7 +127,6 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
@@ -145,11 +145,11 @@
               <relocations>
                 <relocation>
                   <pattern>org.apache.commons.lang3</pattern>
-                  <shadedPattern>org.apache.maven.surefire.shade.org.apache.commons.lang3</shadedPattern>
+                  <shadedPattern>org.apache.maven.surefire.shade.booter.org.apache.commons.lang3</shadedPattern>
                 </relocation>
                 <relocation>
                   <pattern>org.apache.commons.io</pattern>
-                  <shadedPattern>org.apache.maven.surefire.shade.org.apache.commons.io</shadedPattern>
+                  <shadedPattern>org.apache.maven.surefire.shade.booter.org.apache.commons.io</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>

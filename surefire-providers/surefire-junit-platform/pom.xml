@@ -27,11 +27,14 @@
     </parent>
 
     <artifactId>surefire-junit-platform</artifactId>
+
     <name>SureFire JUnit Platform Runner</name>
     <description>SureFire JUnit Platform Runner</description>
+
     <properties>
         <javaVersion>8</javaVersion>
     </properties>
+
     <contributors>
         <contributor>
             <name>Konstantin Lutovich</name>
@@ -86,12 +89,10 @@
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-launcher</artifactId>
-            <version>1.3.1</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.3.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -134,41 +135,11 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
                 <configuration>
                     <jvm>${java.home}/bin/java</jvm>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <minimizeJar>true</minimizeJar>
-                            <artifactSet>
-                                <includes>
-                                    <include>org.apache.maven.surefire:common-java5</include>
-                                </includes>
-                            </artifactSet>
-                            <relocations>
-                                <relocation>
-                                    <pattern>javax.annotation</pattern>
-                                    <shadedPattern>org.apache.maven.surefire.javax.annotation</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.apache.maven.shared</pattern>
-                                    <shadedPattern>org.apache.maven.surefire.org.apache.maven.shared</shadedPattern>
-                                </relocation>
-                            </relocations>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

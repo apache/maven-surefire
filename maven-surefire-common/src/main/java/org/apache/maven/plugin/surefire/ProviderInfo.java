@@ -20,7 +20,6 @@ package org.apache.maven.plugin.surefire;
  */
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.apache.maven.plugin.MojoExecutionException;
 
 import javax.annotation.Nonnull;
@@ -37,8 +36,7 @@ public interface ProviderInfo
     boolean isApplicable();
 
     @Nonnull
-    Set<Artifact> getProviderClasspath()
-        throws AbstractArtifactResolutionException;
+    Set<Artifact> getProviderClasspath();
 
     void addProviderProperties() throws MojoExecutionException;
 }

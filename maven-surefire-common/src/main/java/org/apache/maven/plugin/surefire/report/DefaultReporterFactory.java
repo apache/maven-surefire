@@ -442,20 +442,19 @@ public class DefaultReporterFactory
 
     private void log( String s, Level level )
     {
-        MessageBuilder builder = buffer();
         switch ( level )
         {
             case FAILURE:
-                consoleLogger.error( builder.failure( s ).toString() );
+                failure( s );
                 break;
             case UNSTABLE:
-                consoleLogger.warning( builder.warning( s ).toString() );
+                warning( s );
                 break;
             case SUCCESS:
-                consoleLogger.info( builder.success( s ).toString() );
+                success( s );
                 break;
             default:
-                consoleLogger.info( builder.a( s ).toString() );
+                info( s );
         }
     }
 
@@ -467,13 +466,13 @@ public class DefaultReporterFactory
     private void info( String s )
     {
         MessageBuilder builder = buffer();
-        consoleLogger.info( builder.info( s ).toString() );
+        consoleLogger.info( builder.a( s ).toString() );
     }
 
-    private void err( String s )
+    private void warning( String s )
     {
         MessageBuilder builder = buffer();
-        consoleLogger.error( builder.error( s ).toString() );
+        consoleLogger.warning( builder.warning( s ).toString() );
     }
 
     private void success( String s )

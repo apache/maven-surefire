@@ -31,8 +31,6 @@ import org.apache.maven.surefire.util.internal.DumpFileUtils;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
@@ -185,27 +183,26 @@ public final class SurefireHelper
             cli.add( LOGGING_LEVEL_DEBUG );
         }
 
-        try
+        MavenExecutionRequest request = session.getRequest();
+
+        if ( request.isShowErrors() )
         {
-            Method getRequestMethod = session.getClass().getMethod( "getRequest" );
-            MavenExecutionRequest request = (MavenExecutionRequest) getRequestMethod.invoke( session );
+            cli.add( SHOW_ERRORS );
+        }
 
-            if ( request.isShowErrors() )
+        String failureBehavior = request.getReactorFailureBehavior();
+        if ( failureBehavior != null )
+        {
+            try
             {
-                cli.add( SHOW_ERRORS );
+                cli.add( CommandLineOption.valueOf( failureBehavior ) );
             }
-
-            String f = getFailureBehavior( request );
-            if ( f != null )
+            catch ( IllegalArgumentException e )
             {
-                // compatible with enums Maven 3.0
-                cli.add( CommandLineOption.valueOf( f.startsWith( "REACTOR_" ) ? f : "REACTOR_" + f ) );
+                // CommandLineOption does not have specified enum as string. See getRequest() method in Maven Session.
             }
         }
-        catch ( Exception e )
-        {
-            // don't need to log the exception that Maven 2 does not have getRequest() method in Maven Session
-        }
+
         return unmodifiableList( cli );
     }
 
@@ -248,21 +245,6 @@ public final class SurefireHelper
             path = path.startsWith( "\\\\" ) ? "\\\\?\\UNC\\" + path.substring( 2 ) : "\\\\?\\" + path;
         }
         return path;
-    }
-
-    private static String getFailureBehavior( MavenExecutionRequest request )
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
-    {
-        try
-        {
-            return request.getFailureBehavior();
-        }
-        catch ( NoSuchMethodError e )
-        {
-            return (String) request.getClass()
-                .getMethod( "getReactorFailureBehavior" )
-                .invoke( request );
-        }
     }
 
     private static boolean failIfNoTests( SurefireReportParameters reportParameters )

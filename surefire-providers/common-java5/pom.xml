@@ -41,7 +41,6 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
@@ -51,10 +50,15 @@
             </goals>
             <configuration>
               <minimizeJar>true</minimizeJar>
+              <artifactSet>
+                <includes>
+                  <include>org.apache.maven.shared:maven-shared-utils</include>
+                </includes>
+              </artifactSet>
               <relocations>
                 <relocation>
-                  <pattern>org.codehaus.plexus.util</pattern>
-                  <shadedPattern>org.apache.maven.surefire.commonjunit48.org.codehaus.plexus.util</shadedPattern>
+                  <pattern>org.apache.maven.shared</pattern>
+                  <shadedPattern>org.apache.maven.surefire.shade.java5.org.apache.maven.shared</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>

@@ -217,14 +217,18 @@ public class AbstractSurefireMojoTest
                 createFromVersion( "1" ), "runtime", "jar", "", handler );
         common.setFile( mockFile( "maven-surefire-common.jar" ) );
 
-
         Artifact api = new DefaultArtifact( "org.apache.maven.surefire", "surefire-api",
                 createFromVersion( "1" ), "runtime", "jar", "", handler );
         api.setFile( mockFile( "surefire-api.jar" ) );
 
+        Artifact loggerApi = new DefaultArtifact( "org.apache.maven.surefire", "surefire-logger-api",
+                createFromVersion( "1" ), "runtime", "jar", "", handler );
+        loggerApi.setFile( mockFile( "surefire-logger-api.jar" ) );
+
         Map<String, Artifact> providerArtifactsMap = new HashMap<String, Artifact>();
         providerArtifactsMap.put( "org.apache.maven.surefire:maven-surefire-common", common );
         providerArtifactsMap.put( "org.apache.maven.surefire:surefire-api", api );
+        providerArtifactsMap.put( "org.apache.maven.surefire:surefire-logger-api", loggerApi );
 
         when( mojo.getPluginArtifactMap() )
                 .thenReturn( providerArtifactsMap );
@@ -268,7 +272,6 @@ public class AbstractSurefireMojoTest
         verify( mojo, times( 1 ) ).isChildDelegation();
         verifyPrivate( mojo, times( 1 ) ).invoke( "generateTestClasspath" );
         verify( mojo, times( 1 ) ).getEffectiveForkCount();
-        verify( logger, times( 6 ) ).isDebugEnabled();
         ArgumentCaptor<String> argument = ArgumentCaptor.forClass( String.class );
         verify( logger, times( 6 ) ).debug( argument.capture() );
         assertThat( argument.getAllValues() )
@@ -276,8 +279,8 @@ public class AbstractSurefireMojoTest
                 "provider classpath:  surefire-provider.jar",
                 "test(compact) classpath:  test-classes  classes  junit.jar  hamcrest.jar",
                 "provider(compact) classpath:  surefire-provider.jar",
-                "in-process classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-api.jar",
-                "in-process(compact) classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-api.jar"
+                "in-process classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-api.jar  surefire-logger-api.jar",
+                "in-process(compact) classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-api.jar  surefire-logger-api.jar"
                 );
 
         assertThat( conf.getClassLoaderConfiguration() )

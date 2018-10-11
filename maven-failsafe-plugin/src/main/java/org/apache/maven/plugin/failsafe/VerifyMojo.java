@@ -151,7 +151,7 @@ public class VerifyMojo
     /**
      * The current build session instance.
      */
-    @Component
+    @Parameter( defaultValue = "${session}", readonly = true )
     private MavenSession session;
 
     @Component

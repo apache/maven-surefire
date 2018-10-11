@@ -32,7 +32,7 @@ properties(
 
 final def oses = ['linux':'ubuntu && !H24', 'windows':'Windows']
 final def mavens = env.BRANCH_NAME == 'master' ? ['3.5.x', '3.3.x', '3.2.x'] : ['3.5.x']
-final def jdks = [11, 8, 7]
+final def jdks = [9, 8, 7]
 
 final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
 final def goals = ['clean', 'install', 'jacoco:report']
@@ -139,9 +139,9 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
                 withEnv(["JAVA_HOME=${tool(jdkName)}",
                          "JAVA_HOME_IT=${tool(jdkTestName)}",
                          "MAVEN_OPTS=${mavenOpts}",
-                         "PATH+MAVEN=${tool(mvnName)}/bin:${env.JAVA_HOME}/bin"
+                         "PATH+MAVEN=${tool(mvnName)}/bin:${tool(jdkName)}/bin"
                 ]) {
-                    sh 'echo JAVA_HOME=$JAVA_HOME, JAVA_HOME_IT=$JAVA_HOME_IT'
+                    sh 'echo JAVA_HOME=$JAVA_HOME, JAVA_HOME_IT=$JAVA_HOME_IT, PATH=$PATH'
                     def script = cmd + ['\"-Djdk.home=$JAVA_HOME_IT\"']
                     sh script.join(' ')
                 }
@@ -149,9 +149,9 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
                 withEnv(["JAVA_HOME=${tool(jdkName)}",
                          "JAVA_HOME_IT=${tool(jdkTestName)}",
                          "MAVEN_OPTS=${mavenOpts}",
-                         "PATH+MAVEN=${tool(mvnName)}\\bin;${env.JAVA_HOME}\\bin"
+                         "PATH+MAVEN=${tool(mvnName)}\\bin;${tool(jdkName)}\\bin"
                 ]) {
-                    bat 'echo JAVA_HOME=%JAVA_HOME%, JAVA_HOME_IT=%JAVA_HOME_IT%'
+                    bat 'echo JAVA_HOME=%JAVA_HOME%, JAVA_HOME_IT=%JAVA_HOME_IT%, PATH=%PATH%'
                     def script = cmd + ['\"-Djdk.home=%JAVA_HOME_IT%\"']
                     bat script.join(' ')
                 }
