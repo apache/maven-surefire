@@ -2,7 +2,7 @@ package pkg;
 
 import org.testng.annotations.Test;
 
-import java.util.concurrent.TimeUnit;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class ATest
 {
@@ -10,8 +10,7 @@ public class ATest
     public void someMethod()
         throws InterruptedException
     {
-        // checking processros # due to very slow Windows Jenkins machines
-        TimeUnit.MILLISECONDS.sleep( Runtime.getRuntime().availableProcessors() == 1 ? 3600 : 1500 );
+        MILLISECONDS.sleep( 3600L );
         throw new RuntimeException( "assert \"foo\" == \"bar\"\n"
                                         + "             |\n"
                                         + "             false" );
