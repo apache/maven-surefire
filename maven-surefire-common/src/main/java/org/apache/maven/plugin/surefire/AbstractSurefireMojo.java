@@ -21,7 +21,9 @@ package org.apache.maven.plugin.surefire;
  */
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.repository.RepositorySystem;
@@ -95,6 +97,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -478,11 +481,11 @@ public abstract class AbstractSurefireMojo
 
     /**
      * Allows you to specify the name of the JUnit Platform artifact.
-     * If not set, {@code org.junit.platform:junit-platform-engine} will be used.
+     * If not set, {@code org.junit.platform:junit-platform-commons} will be used.
      *
      * @since 2.22.0
      */
-    @Parameter( property = "junitPlatformArtifactName", defaultValue = "org.junit.platform:junit-platform-engine" )
+    @Parameter( property = "junitPlatformArtifactName", defaultValue = "org.junit.platform:junit-platform-commons" )
     private String junitPlatformArtifactName;
 
     /**
@@ -2849,11 +2852,11 @@ public abstract class AbstractSurefireMojo
     final class JUnitPlatformProviderInfo
         implements ProviderInfo
     {
-        private final Artifact junitArtifact;
+        private final Artifact junitPlatformArtifact;
 
-        JUnitPlatformProviderInfo( Artifact junitArtifact )
+        JUnitPlatformProviderInfo( Artifact junitPlatformArtifact )
         {
-            this.junitArtifact = junitArtifact;
+            this.junitPlatformArtifact = junitPlatformArtifact;
         }
 
         @Override
@@ -2866,7 +2869,7 @@ public abstract class AbstractSurefireMojo
         @Override
         public boolean isApplicable()
         {
-            return junitArtifact != null;
+            return junitPlatformArtifact != null;
         }
 
         @Override
@@ -2879,8 +2882,55 @@ public abstract class AbstractSurefireMojo
         @Nonnull
         public Set<Artifact> getProviderClasspath()
         {
+            String provider = "surefire-junit-platform";
             String version = surefireBooterArtifact.getBaseVersion();
-            return dependencyResolver.getProviderClasspath( "surefire-junit-platform", version );
+            Set<Artifact> providerArtifacts = dependencyResolver.getProviderClasspath( provider, version );
+            alignJUnitPlatformVersion( providerArtifacts );
+            return providerArtifacts;
+        }
+
+        private void alignJUnitPlatformVersion( Set<Artifact> providerArtifacts )
+        {
+            Map<String, Artifact> providerArtifactMap = new HashMap<String, Artifact>();
+            for ( Artifact artifact : providerArtifacts )
+            {
+                String key = artifact.getGroupId() + ":" + artifact.getArtifactId();
+                providerArtifactMap.put( key, artifact );
+            }
+            Artifact defaultLauncher = providerArtifactMap.get( "org.junit.platform:junit-platform-launcher" );
+            logDebugOrCliShowErrors( "JUnit Platform Artifact: " + junitPlatformArtifact );
+            logDebugOrCliShowErrors( "JUnit Platform Launcher: " + defaultLauncher );
+            if ( junitPlatformArtifact.getVersion().equals( defaultLauncher.getVersion() ) )
+            {
+                logDebugOrCliShowErrors( "JUnit Platform versions are equal - proceeding anyway... " );
+            }
+            String version =  junitPlatformArtifact.getBaseVersion();
+            logDebugOrCliShowErrors( "Aligning JUnit Platform to version: " + version );
+            // remove "wrong" platform artifacts
+            Iterator<Artifact> artifactIterator = providerArtifacts.iterator();
+            while ( artifactIterator.hasNext() )
+            {
+                Artifact currentArtifact = artifactIterator.next();
+                if ( currentArtifact.getGroupId().equals( "org.junit.platform" ) )
+                {
+                    logDebugOrCliShowErrors( "  Removed from provider set: " + currentArtifact );
+                    artifactIterator.remove();
+                }
+            }
+            // resolve matching "junit-platform-launcher" and its transitive dependencies
+            resolve( providerArtifacts, "org.junit.platform", "junit-platform-launcher", version );
+        }
+
+        /** Resolve artifact and its transitive dependencies and all to the target set. */
+        private void resolve( Set<Artifact> providerArtifacts, String g, String a, String v )
+        {
+            ArtifactHandler handler = junitPlatformArtifact.getArtifactHandler();
+            Artifact artifact = new DefaultArtifact( g, a, v, "test", "jar", "", handler );
+            logDebugOrCliShowErrors( "Resolving (additional) providers artifacts for: " + artifact );
+            @SuppressWarnings( "unchecked" )
+            Set<Artifact> resolvedArtifacts = dependencyResolver.resolveArtifact( artifact ).getArtifacts();
+            providerArtifacts.addAll( resolvedArtifacts );
+            logDebugOrCliShowErrors( "Resolved (additional) providers artifacts: " + resolvedArtifacts );
         }
     }
 
