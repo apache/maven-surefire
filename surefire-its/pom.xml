@@ -87,7 +87,6 @@
         <directory>src/test/resources</directory>
         <targetPath>${project.build.outputDirectory}</targetPath>
         <excludes>
-          <exclude>settings.xml</exclude>
           <exclude>toolchains.xml</exclude>
         </excludes>
       </resource>
@@ -96,7 +95,6 @@
         <filtering>true</filtering>
         <targetPath>${project.build.directory}/private</targetPath>
         <includes>
-          <include>settings.xml</include>
           <include>toolchains.xml</include>
         </includes>
       </resource>
@@ -123,6 +121,22 @@
                   </excludes>
                 </enforceBytecodeVersion>
               </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-help-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>settings.xml</id>
+            <phase>generate-test-resources</phase>
+            <goals>
+              <goal>effective-settings</goal>
+            </goals>
+            <configuration>
+              <output>${project.build.directory}/private/settings.xml</output>
+              <showPasswords>false</showPasswords>
             </configuration>
           </execution>
         </executions>
