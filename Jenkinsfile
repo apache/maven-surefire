@@ -63,7 +63,7 @@ oses.eachWithIndex { osMapping, indexOfOs ->
             stages[stageKey] = {
                 node(label) {
                     timestamps {
-                        def boolean makeReports = indexOfOs = 0 && indexOfMaven == 0 && indexOfJdk == 0
+                        def boolean makeReports = indexOfOs == 0 && indexOfMaven == 0 && indexOfJdk == 0
                         def failsafeItPort = 8000 + 100 * indexOfMaven + 10 * indexOfJdk
                         def allOptions = options + ["-Dfailsafe-integration-test-port=${failsafeItPort}", "-Dfailsafe-integration-test-stop-port=${1 + failsafeItPort}"]
                         buildProcess(stageKey, jdkName, jdkTestName, mvnName, goals, allOptions, mavenOpts, makeReports)
