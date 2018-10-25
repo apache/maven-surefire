@@ -35,8 +35,8 @@ But in order to run IT tests, you can do:
   **(on Windows)** *set MAVEN_OPTS="-server -Xmx256m -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=384m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Dhttps.protocols=TLSv1"*    
 * In order to run the build with **JDK 9** **on Windows** (**on Linux/Unix modify system property jdk.home**):  
   *mvn install site site:stage -P reporting,run-its "-Djdk.home=e:\Program Files\Java\jdk9\"*
-* In order to run the build with **JDK 10** disable JaCoCo due to a [bug in JaCoCo](https://github.com/jacoco/jacoco/issues/629)
-  *mvn install site site:stage -P reporting,run-its -Djacoco.skip=true "-Djdk.home=e:\Program Files\Java\jdk10\"*
+* In order to run the build with **JDK 11**:
+  *mvn install site site:stage -P reporting,run-its "-Djdk.home=e:\Program Files\Java\jdk11\"*
   
 ### Deploying web site
 

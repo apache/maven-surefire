@@ -50,11 +50,8 @@ oses.eachWithIndex { osMapping, indexOfOs ->
 
 // Referenses for TLS:
 // https://central.sonatype.org/articles/2018/May/04/discontinued-support-for-tlsv11-and-below/?__hstc=31049440.ab2fd229e7f8b6176196d9f78621e1f5.1534324377408.1534324377408.1534324377408.1&__hssc=31049440.1.1534324377409&__hsfp=2729160845
-            def mavenOpts = '-server -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseNUMA \
+            def mavenOpts = '-server -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseNUMA -XX:+UseStringDeduplication \
 -Xms64m -Djava.awt.headless=true -Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2'
-            if (jdk > 7) {
-                mavenOpts += ' -XX:+UseStringDeduplication'
-            }
             mavenOpts += (os == 'linux' ? ' -Xmx1g' : ' -Xmx256m')
 
             if (label == null || jdkTestName == null || mvnName == null) {
@@ -67,13 +64,9 @@ oses.eachWithIndex { osMapping, indexOfOs ->
             stages[stageKey] = {
                 node(label) {
                     timestamps {
-                        //https://github.com/jacoco/jacoco/issues/629
-                        def boolean makeReports = os == 'linux' && indexOfMaven == mavens.size() - 1 && jdk == 9
+                        def boolean makeReports = os == 'linux' && indexOfMaven == 0 && jdk == 11
                         def failsafeItPort = 8000 + 100 * indexOfMaven + 10 * indexOfJdk
                         def allOptions = options + ["-Dfailsafe-integration-test-port=${failsafeItPort}", "-Dfailsafe-integration-test-stop-port=${1 + failsafeItPort}"]
-                        if (jdk == 11) {
-                            allOptions += ['-DskipUnitTests=true']
-                        }
                         buildProcess(stageKey, jdkName, jdkTestName, mvnName, goals, allOptions, mavenOpts, makeReports)
                     }
                 }
