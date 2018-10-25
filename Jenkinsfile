@@ -32,7 +32,7 @@ properties(
 
 final def oses = ['linux':'ubuntu && !H24', 'windows':'Windows']
 final def mavens = env.BRANCH_NAME == 'master' ? ['3.2.x', '3.3.x', '3.5.x'] : ['3.5.x']
-final def jdks = [7, 8, 9, 10, 11]
+final def jdks = [7, 8, 11]
 
 final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
 final def goals = ['clean', 'install', 'jacoco:report']
@@ -114,7 +114,7 @@ timeout(time: 12, unit: 'HOURS') {
         throw e
     } finally {
         stage("notifications") {
-            //jenkinsNotify()
+            jenkinsNotify()
         }
     }
 }
