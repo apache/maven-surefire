@@ -84,6 +84,7 @@
   </distributionManagement>
 
   <properties>
+    <javaVersion>7</javaVersion>
     <mavenVersion>2.2.1</mavenVersion>
     <!-- <shadedVersion>2.12.4</shadedVersion> commented out due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
     <commonsLang3Version>3.5</commonsLang3Version>
@@ -434,8 +435,8 @@
               <configuration>
                 <signature>
                   <groupId>org.codehaus.mojo.signature</groupId>
-                  <artifactId>java16</artifactId>
-                  <version>1.1</version>
+                  <artifactId>java17</artifactId>
+                  <version>1.0</version>
                 </signature>
                 <excludeDependencies>
                   <param>org.codehaus.plexus:plexus-java</param>
