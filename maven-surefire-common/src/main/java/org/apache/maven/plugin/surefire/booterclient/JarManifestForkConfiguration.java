@@ -114,8 +114,17 @@ public final class JarManifestForkConfiguration
             for ( Iterator<String> it = classPath.iterator(); it.hasNext(); )
             {
                 File file1 = new File( it.next() );
+                String uri;
+                try
+                {
+                    uri = URI.create( parent.relativize( file1.toPath() ).toString() ).toASCIIString();
+                }
+                catch ( IllegalArgumentException e )
+                {
+                    uri = file1.toURI().toASCIIString();
+                    getConsoleLogger().warning( "Boot Manifest-JAR contains absolute paths in classpath" );
+                }
 
-                String uri = URI.create( parent.relativize( file1.toPath() ).toString() ).toASCIIString();
                 cp.append( uri );
                 if ( file1.isDirectory() && !uri.endsWith( "/" ) )
                 {
