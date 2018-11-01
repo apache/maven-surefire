@@ -30,6 +30,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
@@ -114,7 +115,7 @@ public final class JarManifestForkConfiguration
             {
                 File file1 = new File( it.next() );
 
-                String uri = parent.relativize( file1.toPath() ).toString();
+                String uri = URI.create( parent.relativize( file1.toPath() ).toString() ).toASCIIString();
                 cp.append( uri );
                 if ( file1.isDirectory() && !uri.endsWith( "/" ) )
                 {
