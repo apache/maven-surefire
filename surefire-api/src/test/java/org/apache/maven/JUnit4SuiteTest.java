@@ -37,7 +37,6 @@ import org.apache.maven.surefire.util.RunOrderCalculatorTest;
 import org.apache.maven.surefire.util.RunOrderTest;
 import org.apache.maven.surefire.util.ScanResultTest;
 import org.apache.maven.surefire.util.TestsToRunTest;
-import org.apache.maven.surefire.util.UrlUtilsTest;
 import org.apache.maven.surefire.util.internal.ConcurrencyUtilsTest;
 import org.apache.maven.surefire.util.internal.ImmutableMapTest;
 import org.apache.maven.surefire.util.internal.StringUtilsTest;
@@ -66,7 +65,6 @@ import org.junit.runners.Suite;
     RunOrderTest.class,
     ScanResultTest.class,
     TestsToRunTest.class,
-    UrlUtilsTest.class,
     SpecificTestClassFilterTest.class,
     FundamentalFilterTest.class,
     ImmutableMapTest.class,

@@ -102,23 +102,19 @@ public class TestFile
 
     public String slurpFile()
     {
-        try
+        StringBuilder sb = new StringBuilder();
+        try ( BufferedReader reader = new BufferedReader( new FileReader( file ) ) )
         {
-            StringBuilder sb = new StringBuilder();
-            BufferedReader reader;
-            reader = new BufferedReader( new FileReader( file ) );
             for ( String line = reader.readLine(); line != null; line = reader.readLine() )
             {
                 sb.append( line );
             }
-            reader.close();
             return sb.toString();
         }
         catch ( IOException e )
         {
             throw new SurefireVerifierException( e );
         }
-
     }
 
     public String readFileToString()

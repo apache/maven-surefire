@@ -19,11 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
-
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -36,12 +33,6 @@ import org.junit.Test;
  */
 public class JUnit47RerunFailingTestWithCucumberIT
     extends SurefireJUnit4IntegrationTestCase {
-
-    @Before
-    public void assumeJdk17() {
-        assumeJavaVersion(1.7d);
-    }
-
 
     private SurefireLauncher unpack() {
         return unpack("junit47-rerun-failing-tests-with-cucumber")

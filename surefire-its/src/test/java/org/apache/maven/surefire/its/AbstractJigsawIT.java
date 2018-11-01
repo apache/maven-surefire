@@ -81,9 +81,10 @@ public abstract class AbstractJigsawIT
                 + EXT_JDK_HOME + File.separator + "release", release.exists() );
 
         Properties properties = new Properties();
-        InputStream is = new FileInputStream( release );
-        properties.load( is );
-        is.close();
+        try ( InputStream is = new FileInputStream( release ) )
+        {
+            properties.load( is );
+        }
         String javaVersion = properties.getProperty( "JAVA_VERSION" ).replace( "\"", "" );
         StringTokenizer versions = new StringTokenizer( javaVersion, "._" );
 

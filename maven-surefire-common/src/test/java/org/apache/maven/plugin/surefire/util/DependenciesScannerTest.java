@@ -49,14 +49,14 @@ public class DependenciesScannerTest
                                  "jar", "tests", null );
         artifact.setFile( testFile );
 
-        List<String> scanDependencies = new ArrayList<String>();
+        List<String> scanDependencies = new ArrayList<>();
         scanDependencies.add( "org.surefire.dependency:test-jar" );
 
-        List<String> include = new ArrayList<String>();
+        List<String> include = new ArrayList<>();
         include.add( "**/*A.java" );
-        List<String> exclude = new ArrayList<String>();
+        List<String> exclude = new ArrayList<>();
 
-        List<File> dependenciesToScan = new ArrayList<File>();
+        List<File> dependenciesToScan = new ArrayList<>();
         for ( Artifact a : DependencyScanner.filter( Collections.singletonList( artifact ), scanDependencies ) )
         {
             dependenciesToScan.add( a.getFile() );
@@ -69,7 +69,7 @@ public class DependenciesScannerTest
         assertNotNull( classNames );
         assertEquals( 1, classNames.size() );
 
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
         classNames.writeTo( props );
         assertEquals( 1, props.size() );
     }
@@ -80,18 +80,13 @@ public class DependenciesScannerTest
         File output = new File( "target/DependenciesScannerTest-tests.jar" );
         output.delete();
 
-        ZipOutputStream out = new ZipOutputStream( new FileOutputStream( output ) );
-        try
+        try ( ZipOutputStream out = new ZipOutputStream( new FileOutputStream( output ) ) )
         {
             out.putNextEntry( new ZipEntry( "org/test/TestA.class" ) );
             out.closeEntry();
             out.putNextEntry( new ZipEntry( "org/test/TestB.class" ) );
             out.closeEntry();
             return output;
-        }
-        finally
-        {
-            out.close();
         }
     }
 }

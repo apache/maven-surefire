@@ -146,19 +146,9 @@ public class SurefireReflectorTest
             isCalled = foo.getClass().getMethod( "isCalled" );
             return (Boolean) isCalled.invoke( foo );
         }
-        catch ( IllegalAccessException e )
-        {
-            throw new RuntimeException( e );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new RuntimeException( e );
-        }
-        catch ( NoSuchMethodException e )
+        catch ( ReflectiveOperationException e )
         {
             throw new RuntimeException( e );
         }
     }
-
-
 }

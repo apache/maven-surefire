@@ -36,6 +36,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static java.util.Objects.requireNonNull;
 import static java.lang.Thread.State.NEW;
 import static java.lang.Thread.State.RUNNABLE;
 import static java.lang.Thread.State.TERMINATED;
@@ -53,7 +54,6 @@ import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDae
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
-import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
 
 /**
  * Reader of commands coming from plugin(master) process.
@@ -67,18 +67,17 @@ public final class CommandReader
 
     private static final CommandReader READER = new CommandReader();
 
-    private final Queue<BiProperty<MasterProcessCommand, CommandListener>> listeners
-        = new ConcurrentLinkedQueue<BiProperty<MasterProcessCommand, CommandListener>>();
+    private final Queue<BiProperty<MasterProcessCommand, CommandListener>> listeners = new ConcurrentLinkedQueue<>();
 
     private final Thread commandThread = newDaemonThread( new CommandRunnable(), "surefire-forkedjvm-command-thread" );
 
-    private final AtomicReference<Thread.State> state = new AtomicReference<Thread.State>( NEW );
+    private final AtomicReference<Thread.State> state = new AtomicReference<>( NEW );
 
     private final CountDownLatch startMonitor = new CountDownLatch( 1 );
 
     private final Semaphore nextCommandNotifier = new Semaphore( 0 );
 
-    private final CopyOnWriteArrayList<String> testClasses = new CopyOnWriteArrayList<String>();
+    private final CopyOnWriteArrayList<String> testClasses = new CopyOnWriteArrayList<>();
 
     private volatile Shutdown shutdown;
 
@@ -174,7 +173,7 @@ public final class CommandReader
 
     private void addListener( MasterProcessCommand cmd, CommandListener listener )
     {
-        listeners.add( new BiProperty<MasterProcessCommand, CommandListener>( cmd, listener ) );
+        listeners.add( new BiProperty<>( cmd, listener ) );
     }
 
     public void removeListener( CommandListener listener )

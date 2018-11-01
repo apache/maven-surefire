@@ -149,7 +149,6 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <useSystemClassLoader>true</useSystemClassLoader>
                     <classpathDependencyExcludes>
                         <classpathDependencyExclude>org.fusesource.jansi:jansi</classpathDependencyExclude>
                     </classpathDependencyExcludes>

@@ -102,15 +102,9 @@ public class RunResult
             return null;
         }
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintWriter pw = new PrintWriter( out );
-        try
+        try ( PrintWriter pw = new PrintWriter( out ) )
         {
             e.printStackTrace( pw );
-            pw.flush();
-        }
-        finally
-        {
-            pw.close();
         }
         return new String( out.toByteArray() );
     }

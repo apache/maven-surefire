@@ -44,20 +44,16 @@ public class SystemPropertyManager
     public static PropertiesWrapper loadProperties( InputStream inStream )
         throws IOException
     {
-        try
+        try ( final InputStream stream = inStream )
         {
             Properties p = new Properties();
-            p.load( inStream );
-            Map<String, String> map = new ConcurrentHashMap<String, String>( p.size() );
+            p.load( stream );
+            Map<String, String> map = new ConcurrentHashMap<>( p.size() );
             for ( String key : p.stringPropertyNames() )
             {
                 map.put( key, p.getProperty( key ) );
             }
             return new PropertiesWrapper( map );
-        }
-        finally
-        {
-            close( inStream ); // @todo use try-with-resources JDK7, search in all code
         }
     }
 
@@ -92,34 +88,9 @@ public class SystemPropertyManager
     public static void writePropertiesFile( File file, String name, Properties properties )
         throws IOException
     {
-        FileOutputStream out = new FileOutputStream( file );
-
-        try
+        try ( FileOutputStream out = new FileOutputStream( file ) )
         {
             properties.store( out, name );
         }
-        finally
-        {
-            out.close();
-        }
     }
-
-    public static void close( InputStream inputStream )
-    {
-        if ( inputStream == null )
-        {
-            return;
-        }
-
-        try
-        {
-            inputStream.close();
-        }
-        catch ( IOException ex )
-        {
-            // ignore
-        }
-    }
-
-
 }

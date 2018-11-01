@@ -35,7 +35,7 @@
   <properties>
     <junit.version>4.8.1</junit.version>
     <forkMode>once</forkMode>
-    <maven.compiler.source>1.6</maven.compiler.source>
-    <maven.compiler.target>1.6</maven.compiler.target>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
   </properties>
 </project>

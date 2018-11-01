@@ -37,47 +37,7 @@ public final class ObjectUtils
 
     public static <T> T useNonNull( T target, T fallback )
     {
-        return isNull( target ) ? fallback : target;
-    }
-
-    /*
-    * In JDK7 use java.util.Objects instead.
-    * todo
-    * */
-    public static boolean isNull( Object target )
-    {
-        return target == null;
-    }
-
-    /*
-    * In JDK7 use java.util.Objects instead.
-    * todo
-    * */
-    public static boolean nonNull( Object target )
-    {
-        return !isNull( target );
-    }
-
-    /*
-    * In JDK7 use java.util.Objects instead.
-    * todo
-    * */
-    public static <T> T requireNonNull( T obj, String message )
-    {
-        if ( isNull( obj ) )
-        {
-            throw new NullPointerException( message );
-        }
-        return obj;
-    }
-
-    /*
-    * In JDK7 use java.util.Objects instead.
-    * todo
-    * */
-    public static <T> T requireNonNull( T obj )
-    {
-        return requireNonNull( obj, null );
+        return target == null ? fallback : target;
     }
 
     public static Map<String, String> systemProps()

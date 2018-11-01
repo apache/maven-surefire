@@ -49,7 +49,7 @@ public class TestProvidingInputStreamTest
     public void closedStreamShouldReturnEndOfStream()
         throws IOException
     {
-        Queue<String> commands = new ArrayDeque<String>();
+        Queue<String> commands = new ArrayDeque<>();
         TestProvidingInputStream is = new TestProvidingInputStream( commands );
         is.close();
         assertThat( is.read(), is( -1 ) );
@@ -59,10 +59,10 @@ public class TestProvidingInputStreamTest
     public void emptyStreamShouldWaitUntilClosed()
         throws Exception
     {
-        Queue<String> commands = new ArrayDeque<String>();
+        Queue<String> commands = new ArrayDeque<>();
         final TestProvidingInputStream is = new TestProvidingInputStream( commands );
         final Thread streamThread = Thread.currentThread();
-        FutureTask<Thread.State> futureTask = new FutureTask<Thread.State>( new Callable<Thread.State>()
+        FutureTask<Thread.State> futureTask = new FutureTask<>( new Callable<Thread.State>()
         {
             @Override
             public Thread.State call()
@@ -84,7 +84,7 @@ public class TestProvidingInputStreamTest
     public void finishedTestsetShouldNotBlock()
         throws IOException
     {
-        Queue<String> commands = new ArrayDeque<String>();
+        Queue<String> commands = new ArrayDeque<>();
         final TestProvidingInputStream is = new TestProvidingInputStream( commands );
         is.testSetFinished();
         new Thread( new Runnable()
@@ -111,7 +111,7 @@ public class TestProvidingInputStreamTest
     public void shouldReadTest()
         throws IOException
     {
-        Queue<String> commands = new ArrayDeque<String>();
+        Queue<String> commands = new ArrayDeque<>();
         commands.add( "Test" );
         final TestProvidingInputStream is = new TestProvidingInputStream( commands );
         new Thread( new Runnable()

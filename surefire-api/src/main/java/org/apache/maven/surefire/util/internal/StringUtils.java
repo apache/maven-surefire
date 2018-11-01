@@ -25,6 +25,8 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.util.StringTokenizer;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+
 /**
  * <p>
  * Common {@link String java.lang.String} manipulation routines.
@@ -58,17 +60,6 @@ public final class StringUtils
                     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
     private static final Charset DEFAULT_CHARSET = Charset.defaultCharset();
-
-    /**
-     * TODO
-     * Use JDK7 StandardCharsets
-     */
-    public static final Charset US_ASCII = Charset.forName( "US-ASCII" );
-
-    // 8-bit charset Latin-1
-    public static final Charset ISO_8859_1 = Charset.forName( "ISO-8859-1" );
-
-    public static final Charset UTF_8 = Charset.forName( "UTF-8" );
 
     private StringUtils()
     {

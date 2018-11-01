@@ -81,59 +81,39 @@ public class TestNGMapConfigurator
         {
             String key = entry.getKey();
             Object val = entry.getValue();
-            // todo: use switch-case of jdk7
-            if ( "listener".equals( key ) )
+            switch ( key )
             {
-                val = convertListeners( entry.getValue() );
-            }
-            else if ( "objectfactory".equals( key ) )
-            {
-                val = AbstractDirectConfigurator.loadClass( entry.getValue() );
-            }
-            else if ( "testrunfactory".equals( key ) )
-            {
-                val = AbstractDirectConfigurator.loadClass( entry.getValue() );
-            }
-            else if ( "reporter".equals( key ) )
-            {
-                // for TestNG 5.6 or higher
-                // TODO support multiple reporters?
-                val = convertReporterConfig( val );
-                key = "reporterslist";
-            }
-            else if ( "junit".equals( key ) )
-            {
-                val = convert( val, Boolean.class );
-            }
-            else if ( "skipfailedinvocationcounts".equals( key ) )
-            {
-                val = convert( val, Boolean.class );
-            }
-            else if ( "mixed".equals( key ) )
-            {
-                val = convert( val, Boolean.class );
-            }
-            else if ( "configfailurepolicy".equals( key ) )
-            {
-                val = convert( val, String.class );
-            }
-            else if ( "group-by-instances".equals( key ) )
-            {
-                val = convert( val, Boolean.class );
-            }
-            else if ( THREADCOUNT_PROP.equals( key ) )
-            {
-                val = convert ( val, String.class );
-            }
-            else if ( "suitethreadpoolsize".equals( key ) )
-            {
+                case "listener":
+                    val = convertListeners( entry.getValue() );
+                    break;
+                case "objectfactory":
+                case "testrunfactory":
+                    val = AbstractDirectConfigurator.loadClass( entry.getValue() );
+                    break;
+                case "reporter":
+                    // for TestNG 5.6 or higher
+                    // TODO support multiple reporters?
+                    val = convertReporterConfig( val );
+                    key = "reporterslist";
+                    break;
+                case "junit":
+                case "skipfailedinvocationcounts":
+                case "mixed":
+                case "group-by-instances":
+                    val = convert( val, Boolean.class );
+                    break;
+                case "configfailurepolicy":
+                case THREADCOUNT_PROP:
+                    val = convert( val, String.class );
+                    break;
                 // for TestNG 6.9.7 or higher
-                val = convert( val, Integer.class );
-            }
-            else if ( "dataproviderthreadcount".equals( key ) )
-            {
-                // for TestNG 5.10 or higher
-                val = convert( val, Integer.class );
+                case "suitethreadpoolsize":
+                    // for TestNG 5.10 or higher
+                case "dataproviderthreadcount":
+                    val = convert( val, Integer.class );
+                    break;
+                default:
+                    break;
             }
 
             if ( key.startsWith( "-" ) )

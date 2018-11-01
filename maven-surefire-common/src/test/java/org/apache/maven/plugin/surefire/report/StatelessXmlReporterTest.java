@@ -38,8 +38,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
-import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
 
 @SuppressWarnings( "ResultOfMethodCallIgnored" )
 public class StatelessXmlReporterTest
@@ -74,7 +74,6 @@ public class StatelessXmlReporterTest
 
     @Override
     protected void tearDown()
-        throws Exception
     {
         if ( expectedReportFile != null )
         {

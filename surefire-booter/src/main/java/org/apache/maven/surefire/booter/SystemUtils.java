@@ -35,7 +35,7 @@ import java.util.StringTokenizer;
 
 import static java.lang.Character.isDigit;
 import static java.lang.Thread.currentThread;
-import static org.apache.commons.io.IOUtils.closeQuietly;
+import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_FREE_BSD;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
@@ -43,7 +43,6 @@ import static org.apache.commons.lang3.SystemUtils.IS_OS_NET_BSD;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_OPEN_BSD;
 import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodChain;
 import static org.apache.maven.surefire.util.ReflectionUtils.tryLoadClass;
-import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
 
 /**
  * JDK 9 support.
@@ -54,8 +53,6 @@ import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull
 public final class SystemUtils
 {
     public static final BigDecimal JAVA_SPECIFICATION_VERSION = getJavaSpecificationVersion();
-
-    private static final BigDecimal JAVA_VERSION_7 = new BigDecimal( "1.7" ).stripTrailingZeros();
 
     private static final BigDecimal JIGSAW_JAVA_VERSION = new BigDecimal( 9 ).stripTrailingZeros();
 
@@ -137,11 +134,9 @@ public final class SystemUtils
         {
             return null;
         }
-        InputStream is = null;
-        try
+        Properties properties = new Properties();
+        try ( InputStream is = new FileInputStream( release ) )
         {
-            Properties properties = new Properties();
-            is = new FileInputStream( release );
             properties.load( is );
             String javaVersion = properties.getProperty( "JAVA_VERSION" ).replace( "\"", "" );
             StringTokenizer versions = new StringTokenizer( javaVersion, "._" );
@@ -166,10 +161,6 @@ public final class SystemUtils
         catch ( IOException e )
         {
             return null;
-        }
-        finally
-        {
-            closeQuietly( is );
         }
     }
 
@@ -229,11 +220,6 @@ public final class SystemUtils
     public static boolean isBuiltInJava9AtLeast()
     {
         return JAVA_SPECIFICATION_VERSION.compareTo( JIGSAW_JAVA_VERSION ) >= 0;
-    }
-
-    public static boolean isBuiltInJava7AtLeast()
-    {
-        return JAVA_SPECIFICATION_VERSION.compareTo( JAVA_VERSION_7 ) >= 0;
     }
 
     public static boolean isJava9AtLeast( BigDecimal version )
@@ -336,18 +322,13 @@ public final class SystemUtils
      */
     static Long pidStatusOnLinux( String root ) throws Exception
     {
-        FileReader input = new FileReader( root + "/proc/self/stat" );
-        try
+        try ( FileReader input = new FileReader( root + "/proc/self/stat" ) )
         {
             // Reading and encoding 20 characters is bit faster than whole line.
             // size of (long) = 19, + 1 space
             char[] buffer = new char[PROC_STATUS_PID_FIRST_CHARS];
             String startLine = new String( buffer, 0, input.read( buffer ) );
             return Long.parseLong( startLine.substring( 0, startLine.indexOf( ' ' ) ) );
-        }
-        finally
-        {
-            input.close();
         }
     }
 
@@ -383,17 +364,12 @@ public final class SystemUtils
      */
     static Long pidStatusOnBSD( String root ) throws Exception
     {
-        BufferedReader input = new BufferedReader( new FileReader( root + "/proc/curproc/status" ) );
-        try
+        try ( BufferedReader input = new BufferedReader( new FileReader( root + "/proc/curproc/status" ) ) )
         {
             String line = input.readLine();
             int i1 = 1 + line.indexOf( ' ' );
             int i2 = line.indexOf( ' ', i1 );
             return Long.parseLong( line.substring( i1, i2 ) );
-        }
-        finally
-        {
-            input.close();
         }
     }
 

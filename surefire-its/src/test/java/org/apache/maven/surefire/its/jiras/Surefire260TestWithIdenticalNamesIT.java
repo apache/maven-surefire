@@ -58,8 +58,7 @@ public class Surefire260TestWithIdenticalNamesIT
         TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
         final URI uri = siteFile.toURI();
 
-        WebClient webClient = new WebClient();
-        try
+        try ( WebClient webClient = new WebClient() )
         {
             HtmlPage page = webClient.getPage( uri.toURL() );
             HtmlAnchor a = ( HtmlAnchor ) page.getByXPath(
@@ -70,10 +69,6 @@ public class Surefire260TestWithIdenticalNamesIT
             assertTrue( content.getAttribute( "style" ).contains( "none" ) );
             a.click();
             assertFalse( content.getAttribute( "style" ).contains( "none" ) );
-        }
-        finally
-        {
-            webClient.close();
         }
     }
 }

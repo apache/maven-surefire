@@ -28,7 +28,7 @@ import org.apache.maven.surefire.report.ReportEntry;
 
 import static java.nio.ByteBuffer.wrap;
 import static java.nio.charset.Charset.defaultCharset;
-import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Outputs test system out/system err directly to the console

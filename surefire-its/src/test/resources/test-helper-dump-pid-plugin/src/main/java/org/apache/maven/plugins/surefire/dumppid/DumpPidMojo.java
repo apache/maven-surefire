@@ -41,7 +41,6 @@ public class DumpPidMojo
     public void execute()
         throws MojoExecutionException
     {
-        File target;
         try
         {
             getLog().info( "Dumping PID to " + targetDir );
@@ -51,16 +50,14 @@ public class DumpPidMojo
                 targetDir.mkdirs();
             }
             
-            target = new File( targetDir, "maven.pid" ).getCanonicalFile();
+            File target = new File( targetDir, "maven.pid" ).getCanonicalFile();
 
-            FileWriter fw = new FileWriter( target );
-            String pid = ManagementFactory.getRuntimeMXBean().getName();
-            fw.write( pid );
-            fw.flush();
-            fw.close();
-            
-            getLog().info( "Wrote " + pid + " to " + target );
-            
+            try ( FileWriter fw = new FileWriter( target ) )
+            {
+                String pid = ManagementFactory.getRuntimeMXBean().getName();
+                fw.write( pid );
+                getLog().info( "Wrote " + pid + " to " + target );
+            }
         }
         catch ( IOException e )
         {

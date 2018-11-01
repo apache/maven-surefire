@@ -25,7 +25,6 @@ import org.apache.maven.shared.utils.xml.XMLWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.SafeThrowable;
-import org.apache.maven.surefire.util.internal.StringUtils;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -42,11 +41,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType;
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
-import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
 import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 
 @SuppressWarnings( { "javadoc", "checkstyle:javadoctype" } )
@@ -126,11 +124,10 @@ public class StatelessXmlReporter
         }
 
         OutputStream outputStream = getOutputStream( testSetReportEntry );
-        OutputStreamWriter fw = getWriter( outputStream );
-        try
+        try ( OutputStreamWriter fw = getWriter( outputStream ) )
         {
             XMLWriter ppw = new PrettyPrintXMLWriter( fw );
-            ppw.setEncoding( StringUtils.UTF_8.name() );
+            ppw.setEncoding( UTF_8.name() );
 
             createTestSuiteElement( ppw, testSetReportEntry, testSetStats, testSetReportEntry.elapsedTimeAsString() );
 
@@ -157,7 +154,7 @@ public class StatelessXmlReporter
                                     if ( methodEntry.getReportEntryType() == SUCCESS )
                                     {
                                         startTestElement( ppw, methodEntry, reportNameSuffix,
-                                                          methodEntryList.get( 0 ).elapsedTimeAsString() );
+                                                methodEntryList.get( 0 ).elapsedTimeAsString() );
                                         ppw.endElement();
                                     }
                                 }
@@ -166,7 +163,7 @@ public class StatelessXmlReporter
                             case failure:
                                 // When rerunFailingTestsCount is set to larger than 0
                                 startTestElement( ppw, methodEntryList.get( 0 ), reportNameSuffix,
-                                                  methodEntryList.get( 0 ).elapsedTimeAsString() );
+                                        methodEntryList.get( 0 ).elapsedTimeAsString() );
                                 boolean firstRun = true;
                                 for ( WrappedReportEntry singleRunEntry : methodEntryList )
                                 {
@@ -174,13 +171,13 @@ public class StatelessXmlReporter
                                     {
                                         firstRun = false;
                                         getTestProblems( fw, ppw, singleRunEntry, trimStackTrace, outputStream,
-                                                         singleRunEntry.getReportEntryType().getXmlTag(), false );
+                                                singleRunEntry.getReportEntryType().getXmlTag(), false );
                                         createOutErrElements( fw, ppw, singleRunEntry, outputStream );
                                     }
                                     else
                                     {
                                         getTestProblems( fw, ppw, singleRunEntry, trimStackTrace, outputStream,
-                                                         singleRunEntry.getReportEntryType().getRerunXmlTag(), true );
+                                                singleRunEntry.getReportEntryType().getRerunXmlTag(), true );
                                     }
                                 }
                                 ppw.endElement();
@@ -202,7 +199,7 @@ public class StatelessXmlReporter
                                     if ( singleRunEntry.getReportEntryType() != SUCCESS )
                                     {
                                         getTestProblems( fw, ppw, singleRunEntry, trimStackTrace, outputStream,
-                                                         singleRunEntry.getReportEntryType().getFlakyXmlTag(), true );
+                                                singleRunEntry.getReportEntryType().getFlakyXmlTag(), true );
                                     }
                                 }
                                 ppw.endElement();
@@ -210,9 +207,9 @@ public class StatelessXmlReporter
                                 break;
                             case skipped:
                                 startTestElement( ppw, methodEntryList.get( 0 ), reportNameSuffix,
-                                                  methodEntryList.get( 0 ).elapsedTimeAsString() );
+                                        methodEntryList.get( 0 ).elapsedTimeAsString() );
                                 getTestProblems( fw, ppw, methodEntryList.get( 0 ), trimStackTrace, outputStream,
-                                                 methodEntryList.get( 0 ).getReportEntryType().getXmlTag(), false );
+                                        methodEntryList.get( 0 ).getReportEntryType().getXmlTag(), false );
                                 ppw.endElement();
                                 break;
                             default:
@@ -229,7 +226,7 @@ public class StatelessXmlReporter
                             if ( methodEntry.getReportEntryType() != SUCCESS )
                             {
                                 getTestProblems( fw, ppw, methodEntry, trimStackTrace, outputStream,
-                                                 methodEntry.getReportEntryType().getXmlTag(), false );
+                                        methodEntry.getReportEntryType().getXmlTag(), false );
                                 createOutErrElements( fw, ppw, methodEntry, outputStream );
                             }
                             ppw.endElement();
@@ -239,17 +236,13 @@ public class StatelessXmlReporter
             }
             ppw.endElement(); // TestSuite
         }
-        catch ( IOException e )
+        catch ( Exception e )
         {
             // It's not a test error.
             // This method must be sail-safe and errors are in a dump log.
             // The control flow must not be broken in TestSetRunListener#testSetCompleted.
             InPluginProcessDumpSingleton.getSingleton()
                     .dumpException( e, e.getLocalizedMessage(), reportsDirectory );
-        }
-        finally
-        {
-            closeQuietly( fw );
         }
     }
 
@@ -269,7 +262,7 @@ public class StatelessXmlReporter
      */
     private TestResultType getTestResultType( List<WrappedReportEntry> methodEntryList )
     {
-        List<ReportEntryType> testResultTypeList = new ArrayList<ReportEntryType>();
+        List<ReportEntryType> testResultTypeList = new ArrayList<>();
         for ( WrappedReportEntry singleRunEntry : methodEntryList )
         {
             testResultTypeList.add( singleRunEntry.getReportEntryType() );
@@ -319,7 +312,7 @@ public class StatelessXmlReporter
         List<WrappedReportEntry> methodEntryList = methodRunHistoryMap.get( methodEntry.getName() );
         if ( methodEntryList == null )
         {
-            methodEntryList = new ArrayList<WrappedReportEntry>();
+            methodEntryList = new ArrayList<>();
             methodRunHistoryMap.put( methodEntry.getName(), methodEntryList );
         }
         methodEntryList.add( methodEntry );
@@ -333,7 +326,7 @@ public class StatelessXmlReporter
     }
 
     private static void startTestElement( XMLWriter ppw, WrappedReportEntry report, String reportNameSuffix,
-                                          String timeAsString ) throws IOException
+                                          String timeAsString )
     {
         ppw.startElement( "testcase" );
         ppw.addAttribute( "name", report.getReportName() );
@@ -356,7 +349,7 @@ public class StatelessXmlReporter
     }
 
     private void createTestSuiteElement( XMLWriter ppw, WrappedReportEntry report, TestSetStats testSetStats,
-                                         String timeAsString ) throws IOException
+                                         String timeAsString )
     {
         ppw.startElement( "testsuite" );
 
@@ -383,7 +376,7 @@ public class StatelessXmlReporter
 
     private static void getTestProblems( OutputStreamWriter outputStreamWriter, XMLWriter ppw,
                                          WrappedReportEntry report, boolean trimStackTrace, OutputStream fw,
-                                         String testErrorType, boolean createOutErrElementsInside ) throws IOException
+                                         String testErrorType, boolean createOutErrElementsInside )
     {
         ppw.startElement( testErrorType );
 
@@ -440,7 +433,7 @@ public class StatelessXmlReporter
 
     // Create system-out and system-err elements
     private static void createOutErrElements( OutputStreamWriter outputStreamWriter, XMLWriter ppw,
-                                              WrappedReportEntry report, OutputStream fw ) throws IOException
+                                              WrappedReportEntry report, OutputStream fw )
     {
         EncodingOutputStream eos = new EncodingOutputStream( fw );
         addOutputStreamElement( outputStreamWriter, eos, ppw, report.getStdout(), "system-out" );
@@ -450,7 +443,7 @@ public class StatelessXmlReporter
     private static void addOutputStreamElement( OutputStreamWriter outputStreamWriter,
                                          EncodingOutputStream eos, XMLWriter xmlWriter,
                                          Utf8RecodingDeferredFileOutputStream utf8RecodingDeferredFileOutputStream,
-                                         String name ) throws IOException
+                                         String name )
     {
         if ( utf8RecodingDeferredFileOutputStream != null && utf8RecodingDeferredFileOutputStream.getByteCount() > 0 )
         {
@@ -480,7 +473,7 @@ public class StatelessXmlReporter
      *
      * @param xmlWriter The test suite to report to
      */
-    private static void showProperties( XMLWriter xmlWriter, Map<String, String> systemProperties ) throws IOException
+    private static void showProperties( XMLWriter xmlWriter, Map<String, String> systemProperties )
     {
         xmlWriter.startElement( "properties" );
         for ( final Entry<String, String> entry : systemProperties.entrySet() )

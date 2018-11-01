@@ -24,8 +24,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static org.apache.maven.surefire.util.ReflectionUtils.loadClass;
-import static org.apache.maven.surefire.util.internal.StringUtils.ISO_8859_1;
 
 /**
  * @author Kristian Rosenvold

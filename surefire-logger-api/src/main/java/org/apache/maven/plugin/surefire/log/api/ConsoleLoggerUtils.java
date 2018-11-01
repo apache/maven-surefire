@@ -36,20 +36,14 @@ public final class ConsoleLoggerUtils
     public static String toString( String message, Throwable t )
     {
         StringWriter result = new StringWriter( 512 );
-        PrintWriter writer = new PrintWriter( result );
-        try
+        try ( PrintWriter writer = new PrintWriter( result ) )
         {
             if ( message != null )
             {
                 writer.println( message );
             }
             t.printStackTrace( writer );
-            writer.flush();
             return result.toString();
-        }
-        finally
-        {
-            writer.close();
         }
     }
 }

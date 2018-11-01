@@ -76,7 +76,6 @@ import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultScanResult;
 import org.apache.maven.surefire.util.RunOrder;
-import org.apache.maven.surefire.util.SurefireReflectionException;
 import org.apache.maven.toolchain.DefaultToolchain;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
@@ -88,8 +87,8 @@ import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -122,16 +121,12 @@ import static org.apache.maven.shared.utils.StringUtils.isNotEmpty;
 import static org.apache.maven.shared.utils.StringUtils.split;
 import static org.apache.maven.surefire.booter.SystemUtils.JAVA_SPECIFICATION_VERSION;
 import static org.apache.maven.surefire.booter.SystemUtils.endsWithJavaPath;
-import static org.apache.maven.surefire.booter.SystemUtils.isBuiltInJava7AtLeast;
 import static org.apache.maven.surefire.booter.SystemUtils.isBuiltInJava9AtLeast;
 import static org.apache.maven.surefire.booter.SystemUtils.isJava9AtLeast;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkHomeFromJvmExec;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkVersionFromReleaseFile;
 import static org.apache.maven.surefire.suite.RunResult.failure;
 import static org.apache.maven.surefire.suite.RunResult.noTestsRun;
-import static org.apache.maven.surefire.util.ReflectionUtils.invokeGetter;
-import static org.apache.maven.surefire.util.ReflectionUtils.invokeStaticMethod;
-import static org.apache.maven.surefire.util.ReflectionUtils.tryLoadClass;
 
 /**
  * Abstract base class for running tests using Surefire.
@@ -150,7 +145,6 @@ public abstract class AbstractSurefireMojo
     private static final Map<String, String> JAVA_9_MATCHER_OLD_NOTATION = singletonMap( "version", "[1.9,)" );
     private static final Map<String, String> JAVA_9_MATCHER = singletonMap( "version", "[9,)" );
     private static final Platform PLATFORM = new Platform();
-    private static final File SYSTEM_TMP_DIR = new File( System.getProperty( "java.io.tmpdir" ) );
 
     private final ProviderDetector providerDetector = new ProviderDetector();
 
@@ -995,21 +989,7 @@ public abstract class AbstractSurefireMojo
             {
                 current = current.aggregate( executeProvider( provider, scanResult ) );
             }
-            catch ( SurefireBooterForkException e )
-            {
-                if ( firstForkException == null )
-                {
-                    firstForkException = e;
-                }
-            }
-            catch ( SurefireExecutionException e )
-            {
-                if ( firstForkException == null )
-                {
-                    firstForkException = e;
-                }
-            }
-            catch ( TestSetFailedException e )
+            catch ( SurefireBooterForkException | SurefireExecutionException | TestSetFailedException e )
             {
                 if ( firstForkException == null )
                 {
@@ -1105,7 +1085,7 @@ public abstract class AbstractSurefireMojo
 
     private Set<Object> systemPropertiesMatchingArgLine( SurefireProperties result )
     {
-        Set<Object> intersection = new HashSet<Object>();
+        Set<Object> intersection = new HashSet<>();
         if ( isNotBlank( getArgLine() ) )
         {
             for ( Object systemProperty : result.getStringKeySet() )
@@ -1166,12 +1146,6 @@ public abstract class AbstractSurefireMojo
                                                        runOrderParameters, getConsoleLogger(), scanResult );
 
                 return forkStarter.run( effectiveProperties, scanResult );
-            }
-            // tod Java 1.7 multiple exception catch block
-            catch ( SurefireExecutionException e )
-            {
-                forkStarter.killOrphanForks();
-                throw e;
             }
             catch ( SurefireBooterForkException e )
             {
@@ -1768,7 +1742,7 @@ public abstract class AbstractSurefireMojo
     private static Set<Artifact> retainInProcArtifactsUnique( Set<Artifact> providerArtifacts,
                                                          Artifact... inPluginArtifacts )
     {
-        Set<Artifact> result = new LinkedHashSet<Artifact>();
+        Set<Artifact> result = new LinkedHashSet<>();
         for ( Artifact inPluginArtifact : inPluginArtifacts )
         {
             boolean contains = false;
@@ -1828,7 +1802,7 @@ public abstract class AbstractSurefireMojo
         testClasspath = new Classpath( result.getClasspathElements() );
         Classpath testModulepath = new Classpath( result.getModulepathElements().keySet() );
 
-        SortedSet<String> packages = new TreeSet<String>();
+        SortedSet<String> packages = new TreeSet<>();
 
         for ( String className : scanResult.getClasses() )
         {
@@ -1969,7 +1943,7 @@ public abstract class AbstractSurefireMojo
         List<String> includes = null;
         if ( isSpecificTestSpecified() )
         {
-            includes = new ArrayList<String>();
+            includes = new ArrayList<>();
             addAll( includes, split( getTest(), "," ) );
         }
         else
@@ -2037,7 +2011,7 @@ public abstract class AbstractSurefireMojo
 
     @Nonnull private List<String> filterNulls( @Nonnull List<String> toFilter )
     {
-        List<String> result = new ArrayList<String>( toFilter.size() );
+        List<String> result = new ArrayList<>( toFilter.size() );
         for ( String item : toFilter )
         {
             if ( item != null )
@@ -2531,7 +2505,7 @@ public abstract class AbstractSurefireMojo
         Classpath existing = ClasspathCache.getCachedClassPath( surefireArtifact.getArtifactId() );
         if ( existing == null )
         {
-            List<String> items = new ArrayList<String>();
+            List<String> items = new ArrayList<>();
             for ( Artifact artifact : dependencyResolver.resolveArtifact( surefireArtifact ).getArtifacts() )
             {
                 getConsoleLogger().debug(
@@ -2780,7 +2754,7 @@ public abstract class AbstractSurefireMojo
         }
 
         @Override
-        public void addProviderProperties() throws MojoExecutionException
+        public void addProviderProperties()
         {
         }
 
@@ -2821,7 +2795,7 @@ public abstract class AbstractSurefireMojo
         }
 
         @Override
-        public void addProviderProperties() throws MojoExecutionException
+        public void addProviderProperties()
         {
         }
 
@@ -2858,7 +2832,7 @@ public abstract class AbstractSurefireMojo
         }
 
         @Override
-        public void addProviderProperties() throws MojoExecutionException
+        public void addProviderProperties()
         {
             convertGroupParameters();
         }
@@ -3046,67 +3020,16 @@ public abstract class AbstractSurefireMojo
         return tmp;
     }
 
-    // todo use Java7 java.nio.file.Files.createTempDirectory()
     File createSurefireBootDirectoryInTemp()
     {
-        if ( isBuiltInJava7AtLeast() )
-        {
-            try
-            {
-                return new File( SYSTEM_TMP_DIR, createTmpDirectoryNameWithJava7( getTempDir() ) );
-            }
-            catch ( IOException e )
-            {
-                return createSurefireBootDirectoryInBuild();
-            }
-        }
-        else
-        {
-            try
-            {
-                File tmp = File.createTempFile( getTempDir(), null );
-                //noinspection ResultOfMethodCallIgnored
-                tmp.delete();
-                return tmp.mkdirs() ? tmp : createSurefireBootDirectoryInBuild();
-            }
-            catch ( IOException e )
-            {
-                return createSurefireBootDirectoryInBuild();
-            }
-        }
-    }
-
-    /**
-     * Reflection call of java.nio.file.Files.createTempDirectory( "surefire" ).
-     * @return Java 7 NIO Path
-     */
-    static Object createTmpDirectoryWithJava7( String directoryPrefix )
-            throws IOException
-    {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        Class<?> filesType = tryLoadClass( classLoader, "java.nio.file.Files" );
-        Class<?> fileAttributeType = tryLoadClass( classLoader, "java.nio.file.attribute.FileAttribute" );
-        Object attrs = Array.newInstance( fileAttributeType, 0 );
         try
         {
-            return invokeStaticMethod( filesType, "createTempDirectory",
-                                             new Class<?>[]{ String.class, attrs.getClass() },
-                                             new Object[]{ directoryPrefix, attrs } );
+            return Files.createTempDirectory( getTempDir() ).toFile();
         }
-        catch ( SurefireReflectionException e )
+        catch ( IOException e )
         {
-            Throwable cause = e.getCause();
-            throw cause instanceof IOException ? (IOException) cause : new IOException( cause );
+            return createSurefireBootDirectoryInBuild();
         }
-    }
-
-    static String createTmpDirectoryNameWithJava7( String directoryPrefix )
-            throws IOException
-    {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        Class<?> pathType = tryLoadClass( classLoader, "java.nio.file.Path" );
-        Object path = createTmpDirectoryWithJava7( directoryPrefix );
-        return invokeGetter( pathType, path, "getFileName" ).toString();
     }
 
     @Override

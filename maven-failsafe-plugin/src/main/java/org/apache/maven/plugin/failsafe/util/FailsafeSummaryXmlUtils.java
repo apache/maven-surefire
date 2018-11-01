@@ -36,9 +36,9 @@ import java.util.Locale;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeXml10;
 import static org.apache.commons.lang3.StringEscapeUtils.unescapeXml;
-import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
 import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 
 /**
@@ -78,11 +78,9 @@ public final class FailsafeSummaryXmlUtils
         XPathFactory xpathFactory = XPathFactory.newInstance();
         XPath xpath = xpathFactory.newXPath();
 
-        FileInputStream is = new FileInputStream( failsafeSummaryXml );
-
-        try
+        try ( FileInputStream is = new FileInputStream( failsafeSummaryXml ) )
         {
-            Node root = (Node) xpath.evaluate( "/", new InputSource( is ), XPathConstants.NODE );
+            Node root = ( Node ) xpath.evaluate( "/", new InputSource( is ), XPathConstants.NODE );
 
             String completed = xpath.evaluate( "/failsafe-summary/completed", root );
             String errors = xpath.evaluate( "/failsafe-summary/errors", root );
@@ -92,13 +90,9 @@ public final class FailsafeSummaryXmlUtils
             String timeout = xpath.evaluate( "/failsafe-summary/@timeout", root );
 
             return new RunResult( parseInt( completed ), parseInt( errors ), parseInt( failures ), parseInt( skipped ),
-                                        isBlank( failureMessage ) ? null : unescapeXml( failureMessage ),
-                                        parseBoolean( timeout )
+                    isBlank( failureMessage ) ? null : unescapeXml( failureMessage ),
+                    parseBoolean( timeout )
             );
-        }
-        finally
-        {
-            is.close();
         }
     }
 
@@ -116,14 +110,9 @@ public final class FailsafeSummaryXmlUtils
                 fromRunResult.getSkipped(),
                 msg );
 
-        FileOutputStream os = new FileOutputStream( toFailsafeSummaryXml );
-        try
+        try ( FileOutputStream os = new FileOutputStream( toFailsafeSummaryXml ) )
         {
             IOUtils.write( xml, os, UTF_8 );
-        }
-        finally
-        {
-            os.close();
         }
     }
 

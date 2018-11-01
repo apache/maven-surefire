@@ -55,7 +55,7 @@ public class ProviderFactory
 
     private static final Class[] INVOKE_EMPTY_PARAMETER_TYPES = { };
 
-    private static final Class[] INVOKE_EMPTY_PARAMETERS = { };
+    private static final Object[] INVOKE_EMPTY_PARAMETERS = { };
 
     public ProviderFactory( StartupConfiguration startupConfiguration, ProviderConfiguration providerConfiguration,
                             ClassLoader testsClassLoader, Object reporterManagerFactory )
@@ -152,7 +152,7 @@ public class ProviderFactory
 
         @Override
         public RunResult invoke( Object forkTestSet )
-            throws TestSetFailedException, ReporterException, InvocationTargetException
+            throws ReporterException, InvocationTargetException
         {
             ClassLoader current = swapClassLoader( testsClassLoader );
             try

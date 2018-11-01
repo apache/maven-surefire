@@ -66,7 +66,7 @@ final class PpidChecker
     private static final String SYSTEM_PATH_TO_WMIC =
             "%" + WINDOWS_SYSTEM_ROOT_ENV + "%\\" + RELATIVE_PATH_TO_WMIC + "\\";
 
-    private final Queue<Process> destroyableCommands = new ConcurrentLinkedQueue<Process>();
+    private final Queue<Process> destroyableCommands = new ConcurrentLinkedQueue<>();
 
     /**
      * The etime is in the form of [[dd-]hh:]mm:ss on Unix like systems.

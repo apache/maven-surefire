@@ -57,7 +57,7 @@ public final class RunEntryStatisticsMap
 
     public RunEntryStatisticsMap()
     {
-        runEntryStatistics = new ConcurrentHashMap<String, RunEntryStatistics>();
+        runEntryStatistics = new ConcurrentHashMap<>();
     }
 
     public static RunEntryStatisticsMap fromFile( File file )
@@ -67,10 +67,6 @@ public final class RunEntryStatisticsMap
             try
             {
                 return fromReader( new FileReader( file ) );
-            }
-            catch ( FileNotFoundException e )
-            {
-                throw new RuntimeException( e );
             }
             catch ( IOException e )
             {
@@ -86,7 +82,7 @@ public final class RunEntryStatisticsMap
     static RunEntryStatisticsMap fromReader( Reader fileReader )
         throws IOException
     {
-        Map<String, RunEntryStatistics> result = new HashMap<String, RunEntryStatistics>();
+        Map<String, RunEntryStatistics> result = new HashMap<>();
         BufferedReader bufferedReader = new BufferedReader( fileReader );
         String line = bufferedReader.readLine();
         while ( line != null )
@@ -105,20 +101,14 @@ public final class RunEntryStatisticsMap
         throws FileNotFoundException
     {
         FileOutputStream fos = new FileOutputStream( file );
-        PrintWriter printWriter = new PrintWriter( fos );
-        try
+        try ( PrintWriter printWriter = new PrintWriter( fos ) )
         {
-            List<RunEntryStatistics> items = new ArrayList<RunEntryStatistics>( runEntryStatistics.values() );
+            List<RunEntryStatistics> items = new ArrayList<>( runEntryStatistics.values() );
             sort( items, new RunCountComparator() );
             for ( RunEntryStatistics item : items )
             {
                 printWriter.println( item.toString() );
             }
-            printWriter.flush();
-        }
-        finally
-        {
-            printWriter.close();
         }
     }
 
@@ -181,7 +171,7 @@ public final class RunEntryStatisticsMap
     {
         Map classPriorities = getPriorities( priorityComparator );
 
-        List<PrioritizedTest> tests = new ArrayList<PrioritizedTest>();
+        List<PrioritizedTest> tests = new ArrayList<>();
         for ( Class<?> clazz : testsToRun )
         {
             Priority pri = (Priority) classPriorities.get( clazz.getName() );
@@ -198,7 +188,7 @@ public final class RunEntryStatisticsMap
 
     private List<Class<?>> transformToClasses( List<PrioritizedTest> tests )
     {
-        List<Class<?>> result = new ArrayList<Class<?>>();
+        List<Class<?>> result = new ArrayList<>();
         for ( PrioritizedTest test : tests )
         {
             result.add( test.getClazz() );
@@ -208,7 +198,7 @@ public final class RunEntryStatisticsMap
 
     private Map getPriorities( Comparator<Priority> priorityComparator )
     {
-        Map<String, Priority> priorities = new HashMap<String, Priority>();
+        Map<String, Priority> priorities = new HashMap<>();
         for ( Object o : runEntryStatistics.keySet() )
         {
             String testNames = (String) o;
@@ -224,9 +214,9 @@ public final class RunEntryStatisticsMap
             priority.addItem( itemStat );
         }
 
-        List<Priority> items = new ArrayList<Priority>( priorities.values() );
+        List<Priority> items = new ArrayList<>( priorities.values() );
         sort( items, priorityComparator );
-        Map<String, Priority> result = new HashMap<String, Priority>();
+        Map<String, Priority> result = new HashMap<>();
         int i = 0;
         for ( Priority pri : items )
         {

@@ -39,7 +39,6 @@ public class ClasspathTest
     private static final String DUMMY_URL_2 = "bar.jar";
 
     public void testShouldWriteEmptyPropertyForEmptyClasspath()
-        throws Exception
     {
         Classpath classpath = Classpath.emptyClasspath();
         classpath.writeToSystemProperty( DUMMY_PROPERTY_NAME );
@@ -47,7 +46,6 @@ public class ClasspathTest
     }
 
     public void testShouldWriteSeparatedElementsAsSystemProperty()
-        throws Exception
     {
         Classpath classpath = Classpath.emptyClasspath().addClassPathElementUrl( DUMMY_URL_1 ).addClassPathElementUrl( DUMMY_URL_2 );
         classpath.writeToSystemProperty( DUMMY_PROPERTY_NAME );
@@ -62,15 +60,6 @@ public class ClasspathTest
         assertClasspathConsistsOfElements( classpath, new String[]{ DUMMY_URL_1 } );
     }
 
-    public void testGetAsUrlList()
-        throws Exception
-    {
-        final List asUrlList = createClasspathWithTwoElements().getAsUrlList();
-        assertEquals( 2, asUrlList.size() );
-        assertTrue( asUrlList.get( 0 ).toString().endsWith( DUMMY_URL_1 ) );
-        assertTrue( asUrlList.get( 1 ).toString().endsWith( DUMMY_URL_2 ) );
-    }
-
     public void testShouldJoinTwoNullClasspaths()
     {
         Classpath joinedClasspath = Classpath.join( null, null );
@@ -78,7 +67,6 @@ public class ClasspathTest
     }
 
     public void testShouldHaveAllElementsAfterJoiningTwoDifferentClasspaths()
-        throws Exception
     {
         Classpath firstClasspath = Classpath.emptyClasspath();
         Classpath secondClasspath = firstClasspath.addClassPathElementUrl( DUMMY_URL_1 ).addClassPathElementUrl( DUMMY_URL_2 );
@@ -87,7 +75,6 @@ public class ClasspathTest
     }
 
     public void testShouldNotHaveDuplicatesAfterJoiningTowClasspathsWithEqualElements()
-        throws Exception
     {
         Classpath firstClasspath = Classpath.emptyClasspath().addClassPathElementUrl( DUMMY_URL_1 );
         Classpath secondClasspath = Classpath.emptyClasspath().addClassPathElementUrl( DUMMY_URL_1 );
@@ -96,7 +83,6 @@ public class ClasspathTest
     }
 
     public void testShouldNotBeAbleToRemoveElement()
-        throws Exception
     {
         try
         {
@@ -132,7 +118,6 @@ public class ClasspathTest
     }
 
     public void testShouldThrowIllegalArgumentExceptionWhenNullIsAddedAsClassPathElementUrl()
-        throws Exception
     {
         Classpath classpath = Classpath.emptyClasspath();
         try
@@ -146,7 +131,6 @@ public class ClasspathTest
     }
 
     public void testShouldNotAddNullAsClassPathElementUrl()
-        throws Exception
     {
         Classpath classpath = Classpath.emptyClasspath();
         try

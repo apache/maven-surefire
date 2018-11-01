@@ -49,7 +49,7 @@ public class SurefireProperties
     private static final Collection<String> KEYS_THAT_CANNOT_BE_USED_AS_SYSTEM_PROPERTIES =
             asList( "java.library.path", "file.encoding", "jdk.map.althashing.threshold", "line.separator" );
 
-    private final LinkedHashSet<Object> items = new LinkedHashSet<Object>();
+    private final LinkedHashSet<Object> items = new LinkedHashSet<>();
 
     public SurefireProperties()
     {
@@ -123,7 +123,7 @@ public class SurefireProperties
 
     public Set<Object> propertiesThatCannotBeSetASystemProperties()
     {
-        Set<Object> result = new HashSet<Object>();
+        Set<Object> result = new HashSet<>();
         for ( Object key : getStringKeySet() )
         {
             if ( KEYS_THAT_CANNOT_BE_USED_AS_SYSTEM_PROPERTIES.contains( key ) )
@@ -245,15 +245,11 @@ public class SurefireProperties
     private static SurefireProperties loadProperties( InputStream inStream )
         throws IOException
     {
-        try
+        try ( final InputStream surefirePropertiesStream = inStream )
         {
             Properties p = new Properties();
-            p.load( inStream );
+            p.load( surefirePropertiesStream );
             return new SurefireProperties( p );
-        }
-        finally
-        {
-            close( inStream );
         }
     }
 
@@ -261,18 +257,6 @@ public class SurefireProperties
         throws IOException
     {
         return file == null ? new SurefireProperties() : loadProperties( new FileInputStream( file ) );
-    }
-
-    private static void close( InputStream inputStream )
-    {
-        try
-        {
-            inputStream.close();
-        }
-        catch ( IOException ex )
-        {
-            // ignore
-        }
     }
 
     public void setNullableProperty( String key, String value )

@@ -23,8 +23,6 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
-
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1211">SUREFIRE-1211</a>
@@ -37,8 +35,6 @@ public class Surefire1211JUnitTestNgIT
     @Test
     public void withJUnit()
     {
-        assumeJavaVersion( 1.7d );
-
         unpack().threadCount( 1 )
                 .executeTest()
                 .verifyErrorFree( 2 );
@@ -47,8 +43,6 @@ public class Surefire1211JUnitTestNgIT
     @Test
     public void withoutJUnit()
     {
-        assumeJavaVersion( 1.7d );
-
         unpack().threadCount( 1 )
                 .sysProp( "junit", "false" )
                 .executeTest()

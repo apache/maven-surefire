@@ -23,8 +23,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
@@ -46,8 +44,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +54,6 @@ import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
 import static org.apache.commons.lang3.JavaVersion.JAVA_RECENT;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersion;
-import static org.apache.maven.surefire.booter.SystemUtils.isBuiltInJava7AtLeast;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -155,7 +150,7 @@ public class AbstractSurefireMojoJava7PlusTest
         @SuppressWarnings( "unchecked" )
         ResolvePathsResult<String> res = mock( ResolvePathsResult.class );
         when( res.getClasspathElements() ).thenReturn( asList( "non-modular.jar", "junit.jar", "hamcrest.jar" ) );
-        Map<String, ModuleNameSource> mod = new LinkedHashMap<String, ModuleNameSource>();
+        Map<String, ModuleNameSource> mod = new LinkedHashMap<>();
         mod.put( "modular.jar", null );
         mod.put( "classes", null );
         when( res.getModulepathElements() ).thenReturn( mod );
@@ -213,48 +208,6 @@ public class AbstractSurefireMojoJava7PlusTest
         assertThat( mcc.getModularClasspath().getModulePath() )
                 .containsExactly( "modular.jar", "classes" );
         assertThat( ( Object ) mcc.getTestClasspath() ).isEqualTo( new Classpath( res.getClasspathElements() ) );
-    }
-
-    @Test
-    public void shouldHaveTmpDirectory() throws IOException
-    {
-        Path path = ( Path ) AbstractSurefireMojo.createTmpDirectoryWithJava7( "surefire" );
-
-        assertThat( path )
-                .isNotNull();
-
-        assertThat( path.startsWith( System.getProperty( "java.io.tmpdir" ) ) )
-                .isTrue();
-
-        String dir = path.getName( path.getNameCount() - 1 ).toString();
-
-        assertThat( dir )
-                .startsWith( "surefire" );
-
-        assertThat( dir )
-                .matches( "^surefire[\\d]+$" );
-    }
-
-    @Test
-    public void shouldHaveTmpDirectoryName() throws IOException
-    {
-        String dir = AbstractSurefireMojo.createTmpDirectoryNameWithJava7( "surefire" );
-
-        assertThat( dir )
-                .isNotNull();
-
-        assertThat( dir )
-                .startsWith( "surefire" );
-
-        assertThat( dir )
-                .matches( "^surefire[\\d]+$" );
-    }
-
-    @Test
-    public void shouldTestIsJava7()
-    {
-        assertThat( isBuiltInJava7AtLeast() )
-                .isTrue();
     }
 
     private static File mockFile( String absolutePath )
@@ -594,7 +547,6 @@ public class AbstractSurefireMojoJava7PlusTest
 
         @Override
         protected void handleSummary( RunResult summary, Exception firstForkException )
-                throws MojoExecutionException, MojoFailureException
         {
 
         }

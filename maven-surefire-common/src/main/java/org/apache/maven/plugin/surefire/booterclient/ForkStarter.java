@@ -75,7 +75,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.lang.StrictMath.min;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.currentThread;
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.util.Collections.addAll;
+import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -95,8 +97,6 @@ import static org.apache.maven.surefire.suite.RunResult.timeout;
 import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDownToZero;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThread;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
-import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
-import static org.apache.maven.surefire.util.internal.StringUtils.ISO_8859_1;
 
 /**
  * Starts the fork or runs in-process.
@@ -165,7 +165,7 @@ public class ForkStarter
         CloseableCloser( int jvmRun, Closeable... testProvidingInputStream )
         {
             this.jvmRun = jvmRun;
-            this.testProvidingInputStream = new ConcurrentLinkedQueue<Closeable>();
+            this.testProvidingInputStream = new ConcurrentLinkedQueue<>();
             addAll( this.testProvidingInputStream, testProvidingInputStream );
             if ( this.testProvidingInputStream.isEmpty() )
             {
@@ -228,14 +228,14 @@ public class ForkStarter
         this.log = log;
         defaultReporterFactory = new DefaultReporterFactory( startupReportConfiguration, log );
         defaultReporterFactory.runStarting();
-        defaultReporterFactories = new ConcurrentLinkedQueue<DefaultReporterFactory>();
-        currentForkClients = new ConcurrentLinkedQueue<ForkClient>();
+        defaultReporterFactories = new ConcurrentLinkedQueue<>();
+        currentForkClients = new ConcurrentLinkedQueue<>();
         timeoutCheckScheduler = createTimeoutCheckScheduler();
         triggerTimeoutCheck();
     }
 
     public RunResult run( @Nonnull SurefireProperties effectiveSystemProperties, @Nonnull DefaultScanResult scanResult )
-        throws SurefireBooterForkException, SurefireExecutionException
+        throws SurefireBooterForkException
     {
         try
         {
@@ -317,14 +317,14 @@ public class ForkStarter
                                                                   new ArrayBlockingQueue<Runnable>( forkCount ) );
         executorService.setThreadFactory( FORKED_JVM_DAEMON_THREAD_FACTORY );
 
-        final Queue<String> tests = new ConcurrentLinkedQueue<String>();
+        final Queue<String> tests = new ConcurrentLinkedQueue<>();
 
         for ( Class<?> clazz : getSuitesIterator() )
         {
             tests.add( clazz.getName() );
         }
 
-        final Queue<TestProvidingInputStream> testStreams = new ConcurrentLinkedQueue<TestProvidingInputStream>();
+        final Queue<TestProvidingInputStream> testStreams = new ConcurrentLinkedQueue<>();
 
         for ( int forkNum = 0, total = min( forkCount, tests.size() ); forkNum < total; forkNum++ )
         {
@@ -339,7 +339,7 @@ public class ForkStarter
             addShutDownHook( shutdown );
             int failFastCount = providerConfiguration.getSkipAfterFailureCount();
             final AtomicInteger notifyStreamsToSkipTestsJustNow = new AtomicInteger( failFastCount );
-            final Collection<Future<RunResult>> results = new ArrayList<Future<RunResult>>( forkCount );
+            final Collection<Future<RunResult>> results = new ArrayList<>( forkCount );
             final AtomicBoolean printedErrorStream = new AtomicBoolean();
             for ( final TestProvidingInputStream testProvidingInputStream : testStreams )
             {
@@ -401,7 +401,7 @@ public class ForkStarter
     private RunResult runSuitesForkPerTestSet( final SurefireProperties effectiveSystemProperties, int forkCount )
         throws SurefireBooterForkException
     {
-        ArrayList<Future<RunResult>> results = new ArrayList<Future<RunResult>>( 500 );
+        ArrayList<Future<RunResult>> results = new ArrayList<>( 500 );
         ThreadPoolExecutor executorService =
             new ThreadPoolExecutor( forkCount, forkCount, 60, SECONDS, new LinkedBlockingQueue<Runnable>() );
         executorService.setThreadFactory( FORKED_JVM_DAEMON_THREAD_FACTORY );

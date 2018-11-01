@@ -26,7 +26,6 @@ import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.TestSetReportEntry;
-import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +35,7 @@ public class JUnitTestSetTest
 {
 
     public void testExecuteSuiteClass()
-        throws TestSetFailedException
+        throws Exception
     {
         ClassLoader testClassLoader = this.getClass().getClassLoader();
         JUnit3Reflector reflector = new JUnit3Reflector( testClassLoader );
@@ -62,7 +61,7 @@ public class JUnitTestSetTest
         implements RunListener
     {
 
-        private List<ReportEntry> succeededTests = new ArrayList<ReportEntry>();
+        private List<ReportEntry> succeededTests = new ArrayList<>();
 
         @Override
         public void testSetStarting( TestSetReportEntry report )

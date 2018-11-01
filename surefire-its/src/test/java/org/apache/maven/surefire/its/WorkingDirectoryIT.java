@@ -112,9 +112,10 @@ public class WorkingDirectoryIT
         final TestFile outFile = getOutFile( childTestDir );
         assertTrue( "out.txt doesn't exist: " + outFile.getAbsolutePath(), outFile.exists() );
         Properties p = new Properties();
-        FileInputStream is = outFile.getFileInputStream();
-        p.load( is );
-        is.close();
+        try ( FileInputStream is = outFile.getFileInputStream() )
+        {
+            p.load( is );
+        }
         String userDirPath = p.getProperty( "user.dir" );
         assertNotNull( "user.dir was null in property file", userDirPath );
         File userDir = new File( userDirPath );

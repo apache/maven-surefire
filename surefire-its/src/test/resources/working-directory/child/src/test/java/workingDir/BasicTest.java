@@ -34,13 +34,12 @@ public class BasicTest
         File target = new File( System.getProperty( "user.dir" ), "target" ).getAbsoluteFile();
         File outFile = new File( target, "out.txt" );
         assertTrue( outFile.createNewFile() );
-        FileOutputStream os = new FileOutputStream( outFile );
-        String userDir = System.getProperty( "user.dir" );
-        Properties p = new Properties();
-        p.setProperty( "user.dir", userDir );
-        p.store( os, "" );
-        os.flush();
-        os.close();
+        try ( FileOutputStream os = new FileOutputStream( outFile ) )
+        {
+            String userDir = System.getProperty( "user.dir" );
+            Properties p = new Properties();
+            p.setProperty( "user.dir", userDir );
+            p.store( os, "" );
+        }
     }
-
 }

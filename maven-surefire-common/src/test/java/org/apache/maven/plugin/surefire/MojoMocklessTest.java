@@ -24,7 +24,6 @@ import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.util.DefaultScanResult;
@@ -110,13 +109,14 @@ public class MojoMocklessTest
 
         File artifactFile = File.createTempFile( "surefire", ".jar" );
         testDeps.setFile( artifactFile );
-        ZipOutputStream os = new ZipOutputStream( new FileOutputStream( artifactFile ) );
-        os.putNextEntry( new ZipEntry( "pkg/" ) );
-        os.closeEntry();
-        os.putNextEntry( new ZipEntry( "pkg/MyTest.class" ) );
-        os.closeEntry();
-        os.finish();
-        os.close();
+        try ( ZipOutputStream os = new ZipOutputStream( new FileOutputStream( artifactFile ) ) )
+        {
+            os.putNextEntry( new ZipEntry( "pkg/" ) );
+            os.closeEntry();
+            os.putNextEntry( new ZipEntry( "pkg/MyTest.class" ) );
+            os.closeEntry();
+            os.finish();
+        }
 
         List<Artifact> projectTestArtifacts = singletonList( testDeps );
         String[] dependenciesToScan = { "g:a" };
@@ -143,11 +143,12 @@ public class MojoMocklessTest
 
         File artifactFile = File.createTempFile( "surefire", ".jar" );
         testDeps.setFile( artifactFile );
-        ZipOutputStream os = new ZipOutputStream( new FileOutputStream( artifactFile ) );
-        os.putNextEntry( new ZipEntry( "pkg/" ) );
-        os.closeEntry();
-        os.finish();
-        os.close();
+        try ( ZipOutputStream os = new ZipOutputStream( new FileOutputStream( artifactFile ) ) )
+        {
+            os.putNextEntry( new ZipEntry( "pkg/" ) );
+            os.closeEntry();
+            os.finish();
+        }
 
         List<Artifact> projectTestArtifacts = singletonList( testDeps );
         String[] dependenciesToScan = { "g:a" };
@@ -217,13 +218,14 @@ public class MojoMocklessTest
         Artifact testDep2 = new DefaultArtifact( "g", "a", version, "test", "jar", null, handler );
         File artifactFile2 = File.createTempFile( "surefire", ".jar" );
         testDep2.setFile( artifactFile2 );
-        ZipOutputStream os = new ZipOutputStream( new FileOutputStream( artifactFile2 ) );
-        os.putNextEntry( new ZipEntry( "pkg/" ) );
-        os.closeEntry();
-        os.putNextEntry( new ZipEntry( "pkg/MyTest.class" ) );
-        os.closeEntry();
-        os.finish();
-        os.close();
+        try ( ZipOutputStream os = new ZipOutputStream( new FileOutputStream( artifactFile2 ) ) )
+        {
+            os.putNextEntry( new ZipEntry( "pkg/" ) );
+            os.closeEntry();
+            os.putNextEntry( new ZipEntry( "pkg/MyTest.class" ) );
+            os.closeEntry();
+            os.finish();
+        }
 
         List<Artifact> projectTestArtifacts = asList( testDep1, testDep2 );
         String[] dependenciesToScan = { "g:a" };
@@ -587,7 +589,6 @@ public class MojoMocklessTest
 
         @Override
         protected void handleSummary( RunResult summary, Exception firstForkException )
-                throws MojoExecutionException, MojoFailureException
         {
 
         }

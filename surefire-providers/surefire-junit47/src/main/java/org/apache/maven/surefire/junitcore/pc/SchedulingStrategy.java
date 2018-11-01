@@ -135,15 +135,9 @@ public abstract class SchedulingStrategy
     protected void logQuietly( Throwable t )
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintStream stream = new PrintStream( out );
-        try
+        try ( PrintStream stream = new PrintStream( out ) )
         {
             t.printStackTrace( stream );
-            stream.flush();
-        }
-        finally
-        {
-            stream.close();
         }
         logger.println( out.toString() );
     }

@@ -58,7 +58,7 @@ public class DependencyScanner
     public DefaultScanResult scan()
         throws MojoExecutionException
     {
-        Set<String> classes = new LinkedHashSet<String>();
+        Set<String> classes = new LinkedHashSet<>();
         for ( File artifact : dependenciesToScan )
         {
             if ( artifact != null && artifact.isFile() && artifact.getName().endsWith( ".jar" ) )
@@ -73,16 +73,14 @@ public class DependencyScanner
                 }
             }
         }
-        return new DefaultScanResult( new ArrayList<String>( classes ) );
+        return new DefaultScanResult( new ArrayList<>( classes ) );
     }
 
     private static void scanArtifact( File artifact, TestFilter<String, String> filter, Set<String> classes )
         throws IOException
     {
-        JarFile jar = null;
-        try
+        try ( JarFile jar = new JarFile( artifact ) )
         {
-            jar = new JarFile( artifact );
             for ( Enumeration<JarEntry> entries = jar.entries(); entries.hasMoreElements(); )
             {
                 JarEntry entry = entries.nextElement();
@@ -93,18 +91,11 @@ public class DependencyScanner
                 }
             }
         }
-        finally
-        {
-            if ( jar != null )
-            {
-                jar.close();
-            }
-        }
     }
 
     public static List<Artifact> filter( List<Artifact> artifacts, List<String> groupArtifactIds )
     {
-        List<Artifact> matches = new ArrayList<Artifact>();
+        List<Artifact> matches = new ArrayList<>();
         if ( groupArtifactIds == null || artifacts == null )
         {
             return matches;

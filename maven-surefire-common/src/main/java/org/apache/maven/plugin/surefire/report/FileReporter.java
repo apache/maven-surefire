@@ -93,22 +93,12 @@ public class FileReporter
 
     public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
     {
-        PrintWriter writer = null;
-        try
+        try ( PrintWriter writer = testSetStarting( report ) )
         {
-            writer = testSetStarting( report );
             writer.println( testSetStats.getTestSetSummary( report ) );
             for ( String testResult : testResults )
             {
                 writer.println( testResult );
-            }
-            writer.flush();
-        }
-        finally
-        {
-            if ( writer != null )
-            {
-                writer.close();
             }
         }
     }

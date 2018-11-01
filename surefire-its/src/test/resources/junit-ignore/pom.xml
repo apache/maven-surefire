@@ -32,8 +32,8 @@
     <junit.version>4.4</junit.version>
     <surefire.parallel></surefire.parallel>
     <surefire.threadcount>3</surefire.threadcount>
-    <maven.compiler.source>1.6</maven.compiler.source>
-    <maven.compiler.target>1.6</maven.compiler.target>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
   </properties>
 
   <dependencies>

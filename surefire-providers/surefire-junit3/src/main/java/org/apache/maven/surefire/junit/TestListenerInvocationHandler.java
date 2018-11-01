@@ -45,13 +45,13 @@ public class TestListenerInvocationHandler
 
     private static final String END_TEST = "endTest";
 
-    private final Set<FailedTest> failedTestsSet = new HashSet<FailedTest>();
+    private final Set<FailedTest> failedTestsSet = new HashSet<>();
 
     private RunListener reporter;
 
-    private static final Class[] EMPTY_CLASS_ARRAY = new Class[]{ };
+    private static final Class[] EMPTY_CLASS_ARRAY = { };
 
-    private static final String[] EMPTY_STRING_ARRAY = new String[]{ };
+    private static final Object[] EMPTY_STRING_ARRAY = { };
 
     private static class FailedTest
     {
@@ -125,28 +125,29 @@ public class TestListenerInvocationHandler
     {
         String methodName = method.getName();
 
-        if ( methodName.equals( START_TEST ) )
+        switch ( methodName )
         {
-            handleStartTest( args );
-        }
-        else if ( methodName.equals( ADD_ERROR ) )
-        {
-            handleAddError( args );
-        }
-        else if ( methodName.equals( ADD_FAILURE ) )
-        {
-            handleAddFailure( args );
-        }
-        else if ( methodName.equals( END_TEST ) )
-        {
-            handleEndTest( args );
+            case START_TEST:
+                handleStartTest( args );
+                break;
+            case ADD_ERROR:
+                handleAddError( args );
+                break;
+            case ADD_FAILURE:
+                handleAddFailure( args );
+                break;
+            case END_TEST:
+                handleEndTest( args );
+                break;
+            default:
+                break;
         }
 
         return null;
     }
 
     // Handler for TestListener.startTest(Test)
-    public void handleStartTest( Object[] args )
+    private void handleStartTest( Object[] args )
     {
         ReportEntry report = new SimpleReportEntry( args[0].getClass().getName(), args[0].toString() );
 

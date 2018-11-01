@@ -23,9 +23,9 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 import static java.lang.String.format;
-import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
-import static org.apache.maven.surefire.util.internal.StringUtils.ISO_8859_1;
-import static org.apache.maven.surefire.util.internal.StringUtils.US_ASCII;
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.util.Objects.requireNonNull;
 import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 
 /**

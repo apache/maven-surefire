@@ -31,7 +31,7 @@ import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
 import junit.framework.TestCase;
 import org.apache.maven.shared.utils.io.FileUtils;
 
-import static org.apache.maven.surefire.util.internal.StringUtils.US_ASCII;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.fest.assertions.Assertions.assertThat;
 
 public class ConsoleOutputFileReporterTest
@@ -122,7 +122,7 @@ public class ConsoleOutputFileReporterTest
         final ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, null, null );
         reporter.testSetStarting( new SimpleReportEntry( getClass().getName(), getClass().getName() ) );
         ExecutorService scheduler = Executors.newFixedThreadPool( 10 );
-        final ArrayList<Callable<Void>> jobs = new ArrayList<Callable<Void>>();
+        final ArrayList<Callable<Void>> jobs = new ArrayList<>();
         for ( int i = 0; i < 10; i++ )
         {
             jobs.add( new Callable<Void>() {

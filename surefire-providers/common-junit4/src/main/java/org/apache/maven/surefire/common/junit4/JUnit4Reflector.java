@@ -19,16 +19,14 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.SurefireReflectionException;
 import org.junit.Ignore;
 import org.junit.runner.Description;
-import org.junit.runner.Request;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray;
+import static org.apache.maven.surefire.util.ReflectionUtils.getMethod;
 import static org.apache.maven.surefire.util.ReflectionUtils.tryGetMethod;
 
 /**
@@ -39,7 +37,7 @@ public final class JUnit4Reflector
 {
     private static final Class[] PARAMS = { Class.class };
 
-    private static final Class[] IGNORE_PARAMS = { Ignore.class };
+    private static final Object[] IGNORE_PARAMS = { Ignore.class };
 
     private static final Class[] PARAMS_WITH_ANNOTATIONS = { String.class, Annotation[].class };
 
@@ -54,32 +52,10 @@ public final class JUnit4Reflector
         return getAnnotation == null ? null : (Ignore) invokeMethodWithArray( d, getAnnotation, IGNORE_PARAMS );
     }
 
-    public static String getAnnotatedIgnoreValue( Description description )
+    static String getAnnotatedIgnoreValue( Description description )
     {
         final Ignore ignore = getAnnotatedIgnore( description );
         return ignore != null ? ignore.value() : null;
-    }
-
-    public static Request createRequest( Class<?>... classes )
-    {
-        try
-        {
-            return (Request) Request.class.getDeclaredMethod( "classes", Class[].class )// Since of JUnit 4.5
-                .invoke( null, new Object[]{ classes } );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            return Request.classes( null, classes ); // Since of JUnit 4.0
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new SurefireReflectionException( e.getCause() );
-        }
-        catch ( IllegalAccessException e )
-        {
-            // probably JUnit 5.x
-            throw new SurefireReflectionException( e );
-        }
     }
 
     public static Description createDescription( String description )
@@ -90,8 +66,8 @@ public final class JUnit4Reflector
         }
         catch ( NoSuchMethodError e )
         {
-            Method method = tryGetMethod( Description.class, "createSuiteDescription", PARAMS_WITH_ANNOTATIONS );
-            // may throw exception probably with JUnit 5.x
+            Method method = getMethod( Description.class, "createSuiteDescription", PARAMS_WITH_ANNOTATIONS );
+            // may throw exception probably with broken JUnit 4.x
             return (Description) invokeMethodWithArray( null, method, description, new Annotation[0] );
         }
     }
@@ -109,6 +85,7 @@ public final class JUnit4Reflector
         return new IgnoredWithUserError( value );
     }
 
+    @SuppressWarnings( "ClassExplicitlyAnnotation" )
     private static class IgnoredWithUserError
         implements Annotation, Ignore
     {
@@ -117,11 +94,6 @@ public final class JUnit4Reflector
         IgnoredWithUserError( String value )
         {
             this.value = value;
-        }
-
-        IgnoredWithUserError()
-        {
-            this( "" );
         }
 
         @Override
@@ -156,15 +128,7 @@ public final class JUnit4Reflector
 
         private boolean equalValue( Ignore ignore )
         {
-            if ( ignore == null )
-            {
-                return false;
-            }
-            else
-            {
-                String val = ignore.value();
-                return val == null ? value == null : val.equals( value );
-            }
+            return ignore != null && ignore.value().equals( value );
         }
     }
 }

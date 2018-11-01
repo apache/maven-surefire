@@ -27,7 +27,7 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 
-import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * A deferred file output stream decorator that recodes the bytes written into the stream from the VM default encoding

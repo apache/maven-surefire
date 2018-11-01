@@ -117,11 +117,8 @@ public class ModularClasspathForkConfiguration
             surefireArgs.deleteOnExit();
         }
 
-        BufferedWriter writer = null;
-        try
+        try ( BufferedWriter writer = new BufferedWriter( new FileWriter( surefireArgs ) ) )
         {
-            writer = new BufferedWriter( new FileWriter( surefireArgs ) );
-
             if ( !modulePath.isEmpty() )
             {
                 writer.write( "--module-path" );
@@ -195,16 +192,9 @@ public class ModularClasspathForkConfiguration
             writer.write( startClassName );
 
             writer.newLine();
-        }
-        finally
-        {
-            if ( writer != null )
-            {
-                writer.close();
-            }
-        }
 
-        return surefireArgs;
+            return surefireArgs;
+        }
     }
 
     @Nonnull

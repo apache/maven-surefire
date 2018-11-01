@@ -95,9 +95,9 @@ final class TestNGExecutor
         XmlMethodSelector groupMatchingSelector = createGroupMatchingSelector( options );
         XmlMethodSelector methodNameFilteringSelector = createMethodNameFilteringSelector( methodFilter );
 
-        Map<String, SuiteAndNamedTests> suitesNames = new HashMap<String, SuiteAndNamedTests>();
+        Map<String, SuiteAndNamedTests> suitesNames = new HashMap<>();
 
-        List<XmlSuite> xmlSuites = new ArrayList<XmlSuite>();
+        List<XmlSuite> xmlSuites = new ArrayList<>();
         for ( Class<?> testClass : testClasses )
         {
             TestMetadata metadata = findTestMetadata( testClass );
@@ -189,7 +189,7 @@ final class TestNGExecutor
     {
         private XmlSuite xmlSuite = new XmlSuite();
 
-        private Map<String, XmlTest> testNameToTest = new HashMap<String, XmlTest>();
+        private Map<String, XmlTest> testNameToTest = new HashMap<>();
     }
 
     private static void addSelector( XmlTest xmlTest, XmlMethodSelector selector )
@@ -289,15 +289,7 @@ final class TestNGExecutor
         {
             return (Configurator) Class.forName( className ).newInstance();
         }
-        catch ( InstantiationException e )
-        {
-            throw new RuntimeException( e );
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new RuntimeException( e );
-        }
-        catch ( ClassNotFoundException e )
+        catch ( ReflectiveOperationException e )
         {
             throw new RuntimeException( e );
         }

@@ -29,8 +29,8 @@
   <name>Pojo simple test</name>
 
   <properties>
-    <maven.compiler.source>1.6</maven.compiler.source>
-    <maven.compiler.target>1.6</maven.compiler.target>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
   </properties>
 
   <!-- NOTE: This has no dependencies on JUnit or TestNG, just nothing -->

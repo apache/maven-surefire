@@ -51,7 +51,7 @@ public class ConsoleOutputFileReporter
     private final Integer forkNumber;
 
     private final AtomicStampedReference<FilterOutputStream> fileOutputStream =
-            new AtomicStampedReference<FilterOutputStream>( null, OPEN );
+            new AtomicStampedReference<>( null, OPEN );
 
     private final ReentrantLock lock = new ReentrantLock();
 

@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
+import static java.util.Objects.requireNonNull;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>

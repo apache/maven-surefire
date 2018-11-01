@@ -94,15 +94,7 @@ public final class ReflectionUtils
         {
             return constructor.newInstance( params );
         }
-        catch ( InvocationTargetException e )
-        {
-            throw new SurefireReflectionException( e );
-        }
-        catch ( InstantiationException e )
-        {
-            throw new SurefireReflectionException( e );
-        }
-        catch ( IllegalAccessException e )
+        catch ( ReflectiveOperationException e )
         {
             throw new SurefireReflectionException( e );
         }
@@ -115,11 +107,7 @@ public final class ReflectionUtils
             Class<?> clazz = loadClass( classLoader, classname );
             return returnType.cast( clazz.newInstance() );
         }
-        catch ( InstantiationException e )
-        {
-            throw new SurefireReflectionException( e );
-        }
-        catch ( IllegalAccessException e )
+        catch ( ReflectiveOperationException e )
         {
             throw new SurefireReflectionException( e );
         }
@@ -138,11 +126,7 @@ public final class ReflectionUtils
         {
             throw new SurefireReflectionException( e.getTargetException() );
         }
-        catch ( InstantiationException e )
-        {
-            throw new SurefireReflectionException( e );
-        }
-        catch ( IllegalAccessException e )
+        catch ( ReflectiveOperationException e )
         {
             throw new SurefireReflectionException( e );
         }
@@ -161,11 +145,7 @@ public final class ReflectionUtils
         {
             throw new SurefireReflectionException( e.getTargetException() );
         }
-        catch ( InstantiationException e )
-        {
-            throw new SurefireReflectionException( e );
-        }
-        catch ( IllegalAccessException e )
+        catch ( ReflectiveOperationException e )
         {
             throw new SurefireReflectionException( e );
         }
@@ -225,10 +205,7 @@ public final class ReflectionUtils
         {
             return classLoader.loadClass( className );
         }
-        catch ( NoClassDefFoundError ignore )
-        {
-        }
-        catch ( ClassNotFoundException ignore )
+        catch ( NoClassDefFoundError | ClassNotFoundException ignore )
         {
         }
         return null;
@@ -240,11 +217,7 @@ public final class ReflectionUtils
         {
             return classLoader.loadClass( className );
         }
-        catch ( NoClassDefFoundError e )
-        {
-            throw new SurefireReflectionException( e );
-        }
-        catch ( ClassNotFoundException e )
+        catch ( NoClassDefFoundError | ClassNotFoundException e )
         {
             throw new SurefireReflectionException( e );
         }

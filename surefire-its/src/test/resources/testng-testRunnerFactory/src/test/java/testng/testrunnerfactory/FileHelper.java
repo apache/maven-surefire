@@ -10,16 +10,16 @@ public class FileHelper
     {
         try
         {
-            File target = new File( System.getProperty("user.dir"), "target" ).getCanonicalFile();
+            File target = new File( System.getProperty( "user.dir" ), "target" ).getCanonicalFile();
             File listenerOutput = new File( target, fileName );
-            FileWriter out = new FileWriter( listenerOutput, true );
-            out.write( content );
-            out.flush();
-            out.close();
+            try ( FileWriter out = new FileWriter( listenerOutput, true ) )
+            {
+                out.write( content );
+            }
         }
-        catch ( IOException exception )
+        catch ( IOException e )
         {
-            throw new RuntimeException( exception );
+            throw new RuntimeException( e );
         }
     }
 }

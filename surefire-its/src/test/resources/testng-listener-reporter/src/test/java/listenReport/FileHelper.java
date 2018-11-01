@@ -31,14 +31,14 @@ public class FileHelper
         {
             File target = new File( "target" ).getAbsoluteFile();
             File listenerOutput = new File( target, fileName );
-            FileWriter out = new FileWriter(listenerOutput);
-            out.write( content );
-            out.flush();
-            out.close();
+            try ( FileWriter out = new FileWriter( listenerOutput ) )
+            {
+                out.write( content );
+            }
         }
         catch ( IOException e )
         {
-            throw new RuntimeException(e);
+            throw new RuntimeException( e );
         }
     }
 }

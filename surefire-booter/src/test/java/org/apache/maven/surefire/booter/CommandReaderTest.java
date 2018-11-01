@@ -29,7 +29,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -40,7 +39,8 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.maven.surefire.util.internal.StringUtils.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -57,7 +57,7 @@ import static org.fest.assertions.Assertions.assertThat;
 @RunWith( NewClassLoaderRunner.class )
 public class CommandReaderTest
 {
-    private final BlockingQueue<Byte> blockingStream = new LinkedBlockingQueue<Byte>();
+    private final BlockingQueue<Byte> blockingStream = new LinkedBlockingQueue<>();
     private InputStream realInputStream;
     private CommandReader reader;
 
@@ -75,7 +75,6 @@ public class CommandReaderTest
 
     @Before
     public void init()
-        throws UnsupportedEncodingException
     {
         Thread.interrupted();
         realInputStream = System.in;
@@ -92,7 +91,7 @@ public class CommandReaderTest
     }
 
     @Test
-    public void readJustOneClass() throws Exception
+    public void readJustOneClass()
     {
         Iterator<String> it = reader.getIterableClasses( nul() ).iterator();
         assertTrue( it.hasNext() );
@@ -111,7 +110,7 @@ public class CommandReaderTest
     }
 
     @Test
-    public void manyClasses() throws Exception
+    public void manyClasses()
     {
         Iterator<String> it1 = reader.getIterableClasses( nul() ).iterator();
         assertThat( it1.next(), is( getClass().getName() ) );
@@ -167,7 +166,7 @@ public class CommandReaderTest
                 assertThat( it.next(), is( CommandReaderTest.class.getName() ) );
             }
         };
-        FutureTask<Object> futureTask = new FutureTask<Object>( runnable, null );
+        FutureTask<Object> futureTask = new FutureTask<>( runnable, null );
         Thread t = new Thread( futureTask );
         reader.stop();
         t.start();
@@ -197,7 +196,7 @@ public class CommandReaderTest
                 assertThat( it.next(), is( PropertiesWrapperTest.class.getName() ) );
             }
         };
-        FutureTask<Object> futureTask = new FutureTask<Object>( runnable, null );
+        FutureTask<Object> futureTask = new FutureTask<>( runnable, null );
         Thread t = new Thread( futureTask );
         t.start();
         counter.await();
@@ -240,7 +239,6 @@ public class CommandReaderTest
     }
 
     private void addTestToPipeline( String cls )
-        throws UnsupportedEncodingException
     {
         byte[] clazz = cls.getBytes( ISO_8859_1 );
         ByteBuffer buffer = ByteBuffer.allocate( 8 + clazz.length )
@@ -255,7 +253,6 @@ public class CommandReaderTest
     }
 
     private void addEndOfPipeline()
-            throws UnsupportedEncodingException
     {
         ByteBuffer buffer = ByteBuffer.allocate( 8 )
                 .putInt( MasterProcessCommand.TEST_SET_FINISHED.getId() )

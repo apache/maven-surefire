@@ -84,13 +84,14 @@
   </distributionManagement>
 
   <properties>
+    <javaVersion>7</javaVersion>
     <mavenVersion>3.0</mavenVersion>
     <!-- <shadedVersion>2.12.4</shadedVersion> commented out due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
-    <commonsLang3Version>3.5</commonsLang3Version>
-    <commonsIoVersion>2.5</commonsIoVersion>
+    <commonsLang3Version>3.8.1</commonsLang3Version>
+    <commonsIoVersion>2.6</commonsIoVersion>
     <!-- maven-shared-utils:3.2.0+ another behavior - broke Surefire performance - end of subprocess notification not arrived in ForkStarter -->
     <mavenSharedUtilsVersion>3.1.0</mavenSharedUtilsVersion>
-    <powermockVersion>2.0.0-beta.5</powermockVersion>
+    <powermockVersion>2.0.0-RC.1</powermockVersion>
     <maven.surefire.scm.devConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
     <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
     <!-- Override with Jigsaw JRE 9 -->
@@ -259,26 +260,6 @@
         <groupId>org.powermock</groupId>
         <artifactId>powermock-core</artifactId>
         <version>${powermockVersion}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy-agent</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>net.bytebuddy</groupId>
-        <artifactId>byte-buddy</artifactId>
-        <version>1.8.17</version>
-      </dependency>
-      <dependency>
-        <groupId>net.bytebuddy</groupId>
-        <artifactId>byte-buddy-agent</artifactId>
-        <version>1.8.17</version>
       </dependency>
       <dependency>
         <groupId>org.powermock</groupId>
@@ -403,7 +384,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>animal-sniffer-maven-plugin</artifactId>
-          <version>1.16</version>
+          <version>1.17</version>
           <executions>
             <execution>
               <id>signature-check</id>
@@ -413,8 +394,8 @@
               <configuration>
                 <signature>
                   <groupId>org.codehaus.mojo.signature</groupId>
-                  <artifactId>java16</artifactId>
-                  <version>1.1</version>
+                  <artifactId>java17</artifactId>
+                  <version>1.0</version>
                 </signature>
                 <excludeDependencies>
                   <param>org.codehaus.plexus:plexus-java</param>
@@ -503,7 +484,7 @@
             <configuration>
               <rules>
                 <requireJavaVersion>
-                  <!-- We use JDK 1.8 to check -Xdoclint:all at compile time but with javac -source 1.6 -target 1.6 -->
+                  <!-- We use JDK 1.8 to check -Xdoclint:all at compile time but with javac -source 1.7 -target 1.7 -->
                   <!-- enforcer:1.3.1 fails on jdk9. 3.0.0-M2 does not but surefire:12.2.4 crashes later. -->
                   <version>[1.8, 1.9)</version>
                 </requireJavaVersion>

@@ -25,7 +25,6 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
@@ -46,8 +45,6 @@ public class Surefire1177TestngParallelSuitesIT
     public void twoSuitesInParallel()
         throws VerificationException
     {
-        assumeJavaVersion( 1.7d );
-
         OutputValidator validator = unpack()
                 .forkMode( "never" )
                 .executeTest()
@@ -63,8 +60,6 @@ public class Surefire1177TestngParallelSuitesIT
     public void twoSuitesInParallelForked()
             throws VerificationException
     {
-        assumeJavaVersion( 1.7d );
-
         OutputValidator validator = unpack()
                 .forkMode( "once" )
                 .executeTest()

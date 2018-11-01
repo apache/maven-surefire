@@ -67,11 +67,7 @@ public class PojoTestSet
         {
             testObject = testClass.newInstance();
         }
-        catch ( InstantiationException e )
-        {
-            throw new TestSetFailedException( "Unable to instantiate POJO '" + testClass + "'", e );
-        }
-        catch ( IllegalAccessException e )
+        catch ( ReflectiveOperationException e )
         {
             throw new TestSetFailedException( "Unable to instantiate POJO '" + testClass + "'", e );
         }
@@ -79,7 +75,6 @@ public class PojoTestSet
 
     @Override
     public void execute( RunListener reportManager, ClassLoader loader )
-        throws TestSetFailedException
     {
         if ( reportManager == null )
         {
@@ -220,7 +215,7 @@ public class PojoTestSet
     {
         if ( testMethods == null )
         {
-            testMethods = new ArrayList<Method>();
+            testMethods = new ArrayList<>();
 
             Method[] methods = getTestClass().getMethods();
 

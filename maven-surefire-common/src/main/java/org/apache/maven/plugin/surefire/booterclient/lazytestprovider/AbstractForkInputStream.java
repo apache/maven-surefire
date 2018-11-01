@@ -22,7 +22,7 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Reader stream sends bytes to forked jvm std-{@link InputStream input-stream}.

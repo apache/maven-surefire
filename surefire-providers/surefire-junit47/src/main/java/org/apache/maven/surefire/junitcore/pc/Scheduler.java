@@ -52,7 +52,7 @@ public class Scheduler
 
     private final SchedulingStrategy strategy;
 
-    private final Set<Controller> slaves = new CopyOnWriteArraySet<Controller>();
+    private final Set<Controller> slaves = new CopyOnWriteArraySet<>();
 
     private final Description description;
 
@@ -220,14 +220,9 @@ public class Scheduler
     protected void logQuietly( Throwable t )
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintStream stream = new PrintStream( out );
-        try
+        try ( PrintStream stream = new PrintStream( out ) )
         {
             t.printStackTrace( stream );
-        }
-        finally
-        {
-            stream.close();
         }
         logger.println( out.toString() );
     }
@@ -249,8 +244,8 @@ public class Scheduler
      */
     protected ShutdownResult describeStopped( boolean stopNow )
     {
-        Collection<Description> executedTests = new ConcurrentLinkedQueue<Description>();
-        Collection<Description> incompleteTests = new ConcurrentLinkedQueue<Description>();
+        Collection<Description> executedTests = new ConcurrentLinkedQueue<>();
+        Collection<Description> incompleteTests = new ConcurrentLinkedQueue<>();
         stop( executedTests, incompleteTests, false, stopNow );
         return new ShutdownResult( executedTests, incompleteTests );
     }
