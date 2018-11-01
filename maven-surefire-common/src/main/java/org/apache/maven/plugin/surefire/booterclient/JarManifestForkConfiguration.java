@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
@@ -117,12 +118,17 @@ public final class JarManifestForkConfiguration
                 String uri;
                 try
                 {
-                    uri = URI.create( parent.relativize( file1.toPath() ).toString() ).toASCIIString();
+                    uri = new URI( null, parent.relativize( file1.toPath() ).toString(), null ).toASCIIString();
                 }
                 catch ( IllegalArgumentException e )
                 {
                     uri = file1.toURI().toASCIIString();
                     getConsoleLogger().warning( "Boot Manifest-JAR contains absolute paths in classpath" );
+                }
+                catch ( URISyntaxException e )
+                {
+                    // This is really unexpected, so fail
+                    throw new IOException( "Could not relativize path " + file1 + " against " + parent, e );
                 }
 
                 cp.append( uri );
