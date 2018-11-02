@@ -225,11 +225,21 @@
         <groupId>org.apache.maven.shared</groupId>
         <artifactId>maven-verifier</artifactId>
         <version>1.6</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.maven.shared</groupId>
+            <artifactId>maven-shared-utils</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-java</artifactId>
-        <version>0.9.10</version>
+        <version>0.9.11</version>
       </dependency>
       <dependency>
         <groupId>org.junit.platform</groupId>
@@ -397,14 +407,6 @@
                   <artifactId>java17</artifactId>
                   <version>1.0</version>
                 </signature>
-                <excludeDependencies>
-                  <param>org.codehaus.plexus:plexus-java</param>
-                  <param>org.ow2.asm:asm</param>
-                </excludeDependencies>
-                <ignores>
-                  <param>org.objectweb.asm.*</param>
-                  <param>org.codehaus.plexus.languages.java.jpms.*</param>
-                </ignores>
               </configuration>
             </execution>
           </executions>
@@ -514,8 +516,6 @@
                 <enforceBytecodeVersion>
                   <maxJdkVersion>${maven.compiler.target}</maxJdkVersion>
                   <excludes>
-                    <exclude>org.codehaus.plexus:plexus-java</exclude>
-                    <exclude>org.ow2.asm:asm</exclude>
                     <exclude>org.junit.platform:junit-platform-commons</exclude>
                   </excludes>
                 </enforceBytecodeVersion>

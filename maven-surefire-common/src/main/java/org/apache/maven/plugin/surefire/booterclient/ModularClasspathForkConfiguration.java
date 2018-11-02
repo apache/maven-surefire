@@ -48,7 +48,7 @@ import java.util.Properties;
 import static java.io.File.createTempFile;
 import static java.io.File.pathSeparatorChar;
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
-import static org.objectweb.asm.Opcodes.ASM6;
+import static org.objectweb.asm.Opcodes.ASM7;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -206,7 +206,7 @@ public class ModularClasspathForkConfiguration
         }
 
         final StringBuilder sb = new StringBuilder();
-        new ClassReader( new FileInputStream( moduleDescriptor ) ).accept( new ClassVisitor( ASM6 )
+        new ClassReader( new FileInputStream( moduleDescriptor ) ).accept( new ClassVisitor( ASM7 )
         {
             @Override
             public ModuleVisitor visitModule( String name, int access, String version )

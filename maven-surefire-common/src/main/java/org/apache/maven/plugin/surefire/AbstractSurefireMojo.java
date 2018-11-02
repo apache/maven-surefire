@@ -731,10 +731,8 @@ public abstract class AbstractSurefireMojo
     @Component
     private ToolchainManager toolchainManager;
 
-    // todo use in 3.0.0 with java 1.7 and substitute new LocationManager() with component in underneath code
-    // todo exclusions of plexus-java not needed in pom.xml - see the m-enforcer-p
-    // @Component
-    // private LocationManager locationManager;
+    @Component
+    private LocationManager locationManager;
 
     @Component
     private RepositorySystem repositorySystem;
@@ -794,7 +792,10 @@ public abstract class AbstractSurefireMojo
      *
      * @return non-null plugin artifact
      */
-    protected abstract Artifact getMojoArtifact();
+    protected Artifact getMojoArtifact()
+    {
+        return pluginDescriptor.getPluginArtifact();
+    }
 
     private String getDefaultExcludes()
     {
@@ -1773,9 +1774,13 @@ public abstract class AbstractSurefireMojo
         return inprocClasspath;
     }
 
-    private Object getLocationManager()
+    /**
+     * For testing purposes - Mockito.
+     * @return plexus component
+     */
+    private LocationManager getLocationManager()
     {
-        return new LocationManager();
+        return locationManager;
     }
 
     private StartupConfiguration newStartupConfigWithModularPath(
@@ -1797,7 +1802,7 @@ public abstract class AbstractSurefireMojo
         ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings( testClasspath.getClassPath() )
                 .setMainModuleDescriptor( moduleDescriptor.getAbsolutePath() );
 
-        ResolvePathsResult<String> result = ( (LocationManager) getLocationManager() ).resolvePaths( req );
+        ResolvePathsResult<String> result = getLocationManager().resolvePaths( req );
 
         testClasspath = new Classpath( result.getClasspathElements() );
         Classpath testModulepath = new Classpath( result.getModulepathElements().keySet() );

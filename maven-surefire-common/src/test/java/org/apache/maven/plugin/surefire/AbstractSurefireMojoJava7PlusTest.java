@@ -33,7 +33,7 @@ import org.apache.maven.surefire.util.DefaultScanResult;
 import org.codehaus.plexus.languages.java.jpms.LocationManager;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
-import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult.ModuleNameSource;
+import org.codehaus.plexus.languages.java.jpms.ModuleNameSource;
 import org.codehaus.plexus.logging.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
