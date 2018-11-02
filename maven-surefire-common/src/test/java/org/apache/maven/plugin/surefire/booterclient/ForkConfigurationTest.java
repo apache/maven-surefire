@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import static java.io.File.createTempFile;
 import static java.util.Collections.singletonList;
 import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 import static org.junit.Assert.assertEquals;
@@ -181,7 +182,7 @@ public class ForkConfigurationTest
     private File getTempClasspathFile()
         throws IOException
     {
-        File cpElement = File.createTempFile( "ForkConfigurationTest.", ".file" );
+        File cpElement = createTempFile( "ForkConfigurationTest.", ".file" );
         cpElement.deleteOnExit();
         return cpElement;
     }
@@ -204,12 +205,12 @@ public class ForkConfigurationTest
         throws IOException
     {
         Platform platform = new Platform().withJdkExecAttributesForTests( new JdkAttributes( jvm, false ) );
-        File tmpDir = File.createTempFile( "target", "surefire" );
+        File tmpDir = createTempFile( "target", "surefire" );
         assertTrue( tmpDir.delete() );
         assertTrue( tmpDir.mkdirs() );
         return new JarManifestForkConfiguration( emptyClasspath(), tmpDir, null,
                 cwd, new Properties(), argLine, Collections.<String, String>emptyMap(), false, 1, false,
-                platform, new NullConsoleLogger() );
+                platform, new NullConsoleLogger(), createTempFile( "target", "surefire-reports" ) );
     }
 
     // based on http://stackoverflow.com/questions/2591083/getting-version-of-java-in-runtime
