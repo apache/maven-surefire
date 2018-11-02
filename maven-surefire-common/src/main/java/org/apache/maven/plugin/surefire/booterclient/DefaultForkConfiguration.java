@@ -332,10 +332,4 @@ public abstract class DefaultForkConfiguration
     {
         return config.isShadefire() ? relocate( DEFAULT_PROVIDER_CLASS ) : DEFAULT_PROVIDER_CLASS;
     }
-
-    @Nonnull
-    protected ConsoleLogger getConsoleLogger()
-    {
-        return log;
-    }
 }

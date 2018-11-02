@@ -123,7 +123,6 @@ public final class JarManifestForkConfiguration
                 catch ( IllegalArgumentException e )
                 {
                     uri = file1.toURI().toASCIIString();
-                    getConsoleLogger().warning( "Boot Manifest-JAR contains absolute paths in classpath" );
                 }
                 catch ( URISyntaxException e )
                 {
