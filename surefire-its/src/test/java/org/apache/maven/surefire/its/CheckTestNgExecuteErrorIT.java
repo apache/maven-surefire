@@ -56,10 +56,12 @@ public class CheckTestNgExecuteErrorIT
                                                  @Override
                                                  public boolean accept( File dir, String name )
                                                  {
-                                                     return name.endsWith( ".dump" );
+                                                     return name.endsWith( "-jvmRun1.dump" );
                                                  }
                                              });
-        assertThat( dumpFiles ).isNotEmpty();
+        assertThat( dumpFiles )
+                .isNotNull()
+                .isNotEmpty();
         for ( String dump : dumpFiles )
         {
             outputValidator.getSurefireReportsFile( dump )

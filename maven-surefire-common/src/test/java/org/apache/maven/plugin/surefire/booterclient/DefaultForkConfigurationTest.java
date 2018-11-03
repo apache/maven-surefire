@@ -101,7 +101,8 @@ public class DefaultForkConfigurationTest
             @Override
             protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                              @Nonnull String booterThatHasMainMethod,
-                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
+                                             @Nonnull StartupConfiguration config,
+                                             @Nonnull File dumpLogDirectory ) throws SurefireBooterForkException
             {
 
             }
@@ -126,7 +127,8 @@ public class DefaultForkConfigurationTest
             @Override
             protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                              @Nonnull String booterThatHasMainMethod,
-                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
+                                             @Nonnull StartupConfiguration config,
+                                             @Nonnull File dumpLogDirectory ) throws SurefireBooterForkException
             {
 
             }
@@ -151,7 +153,8 @@ public class DefaultForkConfigurationTest
             @Override
             protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                              @Nonnull String booterThatHasMainMethod,
-                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
+                                             @Nonnull StartupConfiguration config,
+                                             @Nonnull File dumpLogDirectory ) throws SurefireBooterForkException
             {
 
             }
@@ -176,7 +179,8 @@ public class DefaultForkConfigurationTest
             @Override
             protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                              @Nonnull String booterThatHasMainMethod,
-                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
+                                             @Nonnull StartupConfiguration config,
+                                             @Nonnull File dumpLogDirectory ) throws SurefireBooterForkException
             {
 
             }
@@ -202,7 +206,8 @@ public class DefaultForkConfigurationTest
             @Override
             protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                              @Nonnull String booterThatHasMainMethod,
-                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
+                                             @Nonnull StartupConfiguration config,
+                                             @Nonnull File dumpLogDirectory ) throws SurefireBooterForkException
             {
 
             }
@@ -227,7 +232,8 @@ public class DefaultForkConfigurationTest
             @Override
             protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                              @Nonnull String booterThatHasMainMethod,
-                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
+                                             @Nonnull StartupConfiguration config,
+                                             @Nonnull File dumpLogDirectory ) throws SurefireBooterForkException
             {
 
             }
@@ -252,7 +258,8 @@ public class DefaultForkConfigurationTest
             @Override
             protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                              @Nonnull String booterThatHasMainMethod,
-                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
+                                             @Nonnull StartupConfiguration config,
+                                             @Nonnull File dumpLogDirectory ) throws SurefireBooterForkException
             {
 
             }
@@ -277,7 +284,8 @@ public class DefaultForkConfigurationTest
             @Override
             protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                              @Nonnull String booterThatHasMainMethod,
-                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
+                                             @Nonnull StartupConfiguration config,
+                                             @Nonnull File dumpLogDirectory ) throws SurefireBooterForkException
             {
 
             }

@@ -20,6 +20,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
+import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.StartupConfiguration;
@@ -56,21 +57,22 @@ public final class JarManifestForkConfiguration
                                          @Nonnull Properties modelProperties, @Nullable String argLine,
                                          @Nonnull Map<String, String> environmentVariables, boolean debug,
                                          int forkCount, boolean reuseForks, @Nonnull Platform pluginPlatform,
-                                         @Nonnull ConsoleLogger log, @Nonnull File reportsDir )
+                                         @Nonnull ConsoleLogger log )
     {
         super( bootClasspath, tempDirectory, debugLine, workingDirectory, modelProperties, argLine,
-                environmentVariables, debug, forkCount, reuseForks, pluginPlatform, log, reportsDir );
+                environmentVariables, debug, forkCount, reuseForks, pluginPlatform, log );
     }
 
     @Override
     protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                      @Nonnull String booterThatHasMainMethod,
-                                     @Nonnull StartupConfiguration config )
+                                     @Nonnull StartupConfiguration config,
+                                     @Nonnull File dumpLogDirectory )
             throws SurefireBooterForkException
     {
         try
         {
-            File jar = createJar( toCompleteClasspath( config ), booterThatHasMainMethod );
+            File jar = createJar( toCompleteClasspath( config ), booterThatHasMainMethod, dumpLogDirectory );
             cli.createArg().setValue( "-jar" );
             cli.createArg().setValue( escapeToPlatformPath( jar.getAbsolutePath() ) );
         }
@@ -90,7 +92,8 @@ public final class JarManifestForkConfiguration
      * @throws IOException When a file operation fails.
      */
     @Nonnull
-    private File createJar( @Nonnull List<String> classPath, @Nonnull String startClassName )
+    private File createJar( @Nonnull List<String> classPath, @Nonnull String startClassName,
+                            @Nonnull File dumpLogDirectory )
             throws IOException
     {
         File file = File.createTempFile( "surefirebooter", ".jar", getTempDirectory() );
@@ -113,10 +116,10 @@ public final class JarManifestForkConfiguration
             StringBuilder cp = new StringBuilder();
             for ( Iterator<String> it = classPath.iterator(); it.hasNext(); )
             {
-                File file1 = new File( it.next() );
-                String uri = toClasspathElementUri( parent, file1 );
+                File classPathElement = new File( it.next() );
+                String uri = toClasspathElementUri( parent, classPathElement, dumpLogDirectory );
                 cp.append( uri );
-                if ( file1.isDirectory() && !uri.endsWith( "/" ) )
+                if ( classPathElement.isDirectory() && !uri.endsWith( "/" ) )
                 {
                     cp.append( '/' );
                 }
@@ -140,7 +143,10 @@ public final class JarManifestForkConfiguration
         }
     }
 
-    private String toClasspathElementUri( Path parent, File classPathElement ) throws IOException
+    private static String toClasspathElementUri( @Nonnull Path parent,
+                                                 @Nonnull File classPathElement,
+                                                 @Nonnull File dumpLogDirectory )
+            throws IOException
     {
         try
         {
@@ -149,7 +155,10 @@ public final class JarManifestForkConfiguration
         }
         catch ( IllegalArgumentException e )
         {
-            logDump( e, "Boot Manifest-JAR contains absolute paths in classpath " + classPathElement.getPath() );
+            String error = "Boot Manifest-JAR contains absolute paths in classpath " + classPathElement.getPath();
+            InPluginProcessDumpSingleton.getSingleton()
+                    .dumpException( e, error, dumpLogDirectory );
+
             return classPathElement.toURI()
                     .toASCIIString();
         }

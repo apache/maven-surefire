@@ -55,12 +55,14 @@ public abstract class ForkConfiguration
     /**
      * @param config               The startup configuration
      * @param forkNumber           index of forked JVM, to be the replacement in the argLine
+     * @param dumpLogDirectory     directory for dump log file
      * @return CommandLine able to flush entire command going to be sent to forked JVM
      * @throws org.apache.maven.surefire.booter.SurefireBooterForkException
      *          when unable to perform the fork
      */
     @Nonnull
     public abstract OutputStreamFlushableCommandline createCommandLine( @Nonnull StartupConfiguration config,
-                                                                        int forkNumber )
+                                                                        int forkNumber,
+                                                                        @Nonnull File dumpLogDirectory )
             throws SurefireBooterForkException;
 }

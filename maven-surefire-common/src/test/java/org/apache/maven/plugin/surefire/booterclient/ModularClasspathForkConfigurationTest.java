@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
+import static java.io.File.createTempFile;
 import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
 import static org.apache.commons.lang3.JavaVersion.JAVA_RECENT;
 import static java.io.File.separator;
@@ -122,7 +123,8 @@ public class ModularClasspathForkConfigurationTest
         StartupConfiguration startupConfiguration =
                 new StartupConfiguration( "JUnitCoreProvider", modularClasspathConfiguration, clc, true, true );
         OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
-        config.resolveClasspath( cli, ForkedBooter.class.getName(), startupConfiguration );
+        config.resolveClasspath( cli, ForkedBooter.class.getName(), startupConfiguration,
+                createTempFile( "surefire", "surefire-reports" ) );
 
         assertThat( cli.getArguments() ).isNotNull();
         assertThat( cli.getArguments() ).hasSize( 1 );

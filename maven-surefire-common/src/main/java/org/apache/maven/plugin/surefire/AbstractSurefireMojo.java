@@ -2173,8 +2173,7 @@ public abstract class AbstractSurefireMojo
                     getEffectiveForkCount(),
                     reuseForks,
                     platform,
-                    getConsoleLogger(),
-                    getReportsDirectory() );
+                    getConsoleLogger() );
         }
         else
         {
@@ -2189,8 +2188,7 @@ public abstract class AbstractSurefireMojo
                     getEffectiveForkCount(),
                     reuseForks,
                     platform,
-                    getConsoleLogger(),
-                    getReportsDirectory() );
+                    getConsoleLogger() );
         }
     }
 

@@ -95,7 +95,8 @@ public abstract class DefaultForkConfiguration
 
     protected abstract void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                               @Nonnull String booterThatHasMainMethod,
-                                              @Nonnull StartupConfiguration config )
+                                              @Nonnull StartupConfiguration config,
+                                              @Nonnull File dumpLogDirectory )
             throws SurefireBooterForkException;
 
     @Nonnull
@@ -107,12 +108,15 @@ public abstract class DefaultForkConfiguration
     /**
      * @param config       The startup configuration
      * @param forkNumber   index of forked JVM, to be the replacement in the argLine
+     * @param dumpLogDirectory     directory for dump log file
      * @return CommandLine able to flush entire command going to be sent to forked JVM
      * @throws org.apache.maven.surefire.booter.SurefireBooterForkException when unable to perform the fork
      */
     @Nonnull
     @Override
-    public OutputStreamFlushableCommandline createCommandLine( @Nonnull StartupConfiguration config, int forkNumber )
+    public OutputStreamFlushableCommandline createCommandLine( @Nonnull StartupConfiguration config,
+                                                               int forkNumber,
+                                                               @Nonnull File dumpLogDirectory )
             throws SurefireBooterForkException
     {
         OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
@@ -140,7 +144,7 @@ public abstract class DefaultForkConfiguration
                     .setLine( getDebugLine() );
         }
 
-        resolveClasspath( cli, findStartClass( config ), config );
+        resolveClasspath( cli, findStartClass( config ), config, dumpLogDirectory );
 
         return cli;
     }

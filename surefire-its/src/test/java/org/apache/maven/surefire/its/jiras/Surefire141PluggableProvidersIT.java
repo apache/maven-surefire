@@ -133,10 +133,12 @@ public class Surefire141PluggableProvidersIT
                                                  @Override
                                                  public boolean accept( File dir, String name )
                                                  {
-                                                     return name.endsWith( ".dump" );
+                                                     return name.endsWith( "-jvmRun1.dump" );
                                                  }
                                              });
-        assertThat( dumpFiles ).isNotEmpty();
+        assertThat( dumpFiles )
+                .isNotNull()
+                .isNotEmpty();
         for ( String dump : dumpFiles )
         {
             validator.getSurefireReportsFile( dump )
