@@ -131,7 +131,7 @@ public final class FooIT
         System.out.println( "CLASS PATH:" );
         System.out.println( classPath );
 
-        assertThat( classPath, containsString( "/target/classes" ) );
+        assertThat( classPath, anyOf( containsString( "../classes" ), containsString( "/target/classes" ) ) );
 
         File[] descriptors = surefireProviderProperties();
         assertThat( descriptors ).hasSize( 1 );

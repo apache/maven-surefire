@@ -165,7 +165,7 @@
                     <threadCount>1</threadCount>
                     <perCoreThreadCount>false</perCoreThreadCount>
                     <forkMode>once</forkMode>
-                    <argLine>-server -Xmx64m -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true</argLine>
+                    <argLine>-server -Xmx64m -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
                     <includes>
                         <include>org/apache/**/*IT*.java</include>
                     </includes>
