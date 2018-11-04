@@ -43,11 +43,13 @@ import static java.util.Collections.unmodifiableList;
  */
 public final class MavenLauncher
 {
-    private final List<String> cliOptions = new ArrayList<String>();
+    private static final File SETTINGS_XML_PATH = settingsXmlPath();
 
-    private final List<String> goals = new ArrayList<String>();
+    private final List<String> cliOptions = new ArrayList<>();
 
-    private final Map<String, String> envvars = new HashMap<String, String>();
+    private final List<String> goals = new ArrayList<>();
+
+    private final Map<String, String> envVars = new HashMap<>();
 
     private File unpackedAt;
 
@@ -160,13 +162,15 @@ public final class MavenLauncher
     public OutputValidator getSubProjectValidator( String subProject )
         throws VerificationException
     {
-        final File subFile = getValidator().getSubFile( subProject );
-        return new OutputValidator( new Verifier( subFile.getAbsolutePath() ) );
+        String subProjectBasedir = getValidator().getSubFile( subProject ).getAbsolutePath();
+        String settingsXml = settingsXmlPath().getAbsolutePath();
+        Verifier subProjectVerifier = createVerifier( subProjectBasedir, settingsXml, null );
+        return new OutputValidator( subProjectVerifier );
     }
 
     public MavenLauncher addEnvVar( String key, String value )
     {
-        envvars.put( key, value );
+        envVars.put( key, value );
         return this;
     }
 
@@ -292,16 +296,9 @@ public final class MavenLauncher
     {
         try
         {
-            File generatedSettings = new File( System.getProperty( "maven.settings.file" ) ).getCanonicalFile();
-            String generatedSettingsPath = generatedSettings.getAbsolutePath();
-            addCliOption( "-s " + generatedSettingsPath );
             getVerifier().setCliOptions( cliOptions );
-            getVerifier().executeGoals( goals, envvars );
+            getVerifier().executeGoals( goals, envVars );
             return getValidator();
-        }
-        catch ( IOException e )
-        {
-            throw new SurefireVerifierException( e.getLocalizedMessage(), e );
         }
         catch ( VerificationException e )
         {
@@ -385,13 +382,9 @@ public final class MavenLauncher
         {
             try
             {
-                verifier =
-                    cli == null
-                    ? new Verifier( ensureUnpacked().getAbsolutePath(), null, false )
-                    : new Verifier( ensureUnpacked().getAbsolutePath(), null, false, cli );
-
-                verifier.getVerifierProperties()
-                        .setProperty( "use.mavenRepoLocal", "false" );
+                String unpackedPath = ensureUnpacked().getAbsolutePath();
+                String settingsXml = SETTINGS_XML_PATH.getAbsolutePath();
+                verifier = createVerifier( unpackedPath, settingsXml, cli );
             }
             catch ( VerificationException e )
             {
@@ -455,5 +448,31 @@ public final class MavenLauncher
             return topInTestClass.getMethodName();
         }
         throw new IllegalStateException( "Cannot find " + testCaseBeingRun.getName() + "in stacktrace" );
+    }
+
+    private static Verifier createVerifier( String basedir, String settingsFile, String[] defaultCliOptions )
+            throws VerificationException
+    {
+        Verifier verifier = defaultCliOptions == null ?
+                new Verifier( basedir, settingsFile, false )
+                : new Verifier( basedir, settingsFile, false, defaultCliOptions );
+
+        verifier.getVerifierProperties()
+                .setProperty( "use.mavenRepoLocal", "true" );
+
+        return verifier;
+    }
+
+    private static File settingsXmlPath()
+    {
+        try
+        {
+            return new File( System.getProperty( "maven.settings.file" ) )
+                    .getCanonicalFile();
+        }
+        catch ( IOException e )
+        {
+            throw new IllegalStateException( e.getLocalizedMessage(), e );
+        }
     }
 }

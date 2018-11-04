@@ -154,6 +154,9 @@
                     <includes>
                         <include>org/apache/maven/surefire/its/fixture/JUnit4SuiteTest.java</include>
                     </includes>
+                    <systemPropertyVariables>
+                        <maven.settings.file>${project.build.directory}/private/settings.xml</maven.settings.file>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
             <plugin>
