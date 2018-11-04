@@ -48,6 +48,19 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <!--
+        No test sources here.
+        This is only a custom plugin.
+        Purpose to pre-install.
+        See the Surefire946KillMainProcessInReusableForkIT.
+        -->
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire.version}</version>
+        <configuration>
+          <skipTests>true</skipTests>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>

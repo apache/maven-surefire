@@ -46,6 +46,16 @@
         <targetPath>META-INF</targetPath>
       </resource>
     </resources>
+    <plugins>
+      <plugin>
+        <!-- No test sources here. See the tests in "surefire-1396-pluggableproviders-classpath". -->
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire.version}</version>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 
 

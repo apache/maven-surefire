@@ -39,13 +39,4 @@
     <module>../child2</module>
   </modules>
   
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${surefire.version}</version>
-      </plugin>
-    </plugins>
-  </build>
-  
 </project>
