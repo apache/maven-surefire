@@ -146,23 +146,29 @@ public final class JarManifestForkConfiguration
     static String relativize( @Nonnull String parent, @Nonnull String child )
             throws IllegalArgumentException
     {
-        return Paths.get( parent ).relativize( Paths.get( child ) ).toString();
+        return Paths.get( parent )
+                .relativize( Paths.get( child ) )
+                .toString();
     }
 
-    static String absoluteUri( @Nonnull String file )
+    static String toAbsoluteUri( @Nonnull String absolutePath )
     {
-        return Paths.get( file ).toUri().toASCIIString();
+        return Paths.get( absolutePath )
+                .toUri()
+                .toASCIIString();
     }
 
     static String toClasspathElementUri( @Nonnull String parent,
-                                           @Nonnull String classPathElement,
-                                           @Nonnull File dumpLogDirectory )
+                                         @Nonnull String classPathElement,
+                                         @Nonnull File dumpLogDirectory )
             throws IOException
     {
         try
         {
-            String uriPath = relativize( parent, classPathElement ).replace( '\\', '/' );
-            return new URI( null, uriPath, null ).toASCIIString();
+            String relativeUriPath = relativize( parent, classPathElement )
+                    .replace( '\\', '/' );
+
+            return new URI( null, relativeUriPath, null ).toASCIIString();
         }
         catch ( IllegalArgumentException e )
         {
@@ -170,7 +176,7 @@ public final class JarManifestForkConfiguration
             InPluginProcessDumpSingleton.getSingleton()
                     .dumpException( e, error, dumpLogDirectory );
 
-            return absoluteUri( classPathElement );
+            return toAbsoluteUri( classPathElement );
         }
         catch ( URISyntaxException e )
         {
