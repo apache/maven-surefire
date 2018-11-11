@@ -25,6 +25,7 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.util.StringTokenizer;
 
+import static java.lang.System.lineSeparator;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 /**
@@ -54,7 +55,7 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
  */
 public final class StringUtils
 {
-    public static final String NL = System.getProperty( "line.separator" );
+    public static final String NL = lineSeparator();
 
     private static final byte[] HEX_CHARS = {
                     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
