@@ -90,12 +90,12 @@ public class Surefire746Test
         BaseProviderFactory providerParameters = new BaseProviderFactory( reporterFactory, true );
 
         providerParameters.setReporterConfiguration( new ReporterConfiguration( new File( "" ), false ) );
-        Map<String, String> junitProps = new HashMap<String, String>();
+        Map<String, String> junitProps = new HashMap<>();
         junitProps.put( ProviderParameterNames.PARALLEL_PROP, "none" );
 
         JUnitCoreParameters jUnitCoreParameters = new JUnitCoreParameters( junitProps );
 
-        final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
+        final Map<String, TestSet> testSetMap = new ConcurrentHashMap<>();
 
         RunListener listener =
             ConcurrentRunListener.createInstance( testSetMap, reporterFactory, false, false,
@@ -106,7 +106,7 @@ public class Surefire746Test
         org.junit.runner.notification.RunListener jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap );
 
         List<org.junit.runner.notification.RunListener> customRunListeners =
-            new ArrayList<org.junit.runner.notification.RunListener>();
+            new ArrayList<>();
         customRunListeners.add( 0, jUnit4RunListener );
 
         try

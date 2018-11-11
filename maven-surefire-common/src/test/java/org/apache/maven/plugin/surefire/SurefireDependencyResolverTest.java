@@ -167,7 +167,7 @@ public class SurefireDependencyResolverTest
         Artifact logger = createArtifact( "surefire-logger-api" );
         logger.setFile( new File( "" ) );
 
-        Set<Artifact> providerArtifacts = new LinkedHashSet<Artifact>();
+        Set<Artifact> providerArtifacts = new LinkedHashSet<>();
         providerArtifacts.add( api );
         providerArtifacts.add( provider );
         providerArtifacts.add( ext );
@@ -263,7 +263,7 @@ public class SurefireDependencyResolverTest
         final Artifact ext = createArtifact( "org.apiguardian", "apiguardian-api" );
         final Artifact logger = createArtifact( "surefire-logger-api" );
 
-        Set<Artifact> pluginArtifacts = new LinkedHashSet<Artifact>();
+        Set<Artifact> pluginArtifacts = new LinkedHashSet<>();
         pluginArtifacts.add( plugin );
         pluginArtifacts.add( common );
         pluginArtifacts.add( api );
@@ -297,7 +297,7 @@ public class SurefireDependencyResolverTest
 
         final ArtifactResolutionResult providerResult = mock( ArtifactResolutionResult.class );
         when( providerResult.getArtifacts() )
-                .thenReturn( new HashSet<Artifact>( asList( provider, api, logger, ext ) ) );
+                .thenReturn( new HashSet<>( asList( provider, api, logger, ext ) ) );
 
         RepositorySystem repositorySystem = mock( RepositorySystem.class );
         when( repositorySystem.resolve( any(  ArtifactResolutionRequest.class) ) )
@@ -336,7 +336,7 @@ public class SurefireDependencyResolverTest
         SurefireDependencyResolver surefireDependencyResolver =
                 new SurefireDependencyResolver( repositorySystem, null, null, null, null, null );
 
-        Map<String, Artifact> pluginArtifactsMapping = new HashMap<String, Artifact>();
+        Map<String, Artifact> pluginArtifactsMapping = new HashMap<>();
         pluginArtifactsMapping.put( plugin.getGroupId() + ":" + plugin.getArtifactId(), plugin );
         pluginArtifactsMapping.put( common.getGroupId() + ":" + common.getArtifactId(), common );
         pluginArtifactsMapping.put( api.getGroupId() + ":" + api.getArtifactId(), api );
@@ -358,7 +358,7 @@ public class SurefireDependencyResolverTest
         Artifact ext = createArtifact( "org.apiguardian", "apiguardian-api" );
         Artifact logger = createArtifact( "surefire-logger-api" );
 
-        Set<Artifact> providerArtifacts = new LinkedHashSet<Artifact>();
+        Set<Artifact> providerArtifacts = new LinkedHashSet<>();
         providerArtifacts.add( api );
         providerArtifacts.add( provider );
         providerArtifacts.add( ext );
@@ -381,7 +381,7 @@ public class SurefireDependencyResolverTest
         Set<Artifact> actual =
                 invokeMethod( SurefireDependencyResolver.class, "orderProviderArtifacts", providerArtifacts );
 
-        Set<Artifact> expected = new LinkedHashSet<Artifact>();
+        Set<Artifact> expected = new LinkedHashSet<>();
         expected.add( provider );
         expected.add( api );
         expected.add( logger );

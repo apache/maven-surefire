@@ -32,7 +32,7 @@ import org.apache.maven.surefire.report.TestSetReportEntry;
 public class MockReporter
     implements RunListener
 {
-    private final List<String> events = new ArrayList<String>();
+    private final List<String> events = new ArrayList<>();
 
     public static final String SET_STARTED = "SET_STARTED";
 

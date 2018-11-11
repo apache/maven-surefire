@@ -305,7 +305,7 @@ public class SmartStackTraceParserTest
 
     public ExecutionException getSingleNested()
     {
-        FutureTask<Object> futureTask = new FutureTask<Object>( new RunnableTestClass2() );
+        FutureTask<Object> futureTask = new FutureTask<>( new RunnableTestClass2() );
         DaemonThreadFactory.newDaemonThread( futureTask ).start();
         try
         {
@@ -325,7 +325,7 @@ public class SmartStackTraceParserTest
 
     private ExecutionException getDoubleNestedException()
     {
-        FutureTask<Object> futureTask = new FutureTask<Object>( new RunnableTestClass1() );
+        FutureTask<Object> futureTask = new FutureTask<>( new RunnableTestClass1() );
         DaemonThreadFactory.newDaemonThread( futureTask ).start();
         try
         {

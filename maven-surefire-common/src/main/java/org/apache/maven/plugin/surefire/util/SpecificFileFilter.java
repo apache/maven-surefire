@@ -42,7 +42,7 @@ public class SpecificFileFilter
     {
         if ( classNames != null && classNames.length > 0 )
         {
-            this.names = new HashSet<String>();
+            this.names = new HashSet<>();
             for ( String name : classNames )
             {
                 names.add( convertSlashToSystemFileSeparator( name ) );

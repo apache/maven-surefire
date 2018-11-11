@@ -75,7 +75,7 @@ public class TestNGMapConfigurator
     Map<String, Object> getConvertedOptions( Map<String, String> options )
         throws TestSetFailedException
     {
-        Map<String, Object> convertedOptions = new HashMap<String, Object>();
+        Map<String, Object> convertedOptions = new HashMap<>();
         convertedOptions.put( "-mixed", false );
         for ( Map.Entry<String, String> entry : options.entrySet() )
         {
@@ -136,7 +136,7 @@ public class TestNGMapConfigurator
             Class<?> reporterConfig = Class.forName( "org.testng.ReporterConfig" );
             Method deserialize = reporterConfig.getMethod( "deserialize", String.class );
             Object rc = deserialize.invoke( null, val );
-            ArrayList<Object> reportersList = new ArrayList<Object>();
+            ArrayList<Object> reportersList = new ArrayList<>();
             reportersList.add( rc );
             return reportersList;
         }

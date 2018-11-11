@@ -51,7 +51,7 @@ public final class TestLessInputStream
 
     private final AtomicBoolean closed = new AtomicBoolean();
 
-    private final Queue<Command> immediateCommands = new ConcurrentLinkedQueue<Command>();
+    private final Queue<Command> immediateCommands = new ConcurrentLinkedQueue<>();
 
     private final TestLessInputStreamBuilder builder;
 
@@ -180,7 +180,7 @@ public final class TestLessInputStream
     public static final class TestLessInputStreamBuilder
     {
         private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
-        private final Queue<TestLessInputStream> aliveStreams = new ConcurrentLinkedQueue<TestLessInputStream>();
+        private final Queue<TestLessInputStream> aliveStreams = new ConcurrentLinkedQueue<>();
         private final ImmediateCommands immediateCommands = new ImmediateCommands();
         private final CachableCommands cachableCommands = new CachableCommands();
         private final Node head = new Node( null );
@@ -487,7 +487,7 @@ public final class TestLessInputStream
 
         private static class Node
         {
-            private final AtomicReference<Node> next = new AtomicReference<Node>();
+            private final AtomicReference<Node> next = new AtomicReference<>();
             private final Command command;
 
             Node( Command command )

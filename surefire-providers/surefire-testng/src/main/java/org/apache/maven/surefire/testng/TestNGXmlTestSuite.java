@@ -89,8 +89,8 @@ final class TestNGXmlTestSuite
             throw new IllegalStateException( "No suite files were specified" );
         }
 
-        suiteFilePaths = new ArrayList<String>( suiteFiles.size() );
-        ArrayList<File> testSets = new ArrayList<File>( suiteFiles.size() );
+        suiteFilePaths = new ArrayList<>( suiteFiles.size() );
+        ArrayList<File> testSets = new ArrayList<>( suiteFiles.size() );
 
         for ( File suiteFile : suiteFiles )
         {

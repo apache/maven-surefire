@@ -50,7 +50,7 @@ public class JUnit4RunListener
      * This is necessary because JUnit4 always fires a {@link org.junit.runner.notification.RunListener#testRunFinished}
      * event-- even if there was a failure.
      */
-    private final ThreadLocal<Boolean> failureFlag = new InheritableThreadLocal<Boolean>();
+    private final ThreadLocal<Boolean> failureFlag = new InheritableThreadLocal<>();
 
     /**
      * Constructor.

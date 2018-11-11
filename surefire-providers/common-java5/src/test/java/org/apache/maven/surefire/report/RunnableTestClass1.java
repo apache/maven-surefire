@@ -39,7 +39,7 @@ class RunnableTestClass1
         throws ExecutionException
     {
         RunnableTestClass2 rt2 = new RunnableTestClass2();
-        FutureTask<Object> futureTask = new FutureTask<Object>( rt2 );
+        FutureTask<Object> futureTask = new FutureTask<>( rt2 );
         DaemonThreadFactory.newDaemonThread( futureTask ).start();
         try
         {

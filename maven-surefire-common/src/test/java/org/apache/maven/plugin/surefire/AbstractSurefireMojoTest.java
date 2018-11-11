@@ -122,7 +122,7 @@ public class AbstractSurefireMojoTest
         Artifact api = new DefaultArtifact( "g", "a", createFromVersionSpec( "1" ), "compile", "jar", "", null );
         api.setFile( mockFile( "surefire-api.jar" ) );
 
-        Set<Artifact> newArtifacts = new LinkedHashSet<Artifact>();
+        Set<Artifact> newArtifacts = new LinkedHashSet<>();
         newArtifacts.add( common );
         newArtifacts.add( api );
 
@@ -152,7 +152,7 @@ public class AbstractSurefireMojoTest
         when( mojo.getClasspathDependencyExcludes() ).thenReturn( new String[]{ "g3:a3" } );
         doReturn( mock( Artifact.class ) ).when( mojo, "getTestNgArtifact" );
 
-        Set<Artifact> artifacts = new HashSet<Artifact>();
+        Set<Artifact> artifacts = new HashSet<>();
 
         Artifact a1 = mock( Artifact.class );
         when( a1.getGroupId() ).thenReturn( "g1" );
@@ -225,7 +225,7 @@ public class AbstractSurefireMojoTest
                 createFromVersion( "1" ), "runtime", "jar", "", handler );
         loggerApi.setFile( mockFile( "surefire-logger-api.jar" ) );
 
-        Map<String, Artifact> providerArtifactsMap = new HashMap<String, Artifact>();
+        Map<String, Artifact> providerArtifactsMap = new HashMap<>();
         providerArtifactsMap.put( "org.apache.maven.surefire:maven-surefire-common", common );
         providerArtifactsMap.put( "org.apache.maven.surefire:surefire-api", api );
         providerArtifactsMap.put( "org.apache.maven.surefire:surefire-logger-api", loggerApi );
@@ -289,7 +289,7 @@ public class AbstractSurefireMojoTest
         assertThat( ( Object ) conf.getClasspathConfiguration().getTestClasspath() )
                 .isEqualTo( testClasspath.toClasspath() );
 
-        Collection<String> files = new ArrayList<String>();
+        Collection<String> files = new ArrayList<>();
         for ( Artifact providerArtifact : providerArtifacts )
         {
             files.add( providerArtifact.getFile().getAbsolutePath() );

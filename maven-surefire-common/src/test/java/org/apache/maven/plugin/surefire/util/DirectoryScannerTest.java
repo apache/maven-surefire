@@ -71,7 +71,7 @@ public class DirectoryScannerTest
         assertThat( classNames, is( notNullValue() ) );
         assertThat( classNames.size(), is( expectedClassesCount ) );
 
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
         classNames.writeTo( props );
         assertThat( props.values(), hasSize( expectedClassesCount ) );
     }

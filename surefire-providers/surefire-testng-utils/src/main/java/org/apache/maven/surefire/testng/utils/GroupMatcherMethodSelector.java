@@ -44,7 +44,7 @@ public class GroupMatcherMethodSelector
 
     private static GroupMatcher matcher;
 
-    private Map<ITestNGMethod, Boolean> answers = new HashMap<ITestNGMethod, Boolean>();
+    private Map<ITestNGMethod, Boolean> answers = new HashMap<>();
 
     @Override
     public boolean includeMethod( IMethodSelectorContext context, ITestNGMethod method, boolean isTestMethod )

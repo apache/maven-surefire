@@ -54,7 +54,7 @@ public final class TestProvidingInputStream
 {
     private final Semaphore barrier = new Semaphore( 0 );
 
-    private final Queue<Command> commands = new ConcurrentLinkedQueue<Command>();
+    private final Queue<Command> commands = new ConcurrentLinkedQueue<>();
 
     private final AtomicBoolean closed = new AtomicBoolean();
 

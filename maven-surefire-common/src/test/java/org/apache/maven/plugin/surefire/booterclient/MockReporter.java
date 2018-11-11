@@ -35,9 +35,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class MockReporter
     implements RunListener, ConsoleLogger, ConsoleOutputReceiver
 {
-    private final List<String> events = new ArrayList<String>();
+    private final List<String> events = new ArrayList<>();
 
-    private final List<Object> data = new ArrayList<Object>();
+    private final List<Object> data = new ArrayList<>();
 
     public static final String SET_STARTING = "SET_STARTED";
 

@@ -222,7 +222,7 @@ public class NewClassLoaderRunner
 
         private static Collection<URL> toPathList( String path ) throws MalformedURLException
         {
-            Collection<URL> classPath = new HashSet<URL>();
+            Collection<URL> classPath = new HashSet<>();
             for ( String file : path.split( pathSeparator ) )
             {
                 classPath.add( new File( file ).toURL() );
@@ -232,7 +232,7 @@ public class NewClassLoaderRunner
 
         private static Collection<URL> toPathList()
         {
-            Collection<URL> classPath = new HashSet<URL>();
+            Collection<URL> classPath = new HashSet<>();
             try
             {
                 String[] files = readFileToString( new File( "target/test-classpath/cp.txt" ) ).split( pathSeparator );

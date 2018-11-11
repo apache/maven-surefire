@@ -52,7 +52,7 @@ public final class RunEntryStatisticsMap
 
     public RunEntryStatisticsMap( Map<String, RunEntryStatistics> runEntryStatistics )
     {
-        this.runEntryStatistics = new ConcurrentHashMap<String, RunEntryStatistics>( runEntryStatistics );
+        this.runEntryStatistics = new ConcurrentHashMap<>( runEntryStatistics );
     }
 
     public RunEntryStatisticsMap()

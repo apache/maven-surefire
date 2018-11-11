@@ -47,7 +47,7 @@ public class ReportTestSuiteTest
     {
         ReportTestCase tCase = new ReportTestCase();
 
-        List<ReportTestCase> tCaseList = new ArrayList<ReportTestCase>();
+        List<ReportTestCase> tCaseList = new ArrayList<>();
 
         tCaseList.add( tCase );
 

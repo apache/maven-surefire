@@ -147,7 +147,7 @@ public class ConcurrentRunListenerTest
         throws TestSetFailedException
     {
         DefaultReporterFactory reporterFactory = createReporterFactory();
-        HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
+        HashMap<String, TestSet> classMethodCounts = new HashMap<>();
         final ConsoleStream defaultConsoleReporter = new DefaultDirectConsoleReporter( System.out );
         RunListener reporter =
             new ClassesParallelRunListener( classMethodCounts, reporterFactory, defaultConsoleReporter );
@@ -166,7 +166,7 @@ public class ConcurrentRunListenerTest
     private RunStatistics runClasses( Class<?>... classes )
         throws TestSetFailedException
     {
-        HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
+        HashMap<String, TestSet> classMethodCounts = new HashMap<>();
         final DefaultReporterFactory reporterManagerFactory = createReporterFactory();
         org.junit.runner.notification.RunListener demultiplexingRunListener =
             createRunListener( reporterManagerFactory, classMethodCounts );

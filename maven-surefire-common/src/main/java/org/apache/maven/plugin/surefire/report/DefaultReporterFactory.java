@@ -63,7 +63,7 @@ import static org.apache.maven.surefire.util.internal.ObjectUtils.useNonNull;
 public class DefaultReporterFactory
     implements ReporterFactory
 {
-    private final Collection<TestSetRunListener> listeners = new ConcurrentLinkedQueue<TestSetRunListener>();
+    private final Collection<TestSetRunListener> listeners = new ConcurrentLinkedQueue<>();
     private final StartupReportConfiguration reportConfiguration;
     private final ConsoleLogger consoleLogger;
     private final Integer forkNumber;
@@ -269,11 +269,11 @@ public class DefaultReporterFactory
     void mergeTestHistoryResult()
     {
         globalStats = new RunStatistics();
-        flakyTests = new TreeMap<String, List<TestMethodStats>>();
-        failedTests = new TreeMap<String, List<TestMethodStats>>();
-        errorTests = new TreeMap<String, List<TestMethodStats>>();
+        flakyTests = new TreeMap<>();
+        failedTests = new TreeMap<>();
+        errorTests = new TreeMap<>();
 
-        Map<String, List<TestMethodStats>> mergedTestHistoryResult = new HashMap<String, List<TestMethodStats>>();
+        Map<String, List<TestMethodStats>> mergedTestHistoryResult = new HashMap<>();
         // Merge all the stats for tests from listeners
         for ( TestSetRunListener listener : listeners )
         {
@@ -283,7 +283,7 @@ public class DefaultReporterFactory
                     mergedTestHistoryResult.get( methodStats.getTestClassMethodName() );
                 if ( currentMethodStats == null )
                 {
-                    currentMethodStats = new ArrayList<TestMethodStats>();
+                    currentMethodStats = new ArrayList<>();
                     currentMethodStats.add( methodStats );
                     mergedTestHistoryResult.put( methodStats.getTestClassMethodName(), currentMethodStats );
                 }
@@ -303,7 +303,7 @@ public class DefaultReporterFactory
             String testClassMethodName = entry.getKey();
             completedCount++;
 
-            List<ReportEntryType> resultTypes = new ArrayList<ReportEntryType>();
+            List<ReportEntryType> resultTypes = new ArrayList<>();
             for ( TestMethodStats methodStats : testMethodStats )
             {
                 resultTypes.add( methodStats.getResultType() );

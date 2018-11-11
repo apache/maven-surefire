@@ -94,7 +94,7 @@ public class Surefire1098BalancedRunOrderIT
     private static List<String> printOnlyTestLines( OutputValidator validator )
         throws VerificationException
     {
-        List<String> log = new ArrayList<String>( validator.loadLogLines() );
+        List<String> log = new ArrayList<>( validator.loadLogLines() );
         for ( Iterator<String> it = log.iterator(); it.hasNext(); ) {
             String line = it.next();
             if ( !line.startsWith( "class jiras.surefire1098." ) ) {

@@ -30,7 +30,7 @@ public abstract class JoinGroupMatcher
     implements GroupMatcher
 {
 
-    Set<GroupMatcher> matchers = new HashSet<GroupMatcher>();
+    Set<GroupMatcher> matchers = new HashSet<>();
 
     public final boolean addMatcher( GroupMatcher matcher )
     {

@@ -39,8 +39,8 @@ final class MethodFilter
 
     MethodFilter( TestListResolver testResolver )
     {
-        Collection<Filter> includedFilters = new LinkedHashSet<Filter>();
-        Collection<Filter> excludedFilters = new LinkedHashSet<Filter>();
+        Collection<Filter> includedFilters = new LinkedHashSet<>();
+        Collection<Filter> excludedFilters = new LinkedHashSet<>();
         for ( ResolvedTest test : testResolver.getIncludedPatterns() )
         {
             includedFilters.add( new RequestedTest( test, true ) );

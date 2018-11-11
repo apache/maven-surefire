@@ -239,7 +239,7 @@ public abstract class DefaultForkConfiguration
     @Nonnull
     private static <K, V> Map<K, V> toImmutable( @Nullable Map<K, V> map )
     {
-        return map == null ? Collections.<K, V>emptyMap() : new ImmutableMap<K, V>( map );
+        return map == null ? Collections.<K, V>emptyMap() : new ImmutableMap<>( map );
     }
 
     @Override

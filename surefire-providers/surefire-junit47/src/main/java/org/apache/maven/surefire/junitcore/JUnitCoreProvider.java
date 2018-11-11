@@ -250,7 +250,7 @@ public class JUnitCoreProvider
         }
         else
         {
-            final Map<String, TestSet> testSetMap = new ConcurrentHashMap<String, TestSet>();
+            final Map<String, TestSet> testSetMap = new ConcurrentHashMap<>();
 
             ConcurrentRunListener listener = createInstance( testSetMap, reporterFactory, isParallelTypes(),
                                                              isParallelMethodsAndTypes(), consoleStream );

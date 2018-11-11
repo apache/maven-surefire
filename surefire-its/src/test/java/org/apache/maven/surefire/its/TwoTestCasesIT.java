@@ -81,7 +81,7 @@ public class TwoTestCasesIT
 
     private Set<String> extractClassNames( List<ReportTestSuite> reports )
     {
-        HashSet<String> classNames = new HashSet<String>();
+        HashSet<String> classNames = new HashSet<>();
         for ( ReportTestSuite suite : reports )
         {
             classNames.add( suite.getFullClassName() );

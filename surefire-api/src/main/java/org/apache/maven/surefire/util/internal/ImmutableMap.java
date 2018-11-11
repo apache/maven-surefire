@@ -45,7 +45,7 @@ public final class ImmutableMap<K, V>
         Node<K, V> previous = null;
         for ( Entry<K, V> e : map.entrySet() )
         {
-            Node<K, V> node = new Node<K, V>( e.getKey(), e.getValue() );
+            Node<K, V> node = new Node<>( e.getKey(), e.getValue() );
             if ( first == null )
             {
                 first = node;
@@ -62,7 +62,7 @@ public final class ImmutableMap<K, V>
     @Override
     public Set<Entry<K, V>> entrySet()
     {
-        Set<Entry<K, V>> entries = new LinkedHashSet<Entry<K, V>>();
+        Set<Entry<K, V>> entries = new LinkedHashSet<>();
         Node<K, V> node = first;
         while ( node != null )
         {

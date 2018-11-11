@@ -75,7 +75,7 @@ public final class OptimizedParallelComputerTest
         throws TestSetFailedException
     {
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new HashMap<>();
         properties.put(PARALLEL_KEY, "suites");
         properties.put(THREADCOUNT_KEY, "3");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
@@ -95,7 +95,7 @@ public final class OptimizedParallelComputerTest
         throws TestSetFailedException
     {
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new HashMap<>();
         properties.put(PARALLEL_KEY, "classes");
         properties.put(THREADCOUNT_KEY, "3");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
@@ -115,7 +115,7 @@ public final class OptimizedParallelComputerTest
         throws TestSetFailedException
     {
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new HashMap<>();
         properties.put(PARALLEL_KEY, "methods");
         properties.put(THREADCOUNT_KEY, "3");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
@@ -135,7 +135,7 @@ public final class OptimizedParallelComputerTest
         throws TestSetFailedException
     {
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new HashMap<>();
         properties.put(PARALLEL_KEY, "both");
         properties.put(THREADCOUNT_KEY, "3");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
@@ -155,7 +155,7 @@ public final class OptimizedParallelComputerTest
         throws TestSetFailedException
     {
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new HashMap<>();
         properties.put(PARALLEL_KEY, "classesAndMethods");
         properties.put(THREADCOUNT_KEY, "3");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
@@ -175,7 +175,7 @@ public final class OptimizedParallelComputerTest
         throws TestSetFailedException
     {
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new HashMap<>();
         properties.put(PARALLEL_KEY, "suitesAndMethods");
         properties.put(THREADCOUNT_KEY, "3");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
@@ -195,7 +195,7 @@ public final class OptimizedParallelComputerTest
         throws TestSetFailedException
     {
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new HashMap<>();
         properties.put(PARALLEL_KEY, "suitesAndClasses");
         properties.put(THREADCOUNT_KEY, "3");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
@@ -215,7 +215,7 @@ public final class OptimizedParallelComputerTest
         throws TestSetFailedException
     {
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new HashMap<>();
         properties.put(PARALLEL_KEY, "all");
         properties.put(THREADCOUNT_KEY, "3");
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
@@ -236,7 +236,7 @@ public final class OptimizedParallelComputerTest
     {
         // 4 * cpu to 5 * cpu threads to run test classes
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new HashMap<>();
         properties.put(PARALLEL_KEY, "suitesAndClasses");
         properties.put(THREADCOUNT_KEY, "6");
         properties.put(THREADCOUNTSUITES_KEY, "2");
@@ -258,7 +258,7 @@ public final class OptimizedParallelComputerTest
     {
         // 4 * cpu to 5 * cpu threads to run test methods
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new HashMap<>();
         properties.put(PARALLEL_KEY, "suitesAndMethods");
         properties.put(THREADCOUNT_KEY, "6");
         properties.put(THREADCOUNTSUITES_KEY, "2");
@@ -280,7 +280,7 @@ public final class OptimizedParallelComputerTest
     {
         // 4 * cpu to 5 * cpu threads to run test methods
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new HashMap<>();
         properties.put(PARALLEL_KEY, "classesAndMethods");
         properties.put(THREADCOUNT_KEY, "6");
         properties.put(THREADCOUNTCLASSES_KEY, "2");
@@ -302,7 +302,7 @@ public final class OptimizedParallelComputerTest
     {
         // 8 * cpu to 13 * cpu threads to run test methods
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new HashMap<>();
         properties.put( PARALLEL_KEY, "all" );
         properties.put( THREADCOUNT_KEY, "14" );
         properties.put( THREADCOUNTSUITES_KEY, "2" );

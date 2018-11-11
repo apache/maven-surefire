@@ -35,7 +35,7 @@ import javax.annotation.Nonnull;
 public class ClasspathCache
 {
     private static final ConcurrentHashMap<String, Classpath> CLASSPATHS =
-        new ConcurrentHashMap<String, Classpath>( 4 );
+        new ConcurrentHashMap<>( 4 );
 
     public static Classpath getCachedClassPath( @Nonnull String artifactId )
     {
@@ -49,7 +49,7 @@ public class ClasspathCache
 
     public static Classpath setCachedClasspath( @Nonnull String key, @Nonnull Set<Artifact> artifacts )
     {
-        Collection<String> files = new ArrayList<String>();
+        Collection<String> files = new ArrayList<>();
         for ( Artifact artifact : artifacts )
         {
             files.add( artifact.getFile().getAbsolutePath() );

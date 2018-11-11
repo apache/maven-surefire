@@ -81,7 +81,7 @@ final class TestClassPath
 
     Classpath toClasspath()
     {
-        List<String> classpath = new ArrayList<String>();
+        List<String> classpath = new ArrayList<>();
         classpath.add( testClassesDirectory.getAbsolutePath() );
         classpath.add( classesDirectory.getAbsolutePath() );
         for ( Artifact artifact : artifacts )

@@ -409,7 +409,7 @@ public class SurefireReflector
 
     private static Collection<Integer> toOrdinals( Collection<? extends Enum> enums )
     {
-        Collection<Integer> ordinals = new ArrayList<Integer>( enums.size() );
+        Collection<Integer> ordinals = new ArrayList<>( enums.size() );
         for ( Enum e : enums )
         {
             ordinals.add( e.ordinal() );

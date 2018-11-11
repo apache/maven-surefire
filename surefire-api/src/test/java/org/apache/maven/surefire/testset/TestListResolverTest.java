@@ -133,8 +133,8 @@ public class TestListResolverTest
 
     public void testNonRegexClassAndMethod()
     {
-        Collection<ResolvedTest> includedFilters = new ArrayList<ResolvedTest>();
-        Collection<ResolvedTest> excludedFilters = new ArrayList<ResolvedTest>();
+        Collection<ResolvedTest> includedFilters = new ArrayList<>();
+        Collection<ResolvedTest> excludedFilters = new ArrayList<>();
         IncludedExcludedPatterns includedExcludedPatterns = new IncludedExcludedPatterns();
         TestListResolver.nonRegexClassAndMethods( "MyTest", "myTest", false, includedExcludedPatterns, includedFilters,
                                                   excludedFilters );
@@ -157,8 +157,8 @@ public class TestListResolverTest
 
     public void testNonRegexClassAndMethods()
     {
-        Collection<ResolvedTest> includedFilters = new ArrayList<ResolvedTest>();
-        Collection<ResolvedTest> excludedFilters = new ArrayList<ResolvedTest>();
+        Collection<ResolvedTest> includedFilters = new ArrayList<>();
+        Collection<ResolvedTest> excludedFilters = new ArrayList<>();
         IncludedExcludedPatterns includedExcludedPatterns = new IncludedExcludedPatterns();
         TestListResolver.nonRegexClassAndMethods( "MyTest.class", "first*+second*", false, includedExcludedPatterns,
                                                   includedFilters, excludedFilters );
@@ -191,8 +191,8 @@ public class TestListResolverTest
 
     public void testNegativeNonRegexClassAndMethod()
     {
-        Collection<ResolvedTest> includedFilters = new ArrayList<ResolvedTest>();
-        Collection<ResolvedTest> excludedFilters = new ArrayList<ResolvedTest>();
+        Collection<ResolvedTest> includedFilters = new ArrayList<>();
+        Collection<ResolvedTest> excludedFilters = new ArrayList<>();
         IncludedExcludedPatterns includedExcludedPatterns = new IncludedExcludedPatterns();
         TestListResolver.nonRegexClassAndMethods( "MyTest", "myTest", true, includedExcludedPatterns, includedFilters,
                                                   excludedFilters );
@@ -216,8 +216,8 @@ public class TestListResolverTest
 
     public void testResolveTestRequest()
     {
-        Collection<ResolvedTest> includedFilters = new ArrayList<ResolvedTest>();
-        Collection<ResolvedTest> excludedFilters = new ArrayList<ResolvedTest>();
+        Collection<ResolvedTest> includedFilters = new ArrayList<>();
+        Collection<ResolvedTest> excludedFilters = new ArrayList<>();
         IncludedExcludedPatterns includedExcludedPatterns = new IncludedExcludedPatterns();
         TestListResolver.resolveTestRequest( "!%regex[.*.MyTest.class#myTest]", includedExcludedPatterns,
                                              includedFilters, excludedFilters );
@@ -365,7 +365,7 @@ public class TestListResolverTest
 
     private static Set<ResolvedTest> $( ResolvedTest... patterns )
     {
-        Set<ResolvedTest> set = new LinkedHashSet<ResolvedTest>();
+        Set<ResolvedTest> set = new LinkedHashSet<>();
         addAll( set, patterns );
         return set;
     }
@@ -490,7 +490,7 @@ public class TestListResolverTest
 
     private static Set<ResolvedTest> resolveClass( String patterns )
     {
-        Set<ResolvedTest> resolved = new HashSet<ResolvedTest>();
+        Set<ResolvedTest> resolved = new HashSet<>();
         for ( String pattern : patterns.split( "," ) )
         {
             resolved.add( new ResolvedTest( CLASS, pattern, false ) );

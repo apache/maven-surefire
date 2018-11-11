@@ -127,13 +127,13 @@ public class JUnitCoreParametersTest
 
     private Map<String, String> newDefaultProperties()
     {
-        return new HashMap<String, String>();
+        return new HashMap<>();
     }
 
 
     private Map<String, String> newPropertiesClasses()
     {
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
         props.put(JUnitCoreParameters.PARALLEL_KEY, "classes");
         props.put(JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "false");
         props.put(JUnitCoreParameters.THREADCOUNT_KEY, "2");
@@ -143,7 +143,7 @@ public class JUnitCoreParametersTest
 
     private Map<String, String> newPropertiesMethods()
     {
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
         props.put(JUnitCoreParameters.PARALLEL_KEY, "methods");
         props.put(JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "false");
         props.put(JUnitCoreParameters.THREADCOUNT_KEY, "2");
@@ -153,7 +153,7 @@ public class JUnitCoreParametersTest
 
     private Map<String, String> newPropertiesBoth()
     {
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
         props.put(JUnitCoreParameters.PARALLEL_KEY, "both");
         props.put(JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "true");
         props.put(JUnitCoreParameters.THREADCOUNT_KEY, "7");
@@ -163,7 +163,7 @@ public class JUnitCoreParametersTest
 
     private Map<String, String> newPropertiesTimeouts( double timeout, double forcedTimeout )
     {
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
         props.put(JUnitCoreParameters.PARALLEL_TIMEOUT_KEY, Double.toString(timeout));
         props.put(JUnitCoreParameters.PARALLEL_TIMEOUTFORCED_KEY, Double.toString(forcedTimeout));
         return props;
@@ -171,7 +171,7 @@ public class JUnitCoreParametersTest
 
     private Map<String, String> newPropertiesOptimization( boolean optimize )
     {
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
         props.put( JUnitCoreParameters.PARALLEL_OPTIMIZE_KEY, Boolean.toString( optimize ) );
         return props;
     }

@@ -88,11 +88,11 @@ public class ForkClient
 
     private final DefaultReporterFactory defaultReporterFactory;
 
-    private final Map<String, String> testVmSystemProperties = new ConcurrentHashMap<String, String>();
+    private final Map<String, String> testVmSystemProperties = new ConcurrentHashMap<>();
 
     private final NotifiableTestStream notifiableTestStream;
 
-    private final Queue<String> testsInProgress = new ConcurrentLinkedQueue<String>();
+    private final Queue<String> testsInProgress = new ConcurrentLinkedQueue<>();
 
     /**
      * {@code testSetStartedAt} is set to non-zero after received
@@ -485,7 +485,7 @@ public class ForkClient
 
     public Set<String> testsInProgress()
     {
-        return new TreeSet<String>( testsInProgress );
+        return new TreeSet<>( testsInProgress );
     }
 
     public boolean hasTestsInProgress()

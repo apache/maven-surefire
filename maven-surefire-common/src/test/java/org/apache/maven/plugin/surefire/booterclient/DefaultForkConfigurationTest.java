@@ -82,7 +82,7 @@ public class DefaultForkConfigurationTest
         workingDirectory = new File( "." );
         modelProperties = new Properties();
         argLine = null;
-        environmentVariables = new HashMap<String, String>();
+        environmentVariables = new HashMap<>();
         debug = true;
         forkCount = 2;
         reuseForks = true;

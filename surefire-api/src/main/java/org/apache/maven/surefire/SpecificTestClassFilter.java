@@ -43,7 +43,7 @@ public class SpecificTestClassFilter
     {
         if ( classNames != null && classNames.length > 0 )
         {
-            this.names = new HashSet<String>();
+            names = new HashSet<>();
             Collections.addAll( names, classNames );
         }
     }

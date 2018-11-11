@@ -56,7 +56,7 @@ public class Surefire747MethodParallelWithSuiteCountIT
     private static Set<String> printTestLines( OutputValidator validator, String pattern )
             throws VerificationException
     {
-        Set<String> log = new TreeSet<String>( validator.loadLogLines() );
+        Set<String> log = new TreeSet<>( validator.loadLogLines() );
         for ( Iterator<String> it = log.iterator(); it.hasNext(); )
         {
             String line = it.next();

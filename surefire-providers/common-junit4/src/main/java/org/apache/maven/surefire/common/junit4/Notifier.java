@@ -46,9 +46,9 @@ import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDown
 public class Notifier
     extends RunNotifier
 {
-    private final Collection<RunListener> listeners = new ArrayList<RunListener>();
+    private final Collection<RunListener> listeners = new ArrayList<>();
 
-    private final Queue<String> testClassNames = new ConcurrentLinkedQueue<String>();
+    private final Queue<String> testClassNames = new ConcurrentLinkedQueue<>();
 
     private final AtomicInteger skipAfterFailureCount;
 

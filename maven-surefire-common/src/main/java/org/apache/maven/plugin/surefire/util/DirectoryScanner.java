@@ -47,7 +47,7 @@ public class DirectoryScanner
     public DefaultScanResult scan()
     {
         FileScanner scanner = new FileScanner( basedir, "class" );
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         scanner.scanTo( result, filter );
         return new DefaultScanResult( result );
     }

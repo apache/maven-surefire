@@ -64,7 +64,7 @@ public class SurefireHelperTest
         String[] dumps = SurefireHelper.getDumpFilesToPrint();
         assertThat( dumps ).hasSize( 4 );
         assertThat( dumps ).doesNotHaveDuplicates();
-        List<String> onlyStrings = new ArrayList<String>();
+        List<String> onlyStrings = new ArrayList<>();
         addAll( onlyStrings, dumps );
         onlyStrings.removeAll( singleton( (String) null ) );
         assertThat( onlyStrings ).hasSize( 4 );

@@ -221,7 +221,7 @@ public class ConfigurableParallelComputerTest
 
     private Class<?>[] getClassList( Class<?> testClass, int numItems )
     {
-        List<Class> realClasses = new ArrayList<Class>();
+        List<Class<?>> realClasses = new ArrayList<>();
         for ( int i = 0; i < numItems; i++ )
         {
             realClasses.add( testClass );

@@ -85,7 +85,7 @@ public class SurefirePropertiesTest
         assertTrue( list( orderedProperties.keys() ).contains( "b" ) );
 
         Iterator it = orderedProperties.getStringKeySet().iterator();
-        SortedSet<Object> keys = new TreeSet<Object>();
+        SortedSet<Object> keys = new TreeSet<>();
         keys.add( it.next() );
         keys.add( it.next() );
         it = keys.iterator();
@@ -112,7 +112,7 @@ public class SurefirePropertiesTest
         assertTrue( list( orderedProperties.keys() ).contains( "b" ) );
 
         Iterator it = orderedProperties.getStringKeySet().iterator();
-        SortedSet<Object> keys = new TreeSet<Object>();
+        SortedSet<Object> keys = new TreeSet<>();
         keys.add( it.next() );
         keys.add( it.next() );
         it = keys.iterator();

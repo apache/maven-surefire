@@ -35,7 +35,7 @@ public class JUnit4RunListenerFactory
 {
     public static List<RunListener> createCustomListeners( String listeners )
     {
-        List<RunListener> result = new ArrayList<RunListener>();
+        List<RunListener> result = new ArrayList<>();
         if ( isNotBlank( listeners ) )
         {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();

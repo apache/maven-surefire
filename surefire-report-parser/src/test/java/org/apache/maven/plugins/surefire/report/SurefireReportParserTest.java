@@ -111,7 +111,7 @@ public class SurefireReportParserTest
             .setTimeElapsed( 1.0f )
             .setNumberOfTests( 100 );
 
-        List<ReportTestSuite> suites = new ArrayList<ReportTestSuite>();
+        List<ReportTestSuite> suites = new ArrayList<>();
 
         suites.add( tSuite1 );
 
@@ -148,7 +148,7 @@ public class SurefireReportParserTest
 
         tSuite3.setPackageName( "Package2" );
 
-        List<ReportTestSuite> suites = new ArrayList<ReportTestSuite>();
+        List<ReportTestSuite> suites = new ArrayList<>();
 
         suites.add( tSuite1 );
 
@@ -191,9 +191,9 @@ public class SurefireReportParserTest
 
         tCase3.setFailure( "index: 0, size: 0", IndexOutOfBoundsException.class.getName() );
 
-        List<ReportTestCase> tCases = new ArrayList<ReportTestCase>();
+        List<ReportTestCase> tCases = new ArrayList<>();
 
-        List<ReportTestCase> tCases2 = new ArrayList<ReportTestCase>();
+        List<ReportTestCase> tCases2 = new ArrayList<>();
 
         tCases.add( tCase1 );
 
@@ -205,7 +205,7 @@ public class SurefireReportParserTest
 
         tSuite2.setTestCases( tCases2 );
 
-        List<ReportTestSuite> suites = new ArrayList<ReportTestSuite>();
+        List<ReportTestSuite> suites = new ArrayList<>();
 
         suites.add( tSuite1 );
 

@@ -201,7 +201,7 @@ public class SmartStackTraceParser
 
     static List<StackTraceElement> focusOnClass( StackTraceElement[] stackTrace, Class clazz )
     {
-        List<StackTraceElement> result = new ArrayList<StackTraceElement>();
+        List<StackTraceElement> result = new ArrayList<>();
         for ( StackTraceElement element : stackTrace )
         {
             if ( element != null && isInSupers( clazz, element.getClassName() ) )
@@ -252,7 +252,7 @@ public class SmartStackTraceParser
 
     static List<StackTraceElement> focusInsideClass( StackTraceElement[] stackTrace, StackTraceFilter filter )
     {
-        List<StackTraceElement> result = new ArrayList<StackTraceElement>();
+        List<StackTraceElement> result = new ArrayList<>();
         for ( StackTraceElement element : stackTrace )
         {
             if ( filter.matches( element ) )

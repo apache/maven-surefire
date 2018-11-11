@@ -109,7 +109,7 @@ public class SelfDestructMojo
                     String pid = name.substring( 0, indexOfAt );
                     getLog().warn( "Going to kill process with PID " + pid );
 
-                    List<String> args = new ArrayList<String>();
+                    List<String> args = new ArrayList<>();
                     if ( System.getProperty( "os.name" ).startsWith( "Windows" ) )
                     {
                         args.add( "taskkill" );

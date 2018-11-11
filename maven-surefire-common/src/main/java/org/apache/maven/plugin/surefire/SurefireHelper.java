@@ -116,7 +116,7 @@ public final class SurefireHelper
 
     public static File replaceForkThreadsInPath( File path, int replacement )
     {
-        Deque<String> dirs = new LinkedList<String>();
+        Deque<String> dirs = new LinkedList<>();
         File root = path;
         while ( !root.exists() )
         {
@@ -162,7 +162,7 @@ public final class SurefireHelper
 
     public static List<CommandLineOption> commandLineOptions( MavenSession session, PluginConsoleLogger log )
     {
-        List<CommandLineOption> cli = new ArrayList<CommandLineOption>();
+        List<CommandLineOption> cli = new ArrayList<>();
         if ( log.isErrorEnabled() )
         {
             cli.add( LOGGING_LEVEL_ERROR );

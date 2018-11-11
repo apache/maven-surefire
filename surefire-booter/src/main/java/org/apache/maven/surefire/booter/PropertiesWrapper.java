@@ -89,7 +89,7 @@ public class PropertiesWrapper
 
     public List<String> getStringList( String propertyPrefix )
     {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for ( int i = 0; ; i++ )
         {
             String value = getProperty( propertyPrefix + i );

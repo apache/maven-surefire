@@ -33,7 +33,7 @@ public class PropertiesWrapperTest
         throws Exception
     {
         PropertiesWrapper propertiesWrapper = new PropertiesWrapper( new HashMap<String, String>() );
-        List<String> items = new ArrayList<String>();
+        List<String> items = new ArrayList<>();
         items.add( "String1" );
         items.add( "String2,String3" );
         items.add( "String4" );
@@ -54,7 +54,7 @@ public class PropertiesWrapperTest
 
     private static final String SECOND_ELEMENT = "foo1";
 
-    private final Map<String, String> properties = new HashMap<String, String>();
+    private final Map<String, String> properties = new HashMap<>();
 
     private final PropertiesWrapper mapper = new PropertiesWrapper( properties );
 

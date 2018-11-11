@@ -28,7 +28,7 @@ public abstract class BaseTest
     @Parameters( name = "{0}" )
     public static Collection< String > parameterList() throws Exception
     {
-        Collection< String > c = new ConcurrentLinkedQueue< String >();
+        Collection< String > c = new ConcurrentLinkedQueue<>();
         c.add( "p0" );
         c.add( "p1" );
 

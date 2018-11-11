@@ -45,7 +45,7 @@ public class TestSetStats
     private static final String IN_MARKER = " - in ";
     private static final String COMMA = ", ";
 
-    private final Queue<WrappedReportEntry> reportEntries = new ConcurrentLinkedQueue<WrappedReportEntry>();
+    private final Queue<WrappedReportEntry> reportEntries = new ConcurrentLinkedQueue<>();
 
     private final boolean trimStackTrace;
 
@@ -260,7 +260,7 @@ public class TestSetStats
 
     public List<String> getTestResults()
     {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for ( WrappedReportEntry testResult : reportEntries )
         {
             if ( testResult.isErrorOrFailure() )

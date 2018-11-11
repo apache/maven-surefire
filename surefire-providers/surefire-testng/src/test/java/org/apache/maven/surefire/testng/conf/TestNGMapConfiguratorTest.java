@@ -87,7 +87,7 @@ public class TestNGMapConfiguratorTest
         throws TestSetFailedException
     {
         TestNGMapConfigurator testNGMapConfigurator = new TestNGMapConfigurator();
-        Map<String, String> raw = new HashMap<String, String>();
+        Map<String, String> raw = new HashMap<>();
         raw.put( key, value );
         return testNGMapConfigurator.getConvertedOptions( raw );
     }

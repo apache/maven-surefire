@@ -126,7 +126,7 @@ public class HelperAssertions
 
     public static List<ReportTestSuite> extractReports( File... testDirs )
     {
-        List<File> reportsDirs = new ArrayList<File>();
+        List<File> reportsDirs = new ArrayList<>();
         for ( File testDir : testDirs )
         {
             File reportsDir = new File( testDir, "target/surefire-reports" );
@@ -147,7 +147,7 @@ public class HelperAssertions
 
     private static List<ReportTestSuite> extractITReports( File... testDirs )
     {
-        List<File> reportsDirs = new ArrayList<File>();
+        List<File> reportsDirs = new ArrayList<>();
         for ( File testDir : testDirs )
         {
             File reportsDir = new File( testDir, "target/failsafe-reports" );

@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 final class MultipleFailureException
         extends IOException
 {
-    private final Queue<Throwable> exceptions = new ConcurrentLinkedQueue<Throwable>();
+    private final Queue<Throwable> exceptions = new ConcurrentLinkedQueue<>();
 
     void addException( Throwable exception )
     {

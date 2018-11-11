@@ -44,7 +44,7 @@ public class TestSuiteXmlParserTest
 {
     private static final String[] linePatterns = { "at org.apache.Test.", "at org.apache.Test$" };
 
-    private final Collection<String> loggedErrors = new ArrayList<String>();
+    private final Collection<String> loggedErrors = new ArrayList<>();
 
     private ConsoleLogger consoleLogger;
 

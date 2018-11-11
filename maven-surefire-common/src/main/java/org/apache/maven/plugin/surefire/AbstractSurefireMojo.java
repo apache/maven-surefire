@@ -417,7 +417,7 @@ public abstract class AbstractSurefireMojo
      * @since 2.1.3
      */
     @Parameter
-    private Map<String, String> environmentVariables = new HashMap<String, String>();
+    private Map<String, String> environmentVariables = new HashMap<>();
 
     /**
      * Command line working directory.
@@ -1663,7 +1663,7 @@ public abstract class AbstractSurefireMojo
 
     private static Map<String, String> toStringProperties( Properties properties )
     {
-        Map<String, String> h = new ConcurrentHashMap<String, String>( properties.size() );
+        Map<String, String> h = new ConcurrentHashMap<>( properties.size() );
         for ( Enumeration e = properties.keys() ; e.hasMoreElements() ; )
         {
             Object k = e.nextElement();
@@ -2482,7 +2482,7 @@ public abstract class AbstractSurefireMojo
      */
     private static Set<Artifact> filterArtifacts( Set<Artifact> artifacts, ArtifactFilter filter )
     {
-        Set<Artifact> filteredArtifacts = new LinkedHashSet<Artifact>();
+        Set<Artifact> filteredArtifacts = new LinkedHashSet<>();
 
         for ( Artifact artifact : artifacts )
         {
@@ -2965,7 +2965,7 @@ public abstract class AbstractSurefireMojo
 
         @Nonnull List<ProviderInfo> resolve()
         {
-            List<ProviderInfo> providersToRun = new ArrayList<ProviderInfo>();
+            List<ProviderInfo> providersToRun = new ArrayList<>();
             Set<String> manuallyConfiguredProviders = getManuallyConfiguredProviders();
             for ( String name : manuallyConfiguredProviders )
             {
@@ -2979,7 +2979,7 @@ public abstract class AbstractSurefireMojo
 
         @Nonnull private List<ProviderInfo> autoDetectOneProvider()
         {
-            List<ProviderInfo> providersToRun = new ArrayList<ProviderInfo>();
+            List<ProviderInfo> providersToRun = new ArrayList<>();
             for ( ProviderInfo wellKnownProvider : wellKnownProviders )
             {
                 if ( wellKnownProvider.isApplicable() )

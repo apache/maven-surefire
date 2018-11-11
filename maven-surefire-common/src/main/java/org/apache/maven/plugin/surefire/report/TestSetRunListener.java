@@ -46,7 +46,7 @@ import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
 public class TestSetRunListener
     implements RunListener, ConsoleOutputReceiver, ConsoleLogger
 {
-    private final Queue<TestMethodStats> testMethodStats = new ConcurrentLinkedQueue<TestMethodStats>();
+    private final Queue<TestMethodStats> testMethodStats = new ConcurrentLinkedQueue<>();
 
     private final TestSetStats detailsForThis;
 

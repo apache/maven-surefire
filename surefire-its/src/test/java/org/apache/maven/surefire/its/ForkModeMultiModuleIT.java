@@ -117,7 +117,7 @@ public class ForkModeMultiModuleIT
 
     private void assertDifferentPids( List<String> pids, int numOfDifferentPids )
     {
-        Set<String> pidSet = new HashSet<String>( pids );
+        Set<String> pidSet = new HashSet<>( pids );
         assertEquals( "number of different pids is not as expected", numOfDifferentPids, pidSet.size() );
     }
 
@@ -131,7 +131,7 @@ public class ForkModeMultiModuleIT
         forkMode.addGoal( "-T2" );
         forkMode.sysProp( "testProperty", "testValue_${surefire.threadNumber}_${surefire.forkNumber}" );
         final OutputValidator outputValidator = forkMode.setForkJvm().executeTest();
-        List<String> pids = new ArrayList<String>( 6 );
+        List<String> pids = new ArrayList<>( 6 );
         pids.addAll( validateModule( outputValidator, "module-a" ) );
         pids.addAll( validateModule( outputValidator, "module-b" ) );
 
@@ -142,7 +142,7 @@ public class ForkModeMultiModuleIT
     {
         HelperAssertions.assertTestSuiteResults( 3, 0, 0, 0, new File( outputValidator.getBaseDir(), module ) );
 
-        List<String> pids = new ArrayList<String>( 3 );
+        List<String> pids = new ArrayList<>( 3 );
         for ( int i = 1; i <= 3; i++ )
         {
             final TestFile targetFile = outputValidator.getTargetFile( module, "test" + i + "-pid" );

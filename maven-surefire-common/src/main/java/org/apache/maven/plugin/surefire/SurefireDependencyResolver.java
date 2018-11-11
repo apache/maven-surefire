@@ -167,7 +167,7 @@ final class SurefireDependencyResolver
     Set<Artifact> addProviderToClasspath( Map<String, Artifact> pluginArtifactMap, Artifact mojoPluginArtifact,
                                           Artifact surefireCommon, Artifact surefireApi, Artifact surefireLoggerApi )
     {
-        Set<Artifact> providerArtifacts = new LinkedHashSet<Artifact>();
+        Set<Artifact> providerArtifacts = new LinkedHashSet<>();
         ArtifactResolutionResult artifactResolutionResult = resolveArtifact( mojoPluginArtifact );
         for ( Artifact artifact : pluginArtifactMap.values() )
         {
@@ -201,7 +201,7 @@ final class SurefireDependencyResolver
 
     private static Set<Artifact> orderProviderArtifacts( Set<Artifact> providerArtifacts )
     {
-        Set<Artifact> orderedProviderArtifacts = new LinkedHashSet<Artifact>();
+        Set<Artifact> orderedProviderArtifacts = new LinkedHashSet<>();
         for ( String order : PROVIDER_CLASSPATH_ORDER )
         {
             Iterator<Artifact> providerArtifactsIt = providerArtifacts.iterator();

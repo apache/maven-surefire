@@ -67,8 +67,8 @@ public class BooterDeserializerProviderConfigurationTest
     {
 
         File aDir = new File( "." );
-        List<String> includes = new ArrayList<String>();
-        List<String> excludes = new ArrayList<String>();
+        List<String> includes = new ArrayList<>();
+        List<String> excludes = new ArrayList<>();
         includes.add( "abc" );
         includes.add( "cde" );
         excludes.add( "xx1" );
@@ -191,8 +191,8 @@ public class BooterDeserializerProviderConfigurationTest
     private DirectoryScannerParameters getDirectoryScannerParametersWithoutSpecificTests()
     {
         File aDir = new File( "." );
-        List<String> includes = new ArrayList<String>();
-        List<String> excludes = new ArrayList<String>();
+        List<String> includes = new ArrayList<>();
+        List<String> excludes = new ArrayList<>();
         includes.add( "abc" );
         includes.add( "cde" );
         excludes.add( "xx1" );

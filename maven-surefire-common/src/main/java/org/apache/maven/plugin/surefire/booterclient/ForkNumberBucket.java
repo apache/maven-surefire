@@ -33,7 +33,7 @@ public final class ForkNumberBucket
 {
     private static final ForkNumberBucket INSTANCE = new ForkNumberBucket();
 
-    private final Queue<Integer> qFree = new ConcurrentLinkedQueue<Integer>();
+    private final Queue<Integer> qFree = new ConcurrentLinkedQueue<>();
 
     private final AtomicInteger highWaterMark = new AtomicInteger( 1 );
 

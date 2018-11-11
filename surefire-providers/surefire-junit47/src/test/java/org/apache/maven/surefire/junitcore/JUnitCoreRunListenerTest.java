@@ -78,7 +78,7 @@ public class JUnitCoreRunListenerTest
   //      st2.addChild( Description.createSuiteDescription( STest2.class ) );
         testDescription.addChild( st2 );
 
-        Map<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
+        Map<String, TestSet> classMethodCounts = new HashMap<>();
         JUnitCoreRunListener listener = new JUnitCoreRunListener( new MockReporter(), classMethodCounts );
         listener.testRunStarted( testDescription );
         assertEquals( 2, classMethodCounts.size() );
@@ -98,7 +98,7 @@ public class JUnitCoreRunListenerTest
         assertNull( testDescription.getTestClass() );
         Description suiteDescription = Description.createSuiteDescription( "testSuite" );
         suiteDescription.addChild( testDescription );
-        Map<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
+        Map<String, TestSet> classMethodCounts = new HashMap<>();
         JUnitCoreRunListener listener = new JUnitCoreRunListener( new MockReporter(), classMethodCounts );
         listener.testRunStarted( suiteDescription );
         assertEquals( 1, classMethodCounts.size() );
@@ -114,7 +114,7 @@ public class JUnitCoreRunListenerTest
         suite.addChild( Description.createSuiteDescription( "testMethodB(some.junit.Test)" ) );
         suite.addChild( Description.createSuiteDescription( "testMethod(another.junit.Test)" ) );
         aggregator.addChild( suite );
-        Map<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
+        Map<String, TestSet> classMethodCounts = new HashMap<>();
         JUnitCoreRunListener listener = new JUnitCoreRunListener( new MockReporter(), classMethodCounts );
         listener.testRunStarted( aggregator );
         assertThat( classMethodCounts.keySet(), hasSize( 2 ) );
@@ -133,7 +133,7 @@ public class JUnitCoreRunListenerTest
         Description aggregator = Description.createSuiteDescription( "null" );
         Description suite = Description.createSuiteDescription( "some.junit.TestSuite" );
         aggregator.addChild( suite );
-        Map<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
+        Map<String, TestSet> classMethodCounts = new HashMap<>();
         JUnitCoreRunListener listener = new JUnitCoreRunListener( new MockReporter(), classMethodCounts );
         listener.testRunStarted( aggregator );
         assertThat( classMethodCounts.keySet(), hasSize( 1 ) );

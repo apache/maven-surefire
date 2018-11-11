@@ -43,7 +43,7 @@ public final class Platform
     public Platform()
     {
         // the job may take 50 or 80 ms
-        this( new FutureTask<Long>( pidJob() ), null );
+        this( new FutureTask<>( pidJob() ), null );
         newDaemonThread( pluginPidJob ).start();
     }
 

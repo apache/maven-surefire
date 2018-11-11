@@ -75,7 +75,7 @@ public class DefaultReporterFactoryTest
         DefaultReporterFactory factory = new DefaultReporterFactory( reportConfig, reporter );
 
         // First run, four tests failed and one passed
-        Queue<TestMethodStats> firstRunStats = new ArrayDeque<TestMethodStats>();
+        Queue<TestMethodStats> firstRunStats = new ArrayDeque<>();
         firstRunStats.add( new TestMethodStats( TEST_ONE, ReportEntryType.ERROR, new DummyStackTraceWriter( ERROR ) ) );
         firstRunStats.add( new TestMethodStats( TEST_TWO, ReportEntryType.ERROR, new DummyStackTraceWriter( ERROR ) ) );
         firstRunStats.add(
@@ -86,7 +86,7 @@ public class DefaultReporterFactoryTest
             new TestMethodStats( TEST_FIVE, ReportEntryType.SUCCESS, null ) );
 
         // Second run, two tests passed
-        Queue<TestMethodStats> secondRunStats = new ArrayDeque<TestMethodStats>();
+        Queue<TestMethodStats> secondRunStats = new ArrayDeque<>();
         secondRunStats.add(
             new TestMethodStats( TEST_ONE, ReportEntryType.FAILURE, new DummyStackTraceWriter( ASSERTION_FAIL ) ) );
         secondRunStats.add( new TestMethodStats( TEST_TWO, ReportEntryType.SUCCESS, null ) );
@@ -95,7 +95,7 @@ public class DefaultReporterFactoryTest
         secondRunStats.add( new TestMethodStats( TEST_FOUR, ReportEntryType.SUCCESS, null ) );
 
         // Third run, another test passed
-        Queue<TestMethodStats> thirdRunStats = new ArrayDeque<TestMethodStats>();
+        Queue<TestMethodStats> thirdRunStats = new ArrayDeque<>();
         thirdRunStats.add( new TestMethodStats( TEST_ONE, ReportEntryType.SUCCESS, null ) );
         thirdRunStats.add(
             new TestMethodStats( TEST_THREE, ReportEntryType.ERROR, new DummyStackTraceWriter( ERROR ) ) );
@@ -144,7 +144,7 @@ public class DefaultReporterFactoryTest
 
     static final class DummyTestReporter implements ConsoleLogger
     {
-        private final List<String> messages = new ArrayList<String>();
+        private final List<String> messages = new ArrayList<>();
 
         @Override
         public boolean isDebugEnabled()
@@ -218,32 +218,32 @@ public class DefaultReporterFactoryTest
 
     public void testGetTestResultType()
     {
-        List<ReportEntryType> emptyList = new ArrayList<ReportEntryType>();
+        List<ReportEntryType> emptyList = new ArrayList<>();
         assertEquals( unknown, getTestResultType( emptyList, 1 ) );
 
-        List<ReportEntryType> successList = new ArrayList<ReportEntryType>();
+        List<ReportEntryType> successList = new ArrayList<>();
         successList.add( ReportEntryType.SUCCESS );
         successList.add( ReportEntryType.SUCCESS );
         assertEquals( success, getTestResultType( successList, 1 ) );
 
-        List<ReportEntryType> failureErrorList = new ArrayList<ReportEntryType>();
+        List<ReportEntryType> failureErrorList = new ArrayList<>();
         failureErrorList.add( ReportEntryType.FAILURE );
         failureErrorList.add( ReportEntryType.ERROR );
         assertEquals( error, getTestResultType( failureErrorList, 1 ) );
 
-        List<ReportEntryType> errorFailureList = new ArrayList<ReportEntryType>();
+        List<ReportEntryType> errorFailureList = new ArrayList<>();
         errorFailureList.add( ReportEntryType.ERROR );
         errorFailureList.add( ReportEntryType.FAILURE );
         assertEquals( error, getTestResultType( errorFailureList, 1 ) );
 
-        List<ReportEntryType> flakeList = new ArrayList<ReportEntryType>();
+        List<ReportEntryType> flakeList = new ArrayList<>();
         flakeList.add( ReportEntryType.SUCCESS );
         flakeList.add( ReportEntryType.FAILURE );
         assertEquals( flake, getTestResultType( flakeList, 1 ) );
 
         assertEquals( failure, getTestResultType( flakeList, 0 ) );
 
-        flakeList = new ArrayList<ReportEntryType>();
+        flakeList = new ArrayList<>();
         flakeList.add( ReportEntryType.ERROR );
         flakeList.add( ReportEntryType.SUCCESS );
         flakeList.add( ReportEntryType.FAILURE );
@@ -251,7 +251,7 @@ public class DefaultReporterFactoryTest
 
         assertEquals( error, getTestResultType( flakeList, 0 ) );
 
-        List<ReportEntryType> skippedList = new ArrayList<ReportEntryType>();
+        List<ReportEntryType> skippedList = new ArrayList<>();
         skippedList.add( ReportEntryType.SKIPPED );
         assertEquals( skipped, getTestResultType( skippedList, 1 ) );
     }

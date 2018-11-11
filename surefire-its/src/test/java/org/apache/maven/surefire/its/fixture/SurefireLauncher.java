@@ -138,7 +138,7 @@ public final class SurefireLauncher
 
     private List<String> getInitialGoals()
     {
-        List<String> goals = new ArrayList<String>();
+        List<String> goals = new ArrayList<>();
 
         goals.add( "-Dsurefire.version=" + surefireVersion );
 

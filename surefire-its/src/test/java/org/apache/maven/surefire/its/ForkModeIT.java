@@ -174,7 +174,7 @@ public class ForkModeIT
 
     private void assertDifferentPids( String[] pids, int numOfDifferentPids )
     {
-        Set<String> pidSet = new HashSet<String>( Arrays.asList( pids ) );
+        Set<String> pidSet = new HashSet<>( Arrays.asList( pids ) );
         assertEquals( "number of different pids is not as expected", numOfDifferentPids, pidSet.size() );
     }
 

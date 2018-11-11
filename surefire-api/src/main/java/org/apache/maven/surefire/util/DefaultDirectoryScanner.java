@@ -139,7 +139,7 @@ public class DefaultDirectoryScanner
 
     private static String[] processIncludesExcludes( List<String> list )
     {
-        List<String> newList = new ArrayList<String>();
+        List<String> newList = new ArrayList<>();
         for ( String include : list )
         {
             String[] includes = include.split( "," );

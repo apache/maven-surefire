@@ -55,7 +55,7 @@ public class Surefire1082ParallelJUnitParameterizedIT
 
     private static Set<String> printOnlyTestLines( Collection<String> logs )
     {
-        Set<String> log = new TreeSet<String>();
+        Set<String> log = new TreeSet<>();
         for ( String line : logs )
         {
             if ( line.startsWith( "class jiras.surefire1082." ) )
@@ -70,13 +70,13 @@ public class Surefire1082ParallelJUnitParameterizedIT
     {
         assertThat( log.size(), is( 4 ) );
 
-        Set<String> expectedLogs1 = new TreeSet<String>();
+        Set<String> expectedLogs1 = new TreeSet<>();
         expectedLogs1.add( "class jiras.surefire1082.Jira1082Test a 0 pool-[\\d]+-thread-1" );
         expectedLogs1.add( "class jiras.surefire1082.Jira1082Test b 0 pool-[\\d]+-thread-1" );
         expectedLogs1.add( "class jiras.surefire1082.Jira1082Test a 1 pool-[\\d]+-thread-2" );
         expectedLogs1.add( "class jiras.surefire1082.Jira1082Test b 1 pool-[\\d]+-thread-2" );
 
-        Set<String> expectedLogs2 = new TreeSet<String>();
+        Set<String> expectedLogs2 = new TreeSet<>();
         expectedLogs2.add( "class jiras.surefire1082.Jira1082Test a 1 pool-[\\d]+-thread-1" );
         expectedLogs2.add( "class jiras.surefire1082.Jira1082Test b 1 pool-[\\d]+-thread-1" );
         expectedLogs2.add( "class jiras.surefire1082.Jira1082Test a 0 pool-[\\d]+-thread-2" );
@@ -100,7 +100,7 @@ public class Surefire1082ParallelJUnitParameterizedIT
 
         validator.assertThatLogLine( containsString( "Running jiras.surefire1082.Jira1082Test" ), is( 1 ) );
 
-        Set<String> log = new TreeSet<String>( validator.loadLogLines( startsWith( "class jiras.surefire1082." ) ) );
+        Set<String> log = new TreeSet<>( validator.loadLogLines( startsWith( "class jiras.surefire1082." ) ) );
         assertParallelRun( log );
     }
 

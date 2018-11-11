@@ -37,7 +37,7 @@ public class JUnit4ProviderUtilTest
 {
     public void testGenerateFailingTestDescriptions()
     {
-        List<Failure> failures = new ArrayList<Failure>();
+        List<Failure> failures = new ArrayList<>();
 
         Description test1Description = Description.createTestDescription( T1.class, "testOne" );
         Description test2Description = Description.createTestDescription( T1.class, "testTwo" );

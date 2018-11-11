@@ -94,7 +94,7 @@ public class SimpleReportEntry
 
         this.elapsed = elapsed;
 
-        this.systemProperties = new ImmutableMap<String, String>( systemProperties );
+        this.systemProperties = new ImmutableMap<>( systemProperties );
     }
 
     public SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed )

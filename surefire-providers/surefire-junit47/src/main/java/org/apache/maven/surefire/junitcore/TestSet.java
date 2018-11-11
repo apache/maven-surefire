@@ -38,11 +38,11 @@ import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
  */
 public class TestSet
 {
-    private static final InheritableThreadLocal<TestSet> TEST_SET = new InheritableThreadLocal<TestSet>();
+    private static final InheritableThreadLocal<TestSet> TEST_SET = new InheritableThreadLocal<>();
 
     private final String testClassName;
 
-    private final Collection<TestMethod> testMethods = new ConcurrentLinkedQueue<TestMethod>();
+    private final Collection<TestMethod> testMethods = new ConcurrentLinkedQueue<>();
 
     private final AtomicBoolean played = new AtomicBoolean();
 

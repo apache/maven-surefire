@@ -62,7 +62,7 @@ public class JUnitCoreTester
 
         try
         {
-            final HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
+            final HashMap<String, TestSet> classMethodCounts = new HashMap<>();
             RunListener reporter = createInstance( classMethodCounts, reporterManagerFactory, parallelClasses, false,
                                                          new DefaultDirectConsoleReporter( System.out ) );
             startCapture( (ConsoleOutputReceiver) reporter );

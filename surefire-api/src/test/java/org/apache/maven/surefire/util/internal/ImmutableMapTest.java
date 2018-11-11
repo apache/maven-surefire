@@ -43,14 +43,14 @@ public class ImmutableMapTest
     @Before
     public void setUp() throws Exception
     {
-        Map<String, String> backingMap = new HashMap<String, String>();
+        Map<String, String> backingMap = new HashMap<>();
         backingMap.put( "a", "1" );
         backingMap.put( "x", null );
         backingMap.put( "b", "2" );
         backingMap.put( "c", "3" );
         backingMap.put( "", "" );
         backingMap.put( null, "1" );
-        map = new ImmutableMap<String, String>( backingMap );
+        map = new ImmutableMap<>( backingMap );
     }
 
     @Test
@@ -58,12 +58,12 @@ public class ImmutableMapTest
     {
         Set<Entry<String, String>> entries = map.entrySet();
         assertThat( entries, hasSize( 6 ) );
-        assertThat( entries, hasItem( new Node<String, String>( "a", "1" ) ) );
-        assertThat( entries, hasItem( new Node<String, String>( "x", null ) ) );
-        assertThat( entries, hasItem( new Node<String, String>( "b", "2" ) ) );
-        assertThat( entries, hasItem( new Node<String, String>( "c", "3" ) ) );
-        assertThat( entries, hasItem( new Node<String, String>( "", "" ) ) );
-        assertThat( entries, hasItem( new Node<String, String>( null, "1" ) ) );
+        assertThat( entries, hasItem( new Node<>( "a", "1" ) ) );
+        assertThat( entries, hasItem( new Node<>( "x", (String) null ) ) );
+        assertThat( entries, hasItem( new Node<>( "b", "2" ) ) );
+        assertThat( entries, hasItem( new Node<>( "c", "3" ) ) );
+        assertThat( entries, hasItem( new Node<>( "", "" ) ) );
+        assertThat( entries, hasItem( new Node<>( (String) null, "1" ) ) );
     }
 
     @Test

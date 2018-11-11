@@ -52,7 +52,7 @@ public final class JUnit4ProviderUtil
      */
     public static Set<Description> generateFailingTestDescriptions( List<Failure> allFailures )
     {
-        Set<Description> failingTestDescriptions = new HashSet<Description>();
+        Set<Description> failingTestDescriptions = new HashSet<>();
 
         for ( Failure failure : allFailures )
         {

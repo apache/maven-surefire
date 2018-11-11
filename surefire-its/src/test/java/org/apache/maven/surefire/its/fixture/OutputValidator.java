@@ -107,7 +107,7 @@ public class OutputValidator
     public List<String> loadLogLines( Matcher<String> line )
             throws VerificationException
     {
-        List<String> matchedLines = new ArrayList<String>();
+        List<String> matchedLines = new ArrayList<>();
         for ( String log : loadLogLines() )
         {
             if ( line.matches( log ) )

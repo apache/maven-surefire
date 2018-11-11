@@ -451,7 +451,7 @@ public class ParallelComputerBuilderTest
         Class<?>[] classes = { NothingDoingTest1.class, NothingDoingTest2.class, NothingDoingTest3.class };
         Result result = core.run( builder.buildComputer(), classes );
         assertTrue( result.wasSuccessful() );
-        ArrayList<String> methods = new ArrayList<String>( NothingDoingTest1.methods );
+        ArrayList<String> methods = new ArrayList<>( NothingDoingTest1.methods );
         assertThat( methods.size(), is( 12 ) );
         assertThat( methods.subList( 9, 12 ), is( not( Arrays.asList( "deinit", "deinit", "deinit" ) ) ) );
     }
@@ -595,7 +595,7 @@ public class ParallelComputerBuilderTest
     {
         Thread[] t = new Thread[1000];
         Thread.enumerate( t );
-        ArrayList<Thread> appThreads = new ArrayList<Thread>( t.length );
+        ArrayList<Thread> appThreads = new ArrayList<>( t.length );
         Collections.addAll( appThreads, t );
         appThreads.removeAll( Collections.singleton( (Thread) null ) );
         Collections.sort( appThreads, new Comparator<Thread>()
@@ -680,7 +680,7 @@ public class ParallelComputerBuilderTest
 
     public static class NothingDoingTest1
     {
-        static final Collection<String> methods = new ConcurrentLinkedQueue<String>();
+        static final Collection<String> methods = new ConcurrentLinkedQueue<>();
 
         @BeforeClass
         public static void init()

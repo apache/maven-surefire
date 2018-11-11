@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public final class LogicalStream
 {
-    private final Queue<Entry> output = new ConcurrentLinkedQueue<Entry>();
+    private final Queue<Entry> output = new ConcurrentLinkedQueue<>();
 
     private static final class Entry
     {

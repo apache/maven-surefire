@@ -65,7 +65,7 @@ public class TestNG5143ConfiguratorTest
             throws TestSetFailedException
     {
         TestNGMapConfigurator testNGMapConfigurator = new TestNG5143Configurator();
-        Map<String, String> raw = new HashMap<String, String>();
+        Map<String, String> raw = new HashMap<>();
         raw.put( key, value );
         return testNGMapConfigurator.getConvertedOptions( raw );
     }

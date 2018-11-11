@@ -77,7 +77,7 @@ public final class StartupReportConfiguration
     private final String xsdSchemaLocation;
 
     private final Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistory
-        = new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>();
+        = new ConcurrentHashMap<>();
 
     private final Charset encoding;
 

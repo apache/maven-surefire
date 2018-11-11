@@ -51,7 +51,7 @@ public final class SurefireReportParser
 
     private static final int PCENT = 100;
 
-    private final List<ReportTestSuite> testSuites = new ArrayList<ReportTestSuite>();
+    private final List<ReportTestSuite> testSuites = new ArrayList<>();
 
     private final NumberFormat numberFormat;
 
@@ -69,7 +69,7 @@ public final class SurefireReportParser
     public List<ReportTestSuite> parseXMLReportFiles()
         throws MavenReportException
     {
-        final Collection<File> xmlReportFiles = new ArrayList<File>();
+        final Collection<File> xmlReportFiles = new ArrayList<>();
         for ( File reportsDirectory : reportsDirectories )
         {
             if ( reportsDirectory.exists() )
@@ -121,7 +121,7 @@ public final class SurefireReportParser
 
     public Map<String, String> getSummary( List<ReportTestSuite> suites )
     {
-        Map<String, String> totalSummary = new HashMap<String, String>();
+        Map<String, String> totalSummary = new HashMap<>();
 
         int totalNumberOfTests = 0;
 
@@ -176,11 +176,11 @@ public final class SurefireReportParser
 
     public Map<String, List<ReportTestSuite>> getSuitesGroupByPackage( List<ReportTestSuite> testSuitesList )
     {
-        Map<String, List<ReportTestSuite>> suitePackage = new HashMap<String, List<ReportTestSuite>>();
+        Map<String, List<ReportTestSuite>> suitePackage = new HashMap<>();
 
         for ( ReportTestSuite suite : testSuitesList )
         {
-            List<ReportTestSuite> suiteList = new ArrayList<ReportTestSuite>();
+            List<ReportTestSuite> suiteList = new ArrayList<>();
 
             if ( suitePackage.get( suite.getPackageName() ) != null )
             {
@@ -204,7 +204,7 @@ public final class SurefireReportParser
 
     public List<ReportTestCase> getFailureDetails( List<ReportTestSuite> testSuites )
     {
-        List<ReportTestCase> failureDetails = new ArrayList<ReportTestCase>();
+        List<ReportTestCase> failureDetails = new ArrayList<>();
 
         for ( ReportTestSuite suite : testSuites )
         {

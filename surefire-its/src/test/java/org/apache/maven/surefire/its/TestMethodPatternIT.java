@@ -86,7 +86,7 @@ public class TestMethodPatternIT
     @Test
     public void testTestNgMethodBefore()
     {
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
         props.put( "testNgVersion", "5.7" );
         props.put( "testNgClassifier", "jdk15" );
         runMethodPattern( "testng-method-pattern-before", props );
@@ -95,7 +95,7 @@ public class TestMethodPatternIT
     @Test
     public void testTestNGMethodPattern()
     {
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
         props.put( "testNgVersion", "5.7" );
         props.put( "testNgClassifier", "jdk15" );
         runMethodPattern( "/testng-method-pattern", props );

@@ -64,8 +64,8 @@ public class TestListResolver
     public TestListResolver( Collection<String> tests )
     {
         final IncludedExcludedPatterns patterns = new IncludedExcludedPatterns();
-        final Set<ResolvedTest> includedFilters = new LinkedHashSet<ResolvedTest>( 0 );
-        final Set<ResolvedTest> excludedFilters = new LinkedHashSet<ResolvedTest>( 0 );
+        final Set<ResolvedTest> includedFilters = new LinkedHashSet<>( 0 );
+        final Set<ResolvedTest> excludedFilters = new LinkedHashSet<>( 0 );
 
         for ( final String csvTests : tests )
         {
@@ -360,7 +360,7 @@ public class TestListResolver
     private static Collection<String> mergeIncludedAndExcludedTests( Collection<String> included,
                                                                      Collection<String> excluded )
     {
-        ArrayList<String> incExc = new ArrayList<String>( included );
+        ArrayList<String> incExc = new ArrayList<>( included );
         incExc.removeAll( Collections.<String>singleton( null ) );
         for ( String exc : excluded )
         {

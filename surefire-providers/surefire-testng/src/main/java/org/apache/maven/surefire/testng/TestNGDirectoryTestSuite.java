@@ -240,7 +240,7 @@ final class TestNGDirectoryTestSuite
 
     private Map<String, String> createJUnitOptions()
     {
-        Map<String, String> junitOptions = new HashMap<String, String>( options );
+        Map<String, String> junitOptions = new HashMap<>( options );
         String onlyJUnit = options.get( "junit" );
         if ( isBlank( onlyJUnit ) )
         {

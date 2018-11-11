@@ -33,7 +33,7 @@ import java.util.List;
 public final class MatchDescriptions
     extends Filter
 {
-    private final List<Filter> filters = new ArrayList<Filter>();
+    private final List<Filter> filters = new ArrayList<>();
 
     public MatchDescriptions( Iterable<Description> descriptions )
     {
