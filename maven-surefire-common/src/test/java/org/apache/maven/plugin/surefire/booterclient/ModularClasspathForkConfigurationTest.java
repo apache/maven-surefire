@@ -27,20 +27,16 @@ import org.apache.maven.surefire.booter.ForkedBooter;
 import org.apache.maven.surefire.booter.ModularClasspath;
 import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
-import org.junit.Before;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
 import static java.io.File.createTempFile;
-import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
-import static org.apache.commons.lang3.JavaVersion.JAVA_RECENT;
 import static java.io.File.separator;
 import static java.io.File.pathSeparator;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -48,7 +44,6 @@ import static java.nio.file.Files.readAllLines;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.fest.assertions.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -56,12 +51,6 @@ import static org.junit.Assume.assumeTrue;
  */
 public class ModularClasspathForkConfigurationTest
 {
-    @Before
-    public void withJava7orHigher()
-    {
-        assumeTrue( JAVA_RECENT.atLeast( JAVA_1_7 ) );
-    }
-
     @Test
     @SuppressWarnings( "ResultOfMethodCallIgnored" )
     public void shouldCreateModularArgsFile() throws Exception
@@ -78,7 +67,7 @@ public class ModularClasspathForkConfigurationTest
         {
             @Nonnull
             @Override
-            String toModuleName( @Nonnull File moduleDescriptor ) throws IOException
+            String toModuleName( @Nonnull File moduleDescriptor )
             {
                 return "abc";
             }

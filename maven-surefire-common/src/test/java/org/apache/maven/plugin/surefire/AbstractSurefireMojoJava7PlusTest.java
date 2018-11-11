@@ -35,7 +35,6 @@ import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
 import org.codehaus.plexus.languages.java.jpms.ModuleNameSource;
 import org.codehaus.plexus.logging.Logger;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -51,11 +50,8 @@ import java.util.Set;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
-import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
-import static org.apache.commons.lang3.JavaVersion.JAVA_RECENT;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersion;
 import static org.fest.assertions.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -82,12 +78,6 @@ public class AbstractSurefireMojoJava7PlusTest
 
     @Mock
     private LocationManager locationManager;
-
-    @BeforeClass
-    public static void withJava7Plus()
-    {
-        assumeTrue( JAVA_RECENT.atLeast( JAVA_1_7 ) );
-    }
 
     @Test
     public void shouldHaveStartupConfigForModularClasspath()

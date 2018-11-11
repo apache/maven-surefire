@@ -51,9 +51,6 @@ import org.apache.maven.surefire.report.RunStatisticsTest;
 import org.apache.maven.surefire.spi.SPITest;
 import org.apache.maven.surefire.util.RelocatorTest;
 
-import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
-import static org.apache.commons.lang3.JavaVersion.JAVA_RECENT;
-
 /**
  * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
  *
@@ -89,10 +86,7 @@ public class JUnit4SuiteTest extends TestCase
         suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoTest.class ) );
         suite.addTest( new JUnit4TestAdapter( DefaultForkConfigurationTest.class ) );
         suite.addTest( new JUnit4TestAdapter( ModularClasspathForkConfigurationTest.class ) );
-        if ( JAVA_RECENT.atLeast( JAVA_1_7 ) )
-        {
-            suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoJava7PlusTest.class ) );
-        }
+        suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoJava7PlusTest.class ) );
         suite.addTest( new JUnit4TestAdapter( ScannerUtilTest.class ) );
         suite.addTest( new JUnit4TestAdapter( MojoMocklessTest.class ) );
         return suite;
