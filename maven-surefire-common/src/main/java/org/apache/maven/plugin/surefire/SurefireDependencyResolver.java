@@ -113,11 +113,7 @@ final class SurefireDependencyResolver
                 return range.containsVersion( new DefaultArtifactVersion( artifact.getBaseVersion() ) );
             }
         }
-        catch ( InvalidVersionSpecificationException e )
-        {
-            throw new RuntimeException( "Bug in plugin. Please report with stacktrace" );
-        }
-        catch ( OverConstrainedVersionException e )
+        catch ( InvalidVersionSpecificationException | OverConstrainedVersionException e )
         {
             throw new RuntimeException( "Bug in plugin. Please report with stacktrace" );
         }
