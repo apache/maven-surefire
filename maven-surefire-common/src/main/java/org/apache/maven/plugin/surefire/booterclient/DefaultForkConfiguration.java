@@ -149,6 +149,11 @@ public abstract class DefaultForkConfiguration
         return cli;
     }
 
+    protected ConsoleLogger getLogger()
+    {
+        return log;
+    }
+
     @Nonnull
     protected List<String> toCompleteClasspath( StartupConfiguration conf ) throws SurefireBooterForkException
     {
@@ -163,8 +168,8 @@ public abstract class DefaultForkConfiguration
         Classpath providerClasspath = pathConfig.getProviderClasspath();
         Classpath completeClasspath = join( join( bootClasspath, testClasspath ), providerClasspath );
 
-        log.debug( completeClasspath.getLogMessage( "boot classpath:" ) );
-        log.debug( completeClasspath.getCompactLogMessage( "boot(compact) classpath:" ) );
+        getLogger().debug( completeClasspath.getLogMessage( "boot classpath:" ) );
+        getLogger().debug( completeClasspath.getCompactLogMessage( "boot(compact) classpath:" ) );
 
         return completeClasspath.getClassPath();
     }

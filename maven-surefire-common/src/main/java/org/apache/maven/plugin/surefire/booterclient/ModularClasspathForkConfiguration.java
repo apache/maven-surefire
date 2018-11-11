@@ -35,7 +35,6 @@ import org.objectweb.asm.ModuleVisitor;
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -49,6 +48,8 @@ import java.util.Properties;
 import static java.io.File.createTempFile;
 import static java.io.File.pathSeparatorChar;
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
+import static org.apache.maven.shared.utils.StringUtils.replace;
+import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 import static org.objectweb.asm.Opcodes.ASM7;
 
 /**
@@ -116,86 +117,94 @@ public class ModularClasspathForkConfiguration
             throws IOException
     {
         File surefireArgs = createTempFile( "surefireargs", "", getTempDirectory() );
-        if ( !isDebug() )
+        if ( isDebug() )
+        {
+            getLogger().debug( "Path to args file: " +  surefireArgs.getCanonicalPath() );
+        }
+        else
         {
             surefireArgs.deleteOnExit();
         }
 
-        try ( BufferedWriter writer = new BufferedWriter( new FileWriter( surefireArgs ), 64 * 1024 ) )
+        try ( FileWriter io = new FileWriter( surefireArgs ) )
         {
+            StringBuilder args = new StringBuilder( 64 * 1024 );
             if ( !modulePath.isEmpty() )
             {
-                writer.write( "--module-path" );
-                writer.newLine();
+                args.append( "--module-path" )
+                        .append( ' ' );
 
                 for ( Iterator<String> it = modulePath.iterator(); it.hasNext(); )
                 {
-                    writer.append( it.next() );
+                    args.append( it.next() );
                     if ( it.hasNext() )
                     {
-                        writer.append( pathSeparatorChar );
+                        args.append( pathSeparatorChar );
                     }
                 }
 
-                writer.newLine();
+                args.append( NL );
             }
 
             if ( !classPath.isEmpty() )
             {
-                writer.write( "--class-path" );
-                writer.newLine();
+                args.append( "--class-path" )
+                        .append( ' ' );
                 for ( Iterator<String> it = classPath.iterator(); it.hasNext(); )
                 {
-                    writer.append( it.next() );
+                    args.append( it.next() );
                     if ( it.hasNext() )
                     {
-                        writer.append( pathSeparatorChar );
+                        args.append( pathSeparatorChar );
                     }
                 }
 
-                writer.newLine();
+                args.append( NL );
             }
 
             final String moduleName = toModuleName( moduleDescriptor );
 
-            writer.write( "--patch-module" );
-            writer.newLine();
-            writer.append( moduleName )
+            args.append( "--patch-module" )
+                    .append( ' ' )
+                    .append( moduleName )
                     .append( '=' )
-                    .append( patchFile.getPath() );
-
-            writer.newLine();
+                    .append( patchFile.getPath() )
+                    .append( NL );
 
             for ( String pkg : packages )
             {
-                writer.write( "--add-exports" );
-                writer.newLine();
-                writer.append( moduleName )
+                args.append( "--add-exports" )
+                        .append( ' ' )
+                        .append( moduleName )
                         .append( '/' )
                         .append( pkg )
                         .append( '=' )
-                        .append( "ALL-UNNAMED" );
-
-                writer.newLine();
+                        .append( "ALL-UNNAMED" )
+                        .append( NL );
             }
 
-            writer.write( "--add-modules" );
-            writer.newLine();
-            writer.append( moduleName );
+            args.append( "--add-modules" )
+                    .append( ' ' )
+                    .append( moduleName )
+                    .append( NL );
 
-            writer.newLine();
-
-            writer.write( "--add-reads" );
-            writer.newLine();
-            writer.append( moduleName )
+            args.append( "--add-reads" )
+                    .append( ' ' )
+                    .append( moduleName )
                     .append( '=' )
-                    .append( "ALL-UNNAMED" );
+                    .append( "ALL-UNNAMED" )
+                    .append( NL );
 
-            writer.newLine();
+            args.append( startClassName );
 
-            writer.write( startClassName );
+            String argsFileContent = args.toString();
 
-            writer.newLine();
+            if ( isDebug() )
+            {
+                getLogger().debug( "args file content: " + replace( argsFileContent, NL, "; " ) );
+            }
+
+            io.write( argsFileContent );
 
             return surefireArgs;
         }
