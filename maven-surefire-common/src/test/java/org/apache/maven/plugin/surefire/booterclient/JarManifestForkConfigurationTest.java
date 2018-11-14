@@ -22,6 +22,8 @@ package org.apache.maven.plugin.surefire.booterclient;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
 
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 
@@ -35,11 +37,13 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.same;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
+
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -68,11 +72,13 @@ public class JarManifestForkConfigurationTest
         throws Exception
     {
         mockStatic( JarManifestForkConfiguration.class );
-        String parent = "/home/me/prj/target/surefire";
-        String classPathElement = "/home/me/.m2/repository/grp/art/1.0/art-1.0.jar";
+        Path parent = mock( Path.class );
+        when( parent.toString() ).thenReturn( "/home/me/prj/target/surefire" );
+        Path classPathElement = mock( Path.class );
+        when( classPathElement.toString() ).thenReturn( "/home/me/.m2/repository/grp/art/1.0/art-1.0.jar" );
         when( relativize( parent, classPathElement ) )
                 .thenReturn( "../../../.m2/repository/grp/art/1.0/art-1.0.jar" );
-        when( toClasspathElementUri( anyString(), anyString(), any( File.class ) ) )
+        when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ) ) )
                 .thenCallRealMethod();
         assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory ) )
                 .isEqualTo( "../../../.m2/repository/grp/art/1.0/art-1.0.jar" );
@@ -83,11 +89,13 @@ public class JarManifestForkConfigurationTest
         throws Exception
     {
         mockStatic( JarManifestForkConfiguration.class );
-        String parent = "/home/me/prj/target/surefire";
-        String classPathElement = "/the Maven repo/grp/art/1.0/art-1.0.jar";
+        Path parent = mock( Path.class );
+        when( parent.toString() ).thenReturn( "/home/me/prj/target/surefire" );
+        Path classPathElement = mock( Path.class );
+        when( classPathElement.toString() ).thenReturn( "/the Maven repo/grp/art/1.0/art-1.0.jar" );
         when( relativize( parent, classPathElement ) )
                 .thenReturn( "../../../../../the Maven repo/grp/art/1.0/art-1.0.jar" );
-        when( toClasspathElementUri( anyString(), anyString(), any( File.class ) ) )
+        when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ) ) )
                 .thenCallRealMethod();
         assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory ) )
                 .isEqualTo( "../../../../../the%20Maven%20repo/grp/art/1.0/art-1.0.jar" );
@@ -98,11 +106,13 @@ public class JarManifestForkConfigurationTest
         throws Exception
     {
         mockStatic( JarManifestForkConfiguration.class );
-        String parent = "C:\\Windows\\Temp\\surefire";
-        String classPathElement = "C:\\Users\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar";
+        Path parent = mock( Path.class );
+        when( parent.toString() ).thenReturn( "C:\\Windows\\Temp\\surefire" );
+        Path classPathElement = mock( Path.class );
+        when( classPathElement.toString() ).thenReturn( "C:\\Users\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar" );
         when( relativize( parent, classPathElement ) )
                 .thenReturn( "..\\..\\..\\Users\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar" );
-        when( toClasspathElementUri( anyString(), anyString(), any( File.class ) ) )
+        when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ) ) )
                 .thenCallRealMethod();
         assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory ) )
                 .isEqualTo( "../../../Users/me/.m2/repository/grp/art/1.0/art-1.0.jar" );
@@ -113,11 +123,13 @@ public class JarManifestForkConfigurationTest
         throws Exception
     {
         mockStatic( JarManifestForkConfiguration.class );
-        String parent = "C:\\Windows\\Temp\\surefire";
-        String classPathElement = "C:\\Test User\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar";
+        Path parent = mock( Path.class );
+        when( parent.toString() ).thenReturn( "C:\\Windows\\Temp\\surefire" );
+        Path classPathElement = mock( Path.class );
+        when( classPathElement.toString() ).thenReturn( "C:\\Test User\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar" );
         when( relativize( parent, classPathElement ) )
                 .thenReturn( "..\\..\\..\\Test User\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar" );
-        when( toClasspathElementUri( anyString(), anyString(), any( File.class ) ) )
+        when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ) ) )
                 .thenCallRealMethod();
         assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory ) )
                 .isEqualTo( "../../../Test%20User/me/.m2/repository/grp/art/1.0/art-1.0.jar" );
@@ -129,14 +141,26 @@ public class JarManifestForkConfigurationTest
     {
         mockStatic( JarManifestForkConfiguration.class );
         mockStatic( InPluginProcessDumpSingleton.class );
-        when( InPluginProcessDumpSingleton.getSingleton() ).thenReturn(mock( InPluginProcessDumpSingleton.class ));
-        String parent = "C:\\Windows\\Temp\\surefire";
-        String classPathElement = "X:\\Users\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar";
-        when( relativize( parent, classPathElement ) )
+        when( InPluginProcessDumpSingleton.getSingleton() ).thenReturn( mock( InPluginProcessDumpSingleton.class ) );
+        Path parent = mock( Path.class );
+        when( parent.toString() ).thenReturn( "C:\\Windows\\Temp\\surefire" );
+        Path classPathElement = mock( Path.class );
+        when( classPathElement.toString() ).thenReturn( "X:\\Users\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar" );
+        when( classPathElement.toUri() )
+                .thenAnswer( new Answer<URI>()
+                {
+                    @Override
+                    public URI answer( InvocationOnMock invocation ) throws URISyntaxException
+                    {
+                        String path = invocation.getMock().toString();
+                        return new URI( "file", "", "/" + path.replace( '\\', '/' ), null );
+                    }
+                } );
+        when( relativize( same( parent ), same( classPathElement ) ) )
                 .thenThrow( new IllegalArgumentException() );
-        when( toAbsoluteUri( classPathElement ) )
-                .thenReturn( "file:///X:/Users/me/.m2/repository/grp/art/1.0/art-1.0.jar" );
-        when( toClasspathElementUri( anyString(), anyString(), any( File.class ) ) )
+        when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ) ) )
+                .thenCallRealMethod();
+        when( toAbsoluteUri( same( classPathElement ) ) )
                 .thenCallRealMethod();
         assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory ) )
                 .isEqualTo( "file:///X:/Users/me/.m2/repository/grp/art/1.0/art-1.0.jar" );
@@ -146,13 +170,13 @@ public class JarManifestForkConfigurationTest
     public void shouldRelativizeOnRealPlatform()
             throws Exception
     {
-        File parentDir = TMP.newFolder( "test-parent-1" )
-                .getCanonicalFile();
+        Path parentDir = TMP.newFolder( "test-parent-1" )
+                .toPath();
 
-        File testDir = TMP.newFolder( "@1 test with white spaces" )
-                .getCanonicalFile();
+        Path testDir = TMP.newFolder( "@1 test with white spaces" )
+                .toPath();
 
-        String relativeTestDir = relativize( parentDir.getPath(), testDir.getPath() );
+        String relativeTestDir = relativize( parentDir, testDir );
 
         assertThat( relativeTestDir )
                 .isEqualTo( ".." + File.separator + "@1 test with white spaces" );
@@ -162,29 +186,29 @@ public class JarManifestForkConfigurationTest
     public void shouldMakeAbsoluteUriOnRealPlatform()
             throws Exception
     {
-        File testDir = TMP.newFolder( "@2 test with white spaces" )
-                .getCanonicalFile();
+        Path testDir = TMP.newFolder( "@2 test with white spaces" )
+                .toPath();
 
-        URI testDirUri = new URI( toAbsoluteUri( testDir.getPath() ) );
+        URI testDirUri = new URI( toAbsoluteUri( testDir ) );
 
         assertThat( testDirUri.getScheme() )
                 .isEqualTo( "file" );
 
         assertThat( testDirUri.getRawPath() )
-                .isEqualTo( testDir.toURI().getRawPath() );
+                .isEqualTo( testDir.toUri().getRawPath() );
     }
 
     @Test
     public void shouldMakeRelativeUriOnRealPlatform()
             throws Exception
     {
-        File parentDir = TMP.newFolder( "test-parent-2" )
-                .getCanonicalFile();
+        Path parentDir = TMP.newFolder( "test-parent-2" )
+                .toPath();
 
-        File testDir = TMP.newFolder( "@3 test with white spaces" )
-                .getCanonicalFile();
+        Path testDir = TMP.newFolder( "@3 test with white spaces" )
+                .toPath();
 
-        String testDirUriPath = toClasspathElementUri( parentDir.getPath(), testDir.getPath(), dumpDirectory );
+        String testDirUriPath = toClasspathElementUri( parentDir, testDir, dumpDirectory );
 
         assertThat( testDirUriPath )
                 .isEqualTo( "../@3%20test%20with%20white%20spaces" );

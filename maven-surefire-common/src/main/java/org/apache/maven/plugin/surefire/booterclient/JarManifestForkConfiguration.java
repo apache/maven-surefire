@@ -33,6 +33,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
@@ -42,6 +43,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
+import static java.nio.file.Files.isDirectory;
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
 
 /**
@@ -101,7 +103,7 @@ public final class JarManifestForkConfiguration
         {
             file.deleteOnExit();
         }
-        String parent = file.getParent();
+        Path parent = file.getParentFile().toPath();
         FileOutputStream fos = new FileOutputStream( file );
         try ( JarOutputStream jos = new JarOutputStream( fos ) )
         {
@@ -116,10 +118,10 @@ public final class JarManifestForkConfiguration
             StringBuilder cp = new StringBuilder();
             for ( Iterator<String> it = classPath.iterator(); it.hasNext(); )
             {
-                String classPathElement = it.next();
+                Path classPathElement = Paths.get( it.next() );
                 String uri = toClasspathElementUri( parent, classPathElement, dumpLogDirectory );
                 cp.append( uri );
-                if ( new File( classPathElement ).isDirectory() && !uri.endsWith( "/" ) )
+                if ( isDirectory( classPathElement ) && !uri.endsWith( "/" ) )
                 {
                     cp.append( '/' );
                 }
@@ -143,23 +145,21 @@ public final class JarManifestForkConfiguration
         }
     }
 
-    static String relativize( @Nonnull String parent, @Nonnull String child )
+    static String relativize( @Nonnull Path parent, @Nonnull Path child )
             throws IllegalArgumentException
     {
-        return Paths.get( parent )
-                .relativize( Paths.get( child ) )
+        return parent.relativize( child )
                 .toString();
     }
 
-    static String toAbsoluteUri( @Nonnull String absolutePath )
+    static String toAbsoluteUri( @Nonnull Path absolutePath )
     {
-        return Paths.get( absolutePath )
-                .toUri()
+        return absolutePath.toUri()
                 .toASCIIString();
     }
 
-    static String toClasspathElementUri( @Nonnull String parent,
-                                         @Nonnull String classPathElement,
+    static String toClasspathElementUri( @Nonnull Path parent,
+                                         @Nonnull Path classPathElement,
                                          @Nonnull File dumpLogDirectory )
             throws IOException
     {
@@ -168,7 +168,8 @@ public final class JarManifestForkConfiguration
             String relativeUriPath = relativize( parent, classPathElement )
                     .replace( '\\', '/' );
 
-            return new URI( null, relativeUriPath, null ).toASCIIString();
+            return new URI( null, relativeUriPath, null )
+                    .toASCIIString();
         }
         catch ( IllegalArgumentException e )
         {
