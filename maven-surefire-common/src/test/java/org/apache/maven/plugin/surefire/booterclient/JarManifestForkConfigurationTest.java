@@ -20,7 +20,6 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -32,11 +31,13 @@ import static org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfi
 import static org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.toClasspathElementUri;
 import static org.fest.assertions.Assertions.assertThat;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+
+import static org.fest.util.Files.delete;
+import static org.fest.util.Files.newTemporaryFolder;
 import static org.mockito.ArgumentMatchers.same;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -54,17 +55,22 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @PrepareForTest( { JarManifestForkConfiguration.class, InPluginProcessDumpSingleton.class } )
 public class JarManifestForkConfigurationTest
 {
-    @ClassRule
-    public static final TemporaryFolder TMP = new TemporaryFolder();
+    private static final File TMP = newTemporaryFolder();
 
     private static File dumpDirectory;
 
     @BeforeClass
     public static void createSystemTemporaryDir()
-            throws IOException
     {
-        TMP.create();
-        dumpDirectory = TMP.newFolder();
+        dumpDirectory = new File( TMP, "dump" );
+        assertThat( dumpDirectory.mkdir() )
+                .isTrue();
+    }
+
+    @AfterClass
+    public static void deleteSystemTemporaryDir()
+    {
+        delete( TMP );
     }
 
     @Test
@@ -168,12 +174,11 @@ public class JarManifestForkConfigurationTest
 
     @Test
     public void shouldRelativizeOnRealPlatform()
-            throws Exception
     {
-        Path parentDir = TMP.newFolder( "test-parent-1" )
+        Path parentDir = new File( TMP, "test-parent-1" )
                 .toPath();
 
-        Path testDir = TMP.newFolder( "@1 test with white spaces" )
+        Path testDir = new File( TMP, "@1 test with white spaces" )
                 .toPath();
 
         String relativeTestDir = relativize( parentDir, testDir );
@@ -186,7 +191,7 @@ public class JarManifestForkConfigurationTest
     public void shouldMakeAbsoluteUriOnRealPlatform()
             throws Exception
     {
-        Path testDir = TMP.newFolder( "@2 test with white spaces" )
+        Path testDir = new File( TMP, "@2 test with white spaces" )
                 .toPath();
 
         URI testDirUri = new URI( toAbsoluteUri( testDir ) );
@@ -202,10 +207,10 @@ public class JarManifestForkConfigurationTest
     public void shouldMakeRelativeUriOnRealPlatform()
             throws Exception
     {
-        Path parentDir = TMP.newFolder( "test-parent-2" )
+        Path parentDir = new File( TMP, "test-parent-2" )
                 .toPath();
 
-        Path testDir = TMP.newFolder( "@3 test with white spaces" )
+        Path testDir = new File( TMP, "@3 test with white spaces" )
                 .toPath();
 
         String testDirUriPath = toClasspathElementUri( parentDir, testDir, dumpDirectory );
