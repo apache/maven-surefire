@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
+import static java.nio.file.Files.isDirectory;
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
 
 /**
@@ -116,10 +118,10 @@ public final class JarManifestForkConfiguration
             StringBuilder cp = new StringBuilder();
             for ( Iterator<String> it = classPath.iterator(); it.hasNext(); )
             {
-                File classPathElement = new File( it.next() );
+                Path classPathElement = Paths.get( it.next() );
                 String uri = toClasspathElementUri( parent, classPathElement, dumpLogDirectory );
                 cp.append( uri );
-                if ( classPathElement.isDirectory() && !uri.endsWith( "/" ) )
+                if ( isDirectory( classPathElement ) && !uri.endsWith( "/" ) )
                 {
                     cp.append( '/' );
                 }
@@ -143,24 +145,39 @@ public final class JarManifestForkConfiguration
         }
     }
 
-    private static String toClasspathElementUri( @Nonnull Path parent,
-                                                 @Nonnull File classPathElement,
-                                                 @Nonnull File dumpLogDirectory )
+    static String relativize( @Nonnull Path parent, @Nonnull Path child )
+            throws IllegalArgumentException
+    {
+        return parent.relativize( child )
+                .toString();
+    }
+
+    static String toAbsoluteUri( @Nonnull Path absolutePath )
+    {
+        return absolutePath.toUri()
+                .toASCIIString();
+    }
+
+    static String toClasspathElementUri( @Nonnull Path parent,
+                                         @Nonnull Path classPathElement,
+                                         @Nonnull File dumpLogDirectory )
             throws IOException
     {
         try
         {
-            return new URI( null, parent.relativize( classPathElement.toPath() ).toString(), null )
+            String relativeUriPath = relativize( parent, classPathElement )
+                    .replace( '\\', '/' );
+
+            return new URI( null, relativeUriPath, null )
                     .toASCIIString();
         }
         catch ( IllegalArgumentException e )
         {
-            String error = "Boot Manifest-JAR contains absolute paths in classpath " + classPathElement.getPath();
+            String error = "Boot Manifest-JAR contains absolute paths in classpath " + classPathElement;
             InPluginProcessDumpSingleton.getSingleton()
                     .dumpException( e, error, dumpLogDirectory );
 
-            return classPathElement.toURI()
-                    .toASCIIString();
+            return toAbsoluteUri( classPathElement );
         }
         catch ( URISyntaxException e )
         {
