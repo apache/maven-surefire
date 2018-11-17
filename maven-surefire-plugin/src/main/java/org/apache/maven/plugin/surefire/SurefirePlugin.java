@@ -350,15 +350,15 @@ public class SurefirePlugin
     private String shutdown;
 
     /**
-     * Disables Jigsaw (Java 9) modular path even if <i>module-info.java</i> is used in project.
+     * Disables modular path (aka Jigsaw project since of Java 9) even if <i>module-info.java</i> is used in project.
      * <br>
      * Enabled by default.
      * If enabled, <i>module-info.java</i> exists and executes with JDK 9+, modular path is used.
      *
      * @since 3.0.0-M2
      */
-    @Parameter( property = "surefire.useJigsawModules", defaultValue = "true" )
-    private boolean useJigsawModules;
+    @Parameter( property = "surefire.useModulePath", defaultValue = "true" )
+    private boolean useModulePath;
 
     @Override
     protected int getRerunFailingTestsCount()
@@ -714,15 +714,15 @@ public class SurefirePlugin
     }
 
     @Override
-    protected boolean useJigsawModules()
+    protected boolean useModulePath()
     {
-        return useJigsawModules;
+        return useModulePath;
     }
 
     @Override
-    protected void setUseJigsawModules( boolean useJigsawModules )
+    protected void setUseModulePath( boolean useModulePath )
     {
-        this.useJigsawModules = useJigsawModules;
+        this.useModulePath = useModulePath;
     }
 
     @Override

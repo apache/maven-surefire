@@ -560,13 +560,13 @@ public class AbstractSurefireMojoJava7PlusTest
         }
 
         @Override
-        protected boolean useJigsawModules()
+        protected boolean useModulePath()
         {
             return false;
         }
 
         @Override
-        protected void setUseJigsawModules( boolean useJigsawModules )
+        protected void setUseModulePath( boolean useModulePath )
         {
 
         }
