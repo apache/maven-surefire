@@ -304,7 +304,7 @@ public class DefaultForkConfigurationTest
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
         ClasspathConfiguration cc = new ClasspathConfiguration( true, true );
         StartupConfiguration conf =
-                new StartupConfiguration( "org.apache.maven.surefire.shadefire.MyProvider", cc, clc, false, false );
+                new StartupConfiguration( "org.apache.maven.shadefire.surefire.MyProvider", cc, clc, false, false );
         StartupConfiguration confMock = spy( conf );
         mockStatic( Relocator.class );
         when( Relocator.relocate( anyString() ) ).thenCallRealMethod();
@@ -315,7 +315,7 @@ public class DefaultForkConfigurationTest
         verifyStatic( Relocator.class, times( 1 ) );
         Relocator.relocate( eq( ForkedBooter.class.getName() ) );
 
-        assertThat( cls ).isEqualTo( "org.apache.maven.surefire.shadefire.booter.ForkedBooter" );
+        assertThat( cls ).isEqualTo( "org.apache.maven.shadefire.surefire.booter.ForkedBooter" );
         assertThat( confMock.isShadefire() ).isTrue();
     }
 

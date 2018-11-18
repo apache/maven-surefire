@@ -130,7 +130,7 @@ public class StartupConfiguration
 
     public boolean isShadefire()
     {
-        return providerClassName.startsWith( "org.apache.maven.surefire.shadefire" );
+        return providerClassName.startsWith( "org.apache.maven.shadefire.surefire" );
     }
 
     public void writeSurefireTestClasspathProperty()

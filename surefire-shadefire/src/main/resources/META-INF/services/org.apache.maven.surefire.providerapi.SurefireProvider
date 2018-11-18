@@ -16,4 +16,4 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-org.apache.maven.surefire.shadefire.junit.JUnit3Provider
+org.apache.maven.shadefire.surefire.junit.JUnit3Provider

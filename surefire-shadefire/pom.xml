@@ -46,17 +46,17 @@
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-junit3</artifactId>
-      <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-api</artifactId>
-      <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-booter</artifactId>
-      <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 
@@ -73,15 +73,17 @@
             <configuration>
               <artifactSet>
                 <includes>
+                  <include>org.apache.maven.surefire:surefire-logger-api</include>
                   <include>org.apache.maven.surefire:surefire-api</include>
                   <include>org.apache.maven.surefire:surefire-booter</include>
+                  <include>org.apache.maven.surefire:common-junit3</include>
                   <include>org.apache.maven.surefire:surefire-junit3</include>
                 </includes>
               </artifactSet>
               <relocations>
                 <relocation>
-                  <pattern>org.apache.maven.surefire</pattern>
-                  <shadedPattern>org.apache.maven.surefire.shadefire</shadedPattern>
+                  <pattern>org.apache.maven</pattern>
+                  <shadedPattern>org.apache.maven.shadefire</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>
@@ -91,12 +93,6 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-deploy-plugin</artifactId>
         <configuration>
           <skip>true</skip>
         </configuration>

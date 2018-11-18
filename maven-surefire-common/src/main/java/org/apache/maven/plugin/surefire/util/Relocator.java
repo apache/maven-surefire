@@ -29,7 +29,7 @@ import javax.annotation.Nonnull;
  */
 public final class Relocator
 {
-    private static final String RELOCATION_BASE = "org.apache.maven.surefire.";
+    private static final String RELOCATION_BASE = "org.apache.maven.";
     private static final String PACKAGE_DELIMITER = "shadefire";
 
     private Relocator()

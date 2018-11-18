@@ -33,12 +33,12 @@ public class RelocatorTest
     public void testFoo()
     {
         String cn = "org.apache.maven.surefire.report.ForkingConsoleReporter";
-        assertEquals( "org.apache.maven.surefire.shadefire.report.ForkingConsoleReporter", Relocator.relocate( cn ) );
+        assertEquals( "org.apache.maven.shadefire.surefire.report.ForkingConsoleReporter", Relocator.relocate( cn ) );
     }
 
     public void testRelocation()
     {
         String org1 = "org.apache.maven.surefire.fooz.Baz";
-        assertEquals( "org.apache.maven.surefire.shadefire.fooz.Baz", Relocator.relocate( org1 ) );
+        assertEquals( "org.apache.maven.shadefire.surefire.fooz.Baz", Relocator.relocate( org1 ) );
     }
 }

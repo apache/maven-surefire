@@ -50,10 +50,10 @@
   <modules>
     <module>surefire-logger-api</module>
     <module>surefire-api</module>
-    <module>surefire-shadefire</module>
     <module>surefire-booter</module>
     <module>surefire-grouper</module>
     <module>surefire-providers</module>
+    <module>surefire-shadefire</module>
     <module>maven-surefire-common</module>
     <module>surefire-report-parser</module>
     <module>maven-surefire-plugin</module>
