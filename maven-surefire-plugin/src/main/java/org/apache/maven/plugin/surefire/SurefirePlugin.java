@@ -394,7 +394,7 @@ public class SurefirePlugin
     @Override
     protected String getReportSchemaLocation()
     {
-        return "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd";
+        return "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd";
     }
     
     // now for the implementation of the field accessors

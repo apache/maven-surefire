@@ -46,7 +46,7 @@ public class StatelessXmlReporterTest
     extends TestCase
 {
     private static final String XSD =
-            "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd";
+            "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd";
     private final static String TEST_ONE = "aTestMethod";
     private final static String TEST_TWO = "bTestMethod";
     private final static String TEST_THREE = "cTestMethod";

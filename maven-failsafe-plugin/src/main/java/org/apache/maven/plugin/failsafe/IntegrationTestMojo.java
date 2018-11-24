@@ -451,7 +451,7 @@ public class IntegrationTestMojo
     @Override
     protected String getReportSchemaLocation()
     {
-        return "https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report.xsd";
+        return "https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report-3.0.xsd";
     }
 
     @Override

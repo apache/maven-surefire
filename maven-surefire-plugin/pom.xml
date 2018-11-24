@@ -110,6 +110,24 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-test-report</id>
+                        <phase>site</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target name="generate-legacy-surefire-test-report">
+                                <move file="${project.build.directory}/site/xsd/legacy-surefire-test-report.xsd"
+                                      tofile="${project.build.directory}/site/xsd/surefire-test-report.xsd"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

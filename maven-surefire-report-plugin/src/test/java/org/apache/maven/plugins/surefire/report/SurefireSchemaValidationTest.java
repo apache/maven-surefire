@@ -94,7 +94,7 @@ public class SurefireSchemaValidationTest
     {
         // get the schema file placed in a different module
         Path xsd = Paths.get( basedir.getAbsolutePath(), "..", "..", "..", "maven-surefire-plugin", "src", "site",
-                              "resources", "xsd", "surefire-test-report.xsd" );
+                              "resources", "xsd", "surefire-test-report-3.0.xsd" );
         return xsd.toFile().getCanonicalFile();
     }
 }

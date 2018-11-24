@@ -355,6 +355,7 @@ public class StatelessXmlReporter
 
         ppw.addAttribute( "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance" );
         ppw.addAttribute( "xsi:noNamespaceSchemaLocation", xsdSchemaLocation );
+        ppw.addAttribute( "version", "3.0" );
 
         ppw.addAttribute( "name", report.getReportName( reportNameSuffix ) );
 
