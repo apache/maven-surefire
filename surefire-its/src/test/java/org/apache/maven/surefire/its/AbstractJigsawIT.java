@@ -64,9 +64,14 @@ public abstract class AbstractJigsawIT
         return unpack();
     }
 
+    protected String getSuffix()
+    {
+        return null;
+    }
+
     private SurefireLauncher unpack()
     {
-        return unpack( getProjectDirectoryName() );
+        return unpack( getProjectDirectoryName(), getSuffix() );
     }
 
     private static boolean isJavaVersion9AtLeast()

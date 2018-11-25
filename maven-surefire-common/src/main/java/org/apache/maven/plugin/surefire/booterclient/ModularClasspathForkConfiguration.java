@@ -131,50 +131,58 @@ public class ModularClasspathForkConfiguration
             StringBuilder args = new StringBuilder( 64 * 1024 );
             if ( !modulePath.isEmpty() )
             {
+                // https://docs.oracle.com/en/java/javase/11/tools/java.html#GUID-4856361B-8BFD-4964-AE84-121F5F6CF111
                 args.append( "--module-path" )
-                        .append( ' ' );
+                        .append( NL )
+                        .append( '"' );
 
                 for ( Iterator<String> it = modulePath.iterator(); it.hasNext(); )
                 {
-                    args.append( it.next() );
+                    args.append( replace( it.next(), "\\", "\\\\" ) );
                     if ( it.hasNext() )
                     {
                         args.append( pathSeparatorChar );
                     }
                 }
 
-                args.append( NL );
+                args.append( '"' )
+                        .append( NL );
             }
 
             if ( !classPath.isEmpty() )
             {
                 args.append( "--class-path" )
-                        .append( ' ' );
+                        .append( NL )
+                        .append( '"' );
+
                 for ( Iterator<String> it = classPath.iterator(); it.hasNext(); )
                 {
-                    args.append( it.next() );
+                    args.append( replace( it.next(), "\\", "\\\\" ) );
                     if ( it.hasNext() )
                     {
                         args.append( pathSeparatorChar );
                     }
                 }
 
-                args.append( NL );
+                args.append( '"' )
+                        .append( NL );
             }
 
             final String moduleName = toModuleName( moduleDescriptor );
 
             args.append( "--patch-module" )
-                    .append( ' ' )
+                    .append( NL )
                     .append( moduleName )
                     .append( '=' )
-                    .append( patchFile.getPath() )
+                    .append( '"' )
+                    .append( replace( patchFile.getPath(), "\\", "\\\\" ) )
+                    .append( '"' )
                     .append( NL );
 
             for ( String pkg : packages )
             {
                 args.append( "--add-exports" )
-                        .append( ' ' )
+                        .append( NL )
                         .append( moduleName )
                         .append( '/' )
                         .append( pkg )
@@ -184,12 +192,12 @@ public class ModularClasspathForkConfiguration
             }
 
             args.append( "--add-modules" )
-                    .append( ' ' )
+                    .append( NL )
                     .append( moduleName )
                     .append( NL );
 
             args.append( "--add-reads" )
-                    .append( ' ' )
+                    .append( NL )
                     .append( moduleName )
                     .append( '=' )
                     .append( "ALL-UNNAMED" )
@@ -201,7 +209,7 @@ public class ModularClasspathForkConfiguration
 
             if ( isDebug() )
             {
-                getLogger().debug( "args file content: " + replace( argsFileContent, NL, "; " ) );
+                getLogger().debug( "args file content:" + NL + argsFileContent );
             }
 
             io.write( argsFileContent );
