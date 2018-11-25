@@ -26,6 +26,8 @@ import java.io.IOException;
 public class ModulePathIT
         extends AbstractJigsawIT
 {
+    private String suffix;
+
     @Test
     public void testModulePath()
             throws IOException
@@ -37,9 +39,27 @@ public class ModulePathIT
                 .assertTestSuiteResults( 2 );
     }
 
+    @Test
+    public void testModulePathWithSpaces()
+            throws IOException
+    {
+        suffix = " with spaces";
+        assumeJigsaw()
+                .debugLogging()
+                .executeTest()
+                .verifyErrorFreeLog()
+                .assertTestSuiteResults( 2 );
+    }
+
     @Override
     protected String getProjectDirectoryName()
     {
         return "modulepath";
+    }
+
+    @Override
+    protected String getSuffix()
+    {
+        return suffix;
     }
 }

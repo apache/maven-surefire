@@ -37,12 +37,14 @@ import java.util.List;
 import java.util.Properties;
 
 import static java.io.File.createTempFile;
+import static java.io.File.pathSeparatorChar;
 import static java.io.File.separator;
-import static java.io.File.pathSeparator;
+import static java.io.File.separatorChar;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.readAllLines;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
+import static org.apache.maven.shared.utils.StringUtils.replace;
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
@@ -73,10 +75,11 @@ public class ModularClasspathForkConfigurationTest
             }
         };
 
-        File patchFile = new File( "target" + separator + "test-classes" );
+        File patchFile = new File( "target" + separatorChar + "test-classes" );
         File descriptor = new File( tmp, "module-info.class" );
         descriptor.createNewFile();
-        List<String> modulePath = asList( "modular.jar", "target/classes" );
+        List<String> modulePath =
+                asList( "modular.jar", "target" + separatorChar + "classes" );
         List<String> classPath = asList( "booter.jar", "non-modular.jar", patchFile.getPath() );
         Collection<String> packages = singleton( "org.apache.abc" );
         String startClassName = ForkedBooter.class.getName();
@@ -90,35 +93,52 @@ public class ModularClasspathForkConfigurationTest
         List<String> argsFileLines = readAllLines( jigsawArgsFile.toPath(), UTF_8 );
 
         assertThat( argsFileLines )
-                .hasSize( 7 );
+                .hasSize( 13 );
 
         assertThat( argsFileLines.get( 0 ) )
-                .isEqualTo( "--module-path"
-                        + " modular.jar"
-                        + pathSeparator
-                        + "target/classes" );
+                .isEqualTo( "--module-path" );
 
         assertThat( argsFileLines.get( 1 ) )
-                .isEqualTo( "--class-path"
-                        + " booter.jar"
-                        + pathSeparator
-                        + "non-modular.jar"
-                        + pathSeparator
-                        + patchFile.getPath() );
+                .isEqualTo( "\"modular.jar"
+                        + pathSeparatorChar
+                        + "target" + ( separatorChar == '\\' ? "\\\\" : "/" ) + "classes\"" );
 
         assertThat( argsFileLines.get( 2 ) )
-                .isEqualTo( "--patch-module abc=" + patchFile.getPath() );
+                .isEqualTo( "--class-path" );
 
         assertThat( argsFileLines.get( 3 ) )
-                .isEqualTo( "--add-exports abc/org.apache.abc=ALL-UNNAMED" );
+                .isEqualTo( "\"booter.jar"
+                        + pathSeparatorChar
+                        + "non-modular.jar"
+                        + pathSeparatorChar
+                        + replace( patchFile.getPath(), "\\", "\\\\" )
+                        + "\"" );
 
         assertThat( argsFileLines.get( 4 ) )
-                .isEqualTo( "--add-modules abc" );
+                .isEqualTo( "--patch-module" );
 
         assertThat( argsFileLines.get( 5 ) )
-                .isEqualTo( "--add-reads abc=ALL-UNNAMED" );
+                .isEqualTo( "abc=\"" + replace( patchFile.getPath(), "\\", "\\\\" ) + "\"" );
 
         assertThat( argsFileLines.get( 6 ) )
+                .isEqualTo( "--add-exports" );
+
+        assertThat( argsFileLines.get( 7 ) )
+                .isEqualTo( "abc/org.apache.abc=ALL-UNNAMED" );
+
+        assertThat( argsFileLines.get( 8 ) )
+                .isEqualTo( "--add-modules" );
+
+        assertThat( argsFileLines.get( 9 ) )
+                .isEqualTo( "abc" );
+
+        assertThat( argsFileLines.get( 10 ) )
+                .isEqualTo( "--add-reads" );
+
+        assertThat( argsFileLines.get( 11 ) )
+                .isEqualTo( "abc=ALL-UNNAMED" );
+
+        assertThat( argsFileLines.get( 12 ) )
                 .isEqualTo( ForkedBooter.class.getName() );
 
         ModularClasspath modularClasspath = new ModularClasspath( descriptor, modulePath, packages, patchFile );
@@ -140,7 +160,7 @@ public class ModularClasspathForkConfigurationTest
         File argFile = new File( cli.getArguments()[0].substring( 1 ) );
         assertThat( argFile ).isFile();
         List<String> argsFileLines2 = readAllLines( argFile.toPath(), UTF_8 );
-        assertThat( argsFileLines2 ).hasSize( 7 );
+        assertThat( argsFileLines2 ).hasSize( 13 );
         for ( int i = 0; i < argsFileLines2.size(); i++ )
         {
             String line = argsFileLines2.get( i );
