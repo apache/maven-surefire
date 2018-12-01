@@ -50,6 +50,7 @@ import java.util.Set;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
+import static java.util.Collections.singletonMap;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersion;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -135,6 +136,7 @@ public class AbstractSurefireMojoJava7PlusTest
         ResolvePathsRequest<String> req = mock( ResolvePathsRequest.class );
         mockStatic( ResolvePathsRequest.class );
         when( ResolvePathsRequest.ofStrings( eq( testClasspath.toClasspath().getClassPath() ) ) ).thenReturn( req );
+        when( req.setJdkHome( anyString() ) ).thenReturn( req );
         when( req.setMainModuleDescriptor( eq( moduleInfo.getAbsolutePath() ) ) ).thenReturn( req );
 
         @SuppressWarnings( "unchecked" )
@@ -144,6 +146,7 @@ public class AbstractSurefireMojoJava7PlusTest
         mod.put( "modular.jar", null );
         mod.put( "classes", null );
         when( res.getModulepathElements() ).thenReturn( mod );
+        when( res.getPathExceptions() ).thenReturn( singletonMap( "java 1.8", new Exception( "low version" ) ) );
         when( locationManager.resolvePaths( eq( req ) ) ).thenReturn( res );
 
         Logger logger = mock( Logger.class );
@@ -152,7 +155,8 @@ public class AbstractSurefireMojoJava7PlusTest
         when( mojo.getConsoleLogger() ).thenReturn( new PluginConsoleLogger( logger ) );
 
         StartupConfiguration conf = invokeMethod( mojo, "newStartupConfigWithModularPath",
-                classLoaderConfiguration, providerClasspath, "org.asf.Provider", moduleInfo, scanResult );
+                classLoaderConfiguration, providerClasspath, "org.asf.Provider", moduleInfo, scanResult,
+                "" );
 
         verify( mojo, times( 1 ) ).effectiveIsEnableAssertions();
         verify( mojo, times( 1 ) ).isChildDelegation();
@@ -166,6 +170,13 @@ public class AbstractSurefireMojoJava7PlusTest
         verify( res, times( 1 ) ).getClasspathElements();
         verify( res, times( 1 ) ).getModulepathElements();
         verify( locationManager, times( 1 ) ).resolvePaths( eq( req ) );
+        ArgumentCaptor<String> argument1 = ArgumentCaptor.forClass( String.class );
+        ArgumentCaptor<Exception> argument2 = ArgumentCaptor.forClass( Exception.class );
+        verify( logger, times( 1 ) ).warn( argument1.capture(), argument2.capture() );
+        assertThat( argument1.getValue() )
+                .isEqualTo( "Exception for 'java 1.8' (probably JDK version < 9)." );
+        assertThat( argument2.getValue().getMessage() )
+                .isEqualTo( "low version" );
         ArgumentCaptor<String> argument = ArgumentCaptor.forClass( String.class );
         verify( logger, times( 6 ) ).debug( argument.capture() );
         assertThat( argument.getAllValues() )

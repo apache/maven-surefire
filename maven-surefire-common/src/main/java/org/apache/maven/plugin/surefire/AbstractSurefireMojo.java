@@ -89,6 +89,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -1709,8 +1710,16 @@ public abstract class AbstractSurefireMojo
             String providerName = provider.getProviderName();
             if ( canExecuteProviderWithModularPath( platform ) && !isInprocess )
             {
+                String jvmExecutable = platform.getJdkExecAttributesForTests().getJvmExecutable();
+                String javaHome = Paths.get( jvmExecutable )
+                        .toAbsolutePath()
+                        .normalize()
+                        .getParent()
+                        .getParent()
+                        .toString();
+
                 return newStartupConfigWithModularPath( classLoaderConfiguration, providerArtifacts, providerName,
-                        getModuleDescriptor(), scanResult );
+                        getModuleDescriptor(), scanResult, javaHome );
             }
             else
             {
@@ -1801,7 +1810,8 @@ public abstract class AbstractSurefireMojo
 
     private StartupConfiguration newStartupConfigWithModularPath(
             @Nonnull ClassLoaderConfiguration classLoaderConfiguration, @Nonnull Set<Artifact> providerArtifacts,
-            @Nonnull String providerName, @Nonnull File moduleDescriptor, @Nonnull DefaultScanResult scanResult )
+            @Nonnull String providerName, @Nonnull File moduleDescriptor, @Nonnull DefaultScanResult scanResult,
+            @Nonnull String javaHome )
             throws IOException
     {
         TestClassPath testClasspathWrapper = generateTestClasspath();
@@ -1816,9 +1826,16 @@ public abstract class AbstractSurefireMojo
         }
 
         ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings( testClasspath.getClassPath() )
+                .setJdkHome( javaHome )
                 .setMainModuleDescriptor( moduleDescriptor.getAbsolutePath() );
 
         ResolvePathsResult<String> result = getLocationManager().resolvePaths( req );
+        for ( Entry<String, Exception> entry : result.getPathExceptions().entrySet() )
+        {
+            getConsoleLogger()
+                    .warning( "Exception for '" + entry.getKey() + "' (probably JDK version < 9).",
+                            entry.getValue() );
+        }
 
         testClasspath = new Classpath( result.getClasspathElements() );
         Classpath testModulepath = new Classpath( result.getModulepathElements().keySet() );
