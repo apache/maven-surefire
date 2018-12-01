@@ -103,7 +103,7 @@ public final class JarManifestForkConfiguration
         {
             file.deleteOnExit();
         }
-        Path parent = file.getParentFile().toPath();
+        Path parent = file.getParentFile().toPath().normalize();
         FileOutputStream fos = new FileOutputStream( file );
         try ( JarOutputStream jos = new JarOutputStream( fos ) )
         {
