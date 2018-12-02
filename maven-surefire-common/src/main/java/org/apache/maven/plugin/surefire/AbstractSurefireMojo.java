@@ -2369,7 +2369,21 @@ public abstract class AbstractSurefireMojo
      */
     File getSurefireTempDir()
     {
-        return IS_OS_WINDOWS ? createSurefireBootDirectoryInTemp() : createSurefireBootDirectoryInBuild();
+        File result = IS_OS_WINDOWS ? createSurefireBootDirectoryInTemp() : createSurefireBootDirectoryInBuild();
+        try
+        {
+            File canonical = result.getCanonicalFile();
+            if ( !result.equals( canonical ) )
+            {
+                logger.debug( "Canonicalized tempDir path '" + result + "' to '" + canonical + "'" );
+            }
+            return canonical;
+        }
+        catch ( IOException e )
+        {
+            logger.error( "Could not canonicalize tempDir path '" + result + "'", e );
+        }
+        return result;
     }
 
     /**
