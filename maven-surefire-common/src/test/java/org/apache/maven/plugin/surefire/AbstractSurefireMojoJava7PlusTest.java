@@ -174,7 +174,7 @@ public class AbstractSurefireMojoJava7PlusTest
         ArgumentCaptor<Exception> argument2 = ArgumentCaptor.forClass( Exception.class );
         verify( logger, times( 1 ) ).warn( argument1.capture(), argument2.capture() );
         assertThat( argument1.getValue() )
-                .isEqualTo( "Exception for 'java 1.8' (probably JDK version < 9)." );
+                .isEqualTo( "Exception for 'java 1.8'." );
         assertThat( argument2.getValue().getMessage() )
                 .isEqualTo( "low version" );
         ArgumentCaptor<String> argument = ArgumentCaptor.forClass( String.class );

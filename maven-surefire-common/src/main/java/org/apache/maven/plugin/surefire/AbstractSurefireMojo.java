@@ -1832,9 +1832,9 @@ public abstract class AbstractSurefireMojo
         ResolvePathsResult<String> result = getLocationManager().resolvePaths( req );
         for ( Entry<String, Exception> entry : result.getPathExceptions().entrySet() )
         {
+            // Probably JDK version < 9. Other known causes: passing a non-jar or a corrupted jar.
             getConsoleLogger()
-                    .warning( "Exception for '" + entry.getKey() + "' (probably JDK version < 9).",
-                            entry.getValue() );
+                    .warning( "Exception for '" + entry.getKey() + "'.", entry.getValue() );
         }
 
         testClasspath = new Classpath( result.getClasspathElements() );
