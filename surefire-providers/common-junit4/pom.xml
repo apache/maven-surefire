@@ -48,9 +48,5 @@
       <artifactId>common-java5</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.maven.shared</groupId>
-      <artifactId>maven-shared-utils</artifactId>
-    </dependency>
   </dependencies>
 </project>
