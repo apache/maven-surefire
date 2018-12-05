@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.apache.maven.surefire</groupId>
         <artifactId>surefire</artifactId>
-        <version>3.0.0-M2-SNAPSHOT</version>
+        <version>3.0.0-M2</version>
     </parent>
 
     <groupId>org.apache.maven.plugins</groupId>
@@ -121,8 +121,7 @@
                         </goals>
                         <configuration>
                             <target name="generate-legacy-surefire-test-report">
-                                <move file="${project.build.directory}/site/xsd/legacy-surefire-test-report.xsd"
-                                      tofile="${project.build.directory}/site/xsd/surefire-test-report.xsd"/>
+                                <move file="${project.build.directory}/site/xsd/legacy-surefire-test-report.xsd" tofile="${project.build.directory}/site/xsd/surefire-test-report.xsd" />
                             </target>
                         </configuration>
                     </execution>
