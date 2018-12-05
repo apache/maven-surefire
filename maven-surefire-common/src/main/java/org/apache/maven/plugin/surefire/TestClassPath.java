@@ -20,8 +20,8 @@ package org.apache.maven.plugin.surefire;
  */
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.booter.Classpath;
-import org.codehaus.plexus.logging.Logger;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -38,13 +38,13 @@ final class TestClassPath
     private final File classesDirectory;
     private final File testClassesDirectory;
     private final String[] additionalClasspathElements;
-    private final Logger logger;
+    private final ConsoleLogger logger;
 
     TestClassPath( Iterable<Artifact> artifacts,
                    File classesDirectory,
                    File testClassesDirectory,
                    String[] additionalClasspathElements,
-                   Logger logger )
+                   ConsoleLogger logger )
     {
         this.artifacts = artifacts;
         this.classesDirectory = classesDirectory;

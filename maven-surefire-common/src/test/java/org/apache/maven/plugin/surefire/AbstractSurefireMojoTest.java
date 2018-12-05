@@ -55,6 +55,7 @@ import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersion;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
 import static org.fest.assertions.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
@@ -326,6 +327,12 @@ public class AbstractSurefireMojoTest
         new File( targetDir, tmpDir ).delete();
 
         AbstractSurefireMojo mojo = mock( AbstractSurefireMojo.class );
+        Logger logger = mock( Logger.class );
+        when( logger.isDebugEnabled() ).thenReturn( false );
+        when( logger.isErrorEnabled() ).thenReturn( false );
+        doNothing().when( logger ).debug( anyString() );
+        doNothing().when( logger ).error( anyString(), any( Throwable.class ) );
+        when( mojo.getConsoleLogger() ).thenReturn( new PluginConsoleLogger( logger ) );
         when( mojo.getTempDir() ).thenReturn( tmpDir );
         when( mojo.getProjectBuildDirectory() ).thenReturn( targetDir );
         when( mojo.createSurefireBootDirectoryInTemp() ).thenCallRealMethod();
