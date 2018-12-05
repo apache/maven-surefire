@@ -34,6 +34,35 @@ Maven ${thisPlugin} Plugin
   Requirements: Maven 3.x and JDK 1.7 or higher. Due to wrong formatting of console text messages
   in Maven Version prior to 3.1.0 it is highly recommended to use Maven 3.1.0 or higher.
 
+*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+||Roadmap                                     ||Release Targets                                                                                                                                                                |
+*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|                                             | Maven API 3.0 and Java 1.7                                                                                                                                                   \ |
+|                                             |                                                                                                                                                                              \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1493}Maven Plugin API 3.0}}                                                                                                \ |
+| 3.0.0-M1                                    | {{{https://issues.apache.org/jira/browse/SUREFIRE-1474}Java 1.7 as minimum}}                                                                                                 \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1212}@Component is deprecated. @Parameter should be used instead}}                                                         \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1588}OSurefire manifest jar classloading broken on latest Debian/Ubuntu Java8}}                                            \ |
+|                                             | {{{https://issues.apache.org/jira/projects/SUREFIRE/versions/12342871}See the Release Notes for the version 3.0.0-M1}}                                                       \ |
+*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|                                             | Fixed JDK9 and Windows Class-Path issues, 3.0 and Legacy Report XSD, 3.0.0-M2 shadefire                                                                                      \ |
+|                                             |                                                                                                                                                                              \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1531}Option to switch-off Java 9 modules}}                                                                                 \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1568}Fixed JDK9+ (Jigsaw) modular paths (module-info.java) having white spaces on file system}}                            \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1590}3.0 and Legacy Report XSD}}                                                                                           \ |
+| 3.0.0-M2                                    | {{{https://issues.apache.org/jira/browse/SUREFIRE-1593}Windows slashes appear in relative paths of Class-Path in MANIFEST.MF (Boot Manifest-JAR)}}                           \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1600}3.0.0-M2 shadefire}}                                                                                                  \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1602}Surefire fails loading class ForkedBooter when using a sub-directory pom file}}                                       \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1605}Plugin fails if used Toolchains together with JDK9+ and (Jigsaw) modular paths (module-info.java)}}                   \ |
+|                                             | {{{https://issues.apache.org/jira/projects/SUREFIRE/versions/12344396}See the Release Notes for the version 3.0.0-M2}}                                                       \ |
+*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 3.0.0-M3                                    | New interprocess communication and TCP/IP which fixes current blocker and critical bugs.                                                                                       |
+*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 3.0.0-M4                                    | Extensions API                                                                                                                                                                 |
+*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 3.0.0-M5                                    | Breaking backwards compatibility with system properties in configuration parameters, removing deprecated configuration parameters and removing deprecated code, etc.           |
+*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
 #{if}(${project.artifactId}=="maven-surefire-plugin")
   The Surefire Plugin is used during the <<<test>>> phase of the build
   lifecycle to execute the unit tests of an application. It generates reports
