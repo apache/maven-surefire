@@ -76,7 +76,7 @@ public class LongWindowsPathIT
             else if ( line.contains( "SUREFIRE-1400 surefire.real.class.path=" ) )
             {
                 assertThat( line )
-                        .contains( System.getProperty( "java.io.tmpdir" ) );
+                        .contains( new File( System.getProperty( "java.io.tmpdir" ) ).getCanonicalPath() );
             }
         }
     }
