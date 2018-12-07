@@ -45,6 +45,7 @@ import java.util.jar.Manifest;
 
 import static java.nio.file.Files.isDirectory;
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
+import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -113,15 +114,20 @@ public final class JarManifestForkConfiguration
 
             Manifest man = new Manifest();
 
+            boolean dumpError = true;
+
             // we can't use StringUtils.join here since we need to add a '/' to
             // the end of directory entries - otherwise the jvm will ignore them.
             StringBuilder cp = new StringBuilder();
             for ( Iterator<String> it = classPath.iterator(); it.hasNext(); )
             {
                 Path classPathElement = Paths.get( it.next() );
-                String uri = toClasspathElementUri( parent, classPathElement, dumpLogDirectory );
-                cp.append( uri );
-                if ( isDirectory( classPathElement ) && !uri.endsWith( "/" ) )
+                ClasspathElementUri classpathElementUri =
+                        toClasspathElementUri( parent, classPathElement, dumpLogDirectory, dumpError );
+                // too many errors in dump file with the same root cause may slow down the Boot Manifest-JAR startup
+                dumpError &= !classpathElementUri.absolute;
+                cp.append( classpathElementUri.uri );
+                if ( isDirectory( classPathElement ) && !classpathElementUri.uri.endsWith( "/" ) )
                 {
                     cp.append( '/' );
                 }
@@ -158,9 +164,10 @@ public final class JarManifestForkConfiguration
                 .toASCIIString();
     }
 
-    static String toClasspathElementUri( @Nonnull Path parent,
+    static ClasspathElementUri toClasspathElementUri( @Nonnull Path parent,
                                          @Nonnull Path classPathElement,
-                                         @Nonnull File dumpLogDirectory )
+                                         @Nonnull File dumpLogDirectory,
+                                         boolean dumpError )
             throws IOException
     {
         try
@@ -168,16 +175,22 @@ public final class JarManifestForkConfiguration
             String relativeUriPath = relativize( parent, classPathElement )
                     .replace( '\\', '/' );
 
-            return new URI( null, relativeUriPath, null )
-                    .toASCIIString();
+            return new ClasspathElementUri( new URI( null, relativeUriPath, null ) );
         }
         catch ( IllegalArgumentException e )
         {
-            String error = "Boot Manifest-JAR contains absolute paths in classpath " + classPathElement;
-            InPluginProcessDumpSingleton.getSingleton()
-                    .dumpException( e, error, dumpLogDirectory );
+            if ( dumpError )
+            {
+                String error = "Boot Manifest-JAR contains absolute paths in classpath '"
+                        + classPathElement
+                        + "'"
+                        + NL
+                        + "Hint: <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>";
+                InPluginProcessDumpSingleton.getSingleton()
+                        .dumpStreamText( error, dumpLogDirectory );
+            }
 
-            return toAbsoluteUri( classPathElement );
+            return new ClasspathElementUri( toAbsoluteUri( classPathElement ) );
         }
         catch ( URISyntaxException e )
         {
@@ -186,6 +199,24 @@ public final class JarManifestForkConfiguration
                     + classPathElement
                     + " against "
                     + parent, e );
+        }
+    }
+
+    static final class ClasspathElementUri
+    {
+        final String uri;
+        final boolean absolute;
+
+        ClasspathElementUri( String uri )
+        {
+            this.uri = uri;
+            absolute = true;
+        }
+
+        ClasspathElementUri( URI uri )
+        {
+            this.uri = uri.toASCIIString();
+            absolute = false;
         }
     }
 }

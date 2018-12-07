@@ -24,6 +24,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 
+import org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.ClasspathElementUri;
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 
 import static org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.relativize;
@@ -38,6 +39,7 @@ import org.junit.runner.RunWith;
 
 import static org.fest.util.Files.delete;
 import static org.fest.util.Files.newTemporaryFolder;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.same;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -84,9 +86,9 @@ public class JarManifestForkConfigurationTest
         when( classPathElement.toString() ).thenReturn( "/home/me/.m2/repository/grp/art/1.0/art-1.0.jar" );
         when( relativize( parent, classPathElement ) )
                 .thenReturn( "../../../.m2/repository/grp/art/1.0/art-1.0.jar" );
-        when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ) ) )
+        when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ), anyBoolean() ) )
                 .thenCallRealMethod();
-        assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory ) )
+        assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory, true ).uri )
                 .isEqualTo( "../../../.m2/repository/grp/art/1.0/art-1.0.jar" );
     }
 
@@ -101,9 +103,9 @@ public class JarManifestForkConfigurationTest
         when( classPathElement.toString() ).thenReturn( "/the Maven repo/grp/art/1.0/art-1.0.jar" );
         when( relativize( parent, classPathElement ) )
                 .thenReturn( "../../../../../the Maven repo/grp/art/1.0/art-1.0.jar" );
-        when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ) ) )
+        when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ), anyBoolean() ) )
                 .thenCallRealMethod();
-        assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory ) )
+        assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory, true ).uri )
                 .isEqualTo( "../../../../../the%20Maven%20repo/grp/art/1.0/art-1.0.jar" );
     }
 
@@ -118,9 +120,9 @@ public class JarManifestForkConfigurationTest
         when( classPathElement.toString() ).thenReturn( "C:\\Users\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar" );
         when( relativize( parent, classPathElement ) )
                 .thenReturn( "..\\..\\..\\Users\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar" );
-        when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ) ) )
+        when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ), anyBoolean() ) )
                 .thenCallRealMethod();
-        assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory ) )
+        assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory, true ).uri )
                 .isEqualTo( "../../../Users/me/.m2/repository/grp/art/1.0/art-1.0.jar" );
     }
 
@@ -135,9 +137,9 @@ public class JarManifestForkConfigurationTest
         when( classPathElement.toString() ).thenReturn( "C:\\Test User\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar" );
         when( relativize( parent, classPathElement ) )
                 .thenReturn( "..\\..\\..\\Test User\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar" );
-        when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ) ) )
+        when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ), anyBoolean() ) )
                 .thenCallRealMethod();
-        assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory ) )
+        assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory, true ).uri )
                 .isEqualTo( "../../../Test%20User/me/.m2/repository/grp/art/1.0/art-1.0.jar" );
     }
 
@@ -164,11 +166,11 @@ public class JarManifestForkConfigurationTest
                 } );
         when( relativize( same( parent ), same( classPathElement ) ) )
                 .thenThrow( new IllegalArgumentException() );
-        when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ) ) )
+        when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ), anyBoolean() ) )
                 .thenCallRealMethod();
         when( toAbsoluteUri( same( classPathElement ) ) )
                 .thenCallRealMethod();
-        assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory ) )
+        assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory, true ).uri )
                 .isEqualTo( "file:///X:/Users/me/.m2/repository/grp/art/1.0/art-1.0.jar" );
     }
 
@@ -213,9 +215,9 @@ public class JarManifestForkConfigurationTest
         Path testDir = new File( TMP, "@3 test with white spaces" )
                 .toPath();
 
-        String testDirUriPath = toClasspathElementUri( parentDir, testDir, dumpDirectory );
+        ClasspathElementUri testDirUriPath = toClasspathElementUri( parentDir, testDir, dumpDirectory, true );
 
-        assertThat( testDirUriPath )
+        assertThat( testDirUriPath.uri )
                 .isEqualTo( "../@3%20test%20with%20white%20spaces" );
     }
 }
