@@ -329,6 +329,15 @@ public class SurefirePlugin
      */
     @Parameter( property = "surefire.skipAfterFailureCount", defaultValue = "0" )
     private int skipAfterFailureCount;
+    
+    /**
+     * Set this to "true" to skip running tests, but still compile them. Its use is NOT RECOMMENDED, but quite
+     * convenient on occasion.
+     * 
+     * @since 3.0.0-M3
+     */
+    @Parameter( property = "skipUTs", defaultValue = "false" )
+    private boolean skipUTs;
 
     /**
      * After the plugin process is shutdown by sending <i>SIGTERM signal (CTRL+C)</i>, <i>SHUTDOWN command</i> is
@@ -376,7 +385,7 @@ public class SurefirePlugin
     @Override
     protected boolean isSkipExecution()
     {
-        return isSkip() || isSkipTests() || isSkipExec();
+        return isSkip() || isSkipTests() || isSkipExec() || isSkipUTs();
     }
 
     @Override
@@ -409,6 +418,16 @@ public class SurefirePlugin
     public void setSkipTests( boolean skipTests )
     {
         this.skipTests = skipTests;
+    }
+
+    public boolean isSkipUTs()
+    {
+        return skipUTs;
+    }
+
+    public void setSkipUTs( boolean skipUTs )
+    {
+        this.skipUTs = skipUTs;
     }
 
     @Override
