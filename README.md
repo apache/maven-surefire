@@ -60,7 +60,9 @@ See http://maven.apache.org/developers/website/deploy-component-reference-docume
 [![Built with Maven](http://maven.apache.org/images/logos/maven-feather.png)](https://maven.apache.org/surefire/)
 
 
-
+[license]: https://www.apache.org/licenses/LICENSE-2.0
+[build]: https://builds.apache.org/job/maven-box/job/maven-surefire/job/master/
+[test-results]: https://builds.apache.org/job/maven-box/job/maven-surefire/job/master/lastCompletedBuild/testReport/
 [Join us @ irc://freenode/maven]: https://www.irccloud.com/invite?channel=maven&amp;hostname=irc.freenode.net&amp;port=6697&amp;ssl=1
 [Webchat with us @channel maven]: http://webchat.freenode.net/?channels=%23maven
 [JIRA Change Log]: https://issues.apache.org/jira/browse/SUREFIRE/?selectedTab=com.atlassian.jira.jira-projects-plugin:changelog-panel
