@@ -20,10 +20,11 @@ package org.apache.maven.surefire.report;
  */
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
+import static java.lang.Math.min;
 import static java.util.Arrays.asList;
+import static java.util.Collections.reverse;
 import static org.apache.maven.shared.utils.StringUtils.chompLast;
 import static org.apache.maven.shared.utils.StringUtils.isNotEmpty;
 
@@ -39,35 +40,27 @@ public class SmartStackTraceParser
 
     private final StackTraceElement[] stackTrace;
 
-    private final String simpleName;
-
     private final String testClassName;
 
-    private final Class testClass;
+    private final Class<?> testClass;
 
     private final String testMethodName;
-
-    public SmartStackTraceParser( Class testClass, Throwable throwable )
-    {
-        this( testClass.getName(), throwable, null );
-    }
 
     public SmartStackTraceParser( String testClassName, Throwable throwable, String testMethodName )
     {
         this.testMethodName = testMethodName;
         this.testClassName = testClassName;
-        testClass = getClass( testClassName );
-        simpleName = testClassName.substring( testClassName.lastIndexOf( "." ) + 1 );
+        testClass = toClass( testClassName );
         this.throwable = new SafeThrowable( throwable );
         stackTrace = throwable.getStackTrace();
     }
 
-    private static Class getClass( String name )
+    private static Class<?> toClass( String name )
     {
         try
         {
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            return classLoader != null ? classLoader.loadClass( name ) : null;
+            return classLoader == null ? null : classLoader.loadClass( name );
         }
         catch ( ClassNotFoundException e )
         {
@@ -75,7 +68,7 @@ public class SmartStackTraceParser
         }
     }
 
-    private static String getSimpleName( String className )
+    private static String toSimpleClassName( String className )
     {
         int i = className.lastIndexOf( "." );
         return className.substring( i + 1 );
@@ -91,10 +84,11 @@ public class SmartStackTraceParser
 
         final StringBuilder result = new StringBuilder();
         final List<StackTraceElement> stackTraceElements = focusOnClass( stackTrace, testClass );
-        Collections.reverse( stackTraceElements );
+        reverse( stackTraceElements );
+        final String testClassSimpleName = toSimpleClassName( testClassName );
         if ( stackTraceElements.isEmpty() )
         {
-            result.append( simpleName );
+            result.append( testClassSimpleName );
             if ( isNotEmpty( testMethodName ) )
             {
                 result.append( "." )
@@ -103,64 +97,62 @@ public class SmartStackTraceParser
         }
         else
         {
-            for ( int i = 0; i < stackTraceElements.size(); i++ )
+            for ( int i = 0, size = stackTraceElements.size(); i < size; i++ )
             {
                 final StackTraceElement stackTraceElement = stackTraceElements.get( i );
+                final boolean isTestClassName = stackTraceElement.getClassName().equals( testClassName );
                 if ( i == 0 )
                 {
-                    result.append( simpleName );
-                    if ( !stackTraceElement.getClassName().equals( testClassName ) )
-                    {
-                        result.append( ">" );
-                    }
-                    else
-                    {
-                        result.append( "." );
-                    }
+                    result.append( testClassSimpleName )
+                            .append( isTestClassName ? '.' : '>' );
                 }
-                if ( !stackTraceElement.getClassName().equals( testClassName ) )
+
+                if ( !isTestClassName )
                 {
-                    result.append( getSimpleName( stackTraceElement.getClassName() ) ) // Add the name of the superclas
-                        .append( "." );
+                    result.append( toSimpleClassName( stackTraceElement.getClassName() ) )
+                        .append( '.' );
                 }
+
                 result.append( stackTraceElement.getMethodName() )
-                    .append( ":" )
+                    .append( ':' )
                     .append( stackTraceElement.getLineNumber() )
                     .append( "->" );
             }
 
             if ( result.length() >= 2 )
             {
-                result.deleteCharAt( result.length() - 1 )
-                    .deleteCharAt( result.length() - 1 );
+                result.setLength( result.length() - 2 );
             }
         }
 
-        Throwable target = throwable.getTarget();
-        String exception = target.getClass().getName();
+        final Throwable target = throwable.getTarget();
+        final Class<?> excType = target.getClass();
+        final String excClassName = excType.getName();
+        final String msg = throwable.getMessage();
+
         if ( target instanceof AssertionError
-            || "junit.framework.AssertionFailedError".equals( exception )
-            || "junit.framework.ComparisonFailure".equals( exception ) )
+                || "junit.framework.AssertionFailedError".equals( excClassName )
+                || "junit.framework.ComparisonFailure".equals( excClassName ) )
         {
-            String msg = throwable.getMessage();
             if ( isNotEmpty( msg ) )
             {
-                result.append( " " )
+                result.append( ' ' )
                     .append( msg );
             }
         }
         else
         {
-            result.append( rootIsInclass() ? " " : " » " );
-            result.append( getMinimalThrowableMiniMessage( target ) );
-            result.append( getTruncatedMessage( MAX_LINE_LENGTH - result.length() ) );
+            result.append( rootIsInclass() ? " " : " » " )
+                    .append( toMinimalThrowableMiniMessage( excType ) );
+
+            result.append( truncateMessage( msg, MAX_LINE_LENGTH - result.length() ) );
         }
         return result.toString();
     }
 
-    private static String getMinimalThrowableMiniMessage( Throwable throwable )
+    private static String toMinimalThrowableMiniMessage( Class<?> excType )
     {
-        String name = throwable.getClass().getSimpleName();
+        String name = excType.getSimpleName();
         if ( name.endsWith( "Exception" ) )
         {
             return chompLast( name, "Exception" );
@@ -172,26 +164,20 @@ public class SmartStackTraceParser
         return name;
     }
 
-    private String getTruncatedMessage( int i )
+    private static String truncateMessage( String msg, int i )
     {
-        if ( i < 0 )
+        StringBuilder truncatedMessage = new StringBuilder();
+        if ( i >= 0 && msg != null )
         {
-            return "";
+            truncatedMessage.append( ' ' )
+                    .append( msg.substring( 0, min( i, msg.length() ) ) );
+
+            if ( i < msg.length() )
+            {
+                truncatedMessage.append( "..." );
+            }
         }
-        String msg = throwable.getMessage();
-        if ( msg == null )
-        {
-            return "";
-        }
-        String substring = msg.substring( 0, Math.min( i, msg.length() ) );
-        if ( i < msg.length() )
-        {
-            return " " + substring + "...";
-        }
-        else
-        {
-            return " " + substring;
-        }
+        return truncatedMessage.toString();
     }
 
     private boolean rootIsInclass()
@@ -199,7 +185,7 @@ public class SmartStackTraceParser
         return stackTrace.length > 0 && stackTrace[0].getClassName().equals( testClassName );
     }
 
-    static List<StackTraceElement> focusOnClass( StackTraceElement[] stackTrace, Class clazz )
+    private static List<StackTraceElement> focusOnClass( StackTraceElement[] stackTrace, Class<?> clazz )
     {
         List<StackTraceElement> result = new ArrayList<>();
         for ( StackTraceElement element : stackTrace )
@@ -212,7 +198,7 @@ public class SmartStackTraceParser
         return result;
     }
 
-    private static boolean isInSupers( Class testClass, String lookFor )
+    private static boolean isInSupers( Class<?> testClass, String lookFor )
     {
         if ( lookFor.startsWith( "junit.framework." ) )
         {
@@ -263,7 +249,7 @@ public class SmartStackTraceParser
         return result;
     }
 
-    static boolean containsClassName( StackTraceElement[] stackTrace, StackTraceFilter filter )
+    private static boolean containsClassName( StackTraceElement[] stackTrace, StackTraceFilter filter )
     {
         for ( StackTraceElement element : stackTrace )
         {
