@@ -32,7 +32,7 @@ properties(
 
 final def oses = ['linux':'ubuntu && !H24', 'windows':'Windows']
 final def mavens = env.BRANCH_NAME == 'master' ? ['3.5.x', '3.3.x', '3.2.x'] : ['3.5.x']
-final def jdks = [11, 8, 7]
+final def jdks = [12, 11, 8, 7]
 
 final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
 final def goals = ['clean', 'install', 'jacoco:report']
@@ -62,6 +62,10 @@ oses.eachWithIndex { osMapping, indexOfOs ->
 
             stages[stageKey] = {
                 node(label) {
+                    if (os == 'windows' && jdk == 12) {
+                        // https://issues.apache.org/jira/browse/INFRA-17384
+                        return
+                    }
                     timestamps {
                         def boolean makeReports = indexOfOs == 0 && indexOfMaven == 0 && indexOfJdk == 0
                         def failsafeItPort = 8000 + 100 * indexOfMaven + 10 * indexOfJdk

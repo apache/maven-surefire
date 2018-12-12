@@ -40,6 +40,7 @@ import static org.hamcrest.Matchers.is;
 public class Java9FullApiIT
         extends AbstractJigsawIT
 {
+    private static final String JVM_SPEC_VERSION = System.getProperty( "java.specification.version" );
 
     @Test
     public void shouldLoadMultipleJavaModules_JavaHome() throws Exception
@@ -55,9 +56,7 @@ public class Java9FullApiIT
                 .verifyTextInLog( "loaded class javax.xml.bind.JAXBException" )
                 .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
                 .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
-                .assertThatLogLine( anyOf( is( "java.specification.version=9" ),
-                                           is( "java.specification.version=10" ),
-                                           is( "java.specification.version=11" ) ),
+                .assertThatLogLine( is( "java.specification.version=" + JVM_SPEC_VERSION ),
                                     greaterThanOrEqualTo( 1 ) );
     }
 
@@ -76,9 +75,7 @@ public class Java9FullApiIT
                 .verifyTextInLog( "loaded class javax.xml.bind.JAXBException" )
                 .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
                 .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
-                .assertThatLogLine( anyOf( is( "java.specification.version=9" ),
-                                           is( "java.specification.version=10" ),
-                                           is( "java.specification.version=11" ) ),
+                .assertThatLogLine( is( "java.specification.version=" + JVM_SPEC_VERSION ),
                                     greaterThanOrEqualTo( 1 ) );
     }
 
@@ -98,9 +95,7 @@ public class Java9FullApiIT
                 .verifyTextInLog( "loaded class javax.xml.bind.JAXBException" )
                 .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
                 .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
-                .assertThatLogLine( anyOf( is( "java.specification.version=9" ),
-                                           is( "java.specification.version=10" ),
-                                           is( "java.specification.version=11" ) ),
+                .assertThatLogLine( is( "java.specification.version=" + JVM_SPEC_VERSION ),
                                     greaterThanOrEqualTo( 1 ) );
     }
 
