@@ -27,6 +27,8 @@ import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toList;
 import static org.apache.maven.surefire.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
 import static org.apache.maven.surefire.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
+import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture;
+import static org.apache.maven.surefire.util.TestsToRun.fromClass;
 import static org.junit.platform.commons.util.StringUtils.isBlank;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
@@ -44,7 +46,6 @@ import java.util.logging.Logger;
 
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -104,22 +105,35 @@ public class JUnitPlatformProvider
     public RunResult invoke( Object forkTestSet )
                     throws TestSetFailedException, ReporterException
     {
-        if ( forkTestSet instanceof TestsToRun )
+        ReporterFactory reporterFactory = parameters.getReporterFactory();
+        final RunResult runResult;
+        try
         {
-            return invokeAllTests( (TestsToRun) forkTestSet );
+            RunListener runListener = reporterFactory.createReporter();
+            startCapture( ( ConsoleOutputReceiver ) runListener );
+            if ( forkTestSet instanceof TestsToRun )
+            {
+                invokeAllTests( (TestsToRun) forkTestSet, runListener );
+            }
+            else if ( forkTestSet instanceof Class )
+            {
+                invokeAllTests( fromClass( ( Class<?> ) forkTestSet ), runListener );
+            }
+            else if ( forkTestSet == null )
+            {
+                invokeAllTests( scanClasspath(), runListener );
+            }
+            else
+            {
+                throw new IllegalArgumentException(
+                        "Unexpected value of forkTestSet: " + forkTestSet );
+            }
         }
-        else if ( forkTestSet instanceof Class )
+        finally
         {
-            return invokeAllTests( TestsToRun.fromClass( (Class<?>) forkTestSet ) );
+            runResult = reporterFactory.close();
         }
-        else if ( forkTestSet == null )
-        {
-            return invokeAllTests( scanClasspath() );
-        }
-        else
-        {
-            throw new IllegalArgumentException( "Unexpected value of forkTestSet: " + forkTestSet );
-        }
+        return runResult;
     }
 
     private TestsToRun scanClasspath()
@@ -130,22 +144,10 @@ public class JUnitPlatformProvider
         return parameters.getRunOrderCalculator().orderTestClasses( scannedClasses );
     }
 
-    private RunResult invokeAllTests( TestsToRun testsToRun )
+    private void invokeAllTests( TestsToRun testsToRun, RunListener runListener )
     {
-        RunResult runResult;
-        ReporterFactory reporterFactory = parameters.getReporterFactory();
-        try
-        {
-            RunListener runListener = reporterFactory.createReporter();
-            ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) runListener );
-            LauncherDiscoveryRequest discoveryRequest = buildLauncherDiscoveryRequest( testsToRun );
-            launcher.execute( discoveryRequest, new RunListenerAdapter( runListener ) );
-        }
-        finally
-        {
-            runResult = reporterFactory.close();
-        }
-        return runResult;
+        LauncherDiscoveryRequest discoveryRequest = buildLauncherDiscoveryRequest( testsToRun );
+        launcher.execute( discoveryRequest, new RunListenerAdapter( runListener ) );
     }
 
     private LauncherDiscoveryRequest buildLauncherDiscoveryRequest( TestsToRun testsToRun )
