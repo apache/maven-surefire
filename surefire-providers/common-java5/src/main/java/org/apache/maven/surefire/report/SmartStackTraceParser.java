@@ -132,7 +132,8 @@ public class SmartStackTraceParser
 
         if ( target instanceof AssertionError
                 || "junit.framework.AssertionFailedError".equals( excClassName )
-                || "junit.framework.ComparisonFailure".equals( excClassName ) )
+                || "junit.framework.ComparisonFailure".equals( excClassName )
+                || excClassName.startsWith( "org.opentest4j." ) )
         {
             if ( isNotEmpty( msg ) )
             {
