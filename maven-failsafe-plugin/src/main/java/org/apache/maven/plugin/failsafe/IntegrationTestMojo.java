@@ -461,6 +461,7 @@ public class IntegrationTestMojo
     }
 
     @Override
+    @Deprecated
     public void setSkipTests( boolean skipTests )
     {
         this.skipTests = skipTests;

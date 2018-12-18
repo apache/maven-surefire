@@ -161,7 +161,9 @@ public abstract class AbstractSurefireMojo
 
     /**
      * Set this to "true" to skip running tests, but still compile them. Its use is NOT RECOMMENDED, but quite
-     * convenient on occasion.
+     * convenient on occasion.<br>
+     * Failsafe plugin deprecated the parameter {@code skipTests} and the parameter will be removed in
+     * <i>Failsafe 3.0.0</i> as it is a source of conflicts between Failsafe and Surefire plugin.
      *
      * @since 2.4
      */
