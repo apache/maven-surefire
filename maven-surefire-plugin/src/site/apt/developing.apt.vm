@@ -114,9 +114,12 @@ ForkedBooter#main
 
 * JDK Versions
 
-  The surefire booter is capable of booting all the way back to jdk1.6. Specifically
-  this means <<<surefire-api>>>, <<<surefire-booter>>>, <<<common-junit3>>> and <<<surefire-junit3>>> are
-  source/target 1.6. The plugin and several providers are 1.6.
+  The surefire booter is capable of booting all the way back to jdk1.7. Specifically
+  this means <<<surefire-api>>>, <<<surefire-booter>>>, <<<common-junit3>>>, <<<surefire-junit3>>>
+  and other modules are compiled with source/target 1.7. The plugin and several providers are 1.7.
+  The provider <<<surefire-junit-platform>>> is compiled with jdk1.8.
+  The project requires using <<<JAVA_HOME>>> jdk1.8 but the tests run with jdk1.7+ which is
+  configured by system property <<<jdk.home>>>, see <<<README.md>>>.
 
 * Provider Isolation
 
