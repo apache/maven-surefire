@@ -23,8 +23,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -33,6 +33,7 @@ import org.apache.commons.io.FileUtils;
 import junit.framework.Assert;
 import org.hamcrest.Matcher;
 
+import static java.nio.charset.Charset.defaultCharset;
 import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.Matchers.containsString;
 
@@ -49,7 +50,7 @@ public class TestFile
 
     public TestFile( File file, OutputValidator surefireVerifier )
     {
-        this( file, Charset.defaultCharset(), surefireVerifier);
+        this( file, defaultCharset(), surefireVerifier);
     }
 
     public TestFile( File file, Charset charset, OutputValidator surefireVerifier )
@@ -57,7 +58,7 @@ public class TestFile
         try
         {
             this.file = file.getCanonicalFile();
-            this.encoding = charset == null ? Charset.defaultCharset() : charset;
+            this.encoding = charset == null ? defaultCharset() : charset;
             this.surefireVerifier = surefireVerifier;
         }
         catch ( IOException e )
@@ -103,7 +104,7 @@ public class TestFile
     public String slurpFile()
     {
         StringBuilder sb = new StringBuilder();
-        try ( BufferedReader reader = new BufferedReader( new FileReader( file ) ) )
+        try ( BufferedReader reader = new BufferedReader( new InputStreamReader( getFileInputStream(), encoding ) ) )
         {
             for ( String line = reader.readLine(); line != null; line = reader.readLine() )
             {
@@ -121,7 +122,7 @@ public class TestFile
     {
         try
         {
-            return FileUtils.readFileToString( file );
+            return FileUtils.readFileToString( file, encoding );
         }
         catch ( IOException e )
         {

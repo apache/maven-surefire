@@ -37,8 +37,8 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>5.7</version>
-            <classifier>jdk15</classifier>
+            <version>6.13.1</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -71,6 +71,12 @@
                         <suiteXmlFile>src/test/resources/Suite1.xml</suiteXmlFile>
                         <suiteXmlFile>src/test/resources/Suite2.xml</suiteXmlFile>
                     </suiteXmlFiles>
+                    <properties>
+                        <property>
+                            <name>surefire.testng.verbose</name>
+                            <value>1</value>
+                        </property>
+                    </properties>
                 </configuration>
             </plugin>
         </plugins>

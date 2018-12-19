@@ -31,6 +31,7 @@ import java.nio.charset.Charset;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.fest.assertions.Assertions.assertThat;
 
 public class Surefire1535TestNGParallelSuitesIT
         extends SurefireJUnit4IntegrationTestCase
@@ -38,8 +39,8 @@ public class Surefire1535TestNGParallelSuitesIT
     private static final Charset UTF8 = Charset.forName( "UTF-8" );
     private static final String TEST_RESULT_1 = platformEncoding( "Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, " );
     private static final String TEST_RESULT_2 = platformEncoding( "Tests run: 2, Failures: 0, Errors: 0, Skipped: 0" );
-    private static final String SUITE1 = platformEncoding( "Suite1.xml" );
-    private static final String SUITE2 = platformEncoding( "Suite2.xml" );
+    private static final String SUITE1 = platformEncoding( "Suite1" );
+    private static final String SUITE2 = platformEncoding( "Suite2" );
     private static final String TEST1 = platformEncoding( "test 1" );
     private static final String TEST2 = platformEncoding( "test 2" );
     private static final String TEST_SUITE = platformEncoding( "Running TestSuite" );
@@ -55,10 +56,23 @@ public class Surefire1535TestNGParallelSuitesIT
         TestFile testFile = validator.getSurefireReportsFile( "../surefire-reports-1/TEST-TestSuite.xml", UTF8 );
         testFile.assertFileExists();
         testFile.assertContainsText( "<testcase name=\"test\" classname=\"it.ParallelTest" );
+        String xml = testFile.readFileToString();
+        boolean parallelTest11 = xml.contains( "<testcase name=\"test\" classname=\"it.ParallelTest1\"" );
+        boolean parallelTest12 = xml.contains( "<testcase name=\"test\" classname=\"it.ParallelTest2\"" );
+        assertThat( parallelTest11 ^ parallelTest12 )
+                .isTrue();
 
         testFile = validator.getSurefireReportsFile( "../surefire-reports-2/TEST-TestSuite.xml", UTF8 );
         testFile.assertFileExists();
         testFile.assertContainsText( "<testcase name=\"test\" classname=\"it.ParallelTest" );
+        xml = testFile.readFileToString();
+        boolean parallelTest21 = xml.contains( "<testcase name=\"test\" classname=\"it.ParallelTest1\"" );
+        boolean parallelTest22 = xml.contains( "<testcase name=\"test\" classname=\"it.ParallelTest2\"" );
+        assertThat( parallelTest21 ^ parallelTest22 )
+                .isTrue();
+
+        assertThat( parallelTest11 && parallelTest22 || parallelTest12 && parallelTest21 )
+                .isTrue();
 
         validator.assertThatLogLine( containsString( TEST_RESULT_2 ), is( 1 ) )
                 .assertThatLogLine( containsString( TEST_RESULT_1 ), is( 2 ) )
@@ -81,10 +95,43 @@ public class Surefire1535TestNGParallelSuitesIT
         TestFile testFile = validator.getSurefireReportsFile( "../surefire-reports-1/TEST-TestSuite.xml", UTF8 );
         testFile.assertFileExists();
         testFile.assertContainsText( "<testcase name=\"test\" classname=\"it.ParallelTest" );
+        String xml = testFile.readFileToString();
+        boolean parallelTest11 = xml.contains( "<testcase name=\"test\" classname=\"it.ParallelTest1\"" );
+        boolean parallelTest12 = xml.contains( "<testcase name=\"test\" classname=\"it.ParallelTest2\"" );
+        assertThat( parallelTest11 ^ parallelTest12 )
+                .isTrue();
+        String log = validator.getSurefireReportsFile( "../surefire-reports-1/TestSuite-output.txt", UTF8 )
+                .readFileToString();
+        assertThat( log.contains( TEST1 ) )
+                .isEqualTo( parallelTest11 );
+        assertThat( log.contains( SUITE1 ) )
+                .isEqualTo( parallelTest11 );
+        assertThat( log.contains( TEST2 ) )
+                .isEqualTo( parallelTest12 );
+        assertThat( log.contains( SUITE2 ) )
+                .isEqualTo( parallelTest12 );
 
         testFile = validator.getSurefireReportsFile( "../surefire-reports-2/TEST-TestSuite.xml", UTF8 );
         testFile.assertFileExists();
         testFile.assertContainsText( "<testcase name=\"test\" classname=\"it.ParallelTest" );
+        xml = testFile.readFileToString();
+        boolean parallelTest21 = xml.contains( "<testcase name=\"test\" classname=\"it.ParallelTest1\"" );
+        boolean parallelTest22 = xml.contains( "<testcase name=\"test\" classname=\"it.ParallelTest2\"" );
+        assertThat( parallelTest21 ^ parallelTest22 )
+                .isTrue();
+        log = validator.getSurefireReportsFile( "../surefire-reports-2/TestSuite-output.txt", UTF8 )
+                .readFileToString();
+        assertThat( log.contains( TEST1 ) )
+                .isEqualTo( parallelTest21 );
+        assertThat( log.contains( SUITE1 ) )
+                .isEqualTo( parallelTest21 );
+        assertThat( log.contains( TEST2 ) )
+                .isEqualTo( parallelTest22 );
+        assertThat( log.contains( SUITE2 ) )
+                .isEqualTo( parallelTest22 );
+
+        assertThat( parallelTest11 && parallelTest22 || parallelTest12 && parallelTest21 )
+                .isTrue();
 
         validator.assertThatLogLine( containsString( TEST_RESULT_2 ), is( 1 ) )
                 .assertThatLogLine( containsString( TEST_RESULT_1 ), is( 2 ) )
