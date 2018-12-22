@@ -19,7 +19,6 @@ package org.apache.maven.plugin.surefire.runorder;
  * under the License.
  */
 
-
 import org.apache.maven.surefire.report.ReportEntry;
 
 import java.io.BufferedReader;
@@ -36,12 +35,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static java.util.Collections.sort;
 import static org.apache.maven.plugin.surefire.runorder.RunEntryStatistics.fromReportEntry;
 import static org.apache.maven.plugin.surefire.runorder.RunEntryStatistics.fromString;
+import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractClassName;
 
 /**
  * @author Kristian Rosenvold
@@ -50,7 +48,7 @@ public final class RunEntryStatisticsMap
 {
     private final Map<String, RunEntryStatistics> runEntryStatistics;
 
-    public RunEntryStatisticsMap( Map<String, RunEntryStatistics> runEntryStatistics )
+    private RunEntryStatisticsMap( Map<String, RunEntryStatistics> runEntryStatistics )
     {
         this.runEntryStatistics = new ConcurrentHashMap<>( runEntryStatistics );
     }
@@ -112,7 +110,7 @@ public final class RunEntryStatisticsMap
         }
     }
 
-    public RunEntryStatistics findOrCreate( ReportEntry reportEntry )
+    private RunEntryStatistics findOrCreate( ReportEntry reportEntry )
     {
         final RunEntryStatistics item = runEntryStatistics.get( reportEntry.getName() );
         return item != null ? item : fromReportEntry( reportEntry );
@@ -254,17 +252,5 @@ public final class RunEntryStatisticsMap
         {
             return o.getMinSuccessRate() - o1.getMinSuccessRate();
         }
-    }
-
-
-    private static final Pattern PARENS = Pattern.compile( "^" + "[^\\(\\)]+" //non-parens
-                                                               + "\\((" // then an open-paren (start matching a group)
-                                                               + "[^\\\\(\\\\)]+" //non-parens
-                                                               + ")\\)" + "$" ); // then a close-paren (end group match)
-
-    String extractClassName( String displayName )
-    {
-        Matcher m = PARENS.matcher( displayName );
-        return m.find() ? m.group( 1 ) : displayName;
     }
 }

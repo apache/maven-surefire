@@ -63,6 +63,7 @@ public class JUnitPlatformEnginesIT
         args.add( new Object[] { "1.1.1", "5.1.1", "1.0.0", "1.0.0" } );
         args.add( new Object[] { "1.2.0", "5.2.0", "1.1.0", "1.0.0" } );
         args.add( new Object[] { "1.3.1", "5.3.1", "1.1.1", "1.0.0" } );
+        args.add( new Object[] { "1.3.2", "5.3.2", "1.1.1", "1.0.0" } );
         args.add( new Object[] { "1.4.0-SNAPSHOT", "5.4.0-SNAPSHOT", "1.1.1", "1.0.0" } );
         return args;
     }
@@ -88,7 +89,7 @@ public class JUnitPlatformEnginesIT
                 .sysProp( "jupiter.version", jupiter )
                 .debugLogging()
                 .executeTest()
-                .verifyErrorFree( 1 );
+                .verifyErrorFree( 2 );
 
         String testClasspath = "[DEBUG] test(compact) classpath:"
                 + "  test-classes"
