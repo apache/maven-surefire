@@ -21,9 +21,9 @@
 
 properties(
     [
-        buildDiscarder(logRotator(artifactDaysToKeepStr: env.BRANCH_NAME == 'master' ? '30' : '7',
-                                  artifactNumToKeepStr: '10',
-                                  daysToKeepStr: env.BRANCH_NAME == 'master' ? '30' : '7',
+        buildDiscarder(logRotator(artifactDaysToKeepStr: env.BRANCH_NAME == 'master' ? '5' : '1',
+                                  artifactNumToKeepStr: '5',
+                                  daysToKeepStr: env.BRANCH_NAME == 'master' ? '10' : '5',
                                   numToKeepStr: '10')
         ),
         disableConcurrentBuilds()
