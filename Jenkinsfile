@@ -187,15 +187,17 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
                 }
             }
 
-            if (fileExists('maven-failsafe-plugin/target/it')) {
-                zip(zipFile: "maven-failsafe-plugin--${stageKey}.zip", dir: 'maven-failsafe-plugin/target/it', archive: true)
-            }
+            if (currentBuild.result != null && currentBuild.result != 'SUCCESS') {
+                if (fileExists('maven-failsafe-plugin/target/it')) {
+                    zip(zipFile: "maven-failsafe-plugin--${stageKey}.zip", dir: 'maven-failsafe-plugin/target/it', archive: true)
+                }
 
-            if (fileExists('surefire-its/target')) {
-                zip(zipFile: "surefire-its--${stageKey}.zip", dir: 'surefire-its/target', archive: true)
-            }
+                if (fileExists('surefire-its/target')) {
+                    zip(zipFile: "surefire-its--${stageKey}.zip", dir: 'surefire-its/target', archive: true)
+                }
 
-            archiveArtifacts(artifacts: "*--${stageKey}.zip", allowEmptyArchive: true, onlyIfSuccessful: false)
+                archiveArtifacts(artifacts: "*--${stageKey}.zip", allowEmptyArchive: true, onlyIfSuccessful: false)
+            }
         }
 
         stage("cleanup ${stageKey}") {
