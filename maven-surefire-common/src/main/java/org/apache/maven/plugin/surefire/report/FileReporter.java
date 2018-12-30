@@ -19,16 +19,14 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterException;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.List;
 
@@ -54,35 +52,6 @@ public class FileReporter
         this.encoding = encoding;
     }
 
-    private PrintWriter testSetStarting( ReportEntry report )
-    {
-        File reportFile = getReportFile( reportsDirectory, report.getName(), reportNameSuffix, ".txt" );
-
-        File reportDir = reportFile.getParentFile();
-
-        // noinspection ResultOfMethodCallIgnored
-        reportDir.mkdirs();
-
-        try
-        {
-            Writer encodedStream = new OutputStreamWriter( new FileOutputStream( reportFile ), encoding );
-
-            PrintWriter writer = new PrintWriter( new BufferedWriter( encodedStream, 16 * 1024 ) );
-
-            writer.println( "-------------------------------------------------------------------------------" );
-
-            writer.println( "Test set: " + report.getName() );
-
-            writer.println( "-------------------------------------------------------------------------------" );
-
-            return writer;
-        }
-        catch ( IOException e )
-        {
-            throw new ReporterException( "Unable to create file for report: " + e.getMessage(), e );
-        }
-    }
-
     static File getReportFile( File reportsDirectory, String reportEntryName, String reportNameSuffix,
                                       String fileExtension )
     {
@@ -93,13 +62,41 @@ public class FileReporter
 
     public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
     {
-        try ( PrintWriter writer = testSetStarting( report ) )
+        File reportFile = getReportFile( reportsDirectory, report.getName(), reportNameSuffix, ".txt" );
+
+        File reportDir = reportFile.getParentFile();
+
+        // noinspection ResultOfMethodCallIgnored
+        reportDir.mkdirs();
+
+        try ( BufferedWriter writer = createFileReporterWriter( reportFile, encoding ) )
         {
-            writer.println( testSetStats.getTestSetSummary( report ) );
+            writer.write( "-------------------------------------------------------------------------------" );
+            writer.newLine();
+
+            writer.write( "Test set: " + report.getName() );
+            writer.newLine();
+
+            writer.write( "-------------------------------------------------------------------------------" );
+            writer.newLine();
+
+            writer.write( testSetStats.getTestSetSummary( report ) );
+            writer.newLine();
             for ( String testResult : testResults )
             {
-                writer.println( testResult );
+                writer.write( testResult );
+                writer.newLine();
             }
         }
+        catch ( IOException e )
+        {
+            throw new ReporterException( "Unable to create file for report: " + e.getLocalizedMessage(), e );
+        }
+    }
+
+    private static BufferedWriter createFileReporterWriter( File reportFile, Charset encoding )
+            throws FileNotFoundException
+    {
+        return new BufferedWriter( new OutputStreamWriter( new FileOutputStream( reportFile ), encoding ), 64 * 1024 );
     }
 }
