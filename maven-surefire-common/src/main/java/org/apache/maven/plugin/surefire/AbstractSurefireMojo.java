@@ -21,7 +21,6 @@ package org.apache.maven.plugin.surefire;
  */
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.repository.RepositorySystem;
@@ -657,12 +656,6 @@ public abstract class AbstractSurefireMojo
     private boolean trimStackTrace;
 
     /**
-     * Creates the artifact.
-     */
-    @Component
-    private ArtifactFactory artifactFactory;
-
-    /**
      * The remote plugin repositories declared in the POM.
      *
      * @since 2.2
@@ -1020,7 +1013,7 @@ public abstract class AbstractSurefireMojo
 
     private void createDependencyResolver()
     {
-        dependencyResolver = new SurefireDependencyResolver( getRepositorySystem(), getArtifactFactory(),
+        dependencyResolver = new SurefireDependencyResolver( getRepositorySystem(),
                                                                    getConsoleLogger(), getLocalRepository(),
                                                                    getRemoteRepositories(),
                                                                    getPluginName() );
@@ -3422,17 +3415,6 @@ public abstract class AbstractSurefireMojo
     public void setTrimStackTrace( boolean trimStackTrace )
     {
         this.trimStackTrace = trimStackTrace;
-    }
-
-    public ArtifactFactory getArtifactFactory()
-    {
-        return artifactFactory;
-    }
-
-    @SuppressWarnings( "UnusedDeclaration" )
-    public void setArtifactFactory( ArtifactFactory artifactFactory )
-    {
-        this.artifactFactory = artifactFactory;
     }
 
     public List<ArtifactRepository> getRemoteRepositories()

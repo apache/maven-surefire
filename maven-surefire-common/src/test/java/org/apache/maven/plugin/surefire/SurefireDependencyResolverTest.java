@@ -26,6 +26,7 @@ import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.repository.RepositorySystem;
 import org.junit.Rule;
@@ -144,7 +145,7 @@ public class SurefireDependencyResolverTest
                 } );
 
         SurefireDependencyResolver surefireDependencyResolver =
-                new SurefireDependencyResolver( repositorySystem, null, null, null, null, null );
+                new SurefireDependencyResolver( repositorySystem, null, null, null, null );
 
         ArtifactResolutionResult actualResult = surefireDependencyResolver.resolveArtifact( provider );
 
@@ -173,22 +174,14 @@ public class SurefireDependencyResolverTest
         providerArtifacts.add( ext );
         providerArtifacts.add( logger );
 
-        ArtifactFactory artifactFactory = mock( ArtifactFactory.class );
-        VersionRange providerVersion = createFromVersion( "5.3.1" );
-        when( artifactFactory.createDependencyArtifact( eq( "org.apache.maven.surefire" ),
-                eq( "surefire-junit-platform" ),
-                eq( providerVersion ),
-                eq( "jar" ),
-                isNull( String.class ),
-                eq( "test" ) ) )
-                .thenReturn( provider );
+        final String providerVersion = "5.3.1";
 
         final ArtifactResolutionResult result = mock( ArtifactResolutionResult.class );
         when( result.getArtifacts() )
                 .thenReturn( providerArtifacts );
 
         RepositorySystem repositorySystem = mock( RepositorySystem.class );
-        when( repositorySystem.resolve( any(  ArtifactResolutionRequest.class) ) )
+        when( repositorySystem.resolve( any( ArtifactResolutionRequest.class ) ) )
                 .then( new Answer<ArtifactResolutionResult>() {
                     @Override
                     public ArtifactResolutionResult answer( InvocationOnMock invocation )
@@ -224,11 +217,33 @@ public class SurefireDependencyResolverTest
                         return result;
                     }
                 } );
+        when( repositorySystem.createDependencyArtifact( any( Dependency.class ) ) )
+                .then( new Answer<Artifact>() {
+                    @Override
+                    public Artifact answer( InvocationOnMock invocation )
+                    {
+                        Object[] args = invocation.getArguments();
+                        assertThat( args )
+                                .hasSize( 1 );
+                        Dependency request = (Dependency) args[0];
+                        assertThat( request.getGroupId() )
+                                .isEqualTo( "org.apache.maven.surefire" );
+                        assertThat( request.getArtifactId() )
+                                .isEqualTo( "surefire-junit-platform" );
+                        assertThat( request.getVersion() )
+                                .isEqualTo( providerVersion );
+                        assertThat( request.getType() )
+                                .isEqualTo( "jar" );
+                        assertThat( request.getScope() )
+                                .isEqualTo( "test" );
+                        return provider;
+                    }
+                } );
 
         ConsoleLogger log = mock( ConsoleLogger.class );
 
         SurefireDependencyResolver surefireDependencyResolver =
-                new SurefireDependencyResolver( repositorySystem, artifactFactory, log, null, null, null );
+                new SurefireDependencyResolver( repositorySystem, log, null, null, null );
 
         when( log.isDebugEnabled() )
                 .thenReturn( true );
@@ -334,7 +349,7 @@ public class SurefireDependencyResolverTest
                 } );
 
         SurefireDependencyResolver surefireDependencyResolver =
-                new SurefireDependencyResolver( repositorySystem, null, null, null, null, null );
+                new SurefireDependencyResolver( repositorySystem, null, null, null, null );
 
         Map<String, Artifact> pluginArtifactsMapping = new HashMap<>();
         pluginArtifactsMapping.put( plugin.getGroupId() + ":" + plugin.getArtifactId(), plugin );

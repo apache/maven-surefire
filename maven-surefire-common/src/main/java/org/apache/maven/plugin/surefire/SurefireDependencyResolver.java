@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
@@ -35,6 +34,7 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.repository.RepositorySystem;
 
@@ -43,7 +43,6 @@ import javax.annotation.Nullable;
 
 import static java.util.Collections.singletonList;
 import static org.apache.maven.artifact.Artifact.SCOPE_TEST;
-import static org.apache.maven.artifact.versioning.VersionRange.createFromVersion;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
 
 /**
@@ -73,8 +72,6 @@ final class SurefireDependencyResolver
 
     private final RepositorySystem repositorySystem;
 
-    private final ArtifactFactory artifactFactory;
-
     private final ConsoleLogger log;
 
     private final ArtifactRepository localRepository;
@@ -83,12 +80,11 @@ final class SurefireDependencyResolver
 
     private final String pluginName;
 
-    SurefireDependencyResolver( RepositorySystem repositorySystem, ArtifactFactory artifactFactory, ConsoleLogger log,
-                                          ArtifactRepository localRepository,
-                                          List<ArtifactRepository> remoteRepositories, String pluginName )
+    SurefireDependencyResolver( RepositorySystem repositorySystem, ConsoleLogger log,
+                                ArtifactRepository localRepository,
+                                List<ArtifactRepository> remoteRepositories, String pluginName )
     {
         this.repositorySystem = repositorySystem;
-        this.artifactFactory = artifactFactory;
         this.log = log;
         this.localRepository = localRepository;
         this.remoteRepositories = remoteRepositories;
@@ -142,8 +138,9 @@ final class SurefireDependencyResolver
     @Nonnull
     Set<Artifact> getProviderClasspath( String providerArtifactId, String providerVersion )
     {
-        Artifact providerArtifact = artifactFactory.createDependencyArtifact( PROVIDER_GROUP_ID,
-                providerArtifactId, createFromVersion( providerVersion ), "jar", null, SCOPE_TEST );
+        Dependency provider = toProviderDependency( providerArtifactId, providerVersion );
+
+        Artifact providerArtifact = repositorySystem.createDependencyArtifact( provider );
 
         ArtifactResolutionResult result = resolveArtifact( providerArtifact );
 
@@ -213,5 +210,16 @@ final class SurefireDependencyResolver
         }
         orderedProviderArtifacts.addAll( providerArtifacts );
         return orderedProviderArtifacts;
+    }
+
+    private static Dependency toProviderDependency( String providerArtifactId, String providerVersion )
+    {
+        Dependency dependency = new Dependency();
+        dependency.setGroupId( PROVIDER_GROUP_ID );
+        dependency.setArtifactId( providerArtifactId );
+        dependency.setVersion( providerVersion );
+        dependency.setType( "jar" );
+        dependency.setScope( SCOPE_TEST );
+        return dependency;
     }
 }
