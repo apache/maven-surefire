@@ -21,10 +21,10 @@
 
 properties(
     [
-        buildDiscarder(logRotator(artifactDaysToKeepStr: env.BRANCH_NAME == 'master' ? '5' : '1',
-                                  artifactNumToKeepStr: '5',
+        buildDiscarder(logRotator(artifactDaysToKeepStr: env.BRANCH_NAME == 'master' ? '1' : '2',
+                                  artifactNumToKeepStr: '50',
                                   daysToKeepStr: env.BRANCH_NAME == 'master' ? '10' : '5',
-                                  numToKeepStr: '10')
+                                  numToKeepStr: env.BRANCH_NAME == 'master' ? '5' : '3')
         ),
         disableConcurrentBuilds()
     ]
@@ -32,7 +32,7 @@ properties(
 
 final def oses = ['linux':'ubuntu && !H24', 'windows':'Windows']
 final def mavens = env.BRANCH_NAME == 'master' ? ['3.5.x', '3.3.x', '3.2.x'] : ['3.5.x']
-final def jdks = [12, 11, 8, 7]
+final def jdks = env.BRANCH_NAME == 'master' ? [12, 11, 8, 7] : [11, 8, 7]
 
 final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
 final def goals = ['clean', 'install', 'jacoco:report']
@@ -114,9 +114,7 @@ timeout(time: 12, unit: 'HOURS') {
         currentBuild.result = 'FAILURE'
         throw e
     } finally {
-        stage("notifications") {
-            jenkinsNotify()
-        }
+        jenkinsNotify()
     }
 }
 
@@ -152,7 +150,8 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
                 ]) {
                     sh 'echo JAVA_HOME=$JAVA_HOME, JAVA_HOME_IT=$JAVA_HOME_IT, PATH=$PATH'
                     def script = cmd + ['\"-Djdk.home=$JAVA_HOME_IT\"']
-                    sh script.join(' ')
+                    def error = sh(returnStatus: true, script: script.join(' '))
+                    currentBuild.result = error == 0 ? 'SUCCESS' : 'FAILURE'
                 }
             } else {
                 withEnv(["JAVA_HOME=${tool(jdkName)}",
@@ -162,48 +161,44 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
                 ]) {
                     bat 'echo JAVA_HOME=%JAVA_HOME%, JAVA_HOME_IT=%JAVA_HOME_IT%, PATH=%PATH%'
                     def script = cmd + ['\"-Djdk.home=%JAVA_HOME_IT%\"']
-                    bat script.join(' ')
+                    def error = bat(returnStatus: true, script: script.join(' '))
+                    currentBuild.result = error == 0 ? 'SUCCESS' : 'FAILURE'
                 }
             }
         }
     } finally {
-        stage("reporting ${stageKey}") {
-            if (makeReports) {
-                openTasks(ignoreCase: true, canComputeNew: false, defaultEncoding: 'UTF-8', pattern: sourcesPatternCsv(),
-                        high: tasksViolationHigh(), normal: tasksViolationNormal(), low: tasksViolationLow())
+        if (makeReports) {
+            openTasks(ignoreCase: true, canComputeNew: false, defaultEncoding: 'UTF-8', pattern: sourcesPatternCsv(),
+                    high: tasksViolationHigh(), normal: tasksViolationNormal(), low: tasksViolationLow())
 
-                jacoco(changeBuildStatus: false,
-                        execPattern: '**/*.exec',
-                        sourcePattern: sourcesPatternCsv(),
-                        classPattern: classPatternCsv())
+            jacoco(changeBuildStatus: false,
+                    execPattern: '**/*.exec',
+                    sourcePattern: sourcesPatternCsv(),
+                    classPattern: classPatternCsv())
 
-                junit(healthScaleFactor: 0.0,
-                        allowEmptyResults: true,
-                        keepLongStdio: true,
-                        testResults: testReportsPatternCsv())
+            junit(healthScaleFactor: 0.0,
+                    allowEmptyResults: true,
+                    keepLongStdio: true,
+                    testResults: testReportsPatternCsv())
 
-                if (currentBuild.result == 'UNSTABLE') {
-                    currentBuild.result = 'FAILURE'
-                }
-            }
-
-            if (currentBuild.result != null && currentBuild.result != 'SUCCESS') {
-                if (fileExists('maven-failsafe-plugin/target/it')) {
-                    zip(zipFile: "maven-failsafe-plugin--${stageKey}.zip", dir: 'maven-failsafe-plugin/target/it', archive: true)
-                }
-
-                if (fileExists('surefire-its/target')) {
-                    zip(zipFile: "surefire-its--${stageKey}.zip", dir: 'surefire-its/target', archive: true)
-                }
-
-                archiveArtifacts(artifacts: "*--${stageKey}.zip", allowEmptyArchive: true, onlyIfSuccessful: false)
+            if (currentBuild.result == 'UNSTABLE') {
+                currentBuild.result = 'FAILURE'
             }
         }
 
-        stage("cleanup ${stageKey}") {
-            // clean up after ourselves to reduce disk space
-            cleanWs()
+        if (currentBuild.result != null && currentBuild.result != 'SUCCESS') {
+            if (fileExists('maven-failsafe-plugin/target/it')) {
+                zip(zipFile: "maven-failsafe-plugin--${stageKey}.zip", dir: 'maven-failsafe-plugin/target/it', archive: true)
+            }
+
+            if (fileExists('surefire-its/target')) {
+                zip(zipFile: "surefire-its--${stageKey}.zip", dir: 'surefire-its/target', archive: true)
+            }
+
+            archiveArtifacts(artifacts: "*--${stageKey}.zip", allowEmptyArchive: true, onlyIfSuccessful: false)
         }
+        // clean up after ourselves to reduce disk space
+        cleanWs()
     }
 }
 
