@@ -30,7 +30,7 @@ import java.util.Locale;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-import static org.apache.commons.io.Charsets.UTF_8;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assume.assumeTrue;
 
 @SuppressWarnings( { "JavaDoc" } )
