@@ -22,7 +22,10 @@ package org.apache.maven.surefire.its.jiras;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.*;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -32,40 +35,39 @@ import org.junit.Test;
 public class Surefire1209RerunAndForkCountIT
         extends SurefireJUnit4IntegrationTestCase
 {
+    private static final String SUMMARY_COUNTS = "Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Flakes: 2";
+
     @Test
-    public void reusableForksJUnit47()
-            throws VerificationException
-    {
+    public void reusableForksJUnit47() throws VerificationException {
         unpack().executeTest()
-                .assertTestSuiteResults( 5, 0, 0, 0, 4 );
+                .assertTestSuiteResults( 5, 0, 0, 0, 4 )
+                .assertThatLogLine( containsString( SUMMARY_COUNTS ), is( 1 ) );
     }
 
     @Test
-    public void notReusableForksJUnit47()
-            throws VerificationException
-    {
+    public void notReusableForksJUnit47() throws VerificationException {
         unpack().reuseForks( false )
                 .executeTest()
-                .assertTestSuiteResults( 5, 0, 0, 0, 4 );
+                .assertTestSuiteResults( 5, 0, 0, 0, 4 )
+                .assertThatLogLine( containsString( SUMMARY_COUNTS ), is( 1 ) );
     }
 
     @Test
-    public void reusableForksJUnit4()
-            throws VerificationException
-    {
-        unpack().addGoal( "-Pjunit4" )
+    public void reusableForksJUnit4() throws VerificationException {
+        unpack().activateProfile( "junit4" )
                 .executeTest()
-                .assertTestSuiteResults( 5, 0, 0, 0, 4 );
+                .assertTestSuiteResults( 5, 0, 0, 0, 4 )
+                .assertThatLogLine( containsString( SUMMARY_COUNTS ), is( 1 ) );
     }
 
     @Test
     public void notReusableForksJUnit4()
-            throws VerificationException
-    {
-        unpack().addGoal( "-Pjunit4" )
+            throws VerificationException {
+        unpack().activateProfile( "junit4" )
                 .reuseForks( false )
                 .executeTest()
-                .assertTestSuiteResults( 5, 0, 0, 0, 4 );
+                .assertTestSuiteResults( 5, 0, 0, 0, 4 )
+                .assertThatLogLine( containsString( SUMMARY_COUNTS ), is( 1 ) );
     }
 
     private SurefireLauncher unpack()

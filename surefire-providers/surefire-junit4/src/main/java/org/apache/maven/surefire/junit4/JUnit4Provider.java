@@ -231,7 +231,7 @@ public class JUnit4Provider
 
     private void executeTestSet( Class<?> clazz, RunListener reporter, Notifier notifier )
     {
-        final SimpleReportEntry report = new SimpleReportEntry( getClass().getName(), clazz.getName(), systemProps() );
+        final SimpleReportEntry report = new SimpleReportEntry( clazz.getName(), null, systemProps() );
         reporter.testSetStarting( report );
         try
         {

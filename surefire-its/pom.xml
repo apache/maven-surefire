@@ -183,7 +183,7 @@
                         <jdk.home>${jdk.home}</jdk.home>
                         <jacoco.agent>${jacoco-it.agent}</jacoco.agent>
                     </systemPropertyVariables>
-                    <redirectTestOutputToFile>false</redirectTestOutputToFile>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                 </configuration>
                 <dependencies>
                     <dependency>

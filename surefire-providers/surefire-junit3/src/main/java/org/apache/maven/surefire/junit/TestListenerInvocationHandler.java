@@ -20,14 +20,19 @@ package org.apache.maven.surefire.junit;
  */
 
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
+import org.apache.maven.surefire.report.StackTraceWriter;
+
+import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
+import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractClassName;
+import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractMethodName;
 
 /**
  * Invocation Handler for TestListener proxies to delegate to our {@link RunListener}
@@ -149,25 +154,24 @@ public class TestListenerInvocationHandler
     // Handler for TestListener.startTest(Test)
     private void handleStartTest( Object[] args )
     {
-        ReportEntry report = new SimpleReportEntry( args[0].getClass().getName(), args[0].toString() );
+        ReportEntry report = createStartEndReportEntry( args );
 
         reporter.testStarting( report );
     }
 
     // Handler for TestListener.addFailure(Test, Throwable)
     private void handleAddError( Object[] args )
-        throws IllegalAccessException, InvocationTargetException
+        throws ReflectiveOperationException
     {
-        ReportEntry report = SimpleReportEntry.withException( args[0].getClass().getName(), args[0].toString(),
-                                                              getStackTraceWriter( args ) );
+        ReportEntry report = toReportEntryWithException( args );
 
         reporter.testError( report );
 
         failedTestsSet.add( new FailedTest( args[0], Thread.currentThread() ) );
     }
 
-    private LegacyPojoStackTraceWriter getStackTraceWriter( Object[] args )
-        throws IllegalAccessException, InvocationTargetException
+    private static LegacyPojoStackTraceWriter toStackTraceWriter( Object[] args )
+        throws ReflectiveOperationException
     {
         String testName;
 
@@ -185,10 +189,9 @@ public class TestListenerInvocationHandler
     }
 
     private void handleAddFailure( Object[] args )
-        throws IllegalAccessException, InvocationTargetException
+        throws ReflectiveOperationException
     {
-        ReportEntry report = SimpleReportEntry.withException( args[0].getClass().getName(), args[0].toString(),
-                                                              getStackTraceWriter( args ) );
+        ReportEntry report = toReportEntryWithException( args );
 
         reporter.testFailed( report );
 
@@ -201,9 +204,25 @@ public class TestListenerInvocationHandler
 
         if ( !testHadFailed )
         {
-            ReportEntry report = new SimpleReportEntry( args[0].getClass().getName(), args[0].toString() );
+            ReportEntry report = createStartEndReportEntry( args );
 
             reporter.testSucceeded( report );
         }
+    }
+
+    private static ReportEntry toReportEntryWithException( Object[] args )
+            throws ReflectiveOperationException
+    {
+        String description = args[0].toString();
+        String className = extractClassName( description );
+        String methodName = extractMethodName( description );
+        StackTraceWriter stackTraceWriter = toStackTraceWriter( args );
+        return withException( className, methodName, stackTraceWriter );
+    }
+
+    private static SimpleReportEntry createStartEndReportEntry( Object[] args )
+    {
+        String description = args[0].toString();
+        return new SimpleReportEntry( extractClassName( description ), extractMethodName( description ) );
     }
 }

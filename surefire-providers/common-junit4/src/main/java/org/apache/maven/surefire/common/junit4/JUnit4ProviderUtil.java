@@ -20,14 +20,17 @@ package org.apache.maven.surefire.common.junit4;
  */
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.maven.surefire.util.internal.ClassMethod;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.Failure;
 
-import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
+import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractClassName;
+import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractMethodName;
 import static org.junit.runner.Description.TEST_MECHANISM;
 
 /**
@@ -75,33 +78,30 @@ public final class JUnit4ProviderUtil
      * @param description method(class) or method[#](class) or method[#whatever-literals](class)
      * @return method JUnit test method
      */
-    public static ClassMethod cutTestClassAndMethod( Description description )
+    public static ClassMethod toClassMethod( Description description )
     {
-        String name = description.getDisplayName();
-        String clazz = null;
-        String method = null;
-        if ( name != null )
+        String clazz = extractClassName( description.getDisplayName() );
+        if ( clazz == null || isInsaneJunitNullString( clazz ) )
         {
-            // The order is : 1.method and then 2.class
-            // method(class)
-            name = name.trim();
-            if ( name.endsWith( ")" ) )
+            // This can happen upon early failures (class instantiation error etc)
+            Iterator<Description> it = description.getChildren().iterator();
+            if ( it.hasNext() )
             {
-                int classBracket = name.lastIndexOf( '(' );
-                if ( classBracket != -1 )
-                {
-                    clazz = tryBlank( name.substring( classBracket + 1, name.length() - 1 ) );
-                    method = tryBlank( name.substring( 0, classBracket ) );
-                }
+                description = it.next();
+                clazz = extractClassName( description.getDisplayName() );
+            }
+            if ( clazz == null )
+            {
+                clazz = "Test Instantiation Error";
             }
         }
+        String method = extractMethodName( description.getDisplayName() );
         return new ClassMethod( clazz, method );
     }
 
-    private static String tryBlank( String s )
+    private static boolean isInsaneJunitNullString( String value )
     {
-        s = s.trim();
-        return isBlank( s ) ? null : s;
+        return "null".equals( value );
     }
 
     public static Filter createMatchAnyDescriptionFilter( Iterable<Description> descriptions )

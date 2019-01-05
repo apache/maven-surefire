@@ -22,10 +22,10 @@ package org.apache.maven.surefire.common.junit4;
 import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.report.SmartStackTraceParser;
 import org.apache.maven.surefire.report.StackTraceWriter;
+import org.apache.maven.surefire.util.internal.ClassMethod;
 import org.junit.runner.notification.Failure;
 
-import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractClassName;
-import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractMethodName;
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClassMethod;
 import static org.apache.maven.surefire.report.SmartStackTraceParser.stackTraceWithFocusOnClassAsString;
 
 /**
@@ -37,8 +37,7 @@ import static org.apache.maven.surefire.report.SmartStackTraceParser.stackTraceW
 public class JUnit4StackTraceWriter
     implements StackTraceWriter
 {
-    // Member Variables
-    protected final Failure junitFailure;
+    private final Failure junitFailure;
 
     /**
      * Constructor.
@@ -78,24 +77,14 @@ public class JUnit4StackTraceWriter
         return "";
     }
 
-    protected String getTestClassName()
-    {
-        return extractClassName( junitFailure.getDescription().getDisplayName() );
-    }
-
-    protected String getTestMethodName()
-    {
-        return extractMethodName( junitFailure.getDescription().getDisplayName() );
-    }
-
     @Override
-    @SuppressWarnings( "ThrowableResultOfMethodCallIgnored" )
     public String smartTrimmedStackTrace()
     {
         Throwable exception = junitFailure.getException();
+        ClassMethod classMethod = toClassMethod( junitFailure.getDescription() );
         return exception == null
             ? junitFailure.getMessage()
-            : new SmartStackTraceParser( getTestClassName(), exception, getTestMethodName() ).getString();
+            : new SmartStackTraceParser( classMethod.getClazz(), exception, classMethod.getMethod() ).getString();
     }
 
     /**
@@ -106,7 +95,7 @@ public class JUnit4StackTraceWriter
     @Override
     public String writeTrimmedTraceToString()
     {
-        String testClass = getTestClassName();
+        String testClass = toClassMethod( junitFailure.getDescription() ).getClazz();
         try
         {
             Throwable e = junitFailure.getException();

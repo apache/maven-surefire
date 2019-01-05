@@ -417,7 +417,7 @@ public class ForkingRunListener
     @Override
     public void println( String message )
     {
-        byte[] buf = message.getBytes();
+        byte[] buf = ( message == null ? "null" : message ).getBytes();
         println( buf, 0, buf.length );
     }
 

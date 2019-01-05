@@ -20,7 +20,7 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
-import org.apache.maven.surefire.common.junit48.JUnit46StackTraceWriter;
+import org.apache.maven.surefire.common.junit4.JUnit4StackTraceWriter;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.junit.runner.Description;
@@ -28,6 +28,8 @@ import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
 import java.util.Map;
+
+import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractClassName;
 
 /**
  * Noteworthy things about JUnit4 listening:
@@ -95,7 +97,7 @@ public class JUnitCoreRunListener
     {
         if ( description.isTest() )
         {
-            final String testClassName = extractDescriptionClassName( description );
+            final String testClassName = extractClassName( description.getDisplayName() );
             if ( testClassName != null )
             {
                 final TestSet testSet;
@@ -121,18 +123,6 @@ public class JUnitCoreRunListener
     @Override
     protected StackTraceWriter createStackTraceWriter( Failure failure )
     {
-        return new JUnit46StackTraceWriter( failure );
-    }
-
-    @Override
-    protected String extractDescriptionClassName( Description description )
-    {
-        return description.getClassName();
-    }
-
-    @Override
-    protected String extractDescriptionMethodName( Description description )
-    {
-        return description.getMethodName();
+        return new JUnit4StackTraceWriter( failure );
     }
 }

@@ -43,7 +43,6 @@ public class JUnitCoreRunListenerTest
     extends TestCase
 {
     public void testTestRunStarted()
-        throws Exception
     {
         RunListener jUnit4TestSetReporter =
             new JUnitCoreRunListener( new MockReporter(), new HashMap<String, TestSet>() );
@@ -55,7 +54,6 @@ public class JUnitCoreRunListenerTest
     }
 
     public void testFailedAssumption()
-        throws Exception
     {
         RunListener jUnit4TestSetReporter =
             new JUnitCoreRunListener( new MockReporter(), new HashMap<String, TestSet>() );

@@ -24,6 +24,7 @@ import org.apache.maven.surefire.util.internal.StringUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Objects;
 
 /**
  * Write the trace out for a POJO test.
@@ -108,5 +109,28 @@ public class PojoStackTraceWriter
             return countNewLines > 1 || countNewLines == 1 && !msg.trim().endsWith( "\n" );
         }
         return false;
+    }
+
+    @Override
+    public boolean equals( Object o )
+    {
+        if ( this == o )
+        {
+            return true;
+        }
+        if ( o == null || getClass() != o.getClass() )
+        {
+            return false;
+        }
+        PojoStackTraceWriter that = ( PojoStackTraceWriter ) o;
+        return Objects.equals( t, that.t )
+                && Objects.equals( testClass, that.testClass )
+                && Objects.equals( testMethod, that.testMethod );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash( t, testClass, testMethod );
     }
 }

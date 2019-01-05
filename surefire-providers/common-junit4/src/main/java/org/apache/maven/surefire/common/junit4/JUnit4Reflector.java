@@ -117,7 +117,7 @@ public final class JUnit4Reflector
         @Override
         public boolean equals( Object obj )
         {
-            return obj instanceof Annotation && obj instanceof Ignore && equalValue( ( Ignore ) obj );
+            return obj instanceof Ignore && equalValue( ( Ignore ) obj );
         }
 
         @Override

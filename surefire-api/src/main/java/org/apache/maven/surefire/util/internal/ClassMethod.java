@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.common.junit4;
+package org.apache.maven.surefire.util.internal;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,7 +19,9 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.internal.StringUtils;
+import java.util.Objects;
+
+import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 
 /**
  * Data transfer object of class and method literals.
@@ -36,9 +38,9 @@ public final class ClassMethod
         this.method = method;
     }
 
-    public boolean isValid()
+    public boolean isValidTest()
     {
-        return !StringUtils.isBlank( clazz ) && !StringUtils.isBlank( method );
+        return !isBlank( clazz ) && !isBlank( method );
     }
 
     public String getClazz()
@@ -49,5 +51,27 @@ public final class ClassMethod
     public String getMethod()
     {
         return method;
+    }
+
+    @Override
+    public boolean equals( Object o )
+    {
+        if ( this == o )
+        {
+            return true;
+        }
+        if ( o == null || getClass() != o.getClass() )
+        {
+            return false;
+        }
+        ClassMethod that = ( ClassMethod ) o;
+        return Objects.equals( clazz, that.clazz )
+                && Objects.equals( method, that.method );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash( clazz, method );
     }
 }

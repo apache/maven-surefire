@@ -23,6 +23,7 @@ import org.apache.maven.surefire.util.internal.ImmutableMap;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Kristian Rosenvold
@@ -75,25 +76,11 @@ public class SimpleReportEntry
     protected SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed,
                                  String message, Map<String, String> systemProperties )
     {
-        if ( source == null )
-        {
-            source = "null";
-        }
-        if ( name == null )
-        {
-            name = "null";
-        }
-
         this.source = source;
-
         this.name = name;
-
         this.stackTraceWriter = stackTraceWriter;
-
         this.message = message;
-
         this.elapsed = elapsed;
-
         this.systemProperties = new ImmutableMap<>( systemProperties );
     }
 
@@ -167,10 +154,16 @@ public class SimpleReportEntry
     }
 
     @Override
+    public int getElapsed( int fallback )
+    {
+        return elapsed == null ? fallback : elapsed;
+    }
+
+    @Override
     public String toString()
     {
         return "ReportEntry{" + "source='" + source + '\'' + ", name='" + name + '\'' + ", stackTraceWriter="
-            + stackTraceWriter + ", elapsed=" + elapsed + ",message=" + message + '}';
+            + stackTraceWriter + ", elapsed=" + elapsed + ", message=" + message + '}';
     }
 
     @Override
@@ -198,17 +191,17 @@ public class SimpleReportEntry
     @Override
     public int hashCode()
     {
-        int result = source != null ? source.hashCode() : 0;
-        result = 31 * result + ( name != null ? name.hashCode() : 0 );
-        result = 31 * result + ( stackTraceWriter != null ? stackTraceWriter.hashCode() : 0 );
-        result = 31 * result + ( elapsed != null ? elapsed.hashCode() : 0 );
+        int result = Objects.hashCode( source );
+        result = 31 * result + Objects.hashCode( name );
+        result = 31 * result + Objects.hashCode( stackTraceWriter );
+        result = 31 * result + Objects.hashCode( elapsed );
         return result;
     }
 
     @Override
     public String getNameWithGroup()
     {
-        return getName();
+        return getSourceName();
     }
 
     @Override
@@ -219,21 +212,21 @@ public class SimpleReportEntry
 
     private boolean isElapsedTimeEqual( SimpleReportEntry en )
     {
-        return elapsed != null ? elapsed.equals( en.elapsed ) : en.elapsed == null;
+        return Objects.equals( elapsed, en.elapsed );
     }
 
     private boolean isNameEqual( SimpleReportEntry en )
     {
-        return name != null ? name.equals( en.name ) : en.name == null;
+        return Objects.equals( name, en.name );
     }
 
     private boolean isSourceEqual( SimpleReportEntry en )
     {
-        return source != null ? source.equals( en.source ) : en.source == null;
+        return Objects.equals( source, en.source );
     }
 
     private boolean isStackEqual( SimpleReportEntry en )
     {
-        return stackTraceWriter != null ? stackTraceWriter.equals( en.stackTraceWriter ) : en.stackTraceWriter == null;
+        return Objects.equals( stackTraceWriter, en.stackTraceWriter );
     }
 }

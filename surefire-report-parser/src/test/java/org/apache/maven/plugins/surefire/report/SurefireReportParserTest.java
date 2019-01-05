@@ -29,10 +29,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
-import org.apache.maven.reporting.MavenReportException;
 
 import junit.framework.TestCase;
 
+import static java.util.Collections.singletonList;
 import static java.util.Locale.ENGLISH;
 
 /**
@@ -41,23 +41,11 @@ import static java.util.Locale.ENGLISH;
 public class SurefireReportParserTest
     extends TestCase
 {
-    private SurefireReportParser report;
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void setUp()
+    public void testParseXMLReportFiles()
         throws Exception
     {
-        super.setUp();
-        report = new SurefireReportParser( null, ENGLISH, new NullConsoleLogger() );
-    }
-
-    public void testParseXMLReportFiles()
-        throws MavenReportException, UnsupportedEncodingException
-    {
-        report.setReportsDirectory( getTestDir() );
+        SurefireReportParser report =
+                new SurefireReportParser( singletonList( getTestDir() ), ENGLISH, new NullConsoleLogger() );
 
         List<ReportTestSuite> suites = report.parseXMLReportFiles();
 
@@ -77,21 +65,6 @@ public class SurefireReportParserTest
         URL resource = getClass().getResource( "/test-reports" );
         // URLDecoder.decode necessary for JDK 1.5+, where spaces are escaped to %20
         return new File( URLDecoder.decode( resource.getPath(), "UTF-8" ) ).getAbsoluteFile();
-    }
-
-    public void testParseTestSuiteName()
-    {
-        assertEquals( "CircleTest", report.parseTestSuiteName( "Battery: com.shape.CircleTest" ) );
-    }
-
-    public void testParseTestSuitePackageName()
-    {
-        assertEquals( "com.shape", report.parseTestSuitePackageName( "Battery: com.shape.CircleTest" ) );
-    }
-
-    public void testParseTestCaseName()
-    {
-        assertEquals( "testCase", report.parseTestCaseName( "testCase(com.shape.CircleTest)" ) );
     }
 
     public void testGetSummary()
@@ -116,6 +89,8 @@ public class SurefireReportParserTest
         suites.add( tSuite1 );
 
         suites.add( tSuite2 );
+
+        SurefireReportParser report = new SurefireReportParser( null, ENGLISH, new NullConsoleLogger() );
 
         Map<String, String> testMap = report.getSummary( suites );
 
@@ -156,6 +131,8 @@ public class SurefireReportParserTest
 
         suites.add( tSuite3 );
 
+        SurefireReportParser report = new SurefireReportParser( null, ENGLISH, new NullConsoleLogger() );
+
         Map<String, List<ReportTestSuite>> groupMap = report.getSuitesGroupByPackage( suites );
 
         assertEquals( 2, groupMap.size() );
@@ -170,6 +147,7 @@ public class SurefireReportParserTest
     public void testComputePercentage()
         throws Exception
     {
+        SurefireReportParser report = new SurefireReportParser( null, ENGLISH, new NullConsoleLogger() );
         NumberFormat numberFormat = report.getNumberFormat();
 
         assertEquals( 70.00f, numberFormat.parse( report.computePercentage( 100, 20, 10, 0 ) ).floatValue(), 0 );
@@ -210,6 +188,8 @@ public class SurefireReportParserTest
         suites.add( tSuite1 );
 
         suites.add( tSuite2 );
+
+        SurefireReportParser report = new SurefireReportParser( null, ENGLISH, new NullConsoleLogger() );
 
         List<ReportTestCase> failures = report.getFailureDetails( suites );
 

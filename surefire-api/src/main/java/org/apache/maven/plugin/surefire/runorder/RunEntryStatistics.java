@@ -19,8 +19,7 @@ package org.apache.maven.plugin.surefire.runorder;
  * under the License.
  */
 
-import java.util.StringTokenizer;
-import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.util.internal.ClassMethod;
 
 /**
  * @author Kristian Rosenvold
@@ -31,39 +30,33 @@ public class RunEntryStatistics
 
     private final int successfulBuilds;
 
-    private final String testName;
+    private final ClassMethod classMethod;
 
-    private RunEntryStatistics( int runTime, int successfulBuilds, String testName )
+    RunEntryStatistics( int runTime, int successfulBuilds, String clazz, String method )
+    {
+        this( runTime, successfulBuilds, new ClassMethod( clazz, method ) );
+    }
+
+    RunEntryStatistics( int runTime, int successfulBuilds, ClassMethod classMethod )
     {
         this.runTime = runTime;
         this.successfulBuilds = successfulBuilds;
-        this.testName = testName;
+        this.classMethod = classMethod;
     }
 
-    public static RunEntryStatistics fromReportEntry( ReportEntry previous )
+    public ClassMethod getClassMethod()
     {
-        final Integer elapsed = previous.getElapsed();
-        return new RunEntryStatistics( elapsed != null ? elapsed : 0, 0, previous.getName() );
-    }
-
-    public static RunEntryStatistics fromValues( int runTime, int successfulBuilds, Class clazz, String testName )
-    {
-        return new RunEntryStatistics( runTime, successfulBuilds, testName + "(" + clazz.getName() + ")" );
+        return classMethod;
     }
 
     public RunEntryStatistics nextGeneration( int runTime )
     {
-        return new RunEntryStatistics( runTime, this.successfulBuilds + 1, this.testName );
+        return new RunEntryStatistics( runTime, successfulBuilds + 1, classMethod );
     }
 
     public RunEntryStatistics nextGenerationFailure( int runTime )
     {
-        return new RunEntryStatistics( runTime, 0, this.testName );
-    }
-
-    public String getTestName()
-    {
-        return testName;
+        return new RunEntryStatistics( runTime, 0, classMethod );
     }
 
     public int getRunTime()
@@ -75,20 +68,4 @@ public class RunEntryStatistics
     {
         return successfulBuilds;
     }
-
-    public static RunEntryStatistics fromString( String line )
-    {
-        StringTokenizer tok = new StringTokenizer( line, "," );
-        int successfulBuilds = Integer.parseInt( tok.nextToken() );
-        int runTime = Integer.parseInt( tok.nextToken() );
-        String className = tok.nextToken();
-        return new RunEntryStatistics( runTime, successfulBuilds, className );
-    }
-
-    @Override
-    public String toString()
-    {
-        return successfulBuilds + "," + runTime + "," + testName;
-    }
-
 }

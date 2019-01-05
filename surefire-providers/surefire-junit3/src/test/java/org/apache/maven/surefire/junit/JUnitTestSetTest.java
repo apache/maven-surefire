@@ -42,10 +42,12 @@ public class JUnitTestSetTest
         JUnitTestSet testSet = new JUnitTestSet( Suite.class, reflector );
         SuccessListener listener = new SuccessListener();
         testSet.execute( listener, testClassLoader );
-        List succeededTests = listener.getSucceededTests();
+        List<ReportEntry> succeededTests = listener.getSucceededTests();
         assertEquals( 1, succeededTests.size() );
-        assertEquals( "testSuccess(org.apache.maven.surefire.junit.JUnitTestSetTest$AlwaysSucceeds)",
-                      ( (ReportEntry) succeededTests.get( 0 ) ).getName() );
+        assertEquals( "org.apache.maven.surefire.junit.JUnitTestSetTest$AlwaysSucceeds",
+                succeededTests.get( 0 ).getSourceName() );
+        assertEquals( "testSuccess",
+                      succeededTests.get( 0 ).getName() );
     }
 
     public static final class AlwaysSucceeds
@@ -81,7 +83,7 @@ public class JUnitTestSetTest
         @Override
         public void testSucceeded( ReportEntry report )
         {
-            this.succeededTests.add( report );
+            succeededTests.add( report );
         }
 
         @Override
@@ -118,7 +120,7 @@ public class JUnitTestSetTest
             testSkipped( report );
         }
 
-        public List getSucceededTests()
+        List<ReportEntry> getSucceededTests()
         {
             return succeededTests;
         }

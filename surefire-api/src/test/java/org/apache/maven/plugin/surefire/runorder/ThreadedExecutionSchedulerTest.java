@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire.runorder;
 import java.util.List;
 
 import junit.framework.TestCase;
+import org.apache.maven.surefire.util.internal.ClassMethod;
 
 /**
  * @author Kristian Rosenvold
@@ -29,24 +30,23 @@ public class ThreadedExecutionSchedulerTest
     extends TestCase
 {
 
-    private final RunEntryStatistics a1 = RunEntryStatistics.fromValues( 200, 2, A.class, "at1" );
+    private final RunEntryStatistics a1 = fromValues( 200, 2, A.class, "at1" );
 
-    private final RunEntryStatistics a2 = RunEntryStatistics.fromValues( 300, 2, A.class, "at2" );
+    private final RunEntryStatistics a2 = fromValues( 300, 2, A.class, "at2" );
 
-    private final RunEntryStatistics b1 = RunEntryStatistics.fromValues( 400, 2, B.class, "bt1" );
+    private final RunEntryStatistics b1 = fromValues( 400, 2, B.class, "bt1" );
 
-    private final RunEntryStatistics b2 = RunEntryStatistics.fromValues( 300, 2, B.class, "bt2" );
+    private final RunEntryStatistics b2 = fromValues( 300, 2, B.class, "bt2" );
 
-    private final RunEntryStatistics c1 = RunEntryStatistics.fromValues( 400, 2, C.class, "ct1" );
+    private final RunEntryStatistics c1 = fromValues( 400, 2, C.class, "ct1" );
 
-    private final RunEntryStatistics c2 = RunEntryStatistics.fromValues( 200, 2, C.class, "ct2" );
+    private final RunEntryStatistics c2 = fromValues( 200, 2, C.class, "ct2" );
 
-    private final RunEntryStatistics d1 = RunEntryStatistics.fromValues( 401, 2, D.class, "ct2" );
+    private final RunEntryStatistics d1 = fromValues( 401, 2, D.class, "ct2" );
 
-    private final RunEntryStatistics e1 = RunEntryStatistics.fromValues( 200, 2, E.class, "ct2" );
+    private final RunEntryStatistics e1 = fromValues( 200, 2, E.class, "ct2" );
 
     public void testAddTest()
-        throws Exception
     {
         ThreadedExecutionScheduler threadedExecutionScheduler = new ThreadedExecutionScheduler( 2 );
         addPrioritizedTests( threadedExecutionScheduler );
@@ -57,17 +57,14 @@ public class ThreadedExecutionSchedulerTest
         assertEquals( D.class, result.get( 2 ) );
         assertEquals( A.class, result.get( 3 ) );
         assertEquals( E.class, result.get( 4 ) );
-
     }
 
     public void testAddTestJaggedResult()
-        throws Exception
     {
         ThreadedExecutionScheduler threadedExecutionScheduler = new ThreadedExecutionScheduler( 4 );
         addPrioritizedTests( threadedExecutionScheduler );
         final List result = threadedExecutionScheduler.getResult();
         assertEquals( 5, result.size() );
-
     }
 
     private void addPrioritizedTests( ThreadedExecutionScheduler threadedExecutionScheduler )
@@ -94,6 +91,11 @@ public class ThreadedExecutionSchedulerTest
         return priority;
     }
 
+    private static RunEntryStatistics fromValues( int runTime, int successfulBuilds, Class clazz, String testName )
+    {
+        ClassMethod classMethod = new ClassMethod( clazz.getName(), testName );
+        return new RunEntryStatistics( runTime, successfulBuilds, classMethod );
+    }
 
     class A
     {

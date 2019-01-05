@@ -139,6 +139,10 @@
                 <version>3.0.0-M3</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
                 <configuration>
                     <jvm>${java.home}/bin/java</jvm>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <includes>
+                        <include>**/JUnit47SuiteTest.java</include>
+                    </includes>
                 </configuration>
             </plugin>
         </plugins>

@@ -1,10 +1,10 @@
 -------------------------------------------------------------------------------
 Battery: com.shapeclone.CircleTest
 -------------------------------------------------------------------------------
-testX(com.shapeclone.CircleTest)
-testY(com.shapeclone.CircleTest)
-testXY(com.shapeclone.CircleTest)
-testRadius(com.shapeclone.CircleTest)
+com.shapeclone.CircleTest.testX
+com.shapeclone.CircleTest.testY
+com.shapeclone.CircleTest.testXY
+com.shapeclone.CircleTest.testRadius
 
 [ stdout ] ---------------------------------------------------------------
 
@@ -63,7 +63,7 @@ junit.framework.AssertionFailedError: expected:<20> but was:<10>
 	at org.codehaus.classworlds.Launcher.launch(Launcher.java:255)
 	at org.codehaus.classworlds.Launcher.mainWithExitCode(Launcher.java:430)
 	at org.codehaus.classworlds.Launcher.main(Launcher.java:375)
-testProperties(com.shapeclone.CircleTest)
+com.shapeclone.CircleTest.testProperties
 
 [ stdout ] ---------------------------------------------------------------
 
@@ -117,6 +117,6 @@ java.lang.ArithmeticException: / by zero
 	at org.codehaus.classworlds.Launcher.launch(Launcher.java:255)
 	at org.codehaus.classworlds.Launcher.mainWithExitCode(Launcher.java:430)
 	at org.codehaus.classworlds.Launcher.main(Launcher.java:375)
-testPI(com.shapeclone.CircleTest)
-testCircumference(com.shapeclone.CircleTest)
-testDiameter(com.shapeclone.CircleTest)
+com.shapeclone.CircleTest.testPI
+com.shapeclone.CircleTest.testCircumference
+com.shapeclone.CircleTest.testDiameter

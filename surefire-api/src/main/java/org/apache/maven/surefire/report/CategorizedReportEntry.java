@@ -78,7 +78,7 @@ public class CategorizedReportEntry
     @Override
     public String getNameWithGroup()
     {
-        return isNameWithGroup() ? getName() + GROUP_PREFIX + getGroup() + GROUP_SUFIX : getName();
+        return isNameWithGroup() ? getSourceName() + GROUP_PREFIX + getGroup() + GROUP_SUFIX : getSourceName();
     }
 
     @Override
@@ -113,6 +113,6 @@ public class CategorizedReportEntry
 
     private boolean isNameWithGroup()
     {
-        return getGroup() != null && !getGroup().equals( getName() );
+        return getGroup() != null && !getGroup().equals( getSourceName() );
     }
 }

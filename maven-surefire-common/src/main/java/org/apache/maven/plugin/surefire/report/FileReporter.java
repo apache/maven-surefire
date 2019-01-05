@@ -62,7 +62,7 @@ public class FileReporter
 
     public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
     {
-        File reportFile = getReportFile( reportsDirectory, report.getName(), reportNameSuffix, ".txt" );
+        File reportFile = getReportFile( reportsDirectory, report.getSourceName(), reportNameSuffix, ".txt" );
 
         File reportDir = reportFile.getParentFile();
 
@@ -74,7 +74,7 @@ public class FileReporter
             writer.write( "-------------------------------------------------------------------------------" );
             writer.newLine();
 
-            writer.write( "Test set: " + report.getName() );
+            writer.write( "Test set: " + report.getSourceName() );
             writer.newLine();
 
             writer.write( "-------------------------------------------------------------------------------" );

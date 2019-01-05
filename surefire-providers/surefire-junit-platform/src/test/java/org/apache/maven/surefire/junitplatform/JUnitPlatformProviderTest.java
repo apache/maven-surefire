@@ -60,6 +60,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
+import org.fest.assertions.Assertions;
 import org.junit.Test;
 import org.junit.jupiter.api.Disabled;
 import org.junit.platform.launcher.Launcher;
@@ -163,30 +164,38 @@ public class JUnitPlatformProviderTest
         invokeProvider( provider, null );
 
         InOrder inOrder = inOrder( runListener );
-        inOrder
-                        .verify( runListener )
-                        .testSetStarting(
-                                        new SimpleReportEntry(
-                                                        JUnitPlatformProvider.class.getName(),
-                                                        TestClass1.class.getName() ) );
-        inOrder
-                        .verify( runListener )
-                        .testSetCompleted(
-                                        new SimpleReportEntry(
-                                                        JUnitPlatformProvider.class.getName(),
-                                                        TestClass1.class.getName() ) );
-        inOrder
-                        .verify( runListener )
-                        .testSetStarting(
-                                        new SimpleReportEntry(
-                                                        JUnitPlatformProvider.class.getName(),
-                                                        TestClass2.class.getName() ) );
-        inOrder
-                        .verify( runListener )
-                        .testSetCompleted(
-                                        new SimpleReportEntry(
-                                                        JUnitPlatformProvider.class.getName(),
-                                                        TestClass2.class.getName() ) );
+
+        ArgumentCaptor<SimpleReportEntry> report = ArgumentCaptor.forClass( SimpleReportEntry.class );
+        inOrder.verify( runListener )
+                .testSetStarting( report.capture() );
+        Assertions.assertThat( report.getValue().getSourceName() )
+                .isEqualTo( TestClass1.class.getName() );
+        Assertions.assertThat( report.getValue().getName() )
+                .isNull();
+
+        report = ArgumentCaptor.forClass( SimpleReportEntry.class );
+        inOrder.verify( runListener )
+                .testSetCompleted( report.capture() );
+        Assertions.assertThat( report.getValue().getSourceName() )
+                .isEqualTo( TestClass1.class.getName() );
+        Assertions.assertThat( report.getValue().getName() )
+                .isNull();
+
+        report = ArgumentCaptor.forClass( SimpleReportEntry.class );
+        inOrder.verify( runListener )
+                .testSetStarting( report.capture() );
+        Assertions.assertThat( report.getValue().getSourceName() )
+                .isEqualTo( TestClass2.class.getName() );
+        Assertions.assertThat( report.getValue().getName() )
+                .isNull();
+
+        report = ArgumentCaptor.forClass( SimpleReportEntry.class );
+        inOrder.verify( runListener )
+                .testSetCompleted( report.capture() );
+        Assertions.assertThat( report.getValue().getSourceName() )
+                .isEqualTo( TestClass2.class.getName() );
+        Assertions.assertThat( report.getValue().getName() )
+                .isNull();
 
         assertThat( executionListener.summaries ).hasSize( 1 );
         TestExecutionSummary summary = executionListener.summaries.get( 0 );

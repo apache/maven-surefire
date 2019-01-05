@@ -19,6 +19,7 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import org.apache.maven.surefire.util.internal.ClassMethod;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.RunListener;
@@ -32,6 +33,7 @@ import org.junit.runner.notification.Failure;
 import java.util.Collections;
 import java.util.Map;
 
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClassMethod;
 import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
 
 /**
@@ -63,13 +65,14 @@ public class NonConcurrentRunListener
     @Override
     protected SimpleReportEntry createReportEntry( Description description )
     {
-        return new SimpleReportEntry( extractDescriptionClassName( description ), description.getDisplayName() );
+        ClassMethod classMethod = toClassMethod( description );
+        return new SimpleReportEntry( classMethod.getClazz(), classMethod.getMethod() );
     }
 
     private TestSetReportEntry createReportEntryForTestSet( Description description, Map<String, String> systemProps )
     {
-        String testClassName = extractDescriptionClassName( description );
-        return new SimpleReportEntry( testClassName, testClassName, systemProps );
+        ClassMethod classMethod = toClassMethod( description );
+        return new SimpleReportEntry( classMethod.getClazz(), classMethod.getClazz(), systemProps );
     }
 
     private TestSetReportEntry createTestSetReportEntryStarted( Description description )
@@ -80,18 +83,6 @@ public class NonConcurrentRunListener
     private TestSetReportEntry createTestSetReportEntryFinished( Description description )
     {
         return createReportEntryForTestSet( description, systemProps() );
-    }
-
-    @Override
-    protected String extractDescriptionClassName( Description description )
-    {
-        return description.getClassName();
-    }
-
-    @Override
-    protected String extractDescriptionMethodName( Description description )
-    {
-        return description.getMethodName();
     }
 
     @Override

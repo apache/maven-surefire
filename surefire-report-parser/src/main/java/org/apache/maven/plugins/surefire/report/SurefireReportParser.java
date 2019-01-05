@@ -33,11 +33,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.reporting.MavenReportException;
-import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.io.DirectoryScanner;
 import org.xml.sax.SAXException;
 
-import static java.util.Collections.singletonList;
+import static org.apache.maven.shared.utils.StringUtils.split;
 
 /**
  *
@@ -57,7 +56,7 @@ public final class SurefireReportParser
 
     private final ConsoleLogger consoleLogger;
 
-    private List<File> reportsDirectories;
+    private final List<File> reportsDirectories;
 
     public SurefireReportParser( List<File> reportsDirectories, Locale locale, ConsoleLogger consoleLogger )
     {
@@ -104,21 +103,6 @@ public final class SurefireReportParser
         return testSuites;
     }
 
-    protected String parseTestSuiteName( String lineString )
-    {
-        return lineString.substring( lineString.lastIndexOf( "." ) + 1, lineString.length() );
-    }
-
-    protected String parseTestSuitePackageName( String lineString )
-    {
-        return lineString.substring( lineString.indexOf( ":" ) + 2, lineString.lastIndexOf( "." ) );
-    }
-
-    protected String parseTestCaseName( String lineString )
-    {
-        return lineString.substring( 0, lineString.indexOf( "(" ) );
-    }
-
     public Map<String, String> getSummary( List<ReportTestSuite> suites )
     {
         Map<String, String> totalSummary = new HashMap<>();
@@ -162,11 +146,6 @@ public final class SurefireReportParser
         totalSummary.put( "totalPercentage", totalPercentage );
 
         return totalSummary;
-    }
-
-    public void setReportsDirectory( File reportsDirectory )
-    {
-        reportsDirectories = singletonList( reportsDirectory );
     }
 
     public NumberFormat getNumberFormat()
@@ -238,9 +217,9 @@ public final class SurefireReportParser
 
         scanner.setBasedir( directory );
 
-        scanner.setIncludes( StringUtils.split( includes, "," ) );
+        scanner.setIncludes( split( includes, "," ) );
 
-        scanner.setExcludes( StringUtils.split( excludes, "," ) );
+        scanner.setExcludes( split( excludes, "," ) );
 
         scanner.scan();
 

@@ -133,7 +133,7 @@ public class JUnit3Provider
                                  Map<String, String> systemProperties )
         throws TestSetFailedException
     {
-        SimpleReportEntry report = new SimpleReportEntry( getClass().getName(), testSet.getName(), systemProperties );
+        SimpleReportEntry report = new SimpleReportEntry( testSet.getName(), null, systemProperties );
 
         reporter.testSetStarting( report );
 

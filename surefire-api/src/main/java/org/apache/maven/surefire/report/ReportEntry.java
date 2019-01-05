@@ -61,6 +61,14 @@ public interface ReportEntry
      */
     Integer getElapsed();
 
+    /**
+     * Returns same value as {@link #getElapsed()} and fallbacks to {@code fallback} for <tt>null</tt> elapsed timed.
+     *
+     * @param fallback usually 0
+     * @return elapsed time if {@link #getElapsed()} is not null; otherwise returns {@code fallback}
+     */
+    int getElapsed( int fallback );
+
 
     /**
      * A message relating to a non-successful termination.
@@ -71,7 +79,7 @@ public interface ReportEntry
     String getMessage();
 
     /**
-     * A name of the test case together with the group or category (if any exists).
+     * A source name of the test case together with the group or category (if any exists).
      *
      * @return A string with the test case name and group/category, or just the name.
      */

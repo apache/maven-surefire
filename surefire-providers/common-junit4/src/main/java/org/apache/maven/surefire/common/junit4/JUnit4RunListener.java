@@ -24,17 +24,17 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.internal.ClassMethod;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.isFailureInsideJUnitItself;
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClassMethod;
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.getAnnotatedIgnoreValue;
 import static org.apache.maven.surefire.report.SimpleReportEntry.assumption;
 import static org.apache.maven.surefire.report.SimpleReportEntry.ignored;
 import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
-import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractClassName;
-import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractMethodName;
 
 /**
  * RunListener for JUnit4, delegates to our own RunListener
@@ -74,7 +74,8 @@ public class JUnit4RunListener
         throws Exception
     {
         String reason = getAnnotatedIgnoreValue( description );
-        reporter.testSkipped( ignored( getClassName( description ), description.getDisplayName(), reason ) );
+        ClassMethod classMethod = toClassMethod( description );
+        reporter.testSkipped( ignored( classMethod.getClazz(), classMethod.getMethod(), reason ) );
     }
 
     /**
@@ -108,16 +109,9 @@ public class JUnit4RunListener
     {
         try
         {
-            String testHeader = failure.getTestHeader();
-            if ( isInsaneJunitNullString( testHeader ) )
-            {
-                testHeader = "Failure when constructing test";
-            }
-
-            String testClassName = getClassName( failure.getDescription() );
             StackTraceWriter stackTrace = createStackTraceWriter( failure );
-
-            ReportEntry report = withException( testClassName, testHeader, stackTrace );
+            ClassMethod classMethod = toClassMethod( failure.getDescription() );
+            ReportEntry report = withException( classMethod.getClazz(), classMethod.getMethod(), stackTrace );
 
             if ( failure.getException() instanceof AssertionError )
             {
@@ -140,8 +134,9 @@ public class JUnit4RunListener
         try
         {
             Description desc = failure.getDescription();
-            String test = getClassName( desc );
-            reporter.testAssumptionFailure( assumption( test, desc.getDisplayName(), failure.getMessage() ) );
+            ClassMethod classMethod = toClassMethod( desc );
+            ReportEntry report = assumption( classMethod.getClazz(), classMethod.getMethod(), failure.getMessage() );
+            reporter.testAssumptionFailure( report );
         }
         finally
         {
@@ -173,25 +168,6 @@ public class JUnit4RunListener
         reporter.testExecutionSkippedByUser();
     }
 
-    private String getClassName( Description description )
-    {
-        String name = extractDescriptionClassName( description );
-        if ( name == null || isInsaneJunitNullString( name ) )
-        {
-            // This can happen upon early failures (class instantiation error etc)
-            Description subDescription = description.getChildren().get( 0 );
-            if ( subDescription != null )
-            {
-                name = extractDescriptionClassName( subDescription );
-            }
-            if ( name == null )
-            {
-                name = "Test Instantiation Error";
-            }
-        }
-        return name;
-    }
-
     protected StackTraceWriter createStackTraceWriter( Failure failure )
     {
         return new JUnit4StackTraceWriter( failure );
@@ -199,17 +175,8 @@ public class JUnit4RunListener
 
     protected SimpleReportEntry createReportEntry( Description description )
     {
-        return new SimpleReportEntry( getClassName( description ), description.getDisplayName() );
-    }
-
-    protected String extractDescriptionClassName( Description description )
-    {
-        return extractClassName( description.getDisplayName() );
-    }
-
-    protected String extractDescriptionMethodName( Description description )
-    {
-        return extractMethodName( description.getDisplayName() );
+        ClassMethod classMethod = toClassMethod( description );
+        return new SimpleReportEntry( classMethod.getClazz(), classMethod.getMethod() );
     }
 
     public static void rethrowAnyTestMechanismFailures( Result run )

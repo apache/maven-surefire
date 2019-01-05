@@ -45,7 +45,7 @@ public class Surefire1534ReuseForksFalseWithJavaModuleIT
         validator.assertTestSuiteResults( 2, 0, 0, 0 );
         validator.verifyErrorFreeLog();
 
-        TestFile report = validator.getSurefireReportsFile( "TEST-MainTest.xml", UTF_8 );
+        TestFile report = validator.getSurefireReportsFile( "TEST-it.MainTest.xml", UTF_8 );
         assertTrue( report.exists() );
         report.assertContainsText( "<property name=\"reuseForks\" value=\"false\"/>" )
                 .assertContainsText( "<property name=\"forkCount\" value=\"1\"/>" )
@@ -66,7 +66,7 @@ public class Surefire1534ReuseForksFalseWithJavaModuleIT
         validator.assertTestSuiteResults( 2, 0, 0, 0 );
         validator.verifyErrorFreeLog();
 
-        TestFile report = validator.getSurefireReportsFile( "TEST-MainTest.xml", UTF_8 );
+        TestFile report = validator.getSurefireReportsFile( "TEST-it.MainTest.xml", UTF_8 );
         assertTrue( report.exists() );
         report.assertContainsText( "<property name=\"reuseForks\" value=\"false\"/>" )
                 .assertContainsText( "<property name=\"forkCount\" value=\"1\"/>" )
@@ -85,7 +85,7 @@ public class Surefire1534ReuseForksFalseWithJavaModuleIT
         validator.assertTestSuiteResults( 2, 0, 0, 0 );
         validator.verifyErrorFreeLog();
 
-        TestFile report = validator.getSurefireReportsFile( "TEST-MainTest.xml", UTF_8 );
+        TestFile report = validator.getSurefireReportsFile( "TEST-it.MainTest.xml", UTF_8 );
         assertTrue( report.exists() );
         report.assertContainsText( "<property name=\"forkCount\" value=\"0\"/>" )
                 .assertContainsText( "<testcase name=\"test1\"" )

@@ -25,6 +25,7 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 
+import org.testng.IClass;
 import org.testng.ISuite;
 import org.testng.ISuiteListener;
 import org.testng.ITestContext;
@@ -64,38 +65,28 @@ public class TestNGReporter
     @Override
     public void onTestStart( ITestResult result )
     {
-        String group = groupString( result.getMethod().getGroups(), result.getTestClass().getName() );
-        String userFriendlyTestName = getUserFriendlyTestName( result );
-        reporter.testStarting( new CategorizedReportEntry( getSource( result ), userFriendlyTestName, group ) );
-    }
-
-    private String getSource( ITestResult result )
-    {
-        return result.getTestClass().getName();
+        String clazz = result.getTestClass().getName();
+        String group = groupString( result.getMethod().getGroups(), clazz );
+        reporter.testStarting( new CategorizedReportEntry( clazz, result.getName(), group ) );
     }
 
     @Override
     public void onTestSuccess( ITestResult result )
     {
-        ReportEntry report = new SimpleReportEntry( getSource( result ), getUserFriendlyTestName( result ) );
+        ReportEntry report = new SimpleReportEntry( result.getTestClass().getName(), result.getName() );
         reporter.testSucceeded( report );
     }
 
     @Override
     public void onTestFailure( ITestResult result )
     {
-        ReportEntry report = withException( getSource( result ), getUserFriendlyTestName( result ),
-                new PojoStackTraceWriter( result.getTestClass().getRealClass().getName(),
+        IClass clazz = result.getTestClass();
+        ReportEntry report = withException( clazz.getName(), result.getName(),
+                new PojoStackTraceWriter( clazz.getRealClass().getName(),
                         result.getMethod().getMethodName(),
                         result.getThrowable() ) );
 
         reporter.testFailed( report );
-    }
-
-    private static String getUserFriendlyTestName( ITestResult result )
-    {
-        // This is consistent with the JUnit output
-        return result.getName() + "(" + result.getTestClass().getName() + ")";
     }
 
     @Override
@@ -103,15 +94,16 @@ public class TestNGReporter
     {
         Throwable t = result.getThrowable();
         String reason = t == null ? null : t.getMessage();
-        ReportEntry report = ignored( getSource( result ), getUserFriendlyTestName( result ), reason );
+        ReportEntry report = ignored( result.getTestClass().getName(), result.getName(), reason );
         reporter.testSkipped( report );
     }
 
     @Override
     public void onTestFailedButWithinSuccessPercentage( ITestResult result )
     {
-        ReportEntry report = withException( getSource( result ), getUserFriendlyTestName( result ),
-                new PojoStackTraceWriter( result.getTestClass().getRealClass().getName(),
+        IClass clazz = result.getTestClass();
+        ReportEntry report = withException( clazz.getName(), result.getName(),
+                new PojoStackTraceWriter( clazz.getRealClass().getName(),
                         result.getMethod().getMethodName(),
                         result.getThrowable() ) );
 

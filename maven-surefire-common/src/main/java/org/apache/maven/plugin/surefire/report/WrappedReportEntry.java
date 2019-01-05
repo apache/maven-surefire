@@ -28,6 +28,7 @@ import java.util.Map;
 
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.maven.plugin.surefire.report.ReporterUtils.formatElapsedTime;
+import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 
 /**
@@ -72,6 +73,12 @@ public class WrappedReportEntry
     public Integer getElapsed()
     {
         return elapsed;
+    }
+
+    @Override
+    public int getElapsed( int fallback )
+    {
+        return elapsed == null ? fallback : elapsed;
     }
 
     public ReportEntryType getReportEntryType()
@@ -137,13 +144,12 @@ public class WrappedReportEntry
 
     public String getReportName()
     {
-        final int i = getName().lastIndexOf( "(" );
-        return i > 0 ? getName().substring( 0, i ) : getName();
+        return getSourceName();
     }
 
     public String getReportName( String suffix )
     {
-        return suffix != null && !suffix.isEmpty() ? getReportName() + "(" + suffix + ")" : getReportName();
+        return isBlank( suffix ) ? getReportName() : getReportName() + "(" + suffix + ")";
     }
 
     public String getOutput( boolean trimStackTrace )
@@ -160,7 +166,8 @@ public class WrappedReportEntry
 
     public String getElapsedTimeSummary()
     {
-        return getName() + "  " + getElapsedTimeVerbose();
+        String description = getName() == null ? getSourceName() : getClassMethodName();
+        return description + "  " + getElapsedTimeVerbose();
     }
 
     public boolean isErrorOrFailure()

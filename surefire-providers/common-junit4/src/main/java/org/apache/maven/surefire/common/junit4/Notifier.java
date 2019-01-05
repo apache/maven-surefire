@@ -32,7 +32,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.cutTestClassAndMethod;
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClassMethod;
 import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDownToZero;
 
 /**
@@ -100,7 +100,7 @@ public class Notifier
         super.fireTestStarted( description );
         if ( !testClassNames.isEmpty() )
         {
-            testClassNames.remove( cutTestClassAndMethod( description ).getClazz() );
+            testClassNames.remove( toClassMethod( description ).getClazz() );
         }
     }
 

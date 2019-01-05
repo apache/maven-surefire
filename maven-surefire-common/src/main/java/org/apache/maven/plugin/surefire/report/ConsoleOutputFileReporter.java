@@ -150,7 +150,7 @@ public class ConsoleOutputFileReporter
         finally
         {
             // prepare <class>-output.txt report file
-            reportEntryName = reportEntry.getName();
+            reportEntryName = reportEntry.getSourceName();
         }
     }
 

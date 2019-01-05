@@ -31,7 +31,7 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
-import java.util.List;
+import java.util.Deque;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -76,7 +76,7 @@ public final class StartupReportConfiguration
 
     private final String xsdSchemaLocation;
 
-    private final Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistory
+    private final Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory
         = new ConcurrentHashMap<>();
 
     private final Charset encoding;
@@ -160,9 +160,9 @@ public final class StartupReportConfiguration
         // reporter, see Surefire1535TestNGParallelSuitesIT. The testClassMethodRunHistory should be isolated.
         // In the in-plugin execution of parallel JUnit4.7 with rerun the map must be shared because reports and
         // listeners are in ThreadLocal, see Surefire1122ParallelAndFlakyTestsIT.
-        Map<String, Map<String, List<WrappedReportEntry>>> testClassMethodRunHistory
+        Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory
                 = isForkMode
-                ? new ConcurrentHashMap<String, Map<String, List<WrappedReportEntry>>>()
+                ? new ConcurrentHashMap<String, Deque<WrappedReportEntry>>()
                 : this.testClassMethodRunHistory;
 
         return isDisableXmlReport()

@@ -74,7 +74,7 @@ public class Surefire943ReportContentIT
         Xpp3Dom child = children[0];
 
         Assert.assertEquals( className, child.getAttribute( "classname" ) );
-        Assert.assertEquals( className, child.getAttribute( "name" ) );
+        Assert.assertEquals( "", child.getAttribute( "name" ) );
 
         Assert.assertEquals( "Expected error tag for failed BeforeClass method for " + className, 1,
                              child.getChildren( "error" ).length );
@@ -84,7 +84,6 @@ public class Surefire943ReportContentIT
 
         Assert.assertTrue( "time for test failure in BeforeClass is expected to be resonably low",
                            Double.compare( Double.parseDouble( child.getAttribute( "time" ) ), 2.0d ) <= 0 );
-
     }
 
     private void validateSkipped( OutputValidator validator, String className )
@@ -97,7 +96,7 @@ public class Surefire943ReportContentIT
         Xpp3Dom child = children[0];
 
         Assert.assertEquals( className, child.getAttribute( "classname" ) );
-        Assert.assertEquals( className, child.getAttribute( "name" ) );
+        Assert.assertEquals( "", child.getAttribute( "name" ) );
 
         Assert.assertEquals( "Expected skipped tag for ignored method for " + className, 1,
                              child.getChildren( "skipped" ).length );

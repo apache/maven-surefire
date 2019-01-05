@@ -45,7 +45,7 @@
               <configuration>
                 <reportsDirectories>
                   <reportsDirectory>${basedir}/target/surefire-reports</reportsDirectory>
-                  <reportsDirectory>${basedir}/src/test/resources/surefire-reports</reportsDirectory>
+                  <reportsDirectory>${basedir}/src/test/resources/surefire-reports2</reportsDirectory>
                 </reportsDirectories>
               </configuration>
             </plugin>
@@ -96,7 +96,7 @@
         <configuration>
           <reportsDirectories>
             <reportsDirectory>${basedir}/target/surefire-reports</reportsDirectory>
-            <reportsDirectory>${basedir}/src/test/resources/surefire-reports</reportsDirectory>
+            <reportsDirectory>${basedir}/src/test/resources/surefire-reports2</reportsDirectory>
           </reportsDirectories>
         </configuration>
         <reportSets>

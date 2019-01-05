@@ -20,6 +20,7 @@ package org.apache.maven.surefire.common.junit4;
  */
 
 import junit.framework.TestCase;
+import org.apache.maven.surefire.util.internal.ClassMethod;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 
@@ -64,25 +65,25 @@ public class JUnit4ProviderUtilTest
     public void testIllegalTestDescription$NegativeTest()
     {
         Description test = Description.createSuiteDescription( "someTestMethod" );
-        ClassMethod classMethod = cutTestClassAndMethod( test );
-        assertFalse( classMethod.isValid() );
+        ClassMethod classMethod = JUnit4ProviderUtil.toClassMethod( test );
+        assertFalse( classMethod.isValidTest() );
     }
 
     public void testOldJUnitParameterizedDescriptionParser()
     {
         Description test = Description.createTestDescription( T1.class, " \n testMethod[5] " );
         assertEquals( " \n testMethod[5] (" + T1.class.getName() + ")", test.getDisplayName() );
-        ClassMethod classMethod = cutTestClassAndMethod( test );
-        assertTrue( classMethod.isValid() );
-        assertEquals( "testMethod[5]", classMethod.getMethod() );
+        ClassMethod classMethod = JUnit4ProviderUtil.toClassMethod( test );
+        assertTrue( classMethod.isValidTest() );
+        assertEquals( " \n testMethod[5] ", classMethod.getMethod() );
         assertEquals( T1.class.getName(), classMethod.getClazz() );
     }
 
     public void testNewJUnitParameterizedDescriptionParser()
     {
         Description test = Description.createTestDescription( T1.class, "flakyTest[3: (Test11); Test12; Test13;]" );
-        ClassMethod classMethod = cutTestClassAndMethod( test );
-        assertTrue( classMethod.isValid() );
+        ClassMethod classMethod = JUnit4ProviderUtil.toClassMethod( test );
+        assertTrue( classMethod.isValidTest() );
         assertEquals( "flakyTest[3: (Test11); Test12; Test13;]", classMethod.getMethod() );
         assertEquals( T1.class.getName(), classMethod.getClazz() );
     }

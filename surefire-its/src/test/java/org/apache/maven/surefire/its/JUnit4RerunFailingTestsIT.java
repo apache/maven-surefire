@@ -254,9 +254,9 @@ public class JUnit4RerunFailingTestsIT
     private void verifyFailuresNoRetry( OutputValidator outputValidator, int run, int failures, int errors, int flakes )
     {
         outputValidator.verifyTextInLog( "Failures:" );
-        outputValidator.verifyTextInLog( "testFailingTestOne(junit4.FlakyFirstTimeTest)" );
+        outputValidator.verifyTextInLog( "junit4.FlakyFirstTimeTest.testFailingTestOne" );
         outputValidator.verifyTextInLog( "ERROR" );
-        outputValidator.verifyTextInLog( "testErrorTestOne(junit4.FlakyFirstTimeTest)" );
+        outputValidator.verifyTextInLog( "junit4.FlakyFirstTimeTest.testErrorTestOne" );
 
         verifyStatistics( outputValidator, run, failures, errors, flakes );
     }

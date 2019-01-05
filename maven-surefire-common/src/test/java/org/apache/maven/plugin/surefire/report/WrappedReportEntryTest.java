@@ -29,45 +29,39 @@ import junit.framework.TestCase;
 public class WrappedReportEntryTest
     extends TestCase
 {
-
     public void testClassNameOnly()
-        throws Exception
     {
-        String category = "surefire.testcase.JunitParamsTest";
+        String className = "surefire.testcase.JunitParamsTest";
         WrappedReportEntry wr =
-            new WrappedReportEntry( new SimpleReportEntry( "fud", category ), null, 12, null, null );
+            new WrappedReportEntry( new SimpleReportEntry( className, null ), null, 12, null, null );
         final String reportName = wr.getReportName();
         assertEquals( "surefire.testcase.JunitParamsTest", reportName );
     }
 
     public void testRegular()
     {
-        ReportEntry reportEntry = new SimpleReportEntry( "fud", "testSum(surefire.testcase.NonJunitParamsTest)" );
+        ReportEntry reportEntry = new SimpleReportEntry( "surefire.testcase.JunitParamsTest", "testSum" );
         WrappedReportEntry wr = new WrappedReportEntry( reportEntry, null, 12, null, null );
         final String reportName = wr.getReportName();
-        assertEquals( "testSum", reportName );
+        assertEquals( "surefire.testcase.JunitParamsTest", reportName );
     }
 
     public void testGetReportNameWithParams()
-        throws Exception
     {
-        String category = "[0] 1\u002C 2\u002C 3 (testSum)(surefire.testcase.JunitParamsTest)";
-        ReportEntry reportEntry = new SimpleReportEntry( "fud", category );
+        String className = "[0] 1\u002C 2\u002C 3 (testSum)";
+        ReportEntry reportEntry = new SimpleReportEntry( className, null );
         WrappedReportEntry wr = new WrappedReportEntry( reportEntry, null, 12, null, null );
         final String reportName = wr.getReportName();
         assertEquals( "[0] 1, 2, 3 (testSum)", reportName );
     }
 
     public void testElapsed()
-        throws Exception
     {
-        String category = "[0] 1\u002C 2\u002C 3 (testSum)(surefire.testcase.JunitParamsTest)";
-        ReportEntry reportEntry = new SimpleReportEntry( "fud", category );
+        String className = "[0] 1\u002C 2\u002C 3 (testSum)";
+        ReportEntry reportEntry = new SimpleReportEntry( className, null );
         WrappedReportEntry wr = new WrappedReportEntry( reportEntry, null, 12, null, null );
         String elapsedTimeSummary = wr.getElapsedTimeSummary();
-        assertEquals( "[0] 1, 2, 3 (testSum)(surefire.testcase.JunitParamsTest)  Time elapsed: 0.012 s",
+        assertEquals( "[0] 1, 2, 3 (testSum)  Time elapsed: 0.012 s",
                       elapsedTimeSummary );
     }
-
-
 }
