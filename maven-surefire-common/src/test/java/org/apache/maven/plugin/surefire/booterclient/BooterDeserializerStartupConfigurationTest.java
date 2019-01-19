@@ -97,7 +97,7 @@ public class BooterDeserializerStartupConfigurationTest
     {
         Classpath testClassPath = new Classpath( Arrays.asList( "CP1", "CP2" ) );
         Classpath providerClasspath = new Classpath( Arrays.asList( "SP1", "SP2" ) );
-        return new ClasspathConfiguration( testClassPath, providerClasspath, Classpath.emptyClasspath(), true, true );
+        return new ClasspathConfiguration( testClassPath, providerClasspath, true, true );
     }
 
     public static ClassLoaderConfiguration getSystemClassLoaderConfiguration()

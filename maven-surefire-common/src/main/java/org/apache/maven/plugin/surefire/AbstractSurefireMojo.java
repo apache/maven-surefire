@@ -1702,6 +1702,13 @@ public abstract class AbstractSurefireMojo
         try
         {
             Set<Artifact> providerArtifacts = provider.getProviderClasspath();
+
+            // Just include the surefire common, api and logger api artifacts
+            // with the provider artifacts to be used later when running tests
+            providerArtifacts.add( getCommonArtifact() );
+            providerArtifacts.add( getApiArtifact() );
+            providerArtifacts.add( getLoggerApiArtifact() );
+
             String providerName = provider.getProviderName();
             if ( canExecuteProviderWithModularPath( platform ) && !isInprocess )
             {
@@ -1747,14 +1754,8 @@ public abstract class AbstractSurefireMojo
         getConsoleLogger().debug( testClasspath.getCompactLogMessage( "test(compact) classpath:" ) );
         getConsoleLogger().debug( providerClasspath.getCompactLogMessage( "provider(compact) classpath:" ) );
 
-        Artifact[] additionalInProcArtifacts = { getCommonArtifact(), getApiArtifact(), getLoggerApiArtifact() };
-        Set<Artifact> inProcArtifacts = retainInProcArtifactsUnique( providerArtifacts, additionalInProcArtifacts );
-        Classpath inProcClasspath = createInProcClasspath( providerClasspath, inProcArtifacts );
-        getConsoleLogger().debug( inProcClasspath.getLogMessage( "in-process classpath:" ) );
-        getConsoleLogger().debug( inProcClasspath.getCompactLogMessage( "in-process(compact) classpath:" ) );
-
         ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( testClasspath, providerClasspath,
-                inProcClasspath, effectiveIsEnableAssertions(), isChildDelegation() );
+                effectiveIsEnableAssertions(), isChildDelegation() );
 
         return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration, isForking(),
                 false );

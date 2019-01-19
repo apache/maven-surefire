@@ -64,7 +64,7 @@ public class ForkConfigurationTest
 
         List<String> cp = singletonList( cpElement.getAbsolutePath() );
         ClasspathConfiguration cpConfig = new ClasspathConfiguration( new Classpath( cp ), emptyClasspath(),
-                emptyClasspath(), true, true );
+                true, true );
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
         StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false );
 
@@ -84,7 +84,7 @@ public class ForkConfigurationTest
 
         List<String> cp = singletonList( cpElement.getAbsolutePath() );
         ClasspathConfiguration cpConfig = new ClasspathConfiguration( new Classpath( cp ), emptyClasspath(),
-                emptyClasspath(), true, true );
+                true, true );
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
         StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false );
 
@@ -105,7 +105,7 @@ public class ForkConfigurationTest
         File cwd = new File( baseDir, "fork_${surefire.forkNumber}" );
 
         ClasspathConfiguration cpConfig = new ClasspathConfiguration( emptyClasspath(), emptyClasspath(),
-                emptyClasspath(), true, true );
+                true, true );
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
         StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false );
         ForkConfiguration config = getForkConfiguration( cwd.getCanonicalFile() );

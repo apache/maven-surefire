@@ -21,9 +21,6 @@ package org.apache.maven.surefire.booter;
 
 import javax.annotation.Nonnull;
 
-import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
-import static org.apache.maven.surefire.booter.Classpath.join;
-
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.21.0.Jigsaw
@@ -77,10 +74,8 @@ public abstract class AbstractPathConfiguration
      */
     public abstract boolean isClassPathConfig();
 
-    protected Classpath getInprocClasspath()
-    {
-        return emptyClasspath();
-    }
+    public abstract ClassLoader createMergedClassLoader()
+        throws SurefireExecutionException;
 
     public <T extends AbstractPathConfiguration> T toRealPath( Class<T> type )
     {
@@ -90,13 +85,6 @@ public abstract class AbstractPathConfiguration
             return type.cast( this );
         }
         throw new IllegalStateException( "no target matched " + type );
-    }
-
-    public ClassLoader createMergedClassLoader()
-            throws SurefireExecutionException
-    {
-        return join( getInprocClasspath(), getTestClasspath() )
-                .createClassLoader( isChildDelegation(), isEnableAssertions(), "test" );
     }
 
     public Classpath getProviderClasspath()

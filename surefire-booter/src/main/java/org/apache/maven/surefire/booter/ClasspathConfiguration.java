@@ -22,6 +22,7 @@ package org.apache.maven.surefire.booter;
 import javax.annotation.Nonnull;
 
 import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
+import static org.apache.maven.surefire.booter.Classpath.join;
 
 /**
  * Represents the classpaths for the BooterConfiguration.
@@ -35,35 +36,23 @@ public class ClasspathConfiguration extends AbstractPathConfiguration
 {
     private final Classpath testClasspathUrls;
 
-    /**
-     * The surefire classpath to use when invoking in-process with the plugin
-     */
-    private final Classpath inprocClasspath;
-
     public ClasspathConfiguration( boolean enableAssertions, boolean childDelegation )
     {
-        this( emptyClasspath(), emptyClasspath(), emptyClasspath(), enableAssertions, childDelegation );
+        this( emptyClasspath(), emptyClasspath(), enableAssertions, childDelegation );
     }
 
     ClasspathConfiguration( @Nonnull PropertiesWrapper properties )
     {
-        this( properties.getClasspath( CLASSPATH ), properties.getClasspath( SUREFIRE_CLASSPATH ), emptyClasspath(),
+        this( properties.getClasspath( CLASSPATH ), properties.getClasspath( SUREFIRE_CLASSPATH ),
               properties.getBooleanProperty( ENABLE_ASSERTIONS ), properties.getBooleanProperty( CHILD_DELEGATION ) );
     }
 
     public ClasspathConfiguration( @Nonnull Classpath testClasspathUrls, @Nonnull Classpath surefireClassPathUrls,
-                                   @Nonnull Classpath inprocClasspath, boolean enableAssertions,
+                                   boolean enableAssertions,
                                    boolean childDelegation )
     {
         super( surefireClassPathUrls, enableAssertions, childDelegation );
         this.testClasspathUrls = testClasspathUrls;
-        this.inprocClasspath = inprocClasspath;
-    }
-
-    @Override
-    protected Classpath getInprocClasspath()
-    {
-        return inprocClasspath;
     }
 
     public Classpath getTestClasspath()
@@ -81,6 +70,14 @@ public class ClasspathConfiguration extends AbstractPathConfiguration
     public final boolean isClassPathConfig()
     {
         return true;
+    }
+
+    @Override
+    public ClassLoader createMergedClassLoader()
+        throws SurefireExecutionException
+    {
+        return join( getProviderClasspath(), getTestClasspath() )
+            .createClassLoader( isChildDelegation(), isEnableAssertions(), "test" );
     }
 
     public void trickClassPathWhenManifestOnlyClasspath()

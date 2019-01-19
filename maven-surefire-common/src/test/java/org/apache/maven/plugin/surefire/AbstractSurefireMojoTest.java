@@ -39,14 +39,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static java.io.File.separatorChar;
 import static java.util.Arrays.asList;
@@ -57,14 +50,13 @@ import static org.apache.maven.artifact.versioning.VersionRange.createFromVersio
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.doNothing;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.spy;
-import static org.powermock.api.mockito.PowerMockito.verifyPrivate;
+import static org.powermock.api.mockito.PowerMockito.*;
 import static org.powermock.reflect.Whitebox.invokeMethod;
 
 /**
@@ -274,14 +266,12 @@ public class AbstractSurefireMojoTest
         verifyPrivate( mojo, times( 1 ) ).invoke( "generateTestClasspath" );
         verify( mojo, times( 1 ) ).getEffectiveForkCount();
         ArgumentCaptor<String> argument = ArgumentCaptor.forClass( String.class );
-        verify( logger, times( 6 ) ).debug( argument.capture() );
+        verify( logger, times( 4 ) ).debug( argument.capture() );
         assertThat( argument.getAllValues() )
                 .containsExactly( "test classpath:  test-classes  classes  junit.jar  hamcrest.jar",
                 "provider classpath:  surefire-provider.jar",
                 "test(compact) classpath:  test-classes  classes  junit.jar  hamcrest.jar",
-                "provider(compact) classpath:  surefire-provider.jar",
-                "in-process classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-api.jar  surefire-logger-api.jar",
-                "in-process(compact) classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-api.jar  surefire-logger-api.jar"
+                "provider(compact) classpath:  surefire-provider.jar"
                 );
 
         assertThat( conf.getClassLoaderConfiguration() )
