@@ -45,6 +45,7 @@ import static java.nio.file.Files.readAllLines;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.apache.maven.shared.utils.StringUtils.replace;
+import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
@@ -146,7 +147,7 @@ public class ModularClasspathForkConfigurationTest
         Classpath surefireClasspathUrls = Classpath.emptyClasspath();
         ModularClasspathConfiguration modularClasspathConfiguration =
                 new ModularClasspathConfiguration( modularClasspath, testClasspathUrls, surefireClasspathUrls,
-                        true, true );
+                        emptyClasspath(), true, true );
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
         StartupConfiguration startupConfiguration =
                 new StartupConfiguration( "JUnitCoreProvider", modularClasspathConfiguration, clc, true, true );

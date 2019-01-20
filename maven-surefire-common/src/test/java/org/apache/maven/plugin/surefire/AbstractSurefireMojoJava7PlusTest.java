@@ -43,10 +43,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
@@ -154,6 +151,24 @@ public class AbstractSurefireMojoJava7PlusTest
         doNothing().when( logger ).debug( anyString() );
         when( mojo.getConsoleLogger() ).thenReturn( new PluginConsoleLogger( logger ) );
 
+        Artifact common = new DefaultArtifact( "org.apache.maven.surefire", "maven-surefire-common", v5, "runtime",
+                "jar", "", handler );
+        common.setFile( mockFile( "maven-surefire-common.jar" ) );
+
+        Artifact api = new DefaultArtifact( "org.apache.maven.surefire", "surefire-api", v5, "runtime",
+                "jar", "", handler );
+        api.setFile( mockFile( "surefire-api.jar" ) );
+
+        Artifact loggerApi = new DefaultArtifact( "org.apache.maven.surefire", "surefire-logger-api", v5, "runtime",
+                "jar", "", handler );
+        loggerApi.setFile( mockFile( "surefire-logger-api.jar" ) );
+
+        Map<String, Artifact> artifacts = new HashMap<>();
+        artifacts.put( "org.apache.maven.surefire:maven-surefire-common", common );
+        artifacts.put( "org.apache.maven.surefire:surefire-api", api );
+        artifacts.put( "org.apache.maven.surefire:surefire-logger-api", loggerApi );
+        when( mojo.getPluginArtifactMap() ).thenReturn( artifacts );
+
         StartupConfiguration conf = invokeMethod( mojo, "newStartupConfigWithModularPath",
                 classLoaderConfiguration, providerClasspath, "org.asf.Provider", moduleInfo, scanResult,
                 "" );
@@ -178,14 +193,16 @@ public class AbstractSurefireMojoJava7PlusTest
         assertThat( argument2.getValue().getMessage() )
                 .isEqualTo( "low version" );
         ArgumentCaptor<String> argument = ArgumentCaptor.forClass( String.class );
-        verify( logger, times( 6 ) ).debug( argument.capture() );
+        verify( logger, times( 8 ) ).debug( argument.capture() );
         assertThat( argument.getAllValues() )
                 .containsExactly( "test classpath:  non-modular.jar  junit.jar  hamcrest.jar",
                         "test modulepath:  modular.jar  classes",
                         "provider classpath:  surefire-provider.jar",
                         "test(compact) classpath:  non-modular.jar  junit.jar  hamcrest.jar",
                         "test(compact) modulepath:  modular.jar  classes",
-                        "provider(compact) classpath:  surefire-provider.jar"
+                        "provider(compact) classpath:  surefire-provider.jar",
+                        "in-process classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-api.jar  surefire-logger-api.jar",
+                        "in-process(compact) classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-api.jar  surefire-logger-api.jar"
                 );
 
         assertThat( conf ).isNotNull();

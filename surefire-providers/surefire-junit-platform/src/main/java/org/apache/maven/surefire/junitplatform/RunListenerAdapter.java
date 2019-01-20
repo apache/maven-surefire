@@ -19,10 +19,13 @@ package org.apache.maven.surefire.junitplatform;
  * under the License.
  */
 
+import static java.util.Collections.emptyMap;
 import static org.apache.maven.surefire.report.SimpleReportEntry.ignored;
+import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
 import static org.junit.platform.engine.TestExecutionResult.Status.ABORTED;
 import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -165,7 +168,7 @@ final class RunListenerAdapter
 
     private void completeTestSet( TestIdentifier testIdentifier )
     {
-        runListener.testSetCompleted( createTestSetReportEntry( testIdentifier ) );
+        runListener.testSetCompleted( createTestSetReportEntry( testIdentifier, systemProps() ) );
         testSetNodes.remove( testIdentifier );
     }
 
@@ -185,8 +188,14 @@ final class RunListenerAdapter
 
     private SimpleReportEntry createTestSetReportEntry( TestIdentifier testIdentifier )
     {
-        return new SimpleReportEntry(
-                        JUnitPlatformProvider.class.getName(), testIdentifier.getLegacyReportingName() );
+        return createTestSetReportEntry( testIdentifier, emptyMap() );
+    }
+
+    private SimpleReportEntry createTestSetReportEntry( TestIdentifier testIdentifier,
+                                                        Map<String, String> systemProperties )
+    {
+        return new SimpleReportEntry( JUnitPlatformProvider.class.getName(),
+                testIdentifier.getLegacyReportingName(), systemProperties );
     }
 
     private SimpleReportEntry createReportEntry( TestIdentifier testIdentifier )

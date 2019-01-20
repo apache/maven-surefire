@@ -21,7 +21,6 @@ package org.apache.maven.surefire.booter;
 
 import javax.annotation.Nonnull;
 
-import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 import static org.apache.maven.surefire.booter.Classpath.join;
 
 /**
@@ -77,10 +76,7 @@ public abstract class AbstractPathConfiguration
      */
     public abstract boolean isClassPathConfig();
 
-    protected Classpath getInprocClasspath()
-    {
-        return emptyClasspath();
-    }
+    protected abstract Classpath getInprocClasspath();
 
     public <T extends AbstractPathConfiguration> T toRealPath( Class<T> type )
     {
@@ -95,8 +91,7 @@ public abstract class AbstractPathConfiguration
     public ClassLoader createMergedClassLoader()
             throws SurefireExecutionException
     {
-        return join( getInprocClasspath(), getTestClasspath() )
-                .createClassLoader( isChildDelegation(), isEnableAssertions(), "test" );
+        return createMergedClassLoader( getInprocTestClasspath() );
     }
 
     public Classpath getProviderClasspath()
@@ -113,5 +108,16 @@ public abstract class AbstractPathConfiguration
     public boolean isChildDelegation()
     {
         return childDelegation;
+    }
+
+    final Classpath getInprocTestClasspath()
+    {
+        return join( getInprocClasspath(), getTestClasspath() );
+    }
+
+    final ClassLoader createMergedClassLoader( Classpath cp )
+            throws SurefireExecutionException
+    {
+        return cp.createClassLoader( isChildDelegation(), isEnableAssertions(), "test" );
     }
 }
