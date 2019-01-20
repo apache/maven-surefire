@@ -51,6 +51,18 @@ public class ModulePathIT
                 .assertTestSuiteResults( 2 );
     }
 
+    @Test
+    public void testModulePathReuseForksFalse()
+            throws IOException
+    {
+        assumeJigsaw()
+                .reuseForks( false )
+                .debugLogging()
+                .executeTest()
+                .verifyErrorFreeLog()
+                .assertTestSuiteResults( 2 );
+    }
+
     @Override
     protected String getProjectDirectoryName()
     {
