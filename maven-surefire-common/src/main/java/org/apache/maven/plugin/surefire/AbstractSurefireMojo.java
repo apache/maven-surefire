@@ -1845,8 +1845,12 @@ public abstract class AbstractSurefireMojo
         ModularClasspath modularClasspath = new ModularClasspath( moduleDescriptor, testModulepath.getClassPath(),
                 packages, getTestClassesDirectory() );
 
+        Artifact[] additionalInProcArtifacts = { getCommonArtifact(), getApiArtifact(), getLoggerApiArtifact() };
+        Set<Artifact> inProcArtifacts = retainInProcArtifactsUnique( providerArtifacts, additionalInProcArtifacts );
+        Classpath inProcClasspath = createInProcClasspath( providerClasspath, inProcArtifacts );
+
         ModularClasspathConfiguration classpathConfiguration = new ModularClasspathConfiguration( modularClasspath,
-                testClasspath, providerClasspath, effectiveIsEnableAssertions(), isChildDelegation() );
+                testClasspath, providerClasspath, inProcClasspath, effectiveIsEnableAssertions(), isChildDelegation() );
 
         getConsoleLogger().debug( testClasspath.getLogMessage( "test classpath:" ) );
         getConsoleLogger().debug( testModulepath.getLogMessage( "test modulepath:" ) );
@@ -1854,6 +1858,8 @@ public abstract class AbstractSurefireMojo
         getConsoleLogger().debug( testClasspath.getCompactLogMessage( "test(compact) classpath:" ) );
         getConsoleLogger().debug( testModulepath.getCompactLogMessage( "test(compact) modulepath:" ) );
         getConsoleLogger().debug( providerClasspath.getCompactLogMessage( "provider(compact) classpath:" ) );
+        getConsoleLogger().debug( inProcClasspath.getLogMessage( "in-process classpath:" ) );
+        getConsoleLogger().debug( inProcClasspath.getCompactLogMessage( "in-process(compact) classpath:" ) );
 
         return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration, isForking(),
                 false );

@@ -1,0 +1,4 @@
+module it
+{
+    exports it;
+}
