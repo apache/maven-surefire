@@ -20,7 +20,7 @@ package org.apache.maven.surefire.booter;
  */
 
 import javax.annotation.Nonnull;
-
+import java.util.Collection;
 import static org.apache.maven.surefire.booter.Classpath.join;
 
 /**
@@ -32,15 +32,22 @@ public class ModularClasspathConfiguration extends AbstractPathConfiguration
     private final ModularClasspath modularClasspath;
     private final Classpath testClasspathUrls;
 
+    /**
+     * The surefire classpath to use when invoking in-process with the plugin
+     */
+    private final Classpath inprocClasspath;
+
     public ModularClasspathConfiguration( @Nonnull ModularClasspath modularClasspath,
                                           @Nonnull Classpath testClasspathUrls,
                                           @Nonnull Classpath surefireClasspathUrls,
+                                          @Nonnull Classpath inprocClasspath,
                                           boolean enableAssertions,
                                           boolean childDelegation )
     {
         super( surefireClasspathUrls, enableAssertions, childDelegation );
         this.modularClasspath = modularClasspath;
         this.testClasspathUrls = testClasspathUrls;
+        this.inprocClasspath = inprocClasspath;
     }
 
     @Override
@@ -73,5 +80,18 @@ public class ModularClasspathConfiguration extends AbstractPathConfiguration
     public ModularClasspath getModularClasspath()
     {
         return modularClasspath;
+    }
+
+    public ClassLoader createMergedClassLoader()
+            throws SurefireExecutionException
+    {
+        Collection<String> modulePath = getModularClasspath().getModulePath();
+        return createMergedClassLoader( join( getInprocTestClasspath(), new Classpath( modulePath ) ) );
+    }
+
+    @Override
+    protected Classpath getInprocClasspath()
+    {
+        return inprocClasspath;
     }
 }

@@ -31,8 +31,9 @@ properties(
 )
 
 final def oses = ['linux':'ubuntu && !H24', 'windows':'Windows']
-final def mavens = env.BRANCH_NAME == 'master' ? ['3.5.x', '3.3.x', '3.2.x'] : ['3.5.x']
-final def jdks = env.BRANCH_NAME == 'master' ? [12, 11, 8, 7] : [11, 8, 7]
+final def mavens = env.BRANCH_NAME == 'master' ? ['3.6.x', '3.5.x', '3.3.x', '3.2.x'] : ['3.6.x']
+// all non-EOL versions and the first EA
+final def jdks = [12, 11, 8, 7]
 
 final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
 final def goals = ['clean', 'install', 'jacoco:report']
@@ -62,16 +63,12 @@ oses.eachWithIndex { osMapping, indexOfOs ->
 
             stages[stageKey] = {
                 node(label) {
-                    if (os == 'windows' && jdk == 12) {
-                        // https://issues.apache.org/jira/browse/INFRA-17384
-                        return
-                    }
                     timestamps {
                         def boolean makeReports = indexOfOs == 0 && indexOfMaven == 0 && indexOfJdk == 0
                         def failsafeItPort = 8000 + 100 * indexOfMaven + 10 * indexOfJdk
                         def allOptions = options + ["-Dfailsafe-integration-test-port=${failsafeItPort}", "-Dfailsafe-integration-test-stop-port=${1 + failsafeItPort}"]
                         if (jdk > 7) {
-                            allOptions += ['-DpowermockVersion=2.0.0-RC.4', '-Denforcer.skip=true']
+                            allOptions += ['-DpowermockVersion=2.0.0', '-Denforcer.skip=true']
                         }
                         ws(dir: "${os == 'windows' ? "${TEMP}\\${BUILD_TAG}" : pwd()}") {
                             buildProcess(stageKey, jdkName, jdkTestName, mvnName, goals, allOptions, mavenOpts, makeReports)
