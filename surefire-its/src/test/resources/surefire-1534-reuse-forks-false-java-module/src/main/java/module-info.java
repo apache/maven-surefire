@@ -1,0 +1,3 @@
+module it {
+    exports it;
+}
