@@ -37,7 +37,7 @@ public class Surefire1534ReuseForksFalseWithJavaModuleIT
     public void testExecuteWithReuseForksFalseWithJavaModule()
             throws IOException
     {
-        OutputValidator validator = assumeJigsaw()
+        OutputValidator validator = assumeJava9()
                 .reuseForks( false )
                 .forkCount( 1 )
                 .executeTest();
@@ -57,7 +57,7 @@ public class Surefire1534ReuseForksFalseWithJavaModuleIT
     public void testExecuteWithReuseForksFalseWithJavaModuleWithFilter()
             throws IOException
     {
-        OutputValidator validator = assumeJigsaw()
+        OutputValidator validator = assumeJava9()
                 .reuseForks( false )
                 .forkCount( 1 )
                 .setTestToRun( "MainTest" )
@@ -78,7 +78,7 @@ public class Surefire1534ReuseForksFalseWithJavaModuleIT
     public void testExecuteWithZeroForkCountWithJavaModule()
             throws IOException
     {
-        OutputValidator validator = assumeJigsaw()
+        OutputValidator validator = assumeJava9()
                 .forkCount( 0 )
                 .executeTest();
 

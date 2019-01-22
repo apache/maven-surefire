@@ -45,7 +45,7 @@ public class Java9FullApiIT
     @Test
     public void shouldLoadMultipleJavaModules_JavaHome() throws Exception
     {
-        OutputValidator validator = assumeJigsaw()
+        OutputValidator validator = assumeJava9()
                                             .setForkJvm()
                                             .debugLogging()
                                             .execute( "verify" )

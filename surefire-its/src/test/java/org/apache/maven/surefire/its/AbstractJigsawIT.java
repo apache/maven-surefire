@@ -47,7 +47,7 @@ public abstract class AbstractJigsawIT
 
     protected abstract String getProjectDirectoryName();
 
-    protected SurefireLauncher assumeJigsaw() throws IOException
+    protected SurefireLauncher assumeJava9() throws IOException
     {
         assumeTrue( "There's no JDK 9 provided.",
                           isJavaVersion9AtLeast() || EXT_JDK_HOME != null && isExtJavaVerion9AtLeast() );

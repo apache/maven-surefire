@@ -32,7 +32,7 @@ public class ModulePathIT
     public void testModulePath()
             throws IOException
     {
-        assumeJigsaw()
+        assumeJava9()
                 .debugLogging()
                 .executeTest()
                 .verifyErrorFreeLog()
@@ -44,7 +44,7 @@ public class ModulePathIT
             throws IOException
     {
         suffix = " with spaces";
-        assumeJigsaw()
+        assumeJava9()
                 .debugLogging()
                 .executeTest()
                 .verifyErrorFreeLog()

@@ -44,7 +44,7 @@ public class Surefire1265Java9IT
     @Test
     public void shouldRunInPluginJava9() throws IOException
     {
-        assumeJigsaw()
+        assumeJava9()
                 .executeTest()
                 .verifyErrorFree( 2 );
     }
