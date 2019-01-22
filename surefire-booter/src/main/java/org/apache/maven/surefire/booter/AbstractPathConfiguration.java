@@ -20,6 +20,7 @@ package org.apache.maven.surefire.booter;
  */
 
 import javax.annotation.Nonnull;
+
 import static org.apache.maven.surefire.booter.Classpath.join;
 
 /**

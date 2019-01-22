@@ -1,3 +1,4 @@
-module it {
+module it
+{
     exports it;
 }

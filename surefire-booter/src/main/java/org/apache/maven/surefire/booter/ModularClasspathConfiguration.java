@@ -23,6 +23,10 @@ import javax.annotation.Nonnull;
 import java.util.Collection;
 import static org.apache.maven.surefire.booter.Classpath.join;
 
+import java.util.Collection;
+
+import static org.apache.maven.surefire.booter.Classpath.join;
+
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.21.0.Jigsaw
