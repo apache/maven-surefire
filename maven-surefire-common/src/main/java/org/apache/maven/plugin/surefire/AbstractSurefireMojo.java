@@ -197,7 +197,7 @@ public abstract class AbstractSurefireMojo
      * The base directory of the project being tested. This can be obtained in your integration test via
      * System.getProperty("basedir").
      */
-    @Parameter( defaultValue = "${basedir}" )
+    @Parameter( defaultValue = "${basedir}", readonly = true )
     protected File basedir;
 
     /**
@@ -242,11 +242,12 @@ public abstract class AbstractSurefireMojo
     private String[] additionalClasspathElements;
 
     /**
-     * The test source directory containing test class sources.
+     * The test source directory containing test class sources. Only used by the TestNG provider to process JavaDoc
+     * tags.
      *
      * @since 2.2
      */
-    @Parameter( defaultValue = "${project.build.testSourceDirectory}", required = true )
+    @Parameter( defaultValue = "${project.build.testSourceDirectory}", readonly = true )
     private File testSourceDirectory;
 
     /**
@@ -660,7 +661,7 @@ public abstract class AbstractSurefireMojo
      *
      * @since 2.2
      */
-    @Parameter( defaultValue = "${project.pluginArtifactRepositories}" )
+    @Parameter( defaultValue = "${project.pluginArtifactRepositories}", readonly = true )
     private List<ArtifactRepository> remoteRepositories;
 
     /**
