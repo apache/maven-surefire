@@ -31,7 +31,7 @@ properties(
 )
 
 final def oses = ['linux':'ubuntu && !H24', 'windows':'Windows']
-final def mavens = env.BRANCH_NAME == 'master' ? ['3.6.x', '3.5.x', '3.3.x', '3.2.x'] : ['3.6.x']
+final def mavens = env.BRANCH_NAME == 'master' ? ['3.6.x', '3.2.x'] : ['3.6.x']
 // all non-EOL versions and the first EA
 final def jdks = [12, 11, 8, 7]
 
@@ -56,7 +56,7 @@ oses.eachWithIndex { osMapping, indexOfOs ->
 
             if (label == null || jdkTestName == null || mvnName == null) {
                 println "Skipping ${stageKey} as unsupported by Jenkins Environment."
-                return;
+                return
             }
 
             println "${stageKey}  ==>  Label: ${label}, JDK: ${jdkTestName}, Maven: ${mvnName}."
@@ -118,7 +118,7 @@ timeout(time: 12, unit: 'HOURS') {
 def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvnName, goals, options, mavenOpts, boolean makeReports) {
     cleanWs()
     try {
-        def mvnLocalRepoDir = null
+        def mvnLocalRepoDir
         if (isUnix()) {
             sh 'mkdir -p .m2'
             mvnLocalRepoDir = "${pwd()}/.m2"
