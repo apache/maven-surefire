@@ -35,6 +35,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -132,9 +133,27 @@ public class StatelessXmlReporter
             createTestSuiteElement( ppw, testSetReportEntry, testSetStats, testSetReportEntry.elapsedTimeAsString() );
 
             showProperties( ppw, testSetReportEntry.getSystemProperties() );
+            
+            
 
+            //map.entrySet() Convert into list
+            List<Map.Entry<String, List<WrappedReportEntry>>> methodRunHistoryMapCoIntoList =
+                    new ArrayList<Map.Entry<String, List<WrappedReportEntry>>>( methodRunHistoryMap.entrySet() );
+            //sort
+            Collections.sort( methodRunHistoryMapCoIntoList,
+                    new Comparator<Map.Entry<String, List<WrappedReportEntry>>>()
+                    {
+                        public int compare( Map.Entry<String, List<WrappedReportEntry>> o1,
+                                            Map.Entry<String, List<WrappedReportEntry>> o2 )
+                        {
+                            return o1.getKey().compareTo( o2.getKey() );
+                        }
+                    }
+            );
+            
             // Iterate through all the test methods in the test class
-            for ( Entry<String, List<WrappedReportEntry>> entry : methodRunHistoryMap.entrySet() )
+            //for ( Entry<String, List<WrappedReportEntry>> entry : methodRunHistoryMap.entrySet() )
+            for ( Map.Entry<String, List<WrappedReportEntry>> entry : methodRunHistoryMapCoIntoList )
             {
                 List<WrappedReportEntry> methodEntryList = entry.getValue();
                 if ( methodEntryList == null )
