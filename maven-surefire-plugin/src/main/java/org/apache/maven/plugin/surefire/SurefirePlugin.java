@@ -300,6 +300,8 @@ public class SurefirePlugin
      * **{@literal /}NotIncludedByDefault.java
      * %regex[.*Test.*|.*Not.*]
      * </code></pre>
+     *
+     * @since 2.13
      */
     @Parameter( property = "surefire.includesFile" )
     private File includesFile;
@@ -312,6 +314,8 @@ public class SurefirePlugin
      * **{@literal /}DontRunTest.*
      * %regex[.*Test.*|.*Not.*]
      * </code></pre>
+     *
+     * @since 2.13
      */
     @Parameter( property = "surefire.excludesFile" )
     private File excludesFile;
