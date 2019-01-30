@@ -19,6 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,9 +38,19 @@ public class JUnitPlatformIT
     @Test
     public void testJupiterEngine()
     {
-        unpack( "/junit-platform-engine-jupiter" )
+        OutputValidator validator = unpack( "/junit-platform-engine-jupiter" )
                 .executeTest()
-                .verifyErrorFree( 5 );
+                .verifyErrorFree( 7 );
+
+        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest.txt" )
+                 // .assertContainsText( "<< ✨ >>" ) // after @DisplayName is uncommented via SUREFIRE-1222
+                 .assertContainsText( "Test set: junitplatformenginejupiter.DisplayNameTest" );
+
+        validator.getSurefireReportsFile( "TEST-junitplatformenginejupiter.DisplayNameTest.xml" )
+                 // At the moment, the testcase with the same is reported twice: test1() and test2() use the same display name
+                 // SUREFIRE-1222 will solve this.
+                 .assertContainsText( "testcase name=\"73$71 âœ”\" classname=\"junitplatformenginejupiter.DisplayNameTest\"" )
+                 .assertContainsText( "testcase name=\"73$71 âœ”\" classname=\"junitplatformenginejupiter.DisplayNameTest\"" );
     }
 
     @Test
