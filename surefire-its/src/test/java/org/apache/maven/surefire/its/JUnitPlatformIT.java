@@ -22,6 +22,7 @@ package org.apache.maven.surefire.its;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
@@ -37,6 +38,15 @@ public class JUnitPlatformIT
 
     @Test
     public void testJupiterEngine()
+    {
+        unpack( "/junit-platform-engine-jupiter" )
+                .executeTest()
+                .verifyErrorFree( 5 );
+    }
+
+    @Test
+    @Ignore( "Uncomment while developing SUREFIRE-1222. Rename 'javax' extension of DisplayNameTest.javax." )
+    public void testJupiterEngineWithDisplayNames()
     {
         OutputValidator validator = unpack( "/junit-platform-engine-jupiter" )
                 .executeTest()
