@@ -20,14 +20,13 @@ package org.apache.maven.plugin.surefire;
  */
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.booter.Classpath;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import static java.util.Collections.addAll;
 import static org.apache.maven.shared.utils.StringUtils.split;
@@ -38,45 +37,26 @@ final class TestClassPath
     private final File classesDirectory;
     private final File testClassesDirectory;
     private final String[] additionalClasspathElements;
-    private final ConsoleLogger logger;
 
     TestClassPath( Iterable<Artifact> artifacts,
                    File classesDirectory,
                    File testClassesDirectory,
-                   String[] additionalClasspathElements,
-                   ConsoleLogger logger )
+                   String[] additionalClasspathElements )
     {
         this.artifacts = artifacts;
         this.classesDirectory = classesDirectory;
         this.testClassesDirectory = testClassesDirectory;
         this.additionalClasspathElements = additionalClasspathElements;
-        this.logger = logger;
     }
 
-    void avoidArtifactDuplicates( Set<Artifact> providerArtifacts )
+    Map<String, Artifact> getTestDependencies()
     {
+        Map<String, Artifact> artifactMapping = new LinkedHashMap<>();
         for ( Artifact artifact : artifacts )
         {
-            Iterator<Artifact> it = providerArtifacts.iterator();
-            while ( it.hasNext() )
-            {
-                Artifact providerArtifact = it.next();
-                String classifier1 = providerArtifact.getClassifier();
-                String classifier2 = artifact.getClassifier();
-                if ( providerArtifact.getGroupId().equals( artifact.getGroupId() )
-                        && providerArtifact.getArtifactId().equals( artifact.getArtifactId() )
-                        && providerArtifact.getType().equals( artifact.getType() )
-                        && ( classifier1 == null ? classifier2 == null : classifier1.equals( classifier2 ) ) )
-                {
-                    it.remove();
-                    if ( logger.isDebugEnabled() )
-                    {
-                        logger.debug( "Removed artifact " + providerArtifact + " from provider. "
-                                + "Already appears in test classpath." );
-                    }
-                }
-            }
+            artifactMapping.put( artifact.getGroupId() + ":" + artifact.getArtifactId(), artifact );
         }
+        return artifactMapping;
     }
 
     Classpath toClasspath()
