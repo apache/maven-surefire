@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,24 +17,16 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.plugin.MojoExecutionException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import javax.annotation.Nonnull;
-import java.util.Set;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
-/**
- * @author Kristian Rosenvold
- */
-public interface ProviderInfo
+class JupiterTest
 {
-    @Nonnull
-    String getProviderName();
-
-    boolean isApplicable();
-
-    @Nonnull
-    Set<Artifact> getProviderClasspath() throws MojoExecutionException;
-
-    void addProviderProperties() throws MojoExecutionException;
+    @Test
+    void test( TestInfo info )
+    {
+        assertEquals( "test(TestInfo)", info.getDisplayName(), "display name mismatch" );
+    }
 }

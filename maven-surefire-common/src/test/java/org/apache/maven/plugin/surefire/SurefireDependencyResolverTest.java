@@ -145,9 +145,9 @@ public class SurefireDependencyResolverTest
                 } );
 
         SurefireDependencyResolver surefireDependencyResolver =
-                new SurefireDependencyResolver( repositorySystem, null, null, null, null );
+                new SurefireDependencyResolver( repositorySystem, null, null, null, null, null, null );
 
-        ArtifactResolutionResult actualResult = surefireDependencyResolver.resolveArtifact( provider );
+        ArtifactResolutionResult actualResult = surefireDependencyResolver.resolvePluginArtifact( provider );
 
         assertThat( actualResult )
                 .isSameAs( expectedResult );
@@ -243,7 +243,7 @@ public class SurefireDependencyResolverTest
         ConsoleLogger log = mock( ConsoleLogger.class );
 
         SurefireDependencyResolver surefireDependencyResolver =
-                new SurefireDependencyResolver( repositorySystem, log, null, null, null );
+                new SurefireDependencyResolver( repositorySystem, log, null, null, null, null, null );
 
         when( log.isDebugEnabled() )
                 .thenReturn( true );
@@ -349,7 +349,7 @@ public class SurefireDependencyResolverTest
                 } );
 
         SurefireDependencyResolver surefireDependencyResolver =
-                new SurefireDependencyResolver( repositorySystem, null, null, null, null );
+                new SurefireDependencyResolver( repositorySystem, null, null, null, null, null, null );
 
         Map<String, Artifact> pluginArtifactsMapping = new HashMap<>();
         pluginArtifactsMapping.put( plugin.getGroupId() + ":" + plugin.getArtifactId(), plugin );

@@ -108,7 +108,7 @@ public class AbstractSurefireMojoJava7PlusTest
 
         TestClassPath testClasspath =
                 new TestClassPath( asList( modular, nonModular, junit, hamcrest ), classesDir, testClassesDir,
-                        null, null );
+                        null );
 
         doReturn( testClasspath ).when( mojo, "generateTestClasspath" );
         doReturn( 1 ).when( mojo, "getEffectiveForkCount" );
@@ -171,11 +171,10 @@ public class AbstractSurefireMojoJava7PlusTest
 
         StartupConfiguration conf = invokeMethod( mojo, "newStartupConfigWithModularPath",
                 classLoaderConfiguration, providerClasspath, "org.asf.Provider", moduleInfo, scanResult,
-                "" );
+                "", testClasspath );
 
         verify( mojo, times( 1 ) ).effectiveIsEnableAssertions();
         verify( mojo, times( 1 ) ).isChildDelegation();
-        verifyPrivate( mojo, times( 1 ) ).invoke( "generateTestClasspath" );
         verify( mojo, times( 1 ) ).getEffectiveForkCount();
         verify( mojo, times( 1 ) ).getTestClassesDirectory();
         verify( scanResult, times( 1 ) ).getClasses();

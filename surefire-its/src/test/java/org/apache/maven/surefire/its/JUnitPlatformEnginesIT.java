@@ -59,13 +59,13 @@ public class JUnitPlatformEnginesIT
     @Parameters(name = "{0}")
     public static Iterable<Object[]> regexVersions()
     {
-        ArrayList<Object[]> args = new ArrayList<Object[]>();
+        ArrayList<Object[]> args = new ArrayList<>();
         args.add( new Object[] { "1.0.3", "5.0.3", "1.0.0", "1.0.0" } );
         args.add( new Object[] { "1.1.1", "5.1.1", "1.0.0", "1.0.0" } );
         args.add( new Object[] { "1.2.0", "5.2.0", "1.1.0", "1.0.0" } );
         args.add( new Object[] { "1.3.2", "5.3.2", "1.1.1", "1.0.0" } );
         args.add( new Object[] { "1.4.0-SNAPSHOT", "5.4.0-SNAPSHOT", "1.1.1", "1.0.0" } );
-        args.add( new Object[] { "1.4.0-RC1", "5.4.0-RC1", "1.1.1", "1.0.0" } );
+        args.add( new Object[] { "1.4.0-RC2", "5.4.0-RC2", "1.1.1", "1.0.0" } );
         return args;
     }
 
@@ -124,7 +124,7 @@ public class JUnitPlatformEnginesIT
                 regex( toRegex( "*surefire-api-*.jar*" ) ),
                 regex( toRegex( "*surefire-logger-api-*.jar*" ) ),
                 regex( toRegex( "*common-java5-*.jar*" ) ),
-                regex( toRegex( "*junit-platform-launcher-1.3.2.jar*" ) )
+                regex( toRegex( "*junit-platform-launcher-" + platform + ".jar*" ) )
         ) );
 
         lines = validator.loadLogLines( startsWith( "[DEBUG] boot(compact) classpath" ) );
@@ -148,7 +148,7 @@ public class JUnitPlatformEnginesIT
                 regex( toRegex( "*opentest4j-" + opentest + ".jar*" ) ),
                 regex( toRegex( "*junit-jupiter-api-" + jupiter + ".jar*" ) ),
                 regex( toRegex( "*surefire-junit-platform-*.jar*" ) ),
-                regex( toRegex(  "*junit-platform-launcher-1.3.2.jar*" ) )
+                regex( toRegex(  "*junit-platform-launcher-" + platform + ".jar*" ) )
         ) );
     }
 

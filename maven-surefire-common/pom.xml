@@ -53,23 +53,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-plugin-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-artifact</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-model</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -79,6 +64,10 @@
         <dependency>
             <groupId>org.apache.maven.shared</groupId>
             <artifactId>maven-common-artifact-filters</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.shared</groupId>
+            <artifactId>maven-artifact-transfer</artifactId>
         </dependency>
         <dependency>
             <groupId>org.codehaus.plexus</groupId>
@@ -165,8 +154,8 @@
                             </artifactSet>
                             <relocations>
                                 <relocation>
-                                    <pattern>org.apache.maven.shared</pattern>
-                                    <shadedPattern>org.apache.maven.surefire.shade.common.org.apache.maven.shared</shadedPattern>
+                                    <pattern>org.apache.maven.shared.utils</pattern>
+                                    <shadedPattern>org.apache.maven.surefire.shade.common.org.apache.maven.shared.utils</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.apache.commons.io</pattern>

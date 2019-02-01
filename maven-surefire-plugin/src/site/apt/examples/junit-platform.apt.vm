@@ -40,7 +40,7 @@ Using JUnit 5 Platform
     <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-engine</artifactId>
-        <version>5.3.2</version>
+        <version>5.4.0</version>
         <scope>test</scope>
     </dependency>
     [...]
@@ -63,7 +63,7 @@ Using JUnit 5 Platform
     <dependency>
         <groupId>org.junit.vintage</groupId>
         <artifactId>junit-vintage-engine</artifactId>
-        <version>5.3.2</version>
+        <version>5.4.0</version>
         <scope>test</scope>
     </dependency>
     [...]
@@ -73,6 +73,112 @@ Using JUnit 5 Platform
   For more information on using JUnit 5, that is the JUnit Platform, JUnit Jupiter, and JUnit Vintage,
   see the {{{https://junit.org/junit5/}JUnit 5 web site}}
   and the {{{https://junit.org/junit5/docs/current/user-guide/}JUnit 5 User Guide}}.
+
+* Smart Resolution of Jupiter Engine and Vintage Engine for JUnit4 (since plugin version 3.0.0-M4)
+
+  JUnit5 API artifact and your test sources become isolated from engine.
+
+  Normally the developer does not want to access internal classes of JUnit5 engine (e.g. <<<5.4.0>>>). In this example
+  the POM has only Jupiter API dependency in test classpath.
+
++---+
+<dependencies>
+    [...]
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.4.0</version>
+        <scope>test</scope>
+    </dependency>
+    [...]
+</dependencies>
+...
+<build>
+    <plugins>
+        [...]
+        <plugin>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>${project.artifactId}</artifactId>
+            <version>${project.version}</version>
+            [... configuration or goals and executions ...]
+        </plugin>
+        [...]
+    </plugins>
+</build>
+...
++---+
+
+  In the following example the engine artifact appears in plugin dependencies and the engine is resolved by the plugin
+  and downloaded from a remote repository for plugins. You may want to update the version of engine with fixed bugs in
+  <<<5.3.2>>> but the API version <<<5.3.0>>> stays intact!
+
++---+
+<dependencies>
+    [...]
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.3.0</version>
+        <scope>test</scope>
+    </dependency>
+    [...]
+</dependencies>
+...
+<build>
+    <plugins>
+        [...]
+        <plugin>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>${project.artifactId}</artifactId>
+            <version>${project.version}</version>
+            <dependencies>
+                <dependency>
+                    <groupId>org.junit.jupiter</groupId>
+                    <artifactId>junit-jupiter-engine</artifactId>
+                    <version>5.3.2</version>
+                </dependency>
+            </dependencies>
+        </plugin>
+        [...]
+    </plugins>
+</build>
+...
++---+
+
+
+  Similar with JUnit4 in test dependencies of your project POM. The Vintage engine artifact is in plugin dependencies.
+
++---+
+<dependencies>
+    [...]
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.12</version>
+        <scope>test</scope>
+    </dependency>
+    [...]
+</dependencies>
+...
+<build>
+    <plugins>
+        ...
+        <plugin>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>${project.artifactId}</artifactId>
+            <version>${project.version}</version>
+            <dependencies>
+                <dependency>
+                    <groupId>org.junit.vintage</groupId>
+                    <artifactId>junit-vintage-engine</artifactId>
+                    <version>5.4.0</version>
+                </dependency>
+            </dependencies>
+        </plugin>
+    </plugins>
+</build>
+...
++---+
 
 * Provider Selection
 
