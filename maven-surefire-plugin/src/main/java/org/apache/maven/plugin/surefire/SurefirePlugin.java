@@ -49,7 +49,7 @@ public class SurefirePlugin
      * The directory containing generated classes of the project being tested. This will be included after the test
      * classes in the test classpath.
      */
-    @Parameter( defaultValue = "${project.build.outputDirectory}" )
+    @Parameter( defaultValue = "${project.build.outputDirectory}", readonly = true )
     private File classesDirectory;
 
     /**

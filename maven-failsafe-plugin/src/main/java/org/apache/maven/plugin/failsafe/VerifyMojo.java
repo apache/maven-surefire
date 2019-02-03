@@ -109,7 +109,7 @@ public class VerifyMojo
      * The directory containing generated test classes of the project being tested.
      * This will be included at the beginning the test classpath.
      */
-    @Parameter( defaultValue = "${project.build.testOutputDirectory}" )
+    @Parameter( defaultValue = "${project.build.testOutputDirectory}", readonly = true )
     private File testClassesDirectory;
 
     /**
