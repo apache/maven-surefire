@@ -197,14 +197,14 @@ public abstract class AbstractSurefireMojo
      * The base directory of the project being tested. This can be obtained in your integration test via
      * System.getProperty("basedir").
      */
-    @Parameter( defaultValue = "${basedir}", readonly = true )
+    @Parameter( defaultValue = "${basedir}" )
     protected File basedir;
 
     /**
      * The directory containing generated test classes of the project being tested. This will be included at the
      * beginning of the test classpath. *
      */
-    @Parameter( defaultValue = "${project.build.testOutputDirectory}" )
+    @Parameter( defaultValue = "${project.build.testOutputDirectory}", required = true )
     protected File testClassesDirectory;
 
     /**
