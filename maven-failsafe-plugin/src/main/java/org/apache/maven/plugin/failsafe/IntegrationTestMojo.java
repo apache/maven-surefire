@@ -61,7 +61,7 @@ public class IntegrationTestMojo
     @Parameter
     private File classesDirectory;
 
-    @Parameter( readonly = true, defaultValue = "${project.build.outputDirectory}" )
+    @Parameter( defaultValue = "${project.build.outputDirectory}", readonly = true, required = true )
     private File defaultClassesDirectory;
 
     /**
