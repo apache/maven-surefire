@@ -157,7 +157,7 @@ public class JUnit4Provider
                     commandsReader.awaitStarted();
                 }
 
-                for ( int i = 0; i <= untilFailureLoopCount && result.getFailures().size() == 0; i++ )
+                for ( int i = 0; i < untilFailureLoopCount && result.getFailures().size() == 0; i++ )
                 {
                     for ( Class<?> testToRun : testsToRun )
                     {

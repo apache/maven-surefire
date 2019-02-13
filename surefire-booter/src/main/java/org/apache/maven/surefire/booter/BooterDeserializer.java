@@ -101,7 +101,7 @@ public class BooterDeserializer
         TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testArtifactClassifier );
         TestRequest testSuiteDefinition =
             new TestRequest( testSuiteXmlFiles, sourceDirectory, new TestListResolver( requestedTest ),
-                             rerunFailingTestsCount, untilFailureLoopCount == null ? 0L : untilFailureLoopCount );
+                             rerunFailingTestsCount, untilFailureLoopCount == null ? 1L : untilFailureLoopCount );
 
         ReporterConfiguration reporterConfiguration =
             new ReporterConfiguration( reportsDirectory, properties.getBooleanProperty( ISTRIMSTACKTRACE ) );

@@ -370,7 +370,7 @@ public class SurefirePlugin
      *
      * @since 3.0.0-M4
      */
-    @Parameter( property = "surefire.untilFailureLoopCount", defaultValue = "0" )
+    @Parameter( property = "surefire.untilFailureLoopCount", defaultValue = "1" )
     private long untilFailureLoopCount;
 
     @Override
