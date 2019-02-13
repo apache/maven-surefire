@@ -724,6 +724,17 @@ public class AbstractSurefireMojoTest
         }
 
         @Override
+        protected long getUntilFailureLoopCount()
+        {
+            return 0;
+        }
+
+        @Override
+        protected void setUntilFailureLoopCount( long untilFailureLoopCount )
+        {
+        }
+
+        @Override
         protected Artifact getMojoArtifact()
         {
             return null;

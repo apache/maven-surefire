@@ -38,18 +38,21 @@ public class TestRequest
 
     private final int rerunFailingTestsCount;
 
+    private final long untilFailureLoopCount;
+
     public TestRequest( List suiteXmlFiles, File testSourceDirectory, TestListResolver requestedTests )
     {
-        this( createFiles( suiteXmlFiles ), testSourceDirectory, requestedTests, 0 );
+        this( createFiles( suiteXmlFiles ), testSourceDirectory, requestedTests, 0, 0 );
     }
 
     public TestRequest( List suiteXmlFiles, File testSourceDirectory, TestListResolver requestedTests,
-                        int rerunFailingTestsCount )
+                        int rerunFailingTestsCount, long untilFailureLoopCount )
     {
         this.suiteXmlFiles = createFiles( suiteXmlFiles );
         this.testSourceDirectory = testSourceDirectory;
         this.requestedTests = requestedTests;
         this.rerunFailingTestsCount = rerunFailingTestsCount;
+        this.untilFailureLoopCount = untilFailureLoopCount;
     }
 
     /**
@@ -90,6 +93,17 @@ public class TestRequest
     public int getRerunFailingTestsCount()
     {
         return rerunFailingTestsCount;
+    }
+
+    /**
+     * How many times to run tests until a failure occurs,
+     * issued with -Dsurefire.untilFailureLoopCount from the command line.
+     *
+     * @return The long parameter to indicate how many times to rerun until a failure occurs
+     */
+    public long getUntilFailureLoopCount()
+    {
+        return untilFailureLoopCount;
     }
 
     private static List<File> createFiles( List suiteXmlFiles )

@@ -791,6 +791,10 @@ public abstract class AbstractSurefireMojo
 
     protected abstract void setUseModulePath( boolean useModulePath );
 
+    protected abstract long getUntilFailureLoopCount();
+
+    protected abstract void setUntilFailureLoopCount( long untilFailureLoopCount );
+
     /**
      * This plugin MOJO artifact.
      *
@@ -1624,7 +1628,8 @@ public abstract class AbstractSurefireMojo
         final TestRequest testSuiteDefinition = new TestRequest( suiteXmlFiles(),
                                                                  getTestSourceDirectory(),
                                                                  getSpecificTests(),
-                                                                 getRerunFailingTestsCount() );
+                                                                 getRerunFailingTestsCount(),
+                                                                 getUntilFailureLoopCount() );
 
         final boolean actualFailIfNoTests;
         DirectoryScannerParameters directoryScannerParameters = null;

@@ -67,6 +67,7 @@ import static org.apache.maven.surefire.booter.BooterConstants.TEST_CLASSES_DIRE
 import static org.apache.maven.surefire.booter.BooterConstants.TEST_SUITE_XML_FILES;
 import static org.apache.maven.surefire.booter.BooterConstants.TESTARTIFACT_CLASSIFIER;
 import static org.apache.maven.surefire.booter.BooterConstants.TESTARTIFACT_VERSION;
+import static org.apache.maven.surefire.booter.BooterConstants.UNTIL_FAILURE_LOOP_COUNT;
 import static org.apache.maven.surefire.booter.BooterConstants.USEMANIFESTONLYJAR;
 import static org.apache.maven.surefire.booter.BooterConstants.USESYSTEMCLASSLOADER;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.writePropertiesFile;
@@ -139,6 +140,8 @@ class BooterSerializer
             properties.setProperty( REQUESTEDTEST, testFilter == null ? "" : testFilter.getPluginParameterTest() );
             int rerunFailingTestsCount = testSuiteDefinition.getRerunFailingTestsCount();
             properties.setNullableProperty( RERUN_FAILING_TESTS_COUNT, toString( rerunFailingTestsCount ) );
+            long untilFailureLoopCount = testSuiteDefinition.getUntilFailureLoopCount();
+            properties.setNullableProperty( UNTIL_FAILURE_LOOP_COUNT, toString( untilFailureLoopCount ) );
         }
 
         DirectoryScannerParameters directoryScannerParameters = booterConfiguration.getDirScannerParams();
