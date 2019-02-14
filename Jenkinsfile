@@ -37,7 +37,7 @@ final def jdks = [12, 11, 8, 7]
 
 final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
 final def goals = ['clean', 'install']
-final def goalsDepl = ['clean', 'deploy', 'jacoco:report']
+final def goalsDepl = ['clean', 'install', 'jacoco:report']
 final Map stages = [:]
 
 oses.eachWithIndex { osMapping, indexOfOs ->
