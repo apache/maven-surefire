@@ -208,16 +208,16 @@
                             </artifactSet>
                             <relocations>
                                 <relocation>
-                                    <pattern>org.apache.maven.shared</pattern>
-                                    <shadedPattern>org.apache.maven.surefire.shade.org.apache.maven.shared</shadedPattern>
+                                    <pattern>org.apache.maven.shared.utils</pattern>
+                                    <shadedPattern>org.apache.maven.surefire.shade.failsafe.org.apache.maven.shared.utils</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.apache.commons.io</pattern>
-                                    <shadedPattern>org.apache.maven.surefire.shade.org.apache.commons.io</shadedPattern>
+                                    <shadedPattern>org.apache.maven.surefire.shade.failsafe.org.apache.commons.io</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.apache.commons.lang3</pattern>
-                                    <shadedPattern>org.apache.maven.surefire.shade.org.apache.commons.lang3</shadedPattern>
+                                    <shadedPattern>org.apache.maven.surefire.shade.failsafe.org.apache.commons.lang3</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>

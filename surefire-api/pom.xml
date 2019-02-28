@@ -82,8 +82,8 @@
               </artifactSet>
               <relocations>
                 <relocation>
-                  <pattern>org.apache.maven.shared</pattern>
-                  <shadedPattern>org.apache.maven.surefire.shade.api.org.apache.maven.shared</shadedPattern>
+                  <pattern>org.apache.maven.shared.utils</pattern>
+                  <shadedPattern>org.apache.maven.surefire.shade.api.org.apache.maven.shared.utils</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>
