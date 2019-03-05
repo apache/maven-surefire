@@ -50,7 +50,7 @@ final class TestPlanScannerFilter
     public boolean accept( Class testClass )
     {
         LauncherDiscoveryRequest discoveryRequest = request()
-                        .selectors( selectClass( testClass ) )
+                        .selectors( selectClass( testClass.getName() ) )
                         .filters( includeAndExcludeFilters ).build();
 
         TestPlan testPlan = launcher.discover( discoveryRequest );

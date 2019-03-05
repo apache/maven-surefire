@@ -156,7 +156,7 @@ public class JUnitPlatformProvider
                         request().filters( filters ).configurationParameters( configurationParameters );
         for ( Class<?> testClass : testsToRun )
         {
-            builder.selectors( selectClass( testClass ) );
+            builder.selectors( selectClass( testClass.getName() ) );
         }
         return builder.build();
     }
