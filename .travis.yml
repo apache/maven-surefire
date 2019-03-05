@@ -3,7 +3,7 @@ jdk:
   - oraclejdk8
 #  - oraclejdk9
 
-script: "rm -rf .repository && mvn --show-version --errors --batch-mode -Prun-its clean install -Dmaven.repo.local=.repository -Denforcer.skip=true -e"
+script: "rm -rf .repository && mvn --show-version --no-snapshot-updates --errors --batch-mode -Prun-its clean install -Dmaven.repo.local=.repository -Denforcer.skip=true -e"
 
 install: true
 
