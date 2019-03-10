@@ -25,7 +25,6 @@ import java.io.PrintStream;
 
 import static java.lang.System.setErr;
 import static java.lang.System.setOut;
-import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 
 /**
  * Deals with system.out/err.
@@ -55,16 +54,14 @@ public final class ConsoleOutputCapture
         @Override
         public void write( byte[] buf, int off, int len )
         {
-            // Note: At this point the supplied "buf" instance is reused, which means
-            // data must be copied out of the buffer
-            target.writeTestOutput( buf, off, len, isStdout );
+            target.writeTestOutput( new String( buf, off, len ), false, isStdout );
         }
 
         @Override
         public void write( byte[] b )
             throws IOException
         {
-            target.writeTestOutput( b, 0, b.length, isStdout );
+            write( b, 0, b.length );
         }
 
         @Override
@@ -81,14 +78,139 @@ public final class ConsoleOutputCapture
         }
 
         @Override
+        public void println( boolean x )
+        {
+            println( x ? "true" : "false" );
+        }
+
+        @Override
+        public void println( char x )
+        {
+            println( String.valueOf( x ) );
+        }
+
+        @Override
+        public void println( int x )
+        {
+            println( String.valueOf( x ) );
+        }
+
+        @Override
+        public void println( long x )
+        {
+            println( String.valueOf( x ) );
+        }
+
+        @Override
+        public void println( float x )
+        {
+            println( String.valueOf( x ) );
+        }
+
+        @Override
+        public void println( double x )
+        {
+            println( String.valueOf( x ) );
+        }
+
+        @Override
+        public void println( char[] x )
+        {
+            println( String.valueOf( x ) );
+        }
+
+        @Override
+        public void println( Object x )
+        {
+            println( String.valueOf( x ) );
+        }
+
+        @Override
         public void println( String s )
         {
-            if ( s == null )
-            {
-                s = "null"; // Shamelessly taken from super.print
-            }
-            final byte[] bytes = ( s + NL ).getBytes();
-            target.writeTestOutput( bytes, 0, bytes.length, isStdout );
+            target.writeTestOutput( s == null ? "null" : s, true, isStdout );
+        }
+
+        @Override
+        public void println()
+        {
+            target.writeTestOutput( "", true, isStdout );
+        }
+
+        @Override
+        public void print( boolean x )
+        {
+            print( x ? "true" : "false" );
+        }
+
+        @Override
+        public void print( char x )
+        {
+            print( String.valueOf( x ) );
+        }
+
+        @Override
+        public void print( int x )
+        {
+            print( String.valueOf( x ) );
+        }
+
+        @Override
+        public void print( long x )
+        {
+            print( String.valueOf( x ) );
+        }
+
+        @Override
+        public void print( float x )
+        {
+            print( String.valueOf( x ) );
+        }
+
+        @Override
+        public void print( double x )
+        {
+            print( String.valueOf( x ) );
+        }
+
+        @Override
+        public void print( char[] x )
+        {
+            print( String.valueOf( x ) );
+        }
+
+        @Override
+        public void print( Object x )
+        {
+            print( String.valueOf( x ) );
+        }
+
+        @Override
+        public void print( String s )
+        {
+            target.writeTestOutput( s == null ? "null" : s, false, isStdout );
+        }
+
+        @Override
+        public PrintStream append( CharSequence csq )
+        {
+            print( csq == null ? "null" : csq.toString() );
+            return this;
+        }
+
+        @Override
+        public PrintStream append( CharSequence csq, int start, int end )
+        {
+            CharSequence s = csq == null ? "null" : csq;
+            print( s.subSequence( start, end ).toString() );
+            return this;
+        }
+
+        @Override
+        public PrintStream append( char c )
+        {
+            print( c );
+            return this;
         }
 
         @Override
@@ -106,9 +228,8 @@ public final class ConsoleOutputCapture
             extends OutputStream
     {
         @Override
-        public void write( int b ) throws IOException
+        public void write( int b )
         {
-
         }
     }
 }

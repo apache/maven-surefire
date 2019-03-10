@@ -218,6 +218,12 @@
         </exclusions>
       </dependency>
       <dependency>
+        <!-- version 1.11 used in maven-artifact-transfer:0.11.0 -->
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.11</version>
+      </dependency>
+      <dependency>
         <groupId>org.apache.maven.shared</groupId>
         <artifactId>maven-artifact-transfer</artifactId>
         <version>0.11.0</version>

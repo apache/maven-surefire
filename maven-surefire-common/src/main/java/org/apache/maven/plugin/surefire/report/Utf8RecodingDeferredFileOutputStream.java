@@ -23,11 +23,9 @@ import org.apache.commons.io.output.DeferredFileOutputStream;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 
 /**
  * A deferred file output stream decorator that recodes the bytes written into the stream from the VM default encoding
@@ -44,10 +42,10 @@ class Utf8RecodingDeferredFileOutputStream
     @SuppressWarnings( "checkstyle:magicnumber" )
     Utf8RecodingDeferredFileOutputStream( String channel )
     {
-        this.deferredFileOutputStream = new DeferredFileOutputStream( 1000000, channel, "deferred", null );
+        deferredFileOutputStream = new DeferredFileOutputStream( 1000000, channel, "deferred", null );
     }
 
-    public synchronized void write( byte[] buf, int off, int len )
+    public synchronized void write( String output, boolean newLine )
         throws IOException
     {
         if ( closed )
@@ -55,28 +53,15 @@ class Utf8RecodingDeferredFileOutputStream
             return;
         }
 
-        if ( !Charset.defaultCharset().equals( UTF_8 ) )
+        if ( output == null )
         {
-            CharBuffer decodedFromDefaultCharset = Charset.defaultCharset().decode( ByteBuffer.wrap( buf, off, len ) );
-            ByteBuffer utf8Encoded = UTF_8.encode( decodedFromDefaultCharset );
-
-            if ( utf8Encoded.hasArray() )
-            {
-                byte[] convertedBytes = utf8Encoded.array();
-
-                deferredFileOutputStream.write( convertedBytes, utf8Encoded.position(), utf8Encoded.remaining() );
-            }
-            else
-            {
-                byte[] convertedBytes = new byte[utf8Encoded.remaining()];
-                utf8Encoded.get( convertedBytes, 0, utf8Encoded.remaining() );
-
-                deferredFileOutputStream.write( convertedBytes, 0, convertedBytes.length );
-            }
+            output = "null";
         }
-        else
+
+        deferredFileOutputStream.write( output.getBytes( UTF_8 ) );
+        if ( newLine )
         {
-            deferredFileOutputStream.write( buf, off, len );
+            deferredFileOutputStream.write( NL.getBytes( UTF_8 ) );
         }
     }
 

@@ -30,7 +30,9 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicStampedReference;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.plugin.surefire.report.FileReporter.getReportFile;
+import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 
 /**
  * Surefire output consumer proxy that writes test output to a {@link java.io.File} for each test suite.
@@ -99,7 +101,7 @@ public class ConsoleOutputFileReporter
     }
 
     @Override
-    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    public void writeTestOutput( String output, boolean newLine, boolean stdout )
     {
         lock.lock();
         try
@@ -121,12 +123,22 @@ public class ConsoleOutputFileReporter
                     os = new BufferedOutputStream( new FileOutputStream( file ), STREAM_BUFFER_SIZE );
                     fileOutputStream.set( os, OPEN );
                 }
-                os.write( buf, off, len );
+
+                if ( output == null )
+                {
+                    output = "null";
+                }
+                os.write( output.getBytes( UTF_8 ) );
+                if ( newLine )
+                {
+                    os.write( NL.getBytes( UTF_8 ) );
+                }
             }
         }
         catch ( IOException e )
         {
             dumpException( e );
+            // todo use UncheckedIOException in Java 8
             throw new RuntimeException( e );
         }
         finally

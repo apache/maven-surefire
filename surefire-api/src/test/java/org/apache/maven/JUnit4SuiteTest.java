@@ -23,6 +23,7 @@ import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
 import org.apache.maven.plugin.surefire.runorder.ThreadedExecutionSchedulerTest;
 import org.apache.maven.surefire.SpecificTestClassFilterTest;
+import org.apache.maven.surefire.booter.ForkedChannelEncoderTest;
 import org.apache.maven.surefire.booter.ForkingRunListenerTest;
 import org.apache.maven.surefire.booter.MasterProcessCommandTest;
 import org.apache.maven.surefire.booter.SurefireReflectorTest;
@@ -39,7 +40,6 @@ import org.apache.maven.surefire.util.ScanResultTest;
 import org.apache.maven.surefire.util.TestsToRunTest;
 import org.apache.maven.surefire.util.internal.ConcurrencyUtilsTest;
 import org.apache.maven.surefire.util.internal.ImmutableMapTest;
-import org.apache.maven.surefire.util.internal.StringUtilsTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -59,7 +59,6 @@ import org.junit.runners.Suite;
     ResolvedTestTest.class,
     TestListResolverTest.class,
     ConcurrencyUtilsTest.class,
-    StringUtilsTest.class,
     DefaultDirectoryScannerTest.class,
     RunOrderCalculatorTest.class,
     RunOrderTest.class,
@@ -68,7 +67,8 @@ import org.junit.runners.Suite;
     SpecificTestClassFilterTest.class,
     FundamentalFilterTest.class,
     ImmutableMapTest.class,
-    ReflectionUtilsTest.class
+    ReflectionUtilsTest.class,
+    ForkedChannelEncoderTest.class
 } )
 @RunWith( Suite.class )
 public class JUnit4SuiteTest

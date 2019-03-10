@@ -98,8 +98,8 @@ public class JUnit3Provider
         {
             final RunListener reporter = reporterFactory.createReporter();
             ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
-            final Map<String, String> systemProperties = systemProps();
-            final String smClassName = systemProperties.get( "surefire.security.manager" );
+            Map<String, String> systemProperties = systemProps();
+            String smClassName = System.getProperty( "surefire.security.manager" );
             if ( smClassName != null )
             {
                 SecurityManager securityManager =
@@ -133,13 +133,9 @@ public class JUnit3Provider
                                  Map<String, String> systemProperties )
         throws TestSetFailedException
     {
-        SimpleReportEntry report = new SimpleReportEntry( testSet.getName(), null, systemProperties );
-
-        reporter.testSetStarting( report );
-
+        reporter.testSetStarting( new SimpleReportEntry( testSet.getName(), null ) );
         testSet.execute( reporter, classLoader );
-
-        reporter.testSetCompleted( report );
+        reporter.testSetCompleted( new SimpleReportEntry( testSet.getName(), null, systemProperties ) );
     }
 
     private TestsToRun scanClassPath()

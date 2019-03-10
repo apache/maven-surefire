@@ -25,6 +25,7 @@ import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Notifiable
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
+import org.apache.maven.surefire.booter.ForkedChannelEncoder;
 import org.apache.maven.surefire.booter.ForkingRunListener;
 import org.apache.maven.surefire.report.CategorizedReportEntry;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
@@ -40,11 +41,11 @@ import org.hamcrest.MatcherAssert;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.List;
-import java.util.StringTokenizer;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 
 /**
@@ -56,10 +57,6 @@ public class ForkingRunListenerTest
     private final ByteArrayOutputStream content, anotherContent;
 
     private final PrintStream printStream, anotherPrintStream;
-
-    final int defaultChannel = 17;
-
-    final int anotherChannel = 18;
 
     public ForkingRunListenerTest()
     {
@@ -74,20 +71,6 @@ public class ForkingRunListenerTest
     {
         printStream.flush();
         content.reset();
-    }
-
-    public void testHeaderCreation()
-    {
-        final byte[] header = ForkingRunListener.createHeader( (byte) 'F', 0xCAFE );
-        String asString = new String( header );
-        assertEquals( "F,cafe," + Charset.defaultCharset().name() + ",", asString );
-    }
-
-    public void testHeaderCreationShort()
-    {
-        final byte[] header = ForkingRunListener.createHeader( (byte) 'F', 0xE );
-        String asString = new String( header );
-        assertEquals( "F,e," + Charset.defaultCharset().name() + ",", asString );
     }
 
     public void testSetStarting()
@@ -115,19 +98,6 @@ public class ForkingRunListenerTest
         ReportEntry expected = createDefaultReportEntry();
         standardTestRun.run().testStarting( expected );
         standardTestRun.assertExpected( MockReporter.TEST_STARTING, expected );
-    }
-
-    public void testStringTokenizer()
-    {
-        String test = "5,11,com.abc.TestClass,testMethod,null,22,,,";
-        StringTokenizer tok = new StringTokenizer( test, "," );
-        assertEquals( "5", tok.nextToken() );
-        assertEquals( "11", tok.nextToken() );
-        assertEquals( "com.abc.TestClass", tok.nextToken() );
-        assertEquals( "testMethod", tok.nextToken() );
-        assertEquals( "null", tok.nextToken() );
-        assertEquals( "22", tok.nextToken() );
-        assertFalse( tok.hasMoreTokens() );
     }
 
     public void testSucceded()
@@ -199,7 +169,7 @@ public class ForkingRunListenerTest
         final StandardTestRun standardTestRun = new StandardTestRun();
         ConsoleLogger directConsoleReporter = (ConsoleLogger) standardTestRun.run();
         directConsoleReporter.info( "HeyYou" );
-        standardTestRun.assertExpected( MockReporter.CONSOLE_OUTPUT, "HeyYou" );
+        standardTestRun.assertExpected( MockReporter.CONSOLE_INFO, "HeyYou" );
     }
 
     public void testConsoleOutput()
@@ -207,7 +177,7 @@ public class ForkingRunListenerTest
     {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ConsoleOutputReceiver directConsoleReporter = (ConsoleOutputReceiver) standardTestRun.run();
-        directConsoleReporter.writeTestOutput( "HeyYou".getBytes(), 0, 6, true );
+        directConsoleReporter.writeTestOutput( "HeyYou", false, true );
         standardTestRun.assertExpected( MockReporter.STDOUT, "HeyYou" );
     }
 
@@ -218,16 +188,17 @@ public class ForkingRunListenerTest
         standardTestRun.run();
 
         reset();
-        createForkingRunListener( defaultChannel );
+        createForkingRunListener();
 
         TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
         NullConsoleLogger log = new NullConsoleLogger();
         ForkClient forkStreamClient =
-                new ForkClient( providerReporterFactory, new MockNotifiableTestStream(), log, null, 1 );
+                new ForkClient( providerReporterFactory, new MockNotifiableTestStream(), log, new AtomicBoolean(), 1 );
 
-        forkStreamClient.consumeMultiLineContent( content.toString( "UTF-8" ) );
+        forkStreamClient.consumeMultiLineContent( ":maven:surefire:std:out:sys-prop:normal-run:UTF-8:azE=:djE="
+                + "\n:maven:surefire:std:out:sys-prop:normal-run:UTF-8:azI=:djI=" );
 
-        MatcherAssert.assertThat( forkStreamClient.getTestVmSystemProperties().size(), is( greaterThan( 1 ) ) );
+        MatcherAssert.assertThat( forkStreamClient.getTestVmSystemProperties().size(), is( 2 ) );
     }
 
     public void testMultipleEntries()
@@ -237,7 +208,7 @@ public class ForkingRunListenerTest
         standardTestRun.run();
 
         reset();
-        RunListener forkingReporter = createForkingRunListener( defaultChannel );
+        RunListener forkingReporter = createForkingRunListener();
 
         TestSetReportEntry reportEntry = createDefaultReportEntry();
         forkingReporter.testSetStarting( reportEntry );
@@ -267,10 +238,10 @@ public class ForkingRunListenerTest
         ReportEntry expected = createDefaultReportEntry();
         final SimpleReportEntry secondExpected = createAnotherDefaultReportEntry();
 
-        new ForkingRunListener( printStream, defaultChannel, false )
+        new ForkingRunListener( new ForkedChannelEncoder( printStream ), false )
                 .testStarting( expected );
 
-        new ForkingRunListener( anotherPrintStream, anotherChannel, false )
+        new ForkingRunListener( new ForkedChannelEncoder( anotherPrintStream ), false )
                 .testSkipped( secondExpected );
 
         TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
@@ -295,9 +266,14 @@ public class ForkingRunListenerTest
 
     // Todo: Test weird characters
 
+    private SimpleReportEntry createDefaultReportEntry( Map<String, String> sysProps )
+    {
+        return new SimpleReportEntry( "com.abc.TestClass", "testMethod", null, 22, sysProps );
+    }
+
     private SimpleReportEntry createDefaultReportEntry()
     {
-        return new SimpleReportEntry( "com.abc.TestClass", "testMethod", 22 );
+        return createDefaultReportEntry( Collections.<String, String>emptyMap() );
     }
 
     private SimpleReportEntry createAnotherDefaultReportEntry()
@@ -333,9 +309,9 @@ public class ForkingRunListenerTest
         }
     }
 
-    private RunListener createForkingRunListener( Integer testSetChannel )
+    private RunListener createForkingRunListener()
     {
-        return new ForkingRunListener( printStream, testSetChannel, false );
+        return new ForkingRunListener( new ForkedChannelEncoder( printStream ), false );
     }
 
     private class StandardTestRun
@@ -346,7 +322,7 @@ public class ForkingRunListenerTest
             throws ReporterException
         {
             reset();
-            return createForkingRunListener( defaultChannel );
+            return createForkingRunListener();
         }
 
         public void clientReceiveContent()

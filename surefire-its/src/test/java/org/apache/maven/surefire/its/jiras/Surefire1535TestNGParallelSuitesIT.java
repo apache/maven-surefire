@@ -26,8 +26,7 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
 
-import java.nio.charset.Charset;
-
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
@@ -36,7 +35,6 @@ import static org.fest.assertions.Assertions.assertThat;
 public class Surefire1535TestNGParallelSuitesIT
         extends SurefireJUnit4IntegrationTestCase
 {
-    private static final Charset UTF8 = Charset.forName( "UTF-8" );
     private static final String TEST_RESULT_1 = platformEncoding( "Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, " );
     private static final String TEST_RESULT_2 = platformEncoding( "Tests run: 2, Failures: 0, Errors: 0, Skipped: 0" );
     private static final String SUITE1 = platformEncoding( "Suite1" );
@@ -53,7 +51,7 @@ public class Surefire1535TestNGParallelSuitesIT
                 .forkCount( 2 )
                 .executeTest();
 
-        TestFile testFile = validator.getSurefireReportsFile( "../surefire-reports-1/TEST-TestSuite.xml", UTF8 );
+        TestFile testFile = validator.getSurefireReportsFile( "../surefire-reports-1/TEST-TestSuite.xml", UTF_8 );
         testFile.assertFileExists();
         testFile.assertContainsText( "<testcase name=\"test\" classname=\"it.ParallelTest" );
         String xml = testFile.readFileToString();
@@ -62,7 +60,7 @@ public class Surefire1535TestNGParallelSuitesIT
         assertThat( parallelTest11 ^ parallelTest12 )
                 .isTrue();
 
-        testFile = validator.getSurefireReportsFile( "../surefire-reports-2/TEST-TestSuite.xml", UTF8 );
+        testFile = validator.getSurefireReportsFile( "../surefire-reports-2/TEST-TestSuite.xml", UTF_8 );
         testFile.assertFileExists();
         testFile.assertContainsText( "<testcase name=\"test\" classname=\"it.ParallelTest" );
         xml = testFile.readFileToString();
@@ -92,7 +90,7 @@ public class Surefire1535TestNGParallelSuitesIT
                 .redirectToFile( true )
                 .executeTest();
 
-        TestFile testFile = validator.getSurefireReportsFile( "../surefire-reports-1/TEST-TestSuite.xml", UTF8 );
+        TestFile testFile = validator.getSurefireReportsFile( "../surefire-reports-1/TEST-TestSuite.xml", UTF_8 );
         testFile.assertFileExists();
         testFile.assertContainsText( "<testcase name=\"test\" classname=\"it.ParallelTest" );
         String xml = testFile.readFileToString();
@@ -100,7 +98,7 @@ public class Surefire1535TestNGParallelSuitesIT
         boolean parallelTest12 = xml.contains( "<testcase name=\"test\" classname=\"it.ParallelTest2\"" );
         assertThat( parallelTest11 ^ parallelTest12 )
                 .isTrue();
-        String log = validator.getSurefireReportsFile( "../surefire-reports-1/TestSuite-output.txt", UTF8 )
+        String log = validator.getSurefireReportsFile( "../surefire-reports-1/TestSuite-output.txt", UTF_8 )
                 .readFileToString();
         assertThat( log.contains( TEST1 ) )
                 .isEqualTo( parallelTest11 );
@@ -111,7 +109,7 @@ public class Surefire1535TestNGParallelSuitesIT
         assertThat( log.contains( SUITE2 ) )
                 .isEqualTo( parallelTest12 );
 
-        testFile = validator.getSurefireReportsFile( "../surefire-reports-2/TEST-TestSuite.xml", UTF8 );
+        testFile = validator.getSurefireReportsFile( "../surefire-reports-2/TEST-TestSuite.xml", UTF_8 );
         testFile.assertFileExists();
         testFile.assertContainsText( "<testcase name=\"test\" classname=\"it.ParallelTest" );
         xml = testFile.readFileToString();
@@ -119,7 +117,7 @@ public class Surefire1535TestNGParallelSuitesIT
         boolean parallelTest22 = xml.contains( "<testcase name=\"test\" classname=\"it.ParallelTest2\"" );
         assertThat( parallelTest21 ^ parallelTest22 )
                 .isTrue();
-        log = validator.getSurefireReportsFile( "../surefire-reports-2/TestSuite-output.txt", UTF8 )
+        log = validator.getSurefireReportsFile( "../surefire-reports-2/TestSuite-output.txt", UTF_8 )
                 .readFileToString();
         assertThat( log.contains( TEST1 ) )
                 .isEqualTo( parallelTest21 );
@@ -197,6 +195,6 @@ public class Surefire1535TestNGParallelSuitesIT
 
     private static String platformEncoding( String text )
     {
-        return new String( text.getBytes( UTF8 ) );
+        return new String( text.getBytes( UTF_8 ) );
     }
 }

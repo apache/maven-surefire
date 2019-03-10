@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.TestSetReportEntry;
+import org.apache.maven.surefire.report.RunMode;
 
 /**
  * Internal tests use only.
@@ -91,6 +92,12 @@ public class MockReporter
     @Override
     public void testExecutionSkippedByUser()
     {
+    }
+
+    @Override
+    public RunMode markAs( RunMode currentRunMode )
+    {
+        return null;
     }
 
     public void testSkippedByUser( ReportEntry report )

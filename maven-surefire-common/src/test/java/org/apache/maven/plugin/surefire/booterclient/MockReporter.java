@@ -24,6 +24,7 @@ import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.TestSetReportEntry;
+import org.apache.maven.surefire.report.RunMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +56,13 @@ public class MockReporter
 
     public static final String TEST_ASSUMPTION_FAIL = "TEST_ASSUMPTION_SKIPPED";
 
-    public static final String CONSOLE_OUTPUT = "CONSOLE_OUTPUT";
+    public static final String CONSOLE_INFO = "CONSOLE_INFO";
+
+    public static final String CONSOLE_WARN = "CONSOLE_WARN";
+
+    public static final String CONSOLE_DEBUG = "CONSOLE_DEBUG";
+
+    public static final String CONSOLE_ERR = "CONSOLE_ERR";
 
     public static final String STDOUT = "STDOUT";
 
@@ -125,6 +132,11 @@ public class MockReporter
     {
     }
 
+    @Override
+    public RunMode markAs(RunMode currentRunMode) {
+        return null;
+    }
+
     public void testSkippedByUser( ReportEntry report )
     {
         testSkipped( report );
@@ -167,7 +179,7 @@ public class MockReporter
     @Override
     public void debug( String message )
     {
-        events.add( CONSOLE_OUTPUT );
+        events.add( CONSOLE_DEBUG );
         data.add( message );
     }
 
@@ -180,7 +192,7 @@ public class MockReporter
     @Override
     public void info( String message )
     {
-        events.add( CONSOLE_OUTPUT );
+        events.add( CONSOLE_INFO );
         data.add( message );
     }
 
@@ -193,7 +205,7 @@ public class MockReporter
     @Override
     public void warning( String message )
     {
-        events.add( CONSOLE_OUTPUT );
+        events.add( CONSOLE_WARN );
         data.add( message );
     }
 
@@ -206,24 +218,26 @@ public class MockReporter
     @Override
     public void error( String message )
     {
-        events.add( CONSOLE_OUTPUT );
+        events.add( CONSOLE_ERR );
         data.add( message );
     }
 
     @Override
     public void error( String message, Throwable t )
     {
+        error( message );
     }
 
     @Override
     public void error( Throwable t )
     {
+        error( t.getLocalizedMessage() );
     }
 
     @Override
-    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    public void writeTestOutput( String output, boolean newLine, boolean stdout )
     {
         events.add( stdout ? STDOUT : STDERR );
-        data.add( new String( buf, off, len ) );
+        data.add( newLine ? output + "\n" : output );
     }
 }

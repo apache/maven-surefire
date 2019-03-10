@@ -36,7 +36,6 @@ import org.apache.maven.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 
-import java.io.PrintStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -51,11 +50,11 @@ public class BaseProviderFactory
     ProviderPropertiesAware, ProviderParameters, TestArtifactInfoAware, RunOrderParametersAware, MainCliOptionsAware,
     FailFastAware, ShutdownAware
 {
-    private static final int ROOT_CHANNEL = 0;
-
     private final ReporterFactory reporterFactory;
 
     private final boolean insideFork;
+
+    private ForkedChannelEncoder forkedChannelEncoder;
 
     private List<CommandLineOption> mainCliOptions = emptyList();
 
@@ -142,9 +141,8 @@ public class BaseProviderFactory
     @Override
     public ConsoleStream getConsoleLogger()
     {
-        boolean trim = reporterConfiguration.isTrimStackTrace();
-        PrintStream out = reporterConfiguration.getOriginalSystemOut();
-        return insideFork ? new ForkingRunListener( out, ROOT_CHANNEL, trim ) : new DefaultDirectConsoleReporter( out );
+        return insideFork ? new ForkingRunListener( forkedChannelEncoder, reporterConfiguration.isTrimStackTrace() )
+                       : new DefaultDirectConsoleReporter( reporterConfiguration.getOriginalSystemOut() );
     }
 
     @Override
@@ -258,5 +256,16 @@ public class BaseProviderFactory
     public void setSystemExitTimeout( Integer systemExitTimeout )
     {
         this.systemExitTimeout = systemExitTimeout;
+    }
+
+    @Override
+    public ForkedChannelEncoder getForkedChannelEncoder()
+    {
+        return forkedChannelEncoder;
+    }
+
+    public void setForkedChannelEncoder( ForkedChannelEncoder forkedChannelEncoder )
+    {
+        this.forkedChannelEncoder = forkedChannelEncoder;
     }
 }

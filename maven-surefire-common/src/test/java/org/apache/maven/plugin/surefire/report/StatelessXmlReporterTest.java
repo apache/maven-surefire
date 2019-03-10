@@ -123,14 +123,11 @@ public class StatelessXmlReporterTest
             stdOutPrefix = "st]]>d-out";
         }
 
-        byte[] stdOutBytes = (stdOutPrefix + "<null>!\u0020\u0000\u001F").getBytes();
-        stdOut.write( stdOutBytes, 0, stdOutBytes.length );
+        stdOut.write( stdOutPrefix + "<null>!\u0020\u0000\u001F", false );
 
         Utf8RecodingDeferredFileOutputStream stdErr = new Utf8RecodingDeferredFileOutputStream( "fds" );
 
-
-        byte[] stdErrBytes = (stdErrPrefix + "?&-&amp;&#163;\u0020\u0000\u001F").getBytes();
-        stdErr.write( stdErrBytes, 0, stdErrBytes.length );
+        stdErr.write( stdErrPrefix + "?&-&amp;&#163;\u0020\u0000\u001F", false );
         WrappedReportEntry t2 =
                 new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), TEST_TWO, stackTraceWriter, 13 ),
                         ReportEntryType.ERROR, 13, stdOut, stdErr );
@@ -284,7 +281,7 @@ public class StatelessXmlReporterTest
             throws IOException
     {
         Utf8RecodingDeferredFileOutputStream stdOut = new Utf8RecodingDeferredFileOutputStream( "fds2" );
-        stdOut.write( content.getBytes(), 0, content.length() );
+        stdOut.write( content, false );
         return stdOut;
     }
 }

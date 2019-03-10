@@ -30,12 +30,15 @@ import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.RunMode;
 import org.apache.maven.surefire.report.TestSetReportEntry;
 
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SKIPPED;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
+import static org.apache.maven.surefire.report.RunMode.NORMAL_RUN;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Reports data for a single test set.
@@ -65,6 +68,8 @@ public class TestSetRunListener
     private Utf8RecodingDeferredFileOutputStream testStdOut = initDeferred( "stdout" );
 
     private Utf8RecodingDeferredFileOutputStream testStdErr = initDeferred( "stderr" );
+
+    private volatile RunMode runMode = NORMAL_RUN;
 
     @SuppressWarnings( "checkstyle:parameternumber" )
     public TestSetRunListener( ConsoleReporter consoleReporter, FileReporter fileReporter,
@@ -143,13 +148,13 @@ public class TestSetRunListener
     }
 
     @Override
-    public synchronized void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    public void writeTestOutput( String output, boolean newLine, boolean stdout )
     {
         try
         {
-            Utf8RecodingDeferredFileOutputStream os = stdout ? testStdOut : testStdErr;
-            os.write( buf, off, len );
-            consoleOutputReceiver.writeTestOutput( buf, off, len, stdout );
+            Utf8RecodingDeferredFileOutputStream stream = stdout ? testStdOut : testStdErr;
+            stream.write( output, newLine );
+            consoleOutputReceiver.writeTestOutput( output, newLine, stdout );
         }
         catch ( IOException e )
         {
@@ -245,6 +250,13 @@ public class TestSetRunListener
     @Override
     public void testExecutionSkippedByUser()
     {
+    }
+
+    public RunMode markAs( RunMode currentRunMode )
+    {
+        RunMode runMode = this.runMode;
+        this.runMode = requireNonNull( currentRunMode );
+        return runMode;
     }
 
     @Override

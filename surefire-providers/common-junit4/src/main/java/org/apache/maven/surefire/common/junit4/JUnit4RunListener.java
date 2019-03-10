@@ -47,7 +47,8 @@ public class JUnit4RunListener
 
     /**
      * This flag is set after a failure has occurred so that a {@link RunListener#testSucceeded} event is not fired.
-     * This is necessary because JUnit4 always fires a {@link org.junit.runner.notification.RunListener#testRunFinished}
+     * This is necessary because JUnit4 always fires a
+     * {@link org.junit.runner.notification.RunListener#testRunFinished(Result)}
      * event-- even if there was a failure.
      */
     private final ThreadLocal<Boolean> failureFlag = new InheritableThreadLocal<>();
@@ -128,7 +129,6 @@ public class JUnit4RunListener
         }
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
     public void testAssumptionFailure( Failure failure )
     {
         try
@@ -190,10 +190,5 @@ public class JUnit4RunListener
                                                         failure.getException() );
             }
         }
-    }
-
-    private static boolean isInsaneJunitNullString( String value )
-    {
-        return "null".equals( value );
     }
 }

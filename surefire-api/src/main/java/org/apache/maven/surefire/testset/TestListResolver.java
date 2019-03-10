@@ -257,7 +257,7 @@ public class TestListResolver
         }
 
         aggregatedTest += aggregatedTest( "!", getExcludedPatterns() );
-        return aggregatedTest.length() == 0 ? "" : aggregatedTest;
+        return aggregatedTest.isEmpty() ? "" : aggregatedTest;
     }
 
     @Override

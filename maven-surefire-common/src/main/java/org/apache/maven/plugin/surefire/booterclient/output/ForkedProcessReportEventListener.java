@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.report;
+package org.apache.maven.plugin.surefire.booterclient.output;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,24 +19,15 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.io.PrintStream;
+import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.RunMode;
 
 /**
- * @author <a href="mailto:kristian@zenior.no">Kristian Rosenvold</a>
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 3.0.0-M4
+ * @param <T> report entry type
  */
-public final class DefaultDirectConsoleReporter
-    implements ConsoleStream
+public interface ForkedProcessReportEventListener<T extends ReportEntry>
 {
-    private final PrintStream systemOut;
-
-    public DefaultDirectConsoleReporter( PrintStream systemOut )
-    {
-        this.systemOut = systemOut;
-    }
-
-    @Override
-    public void println( String message )
-    {
-        systemOut.println( message );
-    }
+    void handle( RunMode runMode, T reportEntry );
 }

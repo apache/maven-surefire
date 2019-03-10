@@ -22,11 +22,9 @@ package org.apache.maven.surefire.booter;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-import static java.lang.String.format;
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Objects.requireNonNull;
-import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
+import static java.lang.String.format;
 
 /**
  * Commands which are sent from plugin to the forked jvm.
@@ -146,7 +144,6 @@ public enum MasterProcessCommand
         switch ( this )
         {
             case RUN_CLASS:
-                return new String( data, ISO_8859_1 );
             case SHUTDOWN:
                 return new String( data, US_ASCII );
             default:
@@ -159,7 +156,6 @@ public enum MasterProcessCommand
         switch ( this )
         {
             case RUN_CLASS:
-                return encodeStringForForkCommunication( data );
             case SHUTDOWN:
                 return data.getBytes( US_ASCII );
             default:

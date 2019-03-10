@@ -185,12 +185,12 @@ class TestMethod
     }
 
     @Override
-    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    public void writeTestOutput( String output, boolean newLine, boolean stdout )
     {
-        getLogicalStream().write( stdout, buf, off, len );
+        getLogicalStream().write( stdout, output, newLine );
     }
 
-    public TestSet getTestSet()
+    TestSet getTestSet()
     {
         return testSet;
     }

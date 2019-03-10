@@ -22,8 +22,6 @@ package org.apache.maven.surefire.booter;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
-import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.io.File;
@@ -31,7 +29,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.security.AccessControlException;
@@ -47,13 +44,9 @@ import static java.lang.Math.max;
 import static java.lang.Thread.currentThread;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_BYE;
-import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_ERROR;
-import static org.apache.maven.surefire.booter.ForkingRunListener.encode;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.setSystemProperties;
 import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
-import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 
 /**
  * The part of the booter that is unique to a forked vm.
@@ -74,7 +67,7 @@ public final class ForkedBooter
     private static final String PING_THREAD = "surefire-forkedjvm-ping-";
 
     private final CommandReader commandReader = CommandReader.getReader();
-    private final PrintStream originalOut = System.out;
+    private final ForkedChannelEncoder eventChannel = new ForkedChannelEncoder( System.out );
 
     private volatile long systemExitTimeoutInSeconds = DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS;
     private volatile PingScheduler pingScheduler;
@@ -127,22 +120,16 @@ public final class ForkedBooter
         }
         catch ( InvocationTargetException t )
         {
-            DumpErrorSingleton.getSingleton().dumpException( t );
-            StackTraceWriter stackTraceWriter =
-                    new LegacyPojoStackTraceWriter( "test subsystem", "no method", t.getTargetException() );
-            StringBuilder stringBuilder = new StringBuilder();
-            encode( stringBuilder, stackTraceWriter, false );
-            encodeAndWriteToOutput( ( (char) BOOTERCODE_ERROR ) + ",0," + stringBuilder + "\n" );
+            Throwable e = t.getTargetException();
+            DumpErrorSingleton.getSingleton().dumpException( e );
+            eventChannel.consoleErrorLog( new LegacyPojoStackTraceWriter( "test subsystem", "no method", e ), false );
         }
         catch ( Throwable t )
         {
             DumpErrorSingleton.getSingleton().dumpException( t );
-            StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( "test subsystem", "no method", t );
-            StringBuilder stringBuilder = new StringBuilder();
-            encode( stringBuilder, stackTraceWriter, false );
-            encodeAndWriteToOutput( ( (char) BOOTERCODE_ERROR ) + ",0," + stringBuilder + "\n" );
+            eventChannel.consoleErrorLog( new LegacyPojoStackTraceWriter( "test subsystem", "no method", t ), false );
         }
-        acknowledgedExit();
+        acknowledgedExit( eventChannel );
     }
 
     private Object createTestSet( TypeEncodedValue forkedTestSet, boolean readTestsFromCommandReader, ClassLoader cl )
@@ -153,7 +140,7 @@ public final class ForkedBooter
         }
         else if ( readTestsFromCommandReader )
         {
-            return new LazyTestsToRun( originalOut );
+            return new LazyTestsToRun( eventChannel );
         }
         return null;
     }
@@ -260,7 +247,7 @@ public final class ForkedBooter
                     cancelPingScheduler();
                     DumpErrorSingleton.getSingleton()
                             .dumpText( "Exiting self fork JVM. Received SHUTDOWN command from Maven shutdown hook." );
-                    exit( 1 );
+                    exit1();
                 }
                 // else refers to shutdown=testset, but not used now, keeping reader open
             }
@@ -289,17 +276,6 @@ public final class ForkedBooter
         };
     }
 
-    private void encodeAndWriteToOutput( String string )
-    {
-        byte[] encodeBytes = encodeStringForForkCommunication( string );
-        //noinspection SynchronizationOnLocalVariableOrMethodParameter
-        synchronized ( originalOut )
-        {
-            originalOut.write( encodeBytes, 0, encodeBytes.length );
-            originalOut.flush();
-        }
-    }
-
     private void kill()
     {
         kill( 1 );
@@ -311,13 +287,13 @@ public final class ForkedBooter
         Runtime.getRuntime().halt( returnCode );
     }
 
-    private void exit( int returnCode )
+    private void exit1()
     {
-        launchLastDitchDaemonShutdownThread( returnCode );
-        System.exit( returnCode );
+        launchLastDitchDaemonShutdownThread( 1 );
+        System.exit( 1 );
     }
 
-    private void acknowledgedExit()
+    private void acknowledgedExit( ForkedChannelEncoder eventChannel )
     {
         final Semaphore barrier = new Semaphore( 0 );
         commandReader.addByeAckListener( new CommandListener()
@@ -329,7 +305,7 @@ public final class ForkedBooter
                                               }
                                           }
         );
-        encodeAndWriteToOutput( ( (char) BOOTERCODE_BYE ) + ",0,BYE!\n" );
+        eventChannel.bye();
         launchLastDitchDaemonShutdownThread( 0 );
         long timeoutMillis = max( systemExitTimeoutInSeconds * ONE_SECOND_IN_MILLIS, ONE_SECOND_IN_MILLIS );
         acquireOnePermit( barrier, timeoutMillis );
@@ -338,17 +314,17 @@ public final class ForkedBooter
         System.exit( 0 );
     }
 
-    private RunResult runSuitesInProcess()
-        throws SurefireExecutionException, TestSetFailedException, InvocationTargetException
+    private void runSuitesInProcess()
+        throws TestSetFailedException, InvocationTargetException
     {
         ForkingReporterFactory factory = createForkingReporterFactory();
-        return invokeProviderInSameClassLoader( factory );
+        invokeProviderInSameClassLoader( factory );
     }
 
     private ForkingReporterFactory createForkingReporterFactory()
     {
         final boolean trimStackTrace = providerConfiguration.getReporterConfiguration().isTrimStackTrace();
-        return new ForkingReporterFactory( trimStackTrace, originalOut );
+        return new ForkingReporterFactory( trimStackTrace, eventChannel );
     }
 
     private synchronized ScheduledThreadPoolExecutor getJvmTerminator()
@@ -377,11 +353,10 @@ public final class ForkedBooter
         );
     }
 
-    private RunResult invokeProviderInSameClassLoader( ForkingReporterFactory factory )
+    private void invokeProviderInSameClassLoader( ForkingReporterFactory factory )
         throws TestSetFailedException, InvocationTargetException
     {
-        return createProviderInCurrentClassloader( factory )
-                       .invoke( testSet );
+        createProviderInCurrentClassloader( factory ).invoke( testSet );
     }
 
     private SurefireProvider createProviderInCurrentClassloader( ForkingReporterFactory reporterManagerFactory )
@@ -389,6 +364,7 @@ public final class ForkedBooter
         BaseProviderFactory bpf = new BaseProviderFactory( reporterManagerFactory, true );
         bpf.setTestRequest( providerConfiguration.getTestSuiteDefinition() );
         bpf.setReporterConfiguration( providerConfiguration.getReporterConfiguration() );
+        bpf.setForkedChannelEncoder( eventChannel );
         ClassLoader classLoader = currentThread().getContextClassLoader();
         bpf.setClassLoaders( classLoader );
         bpf.setTestArtifactInfo( providerConfiguration.getTestArtifact() );
@@ -422,7 +398,7 @@ public final class ForkedBooter
             DumpErrorSingleton.getSingleton().dumpException( t );
             t.printStackTrace();
             booter.cancelPingScheduler();
-            booter.exit( 1 );
+            booter.exit1();
         }
     }
 
@@ -431,15 +407,15 @@ public final class ForkedBooter
         return pluginProcessChecker != null && pluginProcessChecker.canUse();
     }
 
-    private static boolean acquireOnePermit( Semaphore barrier, long timeoutMillis )
+    private static void acquireOnePermit( Semaphore barrier, long timeoutMillis )
     {
         try
         {
-            return barrier.tryAcquire( timeoutMillis, MILLISECONDS );
+            barrier.tryAcquire( timeoutMillis, MILLISECONDS );
         }
         catch ( InterruptedException e )
         {
-            return true;
+            // cancel schedulers, stop the command reader and exit 0
         }
     }
 

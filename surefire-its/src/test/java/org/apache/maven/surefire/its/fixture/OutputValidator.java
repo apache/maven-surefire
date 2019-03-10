@@ -30,6 +30,7 @@ import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.hamcrest.Matcher;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -203,7 +204,7 @@ public class OutputValidator
     public TestFile getSurefireReportsXmlFile( String fileName )
     {
         File targetDir = getSurefireReportsDirectory();
-        return new TestFile( new File( targetDir, fileName ), Charset.forName( "UTF-8" ), this );
+        return new TestFile( new File( targetDir, fileName ), UTF_8, this );
     }
 
     public File getSurefireReportsDirectory()

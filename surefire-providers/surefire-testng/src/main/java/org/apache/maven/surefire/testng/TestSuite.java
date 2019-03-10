@@ -35,7 +35,7 @@ abstract class TestSuite
 {
     abstract Map<String, String> getOptions();
 
-    final String getSuiteName()
+    private String getSuiteName()
     {
         String result = getOptions().get( "suitename" );
         return result == null ? "TestSuite" : result;
@@ -43,7 +43,7 @@ abstract class TestSuite
 
     final void startTestSuite( RunListener reporterManager )
     {
-        TestSetReportEntry report = new SimpleReportEntry( getSuiteName(), null, systemProps() );
+        TestSetReportEntry report = new SimpleReportEntry( getSuiteName(), null );
 
         try
         {

@@ -21,60 +21,40 @@ package org.apache.maven.surefire.junitcore;
 
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 
-import java.util.Arrays;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * A stream-like object that preserves ordering between stdout/stderr
  */
-public final class LogicalStream
+final class LogicalStream
 {
     private final Queue<Entry> output = new ConcurrentLinkedQueue<>();
 
     private static final class Entry
     {
         private final boolean stdout;
+        private final String text;
+        private final boolean newLine;
 
-        private final byte[] b;
-
-        private final int off;
-
-        private final int len;
-
-        private Entry( boolean stdout, byte[] b, int off, int len )
+        Entry( boolean stdout, String text, boolean newLine )
         {
             this.stdout = stdout;
-            this.b = Arrays.copyOfRange( b, off, off + len );
-            this.off = 0;
-            this.len = len;
-        }
-
-        private void writeDetails( ConsoleOutputReceiver outputReceiver )
-        {
-            outputReceiver.writeTestOutput( b, off, len, stdout );
+            this.text = text;
+            this.newLine = newLine;
         }
     }
 
-    public void write( boolean stdout, byte b[], int off, int len )
+    synchronized void write( boolean stdout, String text, boolean newLine )
     {
-        if ( !isBlankLine( b, len ) )
-        {
-            Entry entry = new Entry( stdout, b, off, len );
-            output.add( entry );
-        }
+        output.add( new Entry( stdout, text, newLine ) );
     }
 
-    public void writeDetails( ConsoleOutputReceiver outputReceiver )
+    void writeDetails( ConsoleOutputReceiver outputReceiver )
     {
         for ( Entry entry = output.poll(); entry != null; entry = output.poll() )
         {
-            entry.writeDetails( outputReceiver );
+            outputReceiver.writeTestOutput( entry.text, entry.newLine, entry.stdout );
         }
-    }
-
-    private static boolean isBlankLine( byte[] b, int len )
-    {
-        return b == null || len == 0;
     }
 }

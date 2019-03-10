@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.mockito.AdditionalMatchers.gt;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
@@ -221,16 +220,14 @@ public class JUnitPlatformProviderTest
 
         invokeProvider( provider, VerboseTestClass.class );
 
-        ArgumentCaptor<byte[]> captor = ArgumentCaptor.forClass( byte[].class );
-        // @formatter:off
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass( String.class );
         verify( (ConsoleOutputReceiver) runListener )
-                        .writeTestOutput( captor.capture(), eq( 0 ), gt( 6 ), eq( true ) );
+                        .writeTestOutput( captor.capture(), eq( true ), eq( true ) );
         verify( (ConsoleOutputReceiver) runListener )
-                        .writeTestOutput( captor.capture(), eq( 0 ), gt( 6 ), eq( false ) );
+                        .writeTestOutput( captor.capture(), eq( true ), eq( false ) );
         assertThat( captor.getAllValues() )
-                        .extracting( bytes -> new String( bytes, 0, 6 ) )
-                        .containsExactly( "stdout", "stderr" );
-        // @formatter:on
+                .hasSize( 2 )
+                .containsExactly( "stdout", "stderr" );
     }
 
     @Test

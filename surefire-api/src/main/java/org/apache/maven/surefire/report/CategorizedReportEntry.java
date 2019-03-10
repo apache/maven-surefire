@@ -27,7 +27,6 @@ import java.util.Map;
  */
 public class CategorizedReportEntry
     extends SimpleReportEntry
-    implements ReportEntry
 {
     private static final String GROUP_PREFIX = " (of ";
 

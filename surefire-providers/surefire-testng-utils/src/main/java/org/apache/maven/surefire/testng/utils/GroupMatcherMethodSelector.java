@@ -19,18 +19,18 @@ package org.apache.maven.surefire.testng.utils;
  * under the License.
  */
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.maven.surefire.group.match.AndGroupMatcher;
 import org.apache.maven.surefire.group.match.GroupMatcher;
 import org.apache.maven.surefire.group.match.InverseGroupMatcher;
 import org.apache.maven.surefire.group.parse.GroupMatcherParser;
 import org.apache.maven.surefire.group.parse.ParseException;
-
 import org.testng.IMethodSelector;
 import org.testng.IMethodSelectorContext;
 import org.testng.ITestNGMethod;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Method selector delegating to {@link GroupMatcher} to decide if a method is included or not.

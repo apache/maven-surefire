@@ -48,7 +48,7 @@ public class ConsoleOutputFileReporterTest
         ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), getClass().getName() );
         ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, null, null );
         reporter.testSetStarting( reportEntry );
-        reporter.writeTestOutput( "some text".getBytes( US_ASCII ), 0, 5, true );
+        reporter.writeTestOutput( "some ", false, true );
         reporter.testSetCompleted( reportEntry );
         reporter.close();
 
@@ -76,7 +76,7 @@ public class ConsoleOutputFileReporterTest
         ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), getClass().getName() );
         ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, suffixText, null );
         reporter.testSetStarting( reportEntry );
-        reporter.writeTestOutput( "some text".getBytes( US_ASCII ), 0, 5, true );
+        reporter.writeTestOutput( "some ", false, true );
         reporter.testSetCompleted( reportEntry );
         reporter.close();
 
@@ -98,7 +98,7 @@ public class ConsoleOutputFileReporterTest
         //noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
         ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, null, null );
-        reporter.writeTestOutput( "some text".getBytes( US_ASCII ), 0, 5, true );
+        reporter.writeTestOutput( "some text", false, true );
         reporter.testSetCompleted( new SimpleReportEntry( getClass().getName(), getClass().getName() ) );
         reporter.close();
 
@@ -129,8 +129,7 @@ public class ConsoleOutputFileReporterTest
                 @Override
                 public Void call()
                 {
-                    byte[] stream = "some text\n".getBytes( US_ASCII );
-                    reporter.writeTestOutput( stream, 0, stream.length, true );
+                    reporter.writeTestOutput( "some text\n", false, true );
                     return null;
                 }
             } );

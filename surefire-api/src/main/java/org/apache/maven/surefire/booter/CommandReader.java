@@ -26,7 +26,6 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Queue;
@@ -42,7 +41,6 @@ import static java.lang.Thread.State.RUNNABLE;
 import static java.lang.Thread.State.TERMINATED;
 import static java.lang.StrictMath.max;
 import static org.apache.maven.surefire.booter.Command.toShutdown;
-import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_NEXT_TEST;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.BYE_ACK;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.NOOP;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.RUN_CLASS;
@@ -51,7 +49,6 @@ import static org.apache.maven.surefire.booter.MasterProcessCommand.SKIP_SINCE_N
 import static org.apache.maven.surefire.booter.MasterProcessCommand.TEST_SET_FINISHED;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.decode;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThread;
-import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
 import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
 
@@ -189,7 +186,7 @@ public final class CommandReader
     }
 
     /**
-     * @return test classes which have been retrieved by {@link CommandReader#getIterableClasses(PrintStream)}.
+     * @return test classes which have been retrieved by {@link CommandReader#getIterableClasses(ForkedChannelEncoder)}.
      */
     Iterator<String> iterated()
     {
@@ -200,12 +197,12 @@ public final class CommandReader
      * The iterator can be used only in one Thread.
      * Two simultaneous instances are not allowed for sake of only one {@link #nextCommandNotifier}.
      *
-     * @param originalOutStream original stream in current JVM process
+     * @param eventChannel original stream in current JVM process
      * @return Iterator with test classes lazily loaded as commands from the main process
      */
-    Iterable<String> getIterableClasses( PrintStream originalOutStream )
+    Iterable<String> getIterableClasses( ForkedChannelEncoder eventChannel )
     {
-        return new ClassesIterable( originalOutStream );
+        return new ClassesIterable( eventChannel );
     }
 
     public void stop()
@@ -253,32 +250,32 @@ public final class CommandReader
     private final class ClassesIterable
         implements Iterable<String>
     {
-        private final PrintStream originalOutStream;
+        private final ForkedChannelEncoder eventChannel;
 
-        ClassesIterable( PrintStream originalOutStream )
+        ClassesIterable( ForkedChannelEncoder eventChannel )
         {
-            this.originalOutStream = originalOutStream;
+            this.eventChannel = eventChannel;
         }
 
         @Override
         public Iterator<String> iterator()
         {
-            return new ClassesIterator( originalOutStream );
+            return new ClassesIterator( eventChannel );
         }
     }
 
     private final class ClassesIterator
         implements Iterator<String>
     {
-        private final PrintStream originalOutStream;
+        private final ForkedChannelEncoder eventChannel;
 
         private String clazz;
 
         private int nextQueueIndex;
 
-        private ClassesIterator( PrintStream originalOutStream )
+        private ClassesIterator( ForkedChannelEncoder eventChannel )
         {
-            this.originalOutStream = originalOutStream;
+            this.eventChannel = eventChannel;
         }
 
         @Override
@@ -344,12 +341,7 @@ public final class CommandReader
 
         private void requestNextTest()
         {
-            byte[] encoded = encodeStringForForkCommunication( ( (char) BOOTERCODE_NEXT_TEST ) + ",0,want more!\n" );
-            synchronized ( originalOutStream )
-            {
-                originalOutStream.write( encoded, 0, encoded.length );
-                originalOutStream.flush();
-            }
+            eventChannel.acquireNextTest();
         }
 
         private boolean shouldFinish()

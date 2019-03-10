@@ -26,11 +26,11 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
 
-import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.its.fixture.IsRegex.regex;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.AnyOf.anyOf;
@@ -50,7 +50,7 @@ public class Surefire1082ParallelJUnitParameterizedIT
     {
         TestFile report = validator.getSurefireReportsFile( "jiras.surefire1082.Jira1082Test-output.txt" );
         report.assertFileExists();
-        return printOnlyTestLines( validator.loadFile( report.getFile(), Charset.forName( "UTF-8" ) ) );
+        return printOnlyTestLines( validator.loadFile( report.getFile(), UTF_8 ) );
     }
 
     private static Set<String> printOnlyTestLines( Collection<String> logs )

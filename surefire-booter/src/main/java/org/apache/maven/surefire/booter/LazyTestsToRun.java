@@ -19,7 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.io.PrintStream;
 import java.util.Collections;
 import java.util.Iterator;
 
@@ -44,24 +43,24 @@ import static org.apache.maven.surefire.util.ReflectionUtils.loadClass;
 final class LazyTestsToRun
     extends TestsToRun
 {
-    private final PrintStream originalOutStream;
+    private final ForkedChannelEncoder eventChannel;
 
     /**
      * C'tor
      *
-     * @param originalOutStream the output stream to use when requesting new new tests
+     * @param eventChannel the output stream to use when requesting new new tests
      */
-    LazyTestsToRun( PrintStream originalOutStream )
+    LazyTestsToRun( ForkedChannelEncoder eventChannel )
     {
         super( Collections.<Class<?>>emptySet() );
 
-        this.originalOutStream = originalOutStream;
+        this.eventChannel = eventChannel;
     }
 
     private final class BlockingIterator
         implements Iterator<Class<?>>
     {
-        private final Iterator<String> it = getReader().getIterableClasses( originalOutStream ).iterator();
+        private final Iterator<String> it = getReader().getIterableClasses( eventChannel ).iterator();
 
         @Override
         public boolean hasNext()

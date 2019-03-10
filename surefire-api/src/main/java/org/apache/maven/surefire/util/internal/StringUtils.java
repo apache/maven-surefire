@@ -19,14 +19,9 @@ package org.apache.maven.surefire.util.internal;
  * under the License.
  */
 
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
 import java.util.StringTokenizer;
 
 import static java.lang.System.lineSeparator;
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 /**
  * <p>
@@ -56,11 +51,6 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 public final class StringUtils
 {
     public static final String NL = lineSeparator();
-
-    private static final byte[] HEX_CHARS = {
-                    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-
-    private static final Charset DEFAULT_CHARSET = Charset.defaultCharset();
 
     private StringUtils()
     {
@@ -116,215 +106,6 @@ public final class StringUtils
     }
 
     /**
-     * Escape the specified string to a representation that only consists of nicely printable characters, without any
-     * newlines and without a comma.
-     * <p>
-     * The reverse-method is {@link #unescapeString(StringBuilder, CharSequence)}.
-     *
-     * @param target target string buffer. The required space will be up to {@code str.getBytes().length * 5} chars.
-     * @param str String to escape values in, may be {@code null}.
-     */
-    @SuppressWarnings( "checkstyle:magicnumber" )
-    public static void escapeToPrintable( StringBuilder target, CharSequence str )
-    {
-        if ( target == null )
-        {
-            throw new IllegalArgumentException( "The target buffer must not be null" );
-        }
-        if ( str == null )
-        {
-            return;
-        }
-
-        for ( int i = 0; i < str.length(); i++ )
-        {
-            char c = str.charAt( i );
-
-            // handle non-nicely printable chars and the comma
-            if ( c < 32 || c > 126 || c == '\\' || c == ',' )
-            {
-                target.append( '\\' );
-                target.append( (char) HEX_CHARS[( 0xF000 & c ) >> 12] );
-                target.append( (char) HEX_CHARS[( 0x0F00 & c ) >> 8] );
-                target.append( (char) HEX_CHARS[( 0x00F0 & c ) >> 4] );
-                target.append( (char) HEX_CHARS[( 0x000F & c )] );
-            }
-            else
-            {
-                target.append( c );
-            }
-        }
-    }
-
-    /**
-     * Reverses the effect of {@link #escapeToPrintable(StringBuilder, CharSequence)}.
-     *
-     * @param target target string buffer
-     * @param str the String to un-escape, as created by {@link #escapeToPrintable(StringBuilder, CharSequence)}
-     */
-    public static void unescapeString( StringBuilder target, CharSequence str )
-    {
-        if ( target == null )
-        {
-            throw new IllegalArgumentException( "The target buffer must not be null" );
-        }
-        if ( str == null )
-        {
-            return;
-        }
-
-        for ( int i = 0; i < str.length(); i++ )
-        {
-            char ch = str.charAt( i );
-
-            if ( ch == '\\' )
-            {
-                target.append( (char) (
-                                  digit( str.charAt( ++i ) ) << 12
-                                | digit( str.charAt( ++i ) ) << 8
-                                | digit( str.charAt( ++i ) ) << 4
-                                | digit( str.charAt( ++i ) )
-                                ) );
-            }
-            else
-            {
-                target.append( ch );
-            }
-        }
-    }
-
-    private static int digit( char ch )
-    {
-        if ( ch >= 'a' )
-        {
-            return 10 + ch - 'a';
-        }
-        else if ( ch >= 'A' )
-        {
-            return 10 + ch - 'A';
-        }
-        else
-        {
-            return ch - '0';
-        }
-    }
-
-    /**
-     * Escapes the bytes in the array {@code input} to contain only 'printable' bytes.
-     * <br>
-     * Escaping is done by encoding the non-nicely printable bytes to {@code '\' + upperCaseHexBytes(byte)}.
-     * <br>
-     * The reverse-method is {@link #unescapeBytes(String, String)}.
-     * <br>
-     * The returned byte array is started with aligned sequence {@code header} and finished by {@code \n}.
-     *
-     * @param header prefix header
-     * @param input input buffer
-     * @param off offset in the input buffer
-     * @param len number of bytes to copy from the input buffer
-     * @return number of bytes written to {@code out}
-     * @throws NullPointerException if the specified parameter {@code header} or {@code input} is null
-     * @throws IndexOutOfBoundsException if {@code off} or {@code len} is out of range
-     *         ({@code off < 0 || len < 0 || off >= input.length || len > input.length || off + len > input.length})
-     */
-    @SuppressWarnings( "checkstyle:magicnumber" )
-    public static EncodedArray escapeBytesToPrintable( final byte[] header, final byte[] input, final int off,
-                                                       final int len )
-    {
-        if ( input.length == 0 )
-        {
-            return EncodedArray.EMPTY;
-        }
-        if ( off < 0 || len < 0 || off >= input.length || len > input.length || off + len > input.length )
-        {
-            throw new IndexOutOfBoundsException(
-                    "off < 0 || len < 0 || off >= input.length || len > input.length || off + len > input.length" );
-        }
-        // Hex-escaping can be up to 3 times length of a regular byte. Last character is '\n', see (+1).
-        final byte[] encodeBytes = new byte[header.length + 3 * len + 1];
-        System.arraycopy( header, 0, encodeBytes, 0, header.length );
-        int outputPos = header.length;
-        final int end = off + len;
-        for ( int i = off; i < end; i++ )
-        {
-            final byte b = input[i];
-
-            // handle non-nicely printable bytes
-            if ( b < 32 || b > 126 || b == '\\' || b == ',' )
-            {
-                final int upper = ( 0xF0 & b ) >> 4;
-                final int lower = ( 0x0F & b );
-                encodeBytes[outputPos++] = '\\';
-                encodeBytes[outputPos++] = HEX_CHARS[upper];
-                encodeBytes[outputPos++] = HEX_CHARS[lower];
-            }
-            else
-            {
-                encodeBytes[outputPos++] = b;
-            }
-        }
-        encodeBytes[outputPos++] = (byte) '\n';
-
-        return new EncodedArray( encodeBytes, outputPos );
-    }
-
-    /**
-     * Reverses the effect of {@link #escapeBytesToPrintable(byte[], byte[], int, int)}.
-     *
-     * @param str the input String
-     * @param charsetName the charset name
-     * @return the number of bytes written to {@code out}
-     */
-    public static ByteBuffer unescapeBytes( String str, String charsetName  )
-    {
-        int outPos = 0;
-
-        if ( str == null )
-        {
-            return ByteBuffer.wrap( new byte[0] );
-        }
-
-        byte[] out = new byte[str.length()];
-        for ( int i = 0; i < str.length(); i++ )
-        {
-            char ch = str.charAt( i );
-
-            if ( ch == '\\' )
-            {
-                int upper = digit( str.charAt( ++i ) );
-                int lower = digit( str.charAt( ++i ) );
-                out[outPos++] = (byte) ( upper << 4 | lower );
-            }
-            else
-            {
-                out[outPos++] = (byte) ch;
-            }
-        }
-
-        Charset sourceCharset = Charset.forName( charsetName );
-        if ( !DEFAULT_CHARSET.equals( sourceCharset ) )
-        {
-            CharBuffer decodedFromSourceCharset;
-            try
-            {
-                decodedFromSourceCharset = sourceCharset.newDecoder().decode( ByteBuffer.wrap( out, 0, outPos ) );
-                return DEFAULT_CHARSET.encode( decodedFromSourceCharset );
-            }
-            catch ( CharacterCodingException e )
-            {
-                // ignore and fall through to the non-recoded version
-            }
-        }
-
-        return ByteBuffer.wrap( out, 0, outPos );
-    }
-
-    public static byte[] encodeStringForForkCommunication( String string )
-    {
-        return string.getBytes( ISO_8859_1 );
-    }
-
-    /**
      * Determines if {@code buffer} starts with specific literal(s).
      *
      * @param buffer     Examined StringBuffer
@@ -347,33 +128,6 @@ public final class StringUtils
                 }
             }
             return true;
-        }
-    }
-
-    /**
-     * Escaped string to byte array with offset 0 and certain length.
-     */
-    public static final class EncodedArray
-    {
-        private static final EncodedArray EMPTY = new EncodedArray( new byte[]{}, 0 );
-
-        private final byte[] array;
-        private final int size;
-
-        private EncodedArray( byte[] array, int size )
-        {
-            this.array = array;
-            this.size = size;
-        }
-
-        public byte[] getArray()
-        {
-            return array;
-        }
-
-        public int getSize()
-        {
-            return size;
         }
     }
 }
