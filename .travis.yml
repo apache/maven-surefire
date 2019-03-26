@@ -25,7 +25,7 @@ cache:
 jobs:
   include:
   - stage: test
-    jdk: openjdk11
+    jdk: openjdk8
     script: mvn clean install -Prun-its
 
 branches:
