@@ -165,7 +165,7 @@
                     <jvm>${jdk.home}/bin/java</jvm>
                     <runOrder>alphabetical</runOrder>
                     <parallel>classes</parallel>
-                    <threadCount>3</threadCount>
+                    <threadCount>2</threadCount>
                     <perCoreThreadCount>false</perCoreThreadCount>
                     <forkMode>once</forkMode>
                     <argLine>-server -Xmx256m -XX:+UseG1GC -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
