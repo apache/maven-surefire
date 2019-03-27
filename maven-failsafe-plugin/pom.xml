@@ -286,7 +286,7 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>integration-test</id>
+                                <id>integration-testset1</id>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
@@ -298,11 +298,40 @@
                                         <goal>verify</goal>
                                         <goal>-nsu</goal>
                                     </goals>
-                                    <setupIncludes>
-                                        <setupInclude>dummy-*/pom.xml</setupInclude>
-                                    </setupIncludes>
+                                    <parallelThreads>3</parallelThreads>
                                     <pomIncludes>
-                                        <pomInclude>*/pom.xml</pomInclude>
+                                        <pomInclude>jetty-war-test-failing/pom.xml</pomInclude>
+                                        <pomInclude>multiple-summaries/pom.xml</pomInclude>
+                                        <pomInclude>multiple-summaries-failing/pom.xml</pomInclude>
+                                    </pomIncludes>
+                                    <postBuildHookScript>verify</postBuildHookScript>
+                                    <settingsFile>src/it/settings.xml</settingsFile>
+                                    <skipInvocation>${skipTests}</skipInvocation>
+                                    <streamLogs>false</streamLogs>
+                                    <showErrors>true</showErrors>
+                                    <properties>
+                                        <integration-test-port>${failsafe-integration-test-port}</integration-test-port>
+                                        <integration-test-stop-port>${failsafe-integration-test-stop-port}</integration-test-stop-port>
+                                    </properties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>integration-testset2</id>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <projectsDirectory>src/it</projectsDirectory>
+                                    <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+                                    <goals>
+                                        <goal>clean</goal>
+                                        <goal>verify</goal>
+                                        <goal>-nsu</goal>
+                                    </goals>
+                                    <parallelThreads>2</parallelThreads>
+                                    <pomIncludes>
+                                        <pomInclude>jetty-war-test-passing/pom.xml</pomInclude>
+                                        <pomInclude>working-directory/pom.xml</pomInclude>
                                     </pomIncludes>
                                     <postBuildHookScript>verify</postBuildHookScript>
                                     <settingsFile>src/it/settings.xml</settingsFile>

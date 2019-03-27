@@ -164,10 +164,11 @@
                 <configuration>
                     <jvm>${jdk.home}/bin/java</jvm>
                     <runOrder>alphabetical</runOrder>
-                    <threadCount>1</threadCount>
+                    <parallel>classes</parallel>
+                    <threadCount>3</threadCount>
                     <perCoreThreadCount>false</perCoreThreadCount>
                     <forkMode>once</forkMode>
-                    <argLine>-server -Xmx64m -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+                    <argLine>-server -Xmx256m -XX:+UseG1GC -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
                     <includes>
                         <include>org/apache/**/*IT*.java</include>
                     </includes>
