@@ -313,7 +313,6 @@
                                         <integration-test-port>${failsafe-integration-test-port}</integration-test-port>
                                         <integration-test-stop-port>${failsafe-integration-test-stop-port}</integration-test-stop-port>
                                     </properties>
-                                    <parallelThreads>3</parallelThreads>
                                 </configuration>
                             </execution>
                         </executions>
