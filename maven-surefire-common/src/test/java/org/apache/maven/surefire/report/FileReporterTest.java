@@ -42,10 +42,10 @@ public class FileReporterTest
     public void testFileNameWithoutSuffix()
     {
         File reportDir = new File( "target" );
-        reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
+        reportEntry = new SimpleReportEntry( getClass().getName(), null, testName, null );
         WrappedReportEntry wrappedReportEntry =
             new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null );
-        reporter = new FileReporter( reportDir, null, Charset.defaultCharset() );
+        reporter = new FileReporter( reportDir, null, Charset.defaultCharset(), false, false, false );
         reporter.testSetCompleted( wrappedReportEntry, createTestSetStats(), new ArrayList<String>() );
 
         File expectedReportFile = new File( reportDir, testName + ".txt" );
@@ -64,10 +64,10 @@ public class FileReporterTest
     {
         File reportDir = new File( "target" );
         String suffixText = "sampleSuffixText";
-        reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
+        reportEntry = new SimpleReportEntry( getClass().getName(), null, testName, null );
         WrappedReportEntry wrappedReportEntry =
             new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null );
-        reporter = new FileReporter( reportDir, suffixText, Charset.defaultCharset() );
+        reporter = new FileReporter( reportDir, suffixText, Charset.defaultCharset(), false, false, false );
         reporter.testSetCompleted( wrappedReportEntry, createTestSetStats(), new ArrayList<String>() );
 
         File expectedReportFile = new File( reportDir, testName + "-" + suffixText + ".txt" );

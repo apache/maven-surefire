@@ -170,7 +170,7 @@ public class TestSetStats
         completedCount += 1;
     }
 
-    public String getTestSetSummary( WrappedReportEntry reportEntry )
+    public String getTestSetSummary( WrappedReportEntry reportEntry, boolean phrasedClassName )
     {
         String summary = TESTS_RUN + completedCount
                                  + COMMA
@@ -187,12 +187,13 @@ public class TestSetStats
             summary += FAILURE_MARKER;
         }
 
-        summary += IN_MARKER + reportEntry.getNameWithGroup();
+        summary += IN_MARKER;
+        summary += phrasedClassName ? reportEntry.getReportNameWithGroup() : reportEntry.getNameWithGroup();
 
         return summary;
     }
 
-    public String getColoredTestSetSummary( WrappedReportEntry reportEntry )
+    public String getColoredTestSetSummary( WrappedReportEntry reportEntry, boolean phrasedClassName )
     {
         final boolean isSuccessful = failures == 0 && errors == 0 && skipped == 0;
         final boolean isFailure = failures > 0;
@@ -256,7 +257,7 @@ public class TestSetStats
             builder.failure( FAILURE_MARKER );
         }
         builder.a( IN_MARKER );
-        return concatenateWithTestGroup( builder, reportEntry );
+        return concatenateWithTestGroup( builder, reportEntry, phrasedClassName );
     }
 
     public List<String> getTestResults()
@@ -294,15 +295,23 @@ public class TestSetStats
      * @param report     report whose test set is starting
      * @return the message
      */
-    static String concatenateWithTestGroup( MessageBuilder builder, ReportEntry report )
+    static String concatenateWithTestGroup( MessageBuilder builder, ReportEntry report, boolean phrasedClassName )
     {
-        String testClass = report.getNameWithGroup();
-        int indexOfGroup = testClass.indexOf( GROUP_PREFIX );
-        int delimiter = testClass.lastIndexOf( '.', indexOfGroup == -1 ? testClass.length() : indexOfGroup );
-        String pkg = testClass.substring( 0, 1 + delimiter );
-        String cls = testClass.substring( 1 + delimiter );
-        return builder.a( pkg )
-                       .strong( cls )
-                       .toString();
+        if ( phrasedClassName )
+        {
+            return builder.strong( report.getReportNameWithGroup() )
+                    .toString();
+        }
+        else
+        {
+            String testClass = report.getNameWithGroup();
+            int indexOfGroup = testClass.indexOf( GROUP_PREFIX );
+            int delimiter = testClass.lastIndexOf( '.', indexOfGroup == -1 ? testClass.length() : indexOfGroup );
+            String pkg = testClass.substring( 0, 1 + delimiter );
+            String cls = testClass.substring( 1 + delimiter );
+            return builder.a( pkg )
+                    .strong( cls )
+                    .toString();
+        }
     }
 }

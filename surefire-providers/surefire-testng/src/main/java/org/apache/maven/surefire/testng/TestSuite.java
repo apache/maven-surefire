@@ -43,7 +43,7 @@ abstract class TestSuite
 
     final void startTestSuite( RunListener reporterManager )
     {
-        TestSetReportEntry report = new SimpleReportEntry( getSuiteName(), null );
+        TestSetReportEntry report = new SimpleReportEntry( getSuiteName(), null, null, null );
 
         try
         {
@@ -57,7 +57,7 @@ abstract class TestSuite
 
     final void finishTestSuite( RunListener reporterManager )
     {
-        SimpleReportEntry report = new SimpleReportEntry( getSuiteName(), null, systemProps() );
+        SimpleReportEntry report = new SimpleReportEntry( getSuiteName(), null, null, null, systemProps() );
         reporterManager.testSetCompleted( report );
     }
 }

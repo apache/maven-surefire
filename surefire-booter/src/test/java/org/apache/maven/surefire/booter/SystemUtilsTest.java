@@ -22,6 +22,7 @@ package org.apache.maven.surefire.booter;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -63,7 +64,8 @@ public class SystemUtilsTest
         public void shouldMatchJavaSpecVersion() throws Exception
         {
             BigDecimal actual = invokeMethod( SystemUtils.class, "getJavaSpecificationVersion" );
-            BigDecimal expected = new BigDecimal( System.getProperty( "java.specification.version" ) ).stripTrailingZeros();
+            BigDecimal expected =
+                    new BigDecimal( System.getProperty( "java.specification.version" ) ).stripTrailingZeros();
             assertThat( actual ).isEqualTo( expected );
             assertThat( SystemUtils.JAVA_SPECIFICATION_VERSION ).isEqualTo( expected );
         }
@@ -295,6 +297,7 @@ public class SystemUtilsTest
 
     @RunWith( PowerMockRunner.class )
     @PrepareForTest( SystemUtils.class )
+    @PowerMockIgnore( { "org.jacoco.agent.rt.*", "com.vladium.emma.rt.*" } )
     public static class MockTest
     {
 

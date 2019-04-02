@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 
 import java.io.PrintStream;
 
@@ -36,20 +36,20 @@ import static java.util.Objects.requireNonNull;
 public class DirectConsoleOutput
     implements TestcycleConsoleOutputReceiver
 {
-    private final PrintStream sout;
+    private final PrintStream out;
 
-    private final PrintStream serr;
+    private final PrintStream err;
 
-    public DirectConsoleOutput( PrintStream sout, PrintStream serr )
+    public DirectConsoleOutput( PrintStream out, PrintStream err )
     {
-        this.sout = requireNonNull( sout );
-        this.serr = requireNonNull( serr );
+        this.out = requireNonNull( out );
+        this.err = requireNonNull( err );
     }
 
     @Override
     public void writeTestOutput( String output, boolean newLine, boolean stdout )
     {
-        PrintStream stream = stdout ? sout : serr;
+        PrintStream stream = stdout ? out : err;
         if ( newLine )
         {
             stream.println( output );
@@ -61,12 +61,12 @@ public class DirectConsoleOutput
     }
 
     @Override
-    public void testSetStarting( ReportEntry reportEntry )
+    public void testSetStarting( TestSetReportEntry reportEntry )
     {
     }
 
     @Override
-    public void testSetCompleted( ReportEntry report )
+    public void testSetCompleted( TestSetReportEntry report )
     {
     }
 

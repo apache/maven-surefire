@@ -22,14 +22,20 @@ package org.apache.maven.surefire.its;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.convertUnicodeToUTF8;
 
 public class JUnitPlatformIT
         extends SurefireJUnit4IntegrationTestCase
 {
+    private static final String XML_TESTSUITE_FRAGMENT =
+            "<testsuite xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation="
+                    + "\"https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd\" "
+                    + "version=\"3.0\" name=\"&lt;&lt; ✨ &gt;&gt;\"";
+
     @Before
     public void setUp()
     {
@@ -40,27 +46,42 @@ public class JUnitPlatformIT
     public void testJupiterEngine()
     {
         unpack( "/junit-platform-engine-jupiter" )
+                .setTestToRun( "Basic*Test" )
                 .executeTest()
                 .verifyErrorFree( 5 );
     }
 
     @Test
-    @Ignore( "Uncomment while developing SUREFIRE-1222. Rename 'javax' extension of DisplayNameTest.javax." )
     public void testJupiterEngineWithDisplayNames()
     {
         OutputValidator validator = unpack( "/junit-platform-engine-jupiter" )
                 .executeTest()
                 .verifyErrorFree( 7 );
 
-        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest.txt" )
-                 // .assertContainsText( "<< ✨ >>" ) // after @DisplayName is uncommented via SUREFIRE-1222
-                 .assertContainsText( "Test set: junitplatformenginejupiter.DisplayNameTest" );
+        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest.txt", UTF_8 )
+                 .assertContainsText( "<< ✨ >>" );
 
-        validator.getSurefireReportsFile( "TEST-junitplatformenginejupiter.DisplayNameTest.xml" )
-                 // At the moment, the testcase with the same is reported twice: test1() and test2() use the same display name
-                 // SUREFIRE-1222 will solve this.
-                 .assertContainsText( "testcase name=\"73$71 âœ”\" classname=\"junitplatformenginejupiter.DisplayNameTest\"" )
-                 .assertContainsText( "testcase name=\"73$71 âœ”\" classname=\"junitplatformenginejupiter.DisplayNameTest\"" );
+        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest.txt", UTF_8 )
+                .assertContainsText( "Test set: << ✨ >>" );
+
+        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest.txt", UTF_8 )
+                .assertContainsText( " - in << ✨ >>" );
+
+
+        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest-output.txt", UTF_8 )
+                .assertContainsText( "<< ✨ >>" );
+
+        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest-output.txt", UTF_8 )
+                .assertContainsText( "73$71 ✔" );
+
+        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest-output.txt", UTF_8 )
+                .assertContainsText( "73$72 ✔" );
+
+
+        validator.getSurefireReportsFile( "TEST-junitplatformenginejupiter.DisplayNameTest.xml", UTF_8 )
+                .assertContainsText( "testcase name=\"73$71 ✔\" classname=\"&lt;&lt; ✨ &gt;&gt;\"" )
+                .assertContainsText( "testcase name=\"73$72 ✔\" classname=\"&lt;&lt; ✨ &gt;&gt;\"" )
+                .assertContainsText( XML_TESTSUITE_FRAGMENT );
     }
 
     @Test

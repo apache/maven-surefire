@@ -43,121 +43,49 @@ public final class ConsoleLoggerDecorator
     @Override
     public boolean isDebugEnabled()
     {
-        try
-        {
-            return (Boolean) logger.getClass()
-                    .getMethod( "isDebugEnabled" )
-                    .invoke( logger );
-        }
-        catch ( Exception e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage(), e );
-        }
+        return invokeReturnedBoolean( "isDebugEnabled" );
     }
 
     @Override
     public void debug( String message )
     {
-        try
-        {
-            logger.getClass()
-                    .getMethod( "debug", String.class )
-                    .invoke( logger, message );
-        }
-        catch ( Exception e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage(), e );
-        }
+        invokeWithMessage( message, "debug" );
     }
 
     @Override
     public boolean isInfoEnabled()
     {
-        try
-        {
-            return (Boolean) logger.getClass()
-                    .getMethod( "isInfoEnabled" )
-                    .invoke( logger );
-        }
-        catch ( Exception e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage(), e );
-        }
+        return invokeReturnedBoolean( "isInfoEnabled" );
     }
 
     @Override
     public void info( String message )
     {
-        try
-        {
-            logger.getClass()
-                    .getMethod( "info", String.class )
-                    .invoke( logger, message );
-        }
-        catch ( Exception e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage(), e );
-        }
+        invokeWithMessage( message, "info" );
     }
 
     @Override
     public boolean isWarnEnabled()
     {
-        try
-        {
-            return (Boolean) logger.getClass()
-                    .getMethod( "isWarnEnabled" )
-                    .invoke( logger );
-        }
-        catch ( Exception e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage(), e );
-        }
+        return invokeReturnedBoolean( "isWarnEnabled" );
     }
 
     @Override
     public void warning( String message )
     {
-        try
-        {
-            logger.getClass()
-                    .getMethod( "warning", String.class )
-                    .invoke( logger, message );
-        }
-        catch ( Exception e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage(), e );
-        }
+        invokeWithMessage( message, "warning" );
     }
 
     @Override
     public boolean isErrorEnabled()
     {
-        try
-        {
-            return (Boolean) logger.getClass()
-                    .getMethod( "isErrorEnabled" )
-                    .invoke( logger );
-        }
-        catch ( Exception e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage(), e );
-        }
+        return invokeReturnedBoolean( "isErrorEnabled" );
     }
 
     @Override
     public void error( String message )
     {
-        try
-        {
-            logger.getClass()
-                    .getMethod( "error", String.class )
-                    .invoke( logger, message );
-        }
-        catch ( Exception e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage(), e );
-        }
+        invokeWithMessage( message, "error" );
     }
 
     @Override
@@ -183,6 +111,34 @@ public final class ConsoleLoggerDecorator
             logger.getClass()
                     .getMethod( "error", Throwable.class )
                     .invoke( logger, t );
+        }
+        catch ( Exception e )
+        {
+            throw new IllegalStateException( e.getLocalizedMessage(), e );
+        }
+    }
+
+    private boolean invokeReturnedBoolean( String isErrorEnabled )
+    {
+        try
+        {
+            return (Boolean) logger.getClass()
+                    .getMethod( isErrorEnabled )
+                    .invoke( logger );
+        }
+        catch ( Exception e )
+        {
+            throw new IllegalStateException( e.getLocalizedMessage(), e );
+        }
+    }
+
+    private void invokeWithMessage( String message, String error )
+    {
+        try
+        {
+            logger.getClass()
+                    .getMethod( error, String.class )
+                    .invoke( logger, message );
         }
         catch ( Exception e )
         {

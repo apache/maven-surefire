@@ -261,16 +261,18 @@ public final class ForkedChannelDecoder
                 if ( listener != null && encoding != null && mode != null )
                 {
                     String sourceName = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
+                    String sourceText = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
                     String name = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
+                    String nameText = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
                     String group = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
                     String message = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
                     String elapsed = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
                     String traceMessage = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
                     String smartTrimmedStackTrace = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
                     String stackTrace = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
-
-                    listener.handle( mode, toReportEntry( encoding, sourceName, name, group, message, elapsed,
-                            traceMessage, smartTrimmedStackTrace, stackTrace ) );
+                    ReportEntry reportEntry = toReportEntry( encoding, sourceName, sourceText, name, nameText,
+                            group, message, elapsed, traceMessage, smartTrimmedStackTrace, stackTrace );
+                    listener.handle( mode, reportEntry );
                 }
             }
             else if ( event.isJvmExitError() )
@@ -294,7 +296,8 @@ public final class ForkedChannelDecoder
 
     static ReportEntry toReportEntry( Charset encoding,
                    // ReportEntry:
-                   String encSource, String encName, String encGroup, String encMessage, String encTimeElapsed,
+                   String encSource, String encSourceText, String encName, String encNameText,
+                                      String encGroup, String encMessage, String encTimeElapsed,
                    // StackTraceWriter:
                    String encTraceMessage, String encSmartTrimmedStackTrace, String encStackTrace )
             throws NumberFormatException
@@ -306,14 +309,16 @@ public final class ForkedChannelDecoder
         }
 
         String source = decode( encSource, encoding );
+        String sourceText = decode( encSourceText, encoding );
         String name = decode( encName, encoding );
+        String nameText = decode( encNameText, encoding );
         String group = decode( encGroup, encoding );
         StackTraceWriter stackTraceWriter =
                 decodeTrace( encoding, encTraceMessage, encSmartTrimmedStackTrace, encStackTrace );
         Integer elapsed = decodeToInteger( encTimeElapsed );
         String message = decode( encMessage, encoding );
-        return reportEntry( source, name, group, stackTraceWriter, elapsed, message,
-                Collections.<String, String>emptyMap() );
+        return reportEntry( source, sourceText, name, nameText,
+                group, stackTraceWriter, elapsed, message, Collections.<String, String>emptyMap() );
     }
 
     static String decode( String line, Charset encoding )

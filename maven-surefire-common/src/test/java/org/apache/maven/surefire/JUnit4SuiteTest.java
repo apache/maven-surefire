@@ -25,6 +25,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojoJava7PlusTest;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojoTest;
+import org.apache.maven.plugin.surefire.CommonReflectorTest;
 import org.apache.maven.plugin.surefire.MojoMocklessTest;
 import org.apache.maven.plugin.surefire.SurefireHelperTest;
 import org.apache.maven.plugin.surefire.SurefireReflectorTest;
@@ -42,13 +43,16 @@ import org.apache.maven.plugin.surefire.booterclient.output.ForkClientTest;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkedChannelDecoderTest;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactoryTest;
 import org.apache.maven.plugin.surefire.report.StatelessXmlReporterTest;
+import org.apache.maven.plugin.surefire.report.TestSetStatsTest;
 import org.apache.maven.plugin.surefire.report.WrappedReportEntryTest;
 import org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMapTest;
 import org.apache.maven.plugin.surefire.util.DependenciesScannerTest;
 import org.apache.maven.plugin.surefire.util.DirectoryScannerTest;
 import org.apache.maven.plugin.surefire.util.ScannerUtilTest;
 import org.apache.maven.plugin.surefire.util.SpecificFileFilterTest;
-import org.apache.maven.surefire.report.ConsoleOutputFileReporterTest;
+import org.apache.maven.surefire.extensions.ConsoleOutputReporterTest;
+import org.apache.maven.surefire.extensions.StatelessReporterTest;
+import org.apache.maven.surefire.extensions.StatelessTestsetInfoReporterTest;
 import org.apache.maven.surefire.report.FileReporterTest;
 import org.apache.maven.surefire.report.RunStatisticsTest;
 import org.apache.maven.surefire.spi.SPITest;
@@ -68,7 +72,7 @@ public class JUnit4SuiteTest extends TestCase
         suite.addTestSuite( RelocatorTest.class );
         suite.addTestSuite( RunStatisticsTest.class );
         suite.addTestSuite( FileReporterTest.class );
-        suite.addTestSuite( ConsoleOutputFileReporterTest.class );
+        suite.addTestSuite( org.apache.maven.surefire.report.ConsoleOutputFileReporterTest.class );
         suite.addTestSuite( SurefirePropertiesTest.class );
         suite.addTestSuite( SpecificFileFilterTest.class );
         suite.addTest( new JUnit4TestAdapter( DirectoryScannerTest.class ) );
@@ -95,6 +99,11 @@ public class JUnit4SuiteTest extends TestCase
         suite.addTest( new JUnit4TestAdapter( MojoMocklessTest.class ) );
         suite.addTest( new JUnit4TestAdapter( ForkClientTest.class ) );
         suite.addTest( new JUnit4TestAdapter( ForkedChannelDecoderTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( ConsoleOutputReporterTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( StatelessReporterTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( TestSetStatsTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( StatelessTestsetInfoReporterTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( CommonReflectorTest.class ) );
         return suite;
     }
 }

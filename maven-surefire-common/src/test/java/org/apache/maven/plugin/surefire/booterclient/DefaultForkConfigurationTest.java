@@ -31,6 +31,7 @@ import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -58,6 +59,7 @@ import static org.powermock.reflect.Whitebox.invokeMethod;
  */
 @RunWith( PowerMockRunner.class )
 @PrepareForTest( { DefaultForkConfiguration.class, Relocator.class } )
+@PowerMockIgnore( { "org.jacoco.agent.rt.*", "com.vladium.emma.rt.*" } )
 public class DefaultForkConfigurationTest
 {
     private Classpath booterClasspath;

@@ -20,6 +20,9 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
+import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter;
+import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
+import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
@@ -104,7 +107,8 @@ public class JUnitCoreTester
     {
         File target = new File( "./target" );
         File statisticsFile = new File( target, "TESTHASHxXML" );
-        return new StartupReportConfiguration( true, true, "PLAIN", false, true, target, false, null, statisticsFile,
-                false, 0, null, null, false );
+        return new StartupReportConfiguration( true, true, "PLAIN", false, target, false, null, statisticsFile,
+                false, 0, null, null, false, new SurefireStatelessReporter(), new SurefireConsoleOutputReporter(),
+                new SurefireStatelessTestsetInfoReporter() );
     }
 }

@@ -21,8 +21,8 @@ package org.apache.maven.surefire.common.junit48;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
@@ -30,16 +30,14 @@ import org.junit.runners.Suite;
  * @author Tibor Digana (tibor17)
  * @since 2.19
  */
-@Suite.SuiteClasses( {
-    FilterFactoryTest.class,
-    JUnit48ReflectorTest.class,
-    JUnit48TestCheckerTest.class
-} )
-@RunWith( Suite.class )
-public class JUnit4SuiteTest
+public class JUnit4SuiteTest extends TestCase
 {
     public static Test suite()
     {
-        return new JUnit4TestAdapter( JUnit4SuiteTest.class );
+        TestSuite suite = new TestSuite();
+        suite.addTestSuite( JUnit48ReflectorTest.class );
+        suite.addTest( new JUnit4TestAdapter( JUnit48TestCheckerTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( FilterFactoryTest.class ) );
+        return suite;
     }
 }

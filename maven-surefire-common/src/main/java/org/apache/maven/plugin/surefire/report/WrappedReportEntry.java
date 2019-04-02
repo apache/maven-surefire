@@ -103,14 +103,26 @@ public class WrappedReportEntry
     }
 
     @Override
+    public String getSourceText()
+    {
+        return original.getSourceText();
+    }
+
+    @Override
     public String getName()
     {
         return original.getName();
     }
 
+    @Override
+    public String getNameText()
+    {
+        return original.getNameText();
+    }
+
     public String getClassMethodName()
     {
-        return getSourceName() + "." + getName();
+        return original.getSourceName() + "." + original.getName();
     }
 
     @Override
@@ -142,14 +154,28 @@ public class WrappedReportEntry
         return formatElapsedTime( getElapsed() );
     }
 
-    public String getReportName()
+    String getReportSourceName()
     {
-        return getSourceName();
+        String sourceName = getSourceName();
+        String sourceText = getSourceText();
+        return isBlank( sourceText ) ? sourceName : sourceText;
     }
 
-    public String getReportName( String suffix )
+    String getReportSourceName( String suffix )
     {
-        return isBlank( suffix ) ? getReportName() : getReportName() + "(" + suffix + ")";
+        return isBlank( suffix ) ? getReportSourceName() : getReportSourceName() + "(" + suffix + ")";
+    }
+
+    String getSourceName( String suffix )
+    {
+        return isBlank( suffix ) ? getSourceName() : getSourceName() + "(" + suffix + ")";
+    }
+
+    String getReportName()
+    {
+        String name = getName();
+        String nameText = getNameText();
+        return isBlank( nameText ) ? name : nameText;
     }
 
     public String getOutput( boolean trimStackTrace )
@@ -190,6 +216,12 @@ public class WrappedReportEntry
     public String getNameWithGroup()
     {
         return original.getNameWithGroup();
+    }
+
+    @Override
+    public String getReportNameWithGroup()
+    {
+        return original.getReportNameWithGroup();
     }
 
     @Override

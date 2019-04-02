@@ -86,23 +86,31 @@
       <artifactId>powermock-api-mockito2</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.jacoco</groupId>
+      <artifactId>org.jacoco.agent</artifactId>
+      <classifier>runtime</classifier>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
     <plugins>
       <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
         <executions>
           <execution>
-            <id>build-test-classpath</id>
-            <phase>generate-sources</phase>
+            <id>jacoco-instrumentation</id>
             <goals>
-              <goal>build-classpath</goal>
+              <goal>instrument</goal>
             </goals>
-            <configuration>
-              <includeScope>test</includeScope>
-              <outputFile>target/test-classpath/cp.txt</outputFile>
-            </configuration>
+          </execution>
+          <execution>
+            <id>restore-classes</id>
+            <goals>
+              <goal>restore-instrumented-classes</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>
@@ -116,9 +124,13 @@
           </dependency>
         </dependencies>
         <configuration>
+          <argLine>${jvm.args.tests}</argLine>
           <includes>
             <include>**/JUnit4SuiteTest.java</include>
           </includes>
+          <systemPropertyVariables>
+            <jacoco-agent.destfile>${project.build.directory}/jacoco.exec</jacoco-agent.destfile>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
       <plugin>

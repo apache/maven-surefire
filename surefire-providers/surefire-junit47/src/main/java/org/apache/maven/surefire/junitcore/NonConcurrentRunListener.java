@@ -65,13 +65,13 @@ public class NonConcurrentRunListener
     protected SimpleReportEntry createReportEntry( Description description )
     {
         ClassMethod classMethod = toClassMethod( description );
-        return new SimpleReportEntry( classMethod.getClazz(), classMethod.getMethod() );
+        return new SimpleReportEntry( classMethod.getClazz(), null, classMethod.getMethod(), null );
     }
 
     private TestSetReportEntry createReportEntryForTestSet( Description description, Map<String, String> systemProps )
     {
         ClassMethod classMethod = toClassMethod( description );
-        return new SimpleReportEntry( classMethod.getClazz(), classMethod.getClazz(), systemProps );
+        return new SimpleReportEntry( classMethod.getClazz(), null, null, null, systemProps );
     }
 
     private TestSetReportEntry createTestSetReportEntryStarted( Description description )

@@ -907,7 +907,11 @@ public class ForkClientTest
         client.consumeMultiLineContent( ":maven:surefire:std:out:testset-starting:normal-run:UTF-8:"
                 + encodedSourceName
                 + ":"
+                + "-"
+                + ":"
                 + encodedName
+                + ":"
+                + "-"
                 + ":"
                 + encodedGroup
                 + ":"
@@ -939,8 +943,12 @@ public class ForkClientTest
                 .hasSize( 1 );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getSourceName() )
                 .isEqualTo( "pkg.MyTest" );
+        assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getSourceText() )
+                .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getName() )
                 .isEqualTo( "my test" );
+        assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getNameText() )
+                .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getElapsed() )
                 .isEqualTo( 102 );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getMessage() )
@@ -1017,12 +1025,16 @@ public class ForkClientTest
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
         when( reportEntry.getName() ).thenReturn( "my test" );
+        when( reportEntry.getNameText() ).thenReturn( "dn2" );
         when( reportEntry.getNameWithGroup() ).thenReturn( "name with group" );
         when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
+        when( reportEntry.getSourceText() ).thenReturn( "dn1" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
         String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
+        String encodedSourceText = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceText() ) ) );
         String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
+        String encodedNameText = encodeBase64String( toArray( UTF_8.encode( reportEntry.getNameText() ) ) );
         String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
         String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
 
@@ -1030,7 +1042,11 @@ public class ForkClientTest
         client.consumeMultiLineContent( ":maven:surefire:std:out:testset-starting:normal-run:UTF-8:"
                 + encodedSourceName
                 + ":"
+                + encodedSourceText
+                + ":"
                 + encodedName
+                + ":"
+                + encodedNameText
                 + ":"
                 + encodedGroup
                 + ":"
@@ -1060,8 +1076,12 @@ public class ForkClientTest
                 .hasSize( 1 );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getSourceName() )
                 .isEqualTo( "pkg.MyTest" );
+        assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getSourceText() )
+                .isEqualTo( "dn1" );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getName() )
                 .isEqualTo( "my test" );
+        assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getNameText() )
+                .isEqualTo( "dn2" );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getElapsed() )
                 .isEqualTo( 102 );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getMessage() )
@@ -1153,7 +1173,11 @@ public class ForkClientTest
         client.consumeMultiLineContent( ":maven:surefire:std:out:testset-completed:normal-run:UTF-8:"
                 + encodedSourceName
                 + ":"
+                + "-"
+                + ":"
                 + encodedName
+                + ":"
+                + "-"
                 + ":"
                 + encodedGroup
                 + ":"
@@ -1181,8 +1205,12 @@ public class ForkClientTest
                 .hasSize( 1 );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getSourceName() )
                 .isEqualTo( "pkg.MyTest" );
+        assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getSourceText() )
+                .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getName() )
                 .isEqualTo( "my test" );
+        assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getNameText() )
+                .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getElapsed() )
                 .isEqualTo( 102 );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getMessage() )
@@ -1274,7 +1302,11 @@ public class ForkClientTest
         client.consumeMultiLineContent( ":maven:surefire:std:out:test-starting:normal-run:UTF-8:"
                 + encodedSourceName
                 + ":"
+                + "-"
+                + ":"
                 + encodedName
+                + ":"
+                + "-"
                 + ":"
                 + encodedGroup
                 + ":"
@@ -1307,8 +1339,12 @@ public class ForkClientTest
                 .hasSize( 1 );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getSourceName() )
                 .isEqualTo( "pkg.MyTest" );
+        assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getSourceText() )
+                .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getName() )
                 .isEqualTo( "my test" );
+        assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getNameText() )
+                .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getElapsed() )
                 .isEqualTo( 102 );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getMessage() )
@@ -1396,7 +1432,7 @@ public class ForkClientTest
 
         client.consumeMultiLineContent( ":maven:surefire:std:out:test-starting:normal-run:UTF-8:"
                 + encodedSourceName
-                + ":-:-:-:-:-:-:-" );
+                + ":-:-:-:-:-:-:-:-:-" );
 
         assertThat( client.testsInProgress() )
                 .hasSize( 1 )
@@ -1405,7 +1441,11 @@ public class ForkClientTest
         client.consumeMultiLineContent( ":maven:surefire:std:out:test-succeeded:normal-run:UTF-8:"
                 + encodedSourceName
                 + ":"
+                + "-"
+                + ":"
                 + encodedName
+                + ":"
+                + "-"
                 + ":"
                 + encodedGroup
                 + ":"
@@ -1433,7 +1473,11 @@ public class ForkClientTest
                 .hasSize( 2 );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getSourceName() )
                 .isEqualTo( "pkg.MyTest" );
+        assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getSourceText() )
+                .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getName() )
+                .isNull();
+        assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getNameText() )
                 .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getSourceName() )
                 .isEqualTo( "pkg.MyTest" );
@@ -1530,7 +1574,7 @@ public class ForkClientTest
 
         client.consumeMultiLineContent( ":maven:surefire:std:out:test-starting:normal-run:UTF-8:"
                 + encodedSourceName
-                + ":-:-:-:-:-:-:-" );
+                + ":-:-:-:-:-:-:-:-:-" );
 
         assertThat( client.testsInProgress() )
                 .hasSize( 1 )
@@ -1539,7 +1583,11 @@ public class ForkClientTest
         client.consumeMultiLineContent( ":maven:surefire:std:out:test-failed:normal-run:UTF-8:"
                 + encodedSourceName
                 + ":"
+                + "-"
+                + ":"
                 + encodedName
+                + ":"
+                + "-"
                 + ":"
                 + encodedGroup
                 + ":"
@@ -1567,12 +1615,20 @@ public class ForkClientTest
                 .hasSize( 2 );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getSourceName() )
                 .isEqualTo( "pkg.MyTest" );
+        assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getSourceText() )
+                .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getName() )
+                .isNull();
+        assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getNameText() )
                 .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getSourceName() )
                 .isEqualTo( "pkg.MyTest" );
+        assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getSourceText() )
+                .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getName() )
                 .isEqualTo( "my test" );
+        assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getNameText() )
+                .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getElapsed() )
                 .isEqualTo( 102 );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getMessage() )
@@ -1664,7 +1720,7 @@ public class ForkClientTest
 
         client.consumeMultiLineContent( ":maven:surefire:std:out:test-starting:normal-run:UTF-8:"
                 + encodedSourceName
-                + ":-:-:-:-:-:-:-" );
+                + ":-:-:-:-:-:-:-:-:-" );
 
         assertThat( client.testsInProgress() )
                 .hasSize( 1 )
@@ -1673,7 +1729,11 @@ public class ForkClientTest
         client.consumeMultiLineContent( ":maven:surefire:std:out:test-skipped:normal-run:UTF-8:"
                 + encodedSourceName
                 + ":"
+                + "-"
+                + ":"
                 + encodedName
+                + ":"
+                + "-"
                 + ":"
                 + encodedGroup
                 + ":"
@@ -1701,12 +1761,20 @@ public class ForkClientTest
                 .hasSize( 2 );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getSourceName() )
                 .isEqualTo( "pkg.MyTest" );
+        assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getSourceText() )
+                .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getName() )
+                .isNull();
+        assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getNameText() )
                 .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getSourceName() )
                 .isEqualTo( "pkg.MyTest" );
+        assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getSourceText() )
+                .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getName() )
                 .isEqualTo( "my test" );
+        assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getNameText() )
+                .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getElapsed() )
                 .isEqualTo( 102 );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getMessage() )
@@ -1787,9 +1855,11 @@ public class ForkClientTest
         when( reportEntry.getName() ).thenReturn( "my test" );
         when( reportEntry.getNameWithGroup() ).thenReturn( "name with group" );
         when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
+        when( reportEntry.getSourceText() ).thenReturn( "display name" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
         String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
+        String encodedSourceText = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceText() ) ) );
         String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
         String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
         String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
@@ -1798,7 +1868,9 @@ public class ForkClientTest
 
         client.consumeMultiLineContent( ":maven:surefire:std:out:test-starting:normal-run:UTF-8:"
                 + encodedSourceName
-                + ":-:-:-:-:-:-:-" );
+                + ":"
+                + encodedSourceText
+                + ":-:':-:-:-:-:-:-" );
 
         assertThat( client.testsInProgress() )
                 .hasSize( 1 )
@@ -1807,7 +1879,11 @@ public class ForkClientTest
         client.consumeMultiLineContent( ":maven:surefire:std:out:test-error:normal-run:UTF-8:"
                 + encodedSourceName
                 + ":"
+                + encodedSourceText
+                + ":"
                 + encodedName
+                + ":"
+                + "-"
                 + ":"
                 + encodedGroup
                 + ":"
@@ -1835,10 +1911,14 @@ public class ForkClientTest
                 .hasSize( 2 );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getSourceName() )
                 .isEqualTo( "pkg.MyTest" );
+        assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getSourceText() )
+                .isEqualTo( "display name" );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getName() )
                 .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getSourceName() )
                 .isEqualTo( "pkg.MyTest" );
+        assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getSourceText() )
+                .isEqualTo( "display name" );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getName() )
                 .isEqualTo( "my test" );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getElapsed() )
@@ -1919,12 +1999,14 @@ public class ForkClientTest
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
         when( reportEntry.getName() ).thenReturn( "my test" );
+        when( reportEntry.getNameText() ).thenReturn("display name");
         when( reportEntry.getNameWithGroup() ).thenReturn( "name with group" );
         when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
         String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
         String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
+        String encodedText = encodeBase64String( toArray( UTF_8.encode( reportEntry.getNameText() ) ) );
         String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
         String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
 
@@ -1932,7 +2014,7 @@ public class ForkClientTest
 
         client.consumeMultiLineContent( ":maven:surefire:std:out:test-starting:normal-run:UTF-8:"
                 + encodedSourceName
-                + ":-:-:-:-:-:-:-" );
+                + ":-:-:-:-:-:-:-:-:-" );
 
         assertThat( client.testsInProgress() )
                 .hasSize( 1 )
@@ -1941,7 +2023,11 @@ public class ForkClientTest
         client.consumeMultiLineContent( ":maven:surefire:std:out:test-assumption-failure:normal-run:UTF-8:"
                 + encodedSourceName
                 + ":"
+                + "-"
+                + ":"
                 + encodedName
+                + ":"
+                + encodedText
                 + ":"
                 + encodedGroup
                 + ":"
@@ -1969,12 +2055,16 @@ public class ForkClientTest
                 .hasSize( 2 );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getSourceName() )
                 .isEqualTo( "pkg.MyTest" );
+        assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getSourceText() )
+                .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getName() )
                 .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getSourceName() )
                 .isEqualTo( "pkg.MyTest" );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getName() )
                 .isEqualTo( "my test" );
+        assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getNameText() )
+                .isEqualTo( "display name" );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getElapsed() )
                 .isEqualTo( 102 );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getMessage() )

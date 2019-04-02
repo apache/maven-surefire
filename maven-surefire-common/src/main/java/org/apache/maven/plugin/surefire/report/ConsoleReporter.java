@@ -23,8 +23,9 @@ import java.util.List;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.shared.utils.logging.MessageBuilder;
-import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.plugin.surefire.log.api.Level;
+import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 
 import static org.apache.maven.plugin.surefire.log.api.Level.resolveLevel;
 import static org.apache.maven.plugin.surefire.report.TestSetStats.concatenateWithTestGroup;
@@ -37,31 +38,33 @@ import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
  * @author Kristian Rosenvold
  */
 public class ConsoleReporter
+        extends StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats>
 {
     public static final String BRIEF = "brief";
-
     public static final String PLAIN = "plain";
-
     private static final String TEST_SET_STARTING_PREFIX = "Running ";
 
-    private final ConsoleLogger logger;
+    private final boolean usePhrasedClassNameInRunning;
+    private final boolean usePhrasedClassNameInTestCaseSummary;
 
-    public ConsoleReporter( ConsoleLogger logger )
+    public ConsoleReporter( ConsoleLogger logger,
+                            boolean usePhrasedClassNameInRunning, boolean usePhrasedClassNameInTestCaseSummary )
     {
-        this.logger = logger;
+        super( logger );
+        this.usePhrasedClassNameInRunning = usePhrasedClassNameInRunning;
+        this.usePhrasedClassNameInTestCaseSummary = usePhrasedClassNameInTestCaseSummary;
     }
 
-    public ConsoleLogger getConsoleLogger()
+    @Override
+    public void testSetStarting( TestSetReportEntry report )
     {
-        return logger;
+        MessageBuilder builder = buffer().a( TEST_SET_STARTING_PREFIX );
+        String runningTestCase = concatenateWithTestGroup( builder, report, usePhrasedClassNameInRunning );
+        getConsoleLogger()
+                .info( runningTestCase );
     }
 
-    public void testSetStarting( ReportEntry report )
-    {
-        MessageBuilder builder = buffer();
-        logger.info( concatenateWithTestGroup( builder.a( TEST_SET_STARTING_PREFIX ), report ) );
-    }
-
+    @Override
     public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
     {
         boolean success = testSetStats.getCompletedCount() > 0;
@@ -71,13 +74,14 @@ public class ConsoleReporter
         boolean flakes = testSetStats.getSkipped() > 0;
         Level level = resolveLevel( success, failures, errors, skipped, flakes );
 
-        println( testSetStats.getColoredTestSetSummary( report ), level );
+        println( testSetStats.getColoredTestSetSummary( report, usePhrasedClassNameInTestCaseSummary ), level );
         for ( String testResult : testResults )
         {
             println( testResult, level );
         }
     }
 
+    @Override
     public void reset()
     {
     }
@@ -87,13 +91,16 @@ public class ConsoleReporter
         switch ( level )
         {
             case FAILURE:
-                logger.error( message );
+                getConsoleLogger()
+                        .error( message );
                 break;
             case UNSTABLE:
-                logger.warning( message );
+                getConsoleLogger()
+                        .warning( message );
                 break;
             default:
-                logger.info( message );
+                getConsoleLogger()
+                        .info( message );
         }
     }
 }

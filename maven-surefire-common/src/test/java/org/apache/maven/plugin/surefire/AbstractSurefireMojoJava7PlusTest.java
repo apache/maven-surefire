@@ -39,6 +39,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -60,7 +61,6 @@ import static org.powermock.api.mockito.PowerMockito.doNothing;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.spy;
-import static org.powermock.api.mockito.PowerMockito.verifyPrivate;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import static org.powermock.reflect.Whitebox.invokeMethod;
 
@@ -69,6 +69,7 @@ import static org.powermock.reflect.Whitebox.invokeMethod;
  */
 @RunWith( PowerMockRunner.class )
 @PrepareForTest( { AbstractSurefireMojo.class, ResolvePathsRequest.class } )
+@PowerMockIgnore( { "org.jacoco.agent.rt.*", "com.vladium.emma.rt.*" } )
 public class AbstractSurefireMojoJava7PlusTest
 {
     @Mock
@@ -155,6 +156,10 @@ public class AbstractSurefireMojoJava7PlusTest
                 "jar", "", handler );
         common.setFile( mockFile( "maven-surefire-common.jar" ) );
 
+        Artifact ext = new DefaultArtifact( "org.apache.maven.surefire", "surefire-extensions-api", v5, "runtime",
+                "jar", "", handler );
+        ext.setFile( mockFile( "surefire-extensions-api.jar" ) );
+
         Artifact api = new DefaultArtifact( "org.apache.maven.surefire", "surefire-api", v5, "runtime",
                 "jar", "", handler );
         api.setFile( mockFile( "surefire-api.jar" ) );
@@ -165,6 +170,7 @@ public class AbstractSurefireMojoJava7PlusTest
 
         Map<String, Artifact> artifacts = new HashMap<>();
         artifacts.put( "org.apache.maven.surefire:maven-surefire-common", common );
+        artifacts.put( "org.apache.maven.surefire:surefire-extensions-api", ext );
         artifacts.put( "org.apache.maven.surefire:surefire-api", api );
         artifacts.put( "org.apache.maven.surefire:surefire-logger-api", loggerApi );
         when( mojo.getPluginArtifactMap() ).thenReturn( artifacts );
@@ -200,8 +206,8 @@ public class AbstractSurefireMojoJava7PlusTest
                         "test(compact) classpath:  non-modular.jar  junit.jar  hamcrest.jar",
                         "test(compact) modulepath:  modular.jar  classes",
                         "provider(compact) classpath:  surefire-provider.jar",
-                        "in-process classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-api.jar  surefire-logger-api.jar",
-                        "in-process(compact) classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-api.jar  surefire-logger-api.jar"
+                        "in-process classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-extensions-api.jar  surefire-api.jar  surefire-logger-api.jar",
+                        "in-process(compact) classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-extensions-api.jar  surefire-api.jar  surefire-logger-api.jar"
                 );
 
         assertThat( conf ).isNotNull();

@@ -33,7 +33,7 @@ class NullStatelessXmlReporter
 
     private NullStatelessXmlReporter()
     {
-        super( null, null, false, 0, null, null );
+        super( null, null, false, 0, null, null, null, false, false, false, false );
     }
 
     @Override

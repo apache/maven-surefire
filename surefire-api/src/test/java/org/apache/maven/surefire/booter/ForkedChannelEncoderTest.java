@@ -179,43 +179,51 @@ public class ForkedChannelEncoderTest
         StringBuilder encode = encode( "X", "normal-run", reportEntry, false );
         assertThat( encode.toString() )
                 .isEqualTo( ":maven:surefire:std:out:X:normal-run:UTF-8:"
-                                    + encodedSourceName
-                                    + ":"
-                                    + encodedName
-                                    + ":"
-                                    + encodedGroup
-                                    + ":"
-                                    + encodedMessage
-                                    + ":"
-                                    + 102
-                                    + ":"
+                                + encodedSourceName
+                                + ":"
+                                + "-"
+                                + ":"
+                                + encodedName
+                                + ":"
+                                + "-"
+                                + ":"
+                                + encodedGroup
+                                + ":"
+                                + encodedMessage
+                                + ":"
+                                + 102
+                                + ":"
 
-                                    + encodedExceptionMsg
-                                    + ":"
-                                    + encodedSmartStackTrace
-                                    + ":"
-                                    + encodedStackTrace
+                                + encodedExceptionMsg
+                                + ":"
+                                + encodedSmartStackTrace
+                                + ":"
+                                + encodedStackTrace
                 );
 
         encode = encode( "X", "normal-run", reportEntry, true );
         assertThat( encode.toString() )
                 .isEqualTo( ":maven:surefire:std:out:X:normal-run:UTF-8:"
-                                    + encodedSourceName
-                                    + ":"
-                                    + encodedName
-                                    + ":"
-                                    + encodedGroup
-                                    + ":"
-                                    + encodedMessage
-                                    + ":"
-                                    + 102
-                                    + ":"
+                                + encodedSourceName
+                                + ":"
+                                + "-"
+                                + ":"
+                                + encodedName
+                                + ":"
+                                + "-"
+                                + ":"
+                                + encodedGroup
+                                + ":"
+                                + encodedMessage
+                                + ":"
+                                + 102
+                                + ":"
 
-                                    + encodedExceptionMsg
-                                    + ":"
-                                    + encodedSmartStackTrace
-                                    + ":"
-                                    + encodedTrimmedStackTrace
+                                + encodedExceptionMsg
+                                + ":"
+                                + encodedSmartStackTrace
+                                + ":"
+                                + encodedTrimmedStackTrace
                 );
 
         Stream out = Stream.newStream();
@@ -227,7 +235,11 @@ public class ForkedChannelEncoderTest
                 .isEqualTo( ":maven:surefire:std:out:testset-starting:normal-run:UTF-8:"
                                     + encodedSourceName
                                     + ":"
+                                    + "-"
+                                    + ":"
                                     + encodedName
+                                    + ":"
+                                    + "-"
                                     + ":"
                                     + encodedGroup
                                     + ":"
@@ -253,7 +265,11 @@ public class ForkedChannelEncoderTest
                 .isEqualTo( ":maven:surefire:std:out:testset-starting:normal-run:UTF-8:"
                                     + encodedSourceName
                                     + ":"
+                                    + "-"
+                                    + ":"
                                     + encodedName
+                                    + ":"
+                                    + "-"
                                     + ":"
                                     + encodedGroup
                                     + ":"
@@ -316,7 +332,11 @@ public class ForkedChannelEncoderTest
                 .isEqualTo( ":maven:surefire:std:out:testset-completed:normal-run:UTF-8:"
                         + encodedSourceName
                         + ":"
+                        + "-"
+                        + ":"
                         + encodedName
+                        + ":"
+                        + "-"
                         + ":"
                         + encodedGroup
                         + ":"
@@ -379,7 +399,11 @@ public class ForkedChannelEncoderTest
                 .isEqualTo( ":maven:surefire:std:out:test-starting:normal-run:UTF-8:"
                         + encodedSourceName
                         + ":"
+                        + "-"
+                        + ":"
                         + encodedName
+                        + ":"
+                        + "-"
                         + ":"
                         + encodedGroup
                         + ":"
@@ -442,7 +466,11 @@ public class ForkedChannelEncoderTest
                 .isEqualTo( ":maven:surefire:std:out:test-succeeded:normal-run:UTF-8:"
                         + encodedSourceName
                         + ":"
+                        + "-"
+                        + ":"
                         + encodedName
+                        + ":"
+                        + "-"
                         + ":"
                         + encodedGroup
                         + ":"
@@ -505,7 +533,11 @@ public class ForkedChannelEncoderTest
                 .isEqualTo( ":maven:surefire:std:out:test-failed:normal-run:UTF-8:"
                         + encodedSourceName
                         + ":"
+                        + "-"
+                        + ":"
                         + encodedName
+                        + ":"
+                        + "-"
                         + ":"
                         + encodedGroup
                         + ":"
@@ -567,7 +599,11 @@ public class ForkedChannelEncoderTest
                 .isEqualTo( ":maven:surefire:std:out:test-skipped:normal-run:UTF-8:"
                         + encodedSourceName
                         + ":"
+                        + "-"
+                        + ":"
                         + encodedName
+                        + ":"
+                        + "-"
                         + ":"
                         + encodedGroup
                         + ":"
@@ -628,7 +664,11 @@ public class ForkedChannelEncoderTest
                 .isEqualTo( ":maven:surefire:std:out:test-error:normal-run:UTF-8:"
                         + encodedSourceName
                         + ":"
+                        + "-"
+                        + ":"
                         + encodedName
+                        + ":"
+                        + "-"
                         + ":"
                         + encodedGroup
                         + ":"
@@ -687,7 +727,11 @@ public class ForkedChannelEncoderTest
                 .isEqualTo( ":maven:surefire:std:out:test-assumption-failure:normal-run:UTF-8:"
                         + encodedSourceName
                         + ":"
+                        + "-"
+                        + ":"
                         + encodedName
+                        + ":"
+                        + "-"
                         + ":"
                         + encodedGroup
                         + ":"

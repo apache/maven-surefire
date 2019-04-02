@@ -76,7 +76,7 @@ public class JUnit4RunListener
     {
         String reason = getAnnotatedIgnoreValue( description );
         ClassMethod classMethod = toClassMethod( description );
-        reporter.testSkipped( ignored( classMethod.getClazz(), classMethod.getMethod(), reason ) );
+        reporter.testSkipped( ignored( classMethod.getClazz(), null, classMethod.getMethod(), null, reason ) );
     }
 
     /**
@@ -112,7 +112,8 @@ public class JUnit4RunListener
         {
             StackTraceWriter stackTrace = createStackTraceWriter( failure );
             ClassMethod classMethod = toClassMethod( failure.getDescription() );
-            ReportEntry report = withException( classMethod.getClazz(), classMethod.getMethod(), stackTrace );
+            ReportEntry report =
+                    withException( classMethod.getClazz(), null, classMethod.getMethod(), null, stackTrace );
 
             if ( failure.getException() instanceof AssertionError )
             {
@@ -135,7 +136,8 @@ public class JUnit4RunListener
         {
             Description desc = failure.getDescription();
             ClassMethod classMethod = toClassMethod( desc );
-            ReportEntry report = assumption( classMethod.getClazz(), classMethod.getMethod(), failure.getMessage() );
+            ReportEntry report = assumption( classMethod.getClazz(), null, classMethod.getMethod(), null,
+                    failure.getMessage() );
             reporter.testAssumptionFailure( report );
         }
         finally
@@ -176,7 +178,7 @@ public class JUnit4RunListener
     protected SimpleReportEntry createReportEntry( Description description )
     {
         ClassMethod classMethod = toClassMethod( description );
-        return new SimpleReportEntry( classMethod.getClazz(), classMethod.getMethod() );
+        return new SimpleReportEntry( classMethod.getClazz(), null, classMethod.getMethod(), null );
     }
 
     public static void rethrowAnyTestMechanismFailures( Result run )

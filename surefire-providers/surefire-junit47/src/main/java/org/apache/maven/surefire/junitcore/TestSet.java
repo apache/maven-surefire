@@ -120,7 +120,7 @@ public class TestSet
 
     private TestSetReportEntry createReportEntry( Integer elapsed, Map<String, String> systemProps )
     {
-        return new SimpleReportEntry( testClassName, testClassName, null, elapsed, systemProps );
+        return new SimpleReportEntry( testClassName, null, testClassName, null, null, elapsed, systemProps );
     }
 
     public void incrementTestMethodCount()

@@ -1,4 +1,4 @@
-package junitplatformenginejupiter;
+package org.apache.maven.surefire.extensions;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,25 +19,19 @@ package junitplatformenginejupiter;
  * under the License.
  */
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
-// TODO Uncomment after SUREFIRE-1222 is done
-// @DisplayName("<< ✨ >>")
-class DisplayNameTest
+/**
+ * Extension listener for logger.
+ * The signature can be changed between major, minor versions or milestones.
+ *
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 3.0.0-M4
+ */
+public interface ConsoleOutputReportEventListener
 {
-    @Test
-    @DisplayName("73$71 ✔")
-    void test1()
-    {
-    }
-
-    @Test
-    @DisplayName("73$71 ✔")
-    void test2()
-    {
-    }
+    void testSetStarting( TestSetReportEntry report );
+    void testSetCompleted( TestSetReportEntry report );
+    void close();
+    void writeTestOutput( String output, boolean newLine, boolean stdout );
 }
