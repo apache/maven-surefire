@@ -40,6 +40,14 @@ Feature Matrix
 *---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
 | parallel support                            |     N      |    N     |      Y     |    Y      |  N       |  N                   |
 *---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
+| custom run-listener                         |     N      |    Y     |      Y     |    Y      |  -       |  N                   |
+*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
+| re-run count                                |     N      |    Y     |      Y     |    N      |  N       |  N                   |
+*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
+| skip after failure count                    |     N      |    Y     |      Y     |    Y      |  N       |  N                   |
+*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
+| Surefire Extensions                         |     Y      |    Y     |      Y     |    Y      |  Y       |  Y(*2)               |
+*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
 
 
     Legend: "Y" means supported, "N" means not supported. "?" means not tested.
@@ -51,3 +59,6 @@ Feature Matrix
    (*1) The JUnit 5 Platform supports running multiple individual test methods in a single class, but there are some
    corner cases that are not supported, yet: {{{https://github.com/junit-team/junit5/issues/1343}junit-team/junit5#1343}}
    and {{{https://github.com/junit-team/junit5/issues/1406}junit-team/junit5#1406)}}.
+
+   (*2) 3 extensions related to JUnit5 annotation <<<DisplayName>>>.
+

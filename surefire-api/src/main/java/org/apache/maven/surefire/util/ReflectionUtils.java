@@ -223,6 +223,12 @@ public final class ReflectionUtils
         }
     }
 
+    public static Class<?> reloadClass( ClassLoader classLoader, Object source )
+            throws ReflectiveOperationException
+    {
+        return classLoader.loadClass( source.getClass().getName() );
+    }
+
     /**
      * Invoker of public static no-argument method.
      *

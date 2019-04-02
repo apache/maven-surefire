@@ -19,13 +19,21 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
-import org.apache.maven.plugin.surefire.report.DirectConsoleOutput;
-import org.apache.maven.plugin.surefire.report.FileReporter;
-import org.apache.maven.plugin.surefire.report.StatelessXmlReporter;
-import org.apache.maven.plugin.surefire.report.TestcycleConsoleOutputReceiver;
+import org.apache.maven.plugin.surefire.extensions.DefaultStatelessReportMojoConfiguration;
+import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter;
+import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
+import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.report.TestSetStats;
 import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
+import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
+import org.apache.maven.surefire.extensions.ConsoleOutputReporter;
+import org.apache.maven.surefire.extensions.StatelessReportEventListener;
+import org.apache.maven.surefire.extensions.StatelessReporter;
+import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
+import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
+import org.apache.maven.surefire.extensions.StatelessTestsetInfoReporter;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -35,10 +43,11 @@ import java.util.Deque;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.lang3.StringUtils.trimToNull;
 import static org.apache.maven.plugin.surefire.SurefireHelper.replaceForkThreadsInPath;
 import static org.apache.maven.plugin.surefire.report.ConsoleReporter.BRIEF;
 import static org.apache.maven.plugin.surefire.report.ConsoleReporter.PLAIN;
-import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 /**
  * All the parameters used to construct reporters
@@ -66,8 +75,6 @@ public final class StartupReportConfiguration
 
     private final boolean redirectTestOutputToFile;
 
-    private final boolean disableXmlReport;
-
     private final File reportsDirectory;
 
     private final boolean trimStackTrace;
@@ -76,27 +83,33 @@ public final class StartupReportConfiguration
 
     private final String xsdSchemaLocation;
 
-    private final Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory
-        = new ConcurrentHashMap<>();
+    private final Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory = new ConcurrentHashMap<>();
 
     private final Charset encoding;
 
-    private boolean isForkMode;
+    private final boolean isForkMode;
+
+    private final SurefireStatelessReporter xmlReporter;
+
+    private final ConsoleOutputReporter consoleOutputReporter;
+
+    private final SurefireStatelessTestsetInfoReporter testsetReporter;
 
     private StatisticsReporter statisticsReporter;
 
     @SuppressWarnings( "checkstyle:parameternumber" )
     public StartupReportConfiguration( boolean useFile, boolean printSummary, String reportFormat,
-                                       boolean redirectTestOutputToFile, boolean disableXmlReport,
-                                       @Nonnull File reportsDirectory, boolean trimStackTrace, String reportNameSuffix,
-                                       File statisticsFile, boolean requiresRunHistory, int rerunFailingTestsCount,
-                                       String xsdSchemaLocation, String encoding, boolean isForkMode )
+               boolean redirectTestOutputToFile,
+               @Nonnull File reportsDirectory, boolean trimStackTrace, String reportNameSuffix,
+               File statisticsFile, boolean requiresRunHistory, int rerunFailingTestsCount,
+               String xsdSchemaLocation, String encoding, boolean isForkMode,
+               SurefireStatelessReporter xmlReporter, SurefireConsoleOutputReporter consoleOutputReporter,
+               SurefireStatelessTestsetInfoReporter testsetReporter )
     {
         this.useFile = useFile;
         this.printSummary = printSummary;
         this.reportFormat = reportFormat;
         this.redirectTestOutputToFile = redirectTestOutputToFile;
-        this.disableXmlReport = disableXmlReport;
         this.reportsDirectory = reportsDirectory;
         this.trimStackTrace = trimStackTrace;
         this.reportNameSuffix = reportNameSuffix;
@@ -107,8 +120,11 @@ public final class StartupReportConfiguration
         this.rerunFailingTestsCount = rerunFailingTestsCount;
         this.xsdSchemaLocation = xsdSchemaLocation;
         String charset = trimToNull( encoding );
-        this.encoding = charset == null ? Charset.defaultCharset() : Charset.forName( charset );
+        this.encoding = charset == null ? UTF_8 : Charset.forName( charset );
         this.isForkMode = isForkMode;
+        this.xmlReporter = xmlReporter;
+        this.consoleOutputReporter = consoleOutputReporter;
+        this.testsetReporter = testsetReporter;
     }
 
     public boolean isUseFile()
@@ -136,11 +152,6 @@ public final class StartupReportConfiguration
         return redirectTestOutputToFile;
     }
 
-    public boolean isDisableXmlReport()
-    {
-        return disableXmlReport;
-    }
-
     public File getReportsDirectory()
     {
         return reportsDirectory;
@@ -151,10 +162,10 @@ public final class StartupReportConfiguration
         return rerunFailingTestsCount;
     }
 
-    @Deprecated // rename to stateful
-    public StatelessXmlReporter instantiateStatelessXmlReporter( Integer forkNumber )
+    public StatelessReportEventListener<WrappedReportEntry, TestSetStats> instantiateStatelessXmlReporter(
+            Integer forkNumber )
     {
-        assert forkNumber == null || isForkMode;
+        assert ( forkNumber == null ) == !isForkMode;
 
         // If forking TestNG the suites have same name 'TestSuite' and tend to override report statistics in stateful
         // reporter, see Surefire1535TestNGParallelSuitesIT. The testClassMethodRunHistory should be isolated.
@@ -165,17 +176,26 @@ public final class StartupReportConfiguration
                 ? new ConcurrentHashMap<String, Deque<WrappedReportEntry>>()
                 : this.testClassMethodRunHistory;
 
-        return isDisableXmlReport()
-            ? null
-            : new StatelessXmlReporter( resolveReportsDirectory( forkNumber ), reportNameSuffix, trimStackTrace,
-                rerunFailingTestsCount, testClassMethodRunHistory, xsdSchemaLocation );
+        DefaultStatelessReportMojoConfiguration xmlReporterConfig =
+                new DefaultStatelessReportMojoConfiguration( resolveReportsDirectory( forkNumber ), reportNameSuffix,
+                        trimStackTrace, rerunFailingTestsCount, xsdSchemaLocation, testClassMethodRunHistory );
+
+        return xmlReporter.isDisable() ? null : xmlReporter.createListener( xmlReporterConfig );
     }
 
-    public FileReporter instantiateFileReporter( Integer forkNumber )
+    public StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats> instantiateFileReporter(
+            Integer forkNumber )
     {
-        return isUseFile() && isBriefOrPlainFormat()
-            ? new FileReporter( resolveReportsDirectory( forkNumber ), reportNameSuffix, encoding )
+        return !testsetReporter.isDisable() && isUseFile() && isBriefOrPlainFormat()
+            ? testsetReporter.createListener( resolveReportsDirectory( forkNumber ), reportNameSuffix, encoding )
             : null;
+    }
+
+    public StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats> instantiateConsoleReporter(
+            ConsoleLogger consoleLogger )
+    {
+        return !testsetReporter.isDisable() && shouldReportToConsole()
+                ? testsetReporter.createListener( consoleLogger ) : null;
     }
 
     public boolean isBriefOrPlainFormat()
@@ -184,11 +204,12 @@ public final class StartupReportConfiguration
         return BRIEF.equals( fmt ) || PLAIN.equals( fmt );
     }
 
-    public TestcycleConsoleOutputReceiver instantiateConsoleOutputFileReporter( Integer forkNumber )
+    public ConsoleOutputReportEventListener instantiateConsoleOutputFileReporter( Integer forkNum )
     {
-        return isRedirectTestOutputToFile()
-            ? new ConsoleOutputFileReporter( resolveReportsDirectory( forkNumber ), reportNameSuffix, forkNumber )
-            : new DirectConsoleOutput( originalSystemOut, originalSystemErr );
+        ConsoleOutputReportEventListener outputReport = isRedirectTestOutputToFile()
+                ? consoleOutputReporter.createListener( resolveReportsDirectory( forkNum ), reportNameSuffix, forkNum )
+                : consoleOutputReporter.createListener( originalSystemOut, originalSystemErr );
+        return consoleOutputReporter.isDisable() ? null : outputReport;
     }
 
     public synchronized StatisticsReporter getStatisticsReporter()
@@ -215,11 +236,6 @@ public final class StartupReportConfiguration
         return requiresRunHistory;
     }
 
-    public PrintStream getOriginalSystemOut()
-    {
-        return originalSystemOut;
-    }
-
     public String getXsdSchemaLocation()
     {
         return xsdSchemaLocation;
@@ -238,5 +254,25 @@ public final class StartupReportConfiguration
     private File resolveReportsDirectory( Integer forkNumber )
     {
         return forkNumber == null ? reportsDirectory : replaceForkThreadsInPath( reportsDirectory, forkNumber );
+    }
+
+    public StatelessReporter<WrappedReportEntry, TestSetStats, DefaultStatelessReportMojoConfiguration> getXmlReporter()
+    {
+        return xmlReporter;
+    }
+
+    public ConsoleOutputReporter getConsoleOutputReporter()
+    {
+        return consoleOutputReporter;
+    }
+
+    public StatelessTestsetInfoReporter<WrappedReportEntry, TestSetStats> getTestsetReporter()
+    {
+        return testsetReporter;
+    }
+
+    private boolean shouldReportToConsole()
+    {
+        return isUseFile() ? isPrintSummary() : isRedirectTestOutputToFile() || isBriefOrPlainFormat();
     }
 }

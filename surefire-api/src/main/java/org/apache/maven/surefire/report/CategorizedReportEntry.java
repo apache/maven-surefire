@@ -21,6 +21,7 @@ package org.apache.maven.surefire.report;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Kristian Rosenvold
@@ -28,7 +29,7 @@ import java.util.Map;
 public class CategorizedReportEntry
     extends SimpleReportEntry
 {
-    private static final String GROUP_PREFIX = " (of ";
+    public static final String GROUP_PREFIX = " (of ";
 
     private static final String GROUP_SUFIX = ")";
 
@@ -42,30 +43,35 @@ public class CategorizedReportEntry
     public CategorizedReportEntry( String source, String name, String group, StackTraceWriter stackTraceWriter,
                                    Integer elapsed )
     {
-        super( source, name, stackTraceWriter, elapsed );
+        super( source, null, name, null, stackTraceWriter, elapsed );
         this.group = group;
     }
 
     public CategorizedReportEntry( String source, String name, String group, StackTraceWriter stackTraceWriter,
                                    Integer elapsed, String message )
     {
-        this( source, name, group, stackTraceWriter, elapsed, message, Collections.<String, String>emptyMap() );
+        this( source, null, name, null,
+                group, stackTraceWriter, elapsed, message, Collections.<String, String>emptyMap() );
     }
 
-    public CategorizedReportEntry( String source, String name, String group, StackTraceWriter stackTraceWriter,
+    public CategorizedReportEntry( String source, String sourceText, String name, String nameText,
+                                   String group, StackTraceWriter stackTraceWriter,
                                    Integer elapsed, String message, Map<String, String> systemProperties )
     {
-        super( source, name, stackTraceWriter, elapsed, message, systemProperties );
+        super( source, sourceText, name, nameText, stackTraceWriter, elapsed, message, systemProperties );
         this.group = group;
     }
 
-    public static TestSetReportEntry reportEntry( String source, String name, String group,
+    public static TestSetReportEntry reportEntry( String source, String sourceText, String name, String nameText,
+                                                  String group,
                                                   StackTraceWriter stackTraceWriter, Integer elapsed, String message,
                                                   Map<String, String> systemProperties )
     {
         return group != null
-            ? new CategorizedReportEntry( source, name, group, stackTraceWriter, elapsed, message, systemProperties )
-            : new SimpleReportEntry( source, name, stackTraceWriter, elapsed, message, systemProperties );
+            ? new CategorizedReportEntry( source, sourceText, name, nameText,
+                group, stackTraceWriter, elapsed, message, systemProperties )
+            : new SimpleReportEntry( source, sourceText, name, nameText,
+                stackTraceWriter, elapsed, message, systemProperties );
     }
 
     @Override
@@ -78,6 +84,12 @@ public class CategorizedReportEntry
     public String getNameWithGroup()
     {
         return isNameWithGroup() ? getSourceName() + GROUP_PREFIX + getGroup() + GROUP_SUFIX : getSourceName();
+    }
+
+    @Override
+    public String getReportNameWithGroup()
+    {
+        return isNameWithGroup() ? getSourceText() + GROUP_PREFIX + getGroup() + GROUP_SUFIX : getSourceText();
     }
 
     @Override
@@ -98,8 +110,7 @@ public class CategorizedReportEntry
 
         CategorizedReportEntry that = (CategorizedReportEntry) o;
 
-        return !( group != null ? !group.equals( that.group ) : that.group != null );
-
+        return Objects.equals( group, that.group );
     }
 
     @Override

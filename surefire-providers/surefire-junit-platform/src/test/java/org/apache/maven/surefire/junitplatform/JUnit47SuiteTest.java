@@ -21,26 +21,23 @@ package org.apache.maven.surefire.junitplatform;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
  *
  * @since 3.0.0-M4
  */
-@SuiteClasses( {
-        JUnitPlatformProviderTest.class,
-        RunListenerAdapterTest.class,
-        TestMethodFilterTest.class,
-        TestPlanScannerFilterTest.class
-} )
-@RunWith( Suite.class )
-public class JUnit47SuiteTest
+public class JUnit47SuiteTest extends TestCase
 {
     public static Test suite()
     {
-        return new JUnit4TestAdapter( JUnit47SuiteTest.class );
+        TestSuite suite = new TestSuite();
+        suite.addTest( new JUnit4TestAdapter( JUnitPlatformProviderTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( RunListenerAdapterTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( TestMethodFilterTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( TestPlanScannerFilterTest.class ) );
+        return suite;
     }
 }

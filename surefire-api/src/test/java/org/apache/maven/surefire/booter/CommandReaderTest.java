@@ -193,14 +193,14 @@ public class CommandReaderTest
                 Iterator<String> it = reader.getIterableClasses( new ForkedChannelEncoder( nul() ) ).iterator();
                 assertThat( it.next(), is( CommandReaderTest.class.getName() ) );
                 counter.countDown();
-                assertThat( it.next(), is( PropertiesWrapperTest.class.getName() ) );
+                assertThat( it.next(), is( Foo.class.getName() ) );
             }
         };
         FutureTask<Object> futureTask = new FutureTask<>( runnable, null );
         Thread t = new Thread( futureTask );
         t.start();
         counter.await();
-        addTestToPipeline( PropertiesWrapperTest.class.getName() );
+        addTestToPipeline( Foo.class.getName() );
         try
         {
             futureTask.get();

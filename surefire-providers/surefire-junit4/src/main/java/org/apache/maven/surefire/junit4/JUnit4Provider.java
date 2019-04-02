@@ -231,7 +231,7 @@ public class JUnit4Provider
 
     private void executeTestSet( Class<?> clazz, RunListener reporter, Notifier notifier )
     {
-        final SimpleReportEntry report = new SimpleReportEntry( clazz.getName(), null, systemProps() );
+        final SimpleReportEntry report = new SimpleReportEntry( clazz.getName(), null, null, null, systemProps() );
         reporter.testSetStarting( report );
         try
         {
@@ -250,7 +250,7 @@ public class JUnit4Provider
                 String reportName = report.getName();
                 String reportSourceName = report.getSourceName();
                 PojoStackTraceWriter stackWriter = new PojoStackTraceWriter( reportSourceName, reportName, e );
-                reporter.testError( withException( reportSourceName, reportName, stackWriter ) );
+                reporter.testError( withException( reportSourceName, null, reportName, null, stackWriter ) );
             }
         }
         finally

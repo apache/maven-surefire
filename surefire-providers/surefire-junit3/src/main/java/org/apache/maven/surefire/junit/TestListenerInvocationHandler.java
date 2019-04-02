@@ -217,12 +217,12 @@ public class TestListenerInvocationHandler
         String className = extractClassName( description );
         String methodName = extractMethodName( description );
         StackTraceWriter stackTraceWriter = toStackTraceWriter( args );
-        return withException( className, methodName, stackTraceWriter );
+        return withException( className, null, methodName, null, stackTraceWriter );
     }
 
     private static SimpleReportEntry createStartEndReportEntry( Object[] args )
     {
         String description = args[0].toString();
-        return new SimpleReportEntry( extractClassName( description ), extractMethodName( description ) );
+        return new SimpleReportEntry( extractClassName( description ), null, extractMethodName( description ), null );
     }
 }

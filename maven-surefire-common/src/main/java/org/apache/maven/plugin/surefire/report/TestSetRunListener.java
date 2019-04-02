@@ -27,6 +27,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
+import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
+import org.apache.maven.surefire.extensions.StatelessReportEventListener;
+import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
+import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
@@ -53,15 +57,15 @@ public class TestSetRunListener
 
     private final TestSetStats detailsForThis;
 
-    private final TestcycleConsoleOutputReceiver consoleOutputReceiver;
+    private final ConsoleOutputReportEventListener consoleOutputReceiver;
 
     private final boolean briefOrPlainFormat;
 
-    private final StatelessXmlReporter simpleXMLReporter;
+    private final StatelessReportEventListener<WrappedReportEntry, TestSetStats> simpleXMLReporter;
 
-    private final ConsoleReporter consoleReporter;
+    private final StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats> consoleReporter;
 
-    private final FileReporter fileReporter;
+    private final StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats> fileReporter;
 
     private final StatisticsReporter statisticsReporter;
 
@@ -72,9 +76,12 @@ public class TestSetRunListener
     private volatile RunMode runMode = NORMAL_RUN;
 
     @SuppressWarnings( "checkstyle:parameternumber" )
-    public TestSetRunListener( ConsoleReporter consoleReporter, FileReporter fileReporter,
-                               StatelessXmlReporter simpleXMLReporter,
-                               TestcycleConsoleOutputReceiver consoleOutputReceiver,
+    public TestSetRunListener( StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats>
+                                           consoleReporter,
+                               StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats>
+                                       fileReporter,
+                               StatelessReportEventListener<WrappedReportEntry, TestSetStats> simpleXMLReporter,
+                               ConsoleOutputReportEventListener consoleOutputReceiver,
                                StatisticsReporter statisticsReporter, boolean trimStackTrace,
                                boolean isPlainFormat, boolean briefOrPlainFormat )
     {
@@ -138,7 +145,7 @@ public class TestSetRunListener
     @Override
     public void error( String message, Throwable t )
     {
-        consoleReporter.getConsoleLogger().error( message, t );
+        consoleReporter.getConsoleLogger().error( trimTrailingNewLine( message ), t );
     }
 
     @Override

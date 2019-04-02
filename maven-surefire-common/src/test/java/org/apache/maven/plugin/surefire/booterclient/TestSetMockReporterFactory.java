@@ -20,6 +20,9 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
+import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter;
+import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
+import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.surefire.report.RunListener;
@@ -55,7 +58,8 @@ public class TestSetMockReporterFactory
     {
         File target = new File( "./target" );
         File statisticsFile = new File( target, "TESTHASH" );
-        return new StartupReportConfiguration( true, true, "PLAIN", false, false, target, false, null, statisticsFile,
-                false, 0, null, null, true );
+        return new StartupReportConfiguration( true, true, "PLAIN", false, target, false, null, statisticsFile,
+                false, 0, null, null, true, new SurefireStatelessReporter(), new SurefireConsoleOutputReporter(),
+                new SurefireStatelessTestsetInfoReporter() );
     }
 }

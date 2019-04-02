@@ -359,7 +359,7 @@ public class SurefireDependencyResolverTest
         pluginArtifactsMapping.put( provider.getGroupId() + ":" + provider.getArtifactId(), provider );
         pluginArtifactsMapping.put( ext.getGroupId() + ":" + ext.getArtifactId(), ext );
 
-        Set<Artifact> cp = surefireDependencyResolver.addProviderToClasspath( pluginArtifactsMapping, plugin, common, api, logger );
+        Set<Artifact> cp = surefireDependencyResolver.addProviderToClasspath( pluginArtifactsMapping, plugin, api, logger );
         assertThat( cp )
                 .hasSize( 4 )
                 .containsOnly( provider, api, logger, ext );

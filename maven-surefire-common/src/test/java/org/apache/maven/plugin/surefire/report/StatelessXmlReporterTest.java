@@ -84,10 +84,11 @@ public class StatelessXmlReporterTest
     {
         StatelessXmlReporter reporter =
                 new StatelessXmlReporter( reportDir, null, false, 0,
-                        new ConcurrentHashMap<String, Deque<WrappedReportEntry>>(), XSD );
+                        new ConcurrentHashMap<String, Deque<WrappedReportEntry>>(), XSD, "3.0",
+                        false, false, false, false );
         reporter.cleanTestHistoryMap();
 
-        ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), getClass().getName(), 12 );
+        ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), null, getClass().getName(), null, 12 );
         WrappedReportEntry testSetReportEntry = new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS,
                 12, null, null, systemProps() );
         stats.testSucceeded( testSetReportEntry );
@@ -102,7 +103,7 @@ public class StatelessXmlReporterTest
     public void testAllFieldsSerialized()
             throws IOException
     {
-        ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), TEST_ONE, 12 );
+        ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), null, TEST_ONE, null, 12 );
         WrappedReportEntry testSetReportEntry =
                 new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null, systemProps() );
         expectedReportFile = new File( reportDir, "TEST-" + getClass().getName() + ".xml" );
@@ -129,12 +130,12 @@ public class StatelessXmlReporterTest
 
         stdErr.write( stdErrPrefix + "?&-&amp;&#163;\u0020\u0000\u001F", false );
         WrappedReportEntry t2 =
-                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), TEST_TWO, stackTraceWriter, 13 ),
-                        ReportEntryType.ERROR, 13, stdOut, stdErr );
+                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), null, TEST_TWO, null,
+                        stackTraceWriter, 13 ), ReportEntryType.ERROR, 13, stdOut, stdErr );
 
         stats.testSucceeded( t2 );
         StatelessXmlReporter reporter = new StatelessXmlReporter( reportDir, null, false, 0,
-                new ConcurrentHashMap<String, Deque<WrappedReportEntry>>(), XSD );
+                new ConcurrentHashMap<String, Deque<WrappedReportEntry>>(), XSD, "3.0", false, false, false, false );
         reporter.testSetCompleted( testSetReportEntry, stats );
 
         FileInputStream fileInputStream = new FileInputStream( expectedReportFile );
@@ -171,7 +172,7 @@ public class StatelessXmlReporterTest
             throws IOException
     {
         WrappedReportEntry testSetReportEntry =
-                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), TEST_ONE, 12 ),
+                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), null, TEST_ONE, null, 12 ),
                         ReportEntryType.SUCCESS, 12, null, null, systemProps() );
         expectedReportFile = new File( reportDir, "TEST-" + getClass().getName() + ".xml" );
 
@@ -187,23 +188,23 @@ public class StatelessXmlReporterTest
         String secondRunErr = "second run err";
 
         WrappedReportEntry testTwoFirstError =
-                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), TEST_TWO, stackTraceWriterOne, 5 ),
-                        ReportEntryType.ERROR, 5, createStdOutput( firstRunOut ),
+                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), null, TEST_TWO, null,
+                        stackTraceWriterOne, 5 ), ReportEntryType.ERROR, 5, createStdOutput( firstRunOut ),
                         createStdOutput( firstRunErr ) );
 
         WrappedReportEntry testTwoSecondError =
-                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), TEST_TWO, stackTraceWriterTwo, 13 ),
-                        ReportEntryType.ERROR, 13, createStdOutput( secondRunOut ),
+                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), null, TEST_TWO, null,
+                        stackTraceWriterTwo, 13 ), ReportEntryType.ERROR, 13, createStdOutput( secondRunOut ),
                         createStdOutput( secondRunErr ) );
 
         WrappedReportEntry testThreeFirstRun =
-                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), TEST_THREE, stackTraceWriterOne, 13 ),
-                        ReportEntryType.FAILURE, 13, createStdOutput( firstRunOut ),
+                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), null, TEST_THREE, null,
+                        stackTraceWriterOne, 13 ), ReportEntryType.FAILURE, 13, createStdOutput( firstRunOut ),
                         createStdOutput( firstRunErr ) );
 
         WrappedReportEntry testThreeSecondRun =
-                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), TEST_THREE, stackTraceWriterTwo, 2 ),
-                        ReportEntryType.SUCCESS, 2, createStdOutput( secondRunOut ),
+                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), null, TEST_THREE, null,
+                        stackTraceWriterTwo, 2 ), ReportEntryType.SUCCESS, 2, createStdOutput( secondRunOut ),
                         createStdOutput( secondRunErr ) );
 
         stats.testSucceeded( testTwoFirstError );
@@ -213,7 +214,7 @@ public class StatelessXmlReporterTest
 
         StatelessXmlReporter reporter =
                 new StatelessXmlReporter( reportDir, null, false, 1,
-                        new HashMap<String, Deque<WrappedReportEntry>>(), XSD );
+                        new HashMap<String, Deque<WrappedReportEntry>>(), XSD, "3.0", false, false, false, false );
 
         reporter.testSetCompleted( testSetReportEntry, stats );
         reporter.testSetCompleted( testSetReportEntry, rerunStats );

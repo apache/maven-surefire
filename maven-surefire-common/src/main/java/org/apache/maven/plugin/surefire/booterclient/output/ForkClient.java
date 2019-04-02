@@ -159,7 +159,8 @@ public class ForkClient
         public void handle( RunMode runMode, TestSetReportEntry reportEntry )
         {
             testsInProgress.clear();
-            TestSetReportEntry entry = reportEntry( reportEntry.getSourceName(), reportEntry.getName(),
+            TestSetReportEntry entry = reportEntry( reportEntry.getSourceName(), reportEntry.getSourceText(),
+                    reportEntry.getName(), reportEntry.getNameText(),
                     reportEntry.getGroup(), reportEntry.getStackTraceWriter(), reportEntry.getElapsed(),
                     reportEntry.getMessage(), getTestVmSystemProperties() );
             getTestSetReporter().testSetCompleted( entry );

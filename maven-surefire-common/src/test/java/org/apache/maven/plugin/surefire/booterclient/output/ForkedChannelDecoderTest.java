@@ -107,22 +107,24 @@ public class ForkedChannelDecoderTest
         @Test
         public void shouldRecognizeEmptyStream4ReportEntry()
         {
-            ReportEntry reportEntry = toReportEntry( null, null, "", null, null, "",
+            ReportEntry reportEntry = toReportEntry( null, null, null, "", "", null, null, "",
                     "", "", null );
             assertThat( reportEntry ).isNull();
 
-            reportEntry = toReportEntry( UTF_8, "", "", "", "", "-", "", "", "" );
+            reportEntry = toReportEntry( UTF_8, "", "", "", "", "", "", "-", "", "", "" );
             assertThat( reportEntry ).isNotNull();
             assertThat( reportEntry.getStackTraceWriter() ).isNull();
             assertThat( reportEntry.getSourceName() ).isEmpty();
+            assertThat( reportEntry.getSourceText() ).isEmpty();
             assertThat( reportEntry.getName() ).isEmpty();
+            assertThat( reportEntry.getNameText() ).isEmpty();
             assertThat( reportEntry.getGroup() ).isEmpty();
             assertThat( reportEntry.getNameWithGroup() ).isEmpty();
             assertThat( reportEntry.getMessage() ).isEmpty();
             assertThat( reportEntry.getElapsed() ).isNull();
 
             rule.expect( NumberFormatException.class );
-            toReportEntry( UTF_8, "", "", "", "", "", "", "", "" );
+            toReportEntry( UTF_8, "", "", "", "", "", "", "", "", "", "" );
             fail();
         }
 
@@ -153,58 +155,66 @@ public class ForkedChannelDecoderTest
             when( reportEntry.getGroup() ).thenReturn( "this group" );
             when( reportEntry.getMessage() ).thenReturn( "skipped test" );
             when( reportEntry.getName() ).thenReturn( "my test" );
+            when( reportEntry.getNameText() ).thenReturn( "my display name" );
             when( reportEntry.getNameWithGroup() ).thenReturn( "name with group" );
             when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
+            when( reportEntry.getSourceText() ).thenReturn( "test class display name" );
             when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
             String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
+            String encodedSourceText = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceText() ) ) );
             String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
+            String encodedText = encodeBase64String( toArray( UTF_8.encode( reportEntry.getNameText() ) ) );
             String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
             String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
 
-            ReportEntry decodedReportEntry = toReportEntry( UTF_8, encodedSourceName, encodedName, encodedGroup,
-                                                                  encodedMessage, "-", null, null, null
-            );
+            ReportEntry decodedReportEntry = toReportEntry( UTF_8, encodedSourceName, encodedSourceText,
+                    encodedName, encodedText, encodedGroup, encodedMessage, "-", null, null, null );
 
             assertThat( decodedReportEntry ).isNotNull();
             assertThat( decodedReportEntry.getSourceName() ).isEqualTo( reportEntry.getSourceName() );
+            assertThat( decodedReportEntry.getSourceText() ).isEqualTo( reportEntry.getSourceText() );
             assertThat( decodedReportEntry.getName() ).isEqualTo( reportEntry.getName() );
+            assertThat( decodedReportEntry.getNameText() ).isEqualTo(reportEntry.getNameText());
             assertThat( decodedReportEntry.getGroup() ).isEqualTo( reportEntry.getGroup() );
             assertThat( decodedReportEntry.getMessage() ).isEqualTo( reportEntry.getMessage() );
             assertThat( decodedReportEntry.getStackTraceWriter() ).isNull();
 
-            decodedReportEntry = toReportEntry( UTF_8, encodedSourceName, encodedName, encodedGroup, encodedMessage,
-                    "-", encodedExceptionMsg, encodedSmartStackTrace, null
-            );
+            decodedReportEntry = toReportEntry( UTF_8, encodedSourceName, encodedSourceText, encodedName, encodedText,
+                    encodedGroup, encodedMessage, "-", encodedExceptionMsg, encodedSmartStackTrace, null );
 
             assertThat( decodedReportEntry ).isNotNull();
             assertThat( decodedReportEntry.getSourceName() ).isEqualTo( reportEntry.getSourceName() );
+            assertThat( decodedReportEntry.getSourceText() ).isEqualTo( reportEntry.getSourceText() );
             assertThat( decodedReportEntry.getName() ).isEqualTo( reportEntry.getName() );
+            assertThat( decodedReportEntry.getNameText() ).isEqualTo(reportEntry.getNameText());
             assertThat( decodedReportEntry.getGroup() ).isEqualTo( reportEntry.getGroup() );
             assertThat( decodedReportEntry.getMessage() ).isEqualTo( reportEntry.getMessage() );
             assertThat( decodedReportEntry.getElapsed() ).isNull();
             assertThat( decodedReportEntry.getStackTraceWriter() ).isNull();
 
-            decodedReportEntry = toReportEntry( UTF_8, encodedSourceName, encodedName, encodedGroup, encodedMessage,
-                                                      "1003", encodedExceptionMsg, encodedSmartStackTrace, null
-            );
+            decodedReportEntry = toReportEntry( UTF_8, encodedSourceName, encodedSourceText, encodedName, encodedText,
+                    encodedGroup, encodedMessage, "1003", encodedExceptionMsg, encodedSmartStackTrace, null );
 
             assertThat( decodedReportEntry ).isNotNull();
             assertThat( decodedReportEntry.getSourceName() ).isEqualTo( reportEntry.getSourceName() );
+            assertThat( decodedReportEntry.getSourceText() ).isEqualTo( reportEntry.getSourceText() );
             assertThat( decodedReportEntry.getName() ).isEqualTo( reportEntry.getName() );
+            assertThat( decodedReportEntry.getNameText() ).isEqualTo(reportEntry.getNameText());
             assertThat( decodedReportEntry.getGroup() ).isEqualTo( reportEntry.getGroup() );
             assertThat( decodedReportEntry.getMessage() ).isEqualTo( reportEntry.getMessage() );
             assertThat( decodedReportEntry.getElapsed() ).isEqualTo( 1003 );
             assertThat( decodedReportEntry.getStackTraceWriter() ).isNull();
 
-            decodedReportEntry = toReportEntry( UTF_8, encodedSourceName, encodedName, encodedGroup, encodedMessage,
-                                                      "1003", encodedExceptionMsg, encodedSmartStackTrace,
-                                                      encodedStackTrace
-            );
+            decodedReportEntry = toReportEntry( UTF_8, encodedSourceName, encodedSourceText, encodedName, encodedText,
+                    encodedGroup, encodedMessage, "1003", encodedExceptionMsg, encodedSmartStackTrace,
+                    encodedStackTrace );
 
             assertThat( decodedReportEntry ).isNotNull();
             assertThat( decodedReportEntry.getSourceName() ).isEqualTo( reportEntry.getSourceName() );
+            assertThat( decodedReportEntry.getSourceText() ).isEqualTo( reportEntry.getSourceText() );
             assertThat( decodedReportEntry.getName() ).isEqualTo( reportEntry.getName() );
+            assertThat( decodedReportEntry.getNameText() ).isEqualTo(reportEntry.getNameText());
             assertThat( decodedReportEntry.getGroup() ).isEqualTo( reportEntry.getGroup() );
             assertThat( decodedReportEntry.getMessage() ).isEqualTo( reportEntry.getMessage() );
             assertThat( decodedReportEntry.getElapsed() ).isEqualTo( 1003 );
@@ -217,14 +227,15 @@ public class ForkedChannelDecoderTest
             assertThat( decodedReportEntry.getStackTraceWriter().writeTraceToString() ).isEqualTo( stackTrace );
             assertThat( decodedReportEntry.getStackTraceWriter().writeTrimmedTraceToString() ).isEqualTo( stackTrace );
 
-            decodedReportEntry = toReportEntry( UTF_8, encodedSourceName, encodedName, encodedGroup, encodedMessage,
-                                                      "1003", encodedExceptionMsg, encodedSmartStackTrace,
-                                                      encodedTrimmedStackTrace
-            );
+            decodedReportEntry = toReportEntry( UTF_8, encodedSourceName, encodedSourceText, encodedName, encodedText,
+                    encodedGroup, encodedMessage, "1003", encodedExceptionMsg, encodedSmartStackTrace,
+                    encodedTrimmedStackTrace );
 
             assertThat( decodedReportEntry ).isNotNull();
             assertThat( decodedReportEntry.getSourceName() ).isEqualTo( reportEntry.getSourceName() );
+            assertThat( decodedReportEntry.getSourceText() ).isEqualTo( reportEntry.getSourceText() );
             assertThat( decodedReportEntry.getName() ).isEqualTo( reportEntry.getName() );
+            assertThat( decodedReportEntry.getNameText() ).isEqualTo(reportEntry.getNameText());
             assertThat( decodedReportEntry.getGroup() ).isEqualTo( reportEntry.getGroup() );
             assertThat( decodedReportEntry.getMessage() ).isEqualTo( reportEntry.getMessage() );
             assertThat( decodedReportEntry.getElapsed() ).isEqualTo( 1003 );
@@ -643,8 +654,10 @@ public class ForkedChannelDecoderTest
             when( reportEntry.getGroup() ).thenReturn( "this group" );
             when( reportEntry.getMessage() ).thenReturn( reportedMessage );
             when( reportEntry.getName() ).thenReturn( "my test" );
+            when( reportEntry.getName() ).thenReturn( "display name of test" );
             when( reportEntry.getNameWithGroup() ).thenReturn( "name with group" );
             when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
+            when( reportEntry.getSourceText() ).thenReturn("test class display name");
             when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
             Stream out = Stream.newStream();
@@ -777,7 +790,9 @@ public class ForkedChannelDecoderTest
         public void handle( RunMode runMode, ReportEntry reportEntry )
         {
             assertThat( reportEntry.getSourceName() ).isEqualTo( this.reportEntry.getSourceName() );
+            assertThat( reportEntry.getSourceText() ).isEqualTo( this.reportEntry.getSourceText() );
             assertThat( reportEntry.getName() ).isEqualTo( this.reportEntry.getName() );
+            assertThat( reportEntry.getNameText() ).isEqualTo( this.reportEntry.getNameText() );
             assertThat( reportEntry.getGroup() ).isEqualTo( this.reportEntry.getGroup() );
             assertThat( reportEntry.getMessage() ).isEqualTo( this.reportEntry.getMessage() );
             assertThat( reportEntry.getElapsed() ).isEqualTo( this.reportEntry.getElapsed() );

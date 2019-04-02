@@ -21,8 +21,8 @@ package org.apache.maven.surefire.booter;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
@@ -30,19 +30,15 @@ import org.junit.runners.Suite;
  * @author Tibor Digana (tibor17)
  * @since 2.19
  */
-@Suite.SuiteClasses( {
-    ClasspathTest.class,
-    CommandReaderTest.class,
-    PropertiesWrapperTest.class,
-    SurefireReflectorTest.class,
-    PpidCheckerTest.class,
-    SystemUtilsTest.class
-} )
-@RunWith( Suite.class )
-public class JUnit4SuiteTest
+public class JUnit4SuiteTest extends TestCase
 {
     public static Test suite()
     {
-        return new JUnit4TestAdapter( JUnit4SuiteTest.class );
+        TestSuite suite = new TestSuite();
+        suite.addTest( new JUnit4TestAdapter( PpidCheckerTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( SystemUtilsTest.class ) );
+        suite.addTestSuite( ClasspathTest.class );
+        suite.addTestSuite( PropertiesWrapperTest.class );
+        return suite;
     }
 }

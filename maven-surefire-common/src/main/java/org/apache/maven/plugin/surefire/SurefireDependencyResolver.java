@@ -205,7 +205,7 @@ final class SurefireDependencyResolver
     }
 
     Set<Artifact> addProviderToClasspath( Map<String, Artifact> pluginArtifactMap, Artifact mojoPluginArtifact,
-                                          Artifact surefireCommon, Artifact surefireApi, Artifact surefireLoggerApi )
+                                          Artifact surefireApi, Artifact surefireLoggerApi )
     {
         Set<Artifact> providerArtifacts = new LinkedHashSet<>();
         ArtifactResolutionResult artifactResolutionResult = resolvePluginArtifact( mojoPluginArtifact );
@@ -218,12 +218,7 @@ final class SurefireDependencyResolver
                 {
                     String groupId = dependency.getGroupId();
                     String artifactId = dependency.getArtifactId();
-                    if ( groupId.equals( surefireCommon.getGroupId() )
-                            && artifactId.equals( surefireCommon.getArtifactId() ) )
-                    {
-                        providerArtifacts.add( surefireCommon );
-                    }
-                    else if ( groupId.equals( surefireApi.getGroupId() )
+                    if ( groupId.equals( surefireApi.getGroupId() )
                             && artifactId.equals( surefireApi.getArtifactId() ) )
                     {
                         providerArtifacts.add( surefireApi );

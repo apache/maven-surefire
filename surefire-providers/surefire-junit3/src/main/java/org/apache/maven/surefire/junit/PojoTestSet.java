@@ -116,7 +116,7 @@ public class PojoTestSet
         final String userFriendlyMethodName = methodName + '(' + ( args.length == 0 ? "" : "Reporter" ) + ')';
         final String testName = getTestName( userFriendlyMethodName );
 
-        reportManager.testStarting( new SimpleReportEntry( testClassName, testName ) );
+        reportManager.testStarting( new SimpleReportEntry( testClassName, null, testName, null ) );
 
         try
         {
@@ -125,7 +125,7 @@ public class PojoTestSet
         catch ( Throwable e )
         {
             StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( testClassName, methodName, e );
-            reportManager.testFailed( withException( testClassName, testName, stackTraceWriter ) );
+            reportManager.testFailed( withException( testClassName, null, testName, null, stackTraceWriter ) );
 
             // A return value of true indicates to this class's executeTestMethods
             // method that it should abort and not attempt to execute
@@ -139,20 +139,20 @@ public class PojoTestSet
         try
         {
             method.invoke( testObject, args );
-            reportManager.testSucceeded( new SimpleReportEntry( testClassName, testName ) );
+            reportManager.testSucceeded( new SimpleReportEntry( testClassName, null, testName, null ) );
         }
         catch ( InvocationTargetException e )
         {
             Throwable t = e.getTargetException();
             StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( testClassName, methodName, t );
-            reportManager.testFailed( withException( testClassName, testName, stackTraceWriter ) );
+            reportManager.testFailed( withException( testClassName, null, testName, null, stackTraceWriter ) );
             // Don't return  here, because tearDownFixture should be called even
             // if the test method throws an exception.
         }
         catch ( Throwable t )
         {
             StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( testClassName, methodName, t );
-            reportManager.testFailed( withException( testClassName, testName, stackTraceWriter ) );
+            reportManager.testFailed( withException( testClassName, null, testName, null, stackTraceWriter ) );
             // Don't return  here, because tearDownFixture should be called even
             // if the test method throws an exception.
         }
@@ -165,7 +165,7 @@ public class PojoTestSet
         {
             StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( testClassName, methodName, t );
             // Treat any exception from tearDownFixture as a failure of the test.
-            reportManager.testFailed( withException( testClassName, testName, stackTraceWriter ) );
+            reportManager.testFailed( withException( testClassName, null, testName, null, stackTraceWriter ) );
 
             // A return value of true indicates to this class's executeTestMethods
             // method that it should abort and not attempt to execute

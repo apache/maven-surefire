@@ -32,7 +32,7 @@ public class TestMethodTest
 {
     public void testTestFailure()
     {
-        ReportEntry reportEntry = new SimpleReportEntry( "a", "b" );
+        ReportEntry reportEntry = new SimpleReportEntry( "a", null, "b", null );
         TestMethod testMethod = new TestMethod( reportEntry, new TestSet( TestMethodTest.class.getName() ) );
         testMethod.testFailure( reportEntry );
         final int elapsed = testMethod.getElapsed();

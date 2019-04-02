@@ -268,7 +268,7 @@ public class ForkingRunListenerTest
 
     private SimpleReportEntry createDefaultReportEntry( Map<String, String> sysProps )
     {
-        return new SimpleReportEntry( "com.abc.TestClass", "testMethod", null, 22, sysProps );
+        return new SimpleReportEntry( "com.abc.TestClass", null, "testMethod", null, null, 22, sysProps );
     }
 
     private SimpleReportEntry createDefaultReportEntry()
@@ -278,7 +278,7 @@ public class ForkingRunListenerTest
 
     private SimpleReportEntry createAnotherDefaultReportEntry()
     {
-        return new SimpleReportEntry( "com.abc.AnotherTestClass", "testAnotherMethod", 42 );
+        return new SimpleReportEntry( "com.abc.AnotherTestClass", null, "testAnotherMethod", null, 42 );
     }
 
     private SimpleReportEntry createReportEntryWithStackTrace()

@@ -73,7 +73,7 @@ public class TestNGReporter
     @Override
     public void onTestSuccess( ITestResult result )
     {
-        ReportEntry report = new SimpleReportEntry( result.getTestClass().getName(), result.getName() );
+        ReportEntry report = new SimpleReportEntry( result.getTestClass().getName(), null, result.getName(), null );
         reporter.testSucceeded( report );
     }
 
@@ -81,7 +81,7 @@ public class TestNGReporter
     public void onTestFailure( ITestResult result )
     {
         IClass clazz = result.getTestClass();
-        ReportEntry report = withException( clazz.getName(), result.getName(),
+        ReportEntry report = withException( clazz.getName(), null, result.getName(), null,
                 new PojoStackTraceWriter( clazz.getRealClass().getName(),
                         result.getMethod().getMethodName(),
                         result.getThrowable() ) );
@@ -92,9 +92,10 @@ public class TestNGReporter
     @Override
     public void onTestSkipped( ITestResult result )
     {
+        //noinspection ThrowableResultOfMethodCallIgnored
         Throwable t = result.getThrowable();
         String reason = t == null ? null : t.getMessage();
-        ReportEntry report = ignored( result.getTestClass().getName(), result.getName(), reason );
+        ReportEntry report = ignored( result.getTestClass().getName(), null, result.getName(), null, reason );
         reporter.testSkipped( report );
     }
 
@@ -102,7 +103,7 @@ public class TestNGReporter
     public void onTestFailedButWithinSuccessPercentage( ITestResult result )
     {
         IClass clazz = result.getTestClass();
-        ReportEntry report = withException( clazz.getName(), result.getName(),
+        ReportEntry report = withException( clazz.getName(), null, result.getName(), null,
                 new PojoStackTraceWriter( clazz.getRealClass().getName(),
                         result.getMethod().getMethodName(),
                         result.getThrowable() ) );

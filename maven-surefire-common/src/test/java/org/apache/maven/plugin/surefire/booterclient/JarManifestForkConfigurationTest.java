@@ -53,6 +53,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -61,6 +62,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
  */
 @RunWith( PowerMockRunner.class )
 @PrepareForTest( { JarManifestForkConfiguration.class, InPluginProcessDumpSingleton.class } )
+@PowerMockIgnore( { "org.jacoco.agent.rt.*", "com.vladium.emma.rt.*" } )
 public class JarManifestForkConfigurationTest
 {
     private static final File TMP = newTemporaryFolder();

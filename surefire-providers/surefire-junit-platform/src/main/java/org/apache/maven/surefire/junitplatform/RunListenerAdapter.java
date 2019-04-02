@@ -23,6 +23,7 @@ import static java.util.Collections.emptyMap;
 import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -74,12 +75,12 @@ final class RunListenerAdapter
                         && testIdentifier.getSource().filter( ClassSource.class::isInstance ).isPresent() )
         {
             testStartTime.put( testIdentifier, System.currentTimeMillis() );
-            runListener.testSetStarting( createTestSetReportEntry( testIdentifier ) );
+            runListener.testSetStarting( createReportEntry( testIdentifier ) );
         }
         else if ( testIdentifier.isTest() )
         {
             testStartTime.put( testIdentifier, System.currentTimeMillis() );
-            runListener.testStarting( createTestSetReportEntry( testIdentifier ) );
+            runListener.testStarting( createReportEntry( testIdentifier ) );
         }
     }
 
@@ -104,15 +105,15 @@ final class RunListenerAdapter
                     }
                     else
                     {
-                        runListener.testSetCompleted( createTestSetReportEntry( testIdentifier, testExecutionResult,
-                                systemProps(), elapsed ) );
+                        runListener.testSetCompleted( createReportEntry( testIdentifier, testExecutionResult,
+                                systemProps(), null, elapsed ) );
                     }
                     break;
                 case FAILED:
                     if ( !isTest )
                     {
-                        runListener.testSetCompleted( createTestSetReportEntry( testIdentifier, testExecutionResult,
-                                systemProps(), elapsed ) );
+                        runListener.testSetCompleted( createReportEntry( testIdentifier, testExecutionResult,
+                                systemProps(), null, elapsed ) );
                     }
                     else if ( testExecutionResult.getThrowable()
                             .filter( AssertionError.class::isInstance ).isPresent() )
@@ -127,12 +128,12 @@ final class RunListenerAdapter
                 default:
                     if ( isTest )
                     {
-                        runListener.testSucceeded( createReportEntry( testIdentifier, elapsed ) );
+                        runListener.testSucceeded( createReportEntry( testIdentifier, null, elapsed ) );
                     }
                     else
                     {
                         runListener.testSetCompleted(
-                                createTestSetReportEntry( testIdentifier, null, systemProps(), elapsed ) );
+                                createReportEntry( testIdentifier, null, systemProps(), null, elapsed ) );
                     }
             }
         }
@@ -149,58 +150,43 @@ final class RunListenerAdapter
     public void executionSkipped( TestIdentifier testIdentifier, String reason )
     {
         testStartTime.remove( testIdentifier );
-        String[] classMethodName = toClassMethodName( testIdentifier );
-        String className = classMethodName[1];
-        String methodName = classMethodName[3];
-        runListener.testSkipped( new SimpleReportEntry( className, methodName, reason ) );
+        runListener.testSkipped( createReportEntry( testIdentifier, null, emptyMap(), reason, null ) );
     }
 
-    private SimpleReportEntry createTestSetReportEntry( TestIdentifier testIdentifier,
-                                                        TestExecutionResult testExecutionResult,
-                                                        Map<String, String> systemProperties,
-                                                        Integer elapsedTime )
+    private SimpleReportEntry createReportEntry( TestIdentifier testIdentifier,
+                                                 TestExecutionResult testExecutionResult,
+                                                 Map<String, String> systemProperties,
+                                                 String reason,
+                                                 Integer elapsedTime )
     {
         String[] classMethodName = toClassMethodName( testIdentifier );
-        String className = classMethodName[1];
-        String methodName = classMethodName[3];
+        String className = classMethodName[0];
+        String classText = classMethodName[1];
+        if ( Objects.equals( className, classText ) )
+        {
+            classText = null;
+        }
+        String methodName = testIdentifier.isTest() ? classMethodName[2] : null;
+        String methodText = testIdentifier.isTest() ? classMethodName[3] : null;
+        if ( Objects.equals( methodName, methodText ) )
+        {
+            methodText = null;
+        }
         StackTraceWriter stw =
                 testExecutionResult == null ? null : toStackTraceWriter( className, methodName, testExecutionResult );
-        return new SimpleReportEntry( className, methodName, stw, elapsedTime, systemProperties );
+        return new SimpleReportEntry( className, classText, methodName, methodText,
+                stw, elapsedTime, reason, systemProperties );
     }
 
-    private SimpleReportEntry createTestSetReportEntry( TestIdentifier testIdentifier )
+    private SimpleReportEntry createReportEntry( TestIdentifier testIdentifier )
     {
-        return createTestSetReportEntry( testIdentifier, emptyMap() );
-    }
-
-    private SimpleReportEntry createTestSetReportEntry( TestIdentifier testIdentifier,
-                                                        Map<String, String> systemProperties )
-    {
-        return createTestSetReportEntry( testIdentifier, null, systemProperties, null );
-    }
-
-    private SimpleReportEntry createReportEntry( TestIdentifier testIdentifier, Integer elapsedTime )
-    {
-        return createReportEntry( testIdentifier, (StackTraceWriter) null, elapsedTime );
+        return createReportEntry( testIdentifier, null, null );
     }
 
     private SimpleReportEntry createReportEntry( TestIdentifier testIdentifier,
                                                  TestExecutionResult testExecutionResult, Integer elapsedTime )
     {
-        String[] classMethodNames = toClassMethodName( testIdentifier );
-        String realClassName = classMethodNames[0];
-        String realMethodName = classMethodNames[2];
-        return createReportEntry( testIdentifier,
-                toStackTraceWriter( realClassName, realMethodName, testExecutionResult ), elapsedTime );
-    }
-
-    private SimpleReportEntry createReportEntry( TestIdentifier testIdentifier, StackTraceWriter stackTraceWriter,
-                                                 Integer elapsedTime )
-    {
-        String[] classMethodNames = toClassMethodName( testIdentifier );
-        String className = classMethodNames[1];
-        String methodName = classMethodNames[3];
-        return new SimpleReportEntry( className, methodName, stackTraceWriter, elapsedTime );
+        return createReportEntry( testIdentifier, testExecutionResult, emptyMap(), null, elapsedTime );
     }
 
     private StackTraceWriter toStackTraceWriter( String realClassName, String realMethodName,
@@ -263,7 +249,7 @@ final class RunListenerAdapter
             String className = classSource.getClassName();
             String simpleClassName = className.substring( 1 + className.lastIndexOf( '.' ) );
             String source = display.equals( simpleClassName ) ? className : display;
-            return new String[] { source, source, null, null };
+            return new String[] { className, source, null, null };
         }
         else
         {

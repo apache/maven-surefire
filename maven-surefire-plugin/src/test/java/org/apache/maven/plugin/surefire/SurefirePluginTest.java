@@ -18,99 +18,70 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-
-import java.lang.reflect.Field;
-import org.apache.maven.toolchain.Toolchain;
-
 import junit.framework.TestCase;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.surefire.suite.RunResult;
 
-public class SurefirePluginTest
-    extends TestCase
+import static org.fest.assertions.Assertions.assertThat;
+
+public class SurefirePluginTest extends TestCase
 {
-
-    public void testForkMode()
-        throws NoSuchFieldException, IllegalAccessException
+    public void testDefaultIncludes()
     {
-        SurefirePlugin surefirePlugin = new SurefirePlugin();
-        setFieldValue( surefirePlugin, "toolchain", new MyToolChain() );
-        setFieldValue( surefirePlugin, "forkMode", "never" );
-        assertEquals( "once", surefirePlugin.getEffectiveForkMode() );
+        assertThat( new SurefirePlugin().getDefaultIncludes() )
+                .containsOnly( "**/Test*.java", "**/*Test.java", "**/*Tests.java", "**/*TestCase.java" );
     }
 
-    public void testForkCountComputation()
+    public void testReportSchemaLocation()
     {
-        SurefirePlugin surefirePlugin = new SurefirePlugin();
-        assertConversionFails( surefirePlugin, "nothing" );
-
-        assertConversionFails( surefirePlugin, "5,0" );
-        assertConversionFails( surefirePlugin, "5.0" );
-        assertConversionFails( surefirePlugin, "5,0C" );
-        assertConversionFails( surefirePlugin, "5.0CC" );
-
-        assertForkCount( surefirePlugin, 5, "5" );
-
-        int availableProcessors = Runtime.getRuntime().availableProcessors();
-        assertForkCount( surefirePlugin, 3*availableProcessors, "3C" );
-        assertForkCount( surefirePlugin, (int) ( 2.5*availableProcessors ), "2.5C" );
-        assertForkCount( surefirePlugin, availableProcessors, "1.0001 C" );
-        assertForkCount( surefirePlugin, 1, 1d / ( (double) availableProcessors + 1 ) + "C" );
-        assertForkCount( surefirePlugin, 0, "0 C" );
+        assertThat( new SurefirePlugin().getReportSchemaLocation() )
+            .isEqualTo( "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" );
     }
 
-    private void assertForkCount( SurefirePlugin surefirePlugin, int expected, String value )
+    public void testFailIfNoTests() throws Exception
     {
-        assertEquals( expected, surefirePlugin.convertWithCoreCount( value ));
-    }
-
-    private void assertConversionFails( SurefirePlugin surefirePlugin, String value )
-    {
-        try {
-            surefirePlugin.convertWithCoreCount( value );
-        } catch (NumberFormatException nfe)
+        RunResult runResult = new RunResult( 0, 0, 0, 0 );
+        try
         {
+            SurefirePlugin plugin = new SurefirePlugin();
+            plugin.setFailIfNoTests( true );
+            plugin.handleSummary( runResult, null );
+        }
+        catch ( MojoFailureException e )
+        {
+            assertThat( e.getLocalizedMessage() )
+                    .isEqualTo( "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
             return;
         }
-        fail( "Expected NumberFormatException when converting " + value );
+        fail( "Expected MojoFailureException with message "
+                + "'No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)'" );
     }
 
-    private void setFieldValue( SurefirePlugin plugin, String fieldName, Object value )
-        throws NoSuchFieldException, IllegalAccessException
+    public void testTestFailure() throws Exception
     {
-        Field field = findField( plugin.getClass(), fieldName );
-        field.setAccessible( true );
-        field.set( plugin, value );
-
+        RunResult runResult = new RunResult( 1, 0, 1, 0 );
+        try
+        {
+            SurefirePlugin plugin = new SurefirePlugin();
+            plugin.handleSummary( runResult, null );
+        }
+        catch ( MojoFailureException e )
+        {
+            assertThat( e.getLocalizedMessage() )
+                    .isEqualTo( "There are test failures.\n\nPlease refer to null "
+                            + "for the individual test results.\nPlease refer to dump files (if any exist) "
+                            + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream." );
+            return;
+        }
+        fail( "Expected MojoFailureException with message "
+                + "'There are test failures.\n\nPlease refer to null "
+                + "for the individual test results.\nPlease refer to dump files (if any exist) "
+                + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.'");
     }
 
-    private Field findField( Class clazz, String fieldName )
+    public void testPluginName()
     {
-        while ( clazz != null )
-        {
-            try
-            {
-                return clazz.getDeclaredField( fieldName );
-            }
-            catch ( NoSuchFieldException e )
-            {
-                clazz = clazz.getSuperclass();
-            }
-        }
-        throw new IllegalArgumentException( "Field not found" );
-    }
-
-    private class MyToolChain
-        implements Toolchain
-    {
-        @Override
-        public String getType()
-        {
-            return null;
-        }
-
-        @Override
-        public String findTool( String s )
-        {
-            return null;
-        }
+        assertThat( new SurefirePlugin().getPluginName() )
+                .isEqualTo( "surefire" );
     }
 }

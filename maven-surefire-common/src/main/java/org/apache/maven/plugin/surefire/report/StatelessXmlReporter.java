@@ -22,7 +22,7 @@ package org.apache.maven.plugin.surefire.report;
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.shared.utils.xml.PrettyPrintXMLWriter;
 import org.apache.maven.shared.utils.xml.XMLWriter;
-import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.extensions.StatelessReportEventListener;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.SafeThrowable;
 
@@ -82,8 +82,9 @@ import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
  * @see <a href="http://wiki.apache.org/ant/Proposals/EnhancedTestReports">Ant's format enhancement proposal</a>
  *      (not yet implemented by Ant 1.8.2)
  */
-@Deprecated // this is no more stateless due to existence of testClassMethodRunHistoryMap since of 2.19. Rename to StatefulXmlReporter in 3.0.
+//todo this is no more stateless due to existence of testClassMethodRunHistoryMap since of 2.19.
 public class StatelessXmlReporter
+        implements StatelessReportEventListener<WrappedReportEntry, TestSetStats>
 {
     private final File reportsDirectory;
 
@@ -95,14 +96,25 @@ public class StatelessXmlReporter
 
     private final String xsdSchemaLocation;
 
+    private final String xsdVersion;
+
     // Map between test class name and a map between test method name
     // and the list of runs for each test method
     private final Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistoryMap;
 
+    private final boolean phrasedFileName;
+
+    private final boolean phrasedSuiteName;
+
+    private final boolean phrasedClassName;
+
+    private final boolean phrasedMethodName;
+
     public StatelessXmlReporter( File reportsDirectory, String reportNameSuffix, boolean trimStackTrace,
                                  int rerunFailingTestsCount,
                                  Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistoryMap,
-                                 String xsdSchemaLocation )
+                                 String xsdSchemaLocation, String xsdVersion, boolean phrasedFileName,
+                                 boolean phrasedSuiteName, boolean phrasedClassName, boolean phrasedMethodName )
     {
         this.reportsDirectory = reportsDirectory;
         this.reportNameSuffix = reportNameSuffix;
@@ -110,8 +122,14 @@ public class StatelessXmlReporter
         this.rerunFailingTestsCount = rerunFailingTestsCount;
         this.testClassMethodRunHistoryMap = testClassMethodRunHistoryMap;
         this.xsdSchemaLocation = xsdSchemaLocation;
+        this.xsdVersion = xsdVersion;
+        this.phrasedFileName = phrasedFileName;
+        this.phrasedSuiteName = phrasedSuiteName;
+        this.phrasedClassName = phrasedClassName;
+        this.phrasedMethodName = phrasedMethodName;
     }
 
+    @Override
     public void testSetCompleted( WrappedReportEntry testSetReportEntry, TestSetStats testSetStats )
     {
         Map<String, Map<String, List<WrappedReportEntry>>> classMethodStatistics =
@@ -344,9 +362,9 @@ public class StatelessXmlReporter
         return new OutputStreamWriter( fos, UTF_8 );
     }
 
-    private File getReportFile( ReportEntry report )
+    private File getReportFile( WrappedReportEntry report )
     {
-        String reportName = "TEST-" + report.getSourceName();
+        String reportName = "TEST-" + ( phrasedFileName ? report.getReportSourceName() : report.getSourceName() );
         String customizedReportName = isBlank( reportNameSuffix ) ? reportName : reportName + "-" + reportNameSuffix;
         return new File( reportsDirectory, stripIllegalFilenameChars( customizedReportName + ".xml" ) );
     }
@@ -354,14 +372,16 @@ public class StatelessXmlReporter
     private void startTestElement( XMLWriter ppw, WrappedReportEntry report )
     {
         ppw.startElement( "testcase" );
-        ppw.addAttribute( "name", report.getName() == null ? "" : extraEscape( report.getName(), true ) );
+        String name = phrasedMethodName ? report.getReportName() : report.getName();
+        ppw.addAttribute( "name", name == null ? "" : extraEscape( name, true ) );
 
         if ( report.getGroup() != null )
         {
             ppw.addAttribute( "group", report.getGroup() );
         }
 
-        String className = report.getReportName( reportNameSuffix );
+        String className = phrasedClassName ? report.getReportSourceName( reportNameSuffix )
+                : report.getSourceName( reportNameSuffix );
         if ( className != null )
         {
             ppw.addAttribute( "classname", extraEscape( className, true ) );
@@ -376,9 +396,10 @@ public class StatelessXmlReporter
 
         ppw.addAttribute( "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance" );
         ppw.addAttribute( "xsi:noNamespaceSchemaLocation", xsdSchemaLocation );
-        ppw.addAttribute( "version", "3.0" );
+        ppw.addAttribute( "version", xsdVersion );
 
-        String reportName = report.getReportName( reportNameSuffix );
+        String reportName = phrasedSuiteName ? report.getReportSourceName( reportNameSuffix )
+                : report.getSourceName( reportNameSuffix );
         ppw.addAttribute( "name", reportName == null ? "" : extraEscape( reportName, true ) );
 
         if ( report.getGroup() != null )

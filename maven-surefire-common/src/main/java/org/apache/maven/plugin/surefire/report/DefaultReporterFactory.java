@@ -24,6 +24,10 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.Level;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.shared.utils.logging.MessageBuilder;
+import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
+import org.apache.maven.surefire.extensions.StatelessReportEventListener;
+import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
+import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.RunStatistics;
@@ -113,39 +117,38 @@ public class DefaultReporterFactory
         return reportConfiguration.getReportsDirectory();
     }
 
-    private ConsoleReporter createConsoleReporter()
+    private StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats> createConsoleReporter()
     {
-        return shouldReportToConsole() ? new ConsoleReporter( consoleLogger ) : NullConsoleReporter.INSTANCE;
+        StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats> consoleReporter =
+                reportConfiguration.instantiateConsoleReporter( consoleLogger );
+        return useNonNull( consoleReporter, NullConsoleReporter.INSTANCE );
     }
 
-    private FileReporter createFileReporter()
+    private StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats> createFileReporter()
     {
-        FileReporter fileReporter = reportConfiguration.instantiateFileReporter( forkNumber );
+        StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats> fileReporter =
+                reportConfiguration.instantiateFileReporter( forkNumber );
         return useNonNull( fileReporter, NullFileReporter.INSTANCE );
     }
 
-    private StatelessXmlReporter createSimpleXMLReporter()
+    private StatelessReportEventListener<WrappedReportEntry, TestSetStats> createSimpleXMLReporter()
     {
-        StatelessXmlReporter xmlReporter = reportConfiguration.instantiateStatelessXmlReporter( forkNumber );
+        StatelessReportEventListener<WrappedReportEntry, TestSetStats> xmlReporter =
+                reportConfiguration.instantiateStatelessXmlReporter( forkNumber );
         return useNonNull( xmlReporter, NullStatelessXmlReporter.INSTANCE );
     }
 
-    private TestcycleConsoleOutputReceiver createConsoleOutputReceiver()
+    private ConsoleOutputReportEventListener createConsoleOutputReceiver()
     {
-        return reportConfiguration.instantiateConsoleOutputFileReporter( forkNumber );
+        ConsoleOutputReportEventListener outputReporter =
+                reportConfiguration.instantiateConsoleOutputFileReporter( forkNumber );
+        return useNonNull( outputReporter, NullConsoleOutputReceiver.INSTANCE );
     }
 
     private StatisticsReporter createStatisticsReporter()
     {
         StatisticsReporter statisticsReporter = reportConfiguration.getStatisticsReporter();
         return useNonNull( statisticsReporter, NullStatisticsReporter.INSTANCE );
-    }
-
-    private boolean shouldReportToConsole()
-    {
-        return reportConfiguration.isUseFile()
-                       ? reportConfiguration.isPrintSummary()
-                       : reportConfiguration.isRedirectTestOutputToFile() || reportConfiguration.isBriefOrPlainFormat();
     }
 
     public void mergeFromOtherFactories( Collection<DefaultReporterFactory> factories )
@@ -272,7 +275,7 @@ public class DefaultReporterFactory
      * Merge all the TestMethodStats in each TestRunListeners and put results into flakyTests, failedTests and
      * errorTests, indexed by test class and method name. Update globalStatistics based on the result of the merge.
      */
-    void mergeTestHistoryResult()
+    private void mergeTestHistoryResult()
     {
         globalStats = new RunStatistics();
         flakyTests = new TreeMap<>();
@@ -388,7 +391,6 @@ public class DefaultReporterFactory
 
         for ( Map.Entry<String, List<TestMethodStats>> entry : testStats.entrySet() )
         {
-            printed = true;
             List<TestMethodStats> testMethodStats = entry.getValue();
             if ( testMethodStats.size() == 1 )
             {

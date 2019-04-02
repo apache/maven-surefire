@@ -25,6 +25,9 @@ import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter;
+import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
+import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.repository.RepositorySystem;
@@ -155,6 +158,18 @@ public abstract class AbstractSurefireMojo
     private static final Platform PLATFORM = new Platform();
 
     private final ProviderDetector providerDetector = new ProviderDetector();
+
+    /**
+     * Note: use the legacy system property <em>disableXmlReport</em> set to {@code true} to disable the report.
+     */
+    @Parameter
+    private SurefireStatelessReporter statelessTestsetReporter;
+
+    @Parameter
+    private SurefireConsoleOutputReporter consoleOutputReporter;
+
+    @Parameter
+    private SurefireStatelessTestsetInfoReporter statelessTestsetInfoReporter;
 
     /**
      * Information about this plugin, mainly used to lookup this plugin's configuration from the currently executing
@@ -670,9 +685,11 @@ public abstract class AbstractSurefireMojo
 
     /**
      * Flag to disable the generation of report files in xml format.
-     *
+     * Deprecated since 3.0.0-M4.
+     * Instead use <em>disable</em> within {@code statelessTestsetReporter} since of 3.0.0-M6.
      * @since 2.2
      */
+    @Deprecated // todo make readonly to handle system property
     @Parameter( property = "disableXmlReport", defaultValue = "false" )
     private boolean disableXmlReport;
 
@@ -1781,7 +1798,8 @@ public abstract class AbstractSurefireMojo
         getConsoleLogger().debug( testClasspath.getCompactLogMessage( "test(compact) classpath:" ) );
         getConsoleLogger().debug( providerClasspath.getCompactLogMessage( "provider(compact) classpath:" ) );
 
-        Artifact[] additionalInProcArtifacts = { getCommonArtifact(), getApiArtifact(), getLoggerApiArtifact() };
+        Artifact[] additionalInProcArtifacts =
+                { getCommonArtifact(), getExtensionsArtifact(), getApiArtifact(), getLoggerApiArtifact() };
         Set<Artifact> inProcArtifacts = retainInProcArtifactsUnique( providerArtifacts, additionalInProcArtifacts );
         Classpath inProcClasspath = createInProcClasspath( providerClasspath, inProcArtifacts );
         getConsoleLogger().debug( inProcClasspath.getLogMessage( "in-process classpath:" ) );
@@ -1881,7 +1899,8 @@ public abstract class AbstractSurefireMojo
         ModularClasspath modularClasspath = new ModularClasspath( moduleDescriptor, testModulepath.getClassPath(),
                 packages, getTestClassesDirectory() );
 
-        Artifact[] additionalInProcArtifacts = { getCommonArtifact(), getApiArtifact(), getLoggerApiArtifact() };
+        Artifact[] additionalInProcArtifacts =
+                { getCommonArtifact(), getExtensionsArtifact(), getApiArtifact(), getLoggerApiArtifact() };
         Set<Artifact> inProcArtifacts = retainInProcArtifactsUnique( providerArtifacts, additionalInProcArtifacts );
         Classpath inProcClasspath = createInProcClasspath( providerClasspath, inProcArtifacts );
 
@@ -1906,6 +1925,11 @@ public abstract class AbstractSurefireMojo
         return getPluginArtifactMap().get( "org.apache.maven.surefire:maven-surefire-common" );
     }
 
+    private Artifact getExtensionsArtifact()
+    {
+        return getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-extensions-api" );
+    }
+
     private Artifact getApiArtifact()
     {
         return getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-api" );
@@ -1928,12 +1952,26 @@ public abstract class AbstractSurefireMojo
 
     private StartupReportConfiguration getStartupReportConfiguration( String configChecksum, boolean isForkMode )
     {
+        SurefireStatelessReporter xmlReporter =
+                statelessTestsetReporter == null
+                        ? new SurefireStatelessReporter( /*todo call def. constr.*/ isDisableXmlReport(), "3.0" )
+                        : statelessTestsetReporter;
+
+        xmlReporter.setDisable( isDisableXmlReport() ); // todo change to Boolean in the version 3.0.0-M6
+
+        SurefireConsoleOutputReporter outReporter =
+                consoleOutputReporter == null ? new SurefireConsoleOutputReporter() : consoleOutputReporter;
+
+        SurefireStatelessTestsetInfoReporter testsetReporter =
+                statelessTestsetInfoReporter == null
+                        ? new SurefireStatelessTestsetInfoReporter() : statelessTestsetInfoReporter;
+
         return new StartupReportConfiguration( isUseFile(), isPrintSummary(), getReportFormat(),
-                                               isRedirectTestOutputToFile(), isDisableXmlReport(),
+                                               isRedirectTestOutputToFile(),
                                                getReportsDirectory(), isTrimStackTrace(), getReportNameSuffix(),
                                                getStatisticsFile( configChecksum ), requiresRunHistory(),
                                                getRerunFailingTestsCount(), getReportSchemaLocation(), getEncoding(),
-                                               isForkMode );
+                                               isForkMode, xmlReporter, outReporter, testsetReporter );
     }
 
     private boolean isSpecificTestSpecified()
@@ -3159,7 +3197,7 @@ public abstract class AbstractSurefireMojo
         public Set<Artifact> getProviderClasspath()
         {
             return surefireDependencyResolver.addProviderToClasspath( getPluginArtifactMap(), getMojoArtifact(),
-                    getCommonArtifact(), getApiArtifact(), getLoggerApiArtifact() );
+                    getApiArtifact(), getLoggerApiArtifact() );
         }
     }
 

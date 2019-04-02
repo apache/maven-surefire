@@ -31,6 +31,14 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public class ReflectionUtilsTest
 {
+    @Test
+    public void shouldReloadClass() throws Exception
+    {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        assertThat( ReflectionUtils.reloadClass( cl, new B() ) )
+                .isEqualTo( B.class );
+    }
+
     @Test(expected = RuntimeException.class)
     public void shouldNotInvokeStaticMethod()
     {

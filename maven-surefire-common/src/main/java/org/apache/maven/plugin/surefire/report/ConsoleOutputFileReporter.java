@@ -21,16 +21,17 @@ package org.apache.maven.plugin.surefire.report;
 
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicStampedReference;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.plugin.surefire.report.FileReporter.getReportFile;
 import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 
@@ -43,14 +44,16 @@ import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 public class ConsoleOutputFileReporter
     implements TestcycleConsoleOutputReceiver
 {
-    private static final int STREAM_BUFFER_SIZE = 16 * 1024;
+    private static final int STREAM_BUFFER_SIZE = 64 * 1024;
     private static final int OPEN = 0;
     private static final int CLOSED_TO_REOPEN = 1;
     private static final int CLOSED = 2;
 
     private final File reportsDirectory;
     private final String reportNameSuffix;
+    private final boolean usePhrasedFileName;
     private final Integer forkNumber;
+    private final String encoding;
 
     private final AtomicStampedReference<FilterOutputStream> fileOutputStream =
             new AtomicStampedReference<>( null, OPEN );
@@ -59,15 +62,18 @@ public class ConsoleOutputFileReporter
 
     private volatile String reportEntryName;
 
-    public ConsoleOutputFileReporter( File reportsDirectory, String reportNameSuffix, Integer forkNumber )
+    public ConsoleOutputFileReporter( File reportsDirectory, String reportNameSuffix, boolean usePhrasedFileName,
+                                      Integer forkNumber, String encoding )
     {
         this.reportsDirectory = reportsDirectory;
         this.reportNameSuffix = reportNameSuffix;
+        this.usePhrasedFileName = usePhrasedFileName;
         this.forkNumber = forkNumber;
+        this.encoding = encoding;
     }
 
     @Override
-    public void testSetStarting( ReportEntry reportEntry )
+    public void testSetStarting( TestSetReportEntry reportEntry )
     {
         lock.lock();
         try
@@ -81,7 +87,7 @@ public class ConsoleOutputFileReporter
     }
 
     @Override
-    public void testSetCompleted( ReportEntry report )
+    public void testSetCompleted( TestSetReportEntry report )
     {
     }
 
@@ -128,10 +134,11 @@ public class ConsoleOutputFileReporter
                 {
                     output = "null";
                 }
-                os.write( output.getBytes( UTF_8 ) );
+                Charset charset = Charset.forName( encoding );
+                os.write( output.getBytes( charset ) );
                 if ( newLine )
                 {
-                    os.write( NL.getBytes( UTF_8 ) );
+                    os.write( NL.getBytes( charset ) );
                 }
             }
         }
@@ -162,7 +169,7 @@ public class ConsoleOutputFileReporter
         finally
         {
             // prepare <class>-output.txt report file
-            reportEntryName = reportEntry.getSourceName();
+            reportEntryName = usePhrasedFileName ? reportEntry.getSourceText() : reportEntry.getSourceName();
         }
     }
 

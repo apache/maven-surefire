@@ -133,9 +133,9 @@ public class JUnit3Provider
                                  Map<String, String> systemProperties )
         throws TestSetFailedException
     {
-        reporter.testSetStarting( new SimpleReportEntry( testSet.getName(), null ) );
+        reporter.testSetStarting( new SimpleReportEntry( testSet.getName(), null, null, null ) );
         testSet.execute( reporter, classLoader );
-        reporter.testSetCompleted( new SimpleReportEntry( testSet.getName(), null, systemProperties ) );
+        reporter.testSetCompleted( new SimpleReportEntry( testSet.getName(), null, null, null, systemProperties ) );
     }
 
     private TestsToRun scanClassPath()

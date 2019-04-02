@@ -237,7 +237,7 @@ public class SurefirePlugin
     /**
      * The character encoding scheme to be applied while generating test report
      * files (see target/surefire-reports/yourTestName.txt).
-     * The report output files (*-out.txt) are still encoded with JVM's encoding used in standard out/err pipes.
+     * The report output files (*-out.txt) are encoded in UTF-8 if not set otherwise.
      *
      * @since 3.0.0-M1
      */

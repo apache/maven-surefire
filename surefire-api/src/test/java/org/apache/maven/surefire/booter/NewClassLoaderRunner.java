@@ -19,6 +19,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.shared.utils.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,8 +46,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import static java.io.File.pathSeparator;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.io.FileUtils.readFileToString;
 
 /**
  * JUnit runner testing methods in a separate class loader.
@@ -193,7 +192,7 @@ public class NewClassLoaderRunner
     public static class TestClassLoader
         extends URLClassLoader
     {
-        public TestClassLoader()
+        TestClassLoader()
         {
             super( toClassPath(), null );
         }
@@ -236,7 +235,7 @@ public class NewClassLoaderRunner
             Collection<URL> classPath = new HashSet<>();
             try
             {
-                String[] files = readFileToString( new File( "target/test-classpath/cp.txt" ), UTF_8 )
+                String[] files = FileUtils.fileRead( new File( "target/test-classpath/cp.txt" ), "UTF-8" )
                         .split( pathSeparator );
                 for ( String file : files )
                 {

@@ -19,18 +19,19 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 
 /**
  * @author Kristian Rosenvold
  */
 public interface TestcycleConsoleOutputReceiver
-    extends ConsoleOutputReceiver
+    extends ConsoleOutputReceiver, ConsoleOutputReportEventListener
 {
-    void testSetStarting( ReportEntry reportEntry );
+    void testSetStarting( TestSetReportEntry reportEntry );
 
-    void testSetCompleted( ReportEntry report );
+    void testSetCompleted( TestSetReportEntry report );
 
     void close();
 }

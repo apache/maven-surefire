@@ -19,6 +19,9 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.surefire.AbstractSurefireMojoTest.Mojo;
+import org.apache.maven.surefire.suite.RunResult;
 import org.junit.Test;
 
 import java.io.File;
@@ -29,7 +32,9 @@ import static java.util.Collections.addAll;
 import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
+import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
 import static org.fest.assertions.Assertions.assertThat;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -107,5 +112,47 @@ public class SurefireHelperTest
         path = root + "\\" + pathToJar;
         escaped = escapeToPlatformPath( path );
         assertThat( escaped ).isEqualTo( root + "\\" + pathToJar );
+    }
+
+    @Test
+    public void shouldHandleFailIfNoTests() throws Exception
+    {
+        RunResult summary = new RunResult( 0, 0, 0, 0 );
+        try
+        {
+            Mojo plugin = new Mojo();
+            plugin.setFailIfNoTests( true );
+            reportExecution( plugin, summary, null, null );
+        }
+        catch ( MojoFailureException e )
+        {
+            assertThat( e.getLocalizedMessage() )
+                    .isEqualTo( "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
+            return;
+        }
+        fail( "Expected MojoFailureException with message "
+                + "'No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)'" );
+    }
+
+    @Test
+    public void shouldHandleTestFailure() throws Exception
+    {
+        RunResult summary = new RunResult( 1, 0, 1, 0 );
+        try
+        {
+            reportExecution( new Mojo(), summary, null, null );
+        }
+        catch ( MojoFailureException e )
+        {
+            assertThat( e.getLocalizedMessage() )
+                    .isEqualTo( "There are test failures.\n\nPlease refer to null "
+                            + "for the individual test results.\nPlease refer to dump files (if any exist) "
+                            + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream." );
+            return;
+        }
+        fail( "Expected MojoFailureException with message "
+                + "'There are test failures.\n\nPlease refer to null "
+                + "for the individual test results.\nPlease refer to dump files (if any exist) "
+                + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.'");
     }
 }
