@@ -650,7 +650,7 @@ public abstract class AbstractSurefireMojo
      *
      * @since 2.2
      */
-    @Parameter( property = "trimStackTrace", defaultValue = "true" )
+    @Parameter( property = "trimStackTrace", defaultValue = "false" )
     private boolean trimStackTrace;
 
     /**
