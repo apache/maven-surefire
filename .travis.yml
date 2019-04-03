@@ -22,11 +22,8 @@ cache:
   directories:
   - "$HOME/.m2"
 
-jobs:
-  include:
-  - stage: test
-    jdk: openjdk8
-    script: mvn clean install -Prun-its
+install: true
+script: mvn clean package -DskipTests
 
 branches:
   only:
