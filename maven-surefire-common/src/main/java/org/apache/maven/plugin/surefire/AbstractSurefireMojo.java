@@ -564,6 +564,10 @@ public abstract class AbstractSurefireMojo
      * Since version 2.16 (JUnit 4.7 provider), additional vales are available:
      * <br>
      * {@code suites}, {@code suitesAndClasses}, {@code suitesAndMethods}, {@code classesAndMethods}, {@code all}.
+     * <br>
+     * By default, Surefire does not execute tests in parallel. You can set the parameter {@code parallel} to
+     * {@code none} to explicitly disable parallel execution (e.g. when disabling parallel execution in special Maven
+     * profiles when executing coverage analysis).
      *
      * @since 2.2
      */
