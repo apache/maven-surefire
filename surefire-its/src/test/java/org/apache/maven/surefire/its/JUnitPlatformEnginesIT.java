@@ -63,7 +63,6 @@ public class JUnitPlatformEnginesIT
         args.add( new Object[] { "1.1.1", "5.1.1", "1.0.0", "1.0.0" } );
         args.add( new Object[] { "1.2.0", "5.2.0", "1.1.0", "1.0.0" } );
         args.add( new Object[] { "1.3.1", "5.3.1", "1.1.1", "1.0.0" } );
-        args.add( new Object[] { "1.4.0-SNAPSHOT", "5.4.0-SNAPSHOT", "1.1.1", "1.0.0" } );
         return args;
     }
 
