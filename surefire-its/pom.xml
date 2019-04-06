@@ -162,6 +162,7 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>3.0.0-M3</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
                 <configuration>
+                    <skipTests>false</skipTests>
                     <jvm>${jdk.home}/bin/java</jvm>
                     <runOrder>alphabetical</runOrder>
                     <threadCount>1</threadCount>

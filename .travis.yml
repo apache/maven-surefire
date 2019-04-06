@@ -23,7 +23,7 @@ cache:
   - "$HOME/.m2"
 
 install: true
-script: mvn clean package -DskipTests
+script: mvn clean package -nsu -DskipITs
 
 branches:
   only:
