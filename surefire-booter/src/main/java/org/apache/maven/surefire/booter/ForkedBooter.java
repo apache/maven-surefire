@@ -129,7 +129,7 @@ public final class ForkedBooter
             DumpErrorSingleton.getSingleton().dumpException( t );
             eventChannel.consoleErrorLog( new LegacyPojoStackTraceWriter( "test subsystem", "no method", t ), false );
         }
-        acknowledgedExit( eventChannel );
+        acknowledgedExit();
     }
 
     private Object createTestSet( TypeEncodedValue forkedTestSet, boolean readTestsFromCommandReader, ClassLoader cl )
@@ -293,7 +293,7 @@ public final class ForkedBooter
         System.exit( 1 );
     }
 
-    private void acknowledgedExit( ForkedChannelEncoder eventChannel )
+    private void acknowledgedExit()
     {
         final Semaphore barrier = new Semaphore( 0 );
         commandReader.addByeAckListener( new CommandListener()
