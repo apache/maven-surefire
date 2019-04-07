@@ -22,14 +22,18 @@ package org.apache.maven.plugin.surefire.booterclient;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 
 import org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.ClasspathElementUri;
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.relativize;
 import static org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.toAbsoluteUri;
 import static org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.toClasspathElementUri;
+import static org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.escapeUri;
 import static org.fest.assertions.Assertions.assertThat;
 
 import org.junit.AfterClass;
@@ -39,7 +43,9 @@ import org.junit.runner.RunWith;
 
 import static org.fest.util.Files.delete;
 import static org.fest.util.Files.newTemporaryFolder;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.same;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -88,6 +94,8 @@ public class JarManifestForkConfigurationTest
                 .thenReturn( "../../../.m2/repository/grp/art/1.0/art-1.0.jar" );
         when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ), anyBoolean() ) )
                 .thenCallRealMethod();
+        when( escapeUri( anyString(), any( Charset.class ) ) )
+                .thenCallRealMethod();
         assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory, true ).uri )
                 .isEqualTo( "../../../.m2/repository/grp/art/1.0/art-1.0.jar" );
     }
@@ -104,6 +112,8 @@ public class JarManifestForkConfigurationTest
         when( relativize( parent, classPathElement ) )
                 .thenReturn( "../../../../../the Maven repo/grp/art/1.0/art-1.0.jar" );
         when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ), anyBoolean() ) )
+                .thenCallRealMethod();
+        when( escapeUri( anyString(), any( Charset.class ) ) )
                 .thenCallRealMethod();
         assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory, true ).uri )
                 .isEqualTo( "../../../../../the%20Maven%20repo/grp/art/1.0/art-1.0.jar" );
@@ -122,6 +132,8 @@ public class JarManifestForkConfigurationTest
                 .thenReturn( "..\\..\\..\\Users\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar" );
         when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ), anyBoolean() ) )
                 .thenCallRealMethod();
+        when( escapeUri( anyString(), any( Charset.class )  ) )
+                .thenCallRealMethod();
         assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory, true ).uri )
                 .isEqualTo( "../../../Users/me/.m2/repository/grp/art/1.0/art-1.0.jar" );
     }
@@ -134,10 +146,13 @@ public class JarManifestForkConfigurationTest
         Path parent = mock( Path.class );
         when( parent.toString() ).thenReturn( "C:\\Windows\\Temp\\surefire" );
         Path classPathElement = mock( Path.class );
-        when( classPathElement.toString() ).thenReturn( "C:\\Test User\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar" );
+        when( classPathElement.toString() )
+                .thenReturn("C:\\Test User\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar");
         when( relativize( parent, classPathElement ) )
                 .thenReturn( "..\\..\\..\\Test User\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar" );
         when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ), anyBoolean() ) )
+                .thenCallRealMethod();
+        when( escapeUri( anyString(), any( Charset.class ) ) )
                 .thenCallRealMethod();
         assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory, true ).uri )
                 .isEqualTo( "../../../Test%20User/me/.m2/repository/grp/art/1.0/art-1.0.jar" );
@@ -168,10 +183,52 @@ public class JarManifestForkConfigurationTest
                 .thenThrow( new IllegalArgumentException() );
         when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ), anyBoolean() ) )
                 .thenCallRealMethod();
+        when( escapeUri( anyString(), any( Charset.class ) ) )
+                .thenCallRealMethod();
         when( toAbsoluteUri( same( classPathElement ) ) )
                 .thenCallRealMethod();
         assertThat( toClasspathElementUri( parent, classPathElement, dumpDirectory, true ).uri )
                 .isEqualTo( "file:///X:/Users/me/.m2/repository/grp/art/1.0/art-1.0.jar" );
+    }
+
+    @Test
+    public void shouldEscapeUri()
+            throws Exception
+    {
+        assertThat( escapeUri( "a", UTF_8 ) ).isEqualTo( "a" );
+        assertThat( escapeUri( " ", UTF_8 ) ).isEqualTo( "%20" );
+        assertThat( escapeUri( "%", UTF_8 ) ).isEqualTo( "%25" );
+        assertThat( escapeUri( "+", UTF_8 ) ).isEqualTo( "%2B" );
+        assertThat( escapeUri( ",", UTF_8 ) ).isEqualTo( "%2C" );
+        assertThat( escapeUri( "/", UTF_8 ) ).isEqualTo( "/" );
+        assertThat( escapeUri( "7", UTF_8 ) ).isEqualTo( "7" );
+        assertThat( escapeUri( ":", UTF_8 ) ).isEqualTo( "%3A" );
+        assertThat( escapeUri( "@", UTF_8 ) ).isEqualTo( "%40" );
+        assertThat( escapeUri( "A", UTF_8 ) ).isEqualTo( "A" );
+        assertThat( escapeUri( "[", UTF_8 ) ).isEqualTo( "%5B" );
+        assertThat( escapeUri( "\\", UTF_8 ) ).isEqualTo( "/" );
+        assertThat( escapeUri( "]", UTF_8 ) ).isEqualTo( "%5D" );
+        assertThat( escapeUri( "`", UTF_8 ) ).isEqualTo( "%60" );
+        assertThat( escapeUri( "a", UTF_8 ) ).isEqualTo( "a" );
+        assertThat( escapeUri( "{", UTF_8 ) ).isEqualTo( "%7B" );
+        assertThat( escapeUri( "" + (char) 0xFF, UTF_8 ) ).isEqualTo( "%C3%BF" );
+
+        assertThat( escapeUri( "..\\..\\..\\Test : User\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar",
+                UTF_8 ) )
+                .isEqualTo( "../../../Test%20%3A%20User/me/.m2/repository/grp/art/1.0/art-1.0.jar" );
+
+        assertThat( escapeUri( "..\\..\\..\\Test : User\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar",
+                Charset.defaultCharset() ) )
+                .isEqualTo( "../../../Test%20%3A%20User/me/.m2/repository/grp/art/1.0/art-1.0.jar" );
+
+        assertThat( escapeUri( "../../surefire-its/target/junit-pathWithÜmlaut_1/target/surefire", UTF_8 ) )
+                .isEqualTo( "../../surefire-its/target/junit-pathWith%C3%9Cmlaut_1/target/surefire" );
+
+        String source = "../../surefire-its/target/junit-pathWithÜmlaut_1/target/surefire";
+        String encoded = escapeUri( "../../surefire-its/target/junit-pathWithÜmlaut_1/target/surefire", UTF_8 );
+        String decoded = URLDecoder.decode( encoded, UTF_8.name() );
+        assertThat( decoded )
+                .isEqualTo( source );
     }
 
     @Test
@@ -218,6 +275,6 @@ public class JarManifestForkConfigurationTest
         ClasspathElementUri testDirUriPath = toClasspathElementUri( parentDir, testDir, dumpDirectory, true );
 
         assertThat( testDirUriPath.uri )
-                .isEqualTo( "../@3%20test%20with%20white%20spaces" );
+                .isEqualTo( "../%403%20test%20with%20white%20spaces" );
     }
 }

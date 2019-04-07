@@ -31,6 +31,7 @@
   <properties>
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
+    <skipCompiler>false</skipCompiler>
   </properties>
 
   <dependencies>
@@ -52,6 +53,14 @@
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>
           <version>3.0.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.8.1</version>
+          <configuration>
+            <skip>${skipCompiler}</skip>
+            <skipMain>${skipCompiler}</skipMain>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>

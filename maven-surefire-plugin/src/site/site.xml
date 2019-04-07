@@ -43,6 +43,7 @@
       <item name="Using JUnit 5 Platform" href="examples/junit-platform.html"/>
       <item name="Using POJO Tests" href="examples/pojo-test.html"/>
       <item name="Using Cucumber" href="examples/cucumber.html"/>
+      <item name="Special characters in directories" href="examples/cwd.html"/>
       <item name="Skipping Tests" href="examples/skipping-tests.html"/>
       <item name="Skip After Failure" href="examples/skip-after-failure.html"/>
       <item name="Inclusions and Exclusions of Tests" href="examples/inclusion-exclusion.html"/>

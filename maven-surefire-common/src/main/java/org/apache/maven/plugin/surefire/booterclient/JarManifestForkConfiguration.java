@@ -31,8 +31,9 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
@@ -43,8 +44,11 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.isDirectory;
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
+import static org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.ClasspathElementUri.absolute;
+import static org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.ClasspathElementUri.relative;
 import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 
 /**
@@ -168,14 +172,11 @@ public final class JarManifestForkConfiguration
                                          @Nonnull Path classPathElement,
                                          @Nonnull File dumpLogDirectory,
                                          boolean dumpError )
-            throws IOException
     {
         try
         {
-            String relativeUriPath = relativize( parent, classPathElement )
-                    .replace( '\\', '/' );
-
-            return new ClasspathElementUri( new URI( null, relativeUriPath, null ) );
+            String relativePath = relativize( parent, classPathElement );
+            return relative( escapeUri( relativePath, UTF_8 ) );
         }
         catch ( IllegalArgumentException e )
         {
@@ -190,15 +191,7 @@ public final class JarManifestForkConfiguration
                         .dumpStreamText( error, dumpLogDirectory );
             }
 
-            return new ClasspathElementUri( toAbsoluteUri( classPathElement ) );
-        }
-        catch ( URISyntaxException e )
-        {
-            // This is really unexpected, so fail
-            throw new IOException( "Could not create a relative path "
-                    + classPathElement
-                    + " against "
-                    + parent, e );
+            return absolute( toAbsoluteUri( classPathElement ) );
         }
     }
 
@@ -207,16 +200,37 @@ public final class JarManifestForkConfiguration
         final String uri;
         final boolean absolute;
 
-        ClasspathElementUri( String uri )
+        private ClasspathElementUri( String uri, boolean absolute )
         {
             this.uri = uri;
-            absolute = true;
+            this.absolute = absolute;
         }
 
-        ClasspathElementUri( URI uri )
+        static ClasspathElementUri absolute( String uri )
         {
-            this.uri = uri.toASCIIString();
-            absolute = false;
+            return new ClasspathElementUri( uri, true );
+        }
+
+        static ClasspathElementUri relative( String uri )
+        {
+            return new ClasspathElementUri( uri, false );
+        }
+    }
+
+    static String escapeUri( String input, Charset encoding )
+    {
+        try
+        {
+            String uriFormEncoded = URLEncoder.encode( input, encoding.name() );
+
+            String uriPathEncoded = uriFormEncoded.replaceAll( "\\+", "%20" );
+            uriPathEncoded = uriPathEncoded.replaceAll( "%2F|%5C", "/" );
+
+            return uriPathEncoded;
+        }
+        catch ( UnsupportedEncodingException e )
+        {
+            throw new IllegalStateException( "avoided by using Charset" );
         }
     }
 }
