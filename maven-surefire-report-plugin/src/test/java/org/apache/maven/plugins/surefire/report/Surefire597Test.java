@@ -19,10 +19,10 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
+import junit.framework.TestCase;
 import org.apache.maven.doxia.module.xhtml.XhtmlSink;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
-import org.junit.Test;
 
 import java.io.File;
 import java.io.StringWriter;
@@ -37,9 +37,9 @@ import static org.apache.maven.plugins.surefire.report.Utils.toSystemNewLine;
  * Prevent fom NPE if failure type and message is null however detail presents.
  */
 public class Surefire597Test
+        extends TestCase
 {
-    @Test
-    public void corruptedTestCaseFailureWithMissingErrorTypeAndMessage()
+    public void testCorruptedTestCaseFailureWithMissingErrorTypeAndMessage()
         throws Exception
     {
         File basedir = new File( "." ).getCanonicalFile();

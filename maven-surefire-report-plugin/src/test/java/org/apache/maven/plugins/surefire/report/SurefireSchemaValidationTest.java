@@ -28,20 +28,20 @@ import java.nio.file.Paths;
 
 import javax.xml.transform.stream.StreamSource;
 
+import junit.framework.TestCase;
 import org.apache.maven.shared.utils.io.DirectoryScanner;
 import org.fest.assertions.Assertions;
 import org.junit.Assert;
-import org.junit.Test;
 import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationProblem;
 import org.xmlunit.validation.ValidationResult;
 import org.xmlunit.validation.Validator;
 
 public class SurefireSchemaValidationTest
+        extends TestCase
 {
 
-    @Test
-    public void validate_XMLs_against_schema()
+    public void testValidate_XMLs_against_schema()
         throws Exception
     {
         File basedir = getProjectBasedir();

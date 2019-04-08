@@ -185,6 +185,13 @@
                         <classpathDependencyExclude>org.fusesource.jansi:jansi</classpathDependencyExclude>
                     </classpathDependencyExcludes>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.surefire</groupId>
+                        <artifactId>surefire-shadefire</artifactId>
+                        <version>3.0.0-M3</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
