@@ -38,7 +38,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicMarkableReference;
 
 import static java.lang.Math.max;
 import static java.lang.Thread.currentThread;
@@ -62,6 +62,8 @@ public final class ForkedBooter
 {
     private static final long DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS = 30L;
     private static final long PING_TIMEOUT_IN_SECONDS = 30L;
+    private static final long PING_TIMEOUT_MAX_DELAY_IN_SECONDS = 15L; // due to GC pauses
+    private static final long PING_MAX_TIMEOUT_IN_SECONDS = PING_TIMEOUT_IN_SECONDS + PING_TIMEOUT_MAX_DELAY_IN_SECONDS;
     private static final long ONE_SECOND_IN_MILLIS = 1000L;
     private static final String LAST_DITCH_SHUTDOWN_THREAD = "surefire-forkedjvm-last-ditch-daemon-shutdown-thread-";
     private static final String PING_THREAD = "surefire-forkedjvm-ping-";
@@ -175,7 +177,7 @@ public final class ForkedBooter
     private PingScheduler listenToShutdownCommands( Long ppid )
     {
         commandReader.addShutdownListener( createExitHandler() );
-        AtomicBoolean pingDone = new AtomicBoolean( true );
+        AtomicMarkableReference<Long> pingDone = new AtomicMarkableReference<>( System.currentTimeMillis(), true );
         commandReader.addNoopListener( createPingHandler( pingDone ) );
 
         PingScheduler pingMechanisms = new PingScheduler( createPingScheduler(),
@@ -219,14 +221,14 @@ public final class ForkedBooter
         };
     }
 
-    private CommandListener createPingHandler( final AtomicBoolean pingDone )
+    private CommandListener createPingHandler( final AtomicMarkableReference<Long> pingDone )
     {
         return new CommandListener()
         {
             @Override
             public void update( Command command )
             {
-                pingDone.set( true );
+                pingDone.set( System.currentTimeMillis(), true );
             }
         };
     }
@@ -257,7 +259,8 @@ public final class ForkedBooter
         };
     }
 
-    private Runnable createPingJob( final AtomicBoolean pingDone, final PpidChecker pluginProcessChecker  )
+    private Runnable createPingJob( final AtomicMarkableReference<Long> pingDone,
+                                    final PpidChecker pluginProcessChecker  )
     {
         return new Runnable()
         {
@@ -266,8 +269,17 @@ public final class ForkedBooter
             {
                 if ( !canUseNewPingMechanism( pluginProcessChecker ) )
                 {
-                    boolean hasPing = pingDone.getAndSet( false );
-                    if ( !hasPing )
+                    boolean hasPing;
+                    long lastCheck;
+                    do
+                    {
+                        hasPing = pingDone.isMarked();
+                        lastCheck = pingDone.getReference();
+                    } while ( pingDone.compareAndSet( lastCheck, lastCheck, hasPing, false ) );
+
+                    boolean longGcPausesDetected = System.currentTimeMillis() - lastCheck > PING_MAX_TIMEOUT_IN_SECONDS;
+
+                    if ( !longGcPausesDetected && !hasPing )
                     {
                         DumpErrorSingleton.getSingleton()
                                 .dumpText( "Killing self fork JVM. PING timeout elapsed." );
