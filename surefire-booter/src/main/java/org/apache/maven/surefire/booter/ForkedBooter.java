@@ -38,7 +38,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicMarkableReference;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.Math.max;
 import static java.lang.Thread.currentThread;
@@ -61,10 +62,11 @@ import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDae
 public final class ForkedBooter
 {
     private static final long DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS = 30L;
-    private static final long PING_TIMEOUT_IN_SECONDS = 30L;
-    private static final long PING_TIMEOUT_MAX_DELAY_IN_SECONDS = 15L; // due to GC pauses
-    private static final long PING_MAX_TIMEOUT_IN_SECONDS = PING_TIMEOUT_IN_SECONDS + PING_TIMEOUT_MAX_DELAY_IN_SECONDS;
+    private static final long PING_HALFPERIOD_IN_SECONDS = 15L;
+    private static final long PING_TIMEOUT_MAX_DELAY_IN_MILLIS = 7500L; // due to GC pauses
     private static final long ONE_SECOND_IN_MILLIS = 1000L;
+    private static final long PING_MAX_TIMEOUT_IN_MILLIS =
+            PING_HALFPERIOD_IN_SECONDS * ONE_SECOND_IN_MILLIS + PING_TIMEOUT_MAX_DELAY_IN_MILLIS;
     private static final String LAST_DITCH_SHUTDOWN_THREAD = "surefire-forkedjvm-last-ditch-daemon-shutdown-thread-";
     private static final String PING_THREAD = "surefire-forkedjvm-ping-";
 
@@ -177,8 +179,8 @@ public final class ForkedBooter
     private PingScheduler listenToShutdownCommands( Long ppid )
     {
         commandReader.addShutdownListener( createExitHandler() );
-        AtomicMarkableReference<Long> pingDone = new AtomicMarkableReference<>( System.currentTimeMillis(), true );
-        commandReader.addNoopListener( createPingHandler( pingDone ) );
+        PingPeriod pingPeriod = new PingPeriod();
+        commandReader.addNoopListener( createPingHandler( pingPeriod ) );
 
         PingScheduler pingMechanisms = new PingScheduler( createPingScheduler(),
                                                           ppid == null ? null : new PpidChecker( ppid ) );
@@ -187,8 +189,8 @@ public final class ForkedBooter
             Runnable checkerJob = processCheckerJob( pingMechanisms );
             pingMechanisms.pingScheduler.scheduleWithFixedDelay( checkerJob, 0L, 1L, SECONDS );
         }
-        Runnable pingJob = createPingJob( pingDone, pingMechanisms.pluginProcessChecker );
-        pingMechanisms.pingScheduler.scheduleWithFixedDelay( pingJob, 0L, PING_TIMEOUT_IN_SECONDS, SECONDS );
+        Runnable pingJob = createPingJob( pingPeriod, pingMechanisms.pluginProcessChecker );
+        pingMechanisms.pingScheduler.scheduleWithFixedDelay( pingJob, 0L, PING_HALFPERIOD_IN_SECONDS, SECONDS );
 
         return pingMechanisms;
     }
@@ -221,14 +223,14 @@ public final class ForkedBooter
         };
     }
 
-    private CommandListener createPingHandler( final AtomicMarkableReference<Long> pingDone )
+    private CommandListener createPingHandler( final PingPeriod pingPeriod )
     {
         return new CommandListener()
         {
             @Override
             public void update( Command command )
             {
-                pingDone.set( System.currentTimeMillis(), true );
+                pingPeriod.pingDone.set( true );
             }
         };
     }
@@ -259,8 +261,7 @@ public final class ForkedBooter
         };
     }
 
-    private Runnable createPingJob( final AtomicMarkableReference<Long> pingDone,
-                                    final PpidChecker pluginProcessChecker  )
+    private Runnable createPingJob( final PingPeriod pingPeriod, final PpidChecker pluginProcessChecker  )
     {
         return new Runnable()
         {
@@ -269,22 +270,26 @@ public final class ForkedBooter
             {
                 if ( !canUseNewPingMechanism( pluginProcessChecker ) )
                 {
-                    boolean hasPing;
-                    long lastCheck;
-                    do
+                    int periodCounter = pingPeriod.pingTimeoutCounter.getAndIncrement();
+                    if ( periodCounter % 2 == 0 )
                     {
-                        hasPing = pingDone.isMarked();
-                        lastCheck = pingDone.getReference();
-                    } while ( pingDone.compareAndSet( lastCheck, lastCheck, hasPing, false ) );
+                        boolean longGcPausesDetected = pingPeriod.firstHalfPeriod >= PING_MAX_TIMEOUT_IN_MILLIS;
+                        pingPeriod.periodStartTime = System.currentTimeMillis();
+                        longGcPausesDetected |=
+                                pingPeriod.periodStartTime - pingPeriod.halfPeriodTime >= PING_MAX_TIMEOUT_IN_MILLIS;
+                        boolean hasPing = pingPeriod.pingDone.getAndSet( false );
+                        if ( !longGcPausesDetected && hasPing )
+                        {
+                            DumpErrorSingleton.getSingleton()
+                                    .dumpText( "Killing self fork JVM. PING timeout elapsed." );
 
-                    boolean longGcPausesDetected = System.currentTimeMillis() - lastCheck > PING_MAX_TIMEOUT_IN_SECONDS;
-
-                    if ( !longGcPausesDetected && !hasPing )
+                            kill();
+                        }
+                    }
+                    else
                     {
-                        DumpErrorSingleton.getSingleton()
-                                .dumpText( "Killing self fork JVM. PING timeout elapsed." );
-
-                        kill();
+                        pingPeriod.halfPeriodTime = System.currentTimeMillis();
+                        pingPeriod.firstHalfPeriod = pingPeriod.halfPeriodTime - pingPeriod.periodStartTime;
                     }
                 }
             }
@@ -436,7 +441,7 @@ public final class ForkedBooter
 
     private static ScheduledExecutorService createPingScheduler()
     {
-        ThreadFactory threadFactory = newDaemonThreadFactory( PING_THREAD + PING_TIMEOUT_IN_SECONDS + "s" );
+        ThreadFactory threadFactory = newDaemonThreadFactory( PING_THREAD + PING_HALFPERIOD_IN_SECONDS + "s" );
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor( 1, threadFactory );
         executor.setKeepAliveTime( 3L, SECONDS );
         executor.setMaximumPoolSize( 2 );
@@ -485,6 +490,22 @@ public final class ForkedBooter
         boolean isShutdown()
         {
             return pingScheduler.isShutdown();
+        }
+    }
+
+    private static class PingPeriod
+    {
+        private final AtomicInteger pingTimeoutCounter = new AtomicInteger();
+        private final AtomicBoolean pingDone = new AtomicBoolean();
+        private volatile long halfPeriodTime;
+        private volatile long periodStartTime;
+        private volatile long firstHalfPeriod;
+
+        private PingPeriod()
+        {
+            long now = System.currentTimeMillis();
+            periodStartTime = now;
+            halfPeriodTime = now;
         }
     }
 }
