@@ -29,6 +29,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.security.AccessControlException;
@@ -39,7 +40,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.Math.max;
 import static java.lang.Thread.currentThread;
@@ -48,6 +48,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.setSystemProperties;
 import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
+import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 
 /**
  * The part of the booter that is unique to a forked vm.
@@ -62,13 +63,11 @@ import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDae
 public final class ForkedBooter
 {
     private static final long DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS = 30L;
-    private static final long PING_HALFPERIOD_IN_SECONDS = 15L;
-    private static final long PING_TIMEOUT_MAX_DELAY_IN_MILLIS = 7500L; // due to GC pauses
+    private static final long PING_TIMEOUT_IN_SECONDS = 30L;
     private static final long ONE_SECOND_IN_MILLIS = 1000L;
-    private static final long PING_MAX_TIMEOUT_IN_MILLIS =
-            PING_HALFPERIOD_IN_SECONDS * ONE_SECOND_IN_MILLIS + PING_TIMEOUT_MAX_DELAY_IN_MILLIS;
     private static final String LAST_DITCH_SHUTDOWN_THREAD = "surefire-forkedjvm-last-ditch-daemon-shutdown-thread-";
     private static final String PING_THREAD = "surefire-forkedjvm-ping-";
+    private static final double GC_FACTOR = 0.75d;
 
     private final CommandReader commandReader = CommandReader.getReader();
     private final ForkedChannelEncoder eventChannel = new ForkedChannelEncoder( System.out );
@@ -190,7 +189,7 @@ public final class ForkedBooter
             pingMechanisms.pingScheduler.scheduleWithFixedDelay( checkerJob, 0L, 1L, SECONDS );
         }
         Runnable pingJob = createPingJob( pingPeriod, pingMechanisms.pluginProcessChecker );
-        pingMechanisms.pingScheduler.scheduleWithFixedDelay( pingJob, 0L, PING_HALFPERIOD_IN_SECONDS, SECONDS );
+        pingMechanisms.pingScheduler.scheduleWithFixedDelay( pingJob, 0L, PING_TIMEOUT_IN_SECONDS, SECONDS );
 
         return pingMechanisms;
     }
@@ -270,26 +269,17 @@ public final class ForkedBooter
             {
                 if ( !canUseNewPingMechanism( pluginProcessChecker ) )
                 {
-                    int periodCounter = pingPeriod.pingTimeoutCounter.getAndIncrement();
-                    if ( periodCounter % 2 == 0 )
+                    final long lastGcPeriod = pingPeriod.lastGcPeriod();
+                    final boolean longGcPausesDetected = lastGcPeriod > GC_FACTOR * PING_TIMEOUT_IN_SECONDS;
+                    final boolean hasPing = pingPeriod.pingDone.getAndSet( false );
+                    if ( !longGcPausesDetected && hasPing )
                     {
-                        boolean longGcPausesDetected = pingPeriod.firstHalfPeriod >= PING_MAX_TIMEOUT_IN_MILLIS;
-                        pingPeriod.periodStartTime = System.currentTimeMillis();
-                        longGcPausesDetected |=
-                                pingPeriod.periodStartTime - pingPeriod.halfPeriodTime >= PING_MAX_TIMEOUT_IN_MILLIS;
-                        boolean hasPing = pingPeriod.pingDone.getAndSet( false );
-                        if ( !longGcPausesDetected && hasPing )
-                        {
-                            DumpErrorSingleton.getSingleton()
-                                    .dumpText( "Killing self fork JVM. PING timeout elapsed." );
+                        DumpErrorSingleton.getSingleton()
+                                .dumpText( "Killing self fork JVM. PING timeout elapsed."
+                                        + NL
+                                        + "lastGcPeriod = " + lastGcPeriod + " millis" );
 
-                            kill();
-                        }
-                    }
-                    else
-                    {
-                        pingPeriod.halfPeriodTime = System.currentTimeMillis();
-                        pingPeriod.firstHalfPeriod = pingPeriod.halfPeriodTime - pingPeriod.periodStartTime;
+                        kill();
                     }
                 }
             }
@@ -441,7 +431,7 @@ public final class ForkedBooter
 
     private static ScheduledExecutorService createPingScheduler()
     {
-        ThreadFactory threadFactory = newDaemonThreadFactory( PING_THREAD + PING_HALFPERIOD_IN_SECONDS + "s" );
+        ThreadFactory threadFactory = newDaemonThreadFactory( PING_THREAD + PING_TIMEOUT_IN_SECONDS + "s" );
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor( 1, threadFactory );
         executor.setKeepAliveTime( 3L, SECONDS );
         executor.setMaximumPoolSize( 2 );
@@ -495,17 +485,24 @@ public final class ForkedBooter
 
     private static class PingPeriod
     {
-        private final AtomicInteger pingTimeoutCounter = new AtomicInteger();
         private final AtomicBoolean pingDone = new AtomicBoolean();
-        private volatile long halfPeriodTime;
-        private volatile long periodStartTime;
-        private volatile long firstHalfPeriod;
+        private volatile long accumulatedCollectionElapsedTime;
 
         private PingPeriod()
         {
-            long now = System.currentTimeMillis();
-            periodStartTime = now;
-            halfPeriodTime = now;
+            lastGcPeriod();
+        }
+
+        private long lastGcPeriod()
+        {
+            final long lastAccumulatedGcTime = accumulatedCollectionElapsedTime;
+            long currentAccumulatedGcTime = 0L;
+            for ( GarbageCollectorMXBean gc : ManagementFactory.getGarbageCollectorMXBeans() )
+            {
+                currentAccumulatedGcTime = max( currentAccumulatedGcTime, gc.getCollectionTime() );
+            }
+            accumulatedCollectionElapsedTime = currentAccumulatedGcTime;
+            return currentAccumulatedGcTime - lastAccumulatedGcTime;
         }
     }
 }
