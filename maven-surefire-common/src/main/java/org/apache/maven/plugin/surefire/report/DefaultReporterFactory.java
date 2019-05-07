@@ -175,10 +175,13 @@ public class DefaultReporterFactory
 
     public void runStarting()
     {
-        log( "" );
-        log( "-------------------------------------------------------" );
-        log( " T E S T S" );
-        log( "-------------------------------------------------------" );
+        if ( reportConfiguration.isPrintSummary() )
+        {
+            log( "" );
+            log( "-------------------------------------------------------" );
+            log( " T E S T S" );
+            log( "-------------------------------------------------------" );
+        }
     }
 
     private void runCompleted()
@@ -192,14 +195,17 @@ public class DefaultReporterFactory
         boolean printedFailures = printTestFailures( failure );
         boolean printedErrors = printTestFailures( error );
         boolean printedFlakes = printTestFailures( flake );
-        if ( printedFailures | printedErrors | printedFlakes )
+        if ( reportConfiguration.isPrintSummary() )
         {
+            if ( printedFailures | printedErrors | printedFlakes )
+            {
+                log( "" );
+            }
+            boolean hasSuccessful = globalStats.getCompletedCount() > 0;
+            boolean hasSkipped = globalStats.getSkipped() > 0;
+            log( globalStats.getSummary(), hasSuccessful, printedFailures, printedErrors, hasSkipped, printedFlakes );
             log( "" );
         }
-        boolean hasSuccessful = globalStats.getCompletedCount() > 0;
-        boolean hasSkipped = globalStats.getSkipped() > 0;
-        log( globalStats.getSummary(), hasSuccessful, printedFailures, printedErrors, hasSkipped, printedFlakes );
-        log( "" );
     }
 
     public RunStatistics getGlobalRunStatistics()
