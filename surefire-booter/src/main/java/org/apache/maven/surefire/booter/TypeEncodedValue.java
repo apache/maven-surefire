@@ -22,6 +22,7 @@ package org.apache.maven.surefire.booter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Properties;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
@@ -30,7 +31,7 @@ import static org.apache.maven.surefire.util.ReflectionUtils.loadClass;
 /**
  * @author Kristian Rosenvold
  */
-public class TypeEncodedValue
+public final class TypeEncodedValue
 {
     private final String type;
     private final String value;
@@ -41,7 +42,7 @@ public class TypeEncodedValue
         this.value = value;
     }
 
-    public boolean isTypeClass()
+    private boolean isTypeClass()
     {
         return Class.class.getName().equals( type );
     }
@@ -111,7 +112,6 @@ public class TypeEncodedValue
         TypeEncodedValue that = (TypeEncodedValue) o;
 
         return equalsType( that ) && equalsValue( that );
-
     }
 
     @Override
@@ -122,13 +122,19 @@ public class TypeEncodedValue
         return result;
     }
 
+    @Override
+    public String toString()
+    {
+        return "TypeEncodedValue{" + "type='" + type + '\'' + ", value='" + value + '\'' + '}';
+    }
+
     private boolean equalsType( TypeEncodedValue that )
     {
-        return type == null ? that.type == null : type.equals( that.type );
+        return Objects.equals( type, that.type );
     }
 
     private boolean equalsValue( TypeEncodedValue that )
     {
-        return value == null ? that.value == null : value.equals( that.value );
+        return Objects.equals( value, that.value );
     }
 }
