@@ -162,14 +162,6 @@
                             <goal>restore-instrumented-classes</goal>
                         </goals>
                     </execution>
-                    <execution>
-                        <!--todo remove-->
-                        <id>jacoco-report</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
                 </executions>
             </plugin>
             <plugin>

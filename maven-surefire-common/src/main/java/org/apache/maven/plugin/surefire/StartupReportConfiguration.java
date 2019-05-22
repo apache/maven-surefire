@@ -28,12 +28,9 @@ import org.apache.maven.plugin.surefire.report.TestSetStats;
 import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
-import org.apache.maven.surefire.extensions.ConsoleOutputReporter;
 import org.apache.maven.surefire.extensions.StatelessReportEventListener;
-import org.apache.maven.surefire.extensions.StatelessReporter;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
-import org.apache.maven.surefire.extensions.StatelessTestsetInfoReporter;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -91,7 +88,7 @@ public final class StartupReportConfiguration
 
     private final SurefireStatelessReporter xmlReporter;
 
-    private final ConsoleOutputReporter consoleOutputReporter;
+    private final SurefireConsoleOutputReporter consoleOutputReporter;
 
     private final SurefireStatelessTestsetInfoReporter testsetReporter;
 
@@ -256,17 +253,17 @@ public final class StartupReportConfiguration
         return forkNumber == null ? reportsDirectory : replaceForkThreadsInPath( reportsDirectory, forkNumber );
     }
 
-    public StatelessReporter<WrappedReportEntry, TestSetStats, DefaultStatelessReportMojoConfiguration> getXmlReporter()
+    public SurefireStatelessReporter getXmlReporter()
     {
         return xmlReporter;
     }
 
-    public ConsoleOutputReporter getConsoleOutputReporter()
+    public SurefireConsoleOutputReporter getConsoleOutputReporter()
     {
         return consoleOutputReporter;
     }
 
-    public StatelessTestsetInfoReporter<WrappedReportEntry, TestSetStats> getTestsetReporter()
+    public SurefireStatelessTestsetInfoReporter getTestsetReporter()
     {
         return testsetReporter;
     }
