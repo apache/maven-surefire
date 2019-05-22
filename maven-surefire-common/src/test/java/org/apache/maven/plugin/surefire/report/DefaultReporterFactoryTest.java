@@ -35,6 +35,7 @@ import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.report.StackTraceWriter;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.error;
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.failure;
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.flake;
@@ -44,6 +45,7 @@ import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.Tes
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.getTestResultType;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.powermock.reflect.Whitebox.invokeMethod;
 
 public class DefaultReporterFactoryTest
     extends TestCase
@@ -63,6 +65,7 @@ public class DefaultReporterFactoryTest
     private final static String ERROR = "error";
 
     public void testMergeTestHistoryResult()
+            throws Exception
     {
         MessageUtils.setColorEnabled( false );
         File reportsDirectory = new File("target");
@@ -111,7 +114,7 @@ public class DefaultReporterFactoryTest
         factory.addListener( secondRunListener );
         factory.addListener( thirdRunListener );
 
-        factory.mergeTestHistoryResult();
+        invokeMethod( factory, "mergeTestHistoryResult" );
         RunStatistics mergedStatistics = factory.getGlobalRunStatistics();
 
         // Only TEST_THREE is a failing test, other three are flaky tests
@@ -132,14 +135,12 @@ public class DefaultReporterFactoryTest
         reporter.reset();
         factory.printTestFailures( error );
         String[] expectedFailureOutput =
-            { "Errors: ", TEST_THREE, "  Run 1: " + ASSERTION_FAIL, "  Run 2: " + ERROR, "  Run 3: " + ERROR, ""
-            };
+            { "Errors: ", TEST_THREE, "  Run 1: " + ASSERTION_FAIL, "  Run 2: " + ERROR, "  Run 3: " + ERROR, "" };
         assertEquals( asList( expectedFailureOutput ), reporter.getMessages() );
 
         reporter.reset();
         factory.printTestFailures( failure );
-        String[] expectedErrorOutput = { };
-        assertEquals( asList( expectedErrorOutput ), reporter.getMessages() );
+        assertEquals( emptyList(), reporter.getMessages() );
     }
 
     static final class DummyTestReporter implements ConsoleLogger

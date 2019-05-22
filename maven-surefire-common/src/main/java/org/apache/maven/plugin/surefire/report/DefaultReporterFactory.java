@@ -272,7 +272,7 @@ public class DefaultReporterFactory
      * Merge all the TestMethodStats in each TestRunListeners and put results into flakyTests, failedTests and
      * errorTests, indexed by test class and method name. Update globalStatistics based on the result of the merge.
      */
-    void mergeTestHistoryResult()
+    private void mergeTestHistoryResult()
     {
         globalStats = new RunStatistics();
         flakyTests = new TreeMap<>();
@@ -388,7 +388,6 @@ public class DefaultReporterFactory
 
         for ( Map.Entry<String, List<TestMethodStats>> entry : testStats.entrySet() )
         {
-            printed = true;
             List<TestMethodStats> testMethodStats = entry.getValue();
             if ( testMethodStats.size() == 1 )
             {

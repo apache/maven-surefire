@@ -40,7 +40,7 @@ public final class ThreadedStreamConsumer
 {
     private static final String END_ITEM = "";
 
-    private static final int ITEM_LIMIT_BEFORE_SLEEP = 10 * 1000;
+    private static final int ITEM_LIMIT_BEFORE_SLEEP = 10_000;
 
     private final BlockingQueue<String> items = new ArrayBlockingQueue<>( ITEM_LIMIT_BEFORE_SLEEP );
 
