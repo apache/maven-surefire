@@ -3159,7 +3159,7 @@ public abstract class AbstractSurefireMojo
         public Set<Artifact> getProviderClasspath()
         {
             return surefireDependencyResolver.addProviderToClasspath( getPluginArtifactMap(), getMojoArtifact(),
-                    getCommonArtifact(), getApiArtifact(), getLoggerApiArtifact() );
+                    getApiArtifact(), getLoggerApiArtifact() );
         }
     }
 
