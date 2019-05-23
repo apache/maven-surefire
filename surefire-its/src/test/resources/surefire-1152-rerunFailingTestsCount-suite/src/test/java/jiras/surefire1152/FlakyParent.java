@@ -29,17 +29,16 @@ import static org.junit.Assert.fail;
 public class FlakyParent
 {
     // set of test classes which have previously invoked testFlakyParent
-    private static final Set<Class<?>> previouslyRun = new HashSet<Class<?>>();
+    private static final Set<Class<?>> PREVIOUSLY_RUN = new HashSet<>();
 
     @Test
     public void testFlakyParent()
     {
         Class<?> clazz = getClass();
-        if ( !previouslyRun.contains( clazz ) )
+        if ( !PREVIOUSLY_RUN.contains( clazz ) )
         {
-            previouslyRun.add( clazz );
+            PREVIOUSLY_RUN.add( clazz );
             fail( "deliberately flaky test (should pass the next time)" );
         }
     }
-
 }

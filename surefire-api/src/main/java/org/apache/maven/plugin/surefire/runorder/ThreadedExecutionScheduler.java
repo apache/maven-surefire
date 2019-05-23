@@ -42,7 +42,7 @@ public class ThreadedExecutionScheduler
         lists = new List[numThreads];
         for ( int i = 0; i < numThreads; i++ )
         {
-            lists[i] = new ArrayList<Class<?>>();
+            lists[i] = new ArrayList<>();
         }
     }
 
@@ -56,7 +56,7 @@ public class ThreadedExecutionScheduler
 
     public List<Class<?>> getResult()
     {
-        List<Class<?>> result = new ArrayList<Class<?>>();
+        List<Class<?>> result = new ArrayList<>();
         int index = 0;
         boolean added;
         do

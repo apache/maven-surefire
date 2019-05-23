@@ -98,7 +98,7 @@ final class GroupMatcherCategoryFilter
         }
         else
         {
-            Set<Class<?>> cats = new HashSet<Class<?>>();
+            Set<Class<?>> cats = new HashSet<>();
             Category cat = description.getAnnotation( Category.class );
             if ( cat != null )
             {

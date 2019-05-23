@@ -46,7 +46,7 @@ public class RunEntryStatisticsMapTest
     public void testPrioritizedClassRuntime()
     {
         final RunEntryStatisticsMap runEntryStatisticsMap = RunEntryStatisticsMap.fromStream( getStatisticsFile() );
-        final List<Class<?>> list = Arrays.<Class<?>>asList( A.class, B.class, C.class );
+        final List<Class<?>> list = Arrays.asList( A.class, B.class, C.class );
         final List<Class<?>> prioritizedTestsClassRunTime =
             runEntryStatisticsMap.getPrioritizedTestsClassRunTime( list, 2 );
         assertEquals( C.class, prioritizedTestsClassRunTime.get( 0 ) );
@@ -57,7 +57,7 @@ public class RunEntryStatisticsMapTest
     public void testPrioritizedFailureFirst()
     {
         final RunEntryStatisticsMap runEntryStatisticsMap = RunEntryStatisticsMap.fromStream( getStatisticsFile() );
-        final List<Class<?>> list = Arrays.<Class<?>>asList( A.class, B.class, NewClass.class, C.class );
+        final List<Class<?>> list = Arrays.asList( A.class, B.class, NewClass.class, C.class );
         final List<Class<?>> prioritizedTestsClassRunTime =
             runEntryStatisticsMap.getPrioritizedTestsByFailureFirst( list );
         assertEquals( A.class, prioritizedTestsClassRunTime.get( 0 ) );

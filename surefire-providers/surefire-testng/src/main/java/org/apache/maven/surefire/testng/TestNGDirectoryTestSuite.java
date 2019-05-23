@@ -167,8 +167,8 @@ final class TestNGDirectoryTestSuite
     private void executeMulti( TestsToRun testsToRun, RunListener reporterManager )
         throws TestSetFailedException
     {
-        List<Class<?>> testNgTestClasses = new ArrayList<Class<?>>();
-        List<Class<?>> junitTestClasses = new ArrayList<Class<?>>();
+        List<Class<?>> testNgTestClasses = new ArrayList<>();
+        List<Class<?>> junitTestClasses = new ArrayList<>();
         for ( Class<?> testToRun : testsToRun )
         {
             if ( isJUnitTest( testToRun ) )

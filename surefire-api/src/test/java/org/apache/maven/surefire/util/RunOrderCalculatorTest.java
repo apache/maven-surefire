@@ -45,7 +45,7 @@ public class RunOrderCalculatorTest
 
     private Set<Class<?>> getClassesToRun()
     {
-        Set<Class<?>> classesToRun = new LinkedHashSet<Class<?>>();
+        Set<Class<?>> classesToRun = new LinkedHashSet<>();
         classesToRun.add( B.class );
         classesToRun.add( A.class );
         return classesToRun;

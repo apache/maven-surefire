@@ -57,7 +57,7 @@ public class DefaultRunOrderCalculator
     @SuppressWarnings( "checkstyle:magicnumber" )
     public TestsToRun orderTestClasses( TestsToRun scannedClasses )
     {
-        List<Class<?>> result = new ArrayList<Class<?>>( 512 );
+        List<Class<?>> result = new ArrayList<>( 512 );
 
         for ( Class<?> scannedClass : scannedClasses )
         {
@@ -65,7 +65,7 @@ public class DefaultRunOrderCalculator
         }
 
         orderTestClasses( result, runOrder.length != 0 ? runOrder[0] : null );
-        return new TestsToRun( new LinkedHashSet<Class<?>>( result ) );
+        return new TestsToRun( new LinkedHashSet<>( result ) );
     }
 
     private void orderTestClasses( List<Class<?>> testClasses, RunOrder runOrder )
