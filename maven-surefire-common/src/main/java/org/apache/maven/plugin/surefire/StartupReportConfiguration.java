@@ -35,10 +35,11 @@ import java.util.Deque;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.lang3.StringUtils.trimToNull;
 import static org.apache.maven.plugin.surefire.SurefireHelper.replaceForkThreadsInPath;
 import static org.apache.maven.plugin.surefire.report.ConsoleReporter.BRIEF;
 import static org.apache.maven.plugin.surefire.report.ConsoleReporter.PLAIN;
-import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 /**
  * All the parameters used to construct reporters
@@ -76,8 +77,7 @@ public final class StartupReportConfiguration
 
     private final String xsdSchemaLocation;
 
-    private final Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory
-        = new ConcurrentHashMap<>();
+    private final Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory = new ConcurrentHashMap<>();
 
     private final Charset encoding;
 
@@ -107,7 +107,7 @@ public final class StartupReportConfiguration
         this.rerunFailingTestsCount = rerunFailingTestsCount;
         this.xsdSchemaLocation = xsdSchemaLocation;
         String charset = trimToNull( encoding );
-        this.encoding = charset == null ? Charset.defaultCharset() : Charset.forName( charset );
+        this.encoding = charset == null ? UTF_8 : Charset.forName( charset );
         this.isForkMode = isForkMode;
     }
 
@@ -213,11 +213,6 @@ public final class StartupReportConfiguration
     public boolean isRequiresRunHistory()
     {
         return requiresRunHistory;
-    }
-
-    public PrintStream getOriginalSystemOut()
-    {
-        return originalSystemOut;
     }
 
     public String getXsdSchemaLocation()
