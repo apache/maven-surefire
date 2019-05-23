@@ -43,7 +43,7 @@ import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 public class ConsoleOutputFileReporter
     implements TestcycleConsoleOutputReceiver
 {
-    private static final int STREAM_BUFFER_SIZE = 16 * 1024;
+    private static final int STREAM_BUFFER_SIZE = 64 * 1024;
     private static final int OPEN = 0;
     private static final int CLOSED_TO_REOPEN = 1;
     private static final int CLOSED = 2;

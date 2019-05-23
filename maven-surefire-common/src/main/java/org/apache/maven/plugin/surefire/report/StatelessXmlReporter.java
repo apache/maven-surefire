@@ -331,7 +331,7 @@ public class StatelessXmlReporter
 
         try
         {
-            return new BufferedOutputStream( new FileOutputStream( reportFile ), 16 * 1024 );
+            return new BufferedOutputStream( new FileOutputStream( reportFile ), 64 * 1024 );
         }
         catch ( Exception e )
         {
