@@ -148,6 +148,53 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
+    public void rerunFailingCase()
+                    throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        ProviderParameters parameters = providerParametersMock();
+        // Mock the rerun variable
+        when( parameters.getTestRequest().getRerunFailingTestsCount() ).thenReturn( 2 );
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( parameters, launcher );
+        TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
+        launcher.registerTestExecutionListeners( executionListener );
+
+        // 3 unit tests:
+        // - fail always
+        // - fail twice (pass on 2nd rerun)
+        // - pass always
+        invokeProvider( provider, TestClass4.class );
+
+        assertThat( executionListener.summaries ).hasSize( 3 );
+        TestExecutionSummary summary = executionListener.summaries.get( 0 );
+        assertEquals( 3, summary.getTestsFoundCount() );
+        assertEquals( 3, summary.getTestsStartedCount() );
+        assertEquals( 0, summary.getTestsSkippedCount() );
+        assertEquals( 1, summary.getTestsSucceededCount() );
+        assertEquals( 0, summary.getTestsAbortedCount() );
+        assertEquals( 2, summary.getTestsFailedCount() );
+
+        // Should rerun both of the failures
+        summary = executionListener.summaries.get( 1 );
+        assertEquals( 2, summary.getTestsFoundCount() );
+        assertEquals( 2, summary.getTestsStartedCount() );
+        assertEquals( 0, summary.getTestsSkippedCount() );
+        assertEquals( 0, summary.getTestsSucceededCount() );
+        assertEquals( 0, summary.getTestsAbortedCount() );
+        assertEquals( 2, summary.getTestsFailedCount() );
+
+        // now only one failure should remain
+        summary = executionListener.summaries.get( 2 );
+        assertEquals( 2, summary.getTestsFoundCount() );
+        assertEquals( 2, summary.getTestsStartedCount() );
+        assertEquals( 0, summary.getTestsSkippedCount() );
+        assertEquals( 1, summary.getTestsSucceededCount() );
+        assertEquals( 0, summary.getTestsAbortedCount() );
+        assertEquals( 1, summary.getTestsFailedCount() );
+    }
+
+    @Test
     public void allDiscoveredTestsAreInvokedForNullArgument()
                     throws Exception
     {
@@ -705,6 +752,29 @@ public class JUnitPlatformProviderTest
         void prefix2Suffix2()
         {
             throw new RuntimeException();
+        }
+    }
+
+    static class TestClass4
+    {
+        static int count;
+
+        @org.junit.jupiter.api.Test
+        void testPass()
+        {
+        }
+
+        @org.junit.jupiter.api.Test
+        void testAlwaysFail()
+        {
+            assertTrue( false );
+        }
+
+        @org.junit.jupiter.api.Test
+        void testFailTwice()
+        {
+            count += 1;
+            assertTrue( count >= 3 );
         }
     }
 }

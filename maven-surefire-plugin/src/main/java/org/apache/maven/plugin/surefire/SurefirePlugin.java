@@ -245,7 +245,7 @@ public class SurefirePlugin
     private String encoding;
 
     /**
-     * (JUnit 4+ providers)
+     * (JUnit 4+ providers and JUnit 5+ providers since 3.0.0-M4)
      * The number of times each failing test will be rerun. If set larger than 0, rerun failing tests immediately after
      * they fail. If a failing test passes in any of those reruns, it will be marked as pass and reported as a "flake".
      * However, all the failing attempts will be recorded.

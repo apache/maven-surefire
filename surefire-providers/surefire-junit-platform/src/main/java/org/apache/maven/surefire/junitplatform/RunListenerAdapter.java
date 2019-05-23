@@ -47,6 +47,7 @@ final class RunListenerAdapter
     implements TestExecutionListener
 {
     private final ConcurrentMap<TestIdentifier, Long> testStartTime = new ConcurrentHashMap<>();
+    private final ConcurrentMap<TestIdentifier, TestExecutionResult> failures = new ConcurrentHashMap<>();
     private final RunListener runListener;
     private volatile TestPlan testPlan;
 
@@ -59,6 +60,7 @@ final class RunListenerAdapter
     public void testPlanExecutionStarted( TestPlan testPlan )
     {
         this.testPlan = testPlan;
+        failures.clear();
     }
 
     @Override
@@ -124,6 +126,7 @@ final class RunListenerAdapter
                     {
                         runListener.testError( createReportEntry( testIdentifier, testExecutionResult, elapsed ) );
                     }
+                    failures.put( testIdentifier, testExecutionResult );
                     break;
                 default:
                     if ( isTest )
@@ -211,6 +214,16 @@ final class RunListenerAdapter
         return new PojoStackTraceWriter( realClassName, realMethodName, throwable );
     }
 
+    private String[] toClassMethodName( TestIdentifier testIdentifier )
+    {
+        return toClassMethodName( testIdentifier, true );
+    }
+
+    public String[] toClassMethodNameWithoutPlan( TestIdentifier testIdentifier )
+    {
+        return toClassMethodName( testIdentifier, false );
+    }
+
     /**
      * <ul>
      *     <li>[0] class name - used in stacktrace parser</li>
@@ -220,9 +233,11 @@ final class RunListenerAdapter
      * </ul>
      *
      * @param testIdentifier a class or method
+     * @param usePlan {@code true} for using the test-plan to fetch sources.
+     *                {@code false} to rely on fallbacks.
      * @return 4 elements string array
      */
-    private String[] toClassMethodName( TestIdentifier testIdentifier )
+    private String[] toClassMethodName( TestIdentifier testIdentifier, boolean usePlan )
     {
         Optional<TestSource> testSource = testIdentifier.getSource();
         String display = testIdentifier.getDisplayName();
@@ -232,16 +247,24 @@ final class RunListenerAdapter
             MethodSource methodSource = testSource.map( MethodSource.class::cast ).get();
             String realClassName = methodSource.getClassName();
 
-            String[] source = testPlan.getParent( testIdentifier )
-                    .map( this::toClassMethodName )
-                    .map( s -> new String[] { s[0], s[1] } )
-                    .orElse( new String[] { realClassName, realClassName } );
+            String[] source;
+            if ( usePlan )
+            {
+               source = testPlan.getParent( testIdentifier )
+                        .map( i -> toClassMethodName( i, usePlan ) )
+                        .map( s -> new String[] { s[0], s[1] } )
+                        .orElse( new String[] { realClassName, realClassName } );
+            }
+            else
+            {
+                source = new String[] { realClassName, realClassName };
+            }
 
             String methodName = methodSource.getMethodName();
             boolean useMethod = display.equals( methodName ) || display.equals( methodName + "()" );
             String resolvedMethodName = useMethod ? methodName : display;
 
-            return new String[] { source[0], source[1], methodName, resolvedMethodName };
+            return new String[] {source[0], source[1], methodName, resolvedMethodName};
         }
         else if ( testSource.filter( ClassSource.class::isInstance ).isPresent() )
         {
@@ -249,14 +272,26 @@ final class RunListenerAdapter
             String className = classSource.getClassName();
             String simpleClassName = className.substring( 1 + className.lastIndexOf( '.' ) );
             String source = display.equals( simpleClassName ) ? className : display;
-            return new String[] { className, source, null, null };
+            return new String[] {className, source, null, null};
         }
         else
         {
-            String source = testPlan.getParent( testIdentifier )
-                    .map( TestIdentifier::getDisplayName )
-                    .orElse( display );
-            return new String[] { source, source, display, display };
+            String source = !usePlan ? display : testPlan.getParent( testIdentifier )
+                    .map( TestIdentifier::getDisplayName ).orElse( display );
+            return new String[] {source, source, display, display};
         }
+    }
+
+    /**
+     * @return Map of tests that failed.
+     */
+    public Map<TestIdentifier, TestExecutionResult> getFailures()
+    {
+        return failures;
+    }
+
+    public boolean hasFailingTests()
+    {
+        return !getFailures().isEmpty();
     }
 }

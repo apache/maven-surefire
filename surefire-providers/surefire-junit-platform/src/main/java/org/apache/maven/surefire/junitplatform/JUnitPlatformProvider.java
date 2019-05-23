@@ -31,6 +31,7 @@ import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture
 import static org.apache.maven.surefire.util.TestsToRun.fromClass;
 import static org.junit.platform.commons.util.StringUtils.isBlank;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
+import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMethod;
 import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
 
 import java.io.IOException;
@@ -60,6 +61,7 @@ import org.junit.platform.engine.Filter;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TagFilter;
+import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 
@@ -147,7 +149,26 @@ public class JUnitPlatformProvider
     private void invokeAllTests( TestsToRun testsToRun, RunListener runListener )
     {
         LauncherDiscoveryRequest discoveryRequest = buildLauncherDiscoveryRequest( testsToRun );
-        launcher.execute( discoveryRequest, new RunListenerAdapter( runListener ) );
+        RunListenerAdapter adapter = new RunListenerAdapter( runListener );
+        launcher.execute( discoveryRequest, adapter );
+        // Rerun failing tests if requested
+        int count = parameters.getTestRequest().getRerunFailingTestsCount();
+        if ( count > 0 && adapter.hasFailingTests() )
+        {
+            for ( int i = 0; i < count; i++ )
+            {
+                // Replace the "discoveryRequest" so that it only specifies the failing tests
+                discoveryRequest = buildLauncherDiscoveryRequestForRerunFailures( adapter );
+                // Reset adapter's recorded failures and invoke the failed tests again
+                adapter.getFailures().clear();
+                launcher.execute( discoveryRequest, adapter );
+                // If no tests fail in the rerun, we're done
+                if ( !adapter.hasFailingTests() )
+                {
+                    break;
+                }
+            }
+        }
     }
 
     private LauncherDiscoveryRequest buildLauncherDiscoveryRequest( TestsToRun testsToRun )
@@ -157,6 +178,23 @@ public class JUnitPlatformProvider
         for ( Class<?> testClass : testsToRun )
         {
             builder.selectors( selectClass( testClass.getName() ) );
+        }
+        return builder.build();
+    }
+
+    private LauncherDiscoveryRequest buildLauncherDiscoveryRequestForRerunFailures( RunListenerAdapter adapter )
+    {
+        LauncherDiscoveryRequestBuilder builder = request().filters( filters ).configurationParameters(
+                configurationParameters );
+        // Iterate over recorded failures
+        for ( TestIdentifier identifier : adapter.getFailures().keySet() )
+        {
+            // Extract quantified test name data
+            String[] classMethodName = adapter.toClassMethodNameWithoutPlan( identifier );
+            String className = classMethodName[1];
+            String methodName = classMethodName[3];
+            // Add filter for the specific failing method
+            builder.selectors( selectMethod( className, methodName ) );
         }
         return builder.build();
     }
