@@ -69,13 +69,6 @@ public class TestSingleMethodIT
     }
 
     @Test
-    public void testJunit48Provider4()
-        throws Exception
-    {
-        singleMethod( "junit48-single-method", Collections.<String, String>emptyMap(), null, "-P surefire-junit4" );
-    }
-
-    @Test
     public void testJunit48Provider47()
         throws Exception
     {
@@ -110,14 +103,6 @@ public class TestSingleMethodIT
         throws Exception
     {
         singleMethod( "/testng-single-method-5-14-9", Collections.<String, String>emptyMap(), null );
-    }
-
-    @Test
-    public void fullyQualifiedJunit48Provider4()
-            throws Exception
-    {
-        singleMethod( "junit48-single-method", Collections.<String, String>emptyMap(),
-                            "junit4.BasicTest#testSuccessOne", "-P surefire-junit4" );
     }
 
     @Test

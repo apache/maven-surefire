@@ -62,12 +62,6 @@ public class TestMethodPatternIT
     }
 
     @Test
-    public void testJUnit48Provider4()
-    {
-        runMethodPattern( "junit48-method-pattern", Collections.<String, String>emptyMap(), "-P surefire-junit4" );
-    }
-
-    @Test
     public void testJUnit48Provider47()
     {
         runMethodPattern( "junit48-method-pattern", Collections.<String, String>emptyMap(), "-P surefire-junit47" )

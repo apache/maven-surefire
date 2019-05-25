@@ -49,12 +49,6 @@ public class Surefire1152RerunFailingTestsInSuiteIT
     }
 
     @Test
-    public void testJUnit48Provider4()
-    {
-        runMethodPattern("-P surefire-junit4" );
-    }
-
-    @Test
     public void testJUnit48Provider47()
     {
         runMethodPattern("-P surefire-junit47" )

@@ -41,7 +41,7 @@ public class JUnitDepIT
         throws Exception
     {
         unpack().debugLogging().sysProp( "junit-dep.version", "4.4" ).executeTest().verifyErrorFree( 1 ).verifyTextInLog(
-            "surefire-junit4" ); // Ahem. Will match on the 4.7 provider too
+            "surefire-junit47" );
     }
 
     @Test

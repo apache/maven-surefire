@@ -28,7 +28,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
 /**
- * Surefire 2.19 spawns unnecessary tests in surefire-junit4 provider.
+ * Surefire 2.19 spawns unnecessary tests in surefire-junit47 provider.
  * https://issues.apache.org/jira/browse/SUREFIRE-1185
  * Example, UnlistedTest is the problem here because it runs with filtered out methods:
  *

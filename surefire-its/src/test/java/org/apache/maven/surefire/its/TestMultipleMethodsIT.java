@@ -57,13 +57,6 @@ public class TestMultipleMethodsIT
     }
 
     @Test
-    public void testJunit48Provider4()
-        throws Exception
-    {
-        multipleMethod( "junit48-multiple-methods", "-P surefire-junit4" );
-    }
-
-    @Test
     public void testJunit48Provider47()
         throws Exception
     {

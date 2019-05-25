@@ -30,7 +30,7 @@
 
   <properties>
     <junitVersion>4.4</junitVersion>
-    <provider>surefire-junit4</provider>
+    <provider>surefire-junit47</provider>
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
   </properties>
