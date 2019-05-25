@@ -41,8 +41,8 @@ Using POJO Tests
   to be recognized and executed before and after each test method:
      
 +---+
-public void setUp();
-public void tearDown();
+public static void setUp();
+public static void tearDown();
 +---+
 
   These fixture methods can also throw any exception and will still be valid.
