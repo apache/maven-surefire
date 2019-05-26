@@ -22,8 +22,8 @@ cache:
   directories:
   - "$HOME/.m2"
 
-install: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -DskipITs=true
-script: mvn clean verify  -nsu -Dit.test=PojoSimpleIT -Dtest=xxx -DfailIfNoTests=false
+install: true
+script: mvn clean package -nsu -DskipITs
 
 branches:
   only:
