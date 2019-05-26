@@ -19,6 +19,7 @@
 
 public class PojoTest
 {
+    private static boolean setUpCalled = false;
 
     public void testSuccess()
     {
@@ -28,6 +29,11 @@ public class PojoTest
     public void testFailure()
     {
         assert false;
+    }
+
+    public void testSetUpCall()
+    {
+        assert setUpCalled;
     }
 
 }
