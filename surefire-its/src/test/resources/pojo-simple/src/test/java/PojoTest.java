@@ -21,7 +21,7 @@ public class PojoTest
 {
     private static boolean setUpCalled = false;
 
-    public void setUp()
+    public static void setUp()
     {
         setUpCalled = true;
     }
