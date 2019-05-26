@@ -26,6 +26,10 @@ public class PojoTest
         setUpCalled = true;
     }
 
+    public static void tearDown() {
+        System.out.println( "PR234, tearDown" );
+    }
+
     public void testSuccess()
     {
         assert true;

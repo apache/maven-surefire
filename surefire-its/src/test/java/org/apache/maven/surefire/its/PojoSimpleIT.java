@@ -19,8 +19,13 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.it.VerificationException;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 
 /**
  * Test support for POJO tests.
@@ -31,8 +36,13 @@ public class PojoSimpleIT
     extends SurefireJUnit4IntegrationTestCase
 {
     @Test
-    public void testit()
+    public void testit() throws VerificationException
     {
-        unpack( "pojo-simple" ).executeTest().assertTestSuiteResults( 3, 0, 1, 0 );
+        int expectedTotalTests = 3;
+
+        OutputValidator validator = unpack( "pojo-simple" ).executeTest();
+
+        validator.assertTestSuiteResults( expectedTotalTests, 0, 1, 0 );
+        validator.assertThatLogLine( containsString( "PR234, tearDown" ), is( expectedTotalTests ) );
     }
 }
