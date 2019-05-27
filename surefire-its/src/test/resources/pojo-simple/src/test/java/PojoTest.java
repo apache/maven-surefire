@@ -19,6 +19,17 @@
 
 public class PojoTest
 {
+    private static int calls;
+
+    public void setUp()
+    {
+        System.out.println( "setUp called " + ++calls );
+    }
+
+    public void tearDown()
+    {
+        System.out.println( "tearDown called " + calls );
+    }
 
     public void testSuccess()
     {

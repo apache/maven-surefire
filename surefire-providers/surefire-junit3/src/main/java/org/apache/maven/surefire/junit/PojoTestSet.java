@@ -23,7 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
@@ -41,20 +41,21 @@ public class PojoTestSet
 {
     private static final String TEST_METHOD_PREFIX = "test";
 
-    private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+    private static final String SETUP_METHOD_NAME = "setUp";
 
-    private final Object testObject;
+    private static final String TEARDOWN_METHOD_NAME = "tearDown";
+
+    private static final Object[] EMPTY_OBJECT_ARRAY = {};
 
     private final Class<?> testClass;
 
-    private List<Method> testMethods;
+    private final Collection<Method> testMethods = new ArrayList<>();
 
     private Method setUpMethod;
 
     private Method tearDownMethod;
 
     public PojoTestSet( final Class<?> testClass )
-        throws TestSetFailedException
     {
         if ( testClass == null )
         {
@@ -62,19 +63,11 @@ public class PojoTestSet
         }
 
         this.testClass = testClass;
-
-        try
-        {
-            testObject = testClass.newInstance();
-        }
-        catch ( ReflectiveOperationException e )
-        {
-            throw new TestSetFailedException( "Unable to instantiate POJO '" + testClass + "'", e );
-        }
     }
 
     @Override
     public void execute( RunListener reportManager, ClassLoader loader )
+            throws TestSetFailedException
     {
         if ( reportManager == null )
         {
@@ -85,42 +78,54 @@ public class PojoTestSet
     }
 
     private void executeTestMethods( RunListener reportManager )
+            throws TestSetFailedException
     {
         if ( reportManager == null )
         {
             throw new NullPointerException( "reportManager is null" );
         }
 
-        if ( testMethods == null )
-        {
-            discoverTestMethods();
-        }
+        discoverTestMethods();
 
-        boolean abort = false;
-
-        for ( int i = 0; i < testMethods.size() && !abort; ++i )
+        for ( Method testMethod : testMethods )
         {
-            abort = executeTestMethod( testMethods.get( i ), EMPTY_OBJECT_ARRAY, reportManager );
+            boolean abort = executeTestMethod( testMethod, reportManager );
+            if ( abort )
+            {
+                break;
+            }
         }
     }
 
-    private boolean executeTestMethod( Method method, Object[] args, RunListener reportManager )
+    private boolean executeTestMethod( Method method, RunListener reportManager )
+            throws TestSetFailedException
     {
-        if ( method == null || args == null || reportManager == null )
+        if ( method == null || reportManager == null )
         {
             throw new NullPointerException();
         }
 
+        final Object testObject;
+
+        try
+        {
+            testObject = testClass.newInstance();
+        }
+        catch ( ReflectiveOperationException e )
+        {
+            throw new TestSetFailedException( "Unable to instantiate POJO '" + testClass + "'.", e );
+        }
+
         final String testClassName = getTestClass().getName();
         final String methodName = method.getName();
-        final String userFriendlyMethodName = methodName + '(' + ( args.length == 0 ? "" : "Reporter" ) + ')';
+        final String userFriendlyMethodName = methodName + "()";
         final String testName = getTestName( userFriendlyMethodName );
 
         reportManager.testStarting( new SimpleReportEntry( testClassName, null, testName, null ) );
 
         try
         {
-            setUpFixture();
+            setUpFixture( testObject );
         }
         catch ( Throwable e )
         {
@@ -138,7 +143,7 @@ public class PojoTestSet
         // Make sure that tearDownFixture
         try
         {
-            method.invoke( testObject, args );
+            method.invoke( testObject, EMPTY_OBJECT_ARRAY );
             reportManager.testSucceeded( new SimpleReportEntry( testClassName, null, testName, null ) );
         }
         catch ( InvocationTargetException e )
@@ -159,7 +164,7 @@ public class PojoTestSet
 
         try
         {
-            tearDownFixture();
+            tearDownFixture( testObject );
         }
         catch ( Throwable t )
         {
@@ -193,7 +198,7 @@ public class PojoTestSet
         return getTestClass().getName() + "." + testMethodName;
     }
 
-    private void setUpFixture()
+    private void setUpFixture( Object testObject )
         throws Throwable
     {
         if ( setUpMethod != null )
@@ -202,7 +207,7 @@ public class PojoTestSet
         }
     }
 
-    private void tearDownFixture()
+    private void tearDownFixture( Object testObject )
         throws Throwable
     {
         if ( tearDownMethod != null )
@@ -213,35 +218,19 @@ public class PojoTestSet
 
     private void discoverTestMethods()
     {
-        if ( testMethods == null )
+        for ( Method m : getTestClass().getMethods() )
         {
-            testMethods = new ArrayList<>();
-
-            Method[] methods = getTestClass().getMethods();
-
-            for ( Method m : methods )
+            if ( isNoArgsInstanceMethod( m ) )
             {
                 if ( isValidTestMethod( m ) )
                 {
-                    String simpleName = m.getName();
-
-                    // name must have 5 or more chars
-                    if ( simpleName.length() > 4 )
-                    {
-                        String firstFour = simpleName.substring( 0, 4 );
-
-                        // name must start with "test"
-                        if ( firstFour.equals( TEST_METHOD_PREFIX ) )
-                        {
-                            testMethods.add( m );
-                        }
-                    }
+                    testMethods.add( m );
                 }
-                else if ( m.getName().equals( "setUp" ) && m.getParameterTypes().length == 0 )
+                else if ( SETUP_METHOD_NAME.equals( m.getName() ) )
                 {
                     setUpMethod = m;
                 }
-                else if ( m.getName().equals( "tearDown" ) && m.getParameterTypes().length == 0 )
+                else if ( TEARDOWN_METHOD_NAME.equals( m.getName() ) )
                 {
                     tearDownMethod = m;
                 }
@@ -249,15 +238,17 @@ public class PojoTestSet
         }
     }
 
-    private static boolean isValidTestMethod( Method m )
+    private static boolean isNoArgsInstanceMethod( Method m )
     {
         boolean isInstanceMethod = !Modifier.isStatic( m.getModifiers() );
-
         boolean returnsVoid = m.getReturnType().equals( void.class );
-
         boolean hasNoParams = m.getParameterTypes().length == 0;
-
         return isInstanceMethod && returnsVoid && hasNoParams;
+    }
+
+    private static boolean isValidTestMethod( Method m )
+    {
+        return m.getName().startsWith( TEST_METHOD_PREFIX );
     }
 
     @Override
