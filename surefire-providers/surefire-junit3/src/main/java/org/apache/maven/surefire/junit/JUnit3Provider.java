@@ -28,6 +28,7 @@ import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.ReflectionUtils;
@@ -112,7 +113,6 @@ public class JUnit3Provider
                 SurefireTestSet surefireTestSet = createTestSet( clazz );
                 executeTestSet( surefireTestSet, reporter, testClassLoader, systemProperties );
             }
-
         }
         finally
         {
@@ -122,7 +122,6 @@ public class JUnit3Provider
     }
 
     private SurefireTestSet createTestSet( Class<?> clazz )
-        throws TestSetFailedException
     {
         return reflector.isJUnit3Available() && jUnit3TestChecker.accept( clazz )
             ? new JUnitTestSet( clazz, reflector )
@@ -133,9 +132,19 @@ public class JUnit3Provider
                                  Map<String, String> systemProperties )
         throws TestSetFailedException
     {
-        reporter.testSetStarting( new SimpleReportEntry( testSet.getName(), null, null, null ) );
-        testSet.execute( reporter, classLoader );
-        reporter.testSetCompleted( new SimpleReportEntry( testSet.getName(), null, null, null, systemProperties ) );
+        String clazz = testSet.getName();
+
+        try
+        {
+            TestSetReportEntry started = new SimpleReportEntry( clazz, null, null, null );
+            reporter.testSetStarting( started );
+            testSet.execute( reporter, classLoader );
+        }
+        finally
+        {
+            TestSetReportEntry completed = new SimpleReportEntry( clazz, null, null, null, systemProperties );
+            reporter.testSetCompleted( completed );
+        }
     }
 
     private TestsToRun scanClassPath()
