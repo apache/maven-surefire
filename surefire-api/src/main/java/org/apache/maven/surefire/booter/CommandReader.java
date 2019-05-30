@@ -380,41 +380,31 @@ public final class CommandReader
                 while ( CommandReader.this.state.get() == RUNNABLE )
                 {
                     Command command = decode( stdIn );
-                    if ( command == null )
+                    switch ( command.getCommandType() )
                     {
-                        String errorMessage = "[SUREFIRE] std/in stream corrupted: first sequence not recognized";
-                        DumpErrorSingleton.getSingleton().dumpStreamText( errorMessage );
-                        logger.error( errorMessage );
-                        break;
-                    }
-                    else
-                    {
-                        switch ( command.getCommandType() )
-                        {
-                            case RUN_CLASS:
-                                String test = command.getData();
-                                boolean inserted = CommandReader.this.insertToQueue( test );
-                                if ( inserted )
-                                {
-                                    CommandReader.this.wakeupIterator();
-                                    insertToListeners( command );
-                                }
-                                break;
-                            case TEST_SET_FINISHED:
-                                CommandReader.this.makeQueueFull();
-                                isTestSetFinished = true;
+                        case RUN_CLASS:
+                            String test = command.getData();
+                            boolean inserted = CommandReader.this.insertToQueue( test );
+                            if ( inserted )
+                            {
                                 CommandReader.this.wakeupIterator();
                                 insertToListeners( command );
-                                break;
-                            case SHUTDOWN:
-                                CommandReader.this.makeQueueFull();
-                                CommandReader.this.wakeupIterator();
-                                insertToListeners( command );
-                                break;
-                            default:
-                                insertToListeners( command );
-                                break;
-                        }
+                            }
+                            break;
+                        case TEST_SET_FINISHED:
+                            CommandReader.this.makeQueueFull();
+                            isTestSetFinished = true;
+                            CommandReader.this.wakeupIterator();
+                            insertToListeners( command );
+                            break;
+                        case SHUTDOWN:
+                            CommandReader.this.makeQueueFull();
+                            CommandReader.this.wakeupIterator();
+                            insertToListeners( command );
+                            break;
+                        default:
+                            insertToListeners( command );
+                            break;
                     }
                 }
             }
@@ -431,6 +421,11 @@ public final class CommandReader
                     exitByConfiguration();
                     // does not go to finally for non-default config: Shutdown.EXIT or Shutdown.KILL
                 }
+            }
+            catch ( MasterProcessCommandNoMagicNumberException | MasterProcessUnknownCommandException e )
+            {
+                DumpErrorSingleton.getSingleton().dumpStreamException( e );
+                logger.error( e );
             }
             catch ( IOException e )
             {

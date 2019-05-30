@@ -19,16 +19,24 @@ package org.apache.maven.surefire.booter;
  */
 
 import junit.framework.TestCase;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringBufferInputStream;
+import java.io.StringReader;
 
-import static org.apache.maven.surefire.booter.MasterProcessCommand.*;
+import static java.nio.charset.StandardCharsets.US_ASCII;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.BYE_ACK;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.NOOP;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.RUN_CLASS;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.decode;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.resolve;
+import static org.fest.assertions.Assertions.assertThat;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -37,35 +45,6 @@ import static org.hamcrest.Matchers.*;
 public class MasterProcessCommandTest
     extends TestCase
 {
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
-    public void testEncodedStreamSequence()
-    {
-        byte[] streamSequence = new byte[10];
-        streamSequence[8] = (byte) 'T';
-        streamSequence[9] = (byte) 'e';
-        setCommandAndDataLength( 256, 2, streamSequence );
-        assertEquals( streamSequence[0], (byte) 0 );
-        assertEquals( streamSequence[1], (byte) 0 );
-        assertEquals( streamSequence[2], (byte) 1 );
-        assertEquals( streamSequence[3], (byte) 0 );
-        assertEquals( streamSequence[4], (byte) 0 );
-        assertEquals( streamSequence[5], (byte) 0 );
-        assertEquals( streamSequence[6], (byte) 0 );
-        assertEquals( streamSequence[7], (byte) 2 );
-        // remain unchanged
-        assertEquals( streamSequence[8], (byte) 'T' );
-        assertEquals( streamSequence[9], (byte) 'e' );
-    }
-
-    public void testResolved()
-    {
-        for ( MasterProcessCommand command : MasterProcessCommand.values() )
-        {
-            assertThat( command, is( resolve( command.getId() ) ) );
-        }
-    }
 
     public void testDataToByteArrayAndBack()
     {
@@ -135,24 +114,10 @@ public class MasterProcessCommandTest
         throws IOException
     {
         byte[] encoded = RUN_CLASS.encode( "pkg.Test" );
-        assertThat( encoded.length, is( 16 ) );
-        assertThat( encoded[0], is( (byte) 0 ) );
-        assertThat( encoded[1], is( (byte) 0 ) );
-        assertThat( encoded[2], is( (byte) 0 ) );
-        assertThat( encoded[3], is( (byte) 0 ) );
-        assertThat( encoded[4], is( (byte) 0 ) );
-        assertThat( encoded[5], is( (byte) 0 ) );
-        assertThat( encoded[6], is( (byte) 0 ) );
-        assertThat( encoded[7], is( (byte) 8 ) );
-        assertThat( encoded[8], is( (byte) 'p' ) );
-        assertThat( encoded[9], is( (byte) 'k' ) );
-        assertThat( encoded[10], is( (byte) 'g' ) );
-        assertThat( encoded[11], is( (byte) '.' ) );
-        assertThat( encoded[12], is( (byte) 'T' ) );
-        assertThat( encoded[13], is( (byte) 'e' ) );
-        assertThat( encoded[14], is( (byte) 's' ) );
-        assertThat( encoded[15], is( (byte) 't' ) );
-        Command command = decode( new DataInputStream( new ByteArrayInputStream( encoded ) ) );
+        assertThat( new String( encoded, US_ASCII ), is( ":maven:surefire:std:out:run-testclass:pkg.Test" ) );
+
+        BufferedReader lineReader = new BufferedReader( new InputStreamReader( new ByteArrayInputStream( encoded ) ) );
+        Command command = decode( lineReader );
         assertNotNull( command );
         assertThat( command.getCommandType(), is( RUN_CLASS ) );
         assertThat( command.getData(), is( "pkg.Test" ) );
@@ -160,17 +125,40 @@ public class MasterProcessCommandTest
 
     public void testShouldDecodeTwoCommands() throws IOException
     {
-        byte[] cmd1 = BYE_ACK.encode();
-        byte[] cmd2 = NOOP.encode();
-        byte[] stream = new byte[cmd1.length + cmd2.length];
-        System.arraycopy( cmd1, 0, stream, 0, cmd1.length );
-        System.arraycopy( cmd2, 0, stream, cmd1.length, cmd2.length );
-        DataInputStream is = new DataInputStream( new ByteArrayInputStream( stream ) );
-        Command bye = decode( is );
+        String cmd = ":maven:surefire:std:out:bye-ack\n"
+                + ":maven:surefire:std:out:noop\n";
+        BufferedReader lineReader = new BufferedReader( new StringReader( cmd ) );
+
+        Command bye = decode( lineReader );
         assertNotNull( bye );
         assertThat( bye.getCommandType(), is( BYE_ACK ) );
-        Command noop = decode( is );
+        assertThat( bye.getData(), is( nullValue() ) );
+
+        Command noop = decode( lineReader );
         assertNotNull( noop );
         assertThat( noop.getCommandType(), is( NOOP ) );
+        assertThat( noop.getData(), is( nullValue() ) );
+    }
+
+    public void testObservingShutdownDataFailed()
+    {
+        try
+        {
+            Command.SKIP_SINCE_NEXT_TEST.toShutdownData();
+            fail();
+        }
+        catch ( IllegalStateException e )
+        {
+            assertThat( e )
+                    .hasMessage( "expected MasterProcessCommand.SHUTDOWN" );
+        }
+    }
+
+    public void test() throws IOException
+    {
+        MasterProcessChannelDecoder decoder = new MasterProcessChannelDecoder();
+
+        String cmd = ":maven:surefire:std:out:bye-ack\n";
+        decoder.decode( new ByteArrayInputStream( cmd.getBytes( US_ASCII ) ) );
     }
 }
