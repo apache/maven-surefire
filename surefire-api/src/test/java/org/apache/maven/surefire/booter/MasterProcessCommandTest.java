@@ -158,7 +158,7 @@ public class MasterProcessCommandTest
     {
         MasterProcessChannelDecoder decoder = new MasterProcessChannelDecoder();
 
-        String cmd = ":maven:surefire:std:out:bye-ack\n";
-        decoder.decode( new ByteArrayInputStream( cmd.getBytes( US_ASCII ) ) );
+        String cmd = ":maven-surefire-std-out:bye-ack\n";
+        Command command = decoder.decode( new ByteArrayInputStream( cmd.getBytes( US_ASCII ) ), null );
     }
 }

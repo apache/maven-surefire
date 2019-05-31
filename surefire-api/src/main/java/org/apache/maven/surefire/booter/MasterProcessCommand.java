@@ -69,6 +69,18 @@ public enum MasterProcessCommand
         return dataType != Void.class;
     }
 
+    public static MasterProcessCommand byOpcode( String opcode )
+    {
+        for ( MasterProcessCommand cmd : values() )
+        {
+            if ( cmd.opcodeName.equals( opcode ) )
+            {
+                return cmd;
+            }
+        }
+        return null;
+    }
+
     @SuppressWarnings( "checkstyle:magicnumber" )
     public byte[] encode( String data )
     {

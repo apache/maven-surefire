@@ -19,9 +19,13 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -33,54 +37,86 @@ import java.util.List;
  */
 public class MasterProcessChannelDecoder
 {
-    public String decode( InputStream is ) throws IOException
+    public Command decode( InputStream is, ConsoleLogger logger ) throws IOException
     {
         List<String> tokens = new ArrayList<>();
         StringBuilder token = new StringBuilder();
-        boolean tokenStarted = false;
-        boolean tokenFinished = false;
+        boolean frameStarted = false;
+        boolean frameFinished = false;
         for ( int r; ( r = is.read() ) != -1 ; )
         {
             char c = (char) r;
-            if ( tokenFinished && c == '\n' )
+            if ( frameFinished && c == '\n' )
             {
                 continue;
             }
 
-            if ( !tokenStarted )
+            if ( !frameStarted )
             {
                 if ( c == ':' )
                 {
-                    tokenStarted = true;
-                    tokenFinished = false;
+                    frameStarted = true;
+                    frameFinished = false;
                     token.setLength( 0 );
                     tokens.clear();
                     continue;
                 }
             }
-            else if ( !tokenFinished )
+            else if ( !frameFinished )
             {
-                if ( c == ':' )
+                boolean isFinishedFrame = c == ':' && isTokenComplete( tokens ) || c == '\n' || c == '\r';
+                if ( isFinishedFrame || c == ':' )
                 {
                     tokens.add( token.toString() );
                     token.setLength( 0 );
-                }
-                else if ( /*c == ':' || */c == '\n' || c == '\r' )
-                {
-                    tokenFinished = true;
-                    tokenStarted = false;
-                    continue;
+                    if ( isFinishedFrame )
+                    {
+                        frameFinished = true;
+                        frameStarted = false;
+                        break;
+                    }
                 }
                 else
                 {
                     token.append( c );
                 }
             }
-            else if ( tokenStarted & !tokenFinished )
+
+            boolean removed = removeUnsynchronizedTokens( tokens, logger );
+            if ( removed && tokens.isEmpty() )
             {
-                // magic number, opcode and payload
+                frameStarted = false;
+                frameFinished = true;
             }
         }
-        return null;
+        return new Command( MasterProcessCommand.byOpcode( tokens.get( 1 ) ) );//todo
+    }
+
+    private static boolean isTokenComplete( List<String> tokens )
+    {
+        if ( tokens.size() >= 2 )
+        {
+            MasterProcessCommand cmd = MasterProcessCommand.byOpcode( tokens.get( 1 ) );
+            // todo maybe throw exc
+            return cmd.hasDataType() || tokens.size() == 3;
+        }
+        return false;
+    }
+
+    private boolean removeUnsynchronizedTokens( Collection<String> tokens, ConsoleLogger logger )
+    {
+        boolean removed = false;
+        for ( Iterator<String> it = tokens.iterator(); it.hasNext(); )
+        {
+            String token = it.next();
+            if ( token.equals( "maven-surefire-std-out" ) )
+            {
+                break;
+            }
+            removed = true;
+            it.remove();
+            logger.error( "Forked JVM could not synchronize the '" + token + "' token with preamble sequence." );
+        }
+        return removed;
     }
 }
