@@ -209,11 +209,12 @@ else
    you can execute <<<mvn -Dtest=org.example.MyTest test>>> from the command line.
 
 
-* Filtering by Test Class Names
+* Filtering by Test Class Names for Maven ${thisPlugin}
 
-   The Maven Surefire Plugin will scan for test classes whose fully qualified names match
+   The Maven ${thisPlugin} Plugin will scan for test classes whose fully qualified names match
    the following patterns.
 
+#{if}(${project.artifactId}=="maven-surefire-plugin")
    * <<<**/Test*.java>>>
 
    * <<<**/*Test.java>>>
@@ -221,14 +222,21 @@ else
    * <<<**/*Tests.java>>>
 
    * <<<**/*TestCase.java>>>
+#{else}
+   * <<<**/IT*.java>>>
+
+   * <<<**/*IT.java>>>
+
+   * <<<**/*ITCase.java>>>
+#{end}
 
    Moreover, it will exclude all nested classes (including static member classes) by default.
 
    Note, however, that you can override this default behavior by configuring explicit
-   `include` and `exclude` rules in your `pom.xml` file. For example, to keep Maven Surefire
+   `include` and `exclude` rules in your `pom.xml` file. For example, to keep Maven ${thisPlugin}
    from excluding static member classes, you can override its exclude rules.
 
-* Overriding exclude rules of Maven Surefire
+* Overriding exclude rules of Maven ${thisPlugin}
 
 +---+
 ...
