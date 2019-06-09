@@ -117,6 +117,6 @@ public class Surefire1183Test extends AbstractMojoTestCase
         assertTrue( report.exists() );
 
         String htmlContent = FileUtils.fileRead ( report );
-        assertTrue( htmlContent.contains ( "<h2><a name=\"Acceptance_Test\"></a>Acceptance Test</h2></div>" ) );
+        assertTrue( htmlContent.contains ( "<h2><a name=\"Acceptance_Test\"></a>Acceptance Test</h2></section>" ) );
     }
 }

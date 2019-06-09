@@ -90,8 +90,8 @@
     <!-- <shadedVersion>3.0.0-M2</shadedVersion> commented out due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
     <commonsLang3Version>3.8.1</commonsLang3Version>
     <commonsIoVersion>2.6</commonsIoVersion>
-    <doxiaVersion>1.8</doxiaVersion>
-    <doxiaSitetoolsVersion>1.8.1</doxiaSitetoolsVersion>
+    <doxiaVersion>1.9</doxiaVersion>
+    <doxiaSitetoolsVersion>1.9</doxiaSitetoolsVersion>
     <!-- maven-shared-utils:3.2.0+ another behavior - broke Surefire performance - end of subprocess notification not arrived in ForkStarter -->
     <mavenSharedUtilsVersion>3.1.0</mavenSharedUtilsVersion>
     <powermockVersion>2.0.2</powermockVersion>
