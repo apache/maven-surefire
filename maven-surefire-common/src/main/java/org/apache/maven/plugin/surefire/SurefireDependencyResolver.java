@@ -74,6 +74,7 @@ final class SurefireDependencyResolver
             "surefire-junit-platform",
             "surefire-api",
             "surefire-logger-api",
+            "surefire-shared-utils",
             "common-java5",
             "common-junit3",
             "common-junit4",

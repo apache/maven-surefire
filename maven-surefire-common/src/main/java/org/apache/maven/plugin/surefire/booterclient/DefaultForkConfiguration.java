@@ -26,6 +26,7 @@ import org.apache.maven.surefire.booter.AbstractPathConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
+import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.util.internal.ImmutableMap;
 
 import javax.annotation.Nonnull;
@@ -65,6 +66,7 @@ public abstract class DefaultForkConfiguration
     private final boolean reuseForks;
     @Nonnull private final Platform pluginPlatform;
     @Nonnull private final ConsoleLogger log;
+    @Nonnull private final ForkNodeFactory forkNodeFactory;
 
     @SuppressWarnings( "checkstyle:parameternumber" )
     protected DefaultForkConfiguration( @Nonnull Classpath booterClasspath,
@@ -79,7 +81,8 @@ public abstract class DefaultForkConfiguration
                                      int forkCount,
                                      boolean reuseForks,
                                      @Nonnull Platform pluginPlatform,
-                                     @Nonnull ConsoleLogger log )
+                                     @Nonnull ConsoleLogger log,
+                                     @Nonnull ForkNodeFactory forkNodeFactory )
     {
         this.booterClasspath = booterClasspath;
         this.tempDirectory = tempDirectory;
@@ -94,6 +97,7 @@ public abstract class DefaultForkConfiguration
         this.reuseForks = reuseForks;
         this.pluginPlatform = pluginPlatform;
         this.log = log;
+        this.forkNodeFactory = forkNodeFactory;
     }
 
     protected abstract void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
@@ -106,6 +110,13 @@ public abstract class DefaultForkConfiguration
     protected String extendJvmArgLine( @Nonnull String jvmArgLine )
     {
         return jvmArgLine;
+    }
+
+    @Nonnull
+    @Override
+    public final ForkNodeFactory getForkNodeFactory()
+    {
+        return forkNodeFactory;
     }
 
     /**

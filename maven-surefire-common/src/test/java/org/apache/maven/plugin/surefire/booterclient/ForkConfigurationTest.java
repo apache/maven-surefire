@@ -30,6 +30,7 @@ import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
+import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,6 +48,7 @@ import static org.fest.util.Files.temporaryFolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 /**
  *
@@ -55,10 +57,7 @@ public class ForkConfigurationTest
 {
     private static final StartupConfiguration STARTUP_CONFIG = new StartupConfiguration( "",
             new ClasspathConfiguration( true, true ),
-            new ClassLoaderConfiguration( true, true ),
-            false,
-            false,
-            ALL );
+            new ClassLoaderConfiguration( true, true ), ALL );
 
     private static int idx = 0;
 
@@ -91,7 +90,7 @@ public class ForkConfigurationTest
         ClasspathConfiguration cpConfig = new ClasspathConfiguration( new Classpath( cp ), emptyClasspath(),
                 emptyClasspath(), true, true );
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
-        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false, ALL );
+        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, ALL );
 
         Commandline cli = config.createCommandLine( startup, 1, temporaryFolder() );
 
@@ -111,7 +110,7 @@ public class ForkConfigurationTest
         ClasspathConfiguration cpConfig = new ClasspathConfiguration( new Classpath( cp ), emptyClasspath(),
                 emptyClasspath(), true, true );
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
-        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false, ALL );
+        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, ALL );
 
         Commandline commandLine = config.createCommandLine( startup, 1, temporaryFolder() );
         assertTrue( commandLine.toString().contains( "abc def" ) );
@@ -126,7 +125,7 @@ public class ForkConfigurationTest
         ClasspathConfiguration cpConfig = new ClasspathConfiguration( emptyClasspath(), emptyClasspath(),
                 emptyClasspath(), true, true );
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
-        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false, ALL );
+        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, ALL );
         ForkConfiguration config = getForkConfiguration( cwd.getCanonicalFile() );
         Commandline commandLine = config.createCommandLine( startup, 1, temporaryFolder() );
 
@@ -225,7 +224,7 @@ public class ForkConfigurationTest
         return new JarManifestForkConfiguration( emptyClasspath(), tmpDir, null,
                 cwd, new Properties(), argLine,
                 Collections.<String, String>emptyMap(), new String[0], false, 1, false,
-                platform, new NullConsoleLogger() );
+                platform, new NullConsoleLogger(), mock( ForkNodeFactory.class ) );
     }
 
     // based on http://stackoverflow.com/questions/2591083/getting-version-of-java-in-runtime
@@ -233,6 +232,6 @@ public class ForkConfigurationTest
     private static boolean isJavaVersionAtLeast7u60()
     {
         String[] javaVersionElements = System.getProperty( "java.runtime.version" ).split( "\\.|_|-b" );
-        return Integer.valueOf( javaVersionElements[1] ) >= 7 && Integer.valueOf( javaVersionElements[3] ) >= 60;
+        return Integer.parseInt( javaVersionElements[1] ) >= 7 && Integer.parseInt( javaVersionElements[3] ) >= 60;
     }
 }

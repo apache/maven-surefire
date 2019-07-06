@@ -38,6 +38,16 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>surefire-extensions-spi</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-shared-utils</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
       <scope>provided</scope>
@@ -73,22 +83,35 @@
   <build>
     <plugins>
       <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>build-test-classpath</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>build-classpath</goal>
+            </goals>
+            <configuration>
+              <includeScope>test</includeScope>
+              <outputFile>target/test-classpath/cp.txt</outputFile>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <executions>
           <execution>
-            <id>jacoco-instrumentation</id>
+            <id>jacoco-agent</id>
             <goals>
-              <goal>instrument</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>restore-classes</id>
-            <goals>
-              <goal>restore-instrumented-classes</goal>
+              <goal>prepare-agent</goal>
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <propertyName>jacoco.agent</propertyName>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -100,7 +123,9 @@
           </dependency>
         </dependencies>
         <configuration>
-          <argLine>${jvm.args.tests}</argLine>
+          <argLine>${jvm.args.tests} ${jacoco.agent}</argLine>
+            <useFile>true</useFile>
+            <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <includes>
             <include>**/JUnit4SuiteTest.java</include>
           </includes>

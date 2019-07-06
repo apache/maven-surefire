@@ -19,11 +19,15 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.StackTraceWriter;
+
+import javax.annotation.Nonnull;
+
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M4
  */
 public interface ForkedProcessStackTraceEventListener
 {
-    void handle( String msg, String smartStackTrace, String stackTrace );
+    void handle( @Nonnull StackTraceWriter stackTrace );
 }

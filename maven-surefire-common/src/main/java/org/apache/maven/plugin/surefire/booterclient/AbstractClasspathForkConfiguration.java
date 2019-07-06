@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.extensions.ForkNodeFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -49,10 +50,12 @@ abstract class AbstractClasspathForkConfiguration
                                         int forkCount,
                                         boolean reuseForks,
                                         @Nonnull Platform pluginPlatform,
-                                        @Nonnull ConsoleLogger log )
+                                        @Nonnull ConsoleLogger log,
+                                        @Nonnull ForkNodeFactory forkNodeFactory )
     {
         super( bootClasspath, tempDirectory, debugLine, workingDirectory, modelProperties, argLine,
-                environmentVariables, excludedEnvironmentVariables, debug, forkCount, reuseForks, pluginPlatform, log );
+            environmentVariables, excludedEnvironmentVariables, debug, forkCount, reuseForks, pluginPlatform, log,
+            forkNodeFactory );
     }
 
     @Override

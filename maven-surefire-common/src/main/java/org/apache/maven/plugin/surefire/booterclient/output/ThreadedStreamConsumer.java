@@ -19,9 +19,12 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
+import org.apache.maven.surefire.eventapi.Event;
 import org.apache.maven.surefire.shared.utils.cli.StreamConsumer;
+import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 
+import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -36,13 +39,13 @@ import static java.lang.Thread.currentThread;
  * @author Kristian Rosenvold
  */
 public final class ThreadedStreamConsumer
-        implements StreamConsumer, Closeable
+        implements EventHandler<Event>, Closeable
 {
-    private static final String END_ITEM = "";
+    private static final Event END_ITEM = new FinalEvent();
 
     private static final int ITEM_LIMIT_BEFORE_SLEEP = 10_000;
 
-    private final BlockingQueue<String> items = new ArrayBlockingQueue<>( ITEM_LIMIT_BEFORE_SLEEP );
+    private final BlockingQueue<Event> items = new ArrayBlockingQueue<>( ITEM_LIMIT_BEFORE_SLEEP );
 
     private final AtomicBoolean stop = new AtomicBoolean();
 
@@ -53,17 +56,17 @@ public final class ThreadedStreamConsumer
     final class Pumper
             implements Runnable
     {
-        private final StreamConsumer target;
+        private final EventHandler<Event> target;
 
         private final MultipleFailureException errors = new MultipleFailureException();
 
-        Pumper( StreamConsumer target )
+        Pumper( EventHandler<Event> target )
         {
             this.target = target;
         }
 
         /**
-         * Calls {@link ForkClient#consumeLine(String)} which may throw any {@link RuntimeException}.<br>
+         * Calls {@link ForkClient#handleEvent(Event)} which may throw any {@link RuntimeException}.<br>
          * Even if {@link ForkClient} is not fault-tolerant, this method MUST be fault-tolerant and thus the
          * try-catch block must be inside of the loop which prevents from loosing events from {@link StreamConsumer}.
          * <br>
@@ -80,12 +83,12 @@ public final class ThreadedStreamConsumer
             {
                 try
                 {
-                    String item = ThreadedStreamConsumer.this.items.take();
+                    Event item = ThreadedStreamConsumer.this.items.take();
                     if ( shouldStopQueueing( item ) )
                     {
                         return;
                     }
-                    target.consumeLine( item );
+                    target.handleEvent( item );
                 }
                 catch ( Throwable t )
                 {
@@ -105,7 +108,7 @@ public final class ThreadedStreamConsumer
         }
     }
 
-    public ThreadedStreamConsumer( StreamConsumer target )
+    public ThreadedStreamConsumer( EventHandler<Event> target )
     {
         pumper = new Pumper( target );
         thread = DaemonThreadFactory.newDaemonThread( pumper, "ThreadedStreamConsumer" );
@@ -113,7 +116,7 @@ public final class ThreadedStreamConsumer
     }
 
     @Override
-    public void consumeLine( String s )
+    public void handleEvent( @Nonnull Event event )
     {
         if ( stop.get() )
         {
@@ -127,7 +130,7 @@ public final class ThreadedStreamConsumer
 
         try
         {
-            items.put( s );
+            items.put( event );
         }
         catch ( InterruptedException e )
         {
@@ -164,8 +167,61 @@ public final class ThreadedStreamConsumer
      * @param item    element from <code>items</code>
      * @return {@code true} if tail of the queue
      */
-    private boolean shouldStopQueueing( String item )
+    private boolean shouldStopQueueing( Event item )
     {
         return item == END_ITEM;
+    }
+
+    /**
+     *
+     */
+    private static class FinalEvent extends Event
+    {
+        FinalEvent()
+        {
+            super( null );
+        }
+
+        @Override
+        public boolean isControlCategory()
+        {
+            return false;
+        }
+
+        @Override
+        public boolean isConsoleCategory()
+        {
+            return false;
+        }
+
+        @Override
+        public boolean isConsoleErrorCategory()
+        {
+            return false;
+        }
+
+        @Override
+        public boolean isStandardStreamCategory()
+        {
+            return false;
+        }
+
+        @Override
+        public boolean isSysPropCategory()
+        {
+            return false;
+        }
+
+        @Override
+        public boolean isTestCategory()
+        {
+            return false;
+        }
+
+        @Override
+        public boolean isJvmExitError()
+        {
+            return false;
+        }
     }
 }

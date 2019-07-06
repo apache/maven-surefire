@@ -21,10 +21,10 @@
 
 properties(
     [
-        buildDiscarder(logRotator(artifactDaysToKeepStr: env.BRANCH_NAME == 'master' ? '1' : '2',
+        buildDiscarder(logRotator(artifactDaysToKeepStr: env.BRANCH_NAME == 'master' ? '14' : '7',
                                   artifactNumToKeepStr: '50',
-                                  daysToKeepStr: env.BRANCH_NAME == 'master' ? '10' : '5',
-                                  numToKeepStr: env.BRANCH_NAME == 'master' ? '5' : '3')
+                                  daysToKeepStr: env.BRANCH_NAME == 'master' ? '30' : '14',
+                                  numToKeepStr: env.BRANCH_NAME == 'master' ? '20' : '10')
         ),
         disableConcurrentBuilds()
     ]
@@ -213,6 +213,7 @@ static def sourcesPatternCsv() {
             '**/surefire-api/src/main/java,' +
             '**/surefire-booter/src/main/java,' +
             '**/surefire-extensions-api/src/main/java,' +
+            '**/surefire-extensions-spi/src/main/java,' +
             '**/surefire-grouper/src/main/java,' +
             '**/surefire-its/src/main/java,' +
             '**/surefire-logger-api/src/main/java,' +
@@ -229,6 +230,7 @@ static def classPatternCsv() {
             '**/surefire-api/target/classes,' +
             '**/surefire-booter/target/classes,' +
             '**/surefire-extensions-api/target/classes,' +
+            '**/surefire-extensions-spi/target/classes,' +
             '**/surefire-grouper/target/classes,' +
             '**/surefire-its/target/classes,' +
             '**/surefire-logger-api/target/classes,' +

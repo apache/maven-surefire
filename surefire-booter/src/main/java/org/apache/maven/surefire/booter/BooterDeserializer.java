@@ -32,6 +32,8 @@ import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
 
 // CHECKSTYLE_OFF: imports
+import javax.annotation.Nonnull;
+
 import static org.apache.maven.surefire.booter.BooterConstants.*;
 import static org.apache.maven.surefire.cli.CommandLineOption.*;
 
@@ -56,6 +58,18 @@ public class BooterDeserializer
         throws IOException
     {
         properties = SystemPropertyManager.loadProperties( inputStream );
+    }
+
+    /**
+     * Describes the current connection channel used by the client in the forked JVM
+     * in order to connect to the plugin process.
+     *
+     * @return connection string (must not be null)
+     */
+    @Nonnull
+    public String getConnectionString()
+    {
+        return properties.getProperty( FORK_NODE_CONNECTION_STRING );
     }
 
     /**

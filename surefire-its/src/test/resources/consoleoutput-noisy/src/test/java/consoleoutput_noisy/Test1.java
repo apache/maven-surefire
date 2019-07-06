@@ -33,10 +33,12 @@ public class Test1
     @Test
     public void test1MillionBytes()
     {
+        System.out.println( "t1 = " + System.currentTimeMillis() );
         for ( int i = 0; i < ( 10 * thousand ); i++ )
         {
             System.out.println( "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" );
         }
+        System.out.println( "t2 = " + System.currentTimeMillis() );
     }
 
     @Test

@@ -33,20 +33,16 @@ public class StartupConfiguration
     private final String providerClassName;
     private final AbstractPathConfiguration classpathConfiguration;
     private final ClassLoaderConfiguration classLoaderConfiguration;
-    private final boolean isForkRequested;
-    private final boolean isInForkedVm;
     private final ProcessCheckerType processChecker;
 
     public StartupConfiguration( @Nonnull String providerClassName,
                                  @Nonnull AbstractPathConfiguration classpathConfiguration,
-                                 @Nonnull ClassLoaderConfiguration classLoaderConfiguration, boolean isForkRequested,
-                                 boolean inForkedVm, ProcessCheckerType processChecker )
+                                 @Nonnull ClassLoaderConfiguration classLoaderConfiguration,
+                                 ProcessCheckerType processChecker )
     {
         this.classpathConfiguration = classpathConfiguration;
         this.classLoaderConfiguration = classLoaderConfiguration;
-        this.isForkRequested = isForkRequested;
         this.providerClassName = providerClassName;
-        isInForkedVm = inForkedVm;
         this.processChecker = processChecker;
     }
 
@@ -56,24 +52,16 @@ public class StartupConfiguration
     }
 
     public static StartupConfiguration inForkedVm( String providerClassName,
-                                                   ClasspathConfiguration classpathConfiguration,
-                                                   ClassLoaderConfiguration classLoaderConfiguration,
+                                                   ClasspathConfiguration classpathConfig,
+                                                   ClassLoaderConfiguration classLoaderConfig,
                                                    ProcessCheckerType processChecker )
     {
-        return new StartupConfiguration( providerClassName, classpathConfiguration, classLoaderConfiguration, true,
-                                         true, processChecker );
+        return new StartupConfiguration( providerClassName, classpathConfig, classLoaderConfig, processChecker );
     }
 
     public AbstractPathConfiguration getClasspathConfiguration()
     {
         return classpathConfiguration;
-    }
-
-    @Deprecated
-    public boolean useSystemClassLoader()
-    {
-        // todo; I am not totally convinced this logic is as simple as it could be
-        return classLoaderConfiguration.isUseSystemClassLoader() && ( isInForkedVm || isForkRequested );
     }
 
     public boolean isManifestOnlyJarRequestedAndUsable()

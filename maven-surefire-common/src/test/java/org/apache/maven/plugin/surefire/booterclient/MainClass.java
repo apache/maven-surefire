@@ -34,15 +34,11 @@ public class MainClass
         }
         else
         {
-            System.out.println( ":maven:surefire:std:out:bye" );
-            if ( System.in.read() == 0
-                && System.in.read() == 0
-                && System.in.read() == 0
-                && System.in.read() == 5
-                && System.in.read() == 0
-                && System.in.read() == 0
-                && System.in.read() == 0
-                && System.in.read() == 0 )
+            System.out.println( ":maven-surefire-event:bye:" );
+            String byeAck = ":maven-surefire-command:bye-ack:";
+            byte[] cmd = new byte[byeAck.length()];
+            int len = System.in.read( cmd );
+            if ( len != -1 && new String( cmd, 0, len ).equals( byeAck ) )
             {
                 System.exit( 0 );
             }

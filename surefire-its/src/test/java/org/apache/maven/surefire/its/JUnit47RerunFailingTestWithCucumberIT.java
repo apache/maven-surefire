@@ -19,9 +19,18 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import com.googlecode.junittoolbox.ParallelParameterized;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+
+import java.util.ArrayList;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 
 /**
  * Tests using the JUnit 47 provider to rerun failing tests with the cucumber runner. The main problem that the junit4
@@ -30,35 +39,89 @@ import org.junit.Test;
  *
  * @author mpkorstanje
  */
+@RunWith( ParallelParameterized.class )
 public class JUnit47RerunFailingTestWithCucumberIT extends SurefireJUnit4IntegrationTestCase
 {
+    private static final String LEGACY_FORK_NODE =
+        "org.apache.maven.plugin.surefire.extensions.LegacyForkNodeFactory";
+
+    private static final String SUREFIRE_FORK_NODE =
+        "org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory";
+
+    @Parameters
+    public static Iterable<Object[]> data()
+    {
+        ArrayList<Object[]> args = new ArrayList<>();
+        args.add( new Object[] { "tcp" } );
+        args.add( new Object[] { null } );
+        return args;
+    }
+
+    @Parameter
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
+    public String profileId;
 
     private SurefireLauncher unpack()
     {
-        return unpack( "junit47-rerun-failing-tests-with-cucumber" ).setJUnitVersion( "4.13" );
+        SurefireLauncher launcher =
+            unpack( "junit47-rerun-failing-tests-with-cucumber", profileId == null ? "" : "-" + profileId )
+            .setJUnitVersion( "4.13" );
+
+        if ( profileId != null )
+        {
+            launcher.activateProfile( profileId );
+        }
+
+        return launcher;
     }
 
     @Test
     public void testRerunFailingErrorTestsFalse()
+        throws Exception
     {
-        unpack().maven().addGoal(
-                "-Dsurefire.rerunFailingTestsCount=" + 0 ).withFailure().executeTest().assertTestSuiteResults( 1, 0, 1,
-                0, 0 );
+        String cls = profileId == null ? LEGACY_FORK_NODE : SUREFIRE_FORK_NODE;
+        unpack()
+            .debugLogging()
+            .maven()
+            .sysProp( "surefire.rerunFailingTestsCount", 0 )
+            .withFailure()
+            .executeTest()
+            .assertTestSuiteResults( 1, 0, 1, 0, 0 )
+            .assertThatLogLine(
+                containsString( "Found implementation of fork node factory: " + cls ),
+                equalTo( 1 ) );
     }
 
     @Test
     public void testRerunFailingErrorTestsWithOneRetry()
+        throws Exception
     {
-        unpack().maven().addGoal(
-                "-Dsurefire.rerunFailingTestsCount=" + 1 ).withFailure().executeTest().assertTestSuiteResults( 1, 0, 1,
-                0, 0 );
+        String cls = profileId == null ? LEGACY_FORK_NODE : SUREFIRE_FORK_NODE;
+        unpack()
+            .debugLogging()
+            .maven()
+            .sysProp( "surefire.rerunFailingTestsCount", 1 )
+            .withFailure()
+            .executeTest()
+            .assertTestSuiteResults( 1, 0, 1, 0, 0 )
+            .assertThatLogLine(
+                containsString( "Found implementation of fork node factory: " + cls ),
+                equalTo( 1 ) );
     }
 
     @Test
     public void testRerunFailingErrorTestsTwoRetry()
+        throws Exception
     {
-        unpack().maven().addGoal( "-Dsurefire.rerunFailingTestsCount=" + 2 ).executeTest().assertTestSuiteResults( 1, 0,
-                0, 0, 2 );
+        String cls = profileId == null ? LEGACY_FORK_NODE : SUREFIRE_FORK_NODE;
+        unpack()
+            .maven()
+            .debugLogging()
+            .sysProp( "surefire.rerunFailingTestsCount", 2 )
+            .executeTest()
+            .assertTestSuiteResults( 1, 0, 0, 0, 2 )
+            .assertThatLogLine(
+                containsString( "Found implementation of fork node factory: " + cls ),
+                equalTo( 1 ) );
     }
-
 }

@@ -76,7 +76,7 @@ public final class ReflectionUtils
         return invokeMethodWithArray( instance, method );
     }
 
-    public static Constructor getConstructor( Class<?> clazz, Class<?>... arguments )
+    public static Constructor<?> getConstructor( Class<?> clazz, Class<?>... arguments )
     {
         try
         {
@@ -88,7 +88,7 @@ public final class ReflectionUtils
         }
     }
 
-    public static Object newInstance( Constructor constructor, Object... params )
+    public static Object newInstance( Constructor<?> constructor, Object... params )
     {
         try
         {
@@ -119,27 +119,8 @@ public final class ReflectionUtils
         try
         {
             Class<?> aClass = loadClass( classLoader, className );
-            Constructor constructor = getConstructor( aClass, param1Class );
+            Constructor<?> constructor = getConstructor( aClass, param1Class );
             return constructor.newInstance( param1 );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new SurefireReflectionException( e.getTargetException() );
-        }
-        catch ( ReflectiveOperationException e )
-        {
-            throw new SurefireReflectionException( e );
-        }
-    }
-
-    public static Object instantiateTwoArgs( ClassLoader classLoader, String className, Class<?> param1Class,
-                                             Object param1, Class param2Class, Object param2 )
-    {
-        try
-        {
-            Class<?> aClass = loadClass( classLoader, className );
-            Constructor constructor = getConstructor( aClass, param1Class, param2Class );
-            return constructor.newInstance( param1, param2 );
         }
         catch ( InvocationTargetException e )
         {
@@ -191,10 +172,10 @@ public final class ReflectionUtils
         }
     }
 
-    public static Object instantiateObject( String className, Class[] types, Object[] params, ClassLoader classLoader )
+    public static Object instantiateObject( String className, Class<?>[] types, Object[] params, ClassLoader cl )
     {
-        Class<?> clazz = loadClass( classLoader, className );
-        final Constructor constructor = getConstructor( clazz, types );
+        Class<?> clazz = loadClass( cl, className );
+        final Constructor<?> constructor = getConstructor( clazz, types );
         return newInstance( constructor, params );
     }
 

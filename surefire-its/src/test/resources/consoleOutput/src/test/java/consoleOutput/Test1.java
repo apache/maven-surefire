@@ -22,32 +22,28 @@ package consoleOutput;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Before;
+import org.junit.After;
 
 import static org.junit.Assert.fail;
 
 public class Test1
 {
-    static
+    public Test1()
     {
-       System.out.println("Printline in static block");
-        Runtime.getRuntime().addShutdownHook(  new Thread( ){
-            @Override
-            public void run()
-            {
-                System.out.println( "Printline in shutdown hook" );
-            }
-        });
-    }
-
-    @Override
-    protected void finalize()
-        throws Throwable
-    {
-        System.out.println( "Printline in finalizer" );
-    }
-
-    public Test1(){
        System.out.println("In constructor");
+    }
+
+    @Before
+    public void t1()
+    {
+        System.out.println( "t1 = " + System.currentTimeMillis() );
+    }
+
+    @After
+    public void t2()
+    {
+        System.out.println( "t2 = " + System.currentTimeMillis() );
     }
 
     @Test

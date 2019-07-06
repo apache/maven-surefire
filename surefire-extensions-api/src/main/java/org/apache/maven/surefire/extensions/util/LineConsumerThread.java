@@ -19,10 +19,10 @@ package org.apache.maven.surefire.extensions.util;
  * under the License.
  */
 
-import org.apache.maven.surefire.shared.utils.cli.StreamConsumer;
+import org.apache.maven.surefire.extensions.CloseableDaemonThread;
+import org.apache.maven.surefire.extensions.EventHandler;
 
 import javax.annotation.Nonnull;
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
@@ -31,29 +31,28 @@ import java.util.Scanner;
 /**
  *
  */
-public final class LineConsumerThread extends Thread implements Closeable
+public final class LineConsumerThread extends CloseableDaemonThread
 {
     private final Charset encoding;
     private final ReadableByteChannel channel;
-    private final StreamConsumer consumer;
+    private final EventHandler<String> eventHandler;
     private final CountdownCloseable countdownCloseable;
     private volatile boolean disabled;
 
     public LineConsumerThread( @Nonnull String threadName,
-                               @Nonnull ReadableByteChannel channel, @Nonnull StreamConsumer consumer,
+                               @Nonnull ReadableByteChannel channel, @Nonnull EventHandler<String> eventHandler,
                                @Nonnull CountdownCloseable countdownCloseable )
     {
-        this( threadName, channel, consumer, countdownCloseable, Charset.defaultCharset() );
+        this( threadName, channel, eventHandler, countdownCloseable, Charset.defaultCharset() );
     }
 
     public LineConsumerThread( @Nonnull String threadName,
-                               @Nonnull ReadableByteChannel channel, @Nonnull StreamConsumer consumer,
+                               @Nonnull ReadableByteChannel channel, @Nonnull EventHandler<String> eventHandler,
                                @Nonnull CountdownCloseable countdownCloseable, @Nonnull Charset encoding )
     {
-        setName( threadName );
-        setDaemon( true );
+        super( threadName );
         this.channel = channel;
-        this.consumer = consumer;
+        this.eventHandler = eventHandler;
         this.countdownCloseable = countdownCloseable;
         this.encoding = encoding;
     }
@@ -73,7 +72,7 @@ public final class LineConsumerThread extends Thread implements Closeable
                     isError |= stream.ioException() != null;
                     if ( !isError && !disabled )
                     {
-                        consumer.consumeLine( line );
+                        eventHandler.handleEvent( line );
                     }
                 }
                 catch ( IllegalStateException e )

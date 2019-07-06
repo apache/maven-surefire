@@ -48,7 +48,7 @@ public class BooterDeserializerTest
         assertThat( deserializer.getStartupConfiguration().getProcessChecker() )
                 .isEqualTo( ALL );
 
-        assertThat( deserializer.getStartupConfiguration().useSystemClassLoader() )
+        assertThat( deserializer.getStartupConfiguration().getClassLoaderConfiguration().isUseSystemClassLoader() )
                 .isTrue();
 
         assertThat( deserializer.getStartupConfiguration().getProviderClassName() )

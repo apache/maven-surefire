@@ -24,6 +24,7 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
+import org.apache.maven.surefire.extensions.ForkNodeFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,10 +49,12 @@ public final class ClasspathForkConfiguration
                                        @Nonnull String[] excludedEnvironmentVariables,
                                        boolean debug, int forkCount,
                                        boolean reuseForks, @Nonnull Platform pluginPlatform,
-                                       @Nonnull ConsoleLogger log )
+                                       @Nonnull ConsoleLogger log,
+                                       @Nonnull ForkNodeFactory forkNodeFactory )
     {
         super( bootClasspath, tempDirectory, debugLine, workingDirectory, modelProperties, argLine,
-                environmentVariables, excludedEnvironmentVariables, debug, forkCount, reuseForks, pluginPlatform, log );
+            environmentVariables, excludedEnvironmentVariables, debug, forkCount, reuseForks, pluginPlatform, log,
+            forkNodeFactory );
     }
 
     @Override

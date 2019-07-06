@@ -33,14 +33,14 @@ public class FailFastJUnitIT
     extends AbstractFailFastIT
 {
     @Parameters( name = "{0}" )
-    @SuppressWarnings( "checkstyle:visibilitymodifier" )
+    @SuppressWarnings( { "checkstyle:visibilitymodifier", "checkstyle:linelength" } )
     public static Iterable<Object[]> data()
     {
         /**
          * reuseForks=false is not used because of race conditions and unpredictable commands received by
          * MasterProcessReader, this feature has significant limitation.
          */
-        ArrayList<Object[]> args = new ArrayList<Object[]>();
+        ArrayList<Object[]> args = new ArrayList<>();
         //                        description
         //                                             profile
         //                                                         forkCount,
@@ -50,18 +50,21 @@ public class FailFastJUnitIT
         //                                                                                    failures
         //                                                                                            errors
         //                                                                                                  skipped
-        args.add( new Object[] { "junit4-oneFork-ff1", "junit4",   props( 1, 1, true ),  5,   0,      1,    4 } );
-        args.add( new Object[] { "junit47-oneFork-ff1", "junit47", props( 1, 1, true ),  5,   0,      1,    4 } );
-        args.add( new Object[] { "junit4-oneFork-ff2", "junit4",   props( 1, 2, true ),  5,   0,      2,    3 } );
-        args.add( new Object[] { "junit47-oneFork-ff2", "junit47", props( 1, 2, true ),  5,   0,      2,    3 } );
-        args.add( new Object[] { "junit4-twoForks-ff1", "junit4",  props( 2, 1, true ),  5,   0,      2,    3 } );
-        args.add( new Object[] { "junit47-twoForks-ff1", "junit47", props( 2, 1, true ),  5,   0,      2,    3 } );
-        args.add( new Object[] { "junit4-twoForks-ff2", "junit4",  props( 2, 2, true ),  5,   0,      2,    2 } );
-        args.add( new Object[] { "junit47-twoForks-ff2", "junit47", props( 2, 2, true ),  5,   0,      2,    2 } );
-        args.add( new Object[] { "junit4-oneFork-ff3", "junit4",   props( 1, 3, true ),  5,   0,      2,    0 } );
-        args.add( new Object[] { "junit47-oneFork-ff3", "junit47", props( 1, 3, true ),  5,   0,      2,    0 } );
-        args.add( new Object[] { "junit4-twoForks-ff3", "junit4",  props( 2, 3, true ),  5,   0,      2,    0 } );
-        args.add( new Object[] { "junit47-twoForks-ff3", "junit47", props( 2, 3, true ),  5,   0,      2,    0 } );
+        //                                                                                                        pipes
+        args.add( new Object[] { "junit4-oneFork-ff1", "junit4",   props( 1, 1, true ),  5,   0,      1,    4, true } );
+        args.add( new Object[] { "junit47-oneFork-ff1", "junit47", props( 1, 1, true ),  5,   0,      1,    4, true } );
+        args.add( new Object[] { "junit4-oneFork-ff2", "junit4",   props( 1, 2, true ),  5,   0,      2,    3, true } );
+        args.add( new Object[] { "junit47-oneFork-ff2", "junit47", props( 1, 2, true ),  5,   0,      2,    3, true } );
+        args.add( new Object[] { "junit4-twoForks-ff1", "junit4",  props( 2, 1, true ),  5,   0,      2,    3, true } );
+        args.add( new Object[] { "junit47-twoForks-ff1", "junit47", props( 2, 1, true ),  5,   0,      2,    3, true } );
+        args.add( new Object[] { "junit4-twoForks-ff2", "junit4",  props( 2, 2, true ),  5,   0,      2,    2, true } );
+        args.add( new Object[] { "junit4-twoForks-ff2-tcp", "junit4",  props( 2, 2, true ),  5,   0,      2,    2, false } );
+        args.add( new Object[] { "junit47-twoForks-ff2", "junit47", props( 2, 2, true ),  5,   0,      2,    2, true } );
+        args.add( new Object[] { "junit4-oneFork-ff3", "junit4",   props( 1, 3, true ),  5,   0,      2,    0, true } );
+        args.add( new Object[] { "junit47-oneFork-ff3", "junit47", props( 1, 3, true ),  5,   0,      2,    0, true } );
+        args.add( new Object[] { "junit4-twoForks-ff3", "junit4",  props( 2, 3, true ),  5,   0,      2,    0, true } );
+        args.add( new Object[] { "junit47-twoForks-ff3", "junit47", props( 2, 3, true ),  5,   0,      2,    0, true } );
+        args.add( new Object[] { "junit47-twoForks-ff3-tcp", "junit47", props( 2, 3, true ),  5,   0,      2,    0, false } );
         /*args.add( new Object[] { "junit4-twoForks-ff1x","junit4",  props( 2, 1, false ), 5,   0,      2,    3 } );
         args.add( new Object[] { "junit47-twoForks-ff1x","junit47",props( 2, 1, false ), 5,   0,      2,    3 } );
         args.add( new Object[] { "junit4-twoForks-ff2x","junit4",  props( 2, 2, false ), 5,   0,      2,    2 } );

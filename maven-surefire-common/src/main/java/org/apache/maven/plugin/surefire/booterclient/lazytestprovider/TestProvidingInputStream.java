@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.maven.surefire.booter.Command.BYE_ACK;
 import static org.apache.maven.surefire.booter.Command.NOOP;
 import static org.apache.maven.surefire.booter.Command.SKIP_SINCE_NEXT_TEST;
+import static org.apache.maven.surefire.booter.Command.TEST_SET_FINISHED;
 import static org.apache.maven.surefire.booter.Command.toRunClass;
 import static org.apache.maven.surefire.booter.Command.toShutdown;
 
@@ -50,7 +51,7 @@ import static org.apache.maven.surefire.booter.Command.toShutdown;
  * @author Tibor Digana (tibor17)
  */
 public final class TestProvidingInputStream
-    extends AbstractCommandStream
+        extends DefaultCommandReader
 {
     private final Semaphore barrier = new Semaphore( 0 );
 
@@ -77,7 +78,7 @@ public final class TestProvidingInputStream
     {
         if ( canContinue() )
         {
-            commands.add( Command.TEST_SET_FINISHED );
+            commands.add( TEST_SET_FINISHED );
             barrier.release();
         }
     }
@@ -129,7 +130,7 @@ public final class TestProvidingInputStream
         if ( cmd == null )
         {
             String cmdData = testClassNames.poll();
-            return cmdData == null ? Command.TEST_SET_FINISHED : toRunClass( cmdData );
+            return cmdData == null ? TEST_SET_FINISHED : toRunClass( cmdData );
         }
         else
         {
@@ -145,7 +146,7 @@ public final class TestProvidingInputStream
     }
 
     @Override
-    protected boolean isClosed()
+    public boolean isClosed()
     {
         return closed.get();
     }
@@ -167,7 +168,6 @@ public final class TestProvidingInputStream
     {
         if ( closed.compareAndSet( false, true ) )
         {
-            invalidateInternalBuffer();
             barrier.drainPermits();
             barrier.release();
         }
@@ -182,9 +182,7 @@ public final class TestProvidingInputStream
         }
         catch ( InterruptedException e )
         {
-            // help GC to free this object because StreamFeeder Thread cannot read it anyway after IOE
-            invalidateInternalBuffer();
-            throw new IOException( e.getLocalizedMessage() );
+            throw new IOException( e.getLocalizedMessage(), e );
         }
     }
 }

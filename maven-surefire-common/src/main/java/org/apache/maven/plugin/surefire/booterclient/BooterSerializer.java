@@ -71,6 +71,7 @@ import static org.apache.maven.surefire.booter.BooterConstants.TESTARTIFACT_CLAS
 import static org.apache.maven.surefire.booter.BooterConstants.TESTARTIFACT_VERSION;
 import static org.apache.maven.surefire.booter.BooterConstants.USEMANIFESTONLYJAR;
 import static org.apache.maven.surefire.booter.BooterConstants.USESYSTEMCLASSLOADER;
+import static org.apache.maven.surefire.booter.BooterConstants.FORK_NODE_CONNECTION_STRING;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.writePropertiesFile;
 
 /**
@@ -102,11 +103,11 @@ class BooterSerializer
      */
     File serialize( KeyValueSource sourceProperties, ProviderConfiguration providerConfiguration,
                     StartupConfiguration startupConfiguration, Object testSet, boolean readTestsFromInStream,
-                    Long pid, int forkNumber )
+                    Long pid, int forkNumber, String forkNodeConnectionString )
         throws IOException
     {
         SurefireProperties properties = new SurefireProperties( sourceProperties );
-
+        properties.setNullableProperty( FORK_NODE_CONNECTION_STRING, forkNodeConnectionString );
         properties.setProperty( PLUGIN_PID, pid );
 
         AbstractPathConfiguration cp = startupConfiguration.getClasspathConfiguration();

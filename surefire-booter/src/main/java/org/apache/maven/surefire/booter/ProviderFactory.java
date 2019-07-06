@@ -99,7 +99,8 @@ public class ProviderFactory
         final ClassLoader systemClassLoader = currentThread.getContextClassLoader();
         currentThread.setContextClassLoader( classLoader );
         // Note: Duplicated in ForkedBooter#createProviderInCurrentClassloader
-        Object o = surefireReflector.createBooterConfiguration( classLoader, reporterManagerFactory, isInsideFork );
+        Object o = surefireReflector.createBooterConfiguration( classLoader, isInsideFork );
+        surefireReflector.setReporterFactoryAware( o, reporterManagerFactory );
         surefireReflector.setTestSuiteDefinitionAware( o, providerConfiguration.getTestSuiteDefinition() );
         surefireReflector.setProviderPropertiesAware( o, providerConfiguration.getProviderProperties() );
         surefireReflector.setReporterConfigurationAware( o, providerConfiguration.getReporterConfiguration() );
@@ -109,7 +110,6 @@ public class ProviderFactory
         surefireReflector.setIfDirScannerAware( o, providerConfiguration.getDirScannerParams() );
         surefireReflector.setMainCliOptions( o, providerConfiguration.getMainCliOptions() );
         surefireReflector.setSkipAfterFailureCount( o, providerConfiguration.getSkipAfterFailureCount() );
-        surefireReflector.setShutdown( o, providerConfiguration.getShutdown() );
         if ( isInsideFork )
         {
             surefireReflector.setSystemExitTimeout( o, providerConfiguration.getSystemExitTimeout() );

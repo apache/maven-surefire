@@ -28,6 +28,7 @@ import org.apache.maven.surefire.booter.ModularClasspath;
 import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
+import org.apache.maven.surefire.extensions.ForkNodeFactory;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
@@ -67,10 +68,12 @@ public class ModularClasspathForkConfiguration
                                               @Nonnegative int forkCount,
                                               boolean reuseForks,
                                               @Nonnull Platform pluginPlatform,
-                                              @Nonnull ConsoleLogger log )
+                                              @Nonnull ConsoleLogger log,
+                                              @Nonnull ForkNodeFactory forkNodeFactory )
     {
         super( bootClasspath, tempDirectory, debugLine, workingDirectory, modelProperties, argLine,
-                environmentVariables, excludedEnvironmentVariables, debug, forkCount, reuseForks, pluginPlatform, log );
+            environmentVariables, excludedEnvironmentVariables, debug, forkCount, reuseForks, pluginPlatform, log,
+            forkNodeFactory );
     }
 
     @Override

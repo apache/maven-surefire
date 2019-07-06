@@ -19,14 +19,17 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
+import org.apache.maven.plugin.surefire.extensions.EventConsumerThread;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
-import org.apache.maven.surefire.booter.ForkedChannelEncoder;
 import org.apache.maven.surefire.booter.ForkingRunListener;
+import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder;
+import org.apache.maven.surefire.eventapi.Event;
+import org.apache.maven.surefire.extensions.EventHandler;
+import org.apache.maven.surefire.extensions.ForkNodeArguments;
+import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 import org.apache.maven.surefire.report.CategorizedReportEntry;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
@@ -36,17 +39,26 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.report.TestSetReportEntry;
-import org.hamcrest.MatcherAssert;
+import org.apache.maven.surefire.util.internal.WritableBufferedByteChannel;
 
+import javax.annotation.Nonnull;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.Closeable;
 import java.io.PrintStream;
+import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.Matchers.is;
+import static org.apache.maven.surefire.util.internal.Channels.newBufferedChannel;
+import static org.apache.maven.surefire.util.internal.Channels.newChannel;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Kristian Rosenvold
@@ -74,8 +86,7 @@ public class ForkingRunListenerTest
         content.reset();
     }
 
-    public void testSetStarting()
-        throws ReporterException, IOException
+    public void testSetStarting() throws Exception
     {
         final StandardTestRun standardTestRun = new StandardTestRun();
         TestSetReportEntry expected = createDefaultReportEntry();
@@ -83,8 +94,7 @@ public class ForkingRunListenerTest
         standardTestRun.assertExpected( MockReporter.SET_STARTING, expected );
     }
 
-    public void testSetCompleted()
-        throws ReporterException, IOException
+    public void testSetCompleted() throws Exception
     {
         final StandardTestRun standardTestRun = new StandardTestRun();
         TestSetReportEntry expected = createDefaultReportEntry();
@@ -92,8 +102,7 @@ public class ForkingRunListenerTest
         standardTestRun.assertExpected( MockReporter.SET_COMPLETED, expected );
     }
 
-    public void testStarting()
-        throws ReporterException, IOException
+    public void testStarting() throws Exception
     {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createDefaultReportEntry();
@@ -101,8 +110,7 @@ public class ForkingRunListenerTest
         standardTestRun.assertExpected( MockReporter.TEST_STARTING, expected );
     }
 
-    public void testSucceded()
-        throws ReporterException, IOException
+    public void testSucceeded() throws Exception
     {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createDefaultReportEntry();
@@ -110,8 +118,7 @@ public class ForkingRunListenerTest
         standardTestRun.assertExpected( MockReporter.TEST_SUCCEEDED, expected );
     }
 
-    public void testFailed()
-        throws ReporterException, IOException
+    public void testFailed() throws Exception
     {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createReportEntryWithStackTrace();
@@ -119,8 +126,7 @@ public class ForkingRunListenerTest
         standardTestRun.assertExpected( MockReporter.TEST_FAILED, expected );
     }
 
-    public void testFailedWithCommaInMessage()
-        throws ReporterException, IOException
+    public void testFailedWithCommaInMessage() throws Exception
     {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createReportEntryWithSpecialMessage( "We, the people" );
@@ -128,8 +134,7 @@ public class ForkingRunListenerTest
         standardTestRun.assertExpected( MockReporter.TEST_FAILED, expected );
     }
 
-    public void testFailedWithUnicodeEscapeInMessage()
-        throws ReporterException, IOException
+    public void testFailedWithUnicodeEscapeInMessage() throws Exception
     {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createReportEntryWithSpecialMessage( "We, \\u0177 people" );
@@ -137,8 +142,7 @@ public class ForkingRunListenerTest
         standardTestRun.assertExpected( MockReporter.TEST_FAILED, expected );
     }
 
-    public void testFailure()
-        throws ReporterException, IOException
+    public void testFailure() throws Exception
     {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createDefaultReportEntry();
@@ -146,8 +150,7 @@ public class ForkingRunListenerTest
         standardTestRun.assertExpected( MockReporter.TEST_ERROR, expected );
     }
 
-    public void testSkipped()
-        throws ReporterException, IOException
+    public void testSkipped() throws Exception
     {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createDefaultReportEntry();
@@ -155,8 +158,7 @@ public class ForkingRunListenerTest
         standardTestRun.assertExpected( MockReporter.TEST_SKIPPED, expected );
     }
 
-    public void testAssumptionFailure()
-        throws ReporterException, IOException
+    public void testAssumptionFailure() throws Exception
     {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createDefaultReportEntry();
@@ -164,8 +166,7 @@ public class ForkingRunListenerTest
         standardTestRun.assertExpected( MockReporter.TEST_ASSUMPTION_FAIL, expected );
     }
 
-    public void testConsole()
-        throws ReporterException, IOException
+    public void testConsole() throws Exception
     {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ConsoleLogger directConsoleReporter = (ConsoleLogger) standardTestRun.run();
@@ -173,8 +174,7 @@ public class ForkingRunListenerTest
         standardTestRun.assertExpected( MockReporter.CONSOLE_INFO, "HeyYou" );
     }
 
-    public void testConsoleOutput()
-        throws ReporterException, IOException
+    public void testConsoleOutput() throws Exception
     {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ConsoleOutputReceiver directConsoleReporter = (ConsoleOutputReceiver) standardTestRun.run();
@@ -182,30 +182,36 @@ public class ForkingRunListenerTest
         standardTestRun.assertExpected( MockReporter.STDOUT, "HeyYou" );
     }
 
-    public void testSystemProperties()
-        throws ReporterException, IOException
+    public void testSystemProperties() throws Exception
     {
-        final StandardTestRun standardTestRun = new StandardTestRun();
+        StandardTestRun standardTestRun = new StandardTestRun();
         standardTestRun.run();
 
         reset();
         createForkingRunListener();
 
         TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
-        NullConsoleLogger log = new NullConsoleLogger();
-        ForkClient forkStreamClient =
-                new ForkClient( providerReporterFactory, new MockNotifiableTestStream(), log, new AtomicBoolean(), 1 );
+        ForkClient forkStreamClient = new ForkClient( providerReporterFactory, new MockNotifiableTestStream(), 1 );
 
-        forkStreamClient.consumeMultiLineContent( ":maven:surefire:std:out:sys-prop:normal-run:UTF-8:azE=:djE="
-                + "\n:maven:surefire:std:out:sys-prop:normal-run:UTF-8:azI=:djI=" );
+        byte[] cmd = ":maven-surefire-event:sys-prop:normal-run:UTF-8:azE=:djE=:\n".getBytes();
+        for ( Event e : streamToEvent( cmd ) )
+        {
+            forkStreamClient.handleEvent( e );
+        }
+        cmd = "\n:maven-surefire-event:sys-prop:normal-run:UTF-8:azI=:djI=:\n".getBytes();
+        for ( Event e : streamToEvent( cmd ) )
+        {
+            forkStreamClient.handleEvent( e );
+        }
 
-        MatcherAssert.assertThat( forkStreamClient.getTestVmSystemProperties().size(), is( 2 ) );
+        assertTrue( forkStreamClient.getTestVmSystemProperties().size() == 2 );
+        assertTrue( forkStreamClient.getTestVmSystemProperties().containsKey( "k1" ) );
+        assertTrue( forkStreamClient.getTestVmSystemProperties().containsKey( "k2" ) );
     }
 
-    public void testMultipleEntries()
-        throws ReporterException, IOException
+    public void testMultipleEntries() throws Exception
     {
-        final StandardTestRun standardTestRun = new StandardTestRun();
+        StandardTestRun standardTestRun = new StandardTestRun();
         standardTestRun.run();
 
         reset();
@@ -218,11 +224,13 @@ public class ForkingRunListenerTest
         forkingReporter.testSetCompleted( reportEntry );
 
         TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
-        NullConsoleLogger log = new NullConsoleLogger();
         ForkClient forkStreamClient =
-                new ForkClient( providerReporterFactory, new MockNotifiableTestStream(), log, null, 1 );
+                new ForkClient( providerReporterFactory, new MockNotifiableTestStream(), 1 );
 
-        forkStreamClient.consumeMultiLineContent( content.toString( "UTF-8" ) );
+        for ( Event e : streamToEvent( content.toByteArray() ) )
+        {
+            forkStreamClient.handleEvent( e );
+        }
 
         final MockReporter reporter = (MockReporter) forkStreamClient.getReporter();
         final List<String> events = reporter.getEvents();
@@ -233,36 +241,85 @@ public class ForkingRunListenerTest
     }
 
     public void test2DifferentChannels()
-        throws ReporterException, IOException
+        throws Exception
     {
         reset();
         ReportEntry expected = createDefaultReportEntry();
-        final SimpleReportEntry secondExpected = createAnotherDefaultReportEntry();
+        SimpleReportEntry secondExpected = createAnotherDefaultReportEntry();
 
-        new ForkingRunListener( new ForkedChannelEncoder( printStream ), false )
+        new ForkingRunListener( new LegacyMasterProcessChannelEncoder( newBufferedChannel( printStream ) ), false )
                 .testStarting( expected );
 
-        new ForkingRunListener( new ForkedChannelEncoder( anotherPrintStream ), false )
+        new ForkingRunListener(
+            new LegacyMasterProcessChannelEncoder( newBufferedChannel( anotherPrintStream ) ), false )
                 .testSkipped( secondExpected );
 
         TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
         NotifiableTestStream notifiableTestStream = new MockNotifiableTestStream();
-        NullConsoleLogger log = new NullConsoleLogger();
 
-        ForkClient forkStreamClient = new ForkClient( providerReporterFactory, notifiableTestStream, log, null, 1 );
-        forkStreamClient.consumeMultiLineContent( content.toString( "UTF-8" ) );
+        ForkClient forkStreamClient = new ForkClient( providerReporterFactory, notifiableTestStream, 1 );
+        for ( Event e : streamToEvent( content.toByteArray() ) )
+        {
+            forkStreamClient.handleEvent( e );
+        }
 
         MockReporter reporter = (MockReporter) forkStreamClient.getReporter();
-        Assert.assertEquals( MockReporter.TEST_STARTING, reporter.getFirstEvent() );
-        Assert.assertEquals( expected, reporter.getFirstData() );
-        Assert.assertEquals( 1, reporter.getEvents().size() );
+        assertEquals( MockReporter.TEST_STARTING, reporter.getFirstEvent() );
+        assertEquals( expected, reporter.getFirstData() );
+        assertEquals( 1, reporter.getEvents().size() );
 
-        forkStreamClient = new ForkClient( providerReporterFactory, notifiableTestStream, log, null, 2 );
-        forkStreamClient.consumeMultiLineContent( anotherContent.toString( "UTF-8" ) );
+        forkStreamClient = new ForkClient( providerReporterFactory, notifiableTestStream, 2 );
+        for ( Event e : streamToEvent( anotherContent.toByteArray() ) )
+        {
+            forkStreamClient.handleEvent( e );
+        }
         MockReporter reporter2 = (MockReporter) forkStreamClient.getReporter();
-        Assert.assertEquals( MockReporter.TEST_SKIPPED, reporter2.getFirstEvent() );
-        Assert.assertEquals( secondExpected, reporter2.getFirstData() );
-        Assert.assertEquals( 1, reporter2.getEvents().size() );
+        assertEquals( MockReporter.TEST_SKIPPED, reporter2.getFirstEvent() );
+        assertEquals( secondExpected, reporter2.getFirstData() );
+        assertEquals( 1, reporter2.getEvents().size() );
+    }
+
+    private static List<Event> streamToEvent( byte[] stream ) throws Exception
+    {
+        List<Event> events = new ArrayList<>();
+        EH handler = new EH();
+        CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
+        ConsoleLogger logger = mock( ConsoleLogger.class );
+        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
+        when( arguments.getConsoleLogger() ).thenReturn( logger );
+        ReadableByteChannel channel = newChannel( new ByteArrayInputStream( stream ) );
+        try ( EventConsumerThread t = new EventConsumerThread( "t", channel, handler, countdown, arguments ) )
+        {
+            t.start();
+            countdown.awaitClosed();
+            for ( int i = 0, size = handler.countEventsInCache(); i < size; i++ )
+            {
+                events.add( handler.pullEvent() );
+            }
+            assertEquals( 0, handler.countEventsInCache() );
+            return events;
+        }
+    }
+
+    private static class EH implements EventHandler<Event>
+    {
+        private final BlockingQueue<Event> cache = new LinkedBlockingQueue<>();
+
+        Event pullEvent() throws InterruptedException
+        {
+            return cache.poll( 1, TimeUnit.MINUTES );
+        }
+
+        int countEventsInCache()
+        {
+            return cache.size();
+        }
+
+        @Override
+        public void handleEvent( @Nonnull Event event )
+        {
+            cache.add( event );
+        }
     }
 
     // Todo: Test weird characters
@@ -312,7 +369,8 @@ public class ForkingRunListenerTest
 
     private RunListener createForkingRunListener()
     {
-        return new ForkingRunListener( new ForkedChannelEncoder( printStream ), false );
+        WritableBufferedByteChannel channel = (WritableBufferedByteChannel) newChannel( printStream );
+        return new ForkingRunListener( new LegacyMasterProcessChannelEncoder( channel ), false );
     }
 
     private class StandardTestRun
@@ -326,15 +384,15 @@ public class ForkingRunListenerTest
             return createForkingRunListener();
         }
 
-        public void clientReceiveContent()
-            throws ReporterException, IOException
+        public void clientReceiveContent() throws Exception
         {
             TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
-            NullConsoleLogger log = new NullConsoleLogger();
-            final ForkClient forkStreamClient =
-                    new ForkClient( providerReporterFactory, new MockNotifiableTestStream(), log, null, 1 );
-            forkStreamClient.consumeMultiLineContent( content.toString( ) );
-            reporter = (MockReporter) forkStreamClient.getReporter();
+            ForkClient handler = new ForkClient( providerReporterFactory, new MockNotifiableTestStream(), 1 );
+            for ( Event e : streamToEvent( content.toByteArray() ) )
+            {
+                handler.handleEvent( e );
+            }
+            reporter = (MockReporter) handler.getReporter();
         }
 
         public String getFirstEvent()
@@ -347,8 +405,7 @@ public class ForkingRunListenerTest
             return (ReportEntry) reporter.getData().get( 0 );
         }
 
-        private void assertExpected( String actionCode, ReportEntry expected )
-            throws IOException, ReporterException
+        private void assertExpected( String actionCode, ReportEntry expected ) throws Exception
         {
             clientReceiveContent();
             assertEquals( actionCode, getFirstEvent() );
@@ -368,8 +425,7 @@ public class ForkingRunListenerTest
             }
         }
 
-        private void assertExpected( String actionCode, String expected )
-            throws IOException, ReporterException
+        private void assertExpected( String actionCode, String expected ) throws Exception
         {
             clientReceiveContent();
             assertEquals( actionCode, getFirstEvent() );

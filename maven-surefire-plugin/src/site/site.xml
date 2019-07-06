@@ -38,6 +38,7 @@
       <item name="Download" href="../download.html"/>
     </menu>
     <menu name="Examples">
+      <item name="TCP/IP Communication between Forks" href="examples/process-communication.html"/>
       <item name="Using TestNG" href="examples/testng.html"/>
       <item name="Using JUnit" href="examples/junit.html"/>
       <item name="Using JUnit 5 Platform" href="examples/junit-platform.html"/>

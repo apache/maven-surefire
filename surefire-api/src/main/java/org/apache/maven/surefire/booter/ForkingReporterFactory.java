@@ -34,9 +34,9 @@ public class ForkingReporterFactory
 {
     private final boolean trimstackTrace;
 
-    private final ForkedChannelEncoder eventChannel;
+    private final MasterProcessChannelEncoder eventChannel;
 
-    public ForkingReporterFactory( boolean trimstackTrace, ForkedChannelEncoder eventChannel )
+    public ForkingReporterFactory( boolean trimstackTrace, MasterProcessChannelEncoder eventChannel )
     {
         this.trimstackTrace = trimstackTrace;
         this.eventChannel = eventChannel;

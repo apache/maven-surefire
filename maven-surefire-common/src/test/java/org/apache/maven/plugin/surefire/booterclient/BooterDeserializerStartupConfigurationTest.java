@@ -20,24 +20,23 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import junit.framework.TestCase;
-import org.apache.maven.surefire.shared.io.FileUtils;
 import org.apache.maven.surefire.booter.AbstractPathConfiguration;
 import org.apache.maven.surefire.booter.BooterDeserializer;
+import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
-import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
-import org.apache.maven.surefire.booter.ProcessCheckerType;
 import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
-import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.Shutdown;
+import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.shared.io.FileUtils;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
-import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestListResolver;
+import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.RunOrder;
 import org.junit.After;
 import org.junit.Before;
@@ -50,6 +49,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import static org.apache.maven.surefire.booter.ProcessCheckerType.ALL;
 import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
 import static org.apache.maven.surefire.cli.CommandLineOption.REACTOR_FAIL_FAST;
 import static org.apache.maven.surefire.cli.CommandLineOption.SHOW_ERRORS;
@@ -105,7 +105,7 @@ public class BooterDeserializerStartupConfigurationTest
 
     public void testProcessChecker() throws IOException
     {
-        assertEquals( ProcessCheckerType.ALL, getReloadedStartupConfiguration().getProcessChecker() );
+        assertEquals( ALL, getReloadedStartupConfiguration().getProcessChecker() );
     }
 
     private void assertCpConfigEquals( ClasspathConfiguration expectedConfiguration,
@@ -136,13 +136,13 @@ public class BooterDeserializerStartupConfigurationTest
 
     public void testProcessCheckerAll() throws IOException
     {
-        assertEquals( ProcessCheckerType.ALL, getReloadedStartupConfiguration().getProcessChecker() );
+        assertEquals( ALL, getReloadedStartupConfiguration().getProcessChecker() );
     }
 
     public void testProcessCheckerNull() throws IOException
     {
         StartupConfiguration startupConfiguration = new StartupConfiguration( "com.provider", classpathConfiguration,
-                getManifestOnlyJarForkConfiguration(), false, false, null );
+                getManifestOnlyJarForkConfiguration(), null );
         assertNull( saveAndReload( startupConfiguration ).getProcessChecker() );
     }
 
@@ -178,15 +178,15 @@ public class BooterDeserializerStartupConfigurationTest
         BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
         String aTest = "aTest";
         File propsTest = booterSerializer.serialize( props, getProviderConfiguration(), startupConfiguration, aTest,
-                false, null, 1 );
+                false, null, 1, "tcp://127.0.0.1:63003" );
         BooterDeserializer booterDeserializer = new BooterDeserializer( new FileInputStream( propsTest ) );
         assertNull( booterDeserializer.getPluginPid() );
+        assertEquals( "tcp://127.0.0.1:63003", booterDeserializer.getConnectionString() );
         return booterDeserializer.getStartupConfiguration();
     }
 
     private ProviderConfiguration getProviderConfiguration()
     {
-
         File cwd = new File( "." );
         DirectoryScannerParameters directoryScannerParameters =
             new DirectoryScannerParameters( cwd, new ArrayList<String>(), new ArrayList<String>(),
@@ -204,8 +204,7 @@ public class BooterDeserializerStartupConfigurationTest
 
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )
     {
-        return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, false,
-                                         false, ProcessCheckerType.ALL );
+        return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, ALL );
     }
 
     private File getTestSourceDirectory()

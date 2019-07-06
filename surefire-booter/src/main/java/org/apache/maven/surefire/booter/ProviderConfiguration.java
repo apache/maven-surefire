@@ -96,7 +96,6 @@ public class ProviderConfiguration
         return reporterConfiguration;
     }
 
-
     public boolean isFailIfNoTests()
     {
         return failIfNoTests;
@@ -106,7 +105,6 @@ public class ProviderConfiguration
     {
         return dirScannerParams.getTestClassesDirectory();
     }
-
 
     public DirectoryScannerParameters getDirScannerParams()
     {
