@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,10 +19,20 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.extensions.ForkedChannelServer;
+
+import java.io.Closeable;
+
 /**
- * Command listener interface.
+ * Physical implementation of command sender.<br>
+ * Instance of {@link AbstractForkInputStream} (namely {@link TestLessInputStream} or {@link TestProvidingInputStream})
+ * or the implementation of {@link ForkedChannelServer} (supported by MOJO plugin configuration).
+ *
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 3.0.0-M4
  */
-public interface CommandListener
+public interface DifferedChannelCommandSender
+    extends NotifiableTestStream, Closeable
 {
-    void update( Command command );
+    void setFlushReceiverProvider( FlushReceiverProvider flushReceiverProvider );
 }

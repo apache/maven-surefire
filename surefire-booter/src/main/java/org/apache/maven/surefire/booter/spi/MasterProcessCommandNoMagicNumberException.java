@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.surefire.booter.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,12 +19,20 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.RunOrderParameters;
+import org.apache.maven.surefire.booter.MasterProcessCommand;
+
+import java.io.IOException;
 
 /**
- * @author Kristian Rosenvold
+ * No magic number recognized in the command line, see the JavaDoc in {@link MasterProcessCommand}.
+ *
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 3.0.0-M4
  */
-interface RunOrderParametersAware
+public class MasterProcessCommandNoMagicNumberException extends IOException
 {
-    void setRunOrderParameters( RunOrderParameters runOrderParameters );
+    MasterProcessCommandNoMagicNumberException( String line )
+    {
+        super( "No magic # recognized in the line '" + line + "'" );
+    }
 }

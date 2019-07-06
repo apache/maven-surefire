@@ -19,6 +19,8 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import java.util.Objects;
+
 import static java.util.Objects.requireNonNull;
 import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.RUN_CLASS;
@@ -47,6 +49,11 @@ public final class Command
         this.data = data;
     }
 
+    public Command( MasterProcessCommand command )
+    {
+        this( command, null );
+    }
+
     public static Command toShutdown( Shutdown shutdownType )
     {
         return new Command( SHUTDOWN, shutdownType.name() );
@@ -55,11 +62,6 @@ public final class Command
     public static Command toRunClass( String runClass )
     {
         return new Command( RUN_CLASS, runClass );
-    }
-
-    public Command( MasterProcessCommand command )
-    {
-        this( command, null );
     }
 
     public MasterProcessCommand getCommandType()
@@ -78,16 +80,11 @@ public final class Command
      */
     public Shutdown toShutdownData()
     {
-        if ( !isType( SHUTDOWN ) )
+        if ( command != SHUTDOWN )
         {
             throw new IllegalStateException( "expected MasterProcessCommand.SHUTDOWN" );
         }
         return isBlank( data ) ? DEFAULT : Shutdown.valueOf( data );
-    }
-
-    public boolean isType( MasterProcessCommand command )
-    {
-        return command == this.command;
     }
 
     @Override
@@ -105,7 +102,7 @@ public final class Command
 
         Command arg = (Command) o;
 
-        return command == arg.command && ( data == null ? arg.data == null : data.equals( arg.data ) );
+        return command == arg.command && Objects.equals( data, arg.data );
     }
 
     @Override

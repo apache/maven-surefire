@@ -152,7 +152,7 @@ public class BooterDeserializerStartupConfigurationTest
                 false, null, 1 );
         BooterDeserializer booterDeserializer = new BooterDeserializer( new FileInputStream( propsTest ) );
         assertNull( booterDeserializer.getPluginPid() );
-        return booterDeserializer.getProviderConfiguration();
+        return booterDeserializer.getStartupConfiguration();
     }
 
     private ProviderConfiguration getProviderConfiguration()

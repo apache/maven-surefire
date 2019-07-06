@@ -22,7 +22,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 import org.apache.maven.plugin.surefire.CommonReflector;
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.SurefireProperties;
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.AbstractForkInputStream;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.DifferedChannelCommandSender;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream;
@@ -54,6 +54,7 @@ import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -77,7 +78,6 @@ import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.currentThread;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.util.Collections.addAll;
-import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -542,7 +542,7 @@ public class ForkStarter
 
     private RunResult fork( Object testSet, KeyValueSource providerProperties, ForkClient forkClient,
                             SurefireProperties effectiveSystemProperties, int forkNumber,
-                            AbstractForkInputStream testProvidingInputStream, boolean readTestsFromInStream )
+                            DifferedChannelCommandSender commandSender, boolean readTestsFromInStream )
         throws SurefireBooterForkException
     {
         final String tempDir;
@@ -581,10 +581,7 @@ public class ForkStarter
         OutputStreamFlushableCommandline cli =
                 forkConfiguration.createCommandLine( startupConfiguration, forkNumber, dumpLogDir );
 
-        if ( testProvidingInputStream != null )
-        {
-            testProvidingInputStream.setFlushReceiverProvider( cli );
-        }
+        commandSender.setFlushReceiverProvider( cli );
 
         cli.createArg().setValue( tempDir );
         cli.createArg().setValue( DUMP_FILE_PREFIX + forkNumber );
@@ -594,9 +591,8 @@ public class ForkStarter
             cli.createArg().setValue( systPropsFile.getName() );
         }
 
-        final ThreadedStreamConsumer threadedStreamConsumer = new ThreadedStreamConsumer( forkClient );
-        final CloseableCloser closer = new CloseableCloser( forkNumber, threadedStreamConsumer,
-                                                            requireNonNull( testProvidingInputStream, "null param" ) );
+        ThreadedStreamConsumer threadedStreamConsumer = new ThreadedStreamConsumer( forkClient );
+        CloseableCloser closer = new CloseableCloser( forkNumber, threadedStreamConsumer, commandSender );
 
         log.debug( "Forking command line: " + cli );
 
@@ -609,7 +605,7 @@ public class ForkStarter
                     new NativeStdErrStreamConsumer( forkClient.getDefaultReporterFactory() );
 
             CommandLineCallable future =
-                    executeCommandLineAsCallable( cli, testProvidingInputStream, threadedStreamConsumer,
+                    executeCommandLineAsCallable( cli, (InputStream) commandSender, threadedStreamConsumer,
                                                         stdErrConsumer, 0, closer, ISO_8859_1 );
 
             currentForkClients.add( forkClient );
@@ -674,7 +670,7 @@ public class ForkStarter
                     //noinspection ThrowFromFinallyBlock
                     throw new SurefireBooterForkException( "There was an error in the forked process"
                                                         + detail
-                                                        + ( stackTrace == null ? "" : stackTrace ), cause );
+                                                        + ( stackTrace == null ? "" : "\n" + stackTrace ), cause );
                 }
                 if ( !forkClient.isSaidGoodBye() )
                 {

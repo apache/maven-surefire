@@ -28,7 +28,6 @@ import org.apache.maven.plugin.surefire.AbstractSurefireMojoTest;
 import org.apache.maven.plugin.surefire.CommonReflectorTest;
 import org.apache.maven.plugin.surefire.MojoMocklessTest;
 import org.apache.maven.plugin.surefire.SurefireHelperTest;
-import org.apache.maven.plugin.surefire.SurefireReflectorTest;
 import org.apache.maven.plugin.surefire.SurefirePropertiesTest;
 import org.apache.maven.plugin.surefire.booterclient.BooterDeserializerProviderConfigurationTest;
 import org.apache.maven.plugin.surefire.booterclient.BooterDeserializerStartupConfigurationTest;
@@ -88,7 +87,6 @@ public class JUnit4SuiteTest extends TestCase
         suite.addTest( new JUnit4TestAdapter( TestProvidingInputStreamTest.class ) );
         suite.addTest( new JUnit4TestAdapter( TestLessInputStreamBuilderTest.class ) );
         suite.addTest( new JUnit4TestAdapter( SPITest.class ) );
-        suite.addTest( new JUnit4TestAdapter( SurefireReflectorTest.class ) );
         suite.addTest( new JUnit4TestAdapter( SurefireHelperTest.class ) );
         suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoTest.class ) );
         suite.addTest( new JUnit4TestAdapter( DefaultForkConfigurationTest.class ) );

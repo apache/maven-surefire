@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.surefire.providerapi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,12 +19,21 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.TestRequest;
+import org.apache.maven.surefire.testset.TestSetFailedException;
 
 /**
- * @author Kristian Rosenvold
+ * Hiding CommandReader instance in provider.
  */
-interface TestRequestAware
+public interface CommandChainReader
 {
-    void setTestRequest( TestRequest testSuiteDefinition );
+    boolean awaitStarted()
+        throws TestSetFailedException;
+
+    void addTestsFinishedListener( CommandListener listener );
+
+    void addSkipNextTestsListener( CommandListener listener );
+
+    void addShutdownListener( CommandListener listener );
+
+    void removeListener( CommandListener listener );
 }

@@ -19,11 +19,14 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.StackTraceWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -31,18 +34,24 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.doCallRealMethod;
+import static org.powermock.api.mockito.PowerMockito.doNothing;
 import static org.powermock.api.mockito.PowerMockito.doThrow;
 import static org.powermock.api.mockito.PowerMockito.verifyNoMoreInteractions;
 import static org.powermock.api.mockito.PowerMockito.verifyPrivate;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static org.powermock.reflect.Whitebox.invokeMethod;
+import static org.powermock.reflect.Whitebox.setInternalState;
+import static org.powermock.utils.JavaVersion.JAVA_RECENT;
+import static org.powermock.utils.JavaVersion.JAVA_12;
 
 /**
  * PowerMock tests for {@link ForkedBooter}.
  */
 @RunWith( PowerMockRunner.class )
-@PrepareForTest( { PpidChecker.class, ForkedBooter.class } )
+@PrepareForTest( { PpidChecker.class, ForkedBooter.class, ForkedChannelEncoder.class } )
+@PowerMockIgnore( { "org.jacoco.agent.rt.*", "com.vladium.emma.rt.*" } )
 public class ForkedBooterMockTest
 {
     @Mock
@@ -50,6 +59,21 @@ public class ForkedBooterMockTest
 
     @Mock
     private ForkedBooter booter;
+
+    @Mock
+    private ForkedChannelEncoder eventChannel;
+
+    @Captor
+    private ArgumentCaptor<StackTraceWriter> capturedStackTraceWriter;
+
+    @Captor
+    private ArgumentCaptor<Boolean> capturedBoolean;
+
+    @Captor
+    private ArgumentCaptor<String[]> capturedArgs;
+
+    @Captor
+    private ArgumentCaptor<ForkedBooter> capturedBooter;
 
     @Test
     public void shouldCheckNewPingMechanism() throws Exception
@@ -71,8 +95,6 @@ public class ForkedBooterMockTest
     {
         PowerMockito.mockStatic( ForkedBooter.class );
 
-        ArgumentCaptor<String[]> capturedArgs = ArgumentCaptor.forClass( String[].class );
-        ArgumentCaptor<ForkedBooter> capturedBooter = ArgumentCaptor.forClass( ForkedBooter.class );
         doCallRealMethod()
                 .when( ForkedBooter.class, "run", capturedBooter.capture(), capturedArgs.capture() );
 
@@ -106,6 +128,13 @@ public class ForkedBooterMockTest
     @Test
     public void testMainWithError() throws Exception
     {
+        //does not work in PowerMock
+        //assumeFalse( JAVA_RECENT.atLeast( JAVA_12 ) );
+        if ( JAVA_RECENT.atLeast( JAVA_12 ) )
+        {
+            return;
+        }
+
         PowerMockito.mockStatic( ForkedBooter.class );
 
         doCallRealMethod()
@@ -113,6 +142,13 @@ public class ForkedBooterMockTest
 
         doThrow( new RuntimeException( "dummy exception" ) )
                 .when( booter, "execute" );
+
+        doNothing()
+                .when( booter, "setupBooter",
+                        any( String.class ), any( String.class ), any( String.class ), any( String.class ) );
+
+        // broken in PowerMock JDK 12
+        setInternalState( booter, "eventChannel", eventChannel );
 
         String[] args = new String[]{ "/", "dump", "surefire.properties", "surefire-effective.properties" };
         invokeMethod( ForkedBooter.class, "run", booter, args );
@@ -122,6 +158,18 @@ public class ForkedBooterMockTest
 
         verifyPrivate( booter, times( 1 ) )
                 .invoke( "execute" );
+
+        verify( eventChannel, times( 1 ) )
+                .consoleErrorLog( capturedStackTraceWriter.capture(), capturedBoolean.capture() );
+        assertThat( capturedStackTraceWriter.getValue() )
+                .isNotNull();
+        assertThat( capturedStackTraceWriter.getValue().smartTrimmedStackTrace() )
+                .isEqualTo( "test subsystem#no method RuntimeException dummy exception" );
+        assertThat( capturedStackTraceWriter.getValue().getThrowable().getTarget() )
+                .isNotNull()
+                .isInstanceOf( RuntimeException.class );
+        assertThat( capturedStackTraceWriter.getValue().getThrowable().getTarget().getMessage() )
+                .isEqualTo( "dummy exception" );
 
         verifyPrivate( booter, times( 1 ) )
                 .invoke( "cancelPingScheduler" );

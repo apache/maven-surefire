@@ -87,7 +87,8 @@ public class Surefire746Test
         throws Exception
     {
         ReporterFactory reporterFactory = JUnitCoreTester.defaultNoXml();
-        BaseProviderFactory providerParameters = new BaseProviderFactory( reporterFactory, true );
+        BaseProviderFactory providerParameters = new BaseProviderFactory( true );
+        providerParameters.setReporterFactory( reporterFactory );
 
         providerParameters.setReporterConfiguration( new ReporterConfiguration( new File( "" ), false ) );
         Map<String, String> junitProps = new HashMap<>();

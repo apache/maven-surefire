@@ -23,11 +23,8 @@ import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
 import org.apache.maven.plugin.surefire.runorder.ThreadedExecutionSchedulerTest;
 import org.apache.maven.surefire.SpecificTestClassFilterTest;
-import org.apache.maven.surefire.booter.CommandReaderTest;
 import org.apache.maven.surefire.booter.ForkedChannelEncoderTest;
 import org.apache.maven.surefire.booter.ForkingRunListenerTest;
-import org.apache.maven.surefire.booter.MasterProcessCommandTest;
-import org.apache.maven.surefire.booter.SurefireReflectorTest;
 import org.apache.maven.surefire.report.LegacyPojoStackTraceWriterTest;
 import org.apache.maven.surefire.suite.RunResultTest;
 import org.apache.maven.surefire.testset.FundamentalFilterTest;
@@ -51,11 +48,8 @@ import org.junit.runners.Suite;
  * @since 2.19
  */
 @Suite.SuiteClasses( {
-    CommandReaderTest.class,
     ThreadedExecutionSchedulerTest.class,
     ForkingRunListenerTest.class,
-    MasterProcessCommandTest.class,
-    SurefireReflectorTest.class,
     LegacyPojoStackTraceWriterTest.class,
     RunResultTest.class,
     ResolvedTestTest.class,

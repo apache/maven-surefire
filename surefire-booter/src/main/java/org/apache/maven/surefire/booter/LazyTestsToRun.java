@@ -25,7 +25,6 @@ import java.util.Iterator;
 import org.apache.maven.surefire.util.CloseableIterator;
 import org.apache.maven.surefire.util.TestsToRun;
 
-import static org.apache.maven.surefire.booter.CommandReader.getReader;
 import static org.apache.maven.surefire.util.ReflectionUtils.loadClass;
 
 /**
@@ -44,23 +43,24 @@ final class LazyTestsToRun
     extends TestsToRun
 {
     private final ForkedChannelEncoder eventChannel;
+    private final CommandReader commandReader;
 
     /**
      * C'tor
      *
      * @param eventChannel the output stream to use when requesting new new tests
      */
-    LazyTestsToRun( ForkedChannelEncoder eventChannel )
+    LazyTestsToRun( ForkedChannelEncoder eventChannel, CommandReader commandReader )
     {
         super( Collections.<Class<?>>emptySet() );
-
         this.eventChannel = eventChannel;
+        this.commandReader = commandReader;
     }
 
     private final class BlockingIterator
         implements Iterator<Class<?>>
     {
-        private final Iterator<String> it = getReader().getIterableClasses( eventChannel ).iterator();
+        private final Iterator<String> it = commandReader.getIterableClasses( eventChannel ).iterator();
 
         @Override
         public boolean hasNext()
@@ -132,7 +132,7 @@ final class LazyTestsToRun
      */
     private Iterator<Class<?>> newWeakIterator()
     {
-        final Iterator<String> it = getReader().iterated();
+        final Iterator<String> it = commandReader.iterated();
         return new CloseableIterator<Class<?>>()
         {
             @Override

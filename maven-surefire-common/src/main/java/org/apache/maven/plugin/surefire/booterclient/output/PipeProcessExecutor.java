@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.plugin.surefire.booterclient.output;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,17 +19,29 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.cli.CommandLineOption;
-
-import java.util.List;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.AbstractForkInputStream;
+import org.apache.maven.shared.utils.cli.CommandLineCallable;
+import org.apache.maven.shared.utils.cli.Commandline;
+import org.apache.maven.shared.utils.cli.StreamConsumer;
 
 /**
- * CLI options in plugin (main) JVM process.
- *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19
+ * @since 3.0.0-M4
  */
-interface MainCliOptionsAware
+final class PipeProcessExecutor
+    implements ExecutableCommandline
 {
-    void setMainCliOptions( List<CommandLineOption> mainCliOptions );
+    private final AbstractForkInputStream forkInputStream;
+
+    PipeProcessExecutor( AbstractForkInputStream forkInputStream )
+    {
+        this.forkInputStream = forkInputStream;
+    }
+
+    @Override
+    public CommandLineCallable executeCommandLineAsCallable( Commandline cli,
+                                                             StreamConsumer stdOut, StreamConsumer stdErr )
+    {
+        return null;
+    }
 }

@@ -20,8 +20,8 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import org.apache.maven.surefire.booter.Command;
-import org.apache.maven.surefire.booter.CommandListener;
-import org.apache.maven.surefire.booter.CommandReader;
+import org.apache.maven.surefire.providerapi.CommandChainReader;
+import org.apache.maven.surefire.providerapi.CommandListener;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnitTestFailureListener;
 import org.apache.maven.surefire.common.junit4.Notifier;
@@ -46,7 +46,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.maven.surefire.booter.CommandReader.getReader;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTestDescriptions;
 import static org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory.createCustomListeners;
 import static org.apache.maven.surefire.common.junit4.Notifier.pureNotifier;
@@ -82,14 +81,14 @@ public class JUnitCoreProvider
 
     private final TestListResolver testResolver;
 
-    private final CommandReader commandsReader;
+    private final CommandChainReader commandsReader;
 
     private TestsToRun testsToRun;
 
     public JUnitCoreProvider( ProviderParameters bootParams )
     {
         // don't start a thread in CommandReader while we are in in-plugin process
-        commandsReader = bootParams.isInsideFork() ? getReader().setShutdown( bootParams.getShutdown() ) : null;
+        commandsReader = bootParams.isInsideFork() ? bootParams.getCommandReader() : null;
         providerParameters = bootParams;
         testClassLoader = bootParams.getTestClassLoader();
         scanResult = bootParams.getScanResult();

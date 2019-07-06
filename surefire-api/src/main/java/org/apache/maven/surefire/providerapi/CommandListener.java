@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.surefire.providerapi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,12 +19,12 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.booter.Command;
 
 /**
- * @author Kristian Rosenvold
+ * Command listener interface.
  */
-interface DirectoryScannerParametersAware
+public interface CommandListener
 {
-    void setDirectoryScannerParameters( DirectoryScannerParameters directoryScanner );
+    void update( Command command );
 }

@@ -51,6 +51,7 @@
     <module>surefire-logger-api</module>
     <module>surefire-api</module>
     <module>surefire-extensions-api</module>
+    <module>surefire-extensions-spi</module>
     <module>surefire-booter</module>
     <module>surefire-grouper</module>
     <module>surefire-providers</module>

@@ -23,15 +23,30 @@ import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLoggerDecorator;
+import org.apache.maven.plugin.surefire.log.api.PrintStreamLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
+import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.io.File;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.maven.surefire.util.ReflectionUtils.getMethod;
+import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray;
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.powermock.reflect.Whitebox.getInternalState;
 
 public class CommonReflectorTest
@@ -92,5 +107,40 @@ public class CommonReflectorTest
                 .isEqualTo( infoReporter.toString() );
         assertThat( reportConfiguration.getConsoleOutputReporter().toString() )
                 .isEqualTo( consoleOutputReporter.toString() );
+    }
+
+    @Test
+    public void shouldProxyConsoleLogger()
+    {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        ConsoleLogger logger = spy( new PrintStreamLogger( System.out ) );
+        Object mirror = CommonReflector.createConsoleLogger( logger, cl );
+        MatcherAssert.assertThat( mirror, is( notNullValue() ) );
+        MatcherAssert.assertThat( mirror.getClass().getInterfaces()[0].getName(), is( ConsoleLogger.class.getName() ) );
+        MatcherAssert.assertThat( mirror, is( not( sameInstance( (Object) logger ) ) ) );
+        MatcherAssert.assertThat( mirror, is( instanceOf( ConsoleLoggerDecorator.class ) ) );
+        invokeMethodWithArray( mirror, getMethod( mirror, "info", String.class ), "Hi There!" );
+        verify( logger, times( 1 ) ).info( "Hi There!" );
+    }
+
+    @Test
+    public void testCreateConsoleLogger()
+    {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        ConsoleLogger consoleLogger = mock( ConsoleLogger.class );
+        ConsoleLogger decorator = (ConsoleLogger) CommonReflector.createConsoleLogger( consoleLogger, cl );
+        assertThat( decorator )
+                .isNotSameAs( consoleLogger );
+
+        assertThat( decorator.isDebugEnabled() ).isFalse();
+        when( consoleLogger.isDebugEnabled() ).thenReturn( true );
+        assertThat( decorator.isDebugEnabled() ).isTrue();
+        verify( consoleLogger, times( 2 ) ).isDebugEnabled();
+
+        decorator.info( "msg" );
+        ArgumentCaptor<String> argumentMsg = ArgumentCaptor.forClass( String.class );
+        verify( consoleLogger, times( 1 ) ).info( argumentMsg.capture() );
+        assertThat( argumentMsg.getAllValues() ).hasSize( 1 );
+        assertThat( argumentMsg.getAllValues().get( 0 ) ).isEqualTo( "msg" );
     }
 }

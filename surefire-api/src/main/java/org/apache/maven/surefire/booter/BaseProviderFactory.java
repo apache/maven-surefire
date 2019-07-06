@@ -20,6 +20,7 @@ package org.apache.maven.surefire.booter;
  */
 
 import org.apache.maven.surefire.cli.CommandLineOption;
+import org.apache.maven.surefire.providerapi.CommandChainReader;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ConsoleStream;
 import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
@@ -46,13 +47,11 @@ import static java.util.Collections.emptyList;
  * @author Kristian Rosenvold
  */
 public class BaseProviderFactory
-    implements DirectoryScannerParametersAware, ReporterConfigurationAware, SurefireClassLoadersAware, TestRequestAware,
-    ProviderPropertiesAware, ProviderParameters, TestArtifactInfoAware, RunOrderParametersAware, MainCliOptionsAware,
-    FailFastAware, ShutdownAware
+    implements ProviderParameters
 {
-    private final ReporterFactory reporterFactory;
-
     private final boolean insideFork;
+
+    private ReporterFactory reporterFactory;
 
     private ForkedChannelEncoder forkedChannelEncoder;
 
@@ -74,14 +73,24 @@ public class BaseProviderFactory
 
     private int skipAfterFailureCount;
 
-    private Shutdown shutdown;
-
     private Integer systemExitTimeout;
 
-    public BaseProviderFactory( ReporterFactory reporterFactory, boolean insideFork )
+    private CommandChainReader commandReader;
+
+    public BaseProviderFactory( boolean insideFork )
     {
-        this.reporterFactory = reporterFactory;
         this.insideFork = insideFork;
+    }
+
+    @Override
+    public CommandChainReader getCommandReader()
+    {
+        return commandReader;
+    }
+
+    public void setCommandReader( CommandChainReader commandReader )
+    {
+        this.commandReader = commandReader;
     }
 
     @Override
@@ -114,25 +123,27 @@ public class BaseProviderFactory
                 ? null : new DefaultRunOrderCalculator( runOrderParameters, getThreadCount() );
     }
 
+    public void setReporterFactory( ReporterFactory reporterFactory )
+    {
+        this.reporterFactory = reporterFactory;
+    }
+
     @Override
     public ReporterFactory getReporterFactory()
     {
         return reporterFactory;
     }
 
-    @Override
     public void setDirectoryScannerParameters( DirectoryScannerParameters directoryScannerParameters )
     {
         this.directoryScannerParameters = directoryScannerParameters;
     }
 
-    @Override
     public void setReporterConfiguration( ReporterConfiguration reporterConfiguration )
     {
         this.reporterConfiguration = reporterConfiguration;
     }
 
-    @Override
     public void setClassLoaders( ClassLoader testClassLoader )
     {
         this.testClassLoader = testClassLoader;
@@ -145,7 +156,6 @@ public class BaseProviderFactory
                        : new DefaultDirectConsoleReporter( reporterConfiguration.getOriginalSystemOut() );
     }
 
-    @Override
     public void setTestRequest( TestRequest testRequest )
     {
         this.testRequest = testRequest;
@@ -175,7 +185,6 @@ public class BaseProviderFactory
         return testClassLoader;
     }
 
-    @Override
     public void setProviderProperties( Map<String, String> providerProperties )
     {
         this.providerProperties = providerProperties;
@@ -193,13 +202,11 @@ public class BaseProviderFactory
         return testArtifactInfo;
     }
 
-    @Override
     public void setTestArtifactInfo( TestArtifactInfo testArtifactInfo )
     {
         this.testArtifactInfo = testArtifactInfo;
     }
 
-    @Override
     public void setRunOrderParameters( RunOrderParameters runOrderParameters )
     {
         this.runOrderParameters = runOrderParameters;
@@ -211,7 +218,11 @@ public class BaseProviderFactory
         return mainCliOptions;
     }
 
-    @Override
+    /**
+     * CLI options in plugin (main) JVM process.
+     *
+     * @param mainCliOptions options
+     */
     public void setMainCliOptions( List<CommandLineOption> mainCliOptions )
     {
         this.mainCliOptions = mainCliOptions == null ? Collections.<CommandLineOption>emptyList() : mainCliOptions;
@@ -223,7 +234,11 @@ public class BaseProviderFactory
         return skipAfterFailureCount;
     }
 
-    @Override
+    /**
+     * See the plugin configuration parameter "skipAfterFailureCount".
+     *
+     * @param skipAfterFailureCount the value in config parameter "skipAfterFailureCount"
+     */
     public void setSkipAfterFailureCount( int skipAfterFailureCount )
     {
         this.skipAfterFailureCount = skipAfterFailureCount;
@@ -233,18 +248,6 @@ public class BaseProviderFactory
     public boolean isInsideFork()
     {
         return insideFork;
-    }
-
-    @Override
-    public Shutdown getShutdown()
-    {
-        return shutdown;
-    }
-
-    @Override
-    public void setShutdown( Shutdown shutdown )
-    {
-        this.shutdown = shutdown;
     }
 
     @Override

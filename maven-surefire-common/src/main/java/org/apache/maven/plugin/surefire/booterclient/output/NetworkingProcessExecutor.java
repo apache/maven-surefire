@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.plugin.surefire.booterclient.output;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,13 +19,29 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.shared.utils.cli.CommandLineCallable;
+import org.apache.maven.shared.utils.cli.Commandline;
+import org.apache.maven.shared.utils.cli.StreamConsumer;
+import org.apache.maven.surefire.extensions.ForkedChannelServer;
+
 /**
- * See the plugin configuration parameter {@code skipAfterFailureCount}.
- *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19
+ * @since 3.0.0-M4
  */
-interface FailFastAware
+final class NetworkingProcessExecutor
+        implements ExecutableCommandline
 {
-    void setSkipAfterFailureCount( int skipAfterFailureCount );
+    private final ForkedChannelServer forkedChannelServer;
+
+    NetworkingProcessExecutor( ForkedChannelServer forkedChannelServer )
+    {
+        this.forkedChannelServer = forkedChannelServer;
+    }
+
+    @Override
+    public CommandLineCallable executeCommandLineAsCallable( Commandline cli,
+                                                             StreamConsumer stdOut, StreamConsumer stdErr )
+    {
+        return null;
+    }
 }

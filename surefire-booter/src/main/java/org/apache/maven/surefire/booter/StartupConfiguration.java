@@ -48,6 +48,11 @@ public class StartupConfiguration
         isInForkedVm = inForkedVm;
     }
 
+    public String getInterProcessChannelConfiguration()
+    {
+        return "pipe:std:in";
+    }
+
     public boolean isProviderMainClass()
     {
         return providerClassName.endsWith( "#main" );

@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.surefire.extensions;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,12 +19,31 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.util.Map;
+import org.apache.maven.surefire.booter.Command;
+
+import java.io.IOException;
 
 /**
- * @author Kristian Rosenvold
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 3.0.0-M4
  */
-interface ProviderPropertiesAware
+public abstract class ForkedChannelServer
+    implements AutoCloseable
 {
-    void setProviderProperties( Map<String, String> providerProperties );
+    private final String channelConfig;
+
+    public ForkedChannelServer( String channelConfig )
+    {
+        this.channelConfig = channelConfig;
+    }
+
+    protected String getChannelConfig()
+    {
+        return channelConfig;
+    }
+
+    public abstract void send( Command command ) throws IOException;
+
+    @Override
+    public abstract void close() throws IOException;
 }

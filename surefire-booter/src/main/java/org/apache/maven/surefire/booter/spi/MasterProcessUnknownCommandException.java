@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.surefire.booter.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,13 +19,21 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.booter.MasterProcessCommand;
+
+import java.io.IOException;
+
 /**
- * See the plugin configuration parameter {@code shutdown}.
+ * No {@link MasterProcessCommand command} recognized according to the opcode
+ * encapsulated in the command line, see the JavaDoc in {@link MasterProcessCommand}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19
+ * @since 3.0.0-M4
  */
-public interface ShutdownAware
+public class MasterProcessUnknownCommandException extends IOException
 {
-    void setShutdown( Shutdown shutdown );
+    MasterProcessUnknownCommandException( String line )
+    {
+        super( "Unrecognized command found '" + line + "'" );
+    }
 }

@@ -19,9 +19,15 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.booter.spi.DefaultMasterProcessChannelDecoderFactory;
+import org.apache.maven.surefire.providerapi.CommandListener;
+import org.apache.maven.surefire.providerapi.MasterProcessChannelDecoder;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
+import org.apache.maven.surefire.report.StackTraceWriter;
+import org.apache.maven.surefire.spi.MasterProcessChannelDecoderFactory;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.io.File;
@@ -36,6 +42,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.security.AccessControlException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ServiceLoader;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
@@ -69,7 +76,6 @@ public final class ForkedBooter
     private static final String LAST_DITCH_SHUTDOWN_THREAD = "surefire-forkedjvm-last-ditch-daemon-shutdown-thread-";
     private static final String PING_THREAD = "surefire-forkedjvm-ping-";
 
-    private final CommandReader commandReader = CommandReader.getReader();
     private final ForkedChannelEncoder eventChannel = new ForkedChannelEncoder( System.out );
     private final Semaphore exitBarrier = new Semaphore( 0 );
 
@@ -78,6 +84,8 @@ public final class ForkedBooter
 
     private ScheduledThreadPoolExecutor jvmTerminator;
     private ProviderConfiguration providerConfiguration;
+    private ForkingReporterFactory forkingReporterFactory;
+    private CommandReader commandReader;
     private StartupConfiguration startupConfiguration;
     private Object testSet;
 
@@ -87,7 +95,6 @@ public final class ForkedBooter
     {
         BooterDeserializer booterDeserializer =
                 new BooterDeserializer( createSurefirePropertiesIfFileExists( tmpDir, surefirePropsFileName ) );
-        pingScheduler = isDebugging() ? null : listenToShutdownCommands( booterDeserializer.getPluginPid() );
         setSystemProperties( new File( tmpDir, effectiveSystemPropertiesFileName ) );
 
         providerConfiguration = booterDeserializer.deserialize();
@@ -100,7 +107,17 @@ public final class ForkedBooter
                     .dumpText( "Found Maven process ID " + booterDeserializer.getPluginPid() );
         }
 
-        startupConfiguration = booterDeserializer.getProviderConfiguration();
+        startupConfiguration = booterDeserializer.getStartupConfiguration();
+
+        forkingReporterFactory = createForkingReporterFactory();
+
+        ConsoleLogger logger = (ConsoleLogger) forkingReporterFactory.createReporter();
+        String communicationConfig = startupConfiguration.getInterProcessChannelConfiguration();
+        MasterProcessChannelDecoder decoder = lookupDecoderFactory().createDecoder( communicationConfig, logger );
+        commandReader = new CommandReader( decoder, providerConfiguration.getShutdown(), logger );
+
+        pingScheduler = isDebugging() ? null : listenToShutdownCommands( booterDeserializer.getPluginPid() );
+
         systemExitTimeoutInSeconds = providerConfiguration.systemExitTimeout( DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS );
 
         AbstractPathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
@@ -152,7 +169,7 @@ public final class ForkedBooter
         }
         else if ( readTestsFromCommandReader )
         {
-            return new LazyTestsToRun( eventChannel );
+            return new LazyTestsToRun( eventChannel, commandReader );
         }
         return null;
     }
@@ -352,8 +369,7 @@ public final class ForkedBooter
     private void runSuitesInProcess()
         throws TestSetFailedException, InvocationTargetException
     {
-        ForkingReporterFactory factory = createForkingReporterFactory();
-        invokeProviderInSameClassLoader( factory );
+        createProviderInCurrentClassloader( forkingReporterFactory ).invoke( testSet );
     }
 
     private ForkingReporterFactory createForkingReporterFactory()
@@ -398,15 +414,11 @@ public final class ForkedBooter
         );
     }
 
-    private void invokeProviderInSameClassLoader( ForkingReporterFactory factory )
-        throws TestSetFailedException, InvocationTargetException
-    {
-        createProviderInCurrentClassloader( factory ).invoke( testSet );
-    }
-
     private SurefireProvider createProviderInCurrentClassloader( ForkingReporterFactory reporterManagerFactory )
     {
-        BaseProviderFactory bpf = new BaseProviderFactory( reporterManagerFactory, true );
+        BaseProviderFactory bpf = new BaseProviderFactory( true );
+        bpf.setReporterFactory( reporterManagerFactory );
+        bpf.setCommandReader( commandReader );
         bpf.setTestRequest( providerConfiguration.getTestSuiteDefinition() );
         bpf.setReporterConfiguration( providerConfiguration.getReporterConfiguration() );
         bpf.setForkedChannelEncoder( eventChannel );
@@ -418,10 +430,28 @@ public final class ForkedBooter
         bpf.setDirectoryScannerParameters( providerConfiguration.getDirScannerParams() );
         bpf.setMainCliOptions( providerConfiguration.getMainCliOptions() );
         bpf.setSkipAfterFailureCount( providerConfiguration.getSkipAfterFailureCount() );
-        bpf.setShutdown( providerConfiguration.getShutdown() );
         bpf.setSystemExitTimeout( providerConfiguration.getSystemExitTimeout() );
         String providerClass = startupConfiguration.getActualClassName();
         return (SurefireProvider) instantiateOneArg( classLoader, providerClass, ProviderParameters.class, bpf );
+    }
+
+    private static MasterProcessChannelDecoderFactory lookupDecoderFactory()
+    {
+        MasterProcessChannelDecoderFactory defaultDecoderFactory = null;
+        MasterProcessChannelDecoderFactory customDecoderFactory = null;
+        for ( MasterProcessChannelDecoderFactory decoderFactory : ServiceLoader.load(
+                MasterProcessChannelDecoderFactory.class ) )
+        {
+            if ( decoderFactory.getClass() == DefaultMasterProcessChannelDecoderFactory.class )
+            {
+                defaultDecoderFactory = decoderFactory;
+            }
+            else
+            {
+                customDecoderFactory = decoderFactory;
+            }
+        }
+        return defaultDecoderFactory == null ? customDecoderFactory : defaultDecoderFactory;
     }
 
     /**
@@ -453,6 +483,8 @@ public final class ForkedBooter
         {
             DumpErrorSingleton.getSingleton().dumpException( t );
             t.printStackTrace();
+            StackTraceWriter stack = new LegacyPojoStackTraceWriter( "test subsystem", "no method", t );
+            booter.eventChannel.consoleErrorLog( stack, false );
             booter.cancelPingScheduler();
             booter.exit1();
         }

@@ -19,12 +19,31 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReporterConfiguration;
-
 /**
- * @author Kristian Rosenvold
+ * magic number : opcode [: opcode specific data]*
+ * <br>
+ *
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 3.0.0-M4
  */
-interface ReporterConfigurationAware
+public final class MasterProcessChannelEncoder
 {
-    void setReporterConfiguration( ReporterConfiguration reporterConfiguration );
+
+    private static final String MAGIC_NUMBER = ":maven:surefire:std:out:";
+
+    /**
+     * Encodes opcode and data.
+     *
+     * @param operation opcode
+     * @param data   data
+     * @return encoded command
+     */
+    private static StringBuilder encode( String operation, String data )
+    {
+        StringBuilder s = new StringBuilder( 128 )
+                .append( MAGIC_NUMBER )
+                .append( operation );
+
+        return data == null ? s : s.append( ':' ).append( data );
+    }
 }

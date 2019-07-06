@@ -45,7 +45,7 @@ public class JUnit4ProviderTest
 
     private JUnit4Provider getJUnit4Provider()
     {
-        BaseProviderFactory providerParameters = new BaseProviderFactory( null, true );
+        BaseProviderFactory providerParameters = new BaseProviderFactory( true );
         providerParameters.setProviderProperties( new HashMap<String, String>() );
         providerParameters.setClassLoaders( getClass().getClassLoader() );
         providerParameters.setTestRequest( new TestRequest( null, null, null ) );

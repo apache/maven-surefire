@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.surefire.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,12 +19,22 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.providerapi.MasterProcessChannelDecoder;
+
+import java.io.IOException;
 
 /**
- * @author Kristian Rosenvold
+ * The SPI interface, a factory of decoders.
  */
-interface TestArtifactInfoAware
+public interface MasterProcessChannelDecoderFactory
 {
-    void setTestArtifactInfo( TestArtifactInfo testArtifactInfo );
+    /**
+     * Decoder factory method.
+     *
+     * @param channelConfig "pipe:std:in" or "tcp://localhost:65035"
+     * @param logger        error logger
+     * @return a new instance of decoder
+     */
+    MasterProcessChannelDecoder createDecoder( String channelConfig, ConsoleLogger logger ) throws IOException;
 }

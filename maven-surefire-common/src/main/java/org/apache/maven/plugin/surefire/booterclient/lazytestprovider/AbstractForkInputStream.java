@@ -32,13 +32,14 @@ import static java.util.Objects.requireNonNull;
  */
 public abstract class AbstractForkInputStream
     extends InputStream
-    implements NotifiableTestStream
+    implements DifferedChannelCommandSender
 {
     private volatile FlushReceiverProvider flushReceiverProvider;
 
     /**
      * @param flushReceiverProvider the provider for a flush receiver.
      */
+    @Override
     public void setFlushReceiverProvider( FlushReceiverProvider flushReceiverProvider )
     {
         this.flushReceiverProvider = requireNonNull( flushReceiverProvider );

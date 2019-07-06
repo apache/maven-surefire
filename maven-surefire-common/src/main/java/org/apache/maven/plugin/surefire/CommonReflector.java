@@ -23,8 +23,8 @@ import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLoggerDecorator;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
-import org.apache.maven.surefire.booter.SurefireReflector;
 import org.apache.maven.surefire.util.SurefireReflectionException;
 
 import javax.annotation.Nonnull;
@@ -71,7 +71,7 @@ public class CommonReflector
     {
         Class<?>[] args = { this.startupReportConfiguration, this.consoleLogger };
         Object src = createStartupReportConfiguration( startupReportConfiguration );
-        Object logger = SurefireReflector.createConsoleLogger( consoleLogger, surefireClassLoader );
+        Object logger = createConsoleLogger( consoleLogger, surefireClassLoader );
         Object[] params = { src, logger };
         return instantiateObject( DefaultReporterFactory.class.getName(), args, params, surefireClassLoader );
     }
@@ -84,7 +84,6 @@ public class CommonReflector
                                                      int.class, String.class, String.class, boolean.class,
                                                      statelessTestsetReporter, consoleOutputReporter,
                                                      statelessTestsetInfoReporter );
-        //noinspection BooleanConstructorCall
         Object[] params = { reporterConfiguration.isUseFile(), reporterConfiguration.isPrintSummary(),
             reporterConfiguration.getReportFormat(), reporterConfiguration.isRedirectTestOutputToFile(),
             reporterConfiguration.getReportsDirectory(),
@@ -97,5 +96,18 @@ public class CommonReflector
             reporterConfiguration.getTestsetReporter().clone( surefireClassLoader )
         };
         return newInstance( constructor, params );
+    }
+
+    static Object createConsoleLogger( ConsoleLogger consoleLogger, ClassLoader cl )
+    {
+        try
+        {
+            Class<?> decoratorClass = cl.loadClass( ConsoleLoggerDecorator.class.getName() );
+            return getConstructor( decoratorClass, Object.class ).newInstance( consoleLogger );
+        }
+        catch ( Exception e )
+        {
+            throw new SurefireReflectionException( e );
+        }
     }
 }

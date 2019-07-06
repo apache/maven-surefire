@@ -20,7 +20,6 @@ package org.apache.maven.surefire.providerapi;
  */
 
 import org.apache.maven.surefire.booter.ForkedChannelEncoder;
-import org.apache.maven.surefire.booter.Shutdown;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.report.ConsoleStream;
 import org.apache.maven.surefire.report.ReporterConfiguration;
@@ -147,9 +146,9 @@ public interface ProviderParameters
      */
     boolean isInsideFork();
 
-    Shutdown getShutdown();
-
     Integer getSystemExitTimeout();
 
     ForkedChannelEncoder getForkedChannelEncoder();
+
+    CommandChainReader getCommandReader();
 }

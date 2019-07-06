@@ -20,10 +20,13 @@ package org.apache.maven.surefire.booter;
  */
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
+import org.apache.maven.surefire.booter.spi.MasterProcessCommandNoMagicNumberException;
+import org.apache.maven.surefire.booter.spi.MasterProcessUnknownCommandException;
+import org.apache.maven.surefire.providerapi.CommandChainReader;
+import org.apache.maven.surefire.providerapi.CommandListener;
+import org.apache.maven.surefire.providerapi.MasterProcessChannelDecoder;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
-import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.Iterator;
@@ -47,7 +50,6 @@ import static org.apache.maven.surefire.booter.MasterProcessCommand.RUN_CLASS;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.SHUTDOWN;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.TEST_SET_FINISHED;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.decode;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThread;
 import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
@@ -58,11 +60,9 @@ import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  */
-public final class CommandReader
+public final class CommandReader implements CommandChainReader
 {
     private static final String LAST_TEST_SYMBOL = "";
-
-    private static final CommandReader READER = new CommandReader();
 
     private final Queue<BiProperty<MasterProcessCommand, CommandListener>> listeners = new ConcurrentLinkedQueue<>();
 
@@ -76,38 +76,24 @@ public final class CommandReader
 
     private final CopyOnWriteArrayList<String> testClasses = new CopyOnWriteArrayList<>();
 
-    private volatile Shutdown shutdown;
+    private final MasterProcessChannelDecoder decoder;
+
+    private final Shutdown shutdown;
+
+    private final ConsoleLogger logger;
 
     private int iteratedCount;
 
-    private volatile ConsoleLogger logger = new NullConsoleLogger();
-
-    private CommandReader()
+    public CommandReader( MasterProcessChannelDecoder decoder, Shutdown shutdown, ConsoleLogger logger )
     {
-    }
-
-    public static CommandReader getReader()
-    {
-        final CommandReader reader = READER;
-        if ( reader.state.compareAndSet( NEW, RUNNABLE ) )
-        {
-            reader.commandThread.start();
-        }
-        return reader;
-    }
-
-    public CommandReader setShutdown( Shutdown shutdown )
-    {
-        this.shutdown = shutdown;
-        return this;
-    }
-
-    public CommandReader setLogger( ConsoleLogger logger )
-    {
+        this.decoder = requireNonNull( decoder, "null decoder" );
+        this.shutdown = requireNonNull( shutdown, "null Shutdown config" );
         this.logger = requireNonNull( logger, "null logger" );
-        return this;
+        state.set( RUNNABLE );
+        commandThread.start();
     }
 
+    @Override
     public boolean awaitStarted()
         throws TestSetFailedException
     {
@@ -143,11 +129,13 @@ public final class CommandReader
         addListener( RUN_CLASS, listener );
     }
 
+    @Override
     public void addTestsFinishedListener( CommandListener listener )
     {
         addListener( TEST_SET_FINISHED, listener );
     }
 
+    @Override
     public void addSkipNextTestsListener( CommandListener listener )
     {
         addListener( SKIP_SINCE_NEXT_TEST, listener );
@@ -173,6 +161,7 @@ public final class CommandReader
         listeners.add( new BiProperty<>( cmd, listener ) );
     }
 
+    @Override
     public void removeListener( CommandListener listener )
     {
         for ( Iterator<BiProperty<MasterProcessCommand, CommandListener>> it = listeners.iterator(); it.hasNext(); )
@@ -374,48 +363,37 @@ public final class CommandReader
         public void run()
         {
             CommandReader.this.startMonitor.countDown();
-            DataInputStream stdIn = new DataInputStream( System.in );
             boolean isTestSetFinished = false;
             try
             {
                 while ( CommandReader.this.state.get() == RUNNABLE )
                 {
-                    Command command = decode( stdIn );
-                    if ( command == null )
+                    Command command = CommandReader.this.decoder.decode();
+                    switch ( command.getCommandType() )
                     {
-                        String errorMessage = "[SUREFIRE] std/in stream corrupted: first sequence not recognized";
-                        DumpErrorSingleton.getSingleton().dumpStreamText( errorMessage );
-                        logger.error( errorMessage );
-                        break;
-                    }
-                    else
-                    {
-                        switch ( command.getCommandType() )
-                        {
-                            case RUN_CLASS:
-                                String test = command.getData();
-                                boolean inserted = CommandReader.this.insertToQueue( test );
-                                if ( inserted )
-                                {
-                                    CommandReader.this.wakeupIterator();
-                                    insertToListeners( command );
-                                }
-                                break;
-                            case TEST_SET_FINISHED:
-                                CommandReader.this.makeQueueFull();
-                                isTestSetFinished = true;
+                        case RUN_CLASS:
+                            String test = command.getData();
+                            boolean inserted = CommandReader.this.insertToQueue( test );
+                            if ( inserted )
+                            {
                                 CommandReader.this.wakeupIterator();
                                 insertToListeners( command );
-                                break;
-                            case SHUTDOWN:
-                                CommandReader.this.makeQueueFull();
-                                CommandReader.this.wakeupIterator();
-                                insertToListeners( command );
-                                break;
-                            default:
-                                insertToListeners( command );
-                                break;
-                        }
+                            }
+                            break;
+                        case TEST_SET_FINISHED:
+                            CommandReader.this.makeQueueFull();
+                            isTestSetFinished = true;
+                            CommandReader.this.wakeupIterator();
+                            insertToListeners( command );
+                            break;
+                        case SHUTDOWN:
+                            CommandReader.this.makeQueueFull();
+                            CommandReader.this.wakeupIterator();
+                            insertToListeners( command );
+                            break;
+                        default:
+                            insertToListeners( command );
+                            break;
                     }
                 }
             }
@@ -433,6 +411,11 @@ public final class CommandReader
                     // does not go to finally for non-default config: Shutdown.EXIT or Shutdown.KILL
                 }
             }
+            catch ( MasterProcessCommandNoMagicNumberException | MasterProcessUnknownCommandException e )
+            {
+                DumpErrorSingleton.getSingleton().dumpStreamException( e );
+                CommandReader.this.logger.error( e );
+            }
             catch ( IOException e )
             {
                 CommandReader.this.state.set( TERMINATED );
@@ -441,7 +424,7 @@ public final class CommandReader
                 {
                     String msg = "[SUREFIRE] std/in stream corrupted";
                     DumpErrorSingleton.getSingleton().dumpStreamException( e, msg );
-                    logger.error( msg, e );
+                    CommandReader.this.logger.error( msg, e );
                 }
             }
             finally

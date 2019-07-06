@@ -19,8 +19,6 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.plugin.surefire.log.api.ConsoleLoggerDecorator;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.report.ReporterConfiguration;
@@ -46,7 +44,6 @@ import static java.util.Collections.checkedList;
 import static org.apache.maven.surefire.util.ReflectionUtils.getConstructor;
 import static org.apache.maven.surefire.util.ReflectionUtils.getMethod;
 import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
-import static org.apache.maven.surefire.util.ReflectionUtils.instantiateTwoArgs;
 import static org.apache.maven.surefire.util.ReflectionUtils.invokeGetter;
 import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray;
 import static org.apache.maven.surefire.util.ReflectionUtils.invokeSetter;
@@ -59,7 +56,7 @@ import static org.apache.maven.surefire.util.ReflectionUtils.newInstance;
  *
  * @author Kristian Rosenvold
  */
-public class SurefireReflector
+public final class SurefireReflector
 {
     private final ClassLoader surefireClassLoader;
 
@@ -69,21 +66,11 @@ public class SurefireReflector
 
     private final Class<?> testArtifactInfo;
 
-    private final Class<?> testArtifactInfoAware;
-
     private final Class<?> directoryScannerParameters;
 
     private final Class<?> runOrderParameters;
 
-    private final Class<?> directoryScannerParametersAware;
-
-    private final Class<?> testSuiteDefinitionAware;
-
-    private final Class<?> testClassLoaderAware;
-
-    private final Class<?> reporterConfigurationAware;
-
-    private final Class<?> providerPropertiesAware;
+    private final Class<?> baseProviderFactory;
 
     private final Class<?> runResult;
 
@@ -93,11 +80,7 @@ public class SurefireReflector
 
     private final Class<?> testListResolver;
 
-    private final Class<?> mainCliOptions;
-
     private final Class<Enum> commandLineOptionsClass;
-
-    private final Class<?> shutdownAwareClass;
 
     private final Class<Enum> shutdownClass;
 
@@ -110,22 +93,14 @@ public class SurefireReflector
             reporterConfiguration = surefireClassLoader.loadClass( ReporterConfiguration.class.getName() );
             testRequest = surefireClassLoader.loadClass( TestRequest.class.getName() );
             testArtifactInfo = surefireClassLoader.loadClass( TestArtifactInfo.class.getName() );
-            testArtifactInfoAware = surefireClassLoader.loadClass( TestArtifactInfoAware.class.getName() );
             directoryScannerParameters = surefireClassLoader.loadClass( DirectoryScannerParameters.class.getName() );
             runOrderParameters = surefireClassLoader.loadClass( RunOrderParameters.class.getName() );
-            directoryScannerParametersAware =
-                surefireClassLoader.loadClass( DirectoryScannerParametersAware.class.getName() );
-            testSuiteDefinitionAware = surefireClassLoader.loadClass( TestRequestAware.class.getName() );
-            testClassLoaderAware = surefireClassLoader.loadClass( SurefireClassLoadersAware.class.getName() );
-            reporterConfigurationAware = surefireClassLoader.loadClass( ReporterConfigurationAware.class.getName() );
-            providerPropertiesAware = surefireClassLoader.loadClass( ProviderPropertiesAware.class.getName() );
+            baseProviderFactory = surefireClassLoader.loadClass( BaseProviderFactory.class.getName() );
             reporterFactory = surefireClassLoader.loadClass( ReporterFactory.class.getName() );
             runResult = surefireClassLoader.loadClass( RunResult.class.getName() );
             booterParameters = surefireClassLoader.loadClass( ProviderParameters.class.getName() );
             testListResolver = surefireClassLoader.loadClass( TestListResolver.class.getName() );
-            mainCliOptions = surefireClassLoader.loadClass( MainCliOptionsAware.class.getName() );
             commandLineOptionsClass = (Class<Enum>) surefireClassLoader.loadClass( CommandLineOption.class.getName() );
-            shutdownAwareClass = surefireClassLoader.loadClass( ShutdownAware.class.getName() );
             shutdownClass = (Class<Enum>) surefireClassLoader.loadClass( Shutdown.class.getName() );
         }
         catch ( ClassNotFoundException e )
@@ -227,11 +202,9 @@ public class SurefireReflector
         return newInstance( constructor, reporterConfig.getReportsDirectory(), reporterConfig.isTrimStackTrace() );
     }
 
-    public Object createBooterConfiguration( ClassLoader surefireClassLoader, Object factoryInstance,
-                                             boolean insideFork )
+    public Object createBooterConfiguration( ClassLoader surefireClassLoader, boolean insideFork )
     {
-        return instantiateTwoArgs( surefireClassLoader, BaseProviderFactory.class.getName(),
-                                   reporterFactory, factoryInstance, boolean.class, insideFork );
+        return instantiateOneArg( surefireClassLoader, BaseProviderFactory.class.getName(), boolean.class, insideFork );
     }
 
     public Object instantiateProvider( String providerClassName, Object booterParameters )
@@ -241,7 +214,7 @@ public class SurefireReflector
 
     public void setIfDirScannerAware( Object o, DirectoryScannerParameters dirScannerParams )
     {
-        if ( directoryScannerParametersAware.isAssignableFrom( o.getClass() ) )
+        if ( baseProviderFactory.isAssignableFrom( o.getClass() ) )
         {
             setDirectoryScannerParameters( o, dirScannerParams );
         }
@@ -249,7 +222,7 @@ public class SurefireReflector
 
     public void setMainCliOptions( Object o, List<CommandLineOption> options )
     {
-        if ( mainCliOptions.isAssignableFrom( o.getClass() ) )
+        if ( baseProviderFactory.isAssignableFrom( o.getClass() ) )
         {
             List<Enum> newOptions = checkedList( new ArrayList<Enum>( options.size() ), commandLineOptionsClass );
             Collection<Integer> ordinals = toOrdinals( options );
@@ -271,15 +244,12 @@ public class SurefireReflector
 
     public void setShutdown( Object o, Shutdown shutdown )
     {
-        if ( shutdownAwareClass.isAssignableFrom( o.getClass() ) )
+        for ( Enum e : shutdownClass.getEnumConstants() )
         {
-            for ( Enum e : shutdownClass.getEnumConstants() )
+            if ( shutdown.ordinal() == e.ordinal() )
             {
-                if ( shutdown.ordinal() == e.ordinal() )
-                {
-                    invokeSetter( o, "setShutdown", shutdownClass, e );
-                    break;
-                }
+                invokeSetter( o, "setShutdown", shutdownClass, e );
+                break;
             }
         }
     }
@@ -303,7 +273,7 @@ public class SurefireReflector
 
     public void setTestSuiteDefinitionAware( Object o, TestRequest testSuiteDefinition2 )
     {
-        if ( testSuiteDefinitionAware.isAssignableFrom( o.getClass() ) )
+        if ( baseProviderFactory.isAssignableFrom( o.getClass() ) )
         {
             setTestSuiteDefinition( o, testSuiteDefinition2 );
         }
@@ -317,7 +287,7 @@ public class SurefireReflector
 
     public void setProviderPropertiesAware( Object o, Map<String, String> properties )
     {
-        if ( providerPropertiesAware.isAssignableFrom( o.getClass() ) )
+        if ( baseProviderFactory.isAssignableFrom( o.getClass() ) )
         {
             setProviderProperties( o, properties );
         }
@@ -330,7 +300,7 @@ public class SurefireReflector
 
     public void setReporterConfigurationAware( Object o, ReporterConfiguration reporterConfiguration1 )
     {
-        if ( reporterConfigurationAware.isAssignableFrom( o.getClass() ) )
+        if ( baseProviderFactory.isAssignableFrom( o.getClass() ) )
         {
             setReporterConfiguration( o, reporterConfiguration1 );
         }
@@ -344,7 +314,7 @@ public class SurefireReflector
 
     public void setTestClassLoaderAware( Object o, ClassLoader testClassLoader )
     {
-        if ( testClassLoaderAware.isAssignableFrom( o.getClass() ) )
+        if ( baseProviderFactory.isAssignableFrom( o.getClass() ) )
         {
             setTestClassLoader( o, testClassLoader );
         }
@@ -358,7 +328,7 @@ public class SurefireReflector
 
     public void setTestArtifactInfoAware( Object o, TestArtifactInfo testArtifactInfo1 )
     {
-        if ( testArtifactInfoAware.isAssignableFrom( o.getClass() ) )
+        if ( baseProviderFactory.isAssignableFrom( o.getClass() ) )
         {
             setTestArtifactInfo( o, testArtifactInfo1 );
         }
@@ -368,6 +338,19 @@ public class SurefireReflector
     {
         Object param = createTestArtifactInfo( testArtifactInfo );
         invokeSetter( o, "setTestArtifactInfo", this.testArtifactInfo, param );
+    }
+
+    public void setReporterFactoryAware( Object o, Object reporterFactory )
+    {
+        if ( baseProviderFactory.isAssignableFrom( o.getClass() ) )
+        {
+            setReporterFactory( o, reporterFactory );
+        }
+    }
+
+    void setReporterFactory( Object o, Object reporterFactory )
+    {
+        invokeSetter( o, "setReporterFactory", this.reporterFactory, reporterFactory );
     }
 
     private boolean isRunResult( Object o )
@@ -383,18 +366,5 @@ public class SurefireReflector
             ordinals.add( e.ordinal() );
         }
         return ordinals;
-    }
-
-    public static Object createConsoleLogger( ConsoleLogger consoleLogger, ClassLoader cl )
-    {
-        try
-        {
-            Class<?> decoratorClass = cl.loadClass( ConsoleLoggerDecorator.class.getName() );
-            return getConstructor( decoratorClass, Object.class ).newInstance( consoleLogger );
-        }
-        catch ( Exception e )
-        {
-            throw new SurefireReflectionException( e );
-        }
     }
 }

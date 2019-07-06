@@ -122,7 +122,7 @@ public class BooterDeserializer
                                           systemExitTimeout );
     }
 
-    public StartupConfiguration getProviderConfiguration()
+    public StartupConfiguration getStartupConfiguration()
     {
         boolean useSystemClassLoader = properties.getBooleanProperty( USESYSTEMCLASSLOADER );
         boolean useManifestOnlyJar = properties.getBooleanProperty( USEMANIFESTONLYJAR );

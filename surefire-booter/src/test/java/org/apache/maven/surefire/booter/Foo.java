@@ -19,9 +19,9 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-
 import java.util.Map;
 import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestArtifactInfo;
@@ -30,27 +30,28 @@ import org.apache.maven.surefire.testset.TestRequest;
 /**
  * @author Kristian Rosenvold
  */
-public class Foo
-    implements DirectoryScannerParametersAware, TestRequestAware, ProviderPropertiesAware, ReporterConfigurationAware,
-    SurefireClassLoadersAware, TestArtifactInfoAware, RunOrderParametersAware
+public class Foo extends BaseProviderFactory
 {
-    DirectoryScannerParameters directoryScannerParameters;
+    private DirectoryScannerParameters directoryScannerParameters;
 
-    Map<String, String> providerProperties;
+    private Map<String, String> providerProperties;
 
-    ReporterConfiguration reporterConfiguration;
+    private ReporterConfiguration reporterConfiguration;
 
-    ClassLoader surefireClassLoader;
+    private ClassLoader testClassLoader;
 
-    ClassLoader testClassLoader;
+    private TestRequest testRequest;
 
-    TestRequest testRequest;
+    private TestArtifactInfo testArtifactInfo;
 
-    TestArtifactInfo testArtifactInfo;
+    private RunOrderParameters runOrderParameters;
 
-    RunOrderParameters runOrderParameters;
+    private boolean called;
 
-    boolean called = false;
+    Foo()
+    {
+        super( false );
+    }
 
     @Override
     public void setDirectoryScannerParameters( DirectoryScannerParameters directoryScanner )
@@ -58,7 +59,6 @@ public class Foo
         this.directoryScannerParameters = directoryScanner;
         this.called = true;
     }
-
 
     /**
      * @return true if it has been called
@@ -86,7 +86,6 @@ public class Foo
     public void setClassLoaders( ClassLoader testClassLoader )
     {
         this.testClassLoader = testClassLoader;
-        this.surefireClassLoader = surefireClassLoader;
         this.called = true;
     }
 
@@ -109,5 +108,11 @@ public class Foo
     {
         this.runOrderParameters = runOrderParameters;
         this.called = true;
+    }
+
+    @Override
+    public void setReporterFactory( ReporterFactory reporterFactory )
+    {
+        called = true;
     }
 }

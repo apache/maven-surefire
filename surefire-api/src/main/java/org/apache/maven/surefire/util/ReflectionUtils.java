@@ -132,25 +132,6 @@ public final class ReflectionUtils
         }
     }
 
-    public static Object instantiateTwoArgs( ClassLoader classLoader, String className, Class<?> param1Class,
-                                             Object param1, Class param2Class, Object param2 )
-    {
-        try
-        {
-            Class<?> aClass = loadClass( classLoader, className );
-            Constructor constructor = getConstructor( aClass, param1Class, param2Class );
-            return constructor.newInstance( param1, param2 );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new SurefireReflectionException( e.getTargetException() );
-        }
-        catch ( ReflectiveOperationException e )
-        {
-            throw new SurefireReflectionException( e );
-        }
-    }
-
     public static void invokeSetter( Object o, String name, Class<?> value1clazz, Object value )
     {
         Method setter = getMethod( o, name, value1clazz );

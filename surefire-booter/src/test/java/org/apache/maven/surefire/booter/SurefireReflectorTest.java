@@ -19,7 +19,6 @@ package org.apache.maven.surefire.booter;
 */
 
 import junit.framework.TestCase;
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
@@ -30,7 +29,6 @@ import org.apache.maven.surefire.testset.TestArtifactInfo;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.RunOrder;
-import org.mockito.ArgumentCaptor;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -38,35 +36,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import static org.fest.assertions.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 public class SurefireReflectorTest
         extends TestCase
 {
-    public void testCreateConsoleLogger()
-    {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        ConsoleLogger consoleLogger = mock( ConsoleLogger.class );
-        ConsoleLogger decorator = (ConsoleLogger) SurefireReflector.createConsoleLogger( consoleLogger, cl );
-        assertThat( decorator )
-        .isNotSameAs( consoleLogger );
-
-        assertThat( decorator.isDebugEnabled() ).isFalse();
-        when( consoleLogger.isDebugEnabled() ).thenReturn( true );
-        assertThat( decorator.isDebugEnabled() ).isTrue();
-        verify( consoleLogger, times( 2 ) ).isDebugEnabled();
-
-        decorator.info( "msg" );
-        ArgumentCaptor<String> argumentMsg = ArgumentCaptor.forClass( String.class );
-        verify( consoleLogger, times( 1 ) ).info( argumentMsg.capture() );
-        assertThat( argumentMsg.getAllValues() ).hasSize( 1 );
-        assertThat( argumentMsg.getAllValues().get( 0 ) ).isEqualTo( "msg" );
-    }
-
     public void testShouldCreateFactoryWithoutException()
     {
         ReporterFactory factory = new ReporterFactory()
@@ -85,10 +57,10 @@ public class SurefireReflectorTest
         };
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         SurefireReflector reflector = new SurefireReflector( cl );
-        BaseProviderFactory baseProviderFactory =
-                (BaseProviderFactory) reflector.createBooterConfiguration( cl, factory, true );
-        assertNotNull( baseProviderFactory.getReporterFactory() );
-        assertSame( factory, baseProviderFactory.getReporterFactory() );
+        BaseProviderFactory bpf = (BaseProviderFactory) reflector.createBooterConfiguration( cl, true );
+        bpf.setReporterFactory( factory );
+        assertNotNull( bpf.getReporterFactory() );
+        assertSame( factory, bpf.getReporterFactory() );
     }
 
     public void testSetDirectoryScannerParameters()
@@ -165,6 +137,30 @@ public class SurefireReflectorTest
 
         TestArtifactInfo testArtifactInfo = new TestArtifactInfo( "12.3", "test" );
         surefireReflector.setTestArtifactInfo( foo, testArtifactInfo );
+        assertTrue( isCalled( foo ) );
+    }
+
+    public void testReporterFactoryAware()
+    {
+        SurefireReflector surefireReflector = getReflector();
+        Object foo = getFoo();
+
+        ReporterFactory reporterFactory = new ReporterFactory()
+        {
+            @Override
+            public RunListener createReporter()
+            {
+                return null;
+            }
+
+            @Override
+            public RunResult close()
+            {
+                return null;
+            }
+        };
+
+        surefireReflector.setReporterFactory( foo, reporterFactory );
         assertTrue( isCalled( foo ) );
     }
 
