@@ -50,13 +50,13 @@ import static java.util.Objects.requireNonNull;
 public class ForkingRunListener
     implements RunListener, ConsoleLogger, ConsoleOutputReceiver, ConsoleStream
 {
-    private final ForkedChannelEncoder target;
+    private final MasterProcessChannelEncoder target;
 
     private final boolean trim;
 
     private volatile RunMode runMode = NORMAL_RUN;
 
-    public ForkingRunListener( ForkedChannelEncoder target, boolean trim )
+    public ForkingRunListener( MasterProcessChannelEncoder target, boolean trim )
     {
         this.target = target;
         this.trim = trim;

@@ -25,7 +25,6 @@ import org.apache.maven.surefire.shared.io.FileUtils;
 import org.apache.maven.surefire.booter.BooterDeserializer;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
-import org.apache.maven.surefire.booter.ProcessCheckerType;
 import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.Shutdown;
@@ -52,6 +51,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import static org.apache.maven.surefire.booter.ProcessCheckerType.ALL;
 import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
 import static org.apache.maven.surefire.cli.CommandLineOption.REACTOR_FAIL_FAST;
 import static org.apache.maven.surefire.cli.CommandLineOption.SHOW_ERRORS;
@@ -260,9 +260,10 @@ public class BooterDeserializerProviderConfigurationTest
             test = "aTest";
         }
         final File propsTest = booterSerializer.serialize( props, booterConfiguration, testProviderConfiguration, test,
-                                                           readTestsFromInStream, 51L, 1 );
+                                                           readTestsFromInStream, 51L, 1, "pipe://1" );
         BooterDeserializer booterDeserializer = new BooterDeserializer( new FileInputStream( propsTest ) );
         assertEquals( "51", (Object) booterDeserializer.getPluginPid() );
+        assertEquals( "pipe://1", booterDeserializer.getConnectionString() );
         return booterDeserializer.deserialize();
     }
 
@@ -285,8 +286,7 @@ public class BooterDeserializerProviderConfigurationTest
     {
         ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( true, true );
 
-        return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, false,
-                                         false, ProcessCheckerType.ALL );
+        return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, ALL );
     }
 
     private File getTestSourceDirectory()

@@ -45,7 +45,7 @@ import static org.apache.maven.surefire.booter.Command.toShutdown;
  * @since 2.19
  */
 public final class TestLessInputStream
-    extends AbstractCommandStream
+        extends DefaultCommandReader
 {
     private final Semaphore barrier = new Semaphore( 0 );
 
@@ -108,7 +108,7 @@ public final class TestLessInputStream
     }
 
     @Override
-    protected boolean isClosed()
+    public boolean isClosed()
     {
         return closed.get();
     }
@@ -141,7 +141,6 @@ public final class TestLessInputStream
     {
         if ( closed.compareAndSet( false, true ) )
         {
-            invalidateInternalBuffer();
             barrier.drainPermits();
             barrier.release();
         }
@@ -166,8 +165,6 @@ public final class TestLessInputStream
         }
         catch ( InterruptedException e )
         {
-            // help GC to free this object because StreamFeeder Thread cannot read it anyway after IOE
-            invalidateInternalBuffer();
             throw new IOException( e.getLocalizedMessage() );
         }
     }

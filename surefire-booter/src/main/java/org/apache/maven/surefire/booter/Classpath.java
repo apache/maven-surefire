@@ -100,7 +100,7 @@ public final class Classpath implements Iterable<String>, Cloneable
         {
             throw new IllegalArgumentException( "Null is not a valid class path element url." );
         }
-        return !unmodifiableElements.contains( path ) ? new Classpath( this, path ) : this;
+        return unmodifiableElements.contains( path ) ? this : new Classpath( this, path );
     }
 
     @Nonnull
@@ -184,15 +184,8 @@ public final class Classpath implements Iterable<String>, Cloneable
         for ( String element : unmodifiableElements )
         {
             result.append( "  " );
-            if ( element != null )
-            {
-                int pos = element.lastIndexOf( File.separatorChar );
-                result.append( pos == -1 ? element : element.substring( pos + 1 ) );
-            }
-            else
-            {
-                result.append( (String) null );
-            }
+            int pos = element.lastIndexOf( File.separatorChar );
+            result.append( pos == -1 ? element : element.substring( pos + 1 ) );
         }
         return result.toString();
     }

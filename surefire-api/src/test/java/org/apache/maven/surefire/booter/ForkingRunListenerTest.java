@@ -19,10 +19,16 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-
 import junit.framework.TestCase;
+import org.mockito.ArgumentCaptor;
+
+import static org.fest.assertions.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 /**
  * @author <a href="mailto:kristian.rosenvold@gmail.com">Kristian Rosenvold</a>
@@ -32,10 +38,16 @@ public class ForkingRunListenerTest
 {
     public void testInfo()
     {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        PrintStream target = new PrintStream( byteArrayOutputStream );
-        ForkingRunListener forkingRunListener = new ForkingRunListener( new ForkedChannelEncoder( target ), true );
+        MasterProcessChannelEncoder encoder = mock( MasterProcessChannelEncoder.class );
+        ArgumentCaptor<String> argument1 = ArgumentCaptor.forClass( String.class );
+        doNothing().when( encoder ).consoleInfoLog( anyString() );
+        ForkingRunListener forkingRunListener = new ForkingRunListener( encoder, true );
         forkingRunListener.info( new String( new byte[]{ (byte) 'A' } ) );
         forkingRunListener.info( new String( new byte[]{ } ) );
+        verify( encoder, times( 2 ) ).consoleInfoLog( argument1.capture() );
+        assertThat( argument1.getAllValues() )
+            .hasSize( 2 )
+            .containsSequence( "A", "" );
+        verifyNoMoreInteractions( encoder );
     }
 }

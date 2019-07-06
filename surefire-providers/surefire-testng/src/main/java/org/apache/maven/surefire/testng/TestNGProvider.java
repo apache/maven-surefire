@@ -20,8 +20,8 @@ package org.apache.maven.surefire.testng;
  */
 
 import org.apache.maven.surefire.booter.Command;
-import org.apache.maven.surefire.booter.CommandListener;
-import org.apache.maven.surefire.booter.CommandReader;
+import org.apache.maven.surefire.providerapi.CommandChainReader;
+import org.apache.maven.surefire.providerapi.CommandListener;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
@@ -43,7 +43,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.maven.surefire.booter.CommandReader.getReader;
 import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.testset.TestListResolver.getEmptyTestListResolver;
 import static org.apache.maven.surefire.testset.TestListResolver.optionallyWildcardFilter;
@@ -71,14 +70,14 @@ public class TestNGProvider
 
     private final List<CommandLineOption> mainCliOptions;
 
-    private final CommandReader commandsReader;
+    private final CommandChainReader commandsReader;
 
     private TestsToRun testsToRun;
 
     public TestNGProvider( ProviderParameters bootParams )
     {
         // don't start a thread in CommandReader while we are in in-plugin process
-        commandsReader = bootParams.isInsideFork() ? getReader().setShutdown( bootParams.getShutdown() ) : null;
+        commandsReader = bootParams.isInsideFork() ? bootParams.getCommandReader() : null;
         providerParameters = bootParams;
         testClassLoader = bootParams.getTestClassLoader();
         runOrderCalculator = bootParams.getRunOrderCalculator();

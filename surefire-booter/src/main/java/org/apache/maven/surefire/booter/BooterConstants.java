@@ -58,4 +58,5 @@ public final class BooterConstants
     public static final String SYSTEM_EXIT_TIMEOUT = "systemExitTimeout";
     public static final String PLUGIN_PID = "pluginPid";
     public static final String PROCESS_CHECKER = "processChecker";
+    public static final String FORK_NODE_CONNECTION_STRING = "forkNodeConnectionString";
 }

@@ -21,47 +21,80 @@ package org.apache.maven.plugin.surefire.booterclient.output;
 
 import org.apache.maven.plugin.surefire.booterclient.MockReporter;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
+import org.apache.maven.plugin.surefire.extensions.EventConsumerThread;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.booter.Shutdown;
+import org.apache.maven.surefire.eventapi.ConsoleDebugEvent;
+import org.apache.maven.surefire.eventapi.ConsoleErrorEvent;
+import org.apache.maven.surefire.eventapi.ConsoleInfoEvent;
+import org.apache.maven.surefire.eventapi.ConsoleWarningEvent;
+import org.apache.maven.surefire.eventapi.ControlByeEvent;
+import org.apache.maven.surefire.eventapi.ControlNextTestEvent;
+import org.apache.maven.surefire.eventapi.ControlStopOnNextTestEvent;
+import org.apache.maven.surefire.eventapi.Event;
+import org.apache.maven.surefire.eventapi.StandardStreamErrEvent;
+import org.apache.maven.surefire.eventapi.StandardStreamErrWithNewLineEvent;
+import org.apache.maven.surefire.eventapi.StandardStreamOutEvent;
+import org.apache.maven.surefire.eventapi.StandardStreamOutWithNewLineEvent;
+import org.apache.maven.surefire.eventapi.SystemPropertyEvent;
+import org.apache.maven.surefire.eventapi.TestAssumptionFailureEvent;
+import org.apache.maven.surefire.eventapi.TestErrorEvent;
+import org.apache.maven.surefire.eventapi.TestFailedEvent;
+import org.apache.maven.surefire.eventapi.TestSkippedEvent;
+import org.apache.maven.surefire.eventapi.TestStartingEvent;
+import org.apache.maven.surefire.eventapi.TestSucceededEvent;
+import org.apache.maven.surefire.eventapi.TestsetCompletedEvent;
+import org.apache.maven.surefire.eventapi.TestsetStartingEvent;
+import org.apache.maven.surefire.extensions.EventHandler;
+import org.apache.maven.surefire.extensions.ForkNodeArguments;
+import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.SafeThrowable;
+import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.nio.channels.ReadableByteChannel;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
+import static java.nio.channels.Channels.newChannel;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Arrays.copyOfRange;
-import static org.apache.commons.codec.binary.Base64.encodeBase64String;
+import static org.apache.maven.surefire.shared.codec.binary.Base64.encodeBase64String;
 import static org.apache.maven.plugin.surefire.booterclient.MockReporter.CONSOLE_DEBUG;
 import static org.apache.maven.plugin.surefire.booterclient.MockReporter.CONSOLE_ERR;
-import static org.apache.maven.plugin.surefire.booterclient.MockReporter.CONSOLE_WARN;
 import static org.apache.maven.plugin.surefire.booterclient.MockReporter.CONSOLE_INFO;
+import static org.apache.maven.plugin.surefire.booterclient.MockReporter.CONSOLE_WARN;
 import static org.apache.maven.plugin.surefire.booterclient.MockReporter.SET_COMPLETED;
 import static org.apache.maven.plugin.surefire.booterclient.MockReporter.SET_STARTING;
-import static org.apache.maven.plugin.surefire.booterclient.MockReporter.STDOUT;
 import static org.apache.maven.plugin.surefire.booterclient.MockReporter.STDERR;
+import static org.apache.maven.plugin.surefire.booterclient.MockReporter.STDOUT;
 import static org.apache.maven.plugin.surefire.booterclient.MockReporter.TEST_ASSUMPTION_FAIL;
 import static org.apache.maven.plugin.surefire.booterclient.MockReporter.TEST_ERROR;
 import static org.apache.maven.plugin.surefire.booterclient.MockReporter.TEST_FAILED;
-import static org.apache.maven.plugin.surefire.booterclient.MockReporter.TEST_STARTING;
 import static org.apache.maven.plugin.surefire.booterclient.MockReporter.TEST_SKIPPED;
+import static org.apache.maven.plugin.surefire.booterclient.MockReporter.TEST_STARTING;
 import static org.apache.maven.plugin.surefire.booterclient.MockReporter.TEST_SUCCEEDED;
+import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_BYE;
+import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_CONSOLE_ERROR;
+import static org.apache.maven.surefire.report.RunMode.NORMAL_RUN;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.MapAssert.entry;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.startsWith;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -74,204 +107,88 @@ public class ForkClientTest
 {
     private static final int ELAPSED_TIME = 102;
 
-    @Test
-    public void shouldNotFailOnEmptyInput1()
+    @Test( expected = NullPointerException.class )
+    public void shouldFailOnNPE()
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
         DefaultReporterFactory factory = mock( DefaultReporterFactory.class );
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkClient client = new ForkClient( factory, null, logger, printedErrorStream, 0 );
-        client.consumeLine( null );
-        assertThat( client.isSaidGoodBye() )
-                .isFalse();
-        assertThat( client.getErrorInFork() )
-                .isNull();
-        assertThat( client.isErrorInFork() )
-                .isFalse();
-        assertThat( client.hadTimeout() )
-                .isFalse();
-        assertThat( client.hasTestsInProgress() )
-                .isFalse();
-        assertThat( client.testsInProgress() )
-                .isEmpty();
-        assertThat( client.getTestVmSystemProperties() )
-                .isEmpty();
+        ForkClient client = new ForkClient( factory, null, 0 );
+        client.handleEvent( null );
     }
 
     @Test
-    public void shouldNotFailOnEmptyInput2()
+    public void shouldLogJvmMessage() throws Exception
     {
-        String cwd = System.getProperty( "user.dir" );
-        File target = new File( cwd, "target" );
-        DefaultReporterFactory factory = mock( DefaultReporterFactory.class );
-        when( factory.getReportsDirectory() )
-                .thenReturn( new File( target, "surefire-reports" ) );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
+        String nativeStream = "Listening for transport dt_socket at address: bla";
+        EH eventHandler = new EH();
+        CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
         ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkClient client = new ForkClient( factory, null, logger, printedErrorStream, 0 );
-        client.consumeLine( "   " );
-        assertThat( client.isSaidGoodBye() )
-                .isFalse();
-        assertThat( client.getErrorInFork() )
-                .isNull();
-        assertThat( client.isErrorInFork() )
-                .isFalse();
-        assertThat( client.hadTimeout() )
-                .isFalse();
-        assertThat( client.hasTestsInProgress() )
-                .isFalse();
-        assertThat( client.testsInProgress() )
-                .isEmpty();
-        assertThat( client.getTestVmSystemProperties() )
-                .isEmpty();
-    }
+        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
+        when( arguments.getConsoleLogger() ).thenReturn( logger );
+        when( logger.isDebugEnabled() ).thenReturn( false );
+        when( logger.isInfoEnabled() ).thenReturn( true );
+        ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
+        try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
+        {
+            t.start();
 
-    @Test
-    public void shouldNotFailOnEmptyInput3()
-            throws IOException
-    {
-        String cwd = System.getProperty( "user.dir" );
-        File target = new File( cwd, "target" );
-        DefaultReporterFactory factory = mock( DefaultReporterFactory.class );
-        when( factory.getReportsDirectory() )
-                .thenReturn( new File( target, "surefire-reports" ) );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkClient client = new ForkClient( factory, null, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( null );
-        assertThat( client.isSaidGoodBye() )
-                .isFalse();
-        assertThat( client.getErrorInFork() )
-                .isNull();
-        assertThat( client.isErrorInFork() )
-                .isFalse();
-        assertThat( client.hadTimeout() )
-                .isFalse();
-        assertThat( client.hasTestsInProgress() )
-                .isFalse();
-        assertThat( client.testsInProgress() )
-                .isEmpty();
-        assertThat( client.getTestVmSystemProperties() )
-                .isEmpty();
-    }
+            countdown.awaitClosed();
 
-    @Test
-    public void shouldNotFailOnEmptyInput4()
-            throws IOException
-    {
-        String cwd = System.getProperty( "user.dir" );
-        File target = new File( cwd, "target" );
-        DefaultReporterFactory factory = mock( DefaultReporterFactory.class );
-        when( factory.getReportsDirectory() )
-                .thenReturn( new File( target, "surefire-reports" ) );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        when( logger.isDebugEnabled() )
-                .thenReturn( true );
-        ForkClient client = new ForkClient( factory, null, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( "   " );
-        verify( logger )
-                .isDebugEnabled();
-        verify( logger )
-                .warning( startsWith( "Corrupted STDOUT by directly writing to native stream in forked JVM 0. "
-                        + "See FAQ web page and the dump file " ) );
-        verify( logger )
-                .debug( "   " );
-        verifyNoMoreInteractions( logger );
-        assertThat( client.isSaidGoodBye() )
-                .isFalse();
-        assertThat( client.getErrorInFork() )
-                .isNull();
-        assertThat( client.isErrorInFork() )
-                .isFalse();
-        assertThat( client.hadTimeout() )
-                .isFalse();
-        assertThat( client.hasTestsInProgress() )
-                .isFalse();
-        assertThat( client.testsInProgress() )
-                .isEmpty();
-        assertThat( client.getTestVmSystemProperties() )
-                .isEmpty();
-    }
-
-    @Test
-    public void shouldNotFailOnEmptyInput5()
-            throws IOException
-    {
-        String cwd = System.getProperty( "user.dir" );
-        File target = new File( cwd, "target" );
-        DefaultReporterFactory factory = mock( DefaultReporterFactory.class );
-        when( factory.getReportsDirectory() )
-                .thenReturn( new File( target, "surefire-reports" ) );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        when( logger.isDebugEnabled() )
-                .thenReturn( true );
-        ForkClient client = new ForkClient( factory, null, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( "Listening for transport dt_socket at address: bla" );
-        verify( logger )
-                .isDebugEnabled();
-        verify( logger )
-                .debug( "Listening for transport dt_socket at address: bla" );
-        verifyNoMoreInteractions( logger );
-        assertThat( client.isSaidGoodBye() )
-                .isFalse();
-        assertThat( client.getErrorInFork() )
-                .isNull();
-        assertThat( client.isErrorInFork() )
-                .isFalse();
-        assertThat( client.hadTimeout() )
-                .isFalse();
-        assertThat( client.hasTestsInProgress() )
-                .isFalse();
-        assertThat( client.testsInProgress() )
-                .isEmpty();
-        assertThat( client.getTestVmSystemProperties() )
-                .isEmpty();
-    }
-
-    @Test
-    public void shouldNotFailOnEmptyInput6()
-            throws IOException
-    {
-        String cwd = System.getProperty( "user.dir" );
-        File target = new File( cwd, "target" );
-        DefaultReporterFactory factory = mock( DefaultReporterFactory.class );
-        when( factory.getReportsDirectory() )
-                .thenReturn( new File( target, "surefire-reports" ) );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        when( logger.isDebugEnabled() )
-                .thenReturn( false );
-        when( logger.isInfoEnabled() )
-                .thenReturn( true );
-        ForkClient client = new ForkClient( factory, null, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( "Listening for transport dt_socket at address: bla" );
-        verify( logger )
-                .isDebugEnabled();
-        verify( logger )
-                .isInfoEnabled();
-        verify( logger )
+            verify( logger )
                 .info( "Listening for transport dt_socket at address: bla" );
+        }
+
+        assertThat( eventHandler.sizeOfEventCache() )
+            .isEqualTo( 0 );
+
+        verify( logger ).isDebugEnabled();
+
+        verify( logger ).isInfoEnabled();
+
         verifyNoMoreInteractions( logger );
-        assertThat( client.isSaidGoodBye() )
-                .isFalse();
-        assertThat( client.getErrorInFork() )
-                .isNull();
-        assertThat( client.isErrorInFork() )
-                .isFalse();
-        assertThat( client.hadTimeout() )
-                .isFalse();
-        assertThat( client.hasTestsInProgress() )
-                .isFalse();
-        assertThat( client.testsInProgress() )
-                .isEmpty();
-        assertThat( client.getTestVmSystemProperties() )
-                .isEmpty();
+    }
+
+    @Test
+    public void shouldLogJvmMessageAndProcessEvent() throws Exception
+    {
+        String nativeStream = "Listening for transport dt_socket at address: bla\n:maven-surefire-event:bye:\n";
+        EH eventHandler = new EH();
+        CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
+        ConsoleLogger logger = mock( ConsoleLogger.class );
+        when( logger.isDebugEnabled() )
+            .thenReturn( false );
+        when( logger.isInfoEnabled() )
+            .thenReturn( true );
+        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
+        when( arguments.getConsoleLogger() ).thenReturn( logger );
+        when( logger.isDebugEnabled() ).thenReturn( true );
+        when( logger.isInfoEnabled() ).thenReturn( false );
+        ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
+        try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
+        {
+            t.start();
+
+            Event event = eventHandler.pullEvent();
+            assertThat( event.isControlCategory() )
+                .isTrue();
+            assertThat( event.getEventType() )
+                .isEqualTo( BOOTERCODE_BYE );
+
+            verify( logger )
+                .debug( "Listening for transport dt_socket at address: bla" );
+
+            countdown.awaitClosed();
+        }
+
+        assertThat( eventHandler.sizeOfEventCache() )
+            .isEqualTo( 0 );
+
+        verify( logger ).isDebugEnabled();
+
+        verifyNoMoreInteractions( logger );
     }
 
     @Test
@@ -279,7 +196,7 @@ public class ForkClientTest
     {
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
 
-        ForkClient client = new ForkClient( null, notifiableTestStream, null, null, 0 );
+        ForkClient client = new ForkClient( null, notifiableTestStream, 0 );
         client.kill();
 
         verify( notifiableTestStream, times( 1 ) )
@@ -288,7 +205,6 @@ public class ForkClientTest
 
     @Test
     public void shouldAcquireNextTest()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -296,10 +212,8 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( ":maven:surefire:std:out:next-test\n" );
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        client.handleEvent( new ControlNextTestEvent() );
         verify( notifiableTestStream, times( 1 ) )
                 .provideNewTest();
         verifyNoMoreInteractions( notifiableTestStream );
@@ -322,7 +236,6 @@ public class ForkClientTest
 
     @Test
     public void shouldNotifyWithBye()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -330,11 +243,9 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
 
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( ":maven:surefire:std:out:bye\n" );
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        client.handleEvent( new ControlByeEvent() );
         client.kill();
 
         verify( notifiableTestStream, times( 1 ) )
@@ -361,7 +272,6 @@ public class ForkClientTest
 
     @Test
     public void shouldStopOnNextTest()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -369,10 +279,8 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
         final boolean[] verified = {false};
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 )
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 )
         {
             @Override
             protected void stopOnNextTest()
@@ -381,7 +289,7 @@ public class ForkClientTest
                 verified[0] = true;
             }
         };
-        client.consumeMultiLineContent( ":maven:surefire:std:out:stop-on-next-test\n" );
+        client.handleEvent( new ControlStopOnNextTestEvent() );
         verifyZeroInteractions( notifiableTestStream );
         verifyZeroInteractions( factory );
         assertThat( verified[0] )
@@ -404,7 +312,6 @@ public class ForkClientTest
 
     @Test
     public void shouldReceiveStdOut()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -415,10 +322,8 @@ public class ForkClientTest
         when( factory.createReporter() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( ":maven:surefire:std:out:std-out-stream:normal-run:UTF-8:bXNn\n" );
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        client.handleEvent( new StandardStreamOutEvent( NORMAL_RUN, "msg" ) );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
                 .createReporter();
@@ -449,7 +354,6 @@ public class ForkClientTest
 
     @Test
     public void shouldReceiveStdOutNewLine()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -460,10 +364,8 @@ public class ForkClientTest
         when( factory.createReporter() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( ":maven:surefire:std:out:std-out-stream-new-line:normal-run:UTF-8:bXNn\n" );
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        client.handleEvent( new StandardStreamOutWithNewLineEvent( NORMAL_RUN, "msg" ) );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
                 .createReporter();
@@ -494,7 +396,6 @@ public class ForkClientTest
 
     @Test
     public void shouldReceiveStdErr()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -505,10 +406,8 @@ public class ForkClientTest
         when( factory.createReporter() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( ":maven:surefire:std:out:std-err-stream:normal-run:UTF-8:bXNn\n" );
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        client.handleEvent( new StandardStreamErrEvent( NORMAL_RUN, "msg" ) );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
                 .createReporter();
@@ -539,7 +438,6 @@ public class ForkClientTest
 
     @Test
     public void shouldReceiveStdErrNewLine()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -550,10 +448,8 @@ public class ForkClientTest
         when( factory.createReporter() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( ":maven:surefire:std:out:std-err-stream-new-line:normal-run:UTF-8:bXNn\n" );
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        client.handleEvent( new StandardStreamErrWithNewLineEvent( NORMAL_RUN, "msg" ) );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
                 .createReporter();
@@ -584,28 +480,22 @@ public class ForkClientTest
 
     @Test
     public void shouldLogConsoleError()
-            throws IOException
     {
-        String cwd = System.getProperty( "user.dir" );
-        File target = new File( cwd, "target" );
         DefaultReporterFactory factory = mock( DefaultReporterFactory.class );
-        when( factory.getReportsDirectory() )
-                .thenReturn( new File( target, "surefire-reports" ) );
         MockReporter receiver = new MockReporter();
         when( factory.createReporter() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( ":maven:surefire:std:out:console-error-log:UTF-8:"
-                + encodeBase64String( "Listening for transport dt_socket at address:".getBytes( UTF_8 ) )
-                + ":-:-:-" );
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        StackTraceWriter stackTrace =
+            new DeserializedStacktraceWriter( "Listening for transport dt_socket at address: 5005", null, null );
+        Event event = new ConsoleErrorEvent( stackTrace );
+        client.handleEvent( event );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
                 .createReporter();
         verify( factory, times( 1 ) )
-                .getReportsDirectory();
+            .getReportsDirectory();
         verifyNoMoreInteractions( factory );
         assertThat( client.getReporter() )
                 .isNotNull();
@@ -616,7 +506,7 @@ public class ForkClientTest
         assertThat( receiver.getData() )
                 .isNotEmpty();
         assertThat( receiver.getData() )
-                .contains( "Listening for transport dt_socket at address:" );
+                .contains( "Listening for transport dt_socket at address: 5005" );
         assertThat( client.isSaidGoodBye() )
                 .isFalse();
         assertThat( client.isErrorInFork() )
@@ -634,66 +524,53 @@ public class ForkClientTest
     }
 
     @Test
-    public void shouldLogConsoleErrorWithStackTrace()
-            throws IOException
+    public void shouldLogConsoleErrorWithStackTrace() throws Exception
     {
-        String cwd = System.getProperty( "user.dir" );
-        File target = new File( cwd, "target" );
-        DefaultReporterFactory factory = mock( DefaultReporterFactory.class );
-        when( factory.getReportsDirectory() )
-                .thenReturn( new File( target, "surefire-reports" ) );
-        MockReporter receiver = new MockReporter();
-        when( factory.createReporter() )
-                .thenReturn( receiver );
-        NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
+        String nativeStream = ":maven-surefire-event:console-error-log:UTF-8"
+            + ":" + encodeBase64String( "Listening for transport dt_socket at address: 5005".getBytes( UTF_8 ) )
+            + ":" + encodeBase64String( "s1".getBytes( UTF_8 ) )
+            + ":" + encodeBase64String( "s2".getBytes( UTF_8 ) ) + ":";
+        EH eventHandler = new EH();
+        CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
         ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( ":maven:surefire:std:out:console-error-log:UTF-8"
-                + ":" + encodeBase64String( "Listening for transport dt_socket at address:".getBytes( UTF_8 ) )
-                + ":" + encodeBase64String( "s1".getBytes( UTF_8 ) )
-                + ":" + encodeBase64String( "s2".getBytes( UTF_8 ) ) );
-        verifyZeroInteractions( notifiableTestStream );
-        verify( factory, times( 1 ) )
-                .createReporter();
-        verify( factory, times( 1 ) )
-                .getReportsDirectory();
-        verifyNoMoreInteractions( factory );
-        assertThat( client.getReporter() )
-                .isNotNull();
-        assertThat( receiver.getEvents() )
-                .isNotEmpty();
-        assertThat( receiver.getEvents() )
-                .contains( CONSOLE_ERR );
-        assertThat( receiver.getData() )
-                .isNotEmpty();
-        assertThat( receiver.getData() )
-                .contains( "Listening for transport dt_socket at address:" );
-        assertThat( client.isSaidGoodBye() )
-                .isFalse();
-        assertThat( client.isErrorInFork() )
+        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
+        when( arguments.getConsoleLogger() ).thenReturn( logger );
+        ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
+        try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
+        {
+            t.start();
+
+            Event event = eventHandler.pullEvent();
+            assertThat( event.isConsoleErrorCategory() )
                 .isTrue();
-        assertThat( client.getErrorInFork() )
+            assertThat( event.isConsoleCategory() )
+                .isTrue();
+            assertThat( event.getEventType() )
+                .isEqualTo( BOOTERCODE_CONSOLE_ERROR );
+
+            ConsoleErrorEvent consoleEvent = (ConsoleErrorEvent) event;
+            assertThat( consoleEvent.getStackTraceWriter() )
                 .isNotNull();
-        assertThat( client.getErrorInFork().getThrowable().getLocalizedMessage() )
-                .isEqualTo( "Listening for transport dt_socket at address:" );
-        assertThat( client.getErrorInFork().smartTrimmedStackTrace() )
+            assertThat( consoleEvent.getStackTraceWriter().getThrowable().getMessage() )
+                .isEqualTo( "Listening for transport dt_socket at address: 5005" );
+            assertThat( consoleEvent.getStackTraceWriter().smartTrimmedStackTrace() )
                 .isEqualTo( "s1" );
-        assertThat( client.getErrorInFork().writeTrimmedTraceToString() )
+            assertThat( consoleEvent.getStackTraceWriter().writeTraceToString() )
                 .isEqualTo( "s2" );
-        assertThat( client.hadTimeout() )
-                .isFalse();
-        assertThat( client.hasTestsInProgress() )
-                .isFalse();
-        assertThat( client.testsInProgress() )
-                .isEmpty();
-        assertThat( client.getTestVmSystemProperties() )
-                .isEmpty();
+
+            countdown.awaitClosed();
+
+            verifyZeroInteractions( logger );
+        }
+
+        assertThat( eventHandler.sizeOfEventCache() )
+            .isEqualTo( 0 );
+
+        verifyNoMoreInteractions( logger );
     }
 
     @Test
     public void shouldLogConsoleWarning()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -704,13 +581,8 @@ public class ForkClientTest
         when( factory.createReporter() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        when( logger.isWarnEnabled() )
-                .thenReturn( true );
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( ":maven:surefire:std:out:console-warning-log:UTF-8:"
-                + encodeBase64String( "s1".getBytes( UTF_8 ) ) );
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        client.handleEvent( new ConsoleWarningEvent( "s1" ) );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
                 .createReporter();
@@ -741,7 +613,6 @@ public class ForkClientTest
 
     @Test
     public void shouldLogConsoleDebug()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -752,13 +623,8 @@ public class ForkClientTest
         when( factory.createReporter() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        when( logger.isDebugEnabled() )
-                .thenReturn( true );
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( ":maven:surefire:std:out:console-debug-log:UTF-8:"
-                + encodeBase64String( "s1".getBytes( UTF_8 ) ) );
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        client.handleEvent( new ConsoleDebugEvent( "s1" ) );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
                 .createReporter();
@@ -789,7 +655,6 @@ public class ForkClientTest
 
     @Test
     public void shouldLogConsoleInfo()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -800,11 +665,8 @@ public class ForkClientTest
         when( factory.createReporter() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( ":maven:surefire:std:out:console-info-log:UTF-8:"
-                + encodeBase64String( "s1".getBytes( UTF_8 ) ) );
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        client.handleEvent( new ConsoleInfoEvent( "s1" ) );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
                 .createReporter();
@@ -835,7 +697,6 @@ public class ForkClientTest
 
     @Test
     public void shouldSendSystemProperty()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -846,11 +707,8 @@ public class ForkClientTest
         when( factory.createReporter() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( ":maven:surefire:std:out:sys-prop:normal-run:UTF-8:azE=:djE="
-                + encodeBase64String( "s1".getBytes( UTF_8 ) ) );
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        client.handleEvent( new SystemPropertyEvent( NORMAL_RUN, "k1", "v1" ) );
         verifyZeroInteractions( notifiableTestStream );
         verifyZeroInteractions( factory );
         assertThat( client.getReporter() )
@@ -879,7 +737,6 @@ public class ForkClientTest
 
     @Test
     public void shouldSendTestsetStartingKilled()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -890,21 +747,11 @@ public class ForkClientTest
         when( factory.createReporter() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-
 
         final String exceptionMessage = "msg";
-        final String encodedExceptionMsg = encodeBase64String( toArray( UTF_8.encode( exceptionMessage ) ) );
-
         final String smartStackTrace = "MyTest:86 >> Error";
-        final String encodedSmartStackTrace = encodeBase64String( toArray( UTF_8.encode( smartStackTrace ) ) );
-
         final String stackTrace = "trace line 1\ntrace line 2";
-        final String encodedStackTrace = encodeBase64String( toArray( UTF_8.encode( stackTrace ) ) );
-
         final String trimmedStackTrace = "trace line 1";
-        final String encodedTrimmedStackTrace = encodeBase64String( toArray( UTF_8.encode( trimmedStackTrace ) ) );
 
         SafeThrowable safeThrowable = new SafeThrowable( new Exception( exceptionMessage ) );
         StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
@@ -913,7 +760,7 @@ public class ForkClientTest
         when( stackTraceWriter.writeTrimmedTraceToString() ).thenReturn( trimmedStackTrace );
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
-        ReportEntry reportEntry = mock( ReportEntry.class );
+        TestSetReportEntry reportEntry = mock( TestSetReportEntry.class );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
@@ -922,33 +769,8 @@ public class ForkClientTest
         when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
-        String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
-        String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
-        String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
-        String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
-
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( ":maven:surefire:std:out:testset-starting:normal-run:UTF-8:"
-                + encodedSourceName
-                + ":"
-                + "-"
-                + ":"
-                + encodedName
-                + ":"
-                + "-"
-                + ":"
-                + encodedGroup
-                + ":"
-                + encodedMessage
-                + ":"
-                + ELAPSED_TIME
-                + ":"
-
-                + encodedExceptionMsg
-                + ":"
-                + encodedSmartStackTrace
-                + ":"
-                + encodedTrimmedStackTrace );
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        client.handleEvent( new TestsetStartingEvent( NORMAL_RUN, reportEntry ) );
 
         client.tryToTimeout( System.currentTimeMillis() + 1000L, 1 );
 
@@ -983,13 +805,13 @@ public class ForkClientTest
                 .isNotNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) )
                 .getStackTraceWriter().getThrowable().getLocalizedMessage() )
-                .isEqualTo( "msg" );
+                .isEqualTo( exceptionMessage );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getStackTraceWriter().smartTrimmedStackTrace() )
-                .isEqualTo( "MyTest:86 >> Error" );
+                .isEqualTo( smartStackTrace );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getStackTraceWriter().writeTraceToString() )
-                .isEqualTo( "trace line 1" );
+                .isEqualTo( stackTrace );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getStackTraceWriter().writeTrimmedTraceToString() )
-                .isEqualTo( "trace line 1" );
+                .isEqualTo( trimmedStackTrace );
         assertThat( client.isSaidGoodBye() )
                 .isFalse();
         assertThat( client.isErrorInFork() )
@@ -1010,7 +832,6 @@ public class ForkClientTest
 
     @Test
     public void shouldSendTestsetStarting()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -1021,21 +842,11 @@ public class ForkClientTest
         when( factory.createReporter() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-
 
         final String exceptionMessage = "msg";
-        final String encodedExceptionMsg = encodeBase64String( toArray( UTF_8.encode( exceptionMessage ) ) );
-
         final String smartStackTrace = "MyTest:86 >> Error";
-        final String encodedSmartStackTrace = encodeBase64String( toArray( UTF_8.encode( smartStackTrace ) ) );
-
         final String stackTrace = "trace line 1\ntrace line 2";
-        final String encodedStackTrace = encodeBase64String( toArray( UTF_8.encode( stackTrace ) ) );
-
         final String trimmedStackTrace = "trace line 1";
-        final String encodedTrimmedStackTrace = encodeBase64String( toArray( UTF_8.encode( trimmedStackTrace ) ) );
 
         SafeThrowable safeThrowable = new SafeThrowable( new Exception( exceptionMessage ) );
         StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
@@ -1044,7 +855,7 @@ public class ForkClientTest
         when( stackTraceWriter.writeTrimmedTraceToString() ).thenReturn( trimmedStackTrace );
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
-        ReportEntry reportEntry = mock( ReportEntry.class );
+        TestSetReportEntry reportEntry = mock( TestSetReportEntry.class );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
@@ -1055,36 +866,8 @@ public class ForkClientTest
         when( reportEntry.getSourceText() ).thenReturn( "dn1" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
-        String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
-        String encodedSourceText = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceText() ) ) );
-        String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
-        String encodedNameText = encodeBase64String( toArray( UTF_8.encode( reportEntry.getNameText() ) ) );
-        String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
-        String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
-
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( ":maven:surefire:std:out:testset-starting:normal-run:UTF-8:"
-                + encodedSourceName
-                + ":"
-                + encodedSourceText
-                + ":"
-                + encodedName
-                + ":"
-                + encodedNameText
-                + ":"
-                + encodedGroup
-                + ":"
-                + encodedMessage
-                + ":"
-                + ELAPSED_TIME
-                + ":"
-
-                + encodedExceptionMsg
-                + ":"
-                + encodedSmartStackTrace
-                + ":"
-                + encodedTrimmedStackTrace );
-
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        client.handleEvent( new TestsetStartingEvent( NORMAL_RUN, reportEntry ) );
         client.tryToTimeout( System.currentTimeMillis(), 1 );
 
         verifyZeroInteractions( notifiableTestStream );
@@ -1118,11 +901,11 @@ public class ForkClientTest
                 .getStackTraceWriter().getThrowable().getLocalizedMessage() )
                 .isEqualTo( "msg" );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getStackTraceWriter().smartTrimmedStackTrace() )
-                .isEqualTo( "MyTest:86 >> Error" );
+                .isEqualTo( smartStackTrace );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getStackTraceWriter().writeTraceToString() )
-                .isEqualTo( "trace line 1" );
+                .isEqualTo( stackTrace );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getStackTraceWriter().writeTrimmedTraceToString() )
-                .isEqualTo( "trace line 1" );
+                .isEqualTo( trimmedStackTrace );
         assertThat( client.isSaidGoodBye() )
                 .isFalse();
         assertThat( client.isErrorInFork() )
@@ -1145,7 +928,6 @@ public class ForkClientTest
 
     @Test
     public void shouldSendTestsetCompleted()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -1156,21 +938,11 @@ public class ForkClientTest
         when( factory.createReporter() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-
 
         final String exceptionMessage = "msg";
-        final String encodedExceptionMsg = encodeBase64String( toArray( UTF_8.encode( exceptionMessage ) ) );
-
         final String smartStackTrace = "MyTest:86 >> Error";
-        final String encodedSmartStackTrace = encodeBase64String( toArray( UTF_8.encode( smartStackTrace ) ) );
-
         final String stackTrace = "trace line 1\ntrace line 2";
-        final String encodedStackTrace = encodeBase64String( toArray( UTF_8.encode( stackTrace ) ) );
-
         final String trimmedStackTrace = "trace line 1";
-        final String encodedTrimmedStackTrace = encodeBase64String( toArray( UTF_8.encode( trimmedStackTrace ) ) );
 
         SafeThrowable safeThrowable = new SafeThrowable( new Exception( exceptionMessage ) );
         StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
@@ -1179,7 +951,7 @@ public class ForkClientTest
         when( stackTraceWriter.writeTrimmedTraceToString() ).thenReturn( trimmedStackTrace );
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
-        ReportEntry reportEntry = mock( ReportEntry.class );
+        TestSetReportEntry reportEntry = mock( TestSetReportEntry.class );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
@@ -1188,33 +960,8 @@ public class ForkClientTest
         when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
-        String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
-        String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
-        String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
-        String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
-
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( ":maven:surefire:std:out:testset-completed:normal-run:UTF-8:"
-                + encodedSourceName
-                + ":"
-                + "-"
-                + ":"
-                + encodedName
-                + ":"
-                + "-"
-                + ":"
-                + encodedGroup
-                + ":"
-                + encodedMessage
-                + ":"
-                + ELAPSED_TIME
-                + ":"
-
-                + encodedExceptionMsg
-                + ":"
-                + encodedSmartStackTrace
-                + ":"
-                + encodedTrimmedStackTrace );
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        client.handleEvent( new TestsetCompletedEvent( NORMAL_RUN, reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
         verify( factory ).createReporter();
@@ -1249,9 +996,9 @@ public class ForkClientTest
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getStackTraceWriter().smartTrimmedStackTrace() )
                 .isEqualTo( "MyTest:86 >> Error" );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getStackTraceWriter().writeTraceToString() )
-                .isEqualTo( "trace line 1" );
+                .isEqualTo( stackTrace );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getStackTraceWriter().writeTrimmedTraceToString() )
-                .isEqualTo( "trace line 1" );
+                .isEqualTo( trimmedStackTrace );
         assertThat( client.isSaidGoodBye() )
                 .isFalse();
         assertThat( client.isErrorInFork() )
@@ -1274,7 +1021,6 @@ public class ForkClientTest
 
     @Test
     public void shouldSendTestStarting()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -1285,21 +1031,11 @@ public class ForkClientTest
         when( factory.createReporter() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-
 
         final String exceptionMessage = "msg";
-        final String encodedExceptionMsg = encodeBase64String( toArray( UTF_8.encode( exceptionMessage ) ) );
-
         final String smartStackTrace = "MyTest:86 >> Error";
-        final String encodedSmartStackTrace = encodeBase64String( toArray( UTF_8.encode( smartStackTrace ) ) );
-
         final String stackTrace = "trace line 1\ntrace line 2";
-        final String encodedStackTrace = encodeBase64String( toArray( UTF_8.encode( stackTrace ) ) );
-
         final String trimmedStackTrace = "trace line 1";
-        final String encodedTrimmedStackTrace = encodeBase64String( toArray( UTF_8.encode( trimmedStackTrace ) ) );
 
         SafeThrowable safeThrowable = new SafeThrowable( new Exception( exceptionMessage ) );
         StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
@@ -1317,33 +1053,8 @@ public class ForkClientTest
         when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
-        String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
-        String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
-        String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
-        String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
-
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-        client.consumeMultiLineContent( ":maven:surefire:std:out:test-starting:normal-run:UTF-8:"
-                + encodedSourceName
-                + ":"
-                + "-"
-                + ":"
-                + encodedName
-                + ":"
-                + "-"
-                + ":"
-                + encodedGroup
-                + ":"
-                + encodedMessage
-                + ":"
-                + ELAPSED_TIME
-                + ":"
-
-                + encodedExceptionMsg
-                + ":"
-                + encodedSmartStackTrace
-                + ":"
-                + encodedTrimmedStackTrace );
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        client.handleEvent( new TestStartingEvent( NORMAL_RUN, reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
         verify( factory ).createReporter();
@@ -1381,11 +1092,11 @@ public class ForkClientTest
                 .getStackTraceWriter().getThrowable().getLocalizedMessage() )
                 .isEqualTo( "msg" );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getStackTraceWriter().smartTrimmedStackTrace() )
-                .isEqualTo( "MyTest:86 >> Error" );
+                .isEqualTo( smartStackTrace );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getStackTraceWriter().writeTraceToString() )
-                .isEqualTo( "trace line 1" );
+                .isEqualTo( stackTrace );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getStackTraceWriter().writeTrimmedTraceToString() )
-                .isEqualTo( "trace line 1" );
+                .isEqualTo( trimmedStackTrace );
         assertThat( client.isSaidGoodBye() )
                 .isFalse();
         assertThat( client.isErrorInFork() )
@@ -1404,7 +1115,6 @@ public class ForkClientTest
 
     @Test
     public void shouldSendTestSucceeded()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -1415,21 +1125,11 @@ public class ForkClientTest
         when( factory.createReporter() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-
 
         final String exceptionMessage = "msg";
-        final String encodedExceptionMsg = encodeBase64String( toArray( UTF_8.encode( exceptionMessage ) ) );
-
         final String smartStackTrace = "MyTest:86 >> Error";
-        final String encodedSmartStackTrace = encodeBase64String( toArray( UTF_8.encode( smartStackTrace ) ) );
-
         final String stackTrace = "trace line 1\ntrace line 2";
-        final String encodedStackTrace = encodeBase64String( toArray( UTF_8.encode( stackTrace ) ) );
-
         final String trimmedStackTrace = "trace line 1";
-        final String encodedTrimmedStackTrace = encodeBase64String( toArray( UTF_8.encode( trimmedStackTrace ) ) );
 
         SafeThrowable safeThrowable = new SafeThrowable( new Exception( exceptionMessage ) );
         StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
@@ -1447,42 +1147,15 @@ public class ForkClientTest
         when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
-        String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
-        String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
-        String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
-        String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
-
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-
-        client.consumeMultiLineContent( ":maven:surefire:std:out:test-starting:normal-run:UTF-8:"
-                + encodedSourceName
-                + ":-:-:-:-:-:-:-:-:-" );
+        ForkClient client = new ForkClient( factory, notifiableTestStream,  0 );
+        SimpleReportEntry testStarted = new SimpleReportEntry( reportEntry.getSourceName(), null, null, null );
+        client.handleEvent( new TestStartingEvent( NORMAL_RUN, testStarted ) );
 
         assertThat( client.testsInProgress() )
                 .hasSize( 1 )
                 .contains( "pkg.MyTest" );
 
-        client.consumeMultiLineContent( ":maven:surefire:std:out:test-succeeded:normal-run:UTF-8:"
-                + encodedSourceName
-                + ":"
-                + "-"
-                + ":"
-                + encodedName
-                + ":"
-                + "-"
-                + ":"
-                + encodedGroup
-                + ":"
-                + encodedMessage
-                + ":"
-                + ELAPSED_TIME
-                + ":"
-
-                + encodedExceptionMsg
-                + ":"
-                + encodedSmartStackTrace
-                + ":"
-                + encodedStackTrace );
+        client.handleEvent( new TestSucceededEvent( NORMAL_RUN, reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
         verify( factory ).createReporter();
@@ -1519,11 +1192,11 @@ public class ForkClientTest
                 .getStackTraceWriter().getThrowable().getLocalizedMessage() )
                 .isEqualTo( "msg" );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getStackTraceWriter().smartTrimmedStackTrace() )
-                .isEqualTo( "MyTest:86 >> Error" );
+                .isEqualTo( smartStackTrace );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getStackTraceWriter().writeTraceToString() )
-                .isEqualTo( "trace line 1\ntrace line 2" );
+                .isEqualTo( stackTrace );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getStackTraceWriter().writeTrimmedTraceToString() )
-                .isEqualTo( "trace line 1\ntrace line 2" );
+                .isEqualTo( trimmedStackTrace );
         assertThat( client.isSaidGoodBye() )
                 .isFalse();
         assertThat( client.isErrorInFork() )
@@ -1546,7 +1219,6 @@ public class ForkClientTest
 
     @Test
     public void shouldSendTestFailed()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -1557,21 +1229,11 @@ public class ForkClientTest
         when( factory.createReporter() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-
 
         final String exceptionMessage = "msg";
-        final String encodedExceptionMsg = encodeBase64String( toArray( UTF_8.encode( exceptionMessage ) ) );
-
         final String smartStackTrace = "MyTest:86 >> Error";
-        final String encodedSmartStackTrace = encodeBase64String( toArray( UTF_8.encode( smartStackTrace ) ) );
-
         final String stackTrace = "trace line 1\ntrace line 2";
-        final String encodedStackTrace = encodeBase64String( toArray( UTF_8.encode( stackTrace ) ) );
-
         final String trimmedStackTrace = "trace line 1";
-        final String encodedTrimmedStackTrace = encodeBase64String( toArray( UTF_8.encode( trimmedStackTrace ) ) );
 
         SafeThrowable safeThrowable = new SafeThrowable( new Exception( exceptionMessage ) );
         StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
@@ -1589,42 +1251,15 @@ public class ForkClientTest
         when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
-        String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
-        String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
-        String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
-        String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
-
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-
-        client.consumeMultiLineContent( ":maven:surefire:std:out:test-starting:normal-run:UTF-8:"
-                + encodedSourceName
-                + ":-:-:-:-:-:-:-:-:-" );
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        SimpleReportEntry testClass = new SimpleReportEntry( reportEntry.getSourceName(), null, null, null );
+        client.handleEvent( new TestStartingEvent( NORMAL_RUN, testClass ) );
 
         assertThat( client.testsInProgress() )
                 .hasSize( 1 )
                 .contains( "pkg.MyTest" );
 
-        client.consumeMultiLineContent( ":maven:surefire:std:out:test-failed:normal-run:UTF-8:"
-                + encodedSourceName
-                + ":"
-                + "-"
-                + ":"
-                + encodedName
-                + ":"
-                + "-"
-                + ":"
-                + encodedGroup
-                + ":"
-                + encodedMessage
-                + ":"
-                + ELAPSED_TIME
-                + ":"
-
-                + encodedExceptionMsg
-                + ":"
-                + encodedSmartStackTrace
-                + ":"
-                + encodedTrimmedStackTrace );
+        client.handleEvent( new TestFailedEvent( NORMAL_RUN, reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
         verify( factory ).createReporter();
@@ -1644,6 +1279,8 @@ public class ForkClientTest
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getName() )
                 .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getNameText() )
+                .isNull();
+        assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getStackTraceWriter() )
                 .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getSourceName() )
                 .isEqualTo( "pkg.MyTest" );
@@ -1667,9 +1304,9 @@ public class ForkClientTest
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getStackTraceWriter().smartTrimmedStackTrace() )
                 .isEqualTo( "MyTest:86 >> Error" );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getStackTraceWriter().writeTraceToString() )
-                .isEqualTo( "trace line 1" );
+                .isEqualTo( stackTrace );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getStackTraceWriter().writeTrimmedTraceToString() )
-                .isEqualTo( "trace line 1" );
+                .isEqualTo( trimmedStackTrace );
         assertThat( client.isSaidGoodBye() )
                 .isFalse();
         assertThat( client.isErrorInFork() )
@@ -1692,7 +1329,6 @@ public class ForkClientTest
 
     @Test
     public void shouldSendTestSkipped()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -1703,21 +1339,11 @@ public class ForkClientTest
         when( factory.createReporter() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-
 
         final String exceptionMessage = "msg";
-        final String encodedExceptionMsg = encodeBase64String( toArray( UTF_8.encode( exceptionMessage ) ) );
-
         final String smartStackTrace = "MyTest:86 >> Error";
-        final String encodedSmartStackTrace = encodeBase64String( toArray( UTF_8.encode( smartStackTrace ) ) );
-
         final String stackTrace = "trace line 1\ntrace line 2";
-        final String encodedStackTrace = encodeBase64String( toArray( UTF_8.encode( stackTrace ) ) );
-
         final String trimmedStackTrace = "trace line 1";
-        final String encodedTrimmedStackTrace = encodeBase64String( toArray( UTF_8.encode( trimmedStackTrace ) ) );
 
         SafeThrowable safeThrowable = new SafeThrowable( new Exception( exceptionMessage ) );
         StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
@@ -1735,42 +1361,15 @@ public class ForkClientTest
         when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
-        String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
-        String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
-        String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
-        String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
-
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-
-        client.consumeMultiLineContent( ":maven:surefire:std:out:test-starting:normal-run:UTF-8:"
-                + encodedSourceName
-                + ":-:-:-:-:-:-:-:-:-" );
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        SimpleReportEntry testStarted = new SimpleReportEntry( reportEntry.getSourceName(), null, null, null );
+        client.handleEvent( new TestStartingEvent( NORMAL_RUN, testStarted ) );
 
         assertThat( client.testsInProgress() )
                 .hasSize( 1 )
                 .contains( "pkg.MyTest" );
 
-        client.consumeMultiLineContent( ":maven:surefire:std:out:test-skipped:normal-run:UTF-8:"
-                + encodedSourceName
-                + ":"
-                + "-"
-                + ":"
-                + encodedName
-                + ":"
-                + "-"
-                + ":"
-                + encodedGroup
-                + ":"
-                + encodedMessage
-                + ":"
-                + ELAPSED_TIME
-                + ":"
-
-                + encodedExceptionMsg
-                + ":"
-                + encodedSmartStackTrace
-                + ":"
-                + encodedStackTrace );
+        client.handleEvent( new TestSkippedEvent( NORMAL_RUN, reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
         verify( factory ).createReporter();
@@ -1811,11 +1410,11 @@ public class ForkClientTest
                 .getStackTraceWriter().getThrowable().getLocalizedMessage() )
                 .isEqualTo( "msg" );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getStackTraceWriter().smartTrimmedStackTrace() )
-                .isEqualTo( "MyTest:86 >> Error" );
+                .isEqualTo( smartStackTrace );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getStackTraceWriter().writeTraceToString() )
-                .isEqualTo( "trace line 1\ntrace line 2" );
+                .isEqualTo( stackTrace );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getStackTraceWriter().writeTrimmedTraceToString() )
-                .isEqualTo( "trace line 1\ntrace line 2" );
+                .isEqualTo( trimmedStackTrace );
         assertThat( client.isSaidGoodBye() )
                 .isFalse();
         assertThat( client.isErrorInFork() )
@@ -1838,7 +1437,6 @@ public class ForkClientTest
 
     @Test
     public void shouldSendTestError()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -1849,21 +1447,11 @@ public class ForkClientTest
         when( factory.createReporter() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-
 
         final String exceptionMessage = "msg";
-        final String encodedExceptionMsg = encodeBase64String( toArray( UTF_8.encode( exceptionMessage ) ) );
-
         final String smartStackTrace = "MyTest:86 >> Error";
-        final String encodedSmartStackTrace = encodeBase64String( toArray( UTF_8.encode( smartStackTrace ) ) );
-
         final String stackTrace = "trace line 1\ntrace line 2";
-        final String encodedStackTrace = encodeBase64String( toArray( UTF_8.encode( stackTrace ) ) );
-
         final String trimmedStackTrace = "trace line 1";
-        final String encodedTrimmedStackTrace = encodeBase64String( toArray( UTF_8.encode( trimmedStackTrace ) ) );
 
         SafeThrowable safeThrowable = new SafeThrowable( new Exception( exceptionMessage ) );
         StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
@@ -1882,45 +1470,16 @@ public class ForkClientTest
         when( reportEntry.getSourceText() ).thenReturn( "display name" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
-        String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
-        String encodedSourceText = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceText() ) ) );
-        String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
-        String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
-        String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
-
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-
-        client.consumeMultiLineContent( ":maven:surefire:std:out:test-starting:normal-run:UTF-8:"
-                + encodedSourceName
-                + ":"
-                + encodedSourceText
-                + ":-:':-:-:-:-:-:-" );
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        SimpleReportEntry testStarted =
+            new SimpleReportEntry( reportEntry.getSourceName(), reportEntry.getSourceText(), null, null );
+        client.handleEvent( new TestStartingEvent( NORMAL_RUN, testStarted ) );
 
         assertThat( client.testsInProgress() )
                 .hasSize( 1 )
                 .contains( "pkg.MyTest" );
 
-        client.consumeMultiLineContent( ":maven:surefire:std:out:test-error:normal-run:UTF-8:"
-                + encodedSourceName
-                + ":"
-                + encodedSourceText
-                + ":"
-                + encodedName
-                + ":"
-                + "-"
-                + ":"
-                + encodedGroup
-                + ":"
-                + encodedMessage
-                + ":"
-                + ELAPSED_TIME
-                + ":"
-
-                + encodedExceptionMsg
-                + ":"
-                + encodedSmartStackTrace
-                + ":"
-                + encodedTrimmedStackTrace );
+        client.handleEvent( new TestErrorEvent( NORMAL_RUN, reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
         verify( factory ).createReporter();
@@ -1957,11 +1516,11 @@ public class ForkClientTest
                 .getStackTraceWriter().getThrowable().getLocalizedMessage() )
                 .isEqualTo( "msg" );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getStackTraceWriter().smartTrimmedStackTrace() )
-                .isEqualTo( "MyTest:86 >> Error" );
+                .isEqualTo( smartStackTrace );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getStackTraceWriter().writeTraceToString() )
-                .isEqualTo( "trace line 1" );
+                .isEqualTo( stackTrace );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getStackTraceWriter().writeTrimmedTraceToString() )
-                .isEqualTo( "trace line 1" );
+                .isEqualTo( trimmedStackTrace );
         assertThat( client.isSaidGoodBye() )
                 .isFalse();
         assertThat( client.isErrorInFork() )
@@ -1984,7 +1543,6 @@ public class ForkClientTest
 
     @Test
     public void shouldSendTestAssumptionFailure()
-            throws IOException
     {
         String cwd = System.getProperty( "user.dir" );
         File target = new File( cwd, "target" );
@@ -1995,21 +1553,11 @@ public class ForkClientTest
         when( factory.createReporter() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
-        AtomicBoolean printedErrorStream = new AtomicBoolean();
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-
 
         final String exceptionMessage = "msg";
-        final String encodedExceptionMsg = encodeBase64String( toArray( UTF_8.encode( exceptionMessage ) ) );
-
         final String smartStackTrace = "MyTest:86 >> Error";
-        final String encodedSmartStackTrace = encodeBase64String( toArray( UTF_8.encode( smartStackTrace ) ) );
-
         final String stackTrace = "trace line 1\ntrace line 2";
-        final String encodedStackTrace = encodeBase64String( toArray( UTF_8.encode( stackTrace ) ) );
-
         final String trimmedStackTrace = "trace line 1";
-        final String encodedTrimmedStackTrace = encodeBase64String( toArray( UTF_8.encode( trimmedStackTrace ) ) );
 
         SafeThrowable safeThrowable = new SafeThrowable( new Exception( exceptionMessage ) );
         StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
@@ -2028,43 +1576,15 @@ public class ForkClientTest
         when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
-        String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
-        String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
-        String encodedText = encodeBase64String( toArray( UTF_8.encode( reportEntry.getNameText() ) ) );
-        String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
-        String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
-
-        ForkClient client = new ForkClient( factory, notifiableTestStream, logger, printedErrorStream, 0 );
-
-        client.consumeMultiLineContent( ":maven:surefire:std:out:test-starting:normal-run:UTF-8:"
-                + encodedSourceName
-                + ":-:-:-:-:-:-:-:-:-" );
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        SimpleReportEntry testStarted = new SimpleReportEntry( reportEntry.getSourceName(), null, null, null );
+        client.handleEvent( new TestStartingEvent( NORMAL_RUN, testStarted ) );
 
         assertThat( client.testsInProgress() )
                 .hasSize( 1 )
                 .contains( "pkg.MyTest" );
 
-        client.consumeMultiLineContent( ":maven:surefire:std:out:test-assumption-failure:normal-run:UTF-8:"
-                + encodedSourceName
-                + ":"
-                + "-"
-                + ":"
-                + encodedName
-                + ":"
-                + encodedText
-                + ":"
-                + encodedGroup
-                + ":"
-                + encodedMessage
-                + ":"
-                + ELAPSED_TIME
-                + ":"
-
-                + encodedExceptionMsg
-                + ":"
-                + encodedSmartStackTrace
-                + ":"
-                + encodedStackTrace );
+        client.handleEvent( new TestAssumptionFailureEvent( NORMAL_RUN, reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
         verify( factory ).createReporter();
@@ -2101,11 +1621,11 @@ public class ForkClientTest
                 .getStackTraceWriter().getThrowable().getLocalizedMessage() )
                 .isEqualTo( "msg" );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getStackTraceWriter().smartTrimmedStackTrace() )
-                .isEqualTo( "MyTest:86 >> Error" );
+                .isEqualTo( smartStackTrace );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getStackTraceWriter().writeTraceToString() )
-                .isEqualTo( "trace line 1\ntrace line 2" );
+                .isEqualTo( stackTrace );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getStackTraceWriter().writeTrimmedTraceToString() )
-                .isEqualTo( "trace line 1\ntrace line 2" );
+                .isEqualTo( trimmedStackTrace );
         assertThat( client.isSaidGoodBye() )
                 .isFalse();
         assertThat( client.isErrorInFork() )
@@ -2126,9 +1646,24 @@ public class ForkClientTest
                 .isSameAs( factory );
     }
 
-    private static byte[] toArray( ByteBuffer buffer )
+    private static class EH implements EventHandler<Event>
     {
-        return copyOfRange( buffer.array(), buffer.arrayOffset(), buffer.arrayOffset() + buffer.remaining() );
-    }
+        private final BlockingQueue<Event> cache = new LinkedBlockingQueue<>( 1 );
 
+        Event pullEvent() throws InterruptedException
+        {
+            return cache.poll( 1, TimeUnit.MINUTES );
+        }
+
+        int sizeOfEventCache()
+        {
+            return cache.size();
+        }
+
+        @Override
+        public void handleEvent( @Nonnull Event event )
+        {
+            cache.add( event );
+        }
+    }
 }

@@ -73,8 +73,10 @@
             <configuration>
               <artifactSet>
                 <includes>
+                  <include>org.apache.maven.surefire:surefire-shared-utils</include>
                   <include>org.apache.maven.surefire:surefire-logger-api</include>
                   <include>org.apache.maven.surefire:surefire-api</include>
+                  <include>org.apache.maven.surefire:surefire-extensions-spi</include>
                   <include>org.apache.maven.surefire:surefire-booter</include>
                   <include>org.apache.maven.surefire:common-junit3</include>
                   <include>org.apache.maven.surefire:surefire-junit3</include>
@@ -86,6 +88,9 @@
                   <shadedPattern>org.apache.maven.shadefire</shadedPattern>
                 </relocation>
               </relocations>
+                <transformers>
+                    <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                </transformers>
             </configuration>
           </execution>
         </executions>

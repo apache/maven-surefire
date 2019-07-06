@@ -148,12 +148,31 @@ public class ForkedBooterTest
     }
 
     @Test( timeout = 10_000 )
-    public void testBarrier() throws Exception
+    public void testBarrier1() throws Exception
     {
         Semaphore semaphore = new Semaphore( 2 );
-        invokeMethod( ForkedBooter.class, "acquireOnePermit", semaphore, 30_000L );
+        boolean acquiredOnePermit = invokeMethod( ForkedBooter.class, "acquireOnePermit", semaphore, 30_000L );
 
+        assertThat( acquiredOnePermit ).isTrue();
         assertThat( semaphore.availablePermits() ).isEqualTo( 1 );
+    }
+
+    @Test
+    public void testBarrier2() throws Exception
+    {
+        Semaphore semaphore = new Semaphore( 0 );
+        Thread.currentThread().interrupt();
+        try
+        {
+            boolean acquiredOnePermit = invokeMethod( ForkedBooter.class, "acquireOnePermit", semaphore, 30_000L );
+
+            assertThat( acquiredOnePermit ).isTrue();
+            assertThat( semaphore.availablePermits() ).isEqualTo( 0 );
+        }
+        finally
+        {
+            assertThat( Thread.interrupted() ).isFalse();
+        }
     }
 
     @Test

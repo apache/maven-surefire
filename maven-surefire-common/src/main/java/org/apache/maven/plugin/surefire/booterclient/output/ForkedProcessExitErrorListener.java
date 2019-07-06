@@ -19,11 +19,13 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.StackTraceWriter;
+
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M4
  */
 public interface ForkedProcessExitErrorListener
 {
-    void handle( String exceptionMessage, String smartTrimmedStackTrace, String stackTrace );
+    void handle( StackTraceWriter stackTrace );
 }

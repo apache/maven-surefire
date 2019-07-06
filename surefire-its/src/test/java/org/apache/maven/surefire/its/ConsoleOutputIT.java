@@ -21,47 +21,90 @@ package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+
+import java.util.ArrayList;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 
 /**
  * Basic suite test using all known versions of JUnit 4.x
  *
  * @author Kristian Rosenvold
  */
+@RunWith( Parameterized.class )
 public class ConsoleOutputIT
     extends SurefireJUnit4IntegrationTestCase
 {
-    @Test
-    public void properNewlinesAndEncodingWithDefaultEncodings()
-    {
-        final OutputValidator outputValidator =
-            unpack( "/consoleOutput" ).forkOnce().executeTest();
+    private static final String LEGACY_FORK_NODE =
+        "org.apache.maven.plugin.surefire.extensions.LegacyForkNodeFactory";
 
+    private static final String SUREFIRE_FORK_NODE =
+        "org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory";
+
+    @Parameters
+    public static Iterable<Object[]> data()
+    {
+        ArrayList<Object[]> args = new ArrayList<>();
+        args.add( new Object[] { "tcp" } );
+        args.add( new Object[] { null } );
+        return args;
+    }
+
+    @Parameter
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
+    public String profileId;
+
+    @Test
+    public void properNewlinesAndEncodingWithDefaultEncodings() throws Exception
+    {
+        OutputValidator outputValidator = unpack().forkOnce().executeTest();
         validate( outputValidator, true );
     }
 
     @Test
-    public void properNewlinesAndEncodingWithDifferentEncoding()
+    public void properNewlinesAndEncodingWithDifferentEncoding() throws Exception
     {
-        final OutputValidator outputValidator =
-            unpack( "/consoleOutput" ).forkOnce().argLine( "-Dfile.encoding=UTF-16" ).executeTest();
-
+        OutputValidator outputValidator = unpack()
+                .forkOnce()
+                .argLine( "-Dfile.encoding=UTF-16" )
+                .executeTest();
         validate( outputValidator, true );
     }
 
     @Test
-    public void properNewlinesAndEncodingWithoutFork()
+    public void properNewlinesAndEncodingWithoutFork() throws Exception
     {
-        final OutputValidator outputValidator =
-            unpack( "/consoleOutput" ).forkNever().executeTest();
-
+        OutputValidator outputValidator = unpack()
+                .forkNever()
+                .executeTest();
         validate( outputValidator, false );
     }
 
-    private void validate( final OutputValidator outputValidator, boolean includeShutdownHook )
+    private SurefireLauncher unpack()
+    {
+        SurefireLauncher launcher =
+            unpack( "/consoleOutput", profileId == null ? "" : "-" + profileId )
+                .debugLogging();
+
+        if ( profileId != null )
+        {
+            launcher.activateProfile( profileId );
+        }
+
+        return launcher;
+    }
+
+    private void validate( final OutputValidator outputValidator, boolean canFork )
+        throws Exception
     {
         TestFile xmlReportFile = outputValidator.getSurefireReportsXmlFile( "TEST-consoleOutput.Test1.xml" );
         xmlReportFile.assertContainsText( "SoutLine" );
@@ -73,18 +116,43 @@ public class ConsoleOutputIT
         outputFile.assertContainsText( "SoutLine" );
         outputFile.assertContainsText( "äöüß" );
 
-        if ( includeShutdownHook )
+        String cls = profileId == null ? LEGACY_FORK_NODE : SUREFIRE_FORK_NODE;
+
+        if ( canFork )
         {
-            outputFile.assertContainsText( "Printline in shutdown hook" );
+            outputValidator
+                .assertThatLogLine(
+                    containsString( "Found implementation of fork node factory: " + cls ),
+                    equalTo( 1 ) );
         }
     }
 
     @Test
-    public void largerSoutThanMemory()
+    public void largerSoutThanMemory() throws Exception
     {
-        unpack( "consoleoutput-noisy" )
+        SurefireLauncher launcher =
+            unpackNoisy()
                 .setMavenOpts( "-Xmx64m" )
-                .sysProp( "thousand", "32000" )
-                .executeTest();
+                .sysProp( "thousand", "32000" );
+
+        String cls = profileId == null ? LEGACY_FORK_NODE : SUREFIRE_FORK_NODE;
+
+        launcher.executeTest()
+            .verifyErrorFreeLog()
+            .assertThatLogLine( containsString( "Found implementation of fork node factory: " + cls ), equalTo( 1 ) );
+    }
+
+    private SurefireLauncher unpackNoisy()
+    {
+        SurefireLauncher launcher =
+            unpack( "consoleoutput-noisy", profileId == null ? "" : "-" + profileId )
+                .debugLogging();
+
+        if ( profileId != null )
+        {
+            launcher.activateProfile( profileId );
+        }
+
+        return launcher;
     }
 }

@@ -28,7 +28,6 @@ import org.apache.maven.plugin.surefire.AbstractSurefireMojoTest;
 import org.apache.maven.plugin.surefire.CommonReflectorTest;
 import org.apache.maven.plugin.surefire.MojoMocklessTest;
 import org.apache.maven.plugin.surefire.SurefireHelperTest;
-import org.apache.maven.plugin.surefire.SurefireReflectorTest;
 import org.apache.maven.plugin.surefire.SurefirePropertiesTest;
 import org.apache.maven.plugin.surefire.booterclient.BooterDeserializerProviderConfigurationTest;
 import org.apache.maven.plugin.surefire.booterclient.BooterDeserializerStartupConfigurationTest;
@@ -41,7 +40,11 @@ import org.apache.maven.plugin.surefire.booterclient.ModularClasspathForkConfigu
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStreamBuilderTest;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStreamTest;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClientTest;
-import org.apache.maven.plugin.surefire.booterclient.output.ForkedChannelDecoderTest;
+import org.apache.maven.plugin.surefire.extensions.ConsoleOutputReporterTest;
+import org.apache.maven.plugin.surefire.extensions.E2ETest;
+import org.apache.maven.plugin.surefire.extensions.ForkedProcessEventNotifierTest;
+import org.apache.maven.plugin.surefire.extensions.StatelessReporterTest;
+import org.apache.maven.plugin.surefire.extensions.StreamFeederTest;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactoryTest;
 import org.apache.maven.plugin.surefire.report.StatelessXmlReporterTest;
 import org.apache.maven.plugin.surefire.report.TestSetStatsTest;
@@ -51,8 +54,7 @@ import org.apache.maven.plugin.surefire.util.DependenciesScannerTest;
 import org.apache.maven.plugin.surefire.util.DirectoryScannerTest;
 import org.apache.maven.plugin.surefire.util.ScannerUtilTest;
 import org.apache.maven.plugin.surefire.util.SpecificFileFilterTest;
-import org.apache.maven.surefire.extensions.ConsoleOutputReporterTest;
-import org.apache.maven.surefire.extensions.StatelessReporterTest;
+import org.apache.maven.surefire.extensions.ForkChannelTest;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoReporterTest;
 import org.apache.maven.surefire.report.FileReporterTest;
 import org.apache.maven.surefire.report.RunStatisticsTest;
@@ -89,7 +91,6 @@ public class JUnit4SuiteTest extends TestCase
         suite.addTest( new JUnit4TestAdapter( TestProvidingInputStreamTest.class ) );
         suite.addTest( new JUnit4TestAdapter( TestLessInputStreamBuilderTest.class ) );
         suite.addTest( new JUnit4TestAdapter( SPITest.class ) );
-        suite.addTest( new JUnit4TestAdapter( SurefireReflectorTest.class ) );
         suite.addTest( new JUnit4TestAdapter( SurefireHelperTest.class ) );
         suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoTest.class ) );
         suite.addTest( new JUnit4TestAdapter( DefaultForkConfigurationTest.class ) );
@@ -99,13 +100,16 @@ public class JUnit4SuiteTest extends TestCase
         suite.addTest( new JUnit4TestAdapter( ScannerUtilTest.class ) );
         suite.addTest( new JUnit4TestAdapter( MojoMocklessTest.class ) );
         suite.addTest( new JUnit4TestAdapter( ForkClientTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( ForkedChannelDecoderTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( ForkedProcessEventNotifierTest.class ) );
         suite.addTest( new JUnit4TestAdapter( ConsoleOutputReporterTest.class ) );
         suite.addTest( new JUnit4TestAdapter( StatelessReporterTest.class ) );
         suite.addTest( new JUnit4TestAdapter( TestSetStatsTest.class ) );
         suite.addTest( new JUnit4TestAdapter( StatelessTestsetInfoReporterTest.class ) );
         suite.addTest( new JUnit4TestAdapter( CommonReflectorTest.class ) );
         suite.addTest( new JUnit4TestAdapter( ForkStarterTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( ForkChannelTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( StreamFeederTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( E2ETest.class ) );
         return suite;
     }
 }

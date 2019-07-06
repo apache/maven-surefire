@@ -63,7 +63,7 @@ public interface ReportEntry
     /**
      * The group/category of the testcase
      *
-     * @return A string
+     * @return stack trace object
      */
     StackTraceWriter getStackTraceWriter();
 

@@ -27,6 +27,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.suite.RunResult;
 
 import java.io.File;
@@ -383,6 +384,21 @@ public class IntegrationTestMojo
      */
     @Parameter( property = "failsafe.useModulePath", defaultValue = "true" )
     private boolean useModulePath;
+
+    /**
+     * This parameter configures the forked node. Currently, you can select the communication protocol, i.e. process
+     * pipes or TCP/IP sockets.
+     * The plugin uses process pipes by default which will be turned to TCP/IP in the version 3.0.0.
+     * Alternatively, you can implement your own factory and SPI.
+     * <br>
+     * See the documentation for more details:<br>
+     * <a href="https://maven.apache.org/plugins/maven-surefire-plugin/examples/process-communication.html">
+     *     https://maven.apache.org/plugins/maven-surefire-plugin/examples/process-communication.html</a>
+     *
+     * @since 3.0.0-M5
+     */
+    @Parameter( property = "failsafe.forkNode" )
+    private ForkNodeFactory forkNode;
 
     /**
      * You can selectively exclude individual environment variables by enumerating their keys.
@@ -909,6 +925,12 @@ public class IntegrationTestMojo
     protected final boolean hasSuiteXmlFiles()
     {
         return suiteXmlFiles != null && suiteXmlFiles.length != 0;
+    }
+
+    @Override
+    protected final ForkNodeFactory getForkNode()
+    {
+        return forkNode;
     }
 
     @Override

@@ -48,7 +48,7 @@ public class RunResult
 
     public static final int SUCCESS = 0;
 
-    private static final int FAILURE = 255;
+    public static final int FAILURE = 255;
 
     private static final int NO_TESTS = 254;
 

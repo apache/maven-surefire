@@ -20,9 +20,12 @@ package org.apache.maven.surefire.booter;
  */
 
 import java.io.File;
+import java.net.URL;
+import java.util.Iterator;
 import java.util.List;
 
 import junit.framework.TestCase;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 
 import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 
@@ -101,7 +104,7 @@ public class ClasspathTest
 
     private void assertClasspathConsistsOfElements( Classpath classpath, String[] elements )
     {
-        List classpathElements = classpath.getClassPath();
+        List<String> classpathElements = classpath.getClassPath();
         for ( String element : elements )
         {
             assertTrue( "The element '" + element + " is missing.", classpathElements.contains( element ) );
@@ -111,7 +114,7 @@ public class ClasspathTest
 
     private void assertEmptyClasspath( Classpath classpath )
     {
-        List classpathElements = classpath.getClassPath();
+        List<String> classpathElements = classpath.getClassPath();
         assertEquals( "Wrong number of classpath elements.", 0, classpathElements.size() );
     }
 
@@ -145,5 +148,86 @@ public class ClasspathTest
         {
         }
         assertEmptyClasspath( classpath );
+    }
+
+    public void testCloneShouldBeEqual()
+    {
+        Classpath classpath = Classpath.emptyClasspath()
+            .addClassPathElementUrl( DUMMY_URL_1 )
+            .addClassPathElementUrl( DUMMY_URL_2 );
+
+        assertEquals( classpath, classpath );
+        assertFalse( classpath.equals( null ) );
+
+        assertEquals( 2, classpath.getClassPath().size() );
+        assertEquals( classpath, classpath.clone() );
+        assertEquals( classpath.hashCode(), classpath.clone().hashCode() );
+    }
+
+    public void testIterator()
+    {
+        Classpath classpath = Classpath.emptyClasspath()
+            .addClassPathElementUrl( DUMMY_URL_1 )
+            .addClassPathElementUrl( DUMMY_URL_2 );
+        Iterator<String> it = classpath.iterator();
+        String url1 = it.hasNext() ? it.next() : null;
+        String url2 = it.hasNext() ? it.next() : null;
+        assertEquals( DUMMY_URL_1, url1 );
+        assertEquals( DUMMY_URL_2, url2 );
+    }
+
+    public void testLog()
+    {
+        Classpath classpath = Classpath.emptyClasspath()
+            .addClassPathElementUrl( DUMMY_URL_1 )
+            .addClassPathElementUrl( DUMMY_URL_2 );
+        String log = classpath.getLogMessage( "classpath:" );
+        assertEquals( "classpath:  " + DUMMY_URL_1 + "  " + DUMMY_URL_2, log );
+    }
+
+    public void testCompactLog()
+    {
+        Classpath classpath = Classpath.emptyClasspath()
+            .addClassPathElementUrl( "root" + File.separatorChar + DUMMY_URL_1 )
+            .addClassPathElementUrl( "root" + File.separatorChar + DUMMY_URL_2 );
+        String log = classpath.getCompactLogMessage( "classpath:" );
+        assertEquals( "classpath:  " + DUMMY_URL_1 + "  " + DUMMY_URL_2, log );
+    }
+
+    public void testLoadInNewClassLoader() throws Exception
+    {
+        Class<?> target = ConsoleLogger.class;
+        String thisPath = "/" + target.getName().replace( '.', '/' ) + ".class";
+        URL url = target.getResource( thisPath );
+        assertTrue( url.toString().endsWith( thisPath ) );
+        String s = url.toString().replace( thisPath, "" ).replace( "!", "" ).replace( "jar:file:", "file:" );
+        String oneClasspath = new URL( s ).getFile();
+        assertTrue( new File( oneClasspath ).exists() );
+        Classpath classpath = Classpath.emptyClasspath();
+        ClassLoader classLoader = classpath.addClassPathElementUrl( new File( oneClasspath ).getCanonicalPath() )
+            .createClassLoader( false, true, "" );
+        Class<?> cls = classLoader.loadClass( target.getName() );
+        assertNotNull( cls );
+        assertEquals( cls.getName(), target.getName() );
+        assertNotSame( cls, target );
+    }
+
+    public void testDontLoadInNewClassLoader()
+    {
+        Class<?> target = ConsoleLogger.class;
+        String thisPath = "/" + target.getName().replace( '.', '/' ) + ".class";
+        URL url = target.getResource( thisPath );
+        assertTrue( url.toString().endsWith( thisPath ) );
+        try
+        {
+            Classpath.emptyClasspath()
+                .addClassPathElementUrl( "\u0000" )
+                .createClassLoader( false, true, "" );
+            fail();
+        }
+        catch ( SurefireExecutionException e )
+        {
+            // expected
+        }
     }
 }

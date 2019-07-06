@@ -29,6 +29,8 @@ import org.junit.runner.RunWith;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.runners.Parameterized.Parameter;
 
 /**
@@ -41,6 +43,12 @@ import static org.junit.runners.Parameterized.Parameter;
 public abstract class AbstractFailFastIT
     extends SurefireJUnit4IntegrationTestCase
 {
+    private static final String LEGACY_FORK_NODE =
+        "org.apache.maven.plugin.surefire.extensions.LegacyForkNodeFactory";
+
+    private static final String SUREFIRE_FORK_NODE =
+        "org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory";
+
     @Parameter( 0 )
     @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String description;
@@ -69,16 +77,26 @@ public abstract class AbstractFailFastIT
     @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public int skipped;
 
+    @Parameter( 7 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
+    public boolean useProcessPipes;
+
     protected abstract String withProvider();
 
     private OutputValidator prepare( String description, String profile, Map<String, String> properties )
     {
         MavenLauncher launcher = unpack( "/fail-fast-" + withProvider(), "_" + description )
-            .maven();
+            .maven()
+            .debugLogging();
 
         if ( profile != null )
         {
-            launcher.addGoal( "-P " + profile );
+            launcher.activateProfile( profile );
+        }
+
+        if ( !useProcessPipes )
+        {
+            launcher.activateProfile( "tcp" );
         }
 
         if ( failures != 0 || errors != 0 )
@@ -99,9 +117,11 @@ public abstract class AbstractFailFastIT
     }
 
     @Test
-    public void test()
+    public void test() throws Exception
     {
+        String cls = useProcessPipes ? LEGACY_FORK_NODE : SUREFIRE_FORK_NODE;
         prepare( description, profile, properties )
-            .assertTestSuiteResults( total, errors, failures, skipped );
+            .assertTestSuiteResults( total, errors, failures, skipped )
+            .assertThatLogLine( containsString( "Found implementation of fork node factory: " + cls ), equalTo( 1 ) );
     }
 }

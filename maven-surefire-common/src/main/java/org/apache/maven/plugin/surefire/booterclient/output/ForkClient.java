@@ -22,7 +22,9 @@ package org.apache.maven.plugin.surefire.booterclient.output;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
-import org.apache.maven.surefire.shared.utils.cli.StreamConsumer;
+import org.apache.maven.surefire.eventapi.Event;
+import org.apache.maven.surefire.extensions.EventHandler;
+import org.apache.maven.surefire.booter.MasterProcessChannelEncoder;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
@@ -30,25 +32,20 @@ import org.apache.maven.surefire.report.RunMode;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.report.TestSetReportEntry;
 
-import java.io.BufferedReader;
+import javax.annotation.Nonnull;
 import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.maven.surefire.booter.Shutdown.KILL;
 import static org.apache.maven.surefire.report.CategorizedReportEntry.reportEntry;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
 
 // todo move to the same package with ForkStarter
 
@@ -58,9 +55,8 @@ import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
  * @author Kristian Rosenvold
  */
 public class ForkClient
-     implements StreamConsumer
+    implements EventHandler<Event>
 {
-    private static final String PRINTABLE_JVM_NATIVE_STREAM = "Listening for transport dt_socket at address:";
     private static final long START_TIME_ZERO = 0L;
     private static final long START_TIME_NEGATIVE_TIMEOUT = -1L;
 
@@ -74,25 +70,13 @@ public class ForkClient
 
     /**
      * <em>testSetStartedAt</em> is set to non-zero after received
-     * {@link org.apache.maven.surefire.booter.ForkedChannelEncoder#testSetStarting(ReportEntry, boolean)}.
+     * {@link MasterProcessChannelEncoder#testSetStarting(ReportEntry, boolean)}.
      */
     private final AtomicLong testSetStartedAt = new AtomicLong( START_TIME_ZERO );
 
-    private final ForkedChannelDecoder decoder = new ForkedChannelDecoder();
-
-    private final ConsoleLogger log;
-
-    /**
-     * prevents from printing same warning
-     */
-    private final AtomicBoolean printedErrorStream;
+    private final ForkedProcessEventNotifier notifier = new ForkedProcessEventNotifier();
 
     private final int forkNumber;
-
-    /**
-     * Used by single Thread started by {@link ThreadedStreamConsumer} and therefore does not need to be volatile.
-     */
-    private final ForkedChannelDecoderErrorHandler errorHandler;
 
     private RunListener testSetReporter;
 
@@ -104,41 +88,30 @@ public class ForkClient
     private volatile StackTraceWriter errorInFork;
 
     public ForkClient( DefaultReporterFactory defaultReporterFactory, NotifiableTestStream notifiableTestStream,
-                       ConsoleLogger log, AtomicBoolean printedErrorStream, int forkNumber )
+                       int forkNumber )
     {
         this.defaultReporterFactory = defaultReporterFactory;
         this.notifiableTestStream = notifiableTestStream;
-        this.log = log;
-        this.printedErrorStream = printedErrorStream;
         this.forkNumber = forkNumber;
-        decoder.setTestSetStartingListener( new TestSetStartingListener() );
-        decoder.setTestSetCompletedListener( new TestSetCompletedListener() );
-        decoder.setTestStartingListener( new TestStartingListener() );
-        decoder.setTestSucceededListener( new TestSucceededListener() );
-        decoder.setTestFailedListener( new TestFailedListener() );
-        decoder.setTestSkippedListener( new TestSkippedListener() );
-        decoder.setTestErrorListener( new TestErrorListener() );
-        decoder.setTestAssumptionFailureListener( new TestAssumptionFailureListener() );
-        decoder.setSystemPropertiesListener( new SystemPropertiesListener() );
-        decoder.setStdOutListener( new StdOutListener() );
-        decoder.setStdErrListener( new StdErrListener() );
-        decoder.setConsoleInfoListener( new ConsoleListener() );
-        decoder.setAcquireNextTestListener( new AcquireNextTestListener() );
-        decoder.setConsoleErrorListener( new ErrorListener() );
-        decoder.setByeListener( new ByeListener() );
-        decoder.setStopOnNextTestListener( new StopOnNextTestListener() );
-        decoder.setConsoleDebugListener( new DebugListener() );
-        decoder.setConsoleWarningListener( new WarningListener() );
-        errorHandler = new ErrorHandler();
-    }
-
-    private final class ErrorHandler implements ForkedChannelDecoderErrorHandler
-    {
-        @Override
-        public void handledError( String line, Throwable e )
-        {
-            logStreamWarning( line, e );
-        }
+        notifier.setTestSetStartingListener( new TestSetStartingListener() );
+        notifier.setTestSetCompletedListener( new TestSetCompletedListener() );
+        notifier.setTestStartingListener( new TestStartingListener() );
+        notifier.setTestSucceededListener( new TestSucceededListener() );
+        notifier.setTestFailedListener( new TestFailedListener() );
+        notifier.setTestSkippedListener( new TestSkippedListener() );
+        notifier.setTestErrorListener( new TestErrorListener() );
+        notifier.setTestAssumptionFailureListener( new TestAssumptionFailureListener() );
+        notifier.setSystemPropertiesListener( new SystemPropertiesListener() );
+        notifier.setStdOutListener( new StdOutListener() );
+        notifier.setStdErrListener( new StdErrListener() );
+        notifier.setConsoleInfoListener( new ConsoleListener() );
+        notifier.setAcquireNextTestListener( new AcquireNextTestListener() );
+        notifier.setConsoleErrorListener( new ErrorListener() );
+        notifier.setByeListener( new ByeListener() );
+        notifier.setStopOnNextTestListener( new StopOnNextTestListener() );
+        notifier.setConsoleDebugListener( new DebugListener() );
+        notifier.setConsoleWarningListener( new WarningListener() );
+        notifier.setExitErrorEventListener( new ExitErrorEventListener() );
     }
 
     private final class TestSetStartingListener
@@ -167,7 +140,7 @@ public class ForkClient
         }
     }
 
-    private final class TestStartingListener implements ForkedProcessReportEventListener
+    private final class TestStartingListener implements ForkedProcessReportEventListener<ReportEntry>
     {
         @Override
         public void handle( RunMode runMode, ReportEntry reportEntry )
@@ -177,7 +150,7 @@ public class ForkClient
         }
     }
 
-    private final class TestSucceededListener implements ForkedProcessReportEventListener
+    private final class TestSucceededListener implements ForkedProcessReportEventListener<ReportEntry>
     {
         @Override
         public void handle( RunMode runMode, ReportEntry reportEntry )
@@ -187,7 +160,7 @@ public class ForkClient
         }
     }
 
-    private final class TestFailedListener implements ForkedProcessReportEventListener
+    private final class TestFailedListener implements ForkedProcessReportEventListener<ReportEntry>
     {
         @Override
         public void handle( RunMode runMode, ReportEntry reportEntry )
@@ -197,7 +170,7 @@ public class ForkClient
         }
     }
 
-    private final class TestSkippedListener implements ForkedProcessReportEventListener
+    private final class TestSkippedListener implements ForkedProcessReportEventListener<ReportEntry>
     {
         @Override
         public void handle( RunMode runMode, ReportEntry reportEntry )
@@ -207,7 +180,7 @@ public class ForkClient
         }
     }
 
-    private final class TestErrorListener implements ForkedProcessReportEventListener
+    private final class TestErrorListener implements ForkedProcessReportEventListener<ReportEntry>
     {
         @Override
         public void handle( RunMode runMode, ReportEntry reportEntry )
@@ -217,7 +190,7 @@ public class ForkClient
         }
     }
 
-    private final class TestAssumptionFailureListener implements ForkedProcessReportEventListener
+    private final class TestAssumptionFailureListener implements ForkedProcessReportEventListener<ReportEntry>
     {
         @Override
         public void handle( RunMode runMode, ReportEntry reportEntry )
@@ -276,18 +249,19 @@ public class ForkClient
     private class ErrorListener implements ForkedProcessStackTraceEventListener
     {
         @Override
-        public void handle( String msg, String smartStackTrace, String stackTrace )
+        public void handle( @Nonnull StackTraceWriter stackTrace )
         {
+            String msg = stackTrace.getThrowable().getMessage();
             if ( errorInFork == null )
             {
-                errorInFork = deserializeStackTraceWriter( msg, smartStackTrace, stackTrace );
+                errorInFork = stackTrace.writeTraceToString() != null ? stackTrace : null;
                 if ( msg != null )
                 {
                     getOrCreateConsoleLogger()
                             .error( msg );
                 }
             }
-            dumpToLoFile( msg, null );
+            dumpToLoFile( msg );
         }
     }
 
@@ -327,6 +301,16 @@ public class ForkClient
         {
             getOrCreateConsoleLogger()
                     .warning( msg );
+        }
+    }
+
+    private final class ExitErrorEventListener implements ForkedProcessExitErrorListener
+    {
+        @Override
+        public void handle( StackTraceWriter stackTrace )
+        {
+            getOrCreateConsoleLogger()
+                .error( "System Exit has timed out in the forked process " + forkNumber );
         }
     }
 
@@ -372,12 +356,9 @@ public class ForkClient
     }
 
     @Override
-    public final void consumeLine( String s )
+    public final void handleEvent( @Nonnull Event event )
     {
-        if ( isNotBlank( s ) )
-        {
-            processLine( s );
-        }
+        notifier.notifyEvent( event );
     }
 
     private void setCurrentStartTime()
@@ -404,76 +385,17 @@ public class ForkClient
         return testSetReporter;
     }
 
-    private void processLine( String event )
-    {
-        decoder.handleEvent( event, errorHandler );
-    }
-
-    private File dumpToLoFile( String msg, Throwable e )
+    void dumpToLoFile( String msg )
     {
         File reportsDir = defaultReporterFactory.getReportsDirectory();
         InPluginProcessDumpSingleton util = InPluginProcessDumpSingleton.getSingleton();
-        return e == null
-                ? util.dumpStreamText( msg, reportsDir, forkNumber )
-                : util.dumpStreamException( e, msg, reportsDir, forkNumber );
-    }
-
-    private void logStreamWarning( String event, Throwable e )
-    {
-        if ( event == null || !event.contains( PRINTABLE_JVM_NATIVE_STREAM ) )
-        {
-            String msg = "Corrupted STDOUT by directly writing to native stream in forked JVM " + forkNumber + ".";
-            File dump = dumpToLoFile( msg + " Stream '" + event + "'.", e );
-
-            if ( printedErrorStream.compareAndSet( false, true ) )
-            {
-                log.warning( msg + " See FAQ web page and the dump file " + dump.getAbsolutePath() );
-            }
-
-            if ( log.isDebugEnabled() && event != null )
-            {
-                log.debug( event );
-            }
-        }
-        else
-        {
-            if ( log.isDebugEnabled() )
-            {
-                log.debug( event );
-            }
-            else if ( log.isInfoEnabled() )
-            {
-                log.info( event );
-            }
-            else
-            {
-                // In case of debugging forked JVM, see PRINTABLE_JVM_NATIVE_STREAM.
-                System.out.println( event );
-            }
-        }
+        util.dumpStreamText( msg, reportsDir, forkNumber );
     }
 
     private void writeTestOutput( String output, boolean newLine, boolean isStdout )
     {
         getOrCreateConsoleOutputReceiver()
                 .writeTestOutput( output, newLine, isStdout );
-    }
-
-    public final void consumeMultiLineContent( String s )
-            throws IOException
-    {
-        if ( isBlank( s ) )
-        {
-            logStreamWarning( s, null );
-        }
-        else
-        {
-            BufferedReader stringReader = new BufferedReader( new StringReader( s ) );
-            for ( String s1 = stringReader.readLine(); s1 != null; s1 = stringReader.readLine() )
-            {
-                consumeLine( s1 );
-            }
-        }
     }
 
     public final Map<String, String> getTestVmSystemProperties()
@@ -530,12 +452,5 @@ public class ForkClient
     public boolean hasTestsInProgress()
     {
         return !testsInProgress.isEmpty();
-    }
-
-    private StackTraceWriter deserializeStackTraceWriter( String stackTraceMessage,
-                                                          String smartStackTrace, String stackTrace )
-    {
-        boolean hasTrace = stackTrace != null;
-        return hasTrace ? new DeserializedStacktraceWriter( stackTraceMessage, smartStackTrace, stackTrace ) : null;
     }
 }

@@ -41,7 +41,7 @@ import static org.apache.maven.surefire.testset.ResolvedTest.Type.METHOD;
  * composed of included and excluded tests.<br>
  * The methods {@link #shouldRun(String, String)} are filters easily used in JUnit filter or TestNG.
  * This class is independent of JUnit and TestNG API.<br>
- * It is accessed by Java Reflection API in {@link org.apache.maven.surefire.booter.SurefireReflector}
+ * It is accessed by Java Reflection API in {@code org.apache.maven.surefire.booter.SurefireReflector}
  * using specific ClassLoader.
  */
 public class TestListResolver

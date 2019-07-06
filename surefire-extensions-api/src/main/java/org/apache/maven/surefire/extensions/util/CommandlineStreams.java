@@ -24,11 +24,11 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.Channel;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
-import static java.nio.channels.Channels.newChannel;
-import static org.apache.maven.surefire.extensions.util.FlushableWritableByteChannel.newFlushableChannel;
+import static org.apache.maven.surefire.util.internal.Channels.newBufferedChannel;
 
 /**
  *
@@ -43,10 +43,12 @@ public final class CommandlineStreams implements Closeable
     public CommandlineStreams( @Nonnull Process process )
     {
         InputStream stdOutStream = process.getInputStream();
-        stdOutChannel = newChannel( stdOutStream );
+        stdOutChannel = newBufferedChannel( stdOutStream );
+
         InputStream stdErrStream = process.getErrorStream();
-        stdErrChannel = newChannel( stdErrStream );
-        stdInChannel = newFlushableChannel( process.getOutputStream() );
+        stdErrChannel = newBufferedChannel( stdErrStream );
+
+        stdInChannel = newBufferedChannel( process.getOutputStream() );
     }
 
     public ReadableByteChannel getStdOutChannel()
@@ -77,6 +79,10 @@ public final class CommandlineStreams implements Closeable
               Channel c3 = stdInChannel )
         {
             closed = true;
+        }
+        catch ( ClosedChannelException e )
+        {
+            // already closed externally
         }
     }
 }

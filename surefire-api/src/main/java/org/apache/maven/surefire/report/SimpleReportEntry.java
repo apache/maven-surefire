@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
+ * Basic implementation of {@link TestSetReportEntry} (immutable and thread-safe object).
+ *
  * @author Kristian Rosenvold
  */
 public class SimpleReportEntry

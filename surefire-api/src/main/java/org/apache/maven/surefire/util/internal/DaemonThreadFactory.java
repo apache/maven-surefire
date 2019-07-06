@@ -19,6 +19,7 @@ package org.apache.maven.surefire.util.internal;
  * under the License.
  */
 
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -28,29 +29,24 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class DaemonThreadFactory
     implements ThreadFactory
 {
+    private static final ThreadFactory DEFAULT_THREAD_FACTORY = Executors.defaultThreadFactory();
+
     private static final AtomicInteger POOL_NUMBER = new AtomicInteger( 1 );
 
     private final AtomicInteger threadNumber = new AtomicInteger( 1 );
-
-    private final ThreadGroup group;
 
     private final String namePrefix;
 
     private DaemonThreadFactory()
     {
-        SecurityManager s = System.getSecurityManager();
-        group = s != null ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
         namePrefix = "pool-" + POOL_NUMBER.getAndIncrement() + "-thread-";
     }
 
     @Override
     public Thread newThread( Runnable r )
     {
-        Thread t = new Thread( group, r, namePrefix + threadNumber.getAndIncrement() );
-        if ( t.getPriority() != Thread.NORM_PRIORITY )
-        {
-            t.setPriority( Thread.NORM_PRIORITY );
-        }
+        Thread t = DEFAULT_THREAD_FACTORY.newThread( r );
+        t.setName( namePrefix + threadNumber.getAndIncrement() );
         t.setDaemon( true );
         return t;
     }
@@ -71,34 +67,19 @@ public final class DaemonThreadFactory
 
     public static Thread newDaemonThread( Runnable r )
     {
-        SecurityManager s = System.getSecurityManager();
-        ThreadGroup group = s == null ? Thread.currentThread().getThreadGroup() : s.getThreadGroup();
-        Thread t = new Thread( group, r );
-        if ( t.getPriority() != Thread.NORM_PRIORITY )
-        {
-            t.setPriority( Thread.NORM_PRIORITY );
-        }
-        t.setDaemon( true );
-        return t;
+        return new DaemonThreadFactory().newThread( r );
     }
 
     public static Thread newDaemonThread( Runnable r, String name )
     {
-        SecurityManager s = System.getSecurityManager();
-        ThreadGroup group = s == null ? Thread.currentThread().getThreadGroup() : s.getThreadGroup();
-        Thread t = new Thread( group, r, name );
-        if ( t.getPriority() != Thread.NORM_PRIORITY )
-        {
-            t.setPriority( Thread.NORM_PRIORITY );
-        }
-        t.setDaemon( true );
+        Thread t = new DaemonThreadFactory().newThread( r );
+        t.setName( name );
         return t;
     }
 
     private static class NamedThreadFactory
         implements ThreadFactory
     {
-
         private final String name;
 
         private NamedThreadFactory( String name )
