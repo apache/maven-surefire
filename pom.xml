@@ -403,6 +403,11 @@
         <classifier>runtime</classifier>
         <version>${jacocoVersion}</version>
       </dependency>
+      <dependency>
+        <groupId>com.googlecode.junit-toolbox</groupId>
+        <artifactId>junit-toolbox</artifactId>
+        <version>1.11</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>

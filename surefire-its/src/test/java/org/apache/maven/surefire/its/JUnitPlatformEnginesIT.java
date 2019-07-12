@@ -57,7 +57,7 @@ public class JUnitPlatformEnginesIT
     public String apiguardian;
 
     @Parameters(name = "{0}")
-    public static Iterable<Object[]> regexVersions()
+    public static Iterable<Object[]> artifactVersions()
     {
         ArrayList<Object[]> args = new ArrayList<>();
         args.add( new Object[] { "1.0.3", "5.0.3", "1.0.0", "1.0.0" } );
@@ -66,7 +66,8 @@ public class JUnitPlatformEnginesIT
         args.add( new Object[] { "1.3.2", "5.3.2", "1.1.1", "1.0.0" } );
         args.add( new Object[] { "1.4.2", "5.4.2", "1.1.1", "1.0.0" } );
         args.add( new Object[] { "1.5.0-RC1", "5.5.0-RC1", "1.2.0", "1.1.0" } );
-        args.add( new Object[] { "1.5.0-SNAPSHOT", "5.5.0-SNAPSHOT", "1.2.0", "1.1.0" } );
+        args.add( new Object[] { "1.5.0", "5.5.0", "1.2.0", "1.1.0" } );
+        args.add( new Object[] { "1.6.0-SNAPSHOT", "5.6.0-SNAPSHOT", "1.2.0", "1.1.0" } );
         return args;
     }
 

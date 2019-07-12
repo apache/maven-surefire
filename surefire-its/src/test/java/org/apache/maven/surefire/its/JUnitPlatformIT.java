@@ -19,15 +19,21 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import com.googlecode.junittoolbox.ParallelParameterized;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+
+import java.util.ArrayList;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.convertUnicodeToUTF8;
 
+@RunWith( ParallelParameterized.class )
 public class JUnitPlatformIT
         extends SurefireJUnit4IntegrationTestCase
 {
@@ -35,6 +41,26 @@ public class JUnitPlatformIT
             "<testsuite xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation="
                     + "\"https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd\" "
                     + "version=\"3.0\" name=\"&lt;&lt; ✨ &gt;&gt;\"";
+
+    @Parameter
+    public String junit5Version;
+
+    @Parameter( 1 )
+    public String jqwikVersion;
+
+    @Parameters( name = "{0}" )
+    public static Iterable<Object[]> artifactVersions()
+    {
+        ArrayList<Object[]> args = new ArrayList<>();
+        args.add( new Object[] { "5.2.0", "0.8.0" } );
+        args.add( new Object[] { "5.3.0", "0.8.15" } );
+        args.add( new Object[] { "5.3.2", "0.9.0" } );
+        args.add( new Object[] { "5.4.0", "0.9.3" } );
+        args.add( new Object[] { "5.4.2", "1.0.0" } );
+        args.add( new Object[] { "5.5.0", "1.1.0" } );
+        args.add( new Object[] { "5.6.0-SNAPSHOT", "1.1.6" } );
+        return args;
+    }
 
     @Before
     public void setUp()
@@ -45,8 +71,10 @@ public class JUnitPlatformIT
     @Test
     public void testJupiterEngine()
     {
-        unpack( "/junit-platform-engine-jupiter" )
+        unpack( "junit-platform-engine-jupiter", "-" + junit5Version + "-" + jqwikVersion )
                 .setTestToRun( "Basic*Test" )
+                .sysProp( "junit5.version", junit5Version )
+                .sysProp( "jqwik.version", jqwikVersion )
                 .executeTest()
                 .verifyErrorFree( 5 );
     }
@@ -54,7 +82,9 @@ public class JUnitPlatformIT
     @Test
     public void testJupiterEngineWithDisplayNames()
     {
-        OutputValidator validator = unpack( "/junit-platform-engine-jupiter" )
+        OutputValidator validator = unpack( "junit-platform-engine-jupiter", "-" + junit5Version + "-" + jqwikVersion )
+                .sysProp( "junit5.version", junit5Version )
+                .sysProp( "jqwik.version", jqwikVersion )
                 .executeTest()
                 .verifyErrorFree( 7 );
 
@@ -87,7 +117,9 @@ public class JUnitPlatformIT
     @Test
     public void testVintageEngine()
     {
-        unpack( "/junit-platform-engine-vintage" )
+        unpack( "junit-platform-engine-vintage", "-" + junit5Version + "-" + jqwikVersion )
+                .sysProp( "junit5.version", junit5Version )
+                .sysProp( "jqwik.version", jqwikVersion )
                 .executeTest()
                 .verifyErrorFree( 1 );
     }
@@ -95,7 +127,9 @@ public class JUnitPlatformIT
     @Test
     public void testJQwikEngine()
     {
-        unpack( "/junit-platform-engine-jqwik" )
+        unpack( "junit-platform-engine-jqwik", "-" + junit5Version + "-" + jqwikVersion )
+                .sysProp( "junit5.version", junit5Version )
+                .sysProp( "jqwik.version", jqwikVersion )
                 .executeTest()
                 .verifyErrorFree( 1 );
     }
@@ -103,7 +137,9 @@ public class JUnitPlatformIT
     @Test
     public void testMultipleEngines()
     {
-        unpack( "/junit-platform-multiple-engines" )
+        unpack( "junit-platform-multiple-engines", "-" + junit5Version + "-" + jqwikVersion )
+                .sysProp( "junit5.version", junit5Version )
+                .sysProp( "jqwik.version", jqwikVersion )
                 .executeTest()
                 .verifyErrorFree( 7 );
     }
@@ -111,7 +147,8 @@ public class JUnitPlatformIT
     @Test
     public void testTags()
     {
-        unpack( "/junit-platform-tags" )
+        unpack( "junit-platform-tags", "-" + junit5Version + "-" + jqwikVersion )
+                .sysProp( "junit5.version", junit5Version )
                 .executeTest()
                 .verifyErrorFree( 2 );
     }

@@ -42,7 +42,7 @@
         <dependency>
             <groupId>net.jqwik</groupId>
             <artifactId>jqwik</artifactId>
-            <version>0.8.10</version>
+            <version>${jqwik.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
