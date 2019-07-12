@@ -89,6 +89,7 @@ public class BooterDeserializer
         final String runStatisticsFile = properties.getProperty( RUN_STATISTICS_FILE );
 
         final int rerunFailingTestsCount = properties.getIntProperty( RERUN_FAILING_TESTS_COUNT );
+        final Long untilFailureLoopCount = properties.getLongProperty( UNTIL_FAILURE_LOOP_COUNT );
 
         DirectoryScannerParameters dirScannerParams =
             new DirectoryScannerParameters( testClassesDirectory, includes, excludes, specificTests,
@@ -100,7 +101,7 @@ public class BooterDeserializer
         TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testArtifactClassifier );
         TestRequest testSuiteDefinition =
             new TestRequest( testSuiteXmlFiles, sourceDirectory, new TestListResolver( requestedTest ),
-                             rerunFailingTestsCount );
+                             rerunFailingTestsCount, untilFailureLoopCount == null ? 1L : untilFailureLoopCount );
 
         ReporterConfiguration reporterConfiguration =
             new ReporterConfiguration( reportsDirectory, properties.getBooleanProperty( ISTRIMSTACKTRACE ) );

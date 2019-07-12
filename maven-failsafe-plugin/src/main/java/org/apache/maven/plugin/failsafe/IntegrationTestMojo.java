@@ -385,6 +385,15 @@ public class IntegrationTestMojo
     @Parameter( property = "failsafe.useModulePath", defaultValue = "true" )
     private boolean useModulePath;
 
+    /**
+     * Continuously run tests until failure happens.
+     * At a maximum, it tries to run as many times as the value of this attribute.
+     *
+     * @since 3.0.0-M4
+     */
+    @Parameter( property = "surefire.untilFailureLoopCount", defaultValue = "1" )
+    private long untilFailureLoopCount;
+
     @Override
     protected int getRerunFailingTestsCount()
     {
@@ -826,6 +835,18 @@ public class IntegrationTestMojo
     protected void setUseModulePath( boolean useModulePath )
     {
         this.useModulePath = useModulePath;
+    }
+
+    @Override
+    protected long getUntilFailureLoopCount()
+    {
+        return untilFailureLoopCount;
+    }
+
+    @Override
+    protected void setUntilFailureLoopCount( long untilFailureLoopCount )
+    {
+        this.untilFailureLoopCount = untilFailureLoopCount;
     }
 
     @Override

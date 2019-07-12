@@ -92,6 +92,8 @@ public class JUnit4Provider
 
     private final int rerunFailingTestsCount;
 
+    private final long untilFailureLoopCount;
+
     private final CommandReader commandsReader;
 
     private TestsToRun testsToRun;
@@ -109,6 +111,7 @@ public class JUnit4Provider
         TestRequest testRequest = bootParams.getTestRequest();
         testResolver = testRequest.getTestListResolver();
         rerunFailingTestsCount = testRequest.getRerunFailingTestsCount();
+        untilFailureLoopCount = testRequest.getUntilFailureLoopCount();
     }
 
     @Override
@@ -154,9 +157,12 @@ public class JUnit4Provider
                     commandsReader.awaitStarted();
                 }
 
-                for ( Class<?> testToRun : testsToRun )
+                for ( int i = 0; i < untilFailureLoopCount && result.getFailures().size() == 0; i++ )
                 {
-                    executeTestSet( testToRun, reporter, notifier );
+                    for ( Class<?> testToRun : testsToRun )
+                    {
+                        executeTestSet( testToRun, reporter, notifier );
+                    }
                 }
             }
             finally

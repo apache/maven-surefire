@@ -53,6 +53,8 @@ public class BooterDeserializerProviderConfigurationTest
 
     private static final int rerunFailingTestsCount = 3;
 
+    private static final int untilFailureLoopCount = 6;
+
     private final List<CommandLineOption> cli =
         Arrays.asList( LOGGING_LEVEL_DEBUG, SHOW_ERRORS, REACTOR_FAIL_FAST );
 
@@ -136,6 +138,7 @@ public class BooterDeserializerProviderConfigurationTest
         Assert.assertEquals( "**/" + aUserRequestedTest, filter.getTestClassPattern() );
         Assert.assertEquals( aUserRequestedTestMethod, filter.getTestMethodPattern() );
         Assert.assertEquals( rerunFailingTestsCount, testSuiteDefinition.getRerunFailingTestsCount() );
+        Assert.assertEquals( untilFailureLoopCount, testSuiteDefinition.getUntilFailureLoopCount() );
         assertEquals( cli, reloaded.getMainCliOptions() );
     }
 
@@ -234,7 +237,7 @@ public class BooterDeserializerProviderConfigurationTest
         TestRequest testSuiteDefinition =
             new TestRequest( getSuiteXmlFileStrings(), getTestSourceDirectory(),
                              new TestListResolver( aUserRequestedTest + "#aUserRequestedTestMethod" ),
-                             rerunFailingTestsCount );
+                             rerunFailingTestsCount, untilFailureLoopCount );
         RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null );
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, true, reporterConfiguration,
                 new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new HashMap<String, String>(), aTestTyped,

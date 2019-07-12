@@ -1965,6 +1965,17 @@ public class AbstractSurefireMojoTest
         }
 
         @Override
+        protected long getUntilFailureLoopCount()
+        {
+            return 0;
+        }
+
+        @Override
+        protected void setUntilFailureLoopCount( long untilFailureLoopCount )
+        {
+        }
+
+        @Override
         protected Artifact getMojoArtifact()
         {
             return new DefaultArtifact( "org.apache.maven.surefire", "maven-surefire-plugin", createFromVersion( "1" ),

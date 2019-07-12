@@ -162,7 +162,8 @@ public class SurefireReflector
                                 suiteDefinition.getSuiteXmlFiles(),
                                 suiteDefinition.getTestSourceDirectory(),
                                 resolver,
-                                suiteDefinition.getRerunFailingTestsCount() );
+                                suiteDefinition.getRerunFailingTestsCount(),
+                                suiteDefinition.getUntilFailureLoopCount() );
         }
     }
 
