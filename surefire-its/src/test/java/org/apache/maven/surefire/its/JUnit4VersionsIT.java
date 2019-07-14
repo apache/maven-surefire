@@ -21,11 +21,11 @@ package org.apache.maven.surefire.its;
 
 import java.util.Collection;
 
+import com.googlecode.junittoolbox.ParallelParameterized;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 
 import static java.util.Arrays.asList;
@@ -53,7 +53,7 @@ import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_7;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-@RunWith( Parameterized.class )
+@RunWith( ParallelParameterized.class )
 public class JUnit4VersionsIT
     extends SurefireJUnit4IntegrationTestCase
 {

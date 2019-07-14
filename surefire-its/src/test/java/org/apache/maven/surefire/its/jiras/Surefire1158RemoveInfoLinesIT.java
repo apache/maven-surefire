@@ -18,11 +18,11 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
+import com.googlecode.junittoolbox.ParallelParameterized;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireVerifierException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
 
@@ -36,14 +36,14 @@ import static org.junit.Assert.*;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1158">SUREFIRE-1158</a>
  * @since 2.19
  */
-@RunWith( Parameterized.class )
+@RunWith( ParallelParameterized.class )
 public class Surefire1158RemoveInfoLinesIT
 {
 
     @Parameters(name = "{0}")
     public static Iterable<Object[]> data()
     {
-        ArrayList<Object[]> args = new ArrayList<Object[]>();
+        ArrayList<Object[]> args = new ArrayList<>();
         args.add( new Object[] { "junit-option-ff", "JUnitTest", "-ff", "surefire-junit47", false, true } );
         args.add( new Object[] { "testng-option-ff", "TestNGSuiteTest", "-ff", "surefire-testng", false, false } );
         args.add( new Object[] { "junit-option-X", "JUnitTest", "-X", "surefire-junit47", true, true } );

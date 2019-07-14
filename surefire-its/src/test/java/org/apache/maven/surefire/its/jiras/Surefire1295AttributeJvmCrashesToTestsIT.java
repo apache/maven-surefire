@@ -19,12 +19,12 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
+import com.googlecode.junittoolbox.ParallelParameterized;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -51,7 +51,7 @@ import static org.junit.Assume.assumeTrue;
  * @author michaeltandy
  * @since 2.20
  */
-@RunWith( Parameterized.class )
+@RunWith( ParallelParameterized.class )
 public class Surefire1295AttributeJvmCrashesToTestsIT
         extends SurefireJUnit4IntegrationTestCase
 {
@@ -81,10 +81,10 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
     }
 
     @Parameter( 0 )
-    public static String crashStyle;
+    public String crashStyle;
 
     @Parameter( 1 )
-    public static ForkMode forkStyle;
+    public ForkMode forkStyle;
 
     @Test
     public void test()

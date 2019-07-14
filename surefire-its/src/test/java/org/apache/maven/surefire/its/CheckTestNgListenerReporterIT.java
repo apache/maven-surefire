@@ -19,11 +19,11 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import com.googlecode.junittoolbox.ParallelParameterized;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,7 +38,7 @@ import static org.junit.runners.Parameterized.Parameters;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
-@RunWith( Parameterized.class )
+@RunWith( ParallelParameterized.class )
 public class CheckTestNgListenerReporterIT
     extends SurefireJUnit4IntegrationTestCase
 {
@@ -71,17 +71,18 @@ public class CheckTestNgListenerReporterIT
             { "5.14.6", null, 1.5d }, // Usage of org.testng:guice removed
             { "5.14.9", null, 1.5d }, // Latest 5.14.x TestNG version
             { "6.0", null, 1.5d },
-            { "6.9.9", null, 1.7d } // Currently latest TestNG version
+            { "6.14.3", null, 1.7d },
+            { "7.0.0-beta7", null, 1.7d } // Currently latest TestNG version
         });
     }
 
     @Parameter
     public String version;
 
-    @Parameter(1)
+    @Parameter( 1 )
     public String classifier;
 
-    @Parameter(2)
+    @Parameter( 2 )
     public double javaVersion;
 
     @Test

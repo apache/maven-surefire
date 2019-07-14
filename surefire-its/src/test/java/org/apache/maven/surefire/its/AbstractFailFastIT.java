@@ -19,12 +19,12 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import com.googlecode.junittoolbox.ParallelParameterized;
 import org.apache.maven.surefire.its.fixture.MavenLauncher;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +37,7 @@ import static org.junit.runners.Parameterized.Parameter;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  */
-@RunWith( Parameterized.class )
+@RunWith( ParallelParameterized.class )
 public abstract class AbstractFailFastIT
     extends SurefireJUnit4IntegrationTestCase
 {
