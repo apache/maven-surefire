@@ -109,7 +109,7 @@ timeout(time: 12, unit: 'HOURS') {
         currentBuild.result = 'FAILURE'
         throw e
     } finally {
-        jenkinsNotify()
+        // jenkinsNotify()
     }
 }
 
