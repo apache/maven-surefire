@@ -1,5 +1,12 @@
 package org.apache.maven.surefire.its.jiras;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,6 +27,7 @@ package org.apache.maven.surefire.its.jiras;
  */
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireVerifierException;
 import org.junit.Test;
 
 /**
@@ -33,6 +41,12 @@ public class Surefire1041FailingJUnitRunnerIT
     @Test
     public void reportErrorInJUnitRunnerAsTestError()
     {
-        unpack( "surefire-1041-exception-in-junit-runner" ).mavenTestFailureIgnore( true ).executeTest().assertTestSuiteResults( 1, 1, 0, 0 );
+        try
+        {
+            unpack( "surefire-1041-exception-in-junit-runner" ).forkOnce().mavenTestFailureIgnore( true ).executeTest();
+            fail( "SurefireVerifierException was expected." );
+        } catch (SurefireVerifierException e) {
+            assertThat( e.getMessage(), containsString( "There are test failures." ) );
+        }
     }
 }

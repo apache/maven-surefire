@@ -21,6 +21,8 @@ package org.apache.maven.plugin.surefire;
 
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojoTest.Mojo;
+import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
+import org.apache.maven.plugin.testing.SilentLog;
 import org.apache.maven.surefire.suite.RunResult;
 import org.junit.Test;
 
@@ -154,5 +156,41 @@ public class SurefireHelperTest
                 + "'There are test failures.\n\nPlease refer to null "
                 + "for the individual test results.\nPlease refer to dump files (if any exist) "
                 + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.'");
+    }
+
+    @Test
+    public void shouldIgnoreTestFailure() throws Exception
+    {
+        RunResult summary = new RunResult( 1, 0, 1, 0 );
+        try
+        {
+            reportExecution( new Mojo() {
+                public boolean isTestFailureIgnore() {
+                    return true;
+                }
+            }, summary, new PluginConsoleLogger(new SilentLog()), null );
+        }
+        catch ( MojoFailureException e )
+        {
+            fail( "Failure should not be reported.");
+        }
+    }
+
+    @Test
+    public void shouldNotIgnoreErrors() throws Exception
+    {
+        RunResult summary = new RunResult( 1, 1, 1, 0 );
+        try
+        {
+            reportExecution( new Mojo() {
+                public boolean isTestFailureIgnore() {
+                    return true;
+                }
+            }, summary, new PluginConsoleLogger(new SilentLog()), null );
+            fail( "Errors should be reported.");
+        }
+        catch ( MojoFailureException e )
+        {
+        }
     }
 }
