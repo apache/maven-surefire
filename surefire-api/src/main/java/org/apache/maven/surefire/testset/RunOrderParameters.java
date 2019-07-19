@@ -19,38 +19,47 @@ package org.apache.maven.surefire.testset;
  * under the License.
  */
 
-import java.io.File;
+import org.apache.maven.surefire.util.Randomizer;
 import org.apache.maven.surefire.util.RunOrder;
+import org.apache.maven.surefire.util.RunOrders;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.File;
 
 /**
  * @author Kristian Rosenvold
  */
 public class RunOrderParameters
 {
-    private final RunOrder[] runOrder;
+    private final RunOrders runOrders;
 
-    private File runStatisticsFile;
+    private final File runStatisticsFile;
 
-    public RunOrderParameters( RunOrder[] runOrder, File runStatisticsFile )
+    private final Randomizer randomizer;
+
+
+    public RunOrderParameters( @Nonnull RunOrders runOrders,
+                               @Nullable Randomizer randomizer,
+                               @Nullable File runStatisticsFile )
     {
-        this.runOrder = runOrder;
-        this.runStatisticsFile = runStatisticsFile;
-    }
-
-    public RunOrderParameters( String runOrder, File runStatisticsFile )
-    {
-        this.runOrder = runOrder == null ? RunOrder.DEFAULT : RunOrder.valueOfMulti( runOrder );
+        this.runOrders = runOrders;
+        this.randomizer = ensureRandomizer( runOrders, randomizer );
         this.runStatisticsFile = runStatisticsFile;
     }
 
     public static RunOrderParameters alphabetical()
     {
-        return new RunOrderParameters( new RunOrder[]{ RunOrder.ALPHABETICAL }, null );
+        return new RunOrderParameters(
+                new RunOrders( RunOrder.ALPHABETICAL ),
+                null,
+                null
+        );
     }
 
-    public RunOrder[] getRunOrder()
+    public RunOrders getRunOrders()
     {
-        return runOrder;
+        return runOrders;
     }
 
     public File getRunStatisticsFile()
@@ -58,4 +67,30 @@ public class RunOrderParameters
         return runStatisticsFile;
     }
 
+    public Randomizer getRandomizer()
+    {
+        return randomizer;
+    }
+
+    public boolean isRandomized()
+    {
+        return isRandomized( this.runOrders );
+    }
+
+    @Nullable
+    private static Randomizer ensureRandomizer( @Nonnull RunOrders runOrders,
+                                                @Nullable Randomizer randomizer )
+    {
+        Randomizer result = randomizer;
+        if ( isRandomized( runOrders ) && result == null )
+        {
+            result = new Randomizer();
+        }
+        return result;
+    }
+
+    private static boolean isRandomized( @Nonnull RunOrders runOrders )
+    {
+        return runOrders.contains( RunOrder.RANDOM );
+    }
 }

@@ -29,7 +29,11 @@ import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.util.DefaultScanResult;
+import org.apache.maven.surefire.util.Randomizer;
+import org.apache.maven.surefire.util.RunOrder;
+import org.apache.maven.surefire.util.RunOrders;
 import org.apache.maven.toolchain.Toolchain;
 import org.junit.Test;
 
@@ -52,7 +56,13 @@ public class MojoMocklessTest
     public void testGetStartupReportConfiguration() throws Exception
     {
         AbstractSurefireMojo surefirePlugin = new Mojo( null, null );
-        StartupReportConfiguration config = invokeMethod( surefirePlugin, "getStartupReportConfiguration", "", false );
+        RunOrderParameters runOrderParameters = new RunOrderParameters(
+                new RunOrders( RunOrder.RANDOM ), new Randomizer( "123" ), null
+        );
+        StartupReportConfiguration config = invokeMethod(
+                surefirePlugin, "getStartupReportConfiguration",
+                "", false, runOrderParameters
+        );
 
         assertThat( config.getXmlReporter() )
                 .isNotNull()
@@ -78,7 +88,13 @@ public class MojoMocklessTest
         setInternalState( surefirePlugin, "consoleOutputReporter", consoleReporter );
         setInternalState( surefirePlugin, "statelessTestsetInfoReporter", testsetInfoReporter );
 
-        StartupReportConfiguration config = invokeMethod( surefirePlugin, "getStartupReportConfiguration", "", false );
+        RunOrderParameters runOrderParameters = new RunOrderParameters(
+                new RunOrders( RunOrder.DEFAULT ), null, null
+        );
+        StartupReportConfiguration config = invokeMethod(
+                surefirePlugin, "getStartupReportConfiguration",
+                "", false, runOrderParameters
+        );
 
         assertThat( config.getXmlReporter() )
                 .isNotNull()

@@ -33,6 +33,7 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.util.Randomizer;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -169,6 +170,7 @@ public class DefaultReporterFactory
     {
         mergeTestHistoryResult();
         runCompleted();
+        displayRandomization();
         for ( TestSetRunListener listener : listeners )
         {
             listener.close();
@@ -184,6 +186,30 @@ public class DefaultReporterFactory
             log( "-------------------------------------------------------" );
             log( " T E S T S" );
             log( "-------------------------------------------------------" );
+            displayRandomization();
+        }
+    }
+
+    private boolean isRandomized()
+    {
+        return reportConfiguration.getRunOrderParameters() != null
+                && reportConfiguration.getRunOrderParameters().isRandomized();
+    }
+
+    private void displayRandomization()
+    {
+        if ( isRandomized() )
+        {
+            final Randomizer randomizer = reportConfiguration.getRunOrderParameters().getRandomizer();
+            final String pluginName = reportConfiguration.getPluginName();
+            final String message = String.format(
+                    "Tests are randomly ordered. Re-run the same execution order"
+                            + " with -D%s.runOrder=random:%d",
+                    pluginName, randomizer.getSeed()
+            );
+            log( "" );
+            log( message );
+            log( "" );
         }
     }
 
@@ -200,7 +226,7 @@ public class DefaultReporterFactory
         boolean printedFlakes = printTestFailures( flake );
         if ( reportConfiguration.isPrintSummary() )
         {
-            if ( printedFailures | printedErrors | printedFlakes )
+            if ( printedFailures || printedErrors || printedFlakes )
             {
                 log( "" );
             }

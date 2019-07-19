@@ -19,10 +19,6 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -30,6 +26,11 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.surefire.suite.RunResult;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
 
@@ -269,6 +270,17 @@ public class SurefirePlugin
      * Defines the order the tests will be run in. Supported values are {@code alphabetical},
      * {@code reversealphabetical}, {@code random}, {@code hourly} (alphabetical on even hours, reverse alphabetical
      * on odd hours), {@code failedfirst}, {@code balanced} and {@code filesystem}.
+     * <br>
+     * <br>
+     * When using {@code random} mode, actual <i>seed</i> used to randomize execution order will be printed on
+     * console. If the tests do not pass because they are bounded to the order in which they are executed,
+     * the <i>seed</i> number can be used to reproduce that erroneous execution. To do that pass
+     * {@code random:seed} as a value of {@code runOrder} parameter. This would effectively execute tests
+     * in same exact order as they where executed when they failed. It's most useful to pass it as a
+     * command line parameter:
+     * <br>
+     * <br>
+     * {@code -Dsurefire.runOrder=random:325119}
      * <br>
      * <br>
      * Odd/Even for hourly is determined at the time the of scanning the classpath, meaning it could change during a

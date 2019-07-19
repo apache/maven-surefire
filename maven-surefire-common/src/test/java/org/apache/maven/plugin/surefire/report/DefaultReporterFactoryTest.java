@@ -19,15 +19,7 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import java.io.File;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Queue;
-
 import junit.framework.TestCase;
-
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
@@ -38,6 +30,17 @@ import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.testset.RunOrderParameters;
+import org.apache.maven.surefire.util.Randomizer;
+import org.apache.maven.surefire.util.RunOrder;
+import org.apache.maven.surefire.util.RunOrders;
+
+import java.io.File;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Queue;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
@@ -74,6 +77,11 @@ public class DefaultReporterFactoryTest
     public void testMergeTestHistoryResult()
             throws Exception
     {
+        RunOrderParameters runOrderParameters = new RunOrderParameters(
+                new RunOrders( RunOrder.DEFAULT ),
+                null,
+                null
+        );
         MessageUtils.setColorEnabled( false );
         File target = new File( System.getProperty( "user.dir" ), "target" );
         File reportsDirectory = new File( target, "tmp5" );
@@ -81,7 +89,8 @@ public class DefaultReporterFactoryTest
                 new StartupReportConfiguration( true, true, "PLAIN", false, reportsDirectory, false, null,
                         new File( reportsDirectory, "TESTHASH" ), false, 1, null, null, false,
                         new SurefireStatelessReporter(), new SurefireConsoleOutputReporter(),
-                        new SurefireStatelessTestsetInfoReporter() );
+                        new SurefireStatelessTestsetInfoReporter(),
+                        StartupReportConfiguration.DEFAULT_PLUGIN_NAME, runOrderParameters );
 
         DummyTestReporter reporter = new DummyTestReporter();
 
@@ -151,6 +160,42 @@ public class DefaultReporterFactoryTest
         reporter.reset();
         factory.printTestFailures( failure );
         assertEquals( emptyList(), reporter.getMessages() );
+    }
+
+    public void testRandomOrderMessages()
+    {
+        // given
+        String seed = "765432";
+        Randomizer randomizer = new Randomizer( seed );
+        RunOrderParameters runOrderParameters = new RunOrderParameters(
+                new RunOrders( RunOrder.RANDOM ),
+                randomizer,
+                null
+        );
+        String pluginName = StartupReportConfiguration.DEFAULT_PLUGIN_NAME;
+        File target = new File( "target" );
+        File reportsDirectory = new File( target, "surefire" );
+        StartupReportConfiguration reportConfig = new StartupReportConfiguration(
+                true, true, "PLAIN", false,
+                reportsDirectory, false, "test", target,
+                false, 3, ".",
+                "UTF-8", false,
+                null, null, null,
+                pluginName, runOrderParameters
+        );
+        DummyTestReporter consoleLogger = new DummyTestReporter();
+
+        DefaultReporterFactory factory = new DefaultReporterFactory( reportConfig, consoleLogger );
+        String expectedMessage = String.format( "Tests are randomly ordered. Re-run the same execution " +
+                "order with -D%s.runOrder=random:%s", pluginName, seed );
+
+        // when
+        factory.runStarting();
+
+        // then
+        List<String> messages = consoleLogger.getMessages();
+        assertTrue( messages.contains( " T E S T S" ) );
+        assertTrue( messages.contains( expectedMessage ) );
     }
 
     static final class DummyTestReporter implements ConsoleLogger
@@ -273,11 +318,15 @@ public class DefaultReporterFactoryTest
         MessageUtils.setColorEnabled( false );
         File target = new File( System.getProperty( "user.dir" ), "target" );
         File reportsDirectory = new File( target, "tmp6" );
+        RunOrderParameters runOrderParameters = new RunOrderParameters(
+                new RunOrders( RunOrder.DEFAULT ), null, null
+        );
         StartupReportConfiguration reportConfig =
                 new StartupReportConfiguration( true, true, "PLAIN", false, reportsDirectory, false, null,
                         new File( reportsDirectory, "TESTHASH" ), false, 1, null, null, false,
                         new SurefireStatelessReporter(), new SurefireConsoleOutputReporter(),
-                        new SurefireStatelessTestsetInfoReporter() );
+                        new SurefireStatelessTestsetInfoReporter(),
+                        StartupReportConfiguration.DEFAULT_PLUGIN_NAME, runOrderParameters );
 
         DummyTestReporter reporter = new DummyTestReporter();
 
@@ -326,11 +375,16 @@ public class DefaultReporterFactoryTest
         MessageUtils.setColorEnabled( false );
         File target = new File( System.getProperty( "user.dir" ), "target" );
         File reportsDirectory = new File( target, "tmp7" );
+        RunOrderParameters runOrderParameters = new RunOrderParameters(
+                new RunOrders( RunOrder.DEFAULT ), null, null
+        );
         StartupReportConfiguration reportConfig =
                 new StartupReportConfiguration( true, true, "PLAIN", false, reportsDirectory, false, null,
                         new File( reportsDirectory, "TESTHASH" ), false, 0, null, null, false,
                         new SurefireStatelessReporter(), new SurefireConsoleOutputReporter(),
-                        new SurefireStatelessTestsetInfoReporter() );
+                        new SurefireStatelessTestsetInfoReporter(),
+                        StartupReportConfiguration.DEFAULT_PLUGIN_NAME, runOrderParameters
+                );
 
         assertTrue( reportConfig.isUseFile() );
         assertTrue( reportConfig.isPrintSummary() );

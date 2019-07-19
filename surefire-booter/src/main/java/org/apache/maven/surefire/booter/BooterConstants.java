@@ -46,6 +46,7 @@ public final class BooterConstants
     public static final String SOURCE_DIRECTORY = "testSuiteDefinitionTestSourceDirectory";
     public static final String TEST_CLASSES_DIRECTORY = "testClassesDirectory";
     public static final String RUN_ORDER = "runOrder";
+    public static final String RANDOM_SEED = "randomSeed";
     public static final String RUN_STATISTICS_FILE = "runStatisticsFile";
     public static final String TEST_SUITE_XML_FILES = "testSuiteXmlFiles";
     public static final String PROVIDER_CONFIGURATION = "providerConfiguration";

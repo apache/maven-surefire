@@ -19,13 +19,17 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+
 public class RunOrderParallelForksIT
     extends RunOrderIT
 {
 
     @Override
-    protected String getForkMode()
+    protected SurefireLauncher forkingMode( SurefireLauncher launcher )
     {
-        return "perthread";
+        return launcher
+                .forkMode( "perthread" )
+                .threadCount( 1 );
     }
 }

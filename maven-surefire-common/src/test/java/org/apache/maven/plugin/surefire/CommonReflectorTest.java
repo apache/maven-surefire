@@ -24,6 +24,10 @@ import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
+import org.apache.maven.surefire.testset.RunOrderParameters;
+import org.apache.maven.surefire.util.Randomizer;
+import org.apache.maven.surefire.util.RunOrder;
+import org.apache.maven.surefire.util.RunOrders;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,6 +47,11 @@ public class CommonReflectorTest
     private SurefireStatelessReporter xmlReporter;
     private SurefireConsoleOutputReporter consoleOutputReporter = new SurefireConsoleOutputReporter();
     private SurefireStatelessTestsetInfoReporter infoReporter = new SurefireStatelessTestsetInfoReporter();
+    private RunOrderParameters runOrderParameters = new RunOrderParameters(
+            new RunOrders( RunOrder.RANDOM ),
+            new Randomizer( "seed1234" ),
+            null
+    );
 
     @Before
     public void setup()
@@ -55,7 +64,9 @@ public class CommonReflectorTest
 
         startupReportConfiguration = new StartupReportConfiguration( true, true, "PLAIN", false, reportsDirectory,
                 false, null, statistics, false, 1, null, null, false,
-                xmlReporter, consoleOutputReporter, infoReporter);
+                xmlReporter, consoleOutputReporter, infoReporter,
+                "surefire", runOrderParameters
+        );
 
         consoleLogger = mock( ConsoleLogger.class );
     }
@@ -92,5 +103,8 @@ public class CommonReflectorTest
                 .isEqualTo( infoReporter.toString() );
         assertThat( reportConfiguration.getConsoleOutputReporter().toString() )
                 .isEqualTo( consoleOutputReporter.toString() );
+        assertThat( reportConfiguration.getPluginName() ).isEqualTo( "surefire" );
+        assertThat( reportConfiguration.getRunOrderParameters().getRandomizer().getGivenSeed() )
+                .isEqualTo( "seed1234" );
     }
 }

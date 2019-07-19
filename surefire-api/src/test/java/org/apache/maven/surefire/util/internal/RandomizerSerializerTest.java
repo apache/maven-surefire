@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.util;
+package org.apache.maven.surefire.util.internal;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,38 +19,43 @@ package org.apache.maven.surefire.util;
  * under the License.
  */
 
+import org.apache.maven.surefire.util.Randomizer;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-public class RunOrderTest
+/**
+ * @author <a href="mailto:krzysztof.suszynski@wavesoftware.pl">Krzysztof Suszynski</a>
+ * @since 2016-04-11
+ */
+public class RandomizerSerializerTest
 {
 
     @Test
-    public void testShouldReturnRunOrderForLowerCaseName()
+    public void testDeserialize()
     {
-        assertEquals( RunOrder.HOURLY, RunOrder.valueOf( "hourly" ) );
+        // given
+        String serialized = "\u001E\u0003123456";
+
+        // when
+        Randomizer randomizer = RandomizerSerializer.deserialize( serialized );
+
+        // then
+        assertTrue( StringUtils.isBlank( randomizer.getGivenSeed() ) );
+        assertEquals( 123456L, randomizer.getSeed() );
     }
 
     @Test
-    public void testShouldThrowExceptionForInvalidName()
+    public void testSerialize()
     {
-        try
-        {
-            RunOrder.valueOf( "arbitraryName" );
-            fail( "IllegalArgumentException not thrown." );
-        }
-        catch ( IllegalArgumentException expected )
-        {
-            assertTrue( expected.getMessage().contains( "Please use one of the following RunOrders" ) );
-        }
-    }
+        // given
+        Randomizer randomizer = new Randomizer( "123456" );
 
-    @Test
-    public void testShouldReturnStringRepr()
-    {
-        assertEquals( "hourly", RunOrder.HOURLY.toString() );
+        // when
+        String result = RandomizerSerializer.serialize( randomizer );
+
+        // then
+        assertEquals( "123456\u001E\u0003123456", result );
     }
 }

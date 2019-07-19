@@ -23,9 +23,12 @@ import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
-import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
+import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.testset.RunOrderParameters;
+import org.apache.maven.surefire.util.RunOrder;
+import org.apache.maven.surefire.util.RunOrders;
 
 import java.io.File;
 
@@ -58,8 +61,29 @@ public class TestSetMockReporterFactory
     {
         File target = new File( "./target" );
         File statisticsFile = new File( target, "TESTHASH" );
-        return new StartupReportConfiguration( true, true, "PLAIN", false, target, false, null, statisticsFile,
-                false, 0, null, null, true, new SurefireStatelessReporter(), new SurefireConsoleOutputReporter(),
-                new SurefireStatelessTestsetInfoReporter() );
+        RunOrderParameters runOrderParameters = new RunOrderParameters(
+                new RunOrders( RunOrder.DEFAULT ),
+                null, statisticsFile
+        );
+        return new StartupReportConfiguration(
+                true,
+                true,
+                "PLAIN",
+                false,
+                target,
+                false,
+                null,
+                statisticsFile,
+                false,
+                0,
+                null,
+                null,
+                true,
+                new SurefireStatelessReporter(),
+                new SurefireConsoleOutputReporter(),
+                new SurefireStatelessTestsetInfoReporter(),
+                StartupReportConfiguration.DEFAULT_PLUGIN_NAME,
+                runOrderParameters
+        );
     }
 }
