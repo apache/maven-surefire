@@ -20,7 +20,6 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.maven.plugin.surefire.JdkAttributes;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
@@ -31,6 +30,8 @@ import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -39,7 +40,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import static java.io.File.createTempFile;
 import static java.util.Collections.singletonList;
 import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 import static org.fest.util.Files.temporaryFolder;
@@ -55,11 +55,30 @@ public class ForkConfigurationTest
             false,
             false );
 
+    private static int idx = 0;
+
+    private File basedir;
+
+    @Before
+    public void setupDirectories() throws IOException
+    {
+        File target = new File( System.getProperty( "user.dir" ), "target" );
+        basedir = new File( target, "SUREFIRE-1136-" + ++idx );
+        FileUtils.deleteDirectory( basedir );
+        assertTrue( basedir.mkdirs() );
+    }
+
+    @After
+    public void deleteDirectories() throws IOException
+    {
+        FileUtils.deleteDirectory( basedir );
+    }
+
     @Test
     public void testCreateCommandLine_UseSystemClassLoaderForkOnce_ShouldConstructManifestOnlyJar()
         throws IOException, SurefireBooterForkException
     {
-        ForkConfiguration config = getForkConfiguration( (String) null );
+        ForkConfiguration config = getForkConfiguration( basedir, null );
         File cpElement = getTempClasspathFile();
 
         List<String> cp = singletonList( cpElement.getAbsolutePath() );
@@ -79,7 +98,7 @@ public class ForkConfigurationTest
         throws IOException, SurefireBooterForkException
     {
         // SUREFIRE-657
-        ForkConfiguration config = getForkConfiguration( "abc\ndef" );
+        ForkConfiguration config = getForkConfiguration( basedir, "abc\ndef" );
         File cpElement = getTempClasspathFile();
 
         List<String> cp = singletonList( cpElement.getAbsolutePath() );
@@ -96,13 +115,7 @@ public class ForkConfigurationTest
     public void testCurrentWorkingDirectoryPropagationIncludingForkNumberExpansion()
         throws IOException, SurefireBooterForkException
     {
-        // SUREFIRE-1136
-        File baseDir =
-            new File( FileUtils.getTempDirectory(), "SUREFIRE-1136-" + RandomStringUtils.randomAlphabetic( 3 ) );
-        assertTrue( baseDir.mkdirs() );
-        baseDir.deleteOnExit();
-
-        File cwd = new File( baseDir, "fork_${surefire.forkNumber}" );
+        File cwd = new File( basedir, "fork_${surefire.forkNumber}" );
 
         ClasspathConfiguration cpConfig = new ClasspathConfiguration( emptyClasspath(), emptyClasspath(),
                 emptyClasspath(), true, true );
@@ -111,8 +124,7 @@ public class ForkConfigurationTest
         ForkConfiguration config = getForkConfiguration( cwd.getCanonicalFile() );
         Commandline commandLine = config.createCommandLine( startup, 1, temporaryFolder() );
 
-        File forkDirectory = new File( baseDir, "fork_1" );
-        forkDirectory.deleteOnExit();
+        File forkDirectory = new File( basedir, "fork_1" );
 
         String shellWorkDir = commandLine.getShell().getWorkingDirectory().getCanonicalPath();
         assertEquals( shellWorkDir,  forkDirectory.getCanonicalPath() );
@@ -122,28 +134,24 @@ public class ForkConfigurationTest
     public void testExceptionWhenCurrentDirectoryIsNotRealDirectory()
         throws IOException
     {
-        // SUREFIRE-1136
-        File baseDir =
-            new File( FileUtils.getTempDirectory(), "SUREFIRE-1136-" + RandomStringUtils.randomAlphabetic( 3 ) );
-        assertTrue( baseDir.mkdirs() );
-        baseDir.deleteOnExit();
-
-        File cwd = new File( baseDir, "cwd.txt" );
+        File cwd = new File( basedir, "cwd.txt" );
         FileUtils.touch( cwd );
-        cwd.deleteOnExit();
-
-        ForkConfiguration config = getForkConfiguration( cwd.getCanonicalFile() );
 
         try
         {
+            ForkConfiguration config = getForkConfiguration( cwd.getCanonicalFile() );
             config.createCommandLine( STARTUP_CONFIG, 1, temporaryFolder() );
         }
-        catch ( SurefireBooterForkException sbfe )
+        catch ( SurefireBooterForkException e )
         {
             // To handle issue with ~ expansion on Windows
             String absolutePath = cwd.getCanonicalPath();
-            assertEquals( "WorkingDirectory " + absolutePath + " exists and is not a directory", sbfe.getMessage() );
+            assertEquals( "WorkingDirectory " + absolutePath + " exists and is not a directory", e.getMessage() );
             return;
+        }
+        finally
+        {
+            assertTrue( cwd.delete() );
         }
 
         fail();
@@ -153,25 +161,24 @@ public class ForkConfigurationTest
     public void testExceptionWhenCurrentDirectoryCannotBeCreated()
         throws IOException
     {
-        // SUREFIRE-1136
-        File baseDir =
-            new File( FileUtils.getTempDirectory(), "SUREFIRE-1136-" + RandomStringUtils.randomAlphabetic( 3 ) );
-        assertTrue( baseDir.mkdirs() );
-        baseDir.deleteOnExit();
-
-        // NULL is invalid for JDK starting from 1.7.60 - https://github.com/openjdk-mirror/jdk/commit/e5389115f3634d25d101e2dcc71f120d4fd9f72f
+        // NULL is invalid for JDK starting from 1.7.60
+        // - https://github.com/openjdk-mirror/jdk/commit/e5389115f3634d25d101e2dcc71f120d4fd9f72f
         // ? character is invalid on Windows, seems to be imposable to create invalid directory using Java on Linux
-        File cwd = new File( baseDir, "?\u0000InvalidDirectoryName" );
-        ForkConfiguration config = getForkConfiguration( cwd.getAbsoluteFile() );
+        File cwd = new File( basedir, "?\u0000InvalidDirectoryName" );
 
         try
         {
+            ForkConfiguration config = getForkConfiguration( cwd.getAbsoluteFile() );
             config.createCommandLine( STARTUP_CONFIG, 1, temporaryFolder() );
         }
         catch ( SurefireBooterForkException sbfe )
         {
             assertEquals( "Cannot create workingDirectory " + cwd.getAbsolutePath(), sbfe.getMessage() );
             return;
+        }
+        finally
+        {
+            FileUtils.deleteDirectory( cwd );
         }
 
         if ( SystemUtils.IS_OS_WINDOWS || isJavaVersionAtLeast7u60() )
@@ -183,31 +190,31 @@ public class ForkConfigurationTest
     private File getTempClasspathFile()
         throws IOException
     {
-        File cpElement = createTempFile( "ForkConfigurationTest.", ".file" );
-        cpElement.deleteOnExit();
+        File cpElement = new File( basedir, "ForkConfigurationTest." + idx + ".file" );
+        FileUtils.deleteDirectory( cpElement );
         return cpElement;
     }
 
-    static ForkConfiguration getForkConfiguration( String argLine )
+    static ForkConfiguration getForkConfiguration( File basedir, String argLine )
         throws IOException
     {
         File jvm = new File( new File( System.getProperty( "java.home" ), "bin" ), "java" );
-        return getForkConfiguration( argLine, jvm.getAbsolutePath(), new File( "." ).getCanonicalFile() );
+        return getForkConfiguration( basedir, argLine, jvm.getAbsolutePath(), new File( "." ).getCanonicalFile() );
     }
 
-    private static ForkConfiguration getForkConfiguration( File cwd )
+    private ForkConfiguration getForkConfiguration( File cwd )
             throws IOException
     {
         File jvm = new File( new File( System.getProperty( "java.home" ), "bin" ), "java" );
-        return getForkConfiguration( null, jvm.getAbsolutePath(), cwd );
+        return getForkConfiguration( basedir, null, jvm.getAbsolutePath(), cwd );
     }
 
-    private static ForkConfiguration getForkConfiguration( String argLine, String jvm, File cwd )
+    private static ForkConfiguration getForkConfiguration( File basedir, String argLine, String jvm, File cwd )
         throws IOException
     {
         Platform platform = new Platform().withJdkExecAttributesForTests( new JdkAttributes( jvm, false ) );
-        File tmpDir = createTempFile( "target", "surefire" );
-        assertTrue( tmpDir.delete() );
+        File tmpDir = new File( new File( basedir, "target" ), "surefire" );
+        FileUtils.deleteDirectory( tmpDir );
         assertTrue( tmpDir.mkdirs() );
         return new JarManifestForkConfiguration( emptyClasspath(), tmpDir, null,
                 cwd, new Properties(), argLine, Collections.<String, String>emptyMap(), false, 1, false,

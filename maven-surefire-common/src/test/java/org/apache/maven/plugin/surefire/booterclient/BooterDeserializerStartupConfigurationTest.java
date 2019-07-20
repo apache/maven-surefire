@@ -20,11 +20,14 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import junit.framework.TestCase;
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.surefire.booter.*;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.*;
 import org.apache.maven.surefire.util.RunOrder;
+import org.junit.After;
+import org.junit.Before;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -46,10 +49,30 @@ import static org.apache.maven.surefire.cli.CommandLineOption.SHOW_ERRORS;
 public class BooterDeserializerStartupConfigurationTest
     extends TestCase
 {
+
+    private static int idx = 0;
+
+    private File basedir;
+
     private final ClasspathConfiguration classpathConfiguration = createClasspathConfiguration();
 
     private final List<CommandLineOption> cli =
         Arrays.asList( LOGGING_LEVEL_DEBUG, SHOW_ERRORS, REACTOR_FAIL_FAST );
+
+    @Before
+    public void setupDirectories() throws IOException
+    {
+        File target = new File( System.getProperty( "user.dir" ), "target" );
+        basedir = new File( target, "BooterDeserializerProviderConfigurationTest-" + ++idx );
+        FileUtils.deleteDirectory( basedir );
+        assertTrue( basedir.mkdirs() );
+    }
+
+    @After
+    public void deleteDirectories() throws IOException
+    {
+        FileUtils.deleteDirectory( basedir );
+    }
 
     public void testProvider()
         throws IOException
@@ -100,12 +123,12 @@ public class BooterDeserializerStartupConfigurationTest
         return new ClasspathConfiguration( testClassPath, providerClasspath, Classpath.emptyClasspath(), true, true );
     }
 
-    public static ClassLoaderConfiguration getSystemClassLoaderConfiguration()
+    private static ClassLoaderConfiguration getSystemClassLoaderConfiguration()
     {
         return new ClassLoaderConfiguration( true, false );
     }
 
-    public static ClassLoaderConfiguration getManifestOnlyJarForkConfiguration()
+    private static ClassLoaderConfiguration getManifestOnlyJarForkConfiguration()
     {
         return new ClassLoaderConfiguration( true, true );
     }
@@ -121,7 +144,7 @@ public class BooterDeserializerStartupConfigurationTest
     private StartupConfiguration saveAndReload( StartupConfiguration startupConfiguration )
         throws IOException
     {
-        final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration( (String) null );
+        final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration( basedir, null );
         PropertiesWrapper props = new PropertiesWrapper( new HashMap<String, String>() );
         BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
         String aTest = "aTest";

@@ -21,11 +21,14 @@ package org.apache.maven.plugin.surefire.booterclient;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.surefire.booter.*;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.report.ReporterConfiguration;
 import org.apache.maven.surefire.testset.*;
 import org.apache.maven.surefire.util.RunOrder;
+import org.junit.After;
+import org.junit.Before;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,7 +48,7 @@ public class BooterDeserializerProviderConfigurationTest
     extends TestCase
 {
 
-    public static final TypeEncodedValue aTestTyped = new TypeEncodedValue( String.class.getName(), "aTest" );
+    static final TypeEncodedValue aTestTyped = new TypeEncodedValue( String.class.getName(), "aTest" );
 
     private static final String aUserRequestedTest = "aUserRequestedTest";
 
@@ -53,8 +56,27 @@ public class BooterDeserializerProviderConfigurationTest
 
     private static final int rerunFailingTestsCount = 3;
 
+    private static int idx = 0;
+
+    private File basedir;
+
     private final List<CommandLineOption> cli =
         Arrays.asList( LOGGING_LEVEL_DEBUG, SHOW_ERRORS, REACTOR_FAIL_FAST );
+
+    @Before
+    public void setupDirectories() throws IOException
+    {
+        File target = new File( System.getProperty( "user.dir" ), "target" );
+        basedir = new File( target, "BooterDeserializerProviderConfigurationTest-" + ++idx );
+        FileUtils.deleteDirectory( basedir );
+        assertTrue( basedir.mkdirs() );
+    }
+
+    @After
+    public void deleteDirectories() throws IOException
+    {
+        FileUtils.deleteDirectory( basedir );
+    }
 
     private static ClassLoaderConfiguration getForkConfiguration()
     {
@@ -207,7 +229,7 @@ public class BooterDeserializerProviderConfigurationTest
                                                  boolean readTestsFromInStream )
         throws IOException
     {
-        final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration( (String) null );
+        final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration( basedir, null );
         PropertiesWrapper props = new PropertiesWrapper( new HashMap<String, String>() );
         BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
         Object test;
