@@ -22,6 +22,7 @@ cache:
   directories:
   - "$HOME/.m2"
 
+jdk: openjdk8
 install: true
 script: mvn clean package -nsu -DskipITs
 
