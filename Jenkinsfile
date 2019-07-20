@@ -30,10 +30,10 @@ properties(
     ]
 )
 
-final def oses = ['linux':'ubuntu && !H24', 'windows':'Windows && !windows-2016-1']
+final def oses = ['linux':'ubuntu', 'windows':'Windows']
 final def mavens = env.BRANCH_NAME == 'master' ? ['3.6.x', '3.2.x'] : ['3.6.x']
 // all non-EOL versions and the first EA
-final def jdks = [13, 12, 11, 8, 7]
+final def jdks = [13, 12, 11, 8]
 
 final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
 final def goals = ['clean', 'install']
@@ -109,7 +109,7 @@ timeout(time: 12, unit: 'HOURS') {
         currentBuild.result = 'FAILURE'
         throw e
     } finally {
-        // jenkinsNotify()
+        jenkinsNotify()
     }
 }
 
@@ -133,7 +133,7 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
         }
 
         def properties = ["-Djacoco.skip=${!makeReports}", "\"-Dmaven.repo.local=${mvnLocalRepoDir}\""]
-        println "Setting JDK for testing ${jdkName}"
+        println "Setting JDK for testing ${jdkTestName}"
         def cmd = ['mvn'] + goals + options + properties
 
         stage("build ${stageKey}") {
@@ -143,6 +143,7 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
                          "MAVEN_OPTS=${mavenOpts}",
                          "PATH+MAVEN=${tool(mvnName)}/bin:${tool(jdkName)}/bin"
                 ]) {
+                    sh '$JAVA_HOME_IT/bin/java -version'
                     sh 'echo JAVA_HOME=$JAVA_HOME, JAVA_HOME_IT=$JAVA_HOME_IT, PATH=$PATH'
                     def script = cmd + ['\"-Djdk.home=$JAVA_HOME_IT\"']
                     def error = sh(returnStatus: true, script: script.join(' '))
@@ -154,6 +155,7 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
                          "MAVEN_OPTS=${mavenOpts}",
                          "PATH+MAVEN=${tool(mvnName)}\\bin;${tool(jdkName)}\\bin"
                 ]) {
+                    bat '%JAVA_HOME_IT%\\bin\\java -version'
                     bat 'echo JAVA_HOME=%JAVA_HOME%, JAVA_HOME_IT=%JAVA_HOME_IT%, PATH=%PATH%'
                     def script = cmd + ['\"-Djdk.home=%JAVA_HOME_IT%\"']
                     def error = bat(returnStatus: true, script: script.join(' '))
@@ -205,6 +207,7 @@ static def sourcesPatternCsv() {
             '**/maven-surefire-report-plugin/src/main/java,' +
             '**/surefire-api/src/main/java,' +
             '**/surefire-booter/src/main/java,' +
+            '**/surefire-extensions-api/src/main/java,' +
             '**/surefire-grouper/src/main/java,' +
             '**/surefire-its/src/main/java,' +
             '**/surefire-logger-api/src/main/java,' +
@@ -220,6 +223,7 @@ static def classPatternCsv() {
             '**/maven-surefire-report-plugin/target/classes,' +
             '**/surefire-api/target/classes,' +
             '**/surefire-booter/target/classes,' +
+            '**/surefire-extensions-api/target/classes,' +
             '**/surefire-grouper/target/classes,' +
             '**/surefire-its/target/classes,' +
             '**/surefire-logger-api/target/classes,' +

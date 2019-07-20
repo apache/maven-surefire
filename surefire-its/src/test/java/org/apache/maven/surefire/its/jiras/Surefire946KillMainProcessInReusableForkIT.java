@@ -19,48 +19,118 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
+import com.googlecode.junittoolbox.ParallelParameterized;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+import org.w3c.dom.Document;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
+import java.io.File;
+import java.util.ArrayList;
+
+import static org.fest.assertions.Assertions.assertThat;
+
+@RunWith( ParallelParameterized.class )
 public class Surefire946KillMainProcessInReusableForkIT
     extends SurefireJUnit4IntegrationTestCase
 {
-    // there are 10 test classes that each would wait 2 seconds.
-    private static final int TEST_SLEEP_TIME = 2000;
+    private static final Object LOCK_DEPENDENCY = new Object();
+    private static final Object LOCK_PLUGIN = new Object();
+
+    // there are 10 test classes that each would wait 3.5 seconds.
+    private static final int TEST_SLEEP_TIME = 3_500;
+
+    private String classifierOfDummyDependency;
+
+    @Parameter
+    public String shutdownMavenMethod;
+
+    @Parameter( 1 )
+    public String shutdownSurefireMethod;
+
+    @Parameters( name = "{0}-{1}")
+    public static Iterable<Object[]> data()
+    {
+        ArrayList<Object[]> args = new ArrayList<>();
+        args.add( new Object[] { "halt", "exit" } );
+        args.add( new Object[] { "halt", "kill" } );
+        args.add( new Object[] { "exit", "exit" } );
+        args.add( new Object[] { "exit", "kill" } );
+        args.add( new Object[] { "interrupt", "exit" } );
+        args.add( new Object[] { "interrupt", "kill" } );
+        return args;
+    }
 
     @BeforeClass
     public static void installSelfdestructPlugin()
     {
-        unpack( Surefire946KillMainProcessInReusableForkIT.class, "surefire-946-self-destruct-plugin", "plugin" ).executeInstall();
+        synchronized ( LOCK_PLUGIN )
+        {
+            unpack( Surefire946KillMainProcessInReusableForkIT.class, "surefire-946-self-destruct-plugin", "plugin" )
+                    .executeInstall();
+        }
     }
 
-    @Test( timeout = 30000 )
-    public void testHalt()
+    @Before
+    public void dummyDep()
     {
-        doTest( "halt" );
+        synchronized ( LOCK_DEPENDENCY )
+        {
+            classifierOfDummyDependency = shutdownMavenMethod + shutdownSurefireMethod;
+            unpack( Surefire946KillMainProcessInReusableForkIT.class,
+                    "surefire-946-dummy-dependency", classifierOfDummyDependency )
+                    .sysProp( "distinct.classifier", classifierOfDummyDependency )
+                    .executeInstall();
+        }
     }
 
-    @Test( timeout = 30000 )
-    public void testExit()
+    @Test( timeout = 60_000 )
+    public void test() throws Exception
     {
-        doTest( "exit" );
-    }
+        unpack( "surefire-946-killMainProcessInReusableFork",
+                "-" + shutdownMavenMethod + "-" + shutdownSurefireMethod )
+                .sysProp( "distinct.classifier", classifierOfDummyDependency )
+                .sysProp( "surefire.shutdown", shutdownSurefireMethod )
+                .sysProp( "selfdestruct.timeoutInMillis", "5000" )
+                .sysProp( "selfdestruct.method", shutdownMavenMethod )
+                .sysProp( "testSleepTime", String.valueOf( TEST_SLEEP_TIME ) )
+                .addGoal( "org.apache.maven.plugins.surefire:maven-selfdestruct-plugin:selfdestruct" )
+                .setForkJvm()
+                .forkPerThread().threadCount( 1 ).reuseForks( true ).maven().withFailure().executeTest();
 
-    @Test( timeout = 30000 )
-    public void testInterrupt()
-    {
-        doTest( "interrupt" );
-    }
 
-    private void doTest( String method )
-    {
-        unpack( "surefire-946-killMainProcessInReusableFork" )
-            .sysProp( "selfdestruct.timeoutInMillis", "5000" )
-            .sysProp( "selfdestruct.method", method )
-            .sysProp( "testSleepTime", String.valueOf( TEST_SLEEP_TIME ) )
-            .addGoal( "org.apache.maven.plugins.surefire:maven-selfdestruct-plugin:selfdestruct" )
-            .setForkJvm()
-            .forkPerThread().threadCount( 1 ).reuseForks( true ).maven().withFailure().executeTest();
+        XPathFactory xpathFactory = XPathFactory.newInstance();
+        XPath xpath = xpathFactory.newXPath();
+        File settings = new File( System.getProperty( "maven.settings.file" ) ).getCanonicalFile();
+        Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( settings );
+        String localRepository = xpath.evaluate( "/settings/localRepository", doc );
+        assertThat( localRepository )
+                .isNotNull()
+                .isNotEmpty();
+
+        File dep = new File( localRepository,
+                "org/apache/maven/plugins/surefire/surefire-946-dummy-dependency/0.1/"
+                        + "surefire-946-dummy-dependency-0.1-" + classifierOfDummyDependency + ".jar" );
+
+        assertThat( dep )
+                .exists();
+
+        boolean deleted;
+        int iterations = 0;
+        do
+        {
+            Thread.sleep( 1_000L );
+            deleted = dep.delete();
+        }
+        while ( !deleted && ++iterations < 10 );
+        assertThat( deleted )
+                .isTrue();
     }
 }

@@ -207,8 +207,9 @@ public final class CommandReader
 
     public void stop()
     {
-        if ( state.compareAndSet( NEW, TERMINATED ) || state.compareAndSet( RUNNABLE, TERMINATED ) )
+        if ( !isStopped() )
         {
+            state.set( TERMINATED );
             makeQueueFull();
             listeners.clear();
             commandThread.interrupt();

@@ -19,6 +19,7 @@ package junit44.environment;
  * under the License.
  */
 
+import dummy.DummyClass;
 import org.junit.AfterClass;
 import org.junit.Test;
 
@@ -28,6 +29,7 @@ public class Basic03Test
     @Test
     public void testNothing()
     {
+        System.out.println( new DummyClass().toString() );
     }
 
     @AfterClass

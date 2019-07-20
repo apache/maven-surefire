@@ -37,6 +37,8 @@ public class JUnit4SuiteTest extends TestCase
         TestSuite suite = new TestSuite();
         suite.addTest( new JUnit4TestAdapter( PpidCheckerTest.class ) );
         suite.addTest( new JUnit4TestAdapter( SystemUtilsTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( ForkedBooterTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( ForkedBooterMockTest.class ) );
         suite.addTestSuite( ClasspathTest.class );
         suite.addTestSuite( PropertiesWrapperTest.class );
         return suite;
