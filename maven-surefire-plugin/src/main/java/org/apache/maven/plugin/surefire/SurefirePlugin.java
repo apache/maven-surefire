@@ -338,10 +338,11 @@ public class SurefirePlugin
      * After the plugin process is shutdown by sending <i>SIGTERM signal (CTRL+C)</i>, <i>SHUTDOWN command</i> is
      * received by every forked JVM.
      * <br>
-     * By default ({@code shutdown=testset}) forked JVM would not continue with new test which means that
-     * the current test may still continue to run.
+     * The value is set to ({@code shutdown=exit}) by default (changed in version 3.0.0-M4).
      * <br>
-     * The parameter can be configured with other two values {@code exit} and {@code kill}.
+     * The parameter can be configured with other two values {@code testset} and {@code kill}.
+     * <br>
+     * With({@code shutdown=testset}) the test set may still continue to run in forked JVM.
      * <br>
      * Using {@code exit} forked JVM executes {@code System.exit(1)} after the plugin process has received
      * <i>SIGTERM signal</i>.
@@ -350,7 +351,7 @@ public class SurefirePlugin
      *
      * @since 2.19
      */
-    @Parameter( property = "surefire.shutdown", defaultValue = "testset" )
+    @Parameter( property = "surefire.shutdown", defaultValue = "exit" )
     private String shutdown;
 
     /**
