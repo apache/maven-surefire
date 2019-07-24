@@ -290,6 +290,9 @@
         </profile>
         <profile>
             <id>run-its</id>
+            <properties>
+                <https.protocols>TLSv1.2</https.protocols>
+            </properties>
             <build>
                 <defaultGoal>verify</defaultGoal>
                 <plugins>
@@ -334,6 +337,8 @@
                                     <properties>
                                         <integration-test-port>${failsafe-integration-test-port}</integration-test-port>
                                         <integration-test-stop-port>${failsafe-integration-test-stop-port}</integration-test-stop-port>
+                                        <https.protocols>${https.protocols}</https.protocols>
+                                        <jdk.tls.client.protocols>${https.protocols}</jdk.tls.client.protocols>
                                     </properties>
                                 </configuration>
                             </execution>
@@ -341,7 +346,6 @@
                         <configuration>
                             <javaHome>${jdk.home}</javaHome>
                             <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
-                            <mavenOpts>-Dhttps.protocols=TLSv1.2 -Djdk.tls.client.protocols=TLSv1.2</mavenOpts>
                         </configuration>
                     </plugin>
                 </plugins>

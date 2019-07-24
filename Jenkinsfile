@@ -33,7 +33,7 @@ properties(
 final def oses = ['linux':'ubuntu', 'windows':'Windows']
 final def mavens = env.BRANCH_NAME == 'master' ? ['3.6.x', '3.2.x'] : ['3.6.x']
 // all non-EOL versions and the first EA
-final def jdks = [13, 12, 11, 8]
+final def jdks = [13, 12, 11, 8, 7]
 
 final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
 final def goals = ['clean', 'install']
@@ -52,7 +52,7 @@ oses.eachWithIndex { osMapping, indexOfOs ->
 
 // Referenses for TLS:
 // https://central.sonatype.org/articles/2018/May/04/discontinued-support-for-tlsv11-and-below/?__hstc=31049440.ab2fd229e7f8b6176196d9f78621e1f5.1534324377408.1534324377408.1534324377408.1&__hssc=31049440.1.1534324377409&__hsfp=2729160845
-            def mavenOpts = '-server -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseNUMA -Xms64m -Djava.awt.headless=true -Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2'
+            def mavenOpts = '-server -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseNUMA -Xms64m'
             mavenOpts += (os == 'linux' ? ' -Xmx1g' : ' -Xmx256m')
 
             if (label == null || jdkTestName == null || mvnName == null) {
@@ -67,7 +67,10 @@ oses.eachWithIndex { osMapping, indexOfOs ->
                     timestamps {
                         boolean first = indexOfOs == 0 && indexOfMaven == 0 && indexOfJdk == 0
                         def failsafeItPort = 8000 + 100 * indexOfMaven + 10 * indexOfJdk
-                        def allOptions = options + ["-Dfailsafe-integration-test-port=${failsafeItPort}", "-Dfailsafe-integration-test-stop-port=${1 + failsafeItPort}"]
+                        def allOptions = options + ['-Djava.awt.headless=true', "-Dfailsafe-integration-test-port=${failsafeItPort}", "-Dfailsafe-integration-test-stop-port=${1 + failsafeItPort}"]
+                        if (jdk == 7) {
+                            allOptions += ['-Dhttps.protocols=TLSv1.2']
+                        }
                         ws(dir: "${os == 'windows' ? "${TEMP}\\${BUILD_TAG}" : pwd()}") {
                             buildProcess(stageKey, jdkName, jdkTestName, mvnName, first ? goalsDepl : goals, allOptions, mavenOpts, first)
                         }
