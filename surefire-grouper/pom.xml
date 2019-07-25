@@ -32,10 +32,6 @@
   <name>Maven Surefire Test-Grouping Support</name>
   <description>Maven Surefire Test-Grouping Support</description>
 
-  <prerequisites>
-    <maven>3.0</maven>
-  </prerequisites>
-
   <build>
     <plugins>
       <plugin>
