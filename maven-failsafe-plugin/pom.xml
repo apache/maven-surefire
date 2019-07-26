@@ -290,9 +290,6 @@
         </profile>
         <profile>
             <id>run-its</id>
-            <properties>
-                <https.protocols>TLSv1.2</https.protocols>
-            </properties>
             <build>
                 <defaultGoal>verify</defaultGoal>
                 <plugins>
