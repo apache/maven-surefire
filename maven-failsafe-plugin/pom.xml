@@ -320,9 +320,6 @@
                                         <goal>verify</goal>
                                         <goal>-nsu</goal>
                                     </goals>
-                                    <setupIncludes>
-                                        <setupInclude>dummy-*/pom.xml</setupInclude>
-                                    </setupIncludes>
                                     <pomIncludes>
                                         <pomInclude>*/pom.xml</pomInclude>
                                     </pomIncludes>
