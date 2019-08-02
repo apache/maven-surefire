@@ -112,10 +112,7 @@ timeout(time: 12, unit: 'HOURS') {
         currentBuild.result = 'FAILURE'
         throw e
     } finally {
-        def changes = currentBuild?.changeSets
-        def authors = !changes || changes.isEmpty() ? [] : changes.last().toList().collect { it.author.toString() }.unique()
-        println("The author of the last change: ${authors}")
-        if (!changes || !authors.contains('github')) jenkinsNotify()
+        jenkinsNotify()
     }
 }
 
