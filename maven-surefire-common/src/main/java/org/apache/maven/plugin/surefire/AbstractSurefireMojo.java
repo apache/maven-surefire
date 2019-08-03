@@ -445,6 +445,21 @@ public abstract class AbstractSurefireMojo
     private Map<String, String> environmentVariables = new HashMap<>();
 
     /**
+     * You can selectively exclude individual environment variables by enumerating their keys.
+     * <br>
+     * All environment variables of the plugin process are inherited to a Surefire sub-process by default.
+     * The keys must literally (case sensitive) match in order to exclude their environment variable.
+     * <br>
+     * The environment is a system-dependent mapping from keys to values which is passed from parent plugin process
+     * to the forked Surefire processes.<br>
+     * Example to exclude two environment variables: <i>mvn test -DexcludedEnvironmentVariables=ACME1,ACME2</i>
+     *
+     * @since 3.0.0-M4
+     */
+    @Parameter( property = "excludedEnvironmentVariables" )
+    private String[] excludedEnvironmentVariables;
+
+    /**
      * Command line working directory.
      *
      * @since 2.1.3
@@ -1195,6 +1210,7 @@ public abstract class AbstractSurefireMojo
             if ( getConsoleLogger().isDebugEnabled() )
             {
                 showMap( getEnvironmentVariables(), "environment variable" );
+                showArray( getExcludedEnvironmentVariables(), "excluded environment variable" );
             }
 
             Properties originalSystemProperties = (Properties) System.getProperties().clone();
@@ -2268,6 +2284,7 @@ public abstract class AbstractSurefireMojo
                     getProject().getModel().getProperties(),
                     getArgLine(),
                     getEnvironmentVariables(),
+                    getExcludedEnvironmentVariables(),
                     getConsoleLogger().isDebugEnabled(),
                     getEffectiveForkCount(),
                     reuseForks,
@@ -2283,6 +2300,7 @@ public abstract class AbstractSurefireMojo
                     getProject().getModel().getProperties(),
                     getArgLine(),
                     getEnvironmentVariables(),
+                    getExcludedEnvironmentVariables(),
                     getConsoleLogger().isDebugEnabled(),
                     getEffectiveForkCount(),
                     reuseForks,
@@ -2298,6 +2316,7 @@ public abstract class AbstractSurefireMojo
                     getProject().getModel().getProperties(),
                     getArgLine(),
                     getEnvironmentVariables(),
+                    getExcludedEnvironmentVariables(),
                     getConsoleLogger().isDebugEnabled(),
                     getEffectiveForkCount(),
                     reuseForks,
@@ -2505,6 +2524,7 @@ public abstract class AbstractSurefireMojo
         checksum.add( getParallelTestsTimeoutInSeconds() );
         checksum.add( getParallelTestsTimeoutForcedInSeconds() );
         checksum.add( getEnvironmentVariables() );
+        checksum.add( getExcludedEnvironmentVariables() );
         checksum.add( getWorkingDirectory() );
         checksum.add( isChildDelegation() );
         checksum.add( getGroups() );
@@ -2624,6 +2644,14 @@ public abstract class AbstractSurefireMojo
             String key = (String) o;
             String value = (String) map.get( key );
             getConsoleLogger().debug( "Setting " + setting + " [" + key + "]=[" + value + "]" );
+        }
+    }
+
+    private <T> void showArray( T[] array, String setting )
+    {
+        for ( T e : array )
+        {
+            getConsoleLogger().debug( "Setting " + setting + " [" + e + "]" );
         }
     }
 
@@ -3444,6 +3472,11 @@ public abstract class AbstractSurefireMojo
     public Map<String, String> getEnvironmentVariables()
     {
         return environmentVariables;
+    }
+
+    protected String[] getExcludedEnvironmentVariables()
+    {
+        return excludedEnvironmentVariables == null ? new String[0] : excludedEnvironmentVariables;
     }
 
     @SuppressWarnings( "UnusedDeclaration" )

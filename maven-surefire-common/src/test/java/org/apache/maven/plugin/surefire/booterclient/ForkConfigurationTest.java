@@ -217,7 +217,8 @@ public class ForkConfigurationTest
         FileUtils.deleteDirectory( tmpDir );
         assertTrue( tmpDir.mkdirs() );
         return new JarManifestForkConfiguration( emptyClasspath(), tmpDir, null,
-                cwd, new Properties(), argLine, Collections.<String, String>emptyMap(), false, 1, false,
+                cwd, new Properties(), argLine,
+                Collections.<String, String>emptyMap(), new String[0], false, 1, false,
                 platform, new NullConsoleLogger() );
     }
 

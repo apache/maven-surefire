@@ -32,7 +32,7 @@ import org.junit.Test;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -65,8 +65,9 @@ public class ModularClasspathForkConfigurationTest
         File pwd = new File( "." ).getCanonicalFile();
 
         ModularClasspathForkConfiguration config = new ModularClasspathForkConfiguration( booter, tmp, "", pwd,
-                new Properties(), "", new HashMap<String, String>(), true, 1, true, new Platform(),
-                new NullConsoleLogger() )
+                new Properties(), "",
+                Collections.<String, String>emptyMap(), new String[0], true, 1, true,
+                new Platform(), new NullConsoleLogger() )
         {
             @Nonnull
             @Override

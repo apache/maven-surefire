@@ -45,6 +45,7 @@ public abstract class ForkConfiguration
     @Nonnull protected abstract Properties getModelProperties();
     @Nullable protected abstract String getArgLine();
     @Nonnull protected abstract Map<String, String> getEnvironmentVariables();
+    @Nonnull protected abstract String[] getExcludedEnvironmentVariables();
     protected abstract boolean isDebug();
     protected abstract int getForkCount();
     protected abstract boolean isReuseForks();

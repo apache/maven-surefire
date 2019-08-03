@@ -69,6 +69,7 @@ public class DefaultForkConfigurationTest
     private Properties modelProperties;
     private String argLine;
     private Map<String, String> environmentVariables;
+    private String[] excludedEnvironmentVariables;
     private boolean debug;
     private int forkCount;
     private boolean reuseForks;
@@ -85,6 +86,7 @@ public class DefaultForkConfigurationTest
         modelProperties = new Properties();
         argLine = null;
         environmentVariables = new HashMap<>();
+        excludedEnvironmentVariables = new String[0];
         debug = true;
         forkCount = 2;
         reuseForks = true;
@@ -96,8 +98,8 @@ public class DefaultForkConfigurationTest
     public void shouldBeNullArgLine() throws Exception
     {
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
-                workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log )
+                workingDirectory, modelProperties, argLine, environmentVariables, excludedEnvironmentVariables,
+                debug, forkCount, reuseForks, pluginPlatform, log )
         {
 
             @Override
@@ -122,8 +124,8 @@ public class DefaultForkConfigurationTest
     {
         argLine = "";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
-                workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log )
+                workingDirectory, modelProperties, argLine, environmentVariables, excludedEnvironmentVariables,
+                debug, forkCount, reuseForks, pluginPlatform, log )
         {
 
             @Override
@@ -148,8 +150,8 @@ public class DefaultForkConfigurationTest
     {
         argLine = "\n\r";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
-                workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log )
+                workingDirectory, modelProperties, argLine, environmentVariables, excludedEnvironmentVariables,
+                debug, forkCount, reuseForks, pluginPlatform, log )
         {
 
             @Override
@@ -174,8 +176,8 @@ public class DefaultForkConfigurationTest
     {
         argLine = "-Dfile.encoding=UTF-8";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
-                workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log )
+                workingDirectory, modelProperties, argLine, environmentVariables, excludedEnvironmentVariables,
+                debug, forkCount, reuseForks, pluginPlatform, log )
         {
 
             @Override
@@ -201,8 +203,8 @@ public class DefaultForkConfigurationTest
         modelProperties.put( "encoding", "UTF-8" );
         argLine = "-Dfile.encoding=@{encoding}";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
-                workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log )
+                workingDirectory, modelProperties, argLine, environmentVariables, excludedEnvironmentVariables,
+                debug, forkCount, reuseForks, pluginPlatform, log )
         {
 
             @Override
@@ -227,8 +229,8 @@ public class DefaultForkConfigurationTest
     {
         argLine = "a\n\rb";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
-                workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log )
+                workingDirectory, modelProperties, argLine, environmentVariables, excludedEnvironmentVariables,
+                debug, forkCount, reuseForks, pluginPlatform, log )
         {
 
             @Override
@@ -253,8 +255,8 @@ public class DefaultForkConfigurationTest
     {
         argLine = "-Dthread=${surefire.threadNumber}";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
-                workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log )
+                workingDirectory, modelProperties, argLine, environmentVariables, excludedEnvironmentVariables,
+                debug, forkCount, reuseForks, pluginPlatform, log )
         {
 
             @Override
@@ -279,8 +281,8 @@ public class DefaultForkConfigurationTest
     {
         argLine = "-Dthread=${surefire.forkNumber}";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
-                workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log )
+                workingDirectory, modelProperties, argLine, environmentVariables, excludedEnvironmentVariables,
+                debug, forkCount, reuseForks, pluginPlatform, log )
         {
 
             @Override

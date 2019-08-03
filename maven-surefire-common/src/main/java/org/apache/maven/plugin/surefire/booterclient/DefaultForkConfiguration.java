@@ -59,6 +59,7 @@ public abstract class DefaultForkConfiguration
     @Nonnull private final Properties modelProperties;
     @Nullable private final String argLine;
     @Nonnull private final Map<String, String> environmentVariables;
+    @Nonnull private final String[] excludedEnvironmentVariables;
     private final boolean debug;
     private final int forkCount;
     private final boolean reuseForks;
@@ -73,6 +74,7 @@ public abstract class DefaultForkConfiguration
                                      @Nonnull Properties modelProperties,
                                      @Nullable String argLine,
                                      @Nonnull Map<String, String> environmentVariables,
+                                     @Nonnull String[] excludedEnvironmentVariables,
                                      boolean debug,
                                      int forkCount,
                                      boolean reuseForks,
@@ -86,6 +88,7 @@ public abstract class DefaultForkConfiguration
         this.modelProperties = modelProperties;
         this.argLine = argLine;
         this.environmentVariables = toImmutable( environmentVariables );
+        this.excludedEnvironmentVariables = excludedEnvironmentVariables;
         this.debug = debug;
         this.forkCount = forkCount;
         this.reuseForks = reuseForks;
@@ -119,7 +122,8 @@ public abstract class DefaultForkConfiguration
                                                                @Nonnull File dumpLogDirectory )
             throws SurefireBooterForkException
     {
-        OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
+        OutputStreamFlushableCommandline cli =
+                new OutputStreamFlushableCommandline( getExcludedEnvironmentVariables() );
 
         cli.setWorkingDirectory( getWorkingDirectory( forkNumber ).getAbsolutePath() );
 
@@ -287,6 +291,13 @@ public abstract class DefaultForkConfiguration
     protected Map<String, String> getEnvironmentVariables()
     {
         return environmentVariables;
+    }
+
+    @Nonnull
+    @Override
+    protected String[] getExcludedEnvironmentVariables()
+    {
+        return excludedEnvironmentVariables;
     }
 
     @Override

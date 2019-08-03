@@ -35,13 +35,30 @@ public class EnvironmentVariablesIT
     @Test
     public void testWhenUseSystemClassLoader()
     {
-        unpack( "/environment-variables" ).addGoal( "-DuseSystemClassLoader=true" ).executeTest();
+        unpack( "/environment-variables" )
+                .debugLogging()
+                .addGoal( "-DuseSystemClassLoader=true" )
+                .executeTest();
     }
 
     @Test
     public void testWhenDontUseSystemClassLoader()
     {
-        unpack( "/environment-variables" ).addGoal( "-DuseSystemClassLoader=false" ).executeTest();
+        unpack( "/environment-variables" )
+                .debugLogging()
+                .addGoal( "-DuseSystemClassLoader=false" )
+                .executeTest();
+    }
+
+    @Test
+    public void testExcludedEnv()
+    {
+        unpack( "/environment-variables" )
+                .maven()
+                .debugLogging()
+                .addEnvVar( "UNDEFINED_VAR", "dwdijoi" )
+                .sysProp( "excludedEnvironmentVariables", "UNDEFINED_VAR" )
+                .executeTest();
     }
 
 }
