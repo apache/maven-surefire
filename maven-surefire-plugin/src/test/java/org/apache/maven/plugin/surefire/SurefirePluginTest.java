@@ -84,4 +84,20 @@ public class SurefirePluginTest extends TestCase
         assertThat( new SurefirePlugin().getPluginName() )
                 .isEqualTo( "surefire" );
     }
+
+    public void testShouldGetNullEnv()
+    {
+        SurefirePlugin plugin = new SurefirePlugin();
+        assertThat( plugin.getExcludedEnvironmentVariables() )
+                .hasSize( 0 );
+    }
+
+    public void testShouldGetEnv()
+    {
+        SurefirePlugin plugin = new SurefirePlugin();
+        plugin.setExcludedEnvironmentVariables( new String[] { "ABC", "KLM" } );
+        assertThat( plugin.getExcludedEnvironmentVariables() )
+                .hasSize( 2 )
+                .contains( "ABC", "KLM" );
+    }
 }

@@ -813,6 +813,8 @@ public abstract class AbstractSurefireMojo
      */
     protected abstract boolean hasSuiteXmlFiles();
 
+    protected abstract String[] getExcludedEnvironmentVariables();
+
     public abstract File[] getSuiteXmlFiles();
 
     public abstract void setSuiteXmlFiles( File[] suiteXmlFiles );
@@ -1197,6 +1199,7 @@ public abstract class AbstractSurefireMojo
             if ( getConsoleLogger().isDebugEnabled() )
             {
                 showMap( getEnvironmentVariables(), "environment variable" );
+                showArray( getExcludedEnvironmentVariables(), "excluded environment variable" );
             }
 
             Properties originalSystemProperties = (Properties) System.getProperties().clone();
@@ -2270,6 +2273,7 @@ public abstract class AbstractSurefireMojo
                     getProject().getModel().getProperties(),
                     getArgLine(),
                     getEnvironmentVariables(),
+                    getExcludedEnvironmentVariables(),
                     getConsoleLogger().isDebugEnabled(),
                     getEffectiveForkCount(),
                     reuseForks,
@@ -2285,6 +2289,7 @@ public abstract class AbstractSurefireMojo
                     getProject().getModel().getProperties(),
                     getArgLine(),
                     getEnvironmentVariables(),
+                    getExcludedEnvironmentVariables(),
                     getConsoleLogger().isDebugEnabled(),
                     getEffectiveForkCount(),
                     reuseForks,
@@ -2300,6 +2305,7 @@ public abstract class AbstractSurefireMojo
                     getProject().getModel().getProperties(),
                     getArgLine(),
                     getEnvironmentVariables(),
+                    getExcludedEnvironmentVariables(),
                     getConsoleLogger().isDebugEnabled(),
                     getEffectiveForkCount(),
                     reuseForks,
@@ -2507,6 +2513,7 @@ public abstract class AbstractSurefireMojo
         checksum.add( getParallelTestsTimeoutInSeconds() );
         checksum.add( getParallelTestsTimeoutForcedInSeconds() );
         checksum.add( getEnvironmentVariables() );
+        checksum.add( getExcludedEnvironmentVariables() );
         checksum.add( getWorkingDirectory() );
         checksum.add( isChildDelegation() );
         checksum.add( getGroups() );
@@ -2626,6 +2633,14 @@ public abstract class AbstractSurefireMojo
             String key = (String) o;
             String value = (String) map.get( key );
             getConsoleLogger().debug( "Setting " + setting + " [" + key + "]=[" + value + "]" );
+        }
+    }
+
+    private <T> void showArray( T[] array, String setting )
+    {
+        for ( T e : array )
+        {
+            getConsoleLogger().debug( "Setting " + setting + " [" + e + "]" );
         }
     }
 

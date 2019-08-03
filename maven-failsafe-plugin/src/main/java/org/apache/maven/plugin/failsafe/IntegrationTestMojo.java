@@ -31,11 +31,9 @@ import org.apache.maven.surefire.suite.RunResult;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 import static org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils.writeSummary;
 
@@ -385,6 +383,21 @@ public class IntegrationTestMojo
      */
     @Parameter( property = "failsafe.useModulePath", defaultValue = "true" )
     private boolean useModulePath;
+
+    /**
+     * You can selectively exclude individual environment variables by enumerating their keys.
+     * <br>
+     * The environment is a system-dependent mapping from keys to values which is inherited from the Maven process
+     * to the forked Surefire processes. The keys must literally (case sensitive) match in order to exclude
+     * their environment variable.
+     * <br>
+     * Example to exclude three environment variables:
+     * <i>mvn test -Dfailsafe.excludedEnvironmentVariables=ACME1,ACME2,ACME3</i>
+     *
+     * @since 3.0.0-M4
+     */
+    @Parameter( property = "failsafe.excludedEnvironmentVariables" )
+    private String[] excludedEnvironmentVariables;
 
     @Override
     protected int getRerunFailingTestsCount()
@@ -841,8 +854,14 @@ public class IntegrationTestMojo
         return suiteXmlFiles != null && suiteXmlFiles.length != 0;
     }
 
-    static Charset toCharset( String encoding )
+    @Override
+    protected final String[] getExcludedEnvironmentVariables()
     {
-        return Charset.forName( Charset.isSupported( encoding ) ? encoding : encoding.toUpperCase( Locale.ROOT ) );
+        return excludedEnvironmentVariables == null ? new String[0] : excludedEnvironmentVariables;
+    }
+
+    void setExcludedEnvironmentVariables( String[] excludedEnvironmentVariables )
+    {
+        this.excludedEnvironmentVariables = excludedEnvironmentVariables;
     }
 }

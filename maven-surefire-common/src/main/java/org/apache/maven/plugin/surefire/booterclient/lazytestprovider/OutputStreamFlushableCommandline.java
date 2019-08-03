@@ -19,9 +19,13 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * under the License.
  */
 
-import java.io.IOException;
-import java.io.OutputStream;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentLinkedDeque;
+
 import org.apache.maven.shared.utils.cli.CommandLineException;
+import org.apache.maven.shared.utils.cli.CommandLineUtils;
 import org.apache.maven.shared.utils.cli.Commandline;
 
 /**
@@ -35,28 +39,36 @@ public class OutputStreamFlushableCommandline
     extends Commandline
     implements FlushReceiverProvider
 {
+    private final Collection<String> excludedEnvironmentVariables;
+    private volatile FlushReceiver flushReceiver;
+
     /**
-     * Wraps an output stream in order to delegate a flush.
+     * for testing purposes only
      */
-    private final class OutputStreamFlushReceiver
-        implements FlushReceiver
+    public OutputStreamFlushableCommandline()
     {
-        private final OutputStream outputStream;
-
-        private OutputStreamFlushReceiver( OutputStream outputStream )
-        {
-            this.outputStream = outputStream;
-        }
-
-        @Override
-        public void flush()
-            throws IOException
-        {
-            outputStream.flush();
-        }
+        this( new String[0] );
     }
 
-    private volatile FlushReceiver flushReceiver;
+    public OutputStreamFlushableCommandline( String[] excludedEnvironmentVariables )
+    {
+        this.excludedEnvironmentVariables = new ConcurrentLinkedDeque<>();
+        Collections.addAll( this.excludedEnvironmentVariables, excludedEnvironmentVariables );
+    }
+
+    @Override
+    public final void addSystemEnvironment()
+    {
+        Properties systemEnvVars = CommandLineUtils.getSystemEnvVars();
+
+        for ( String key : systemEnvVars.stringPropertyNames() )
+        {
+            if ( !excludedEnvironmentVariables.contains( key ) )
+            {
+                addEnvironment( key, systemEnvVars.getProperty( key ) );
+            }
+        }
+    }
 
     @Override
     public Process execute()
@@ -77,5 +89,4 @@ public class OutputStreamFlushableCommandline
     {
         return flushReceiver;
     }
-
 }

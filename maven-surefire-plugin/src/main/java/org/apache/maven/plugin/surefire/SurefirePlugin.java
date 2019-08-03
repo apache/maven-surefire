@@ -365,6 +365,21 @@ public class SurefirePlugin
     @Parameter( property = "surefire.useModulePath", defaultValue = "true" )
     private boolean useModulePath;
 
+    /**
+     * You can selectively exclude individual environment variables by enumerating their keys.
+     * <br>
+     * The environment is a system-dependent mapping from keys to values which is inherited from the Maven process
+     * to the forked Surefire processes. The keys must literally (case sensitive) match in order to exclude
+     * their environment variable.
+     * <br>
+     * Example to exclude three environment variables:
+     * <i>mvn test -Dsurefire.excludedEnvironmentVariables=ACME1,ACME2,ACME3</i>
+     *
+     * @since 3.0.0-M4
+     */
+    @Parameter( property = "surefire.excludedEnvironmentVariables" )
+    private String[] excludedEnvironmentVariables;
+
     @Override
     protected int getRerunFailingTestsCount()
     {
@@ -740,5 +755,16 @@ public class SurefirePlugin
     protected final boolean hasSuiteXmlFiles()
     {
         return suiteXmlFiles != null && suiteXmlFiles.length != 0;
+    }
+
+    @Override
+    protected final String[] getExcludedEnvironmentVariables()
+    {
+        return excludedEnvironmentVariables == null ? new String[0] : excludedEnvironmentVariables;
+    }
+
+    void setExcludedEnvironmentVariables( String[] excludedEnvironmentVariables )
+    {
+        this.excludedEnvironmentVariables = excludedEnvironmentVariables;
     }
 }

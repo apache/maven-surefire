@@ -67,6 +67,7 @@ public class ModularClasspathForkConfiguration
                                               @Nonnull Properties modelProperties,
                                               @Nullable String argLine,
                                               @Nonnull Map<String, String> environmentVariables,
+                                              @Nonnull String[] excludedEnvironmentVariables,
                                               boolean debug,
                                               @Nonnegative int forkCount,
                                               boolean reuseForks,
@@ -74,7 +75,7 @@ public class ModularClasspathForkConfiguration
                                               @Nonnull ConsoleLogger log )
     {
         super( bootClasspath, tempDirectory, debugLine, workingDirectory, modelProperties, argLine,
-                environmentVariables, debug, forkCount, reuseForks, pluginPlatform, log );
+                environmentVariables, excludedEnvironmentVariables, debug, forkCount, reuseForks, pluginPlatform, log );
     }
 
     @Override

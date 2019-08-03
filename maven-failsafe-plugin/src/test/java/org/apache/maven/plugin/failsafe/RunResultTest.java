@@ -24,7 +24,6 @@ import org.apache.maven.surefire.suite.RunResult;
 import org.junit.Test;
 
 import java.io.File;
-import java.nio.charset.Charset;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -116,16 +115,6 @@ public class RunResultTest
 
         assertThat( actual )
                 .isEqualTo( expected );
-    }
-
-    @Test
-    public void shouldAcceptAliasCharset()
-    {
-        Charset charset1 = IntegrationTestMojo.toCharset( "UTF8" );
-        assertThat( charset1.name() ).isEqualTo( "UTF-8" );
-
-        Charset charset2 = IntegrationTestMojo.toCharset( "utf8" );
-        assertThat( charset2.name() ).isEqualTo( "UTF-8" );
     }
 
     private void writeReadCheck( RunResult expected )

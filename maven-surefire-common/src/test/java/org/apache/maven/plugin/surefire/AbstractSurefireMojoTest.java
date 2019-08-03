@@ -61,6 +61,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +86,7 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.spy;
 import static org.powermock.api.mockito.PowerMockito.verifyPrivate;
 import static org.powermock.reflect.Whitebox.invokeMethod;
+import static org.powermock.reflect.Whitebox.setInternalState;
 
 /**
  * Test for {@link AbstractSurefireMojo}.
@@ -98,6 +100,48 @@ public class AbstractSurefireMojoTest
     private ArtifactHandler handler;
 
     private final Mojo mojo = new Mojo();
+
+    @Test
+    public void shouldShowArray() throws Exception
+    {
+        Logger logger = mock( Logger.class );
+        when( logger.isDebugEnabled() ).thenReturn( true );
+        doNothing().when( logger ).debug( anyString() );
+
+        AbstractSurefireMojo mojo = spy( this.mojo );
+
+        when( mojo.getConsoleLogger() ).thenReturn( new PluginConsoleLogger( logger ) );
+
+        Object[] array = { "ABC", "XYZ" };
+        invokeMethod( mojo, "showArray", array, "prefix" );
+
+        ArgumentCaptor<String> argument = ArgumentCaptor.forClass( String.class );
+        verify( logger, times( 2 ) ).debug( argument.capture() );
+        assertThat( argument.getAllValues() )
+                .containsExactly( "Setting prefix [ABC]", "Setting prefix [XYZ]" );
+    }
+
+    @Test
+    public void shouldShowMap() throws Exception
+    {
+        Logger logger = mock( Logger.class );
+        when( logger.isDebugEnabled() ).thenReturn( true );
+        doNothing().when( logger ).debug( anyString() );
+
+        AbstractSurefireMojo mojo = spy( this.mojo );
+
+        when( mojo.getConsoleLogger() ).thenReturn( new PluginConsoleLogger( logger ) );
+
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put( "ABC", "123" );
+        map.put( "XYZ", "987" );
+        invokeMethod( mojo, "showMap", map, "prefix" );
+
+        ArgumentCaptor<String> argument = ArgumentCaptor.forClass( String.class );
+        verify( logger, times( 2 ) ).debug( argument.capture() );
+        assertThat( argument.getAllValues() )
+                .containsExactly( "Setting prefix [ABC]=[123]", "Setting prefix [XYZ]=[987]" );
+    }
 
     @Test
     public void shouldRetainInPluginArtifacts() throws Exception
@@ -1963,6 +2007,12 @@ public class AbstractSurefireMojoTest
         protected boolean hasSuiteXmlFiles()
         {
             return false;
+        }
+
+        @Override
+        protected String[] getExcludedEnvironmentVariables()
+        {
+            return new String[0];
         }
 
         @Override
