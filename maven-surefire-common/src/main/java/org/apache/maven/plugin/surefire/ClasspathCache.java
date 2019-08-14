@@ -32,6 +32,7 @@ import javax.annotation.Nonnull;
 /**
  * @author Kristian Rosenvold
  */
+@Deprecated
 public class ClasspathCache
 {
     private static final ConcurrentHashMap<String, Classpath> CLASSPATHS =
