@@ -30,7 +30,9 @@ import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.suite.RunResult;
 import org.codehaus.plexus.logging.Logger;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -73,6 +75,9 @@ import static org.powermock.reflect.Whitebox.invokeMethod;
 @PrepareForTest( AbstractSurefireMojo.class )
 public class AbstractSurefireMojoTest
 {
+    @Rule
+    public final TemporaryFolder temp = new TemporaryFolder();
+
     @Mock
     private ArtifactHandler handler;
 
@@ -305,6 +310,61 @@ public class AbstractSurefireMojoTest
 
         assertThat( conf.getProviderClassName() )
                 .isEqualTo( "org.asf.Provider" );
+    }
+
+    @Test
+    public void providerClasspathCachingIsNotSharedAcrossMojoInstances() throws Exception {
+        ProviderInfo providerInfo = mock( ProviderInfo.class );
+        when( providerInfo.getProviderName() ).thenReturn( "test-provider" );
+        Artifact provider = new DefaultArtifact( "com.example", "provider", createFromVersion( "1" ), "runtime", "jar", "", handler );
+        provider.setFile( mockFile( "original-test-provider.jar" ) );
+        HashSet<Artifact> providerClasspath = new HashSet<Artifact>( asList( provider ) );
+        when( providerInfo.getProviderClasspath()).thenReturn( providerClasspath );
+
+        StartupConfiguration startupConfiguration = startupConfigurationForProvider(providerInfo);
+        assertThat( startupConfiguration.getClasspathConfiguration().getProviderClasspath().getClassPath() )
+                .containsExactly( "original-test-provider.jar" );
+
+        provider.setFile( mockFile( "modified-test-provider.jar" ) );
+        startupConfiguration = startupConfigurationForProvider(providerInfo);
+        assertThat( startupConfiguration.getClasspathConfiguration().getProviderClasspath().getClassPath() )
+                .containsExactly( "modified-test-provider.jar" );
+    }
+
+    private StartupConfiguration startupConfigurationForProvider(ProviderInfo providerInfo) throws Exception {
+        AbstractSurefireMojo mojo = spy( new Mojo() );
+
+        MavenProject project = mock( MavenProject.class );
+        when( project.getArtifacts() ).thenReturn( new HashSet<Artifact>() );
+        when( mojo.getProject() ).thenReturn( project );
+
+        Logger logger = mock( Logger.class );
+        when( logger.isDebugEnabled() ).thenReturn( true );
+        doNothing().when( logger ).debug( anyString() );
+        when( mojo.getConsoleLogger() ).thenReturn( new PluginConsoleLogger( logger ) );
+
+        File classesDir = temp.newFolder();
+        File testClassesDir = temp.newFolder();
+        when ( mojo.getTestClassesDirectory() ).thenReturn( testClassesDir );
+        when ( mojo.getClassesDirectory() ).thenReturn( classesDir );
+
+        Artifact common = new DefaultArtifact( "org.apache.maven.surefire", "maven-surefire-common",
+                createFromVersion( "1" ), "runtime", "jar", "", handler );
+        common.setFile( mockFile( "maven-surefire-common.jar" ) );
+
+        Artifact api = new DefaultArtifact( "org.apache.maven.surefire", "surefire-api",
+                createFromVersion( "1" ), "runtime", "jar", "", handler );
+        api.setFile( mockFile( "surefire-api.jar" ) );
+
+        Map<String, Artifact> providerArtifactsMap = new HashMap<String, Artifact>();
+        providerArtifactsMap.put( "org.apache.maven.surefire:maven-surefire-common", common );
+        providerArtifactsMap.put( "org.apache.maven.surefire:surefire-api", api );
+        when( mojo.getPluginArtifactMap() ).thenReturn( providerArtifactsMap );
+
+        doReturn( 1 ).when( mojo, "getEffectiveForkCount" );
+
+        StartupConfiguration startupConfiguration = invokeMethod( mojo, "createStartupConfiguration", providerInfo, false, null, null);
+        return startupConfiguration;
     }
 
     @Test
