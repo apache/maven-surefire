@@ -336,6 +336,67 @@ public class AbstractSurefireMojoTest
     }
 
     @Test
+    public void providerClasspathCachingIsNotSharedAcrossMojoInstances() throws Exception {
+        ProviderInfo providerInfo = mock( ProviderInfo.class );
+        when( providerInfo.getProviderName() ).thenReturn( "test-provider" );
+        Artifact provider = new DefaultArtifact( "com.example", "provider", createFromVersion( "1" ), "runtime", "jar", "", handler );
+        provider.setFile( mockFile( "original-test-provider.jar" ) );
+        HashSet<Artifact> providerClasspath = new HashSet<Artifact>( asList( provider ) );
+        when( providerInfo.getProviderClasspath()).thenReturn( providerClasspath );
+
+        StartupConfiguration startupConfiguration = startupConfigurationForProvider(providerInfo);
+        assertThat( startupConfiguration.getClasspathConfiguration().getProviderClasspath().getClassPath() )
+                .containsExactly( "original-test-provider.jar" );
+
+        provider.setFile( mockFile( "modified-test-provider.jar" ) );
+        startupConfiguration = startupConfigurationForProvider(providerInfo);
+        assertThat( startupConfiguration.getClasspathConfiguration().getProviderClasspath().getClassPath() )
+                .containsExactly( "modified-test-provider.jar" );
+    }
+
+    private StartupConfiguration startupConfigurationForProvider(ProviderInfo providerInfo) throws Exception {
+        AbstractSurefireMojo mojo = spy( new Mojo() );
+
+        Logger logger = mock( Logger.class );
+        when( logger.isDebugEnabled() ).thenReturn( true );
+        doNothing().when( logger ).debug( anyString() );
+        when( mojo.getConsoleLogger() ).thenReturn( new PluginConsoleLogger( logger ) );
+
+        File classesDir = mockFile( "classes" );
+        File testClassesDir = mockFile( "test-classes" );
+        TestClassPath testClassPath = new TestClassPath( new ArrayList<Artifact>(), classesDir, testClassesDir, new String[0] );
+
+        Artifact common = new DefaultArtifact( "org.apache.maven.surefire", "maven-surefire-common",
+                createFromVersion( "1" ), "runtime", "jar", "", handler );
+        common.setFile( mockFile( "maven-surefire-common.jar" ) );
+
+        Artifact ext = new DefaultArtifact( "org.apache.maven.surefire", "surefire-extensions-api",
+                createFromVersion( "1" ), "runtime", "jar", "", handler );
+        ext.setFile( mockFile( "surefire-extensions-api.jar" ) );
+
+        Artifact api = new DefaultArtifact( "org.apache.maven.surefire", "surefire-api",
+                createFromVersion( "1" ), "runtime", "jar", "", handler );
+        api.setFile( mockFile( "surefire-api.jar" ) );
+
+        Artifact loggerApi = new DefaultArtifact( "org.apache.maven.surefire", "surefire-logger-api",
+                createFromVersion( "1" ), "runtime", "jar", "", handler );
+        loggerApi.setFile( mockFile( "surefire-logger-api.jar" ) );
+
+        Map<String, Artifact> providerArtifactsMap = new HashMap<>();
+        providerArtifactsMap.put( "org.apache.maven.surefire:maven-surefire-common", common );
+        providerArtifactsMap.put( "org.apache.maven.surefire:surefire-extensions-api", ext );
+        providerArtifactsMap.put( "org.apache.maven.surefire:surefire-api", api );
+        providerArtifactsMap.put( "org.apache.maven.surefire:surefire-logger-api", loggerApi );
+
+        when( mojo.getPluginArtifactMap() ).thenReturn( providerArtifactsMap );
+
+        doReturn( 1 ).when( mojo, "getEffectiveForkCount" );
+
+        StartupConfiguration startupConfiguration = invokeMethod( mojo, "createStartupConfiguration", providerInfo, false, null, null, null, testClassPath);
+        return startupConfiguration;
+    }
+
+    @Test
     public void shouldExistTmpDirectory() throws IOException
     {
         String systemTmpDir = System.getProperty( "java.io.tmpdir" );

@@ -159,6 +159,8 @@ public abstract class AbstractSurefireMojo
 
     private final ProviderDetector providerDetector = new ProviderDetector();
 
+    private final ClasspathCache classpathCache = new ClasspathCache();
+
     /**
      * Note: use the legacy system property <em>disableXmlReport</em> set to {@code true} to disable the report.
      */
@@ -1787,10 +1789,10 @@ public abstract class AbstractSurefireMojo
     {
         Classpath testClasspath = testClasspathWrapper.toClasspath();
 
-        Classpath providerClasspath = ClasspathCache.getCachedClassPath( providerName );
+        Classpath providerClasspath = classpathCache.getCachedClassPath( providerName );
         if ( providerClasspath == null )
         {
-            providerClasspath = ClasspathCache.setCachedClasspath( providerName, providerArtifacts );
+            providerClasspath = classpathCache.setCachedClasspath( providerName, providerArtifacts );
         }
 
         getConsoleLogger().debug( testClasspath.getLogMessage( "test classpath:" ) );
@@ -1868,10 +1870,10 @@ public abstract class AbstractSurefireMojo
     {
         Classpath testClasspath = testClasspathWrapper.toClasspath();
 
-        Classpath providerClasspath = ClasspathCache.getCachedClassPath( providerName );
+        Classpath providerClasspath = classpathCache.getCachedClassPath( providerName );
         if ( providerClasspath == null )
         {
-            providerClasspath = ClasspathCache.setCachedClasspath( providerName, providerArtifacts );
+            providerClasspath = classpathCache.setCachedClasspath( providerName, providerArtifacts );
         }
 
         ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings( testClasspath.getClassPath() )
@@ -2629,7 +2631,7 @@ public abstract class AbstractSurefireMojo
 
     private Classpath getArtifactClasspath( Artifact surefireArtifact )
     {
-        Classpath existing = ClasspathCache.getCachedClassPath( surefireArtifact.getArtifactId() );
+        Classpath existing = classpathCache.getCachedClassPath( surefireArtifact.getArtifactId() );
         if ( existing == null )
         {
             List<String> items = new ArrayList<>();
@@ -2643,7 +2645,7 @@ public abstract class AbstractSurefireMojo
                 items.add( artifact.getFile().getAbsolutePath() );
             }
             existing = new Classpath( items );
-            ClasspathCache.setCachedClasspath( surefireArtifact.getArtifactId(), existing );
+            classpathCache.setCachedClasspath( surefireArtifact.getArtifactId(), existing );
         }
         return existing;
     }
@@ -3837,6 +3839,33 @@ public abstract class AbstractSurefireMojo
         else
         {
             throw new IllegalArgumentException( "Fork mode " + forkMode + " is not a legal value" );
+        }
+    }
+
+    private static final class ClasspathCache
+    {
+        private final Map<String, Classpath> classpaths = new HashMap<>( 4 );
+
+        private Classpath getCachedClassPath( @Nonnull String artifactId )
+        {
+            return classpaths.get( artifactId );
+        }
+
+        private void setCachedClasspath( @Nonnull String key, @Nonnull Classpath classpath )
+        {
+            classpaths.put( key, classpath );
+        }
+
+        private Classpath setCachedClasspath( @Nonnull String key, @Nonnull Set<Artifact> artifacts )
+        {
+            Collection<String> files = new ArrayList<>();
+            for ( Artifact artifact : artifacts )
+            {
+                files.add( artifact.getFile().getAbsolutePath() );
+            }
+            Classpath classpath = new Classpath( files );
+            setCachedClasspath( key, classpath );
+            return classpath;
         }
     }
 }
