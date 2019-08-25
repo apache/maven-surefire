@@ -32,10 +32,6 @@
     <name>Maven Surefire Common</name>
     <description>API used in Surefire and Failsafe MOJO.</description>
 
-    <prerequisites>
-        <maven>3.0</maven>
-    </prerequisites>
-
     <dependencies>
         <dependency>
             <groupId>org.apache.maven.surefire</groupId>

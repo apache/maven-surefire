@@ -35,7 +35,7 @@
     <description>Maven Failsafe MOJO in maven-failsafe-plugin.</description>
 
     <prerequisites>
-        <maven>3.0</maven>
+        <maven>${mavenVersion}</maven>
     </prerequisites>
 
     <properties>
