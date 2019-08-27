@@ -72,7 +72,7 @@ public class CheckTestNgListenerReporterIT
             { "5.14.9", null, 1.5d }, // Latest 5.14.x TestNG version
             { "6.0", null, 1.5d },
             { "6.14.3", null, 1.7d },
-            { "7.0.0-beta7", null, 1.8d } // Currently latest TestNG version
+            { "7.0.0", null, 1.8d } // Currently latest TestNG version
         });
     }
 
