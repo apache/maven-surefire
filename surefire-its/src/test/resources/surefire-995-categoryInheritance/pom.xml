@@ -86,5 +86,8 @@
         </plugins>
       </build>
     </profile>
-  </profiles>
-</project>
+    <profile>
+      <id>positive-tests-included-and-excluded-categories</id>
+     </profile>
+   </profiles>
+ </project>
