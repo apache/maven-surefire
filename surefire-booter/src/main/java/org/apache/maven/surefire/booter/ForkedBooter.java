@@ -85,7 +85,7 @@ public final class ForkedBooter
     private ScheduledThreadPoolExecutor jvmTerminator;
     private ProviderConfiguration providerConfiguration;
     private ForkingReporterFactory forkingReporterFactory;
-    private CommandReader commandReader;
+    private volatile CommandReader commandReader;
     private StartupConfiguration startupConfiguration;
     private Object testSet;
 

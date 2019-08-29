@@ -19,6 +19,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.ExecutableCommandlineFactory;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
@@ -64,10 +65,11 @@ public final class JarManifestForkConfiguration
                                          @Nonnull Properties modelProperties, @Nullable String argLine,
                                          @Nonnull Map<String, String> environmentVariables, boolean debug,
                                          int forkCount, boolean reuseForks, @Nonnull Platform pluginPlatform,
-                                         @Nonnull ConsoleLogger log )
+                                         @Nonnull ConsoleLogger log,
+                                         @Nonnull ExecutableCommandlineFactory executableCommandlineFactory )
     {
         super( bootClasspath, tempDirectory, debugLine, workingDirectory, modelProperties, argLine,
-                environmentVariables, debug, forkCount, reuseForks, pluginPlatform, log );
+                environmentVariables, debug, forkCount, reuseForks, pluginPlatform, log, executableCommandlineFactory );
     }
 
     @Override

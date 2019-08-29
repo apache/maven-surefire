@@ -66,7 +66,7 @@ public class ModularClasspathForkConfigurationTest
 
         ModularClasspathForkConfiguration config = new ModularClasspathForkConfiguration( booter, tmp, "", pwd,
                 new Properties(), "", new HashMap<String, String>(), true, 1, true, new Platform(),
-                new NullConsoleLogger() )
+                new NullConsoleLogger(), null )
         {
             @Nonnull
             @Override

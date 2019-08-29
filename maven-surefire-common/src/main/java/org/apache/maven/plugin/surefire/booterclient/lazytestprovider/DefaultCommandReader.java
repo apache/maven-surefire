@@ -31,13 +31,11 @@ import java.io.IOException;
  * @since 2.19
  * @see org.apache.maven.surefire.booter.Command
  */
-public abstract class AbstractCommandStream
-    extends AbstractForkInputStream
+public abstract class DefaultCommandReader
+        extends AbstractCommandReader
 {
     private byte[] currentBuffer;
     private int currentPos;
-
-    protected abstract boolean isClosed();
 
     /**
      * Opposite to {@link #isClosed()}.

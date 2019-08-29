@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
+package org.apache.maven.plugin.surefire.booterclient.output;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,20 +19,10 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * under the License.
  */
 
-import org.apache.maven.surefire.extensions.ForkedChannelServer;
-
-import java.io.Closeable;
-
 /**
- * Physical implementation of command sender.<br>
- * Instance of {@link AbstractCommandReader} (namely {@link TestLessInputStream} or {@link TestProvidingInputStream})
- * or the implementation of {@link ForkedChannelServer} (supported by MOJO plugin configuration).
  *
- * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 3.0.0-M4
  */
-public interface DifferedChannelCommandSender
-    extends NotifiableTestStream, Closeable
+abstract class AbstractEventHandler<T>
 {
-    void setFlushReceiverProvider( FlushReceiverProvider flushReceiverProvider );
+    abstract void handleEvent( T event );
 }

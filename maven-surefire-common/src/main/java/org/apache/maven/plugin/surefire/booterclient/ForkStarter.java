@@ -22,11 +22,12 @@ package org.apache.maven.plugin.surefire.booterclient;
 import org.apache.maven.plugin.surefire.CommonReflector;
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.SurefireProperties;
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.DifferedChannelCommandSender;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.AbstractCommandReader;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStream;
+import org.apache.maven.plugin.surefire.booterclient.output.ExecutableCommandline;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.plugin.surefire.booterclient.output.NativeStdErrStreamConsumer;
@@ -54,7 +55,6 @@ import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -76,7 +76,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.lang.StrictMath.min;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.currentThread;
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.util.Collections.addAll;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -88,7 +87,6 @@ import static org.apache.maven.plugin.surefire.booterclient.ForkNumberBucket.dra
 import static org.apache.maven.plugin.surefire.booterclient.ForkNumberBucket.returnNumber;
 import static org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream
                       .TestLessInputStreamBuilder;
-import static org.apache.maven.shared.utils.cli.CommandLineUtils.executeCommandLineAsCallable;
 import static org.apache.maven.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
 import static org.apache.maven.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.writePropertiesFile;
@@ -282,7 +280,10 @@ public class ForkStarter
             defaultReporterFactories.add( forkedReporterFactory );
             ForkClient forkClient =
                     new ForkClient( forkedReporterFactory, stream, log, new AtomicBoolean(), forkNumber );
-            return fork( null, props, forkClient, effectiveSystemProperties, forkNumber, stream, false );
+            ExecutableCommandline<?> executableCommandline =
+                    forkConfiguration.getExecutableCommandlineFactory().createExecutableCommandline( stream );
+            return fork( null, props, forkClient, effectiveSystemProperties, forkNumber, stream,
+                    executableCommandline, false );
         }
         finally
         {
@@ -371,8 +372,12 @@ public class ForkStarter
                         Map<String, String> providerProperties = providerConfiguration.getProviderProperties();
                         try
                         {
+                            ExecutableCommandline<?> executableCommandline =
+                                    forkConfiguration.getExecutableCommandlineFactory()
+                                            .createExecutableCommandline( testProvidingInputStream );
                             return fork( null, new PropertiesWrapper( providerProperties ), forkClient,
-                                    effectiveSystemProperties, forkNumber, testProvidingInputStream, true );
+                                    effectiveSystemProperties, forkNumber, testProvidingInputStream,
+                                    executableCommandline, true );
                         }
                         finally
                         {
@@ -444,9 +449,13 @@ public class ForkStarter
                         TestLessInputStream stream = builder.build();
                         try
                         {
+                            ExecutableCommandline<?> executableCommandline =
+                                    forkConfiguration.getExecutableCommandlineFactory()
+                                            .createExecutableCommandline( stream );
                             return fork( testSet,
                                          new PropertiesWrapper( providerConfiguration.getProviderProperties() ),
-                                         forkClient, effectiveSystemProperties, forkNumber, stream, false );
+                                         forkClient, effectiveSystemProperties, forkNumber, stream,
+                                         executableCommandline, false );
                         }
                         finally
                         {
@@ -542,7 +551,8 @@ public class ForkStarter
 
     private RunResult fork( Object testSet, KeyValueSource providerProperties, ForkClient forkClient,
                             SurefireProperties effectiveSystemProperties, int forkNumber,
-                            DifferedChannelCommandSender commandSender, boolean readTestsFromInStream )
+                            AbstractCommandReader commandSender, ExecutableCommandline<?> executableCommandline,
+                            boolean readTestsFromInStream )
         throws SurefireBooterForkException
     {
         final String tempDir;
@@ -553,6 +563,8 @@ public class ForkStarter
             tempDir = forkConfiguration.getTempDirectory().getCanonicalPath();
             BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
             Long pluginPid = forkConfiguration.getPluginPlatform().getPluginPid();
+
+            // todo Enrico, add the socket config in providerProperties. The fork VM will read it and connect.
             surefireProperties = booterSerializer.serialize( providerProperties, providerConfiguration,
                     startupConfiguration, testSet, readTestsFromInStream, pluginPid, forkNumber );
 
@@ -604,9 +616,8 @@ public class ForkStarter
             NativeStdErrStreamConsumer stdErrConsumer =
                     new NativeStdErrStreamConsumer( forkClient.getDefaultReporterFactory() );
 
-            CommandLineCallable future =
-                    executeCommandLineAsCallable( cli, (InputStream) commandSender, threadedStreamConsumer,
-                                                        stdErrConsumer, 0, closer, ISO_8859_1 );
+            CommandLineCallable future = executableCommandline.executeCommandLineAsCallable( cli, commandSender,
+                    threadedStreamConsumer, /*todo*/stdOut, stdErrConsumer, closer );
 
             currentForkClients.add( forkClient );
 

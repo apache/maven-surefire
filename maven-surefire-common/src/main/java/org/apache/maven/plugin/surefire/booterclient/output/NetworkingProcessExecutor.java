@@ -19,10 +19,16 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.AbstractCommandReader;
 import org.apache.maven.shared.utils.cli.CommandLineCallable;
+import org.apache.maven.shared.utils.cli.CommandLineException;
+import org.apache.maven.shared.utils.cli.CommandLineUtils;
 import org.apache.maven.shared.utils.cli.Commandline;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
-import org.apache.maven.surefire.extensions.ForkedChannelServer;
+
+import javax.annotation.Nonnull;
+
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -31,17 +37,17 @@ import org.apache.maven.surefire.extensions.ForkedChannelServer;
 final class NetworkingProcessExecutor
         implements ExecutableCommandline
 {
-    private final ForkedChannelServer forkedChannelServer;
-
-    NetworkingProcessExecutor( ForkedChannelServer forkedChannelServer )
-    {
-        this.forkedChannelServer = forkedChannelServer;
-    }
-
+    @Nonnull
     @Override
-    public CommandLineCallable executeCommandLineAsCallable( Commandline cli,
-                                                             StreamConsumer stdOut, StreamConsumer stdErr )
+    public CommandLineCallable executeCommandLineAsCallable( @Nonnull Commandline cli,
+                                                             @Nonnull AbstractCommandReader commands,
+                                                             @Nonnull AbstractEventHandler events,
+                                                             StreamConsumer stdOut,
+                                                             StreamConsumer stdErr,
+                                                             @Nonnull Runnable runAfterProcessTermination )
+            throws CommandLineException
     {
-        return null;
+        return CommandLineUtils.executeCommandLineAsCallable( cli, null, stdOut, stdErr,
+                0, runAfterProcessTermination, ISO_8859_1 );
     }
 }

@@ -20,6 +20,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import org.apache.maven.plugin.surefire.JdkAttributes;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.ExecutableCommandlineFactory;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.booter.AbstractPathConfiguration;
@@ -64,6 +65,7 @@ public abstract class DefaultForkConfiguration
     private final boolean reuseForks;
     @Nonnull private final Platform pluginPlatform;
     @Nonnull private final ConsoleLogger log;
+    @Nonnull private final ExecutableCommandlineFactory executableCommandlineFactory;
 
     @SuppressWarnings( "checkstyle:parameternumber" )
     protected DefaultForkConfiguration( @Nonnull Classpath booterClasspath,
@@ -77,7 +79,8 @@ public abstract class DefaultForkConfiguration
                                      int forkCount,
                                      boolean reuseForks,
                                      @Nonnull Platform pluginPlatform,
-                                     @Nonnull ConsoleLogger log )
+                                     @Nonnull ConsoleLogger log,
+                                     @Nonnull ExecutableCommandlineFactory executableCommandlineFactory )
     {
         this.booterClasspath = booterClasspath;
         this.tempDirectory = tempDirectory;
@@ -91,6 +94,7 @@ public abstract class DefaultForkConfiguration
         this.reuseForks = reuseForks;
         this.pluginPlatform = pluginPlatform;
         this.log = log;
+        this.executableCommandlineFactory = executableCommandlineFactory;
     }
 
     protected abstract void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
@@ -103,6 +107,13 @@ public abstract class DefaultForkConfiguration
     protected String extendJvmArgLine( @Nonnull String jvmArgLine )
     {
         return jvmArgLine;
+    }
+
+    @Nonnull
+    @Override
+    public final ExecutableCommandlineFactory getExecutableCommandlineFactory()
+    {
+        return executableCommandlineFactory;
     }
 
     /**

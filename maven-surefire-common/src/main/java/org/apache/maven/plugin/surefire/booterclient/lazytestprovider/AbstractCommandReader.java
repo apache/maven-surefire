@@ -25,16 +25,25 @@ import java.io.InputStream;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Reader stream sends bytes to forked jvm std-{@link InputStream input-stream}.
+ * Reader stream sends bytes to the forked jvm std-input-stream.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  */
-public abstract class AbstractForkInputStream
-    extends InputStream
+public abstract class AbstractCommandReader
     implements DifferedChannelCommandSender
 {
     private volatile FlushReceiverProvider flushReceiverProvider;
+
+    /**
+     * Waits for the next command and
+     * reads complete stream of encoded {@link org.apache.maven.surefire.booter.MasterProcessCommand command}.
+     *
+     * @return encoded command, or null if closed
+     */
+    public abstract byte[] readNextCommand();
+    public abstract void close();
+    public abstract boolean isClosed();
 
     /**
      * @param flushReceiverProvider the provider for a flush receiver.
@@ -45,7 +54,7 @@ public abstract class AbstractForkInputStream
         this.flushReceiverProvider = requireNonNull( flushReceiverProvider );
     }
 
-    protected boolean tryFlush()
+    protected void tryFlush()
         throws IOException
     {
         if ( flushReceiverProvider != null )
@@ -54,9 +63,7 @@ public abstract class AbstractForkInputStream
             if ( flushReceiver != null )
             {
                 flushReceiver.flush();
-                return true;
             }
         }
-        return false;
     }
 }

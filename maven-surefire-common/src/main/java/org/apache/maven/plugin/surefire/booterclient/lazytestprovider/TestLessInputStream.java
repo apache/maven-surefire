@@ -45,7 +45,7 @@ import static org.apache.maven.surefire.booter.Command.toShutdown;
  * @since 2.19
  */
 public final class TestLessInputStream
-    extends AbstractCommandStream
+        extends DefaultCommandReader
 {
     private final Semaphore barrier = new Semaphore( 0 );
 
@@ -108,7 +108,7 @@ public final class TestLessInputStream
     }
 
     @Override
-    protected boolean isClosed()
+    public boolean isClosed()
     {
         return closed.get();
     }

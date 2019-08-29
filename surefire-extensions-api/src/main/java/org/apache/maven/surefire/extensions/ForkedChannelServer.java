@@ -37,7 +37,7 @@ public abstract class ForkedChannelServer
         this.channelConfig = channelConfig;
     }
 
-    protected String getChannelConfig()
+    public String getChannelConfig()
     {
         return channelConfig;
     }

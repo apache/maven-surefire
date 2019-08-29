@@ -19,29 +19,104 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.AbstractForkInputStream;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.AbstractCommandReader;
 import org.apache.maven.shared.utils.cli.CommandLineCallable;
+import org.apache.maven.shared.utils.cli.CommandLineException;
 import org.apache.maven.shared.utils.cli.Commandline;
+import org.apache.maven.shared.utils.cli.CommandLineUtils;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
+
+import javax.annotation.Nonnull;
+
+import java.io.InputStream;
+
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M4
  */
 final class PipeProcessExecutor
-    implements ExecutableCommandline
+    implements ExecutableCommandline<String>
 {
-    private final AbstractForkInputStream forkInputStream;
-
-    PipeProcessExecutor( AbstractForkInputStream forkInputStream )
+    @Override
+    @Nonnull
+    public CommandLineCallable executeCommandLineAsCallable( @Nonnull Commandline cli,
+                                                             @Nonnull AbstractCommandReader commands,
+                                                             @Nonnull AbstractEventHandler<String> events,
+                                                             StreamConsumer stdOut,
+                                                             StreamConsumer stdErr,
+                                                             @Nonnull Runnable runAfterProcessTermination )
+            throws CommandLineException
     {
-        this.forkInputStream = forkInputStream;
+        return CommandLineUtils.executeCommandLineAsCallable( cli, new CommandReaderAdapter( commands ),
+                new EventHandlerAdapter( events ), stdErr, 0, runAfterProcessTermination, ISO_8859_1 );
     }
 
-    @Override
-    public CommandLineCallable executeCommandLineAsCallable( Commandline cli,
-                                                             StreamConsumer stdOut, StreamConsumer stdErr )
+    private static class EventHandlerAdapter implements StreamConsumer
     {
-        return null;
+        private final AbstractEventHandler<String> events;
+
+        private EventHandlerAdapter( AbstractEventHandler<String> events )
+        {
+            this.events = events;
+        }
+
+        @Override
+        public void consumeLine( String line )
+        {
+            events.handleEvent( line );
+        }
+    }
+
+    private static class CommandReaderAdapter extends InputStream
+    {
+        private final AbstractCommandReader commands;
+
+        private byte[] currentBuffer;
+        private int currentPos;
+        private volatile boolean closed;
+
+        CommandReaderAdapter( AbstractCommandReader commands )
+        {
+            this.commands = commands;
+        }
+
+        @Override
+        public int read()
+        {
+            if ( commands.isClosed() )
+            {
+                close();
+            }
+
+            if ( closed )
+            {
+                return -1;
+            }
+
+            if ( currentBuffer == null )
+            {
+                currentBuffer = commands.readNextCommand();
+                if ( currentBuffer == null )
+                {
+                    return -1;
+                }
+            }
+
+            int b =  currentBuffer[currentPos++] & 0xff;
+            if ( currentPos == currentBuffer.length )
+            {
+                currentBuffer = null;
+                currentPos = 0;
+            }
+            return b;
+        }
+
+        @Override
+        public void close()
+        {
+            closed = true;
+        }
     }
 }

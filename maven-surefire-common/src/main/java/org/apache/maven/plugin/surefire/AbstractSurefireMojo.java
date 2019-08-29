@@ -25,6 +25,7 @@ import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.ExecutableCommandlineFactory;
 import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
@@ -2261,6 +2262,10 @@ public abstract class AbstractSurefireMojo
 
         Classpath bootClasspath = getArtifactClasspath( shadeFire != null ? shadeFire : surefireBooterArtifact );
 
+        //todo Enrico, here should be implementation for pipes and NettyIO depending on MOJO configuration
+        // todo we will create a new @Parameter with POJO object of complex configuration for TCP/IP
+        ExecutableCommandlineFactory executableCommandlineFactory = null;
+
         if ( canExecuteProviderWithModularPath( platform ) )
         {
             return new ModularClasspathForkConfiguration( bootClasspath,
@@ -2274,7 +2279,8 @@ public abstract class AbstractSurefireMojo
                     getEffectiveForkCount(),
                     reuseForks,
                     platform,
-                    getConsoleLogger() );
+                    getConsoleLogger(),
+                    executableCommandlineFactory );
         }
         else if ( getClassLoaderConfiguration().isManifestOnlyJarRequestedAndUsable() )
         {
@@ -2289,7 +2295,8 @@ public abstract class AbstractSurefireMojo
                     getEffectiveForkCount(),
                     reuseForks,
                     platform,
-                    getConsoleLogger() );
+                    getConsoleLogger(),
+                    executableCommandlineFactory );
         }
         else
         {
@@ -2304,7 +2311,8 @@ public abstract class AbstractSurefireMojo
                     getEffectiveForkCount(),
                     reuseForks,
                     platform,
-                    getConsoleLogger() );
+                    getConsoleLogger(),
+                    executableCommandlineFactory );
         }
     }
 

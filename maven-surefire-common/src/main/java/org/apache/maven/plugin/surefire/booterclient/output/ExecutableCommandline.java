@@ -19,14 +19,24 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.AbstractCommandReader;
 import org.apache.maven.shared.utils.cli.CommandLineCallable;
+import org.apache.maven.shared.utils.cli.CommandLineException;
 import org.apache.maven.shared.utils.cli.Commandline;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
+
+import javax.annotation.Nonnull;
 
 /**
  *
  */
-public interface ExecutableCommandline
+public interface ExecutableCommandline<T>
 {
-    CommandLineCallable executeCommandLineAsCallable( Commandline cli, StreamConsumer stdOut, StreamConsumer stdErr );
+    @Nonnull CommandLineCallable executeCommandLineAsCallable( @Nonnull Commandline cli,
+                                                               @Nonnull AbstractCommandReader commands,
+                                                               @Nonnull AbstractEventHandler<T> events,
+                                                               StreamConsumer stdOut,
+                                                               StreamConsumer stdErr,
+                                                               @Nonnull Runnable runAfterProcessTermination )
+            throws CommandLineException;
 }
