@@ -63,31 +63,48 @@ final class GroupMatcherCategoryFilter
     @Override
     public boolean shouldRun( Description description )
     {
-        if ( description.getMethodName() == null || description.getTestClass() == null )
-        {
+        if(invalidTestClass(description)){
             return shouldRun( description, null, null );
         }
-        else
+
+        if (describesTestClass(description)) // is a test class
+        {
+            Class<?> testClass = description.getTestClass();
+            return shouldRun( description, null, testClass );
+        }
+        else // is a test method
         {
             Class<?> testClass = description.getTestClass();
             return shouldRun( description, createSuiteDescription( testClass ), testClass );
         }
     }
 
+    private boolean describesTestClass(Description description) {
+        // Description parser in Junit 4.8 can return "null" String.
+        return description.getMethodName() == null || description.getMethodName().equals("null");
+    }
+
+    private boolean invalidTestClass(Description description) {
+        return description.getTestClass() == null;
+    }
+
     private static void findSuperclassCategories( Set<Class<?>> cats, Class<?> clazz )
     {
-        if ( clazz != null && clazz.getSuperclass() != null )
+        if (hasSuperclass(clazz))
         {
             Category cat = clazz.getSuperclass().getAnnotation( Category.class );
             if ( cat != null )
             {
+                // Found categories in current superclass
                 addAll( cats, cat.value() );
             }
-            else
-            {
-                findSuperclassCategories( cats, clazz.getSuperclass() );
-            }
+            // Search the hierarchy
+            findSuperclassCategories( cats, clazz.getSuperclass() );
         }
+    }
+
+    private static boolean hasSuperclass(Class<?> clazz) {
+        return clazz != null && clazz.getSuperclass() != null;
     }
 
     private boolean shouldRun( Description description, Description parent, Class<?> parentClass )
@@ -102,6 +119,7 @@ final class GroupMatcherCategoryFilter
             Category cat = description.getAnnotation( Category.class );
             if ( cat != null )
             {
+                // Found categories in current description
                 addAll( cats, cat.value() );
             }
 
@@ -110,6 +128,7 @@ final class GroupMatcherCategoryFilter
                 cat = parent.getAnnotation( Category.class );
                 if ( cat != null )
                 {
+                    // Found categories in current parent
                     addAll( cats, cat.value() );
                 }
             }
@@ -125,12 +144,13 @@ final class GroupMatcherCategoryFilter
                 cat = testClass.getAnnotation( Category.class );
                 if ( cat != null )
                 {
+                    // Found categories in current testClass
                     addAll( cats, cat.value() );
                 }
             }
 
             cats.remove( null );
-
+            // System.out.println("Categories in "+description.getTestClass()+"@"+description.getMethodName()+"\n\t"+ cats);
             boolean result = matcher.enabled( cats.toArray( new Class<?>[cats.size()] ) );
 
             if ( !result )
