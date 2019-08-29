@@ -26,6 +26,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
 
+import java.lang.annotation.Inherited;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -33,9 +34,13 @@ import java.util.Set;
 import static java.util.Collections.addAll;
 import static org.junit.runner.Description.createSuiteDescription;
 
-final class GroupMatcherCategoryFilter
-    extends Filter
+final class GroupMatcherCategoryFilter extends Filter
 {
+    /**
+     * Only traverse the tree if <code>@Category</code> annotation is inherited (since <code>junit 4.12</code>).
+     */
+    private static final boolean IS_CATEGORY_INHERITED = Category.class.isAnnotationPresent( Inherited.class );
+
     private final AndGroupMatcher matcher;
 
     GroupMatcherCategoryFilter( GroupMatcher included, GroupMatcher excluded )
@@ -63,31 +68,54 @@ final class GroupMatcherCategoryFilter
     @Override
     public boolean shouldRun( Description description )
     {
-        if ( description.getMethodName() == null || description.getTestClass() == null )
+        if ( invalidTestClass( description ) )
         {
             return shouldRun( description, null, null );
         }
+
+        if ( describesTestClass( description ) ) // is a test class
+        {
+            Class<?> testClass = description.getTestClass();
+            return shouldRun( description, null, testClass );
+        }
         else
+        // is a test method
         {
             Class<?> testClass = description.getTestClass();
             return shouldRun( description, createSuiteDescription( testClass ), testClass );
         }
     }
 
+    private boolean describesTestClass( Description description )
+    {
+        String methodName = description.getMethodName();
+        // Description parser in Junit 4.8 can return "null" String.
+        return methodName == null || methodName.equals( "null" );
+    }
+
+    private boolean invalidTestClass( Description description )
+    {
+        return description.getTestClass() == null;
+    }
+
     private static void findSuperclassCategories( Set<Class<?>> cats, Class<?> clazz )
     {
-        if ( clazz != null && clazz.getSuperclass() != null )
+        if ( IS_CATEGORY_INHERITED && hasSuperclass( clazz ) )
         {
             Category cat = clazz.getSuperclass().getAnnotation( Category.class );
             if ( cat != null )
             {
+                // Found categories in current superclass
                 addAll( cats, cat.value() );
             }
-            else
-            {
-                findSuperclassCategories( cats, clazz.getSuperclass() );
-            }
+            // Search the hierarchy
+            findSuperclassCategories( cats, clazz.getSuperclass() );
         }
+    }
+
+    private static boolean hasSuperclass( Class<?> clazz )
+    {
+        return clazz != null && clazz.getSuperclass() != null;
     }
 
     private boolean shouldRun( Description description, Description parent, Class<?> parentClass )
@@ -102,6 +130,7 @@ final class GroupMatcherCategoryFilter
             Category cat = description.getAnnotation( Category.class );
             if ( cat != null )
             {
+                // Found categories in current description
                 addAll( cats, cat.value() );
             }
 
@@ -110,10 +139,10 @@ final class GroupMatcherCategoryFilter
                 cat = parent.getAnnotation( Category.class );
                 if ( cat != null )
                 {
+                    // Found categories in current parent
                     addAll( cats, cat.value() );
                 }
             }
-
             if ( parentClass != null )
             {
                 findSuperclassCategories( cats, parentClass );
@@ -125,12 +154,12 @@ final class GroupMatcherCategoryFilter
                 cat = testClass.getAnnotation( Category.class );
                 if ( cat != null )
                 {
+                    // Found categories in current testClass
                     addAll( cats, cat.value() );
                 }
             }
 
             cats.remove( null );
-
             boolean result = matcher.enabled( cats.toArray( new Class<?>[cats.size()] ) );
 
             if ( !result )
