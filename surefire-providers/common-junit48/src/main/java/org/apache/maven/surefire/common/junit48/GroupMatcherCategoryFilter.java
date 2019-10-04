@@ -26,6 +26,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
 
+import java.lang.annotation.Inherited;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -33,8 +34,7 @@ import java.util.Set;
 import static java.util.Collections.addAll;
 import static org.junit.runner.Description.createSuiteDescription;
 
-final class GroupMatcherCategoryFilter
-    extends Filter
+final class GroupMatcherCategoryFilter extends Filter
 {
     private final AndGroupMatcher matcher;
 
@@ -63,11 +63,12 @@ final class GroupMatcherCategoryFilter
     @Override
     public boolean shouldRun( Description description )
     {
-        if(invalidTestClass(description)){
+        if ( invalidTestClass( description ) )
+        {
             return shouldRun( description, null, null );
         }
 
-        if (describesTestClass(description)) // is a test class
+        if ( describesTestClass( description ) ) // is a test class
         {
             Class<?> testClass = description.getTestClass();
             return shouldRun( description, null, testClass );
@@ -79,18 +80,21 @@ final class GroupMatcherCategoryFilter
         }
     }
 
-    private boolean describesTestClass(Description description) {
+    private boolean describesTestClass( Description description )
+    {
+        String methodName = description.getMethodName();
         // Description parser in Junit 4.8 can return "null" String.
-        return description.getMethodName() == null || description.getMethodName().equals("null");
+        return methodName == null || methodName.equals( "null" );
     }
 
-    private boolean invalidTestClass(Description description) {
+    private boolean invalidTestClass( Description description )
+    {
         return description.getTestClass() == null;
     }
 
     private static void findSuperclassCategories( Set<Class<?>> cats, Class<?> clazz )
     {
-        if (hasSuperclass(clazz))
+        if ( categoryIsInherited() && hasSuperclass( clazz ) )
         {
             Category cat = clazz.getSuperclass().getAnnotation( Category.class );
             if ( cat != null )
@@ -103,7 +107,8 @@ final class GroupMatcherCategoryFilter
         }
     }
 
-    private static boolean hasSuperclass(Class<?> clazz) {
+    private static boolean hasSuperclass( Class<?> clazz )
+    {
         return clazz != null && clazz.getSuperclass() != null;
     }
 
@@ -132,7 +137,6 @@ final class GroupMatcherCategoryFilter
                     addAll( cats, cat.value() );
                 }
             }
-
             if ( parentClass != null )
             {
                 findSuperclassCategories( cats, parentClass );
@@ -150,7 +154,6 @@ final class GroupMatcherCategoryFilter
             }
 
             cats.remove( null );
-            // System.out.println("Categories in "+description.getTestClass()+"@"+description.getMethodName()+"\n\t"+ cats);
             boolean result = matcher.enabled( cats.toArray( new Class<?>[cats.size()] ) );
 
             if ( !result )
@@ -171,6 +174,11 @@ final class GroupMatcherCategoryFilter
 
             return result;
         }
+    }
+
+    private static boolean categoryIsInherited()
+    {
+        return Category.class.isAnnotationPresent( Inherited.class );
     }
 
     @Override

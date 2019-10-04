@@ -25,7 +25,8 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
-import java.util.Collection;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -45,22 +46,26 @@ public class Surefire995CategoryInheritanceIT
 
     @Test
     public void junit411ShouldRunExplicitCategory() {
-        unpack()
-                .addGoal("-Ppositive-tests")
-                .sysProp("version.junit", "4.11")
-                .executeTest()
-                .verifyErrorFree(3)
-                .verifyTextInLog("SpecialCategorizedTest#b")
-                .verifyTextInLog("CategorizedTest#a");
+        final OutputValidator outputValidator = unpack()
+                .addGoal( "-Ppositive-tests" )
+                .sysProp( "version.junit", "4.11" )
+                .executeTest();
+        outputValidator
+                .verifyErrorFree( 1 )
+                .verifyTextInLog( "CategorizedTest#a" );
     }
 
     @Test
     public void junit411ShouldExcludeExplicitCategory() {
-        unpack()
-                .addGoal("-Ppositive-tests-excluded-categories")
-                .sysProp("version.junit", "4.11")
-                .executeTest()
-                .verifyErrorFree(14);
+        final OutputValidator outputValidator = unpack()
+                .addGoal( "-Ppositive-tests-excluded-categories" )
+                .sysProp("version.junit", "4.11" )
+                .executeTest();
+        // SpecialCategorizedTest inherits the excluded annotation but should still run as
+        // until junit 4.11, the Category annotation is not inherited
+        outputValidator
+                .verifyTextInLog("SpecialCategorizedTest#b")
+                .verifyErrorFree(16);
     }
 
     @Test
@@ -83,22 +88,62 @@ public class Surefire995CategoryInheritanceIT
     }
 
     @Test
-    public void junit412ShouldExecuteInheritedCategories() throws VerificationException {
+    public void junit411ShouldIgnoreInheritedCategories() throws VerificationException {
+        // GIVEN a project using junit 4.11
         final OutputValidator outputValidator = unpack()
                 .addGoal("-Ppositive-tests-included-and-excluded-categories")
+                .sysProp("version.junit", "4.11")
+                // AND the tests marked with CategoryB are marked for execution
                 .setGroups("jiras.surefire955.group.marker.CategoryB")
+                // WHEN the tests are executed
                 .executeTest();
 
-        outputValidator.verifyErrorFree(10) // should be 10
-                .verifyTextInLog("AbstractCTest#pc")
-                .verifyTextInLog("AbstractBCTest#pb")
-                .verifyTextInLog("BTest#b")
-                // Test runs when an already existing category is added in the concrete class
+        // THEN only the tests in classes directly annotated should be executed
+        outputValidator
+                // Test runs when the category is present in the concrete class
+                .verifyTextInLog("Running jiras.surefire955.group.BBCTest")
                 .verifyTextInLog("BBCTest#bbc")
-                // Test runs when there is no category in the concrete class
-                .verifyTextInLog("BCTest#bc")
-                // Test runs when the concrete class has an additional (not excluded) category
-                .verifyTextInLog("ABCTest#abc");
+                .verifyTextInLog("AbstractBCTest#pb")
+                .verifyTextInLog("AbstractCTest#pc")
+                .verifyTextInLog("Running jiras.surefire955.group.BTest")
+                .verifyTextInLog("BTest#b")
+                // Test does not run when there is no category in the concrete class
+                .assertThatLogLine(containsString("BCTest#bc"),is(0))
+                .assertThatLogLine(containsString("ABCTest#abc"),is(0))
+                .verifyErrorFree(4) ;
+    }
+
+    @Test
+    public void junit412ShouldExecuteInheritedCategories() throws VerificationException {
+        // GIVEN a project using junit 4.12
+        final OutputValidator outputValidator = unpack()
+                .addGoal("-Ppositive-tests-included-and-excluded-categories")
+                .sysProp("version.junit", "4.12")
+                // AND the tests marked with CategoryB are marked for execution
+                .setGroups("jiras.surefire955.group.marker.CategoryB")
+                // WHEN the tests are executed
+                .executeTest();
+
+        // THEN the tests in classes directly marked with the CategoryB
+        outputValidator.verifyErrorFree(10)
+       .verifyTextInLog("Running jiras.surefire955.group.BBCTest")
+        // AND Test runs when an already existing category is added in the concrete class
+       .verifyTextInLog("BBCTest#bbc")
+       .verifyTextInLog("AbstractBCTest#pb")
+       .verifyTextInLog("AbstractCTest#pc")
+       .verifyTextInLog("Running jiras.surefire955.group.BTest")
+       .verifyTextInLog("BTest#b")
+        // AND the tests in classes inheriting the CategoryB category should be executed
+       .verifyTextInLog("Running jiras.surefire955.group.ABCTest")
+        // AND Test runs when the concrete class has an additional (not excluded) category
+       .verifyTextInLog("ABCTest#abc")
+       .verifyTextInLog("AbstractBCTest#pb")
+       .verifyTextInLog("AbstractCTest#pc")
+       .verifyTextInLog("Running jiras.surefire955.group.BCTest")
+        // AND Test runs when there is no category in the concrete class
+       .verifyTextInLog("BCTest#bc")
+       .verifyTextInLog("AbstractBCTest#pb")
+       .verifyTextInLog("AbstractCTest#pc");
     }
 
     private SurefireLauncher unpack() {
