@@ -19,6 +19,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -82,11 +83,14 @@ final class PpidChecker
     PpidChecker( long ppid )
     {
         this.ppid = ppid;
-        //todo WARN logger (after new logger is finished) that (IS_OS_UNIX && canExecuteUnixPs()) is false
     }
 
     boolean canUse()
     {
+        if ( isStopped() )
+        {
+            return false;
+        }
         final ProcessInfo ppi = parentProcessInfo;
         return ppi == null ? IS_OS_WINDOWS || IS_OS_UNIX && canExecuteUnixPs() : ppi.canUse();
     }
@@ -99,7 +103,6 @@ final class PpidChecker
      *                               or this object has been {@link #destroyActiveCommands() destroyed}
      * @throws NullPointerException if extracted e-time is null
      */
-    @SuppressWarnings( "unchecked" )
     boolean isProcessAlive()
     {
         if ( !canUse() )
@@ -108,34 +111,26 @@ final class PpidChecker
         }
 
         final ProcessInfo previousInfo = parentProcessInfo;
-        try
+        if ( IS_OS_WINDOWS )
         {
-            if ( IS_OS_WINDOWS )
-            {
-                parentProcessInfo = windows();
-                checkProcessInfo();
+            parentProcessInfo = windows();
+            checkProcessInfo();
 
-                // let's compare creation time, should be same unless killed or PID is reused by OS into another process
-                return previousInfo == null || parentProcessInfo.isTimeEqualTo( previousInfo );
-            }
-            else if ( IS_OS_UNIX )
-            {
-                parentProcessInfo = unix();
-                checkProcessInfo();
-
-                // let's compare elapsed time, should be greater or equal if parent process is the same and still alive
-                return previousInfo == null || !parentProcessInfo.isTimeBefore( previousInfo );
-            }
-
-            throw new IllegalStateException( "unknown platform or you did not call canUse() before isProcessAlive()" );
+            // let's compare creation time, should be same unless killed or PID is reused by OS into another process
+            return !parentProcessInfo.isInvalid()
+                    && ( previousInfo == null || parentProcessInfo.isTimeEqualTo( previousInfo ) );
         }
-        finally
+        else if ( IS_OS_UNIX )
         {
-            if ( parentProcessInfo == null )
-            {
-                parentProcessInfo = INVALID_PROCESS_INFO;
-            }
+            parentProcessInfo = unix();
+            checkProcessInfo();
+
+            // let's compare elapsed time, should be greater or equal if parent process is the same and still alive
+            return !parentProcessInfo.isInvalid()
+                    && ( previousInfo == null || !parentProcessInfo.isTimeBefore( previousInfo ) );
         }
+        parentProcessInfo = ERR_PROCESS_INFO;
+        throw new IllegalStateException( "unknown platform or you did not call canUse() before isProcessAlive()" );
     }
 
     private void checkProcessInfo()
@@ -143,11 +138,6 @@ final class PpidChecker
         if ( isStopped() )
         {
             throw new IllegalStateException( "error [STOPPED] to read process " + ppid );
-        }
-
-        if ( parentProcessInfo.isError() )
-        {
-            throw new IllegalStateException( "error to read process " + ppid );
         }
 
         if ( !parentProcessInfo.canUse() )
@@ -169,6 +159,7 @@ final class PpidChecker
         ProcessInfoConsumer reader = new ProcessInfoConsumer( Charset.defaultCharset().name() )
         {
             @Override
+            @Nonnull
             ProcessInfo consumeLine( String line, ProcessInfo previousOutputLine )
             {
                 if ( previousOutputLine.isInvalid() )
@@ -197,6 +188,7 @@ final class PpidChecker
             private boolean hasHeader;
 
             @Override
+            @Nonnull
             ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo ) throws Exception
             {
                 if ( previousProcessInfo.isInvalid() && !line.isEmpty() )
@@ -256,12 +248,26 @@ final class PpidChecker
 
     private static boolean canExecuteLocalUnixPs()
     {
-        return new File( "/usr/bin/ps" ).canExecute();
+        try
+        {
+            return new File( "/usr/bin/ps" ).canExecute();
+        }
+        catch ( SecurityException e )
+        {
+            return false;
+        }
     }
 
     private static boolean canExecuteStandardUnixPs()
     {
-        return new File( "/bin/ps" ).canExecute();
+        try
+        {
+            return new File( "/bin/ps" ).canExecute();
+        }
+        catch ( SecurityException e )
+        {
+            return false;
+        }
     }
 
     private static boolean hasWmicStandardSystemPath()
@@ -318,6 +324,11 @@ final class PpidChecker
         return formatter;
     }
 
+    public void stop()
+    {
+        stopped = true;
+    }
+
     /**
      * Reads standard output from {@link Process}.
      * <br>
@@ -334,7 +345,7 @@ final class PpidChecker
             this.charset = charset;
         }
 
-        abstract ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo ) throws Exception;
+        abstract @Nonnull ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo ) throws Exception;
 
         ProcessInfo execute( String... command )
         {
@@ -358,7 +369,7 @@ final class PpidChecker
                 }
                 checkValid( scanner );
                 int exitCode = process.waitFor();
-                return exitCode == 0 ? processInfo : INVALID_PROCESS_INFO;
+                return isStopped() ? ERR_PROCESS_INFO : exitCode == 0 ? processInfo : INVALID_PROCESS_INFO;
             }
             catch ( Exception e )
             {
@@ -381,4 +392,25 @@ final class PpidChecker
         }
     }
 
+    @Override
+    public String toString()
+    {
+        String args = "ppid=" + ppid
+                + ", stopped=" + stopped;
+
+        ProcessInfo processInfo = parentProcessInfo;
+        if ( processInfo != null )
+        {
+            args += ", invalid=" + processInfo.isInvalid()
+                    + ", error=" + processInfo.isError();
+        }
+
+        if ( IS_OS_UNIX )
+        {
+            args += ", canExecuteLocalUnixPs=" + canExecuteLocalUnixPs()
+                    + ", canExecuteStandardUnixPs=" + canExecuteStandardUnixPs();
+        }
+
+        return "PpidChecker{" + args + '}';
+    }
 }

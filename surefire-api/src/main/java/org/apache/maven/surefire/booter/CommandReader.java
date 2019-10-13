@@ -398,22 +398,22 @@ public final class CommandReader
                                 if ( inserted )
                                 {
                                     CommandReader.this.wakeupIterator();
-                                    insertToListeners( command );
+                                    callListeners( command );
                                 }
                                 break;
                             case TEST_SET_FINISHED:
                                 CommandReader.this.makeQueueFull();
                                 isTestSetFinished = true;
                                 CommandReader.this.wakeupIterator();
-                                insertToListeners( command );
+                                callListeners( command );
                                 break;
                             case SHUTDOWN:
                                 CommandReader.this.makeQueueFull();
                                 CommandReader.this.wakeupIterator();
-                                insertToListeners( command );
+                                callListeners( command );
                                 break;
                             default:
-                                insertToListeners( command );
+                                callListeners( command );
                                 break;
                         }
                     }
@@ -455,7 +455,7 @@ public final class CommandReader
             }
         }
 
-        private void insertToListeners( Command cmd )
+        private void callListeners( Command cmd )
         {
             MasterProcessCommand expectedCommandType = cmd.getCommandType();
             for ( BiProperty<MasterProcessCommand, CommandListener> listenerWrapper : CommandReader.this.listeners )
@@ -476,18 +476,8 @@ public final class CommandReader
             {
                 CommandReader.this.makeQueueFull();
                 CommandReader.this.wakeupIterator();
-                insertToListeners( toShutdown( shutdown ) );
-                if ( shutdown.isExit() )
-                {
-                    System.exit( 1 );
-                }
-                else if ( shutdown.isKill() )
-                {
-                    Runtime.getRuntime().halt( 1 );
-                }
-                // else is default: other than Shutdown.DEFAULT should not happen; otherwise you missed enum case
+                callListeners( toShutdown( shutdown ) );
             }
         }
     }
-
 }

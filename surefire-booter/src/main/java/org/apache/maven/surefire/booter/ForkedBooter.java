@@ -19,6 +19,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
@@ -78,6 +79,7 @@ public final class ForkedBooter
 
     private ScheduledThreadPoolExecutor jvmTerminator;
     private ProviderConfiguration providerConfiguration;
+    private ForkingReporterFactory forkingReporterFactory;
     private StartupConfiguration startupConfiguration;
     private Object testSet;
 
@@ -87,7 +89,6 @@ public final class ForkedBooter
     {
         BooterDeserializer booterDeserializer =
                 new BooterDeserializer( createSurefirePropertiesIfFileExists( tmpDir, surefirePropsFileName ) );
-        pingScheduler = isDebugging() ? null : listenToShutdownCommands( booterDeserializer.getPluginPid() );
         setSystemProperties( new File( tmpDir, effectiveSystemPropertiesFileName ) );
 
         providerConfiguration = booterDeserializer.deserialize();
@@ -101,6 +102,12 @@ public final class ForkedBooter
         }
 
         startupConfiguration = booterDeserializer.getProviderConfiguration();
+
+        forkingReporterFactory = createForkingReporterFactory();
+
+        ConsoleLogger logger = (ConsoleLogger) forkingReporterFactory.createReporter();
+        pingScheduler = isDebugging() ? null : listenToShutdownCommands( booterDeserializer.getPluginPid(), logger );
+
         systemExitTimeoutInSeconds = providerConfiguration.systemExitTimeout( DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS );
 
         AbstractPathConfiguration classpathConfiguration = startupConfiguration.getClasspathConfiguration();
@@ -181,14 +188,18 @@ public final class ForkedBooter
         }
     }
 
-    private PingScheduler listenToShutdownCommands( Long ppid )
+    private PingScheduler listenToShutdownCommands( Long ppid, ConsoleLogger logger )
     {
-        commandReader.addShutdownListener( createExitHandler() );
+        PpidChecker ppidChecker = ppid == null ? null : new PpidChecker( ppid );
+        commandReader.addShutdownListener( createExitHandler( ppidChecker ) );
         AtomicBoolean pingDone = new AtomicBoolean( true );
         commandReader.addNoopListener( createPingHandler( pingDone ) );
+        PingScheduler pingMechanisms = new PingScheduler( createPingScheduler(), ppidChecker );
+        if ( ppidChecker != null )
+        {
+            logger.debug( ppidChecker.toString() );
+        }
 
-        PingScheduler pingMechanisms = new PingScheduler( createPingScheduler(),
-                                                          ppid == null ? null : new PpidChecker( ppid ) );
         if ( pingMechanisms.pluginProcessChecker != null )
         {
             Runnable checkerJob = processCheckerJob( pingMechanisms );
@@ -244,7 +255,7 @@ public final class ForkedBooter
         };
     }
 
-    private CommandListener createExitHandler()
+    private CommandListener createExitHandler( final PpidChecker ppidChecker )
     {
         return new CommandListener()
         {
@@ -254,6 +265,7 @@ public final class ForkedBooter
                 Shutdown shutdown = command.toShutdownData();
                 if ( shutdown.isKill() )
                 {
+                    ppidChecker.stop();
                     DumpErrorSingleton.getSingleton()
                             .dumpText( "Killing self fork JVM. Received SHUTDOWN command from Maven shutdown hook."
                                     + NL
@@ -264,6 +276,7 @@ public final class ForkedBooter
                 }
                 else if ( shutdown.isExit() )
                 {
+                    ppidChecker.stop();
                     cancelPingScheduler();
                     DumpErrorSingleton.getSingleton()
                             .dumpText( "Exiting self fork JVM. Received SHUTDOWN command from Maven shutdown hook."
@@ -352,8 +365,7 @@ public final class ForkedBooter
     private void runSuitesInProcess()
         throws TestSetFailedException, InvocationTargetException
     {
-        ForkingReporterFactory factory = createForkingReporterFactory();
-        invokeProviderInSameClassLoader( factory );
+        createProviderInCurrentClassloader( forkingReporterFactory ).invoke( testSet );
     }
 
     private ForkingReporterFactory createForkingReporterFactory()
@@ -396,12 +408,6 @@ public final class ForkedBooter
                     }
                 }, systemExitTimeoutInSeconds, SECONDS
         );
-    }
-
-    private void invokeProviderInSameClassLoader( ForkingReporterFactory factory )
-        throws TestSetFailedException, InvocationTargetException
-    {
-        createProviderInCurrentClassloader( factory ).invoke( testSet );
     }
 
     private SurefireProvider createProviderInCurrentClassloader( ForkingReporterFactory reporterManagerFactory )

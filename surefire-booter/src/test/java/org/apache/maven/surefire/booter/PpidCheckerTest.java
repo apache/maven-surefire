@@ -27,8 +27,11 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.util.regex.Matcher;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_UNIX;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
+import static org.apache.maven.surefire.booter.ProcessInfo.unixProcessInfo;
+import static org.apache.maven.surefire.booter.ProcessInfo.windowsProcessInfo;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -37,6 +40,7 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 import static org.junit.Assume.assumeTrue;
 import static org.powermock.reflect.Whitebox.invokeMethod;
+import static org.powermock.reflect.Whitebox.setInternalState;
 
 /**
  * Testing {@link PpidChecker} on a platform.
@@ -50,14 +54,21 @@ public class PpidCheckerTest
     public final ExpectedException exceptions = ExpectedException.none();
 
     @Test
-    public void shouldHavePpidAsWindows()
+    public void canExecuteUnixPs()
     {
-        assumeTrue( IS_OS_WINDOWS );
+        assumeTrue( IS_OS_UNIX );
+        assertThat( PpidChecker.canExecuteUnixPs() )
+                .as( "Surefire should be tested on real box OS, e.g. Ubuntu or FreeBSD." )
+                .isTrue();
+    }
 
+    @Test
+    public void shouldHavePidAtBegin()
+    {
         long expectedPid = Long.parseLong( ManagementFactory.getRuntimeMXBean().getName().split( "@" )[0].trim() );
 
         PpidChecker checker = new PpidChecker( expectedPid );
-        ProcessInfo processInfo = checker.windows();
+        ProcessInfo processInfo = IS_OS_UNIX ? checker.unix() : checker.windows();
 
         assertThat( processInfo )
                 .isNotNull();
@@ -76,18 +87,21 @@ public class PpidCheckerTest
     }
 
     @Test
-    public void shouldHavePpidAsUnix()
+    public void shouldHavePid() throws Exception
     {
-        assumeTrue( IS_OS_UNIX );
-
-        assertThat( PpidChecker.canExecuteUnixPs() )
-                .as( "Surefire should be tested on real box OS, e.g. Ubuntu or FreeBSD." )
-                .isTrue();
-
         long expectedPid = Long.parseLong( ManagementFactory.getRuntimeMXBean().getName().split( "@" )[0].trim() );
+        System.out.println( "java version " + System.getProperty( "java.version" ) + " expectedPid=" + expectedPid );
 
         PpidChecker checker = new PpidChecker( expectedPid );
-        ProcessInfo processInfo = checker.unix();
+        setInternalState( checker, "parentProcessInfo",
+                IS_OS_UNIX
+                        ? unixProcessInfo( expectedPid, 0L )
+                        : windowsProcessInfo( expectedPid, windowsProcessStartTime( checker ) ) );
+
+        // the etime in Unix is measured in seconds. So let's wait 1s at least.
+        SECONDS.sleep( 1L );
+
+        ProcessInfo processInfo = IS_OS_UNIX ? checker.unix() : checker.windows();
 
         assertThat( processInfo )
                 .isNotNull();
@@ -103,24 +117,68 @@ public class PpidCheckerTest
 
         assertThat( processInfo.getTime() )
                 .isNotNull();
+
+        assertThat( checker.toString() )
+                .contains( "ppid=" + expectedPid )
+                .contains( "stopped=false" )
+                .contains( "invalid=false" )
+                .contains( "error=false" );
+
+        checker.destroyActiveCommands();
+        assertThat( checker.canUse() )
+                .isFalse();
+        assertThat( (boolean) invokeMethod( checker, "isStopped" ) )
+                .isTrue();
+    }
+
+    @Test
+    public void shouldBeStopped()
+    {
+        PpidChecker checker = new PpidChecker( 0L );
+        checker.stop();
+
+        assertThat( checker.canUse() )
+                .isFalse();
+
+        exceptions.expect( IllegalStateException.class );
+        exceptions.expectMessage( "irrelevant to call isProcessAlive()" );
+
+        checker.isProcessAlive();
+
+        fail( "this test should throw exception" );
     }
 
     @Test
     public void shouldNotFindSuchPID()
     {
-        long ppid = 1000000L;
+        long ppid = 1_000_000L;
+
+        PpidChecker checker = new PpidChecker( ppid );
+        setInternalState( checker, "parentProcessInfo", ProcessInfo.ERR_PROCESS_INFO );
+
+        assertThat( checker.canUse() )
+                .isFalse();
+
+        exceptions.expect( IllegalStateException.class );
+        exceptions.expectMessage( "irrelevant to call isProcessAlive()" );
+
+        checker.isProcessAlive();
+
+        fail( "this test should throw exception" );
+    }
+
+    @Test
+    public void shouldNotBeAlive()
+    {
+        long ppid = 1_000_000L;
 
         PpidChecker checker = new PpidChecker( ppid );
 
         assertThat( checker.canUse() )
                 .isTrue();
 
-        exceptions.expect( IllegalStateException.class );
-        exceptions.expectMessage( "Cannot use PPID " + ppid + " process information. Going to use NOOP events." );
-
-        checker.isProcessAlive();
-
-        fail( "this test should throw exception" );
+        assertThat( checker.isProcessAlive() )
+                .isFalse();
     }
 
     @Test
@@ -181,5 +239,10 @@ public class PpidCheckerTest
         assumeTrue( new File( System.getenv( "SystemRoot" ), "System32\\Wbem\\wmic.exe" ).isFile() );
         assertThat( (Boolean) invokeMethod( PpidChecker.class, "hasWmicStandardSystemPath" ) ).isTrue();
         assertThat( new File( System.getenv( "SystemRoot" ), "System32\\Wbem\\wmic.exe" ) ).isFile();
+    }
+
+    private static long windowsProcessStartTime( PpidChecker checker )
+    {
+        return (long) checker.windows().getTime();
     }
 }
