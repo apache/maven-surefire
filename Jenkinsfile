@@ -168,18 +168,18 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
         }
     } finally {
         if (makeReports) {
-            ///openTasks(ignoreCase: true, canComputeNew: false, defaultEncoding: 'UTF-8', pattern: sourcesPatternCsv(),
-                    //high: tasksViolationHigh(), normal: tasksViolationNormal(), low: tasksViolationLow())
+            openTasks(ignoreCase: true, canComputeNew: false, defaultEncoding: 'UTF-8', pattern: sourcesPatternCsv(),
+                    high: tasksViolationHigh(), normal: tasksViolationNormal(), low: tasksViolationLow())
 
-            //jacoco(changeBuildStatus: false,
-            //execPattern: '**/*.exec',
-            //sourcePattern: sourcesPatternCsv(),
-            //classPattern: classPatternCsv())
+            jacoco(changeBuildStatus: false,
+                    execPattern: '**/*.exec',
+                    sourcePattern: sourcesPatternCsv(),
+                    classPattern: classPatternCsv())
 
-            //junit(healthScaleFactor: 0.0,
-            //allowEmptyResults: true,
-            //keepLongStdio: true,
-            //testResults: testReportsPatternCsv())
+            junit(healthScaleFactor: 0.0,
+                    allowEmptyResults: true,
+                    keepLongStdio: true,
+                    testResults: testReportsPatternCsv())
 
             if (currentBuild.result == 'UNSTABLE') {
                 currentBuild.result = 'FAILURE'
