@@ -89,6 +89,7 @@
     <mavenVersion>3.0</mavenVersion>
     <!-- <shadedVersion>3.0.0-M2</shadedVersion> commented out due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
     <commonsLang3Version>3.8.1</commonsLang3Version>
+    <commonsCompress>1.19</commonsCompress>
     <commonsIoVersion>2.6</commonsIoVersion>
     <doxiaVersion>1.9</doxiaVersion>
     <doxiaSitetoolsVersion>1.9.1</doxiaSitetoolsVersion>
@@ -107,6 +108,11 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>${commonsCompress}</version>
+      </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
