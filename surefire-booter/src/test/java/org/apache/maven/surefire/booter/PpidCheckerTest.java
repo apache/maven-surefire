@@ -231,6 +231,21 @@ public class PpidCheckerTest
     }
 
     @Test
+    public void shouldParseBusyboxHoursEtime()
+    {
+        Matcher m = PpidChecker.BUSYBOX_CMD_OUT_PATTERN.matcher( "38 1234567890" );
+        assertThat( m.matches() )
+                .isFalse();
+
+        m = PpidChecker.BUSYBOX_CMD_OUT_PATTERN.matcher( "05h38 1234567890" );
+        assertThat( m.matches() )
+                .isTrue();
+        assertThat( PpidChecker.fromBusyboxHours( m ) ).isEqualTo( 3600 * 5L );
+        assertThat( PpidChecker.fromBusyboxMinutes( m ) ).isEqualTo( 60 * 38L );
+        assertThat( PpidChecker.fromBusyboxPID( m ) ).isEqualTo( "1234567890" );
+    }
+
+    @Test
     public void shouldHaveSystemPathToWmicOnWindows() throws Exception
     {
         assumeTrue( IS_OS_WINDOWS );

@@ -76,6 +76,8 @@ final class PpidChecker
      */
     static final Pattern UNIX_CMD_OUT_PATTERN = compile( "^(((\\d+)-)?(\\d{1,2}):)?(\\d{1,2}):(\\d{1,2})\\s+(\\d+)$" );
 
+    static final Pattern BUSYBOX_CMD_OUT_PATTERN = compile( "^(\\d+)[hH](\\d{1,2})\\s+(\\d+)$" );
+
     private final String ppid;
 
     private volatile ProcessInfo parentProcessInfo;
@@ -172,6 +174,12 @@ final class PpidChecker
                                                  + fromHours( matcher )
                                                  + fromMinutes( matcher )
                                                  + fromSeconds( matcher );
+                        return unixProcessInfo( ppid, pidUptime );
+                    }
+                    matcher = BUSYBOX_CMD_OUT_PATTERN.matcher( line );
+                    if ( matcher.matches() && ppid.equals( fromBusyboxPID( matcher ) ) )
+                    {
+                        long pidUptime = fromBusyboxHours( matcher ) + fromBusyboxMinutes( matcher );
                         return unixProcessInfo( ppid, pidUptime );
                     }
                 }
@@ -304,6 +312,23 @@ final class PpidChecker
     static String fromPID( Matcher matcher )
     {
         return matcher.group( 7 );
+    }
+
+    static long fromBusyboxHours( Matcher matcher )
+    {
+        String s = matcher.group( 1 );
+        return s == null ? 0L : HOURS.toSeconds( parseLong( s ) );
+    }
+
+    static long fromBusyboxMinutes( Matcher matcher )
+    {
+        String s = matcher.group( 2 );
+        return s == null ? 0L : MINUTES.toSeconds( parseLong( s ) );
+    }
+
+    static String fromBusyboxPID( Matcher matcher )
+    {
+        return matcher.group( 3 );
     }
 
     private static void checkValid( Scanner scanner )
