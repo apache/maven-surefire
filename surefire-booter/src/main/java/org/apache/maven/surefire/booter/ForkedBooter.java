@@ -188,7 +188,7 @@ public final class ForkedBooter
         }
     }
 
-    private PingScheduler listenToShutdownCommands( Long ppid, ConsoleLogger logger )
+    private PingScheduler listenToShutdownCommands( String ppid, ConsoleLogger logger )
     {
         PpidChecker ppidChecker = ppid == null ? null : new PpidChecker( ppid );
         commandReader.addShutdownListener( createExitHandler( ppidChecker ) );

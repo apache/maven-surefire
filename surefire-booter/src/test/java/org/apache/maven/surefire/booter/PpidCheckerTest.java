@@ -65,7 +65,7 @@ public class PpidCheckerTest
     @Test
     public void shouldHavePidAtBegin()
     {
-        long expectedPid = Long.parseLong( ManagementFactory.getRuntimeMXBean().getName().split( "@" )[0].trim() );
+        String expectedPid = ManagementFactory.getRuntimeMXBean().getName().split( "@" )[0].trim();
 
         PpidChecker checker = new PpidChecker( expectedPid );
         ProcessInfo processInfo = IS_OS_UNIX ? checker.unix() : checker.windows();
@@ -89,7 +89,7 @@ public class PpidCheckerTest
     @Test
     public void shouldHavePid() throws Exception
     {
-        long expectedPid = Long.parseLong( ManagementFactory.getRuntimeMXBean().getName().split( "@" )[0].trim() );
+        String expectedPid = ManagementFactory.getRuntimeMXBean().getName().split( "@" )[0].trim();
         System.out.println( "java version " + System.getProperty( "java.version" ) + " expectedPid=" + expectedPid );
 
         PpidChecker checker = new PpidChecker( expectedPid );
@@ -134,7 +134,7 @@ public class PpidCheckerTest
     @Test
     public void shouldBeStopped()
     {
-        PpidChecker checker = new PpidChecker( 0L );
+        PpidChecker checker = new PpidChecker( "0" );
         checker.stop();
 
         assertThat( checker.canUse() )
@@ -151,9 +151,7 @@ public class PpidCheckerTest
     @Test
     public void shouldNotFindSuchPID()
     {
-        long ppid = 1_000_000L;
-
-        PpidChecker checker = new PpidChecker( ppid );
+        PpidChecker checker = new PpidChecker( "1000000" );
         setInternalState( checker, "parentProcessInfo", ProcessInfo.ERR_PROCESS_INFO );
 
         assertThat( checker.canUse() )
@@ -170,9 +168,7 @@ public class PpidCheckerTest
     @Test
     public void shouldNotBeAlive()
     {
-        long ppid = 1_000_000L;
-
-        PpidChecker checker = new PpidChecker( ppid );
+        PpidChecker checker = new PpidChecker( "1000000" );
 
         assertThat( checker.canUse() )
                 .isTrue();
@@ -184,49 +180,54 @@ public class PpidCheckerTest
     @Test
     public void shouldParseEtime()
     {
-        Matcher m = PpidChecker.UNIX_CMD_OUT_PATTERN.matcher( "38" );
+        Matcher m = PpidChecker.UNIX_CMD_OUT_PATTERN.matcher( "38 1234567890" );
         assertThat( m.matches() )
                 .isFalse();
 
-        m = PpidChecker.UNIX_CMD_OUT_PATTERN.matcher( "05:38" );
+        m = PpidChecker.UNIX_CMD_OUT_PATTERN.matcher( "05:38 1234567890" );
         assertThat( m.matches() )
                 .isTrue();
         assertThat( PpidChecker.fromDays( m ) ).isEqualTo( 0L );
         assertThat( PpidChecker.fromHours( m ) ).isEqualTo( 0L );
         assertThat( PpidChecker.fromMinutes( m ) ).isEqualTo( 300L );
         assertThat( PpidChecker.fromSeconds( m ) ).isEqualTo( 38L );
+        assertThat( PpidChecker.fromPID( m ) ).isEqualTo( "1234567890" );
 
-        m = PpidChecker.UNIX_CMD_OUT_PATTERN.matcher( "00:05:38" );
+        m = PpidChecker.UNIX_CMD_OUT_PATTERN.matcher( "00:05:38 1234567890" );
         assertThat( m.matches() )
                 .isTrue();
         assertThat( PpidChecker.fromDays( m ) ).isEqualTo( 0L );
         assertThat( PpidChecker.fromHours( m ) ).isEqualTo( 0L );
         assertThat( PpidChecker.fromMinutes( m ) ).isEqualTo( 300L );
         assertThat( PpidChecker.fromSeconds( m ) ).isEqualTo( 38L );
+        assertThat( PpidChecker.fromPID( m ) ).isEqualTo( "1234567890" );
 
-        m = PpidChecker.UNIX_CMD_OUT_PATTERN.matcher( "01:05:38" );
+        m = PpidChecker.UNIX_CMD_OUT_PATTERN.matcher( "01:05:38 1234567890" );
         assertThat( m.matches() )
                 .isTrue();
         assertThat( PpidChecker.fromDays( m ) ).isEqualTo( 0L );
         assertThat( PpidChecker.fromHours( m ) ).isEqualTo( 3600L );
         assertThat( PpidChecker.fromMinutes( m ) ).isEqualTo( 300L );
         assertThat( PpidChecker.fromSeconds( m ) ).isEqualTo( 38L );
+        assertThat( PpidChecker.fromPID( m ) ).isEqualTo( "1234567890" );
 
-        m = PpidChecker.UNIX_CMD_OUT_PATTERN.matcher( "02-01:05:38" );
+        m = PpidChecker.UNIX_CMD_OUT_PATTERN.matcher( "02-01:05:38 1234567890" );
         assertThat( m.matches() )
                 .isTrue();
         assertThat( PpidChecker.fromDays( m ) ).isEqualTo( 2 * 24 * 3600L );
         assertThat( PpidChecker.fromHours( m ) ).isEqualTo( 3600L );
         assertThat( PpidChecker.fromMinutes( m ) ).isEqualTo( 300L );
         assertThat( PpidChecker.fromSeconds( m ) ).isEqualTo( 38L );
+        assertThat( PpidChecker.fromPID( m ) ).isEqualTo( "1234567890" );
 
-        m = PpidChecker.UNIX_CMD_OUT_PATTERN.matcher( "02-1:5:3" );
+        m = PpidChecker.UNIX_CMD_OUT_PATTERN.matcher( "02-1:5:3 1234567890" );
         assertThat( m.matches() )
                 .isTrue();
         assertThat( PpidChecker.fromDays( m ) ).isEqualTo( 2 * 24 * 3600L );
         assertThat( PpidChecker.fromHours( m ) ).isEqualTo( 3600L );
         assertThat( PpidChecker.fromMinutes( m ) ).isEqualTo( 300L );
         assertThat( PpidChecker.fromSeconds( m ) ).isEqualTo( 3L );
+        assertThat( PpidChecker.fromPID( m ) ).isEqualTo( "1234567890" );
     }
 
     @Test

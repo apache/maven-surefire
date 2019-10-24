@@ -40,6 +40,7 @@ import static java.util.regex.Pattern.compile;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_HP_UX;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_UNIX;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.surefire.booter.ProcessInfo.unixProcessInfo;
@@ -73,14 +74,14 @@ final class PpidChecker
      * The etime is in the form of [[dd-]hh:]mm:ss on Unix like systems.
      * See the workaround https://issues.apache.org/jira/browse/SUREFIRE-1451.
      */
-    static final Pattern UNIX_CMD_OUT_PATTERN = compile( "^(((\\d+)-)?(\\d{1,2}):)?(\\d{1,2}):(\\d{1,2})$" );
+    static final Pattern UNIX_CMD_OUT_PATTERN = compile( "^(((\\d+)-)?(\\d{1,2}):)?(\\d{1,2}):(\\d{1,2})\\s+(\\d+)$" );
 
-    private final long ppid;
+    private final String ppid;
 
     private volatile ProcessInfo parentProcessInfo;
     private volatile boolean stopped;
 
-    PpidChecker( long ppid )
+    PpidChecker( @Nonnull String ppid )
     {
         this.ppid = ppid;
     }
@@ -165,7 +166,7 @@ final class PpidChecker
                 if ( previousOutputLine.isInvalid() )
                 {
                     Matcher matcher = UNIX_CMD_OUT_PATTERN.matcher( line );
-                    if ( matcher.matches() )
+                    if ( matcher.matches() && ppid.equals( fromPID( matcher ) ) )
                     {
                         long pidUptime = fromDays( matcher )
                                                  + fromHours( matcher )
@@ -177,8 +178,8 @@ final class PpidChecker
                 return previousOutputLine;
             }
         };
-
-        return reader.execute( "/bin/sh", "-c", unixPathToPS() + " -o etime= -p " + ppid );
+        String cmd = unixPathToPS() + " -o etime,pid " + ( IS_OS_LINUX ? "" : "-p " ) + ppid;
+        return reader.execute( "/bin/sh", "-c", cmd );
     }
 
     ProcessInfo windows()
@@ -298,6 +299,11 @@ final class PpidChecker
     {
         String s = matcher.group( 6 );
         return s == null ? 0L : parseLong( s );
+    }
+
+    static String fromPID( Matcher matcher )
+    {
+        return matcher.group( 7 );
     }
 
     private static void checkValid( Scanner scanner )

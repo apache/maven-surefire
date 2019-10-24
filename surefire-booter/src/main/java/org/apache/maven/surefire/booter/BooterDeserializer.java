@@ -61,9 +61,9 @@ public class BooterDeserializer
     /**
      * @return PID of Maven process where plugin is executed; or null if PID could not be determined.
      */
-    public Long getPluginPid()
+    public String getPluginPid()
     {
-        return properties.getLongProperty( PLUGIN_PID );
+        return properties.getProperty( PLUGIN_PID );
     }
 
     public ProviderConfiguration deserialize()

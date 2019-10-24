@@ -42,20 +42,20 @@ final class ProcessInfo
      * <br>
      * <pre>/bin/ps -o etime= -p 123</pre>
      */
-    static @Nonnull ProcessInfo unixProcessInfo( long pid, long etime )
+    static @Nonnull ProcessInfo unixProcessInfo( String pid, long etime )
     {
         return new ProcessInfo( pid, etime );
     }
 
-    static @Nonnull ProcessInfo windowsProcessInfo( long pid, long startTimestamp )
+    static @Nonnull ProcessInfo windowsProcessInfo( String pid, long startTimestamp )
     {
         return new ProcessInfo( pid, startTimestamp );
     }
 
-    private final Long pid;
+    private final String pid;
     private final Comparable time;
 
-    private ProcessInfo( Long pid, Comparable time )
+    private ProcessInfo( String pid, Comparable time )
     {
         this.pid = pid;
         this.time = time;
@@ -76,7 +76,7 @@ final class ProcessInfo
         return this == ERR_PROCESS_INFO;
     }
 
-    long getPID()
+    String getPID()
     {
         checkValid();
         return pid;
