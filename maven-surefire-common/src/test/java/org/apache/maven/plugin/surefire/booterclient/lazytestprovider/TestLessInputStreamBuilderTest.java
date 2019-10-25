@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -137,8 +138,35 @@ public class TestLessInputStreamBuilderTest
             throws IOException
     {
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
-        TestLessInputStream pluginIs = builder.build();
-        MasterProcessChannelDecoder decoder = new DefaultMasterProcessChannelDecoder( pluginIs, null );
+        final TestLessInputStream pluginIs = builder.build();
+        InputStream is = new InputStream()
+        {
+            private byte[] buffer;
+            private int idx;
+
+            @Override
+            public int read() throws IOException
+            {
+                if ( buffer == null )
+                {
+                    idx = 0;
+                    buffer = pluginIs.readNextCommand();
+                }
+
+                if ( buffer != null )
+                {
+                    byte b = buffer[idx++];
+                    if ( idx == buffer.length )
+                    {
+                        buffer = null;
+                        idx = 0;
+                    }
+                    return b;
+                }
+                throw new IOException();
+            }
+        };
+        MasterProcessChannelDecoder decoder = new DefaultMasterProcessChannelDecoder( is, null );
         builder.getImmediateCommands().acknowledgeByeEventReceived();
         builder.getImmediateCommands().noop();
         Command bye = decoder.decode();

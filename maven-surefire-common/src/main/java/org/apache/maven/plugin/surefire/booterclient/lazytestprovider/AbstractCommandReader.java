@@ -20,7 +20,6 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  */
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -41,7 +40,7 @@ public abstract class AbstractCommandReader
      *
      * @return encoded command, or null if closed
      */
-    public abstract byte[] readNextCommand();
+    public abstract byte[] readNextCommand() throws IOException;
     public abstract void close();
     public abstract boolean isClosed();
 

@@ -31,5 +31,5 @@ public interface ExecutableCommandlineFactory
 {
     //todo Enrico, the parameter is not needed in Pipes. It is needed in TCP/IP
     @Nonnull
-    ExecutableCommandline createExecutableCommandline( AbstractCommandReader forkInputStream );
+    ExecutableCommandline<String> createExecutableCommandline( AbstractCommandReader forkInputStream );
 }

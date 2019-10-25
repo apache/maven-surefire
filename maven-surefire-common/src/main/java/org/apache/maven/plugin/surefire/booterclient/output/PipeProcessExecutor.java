@@ -28,6 +28,7 @@ import org.apache.maven.shared.utils.cli.StreamConsumer;
 
 import javax.annotation.Nonnull;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
@@ -43,7 +44,7 @@ final class PipeProcessExecutor
     @Nonnull
     public CommandLineCallable executeCommandLineAsCallable( @Nonnull Commandline cli,
                                                              @Nonnull AbstractCommandReader commands,
-                                                             @Nonnull AbstractEventHandler<String> events,
+                                                             @Nonnull EventHandler<String> events,
                                                              StreamConsumer stdOut,
                                                              StreamConsumer stdErr,
                                                              @Nonnull Runnable runAfterProcessTermination )
@@ -55,9 +56,9 @@ final class PipeProcessExecutor
 
     private static class EventHandlerAdapter implements StreamConsumer
     {
-        private final AbstractEventHandler<String> events;
+        private final EventHandler<String> events;
 
-        private EventHandlerAdapter( AbstractEventHandler<String> events )
+        private EventHandlerAdapter( EventHandler<String> events )
         {
             this.events = events;
         }
@@ -83,7 +84,7 @@ final class PipeProcessExecutor
         }
 
         @Override
-        public int read()
+        public int read() throws IOException
         {
             if ( commands.isClosed() )
             {
@@ -104,6 +105,7 @@ final class PipeProcessExecutor
                 }
             }
 
+            @SuppressWarnings( "checkstyle:magicnumber" )
             int b =  currentBuffer[currentPos++] & 0xff;
             if ( currentPos == currentBuffer.length )
             {

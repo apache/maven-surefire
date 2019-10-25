@@ -36,7 +36,7 @@ import static java.lang.Thread.currentThread;
  * @author Kristian Rosenvold
  */
 public final class ThreadedStreamConsumer
-        implements StreamConsumer, Closeable
+        implements StreamConsumer, EventHandler<String>, Closeable
 {
     private static final String END_ITEM = "";
 
@@ -110,6 +110,12 @@ public final class ThreadedStreamConsumer
         pumper = new Pumper( target );
         thread = DaemonThreadFactory.newDaemonThread( pumper, "ThreadedStreamConsumer" );
         thread.start();
+    }
+
+    @Override
+    public void handleEvent( String event )
+    {
+        consumeLine( event );
     }
 
     @Override

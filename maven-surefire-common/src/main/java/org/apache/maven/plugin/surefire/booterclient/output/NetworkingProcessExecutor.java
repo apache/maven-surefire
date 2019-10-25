@@ -41,7 +41,7 @@ final class NetworkingProcessExecutor
     @Override
     public CommandLineCallable executeCommandLineAsCallable( @Nonnull Commandline cli,
                                                              @Nonnull AbstractCommandReader commands,
-                                                             @Nonnull AbstractEventHandler events,
+                                                             @Nonnull EventHandler events,
                                                              StreamConsumer stdOut,
                                                              StreamConsumer stdErr,
                                                              @Nonnull Runnable runAfterProcessTermination )

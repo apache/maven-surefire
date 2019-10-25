@@ -280,7 +280,7 @@ public class ForkStarter
             defaultReporterFactories.add( forkedReporterFactory );
             ForkClient forkClient =
                     new ForkClient( forkedReporterFactory, stream, log, new AtomicBoolean(), forkNumber );
-            ExecutableCommandline<?> executableCommandline =
+            ExecutableCommandline<String> executableCommandline =
                     forkConfiguration.getExecutableCommandlineFactory().createExecutableCommandline( stream );
             return fork( null, props, forkClient, effectiveSystemProperties, forkNumber, stream,
                     executableCommandline, false );
@@ -372,7 +372,7 @@ public class ForkStarter
                         Map<String, String> providerProperties = providerConfiguration.getProviderProperties();
                         try
                         {
-                            ExecutableCommandline<?> executableCommandline =
+                            ExecutableCommandline<String> executableCommandline =
                                     forkConfiguration.getExecutableCommandlineFactory()
                                             .createExecutableCommandline( testProvidingInputStream );
                             return fork( null, new PropertiesWrapper( providerProperties ), forkClient,
@@ -449,7 +449,7 @@ public class ForkStarter
                         TestLessInputStream stream = builder.build();
                         try
                         {
-                            ExecutableCommandline<?> executableCommandline =
+                            ExecutableCommandline<String> executableCommandline =
                                     forkConfiguration.getExecutableCommandlineFactory()
                                             .createExecutableCommandline( stream );
                             return fork( testSet,
@@ -551,7 +551,7 @@ public class ForkStarter
 
     private RunResult fork( Object testSet, KeyValueSource providerProperties, ForkClient forkClient,
                             SurefireProperties effectiveSystemProperties, int forkNumber,
-                            AbstractCommandReader commandSender, ExecutableCommandline<?> executableCommandline,
+                            AbstractCommandReader commandSender, ExecutableCommandline<String> executableCommandline,
                             boolean readTestsFromInStream )
         throws SurefireBooterForkException
     {
@@ -617,7 +617,7 @@ public class ForkStarter
                     new NativeStdErrStreamConsumer( forkClient.getDefaultReporterFactory() );
 
             CommandLineCallable future = executableCommandline.executeCommandLineAsCallable( cli, commandSender,
-                    threadedStreamConsumer, /*todo*/stdOut, stdErrConsumer, closer );
+                    threadedStreamConsumer, /*todo stdOut*/ null, stdErrConsumer, closer );
 
             currentForkClients.add( forkClient );
 

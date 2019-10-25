@@ -168,7 +168,6 @@ public final class TestProvidingInputStream
     {
         if ( closed.compareAndSet( false, true ) )
         {
-            invalidateInternalBuffer();
             barrier.drainPermits();
             barrier.release();
         }
@@ -183,8 +182,6 @@ public final class TestProvidingInputStream
         }
         catch ( InterruptedException e )
         {
-            // help GC to free this object because StreamFeeder Thread cannot read it anyway after IOE
-            invalidateInternalBuffer();
             throw new IOException( e.getLocalizedMessage(), e );
         }
     }

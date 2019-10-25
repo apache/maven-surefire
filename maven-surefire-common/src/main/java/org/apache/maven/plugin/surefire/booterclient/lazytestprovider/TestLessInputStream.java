@@ -141,7 +141,6 @@ public final class TestLessInputStream
     {
         if ( closed.compareAndSet( false, true ) )
         {
-            invalidateInternalBuffer();
             barrier.drainPermits();
             barrier.release();
         }
@@ -166,8 +165,6 @@ public final class TestLessInputStream
         }
         catch ( InterruptedException e )
         {
-            // help GC to free this object because StreamFeeder Thread cannot read it anyway after IOE
-            invalidateInternalBuffer();
             throw new IOException( e.getLocalizedMessage() );
         }
     }

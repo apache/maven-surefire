@@ -21,8 +21,9 @@ package org.apache.maven.plugin.surefire.booterclient.output;
 
 /**
  *
+ * @param <T> type of event
  */
-abstract class AbstractEventHandler<T>
+interface EventHandler<T>
 {
-    abstract void handleEvent( T event );
+    void handleEvent( T event );
 }

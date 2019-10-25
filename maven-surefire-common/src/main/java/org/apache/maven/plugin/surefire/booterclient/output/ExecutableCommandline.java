@@ -28,13 +28,14 @@ import org.apache.maven.shared.utils.cli.StreamConsumer;
 import javax.annotation.Nonnull;
 
 /**
- *
+ * todo add javadoc
+ * @param <T> type of event
  */
 public interface ExecutableCommandline<T>
 {
     @Nonnull CommandLineCallable executeCommandLineAsCallable( @Nonnull Commandline cli,
                                                                @Nonnull AbstractCommandReader commands,
-                                                               @Nonnull AbstractEventHandler<T> events,
+                                                               @Nonnull EventHandler<T> events,
                                                                StreamConsumer stdOut,
                                                                StreamConsumer stdErr,
                                                                @Nonnull Runnable runAfterProcessTermination )

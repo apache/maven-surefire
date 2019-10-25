@@ -22,6 +22,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.maven.plugin.surefire.JdkAttributes;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.ExecutableCommandlineFactory;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.cli.Commandline;
@@ -46,6 +47,7 @@ import static org.fest.util.Files.temporaryFolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 public class ForkConfigurationTest
 {
@@ -218,13 +220,13 @@ public class ForkConfigurationTest
         assertTrue( tmpDir.mkdirs() );
         return new JarManifestForkConfiguration( emptyClasspath(), tmpDir, null,
                 cwd, new Properties(), argLine, Collections.<String, String>emptyMap(), false, 1, false,
-                platform, new NullConsoleLogger() );
+                platform, new NullConsoleLogger(), mock(ExecutableCommandlineFactory.class) );
     }
 
     // based on http://stackoverflow.com/questions/2591083/getting-version-of-java-in-runtime
     private static boolean isJavaVersionAtLeast7u60()
     {
         String[] javaVersionElements = System.getProperty( "java.runtime.version" ).split( "\\.|_|-b" );
-        return Integer.valueOf( javaVersionElements[1] ) >= 7 && Integer.valueOf( javaVersionElements[3] ) >= 60;
+        return Integer.parseInt( javaVersionElements[1] ) >= 7 && Integer.parseInt( javaVersionElements[3] ) >= 60;
     }
 }

@@ -34,9 +34,6 @@ import java.io.IOException;
 public abstract class DefaultCommandReader
         extends AbstractCommandReader
 {
-    private byte[] currentBuffer;
-    private int currentPos;
-
     /**
      * Opposite to {@link #isClosed()}.
      * @return {@code true} if not closed
@@ -60,59 +57,37 @@ public abstract class DefaultCommandReader
     protected abstract Command nextCommand();
 
     /**
-     * Returns quietly and immediately.
-     */
-    protected final void invalidateInternalBuffer()
-    {
-        currentBuffer = null;
-        currentPos = 0;
-    }
-
-    /**
      * Used by single thread in StreamFeeder class.
      *
      * @return {@inheritDoc}
      * @throws IOException {@inheritDoc}
      */
-    @SuppressWarnings( "checkstyle:magicnumber" )
     @Override
-    public int read()
+    public byte[] readNextCommand()
         throws IOException
     {
+        tryFlush();
+
         if ( isClosed() )
         {
-            tryFlush();
-            return -1;
+            return null;
         }
 
-        if ( currentBuffer == null )
+        if ( !canContinue() )
         {
-            tryFlush();
-
-            if ( !canContinue() )
-            {
-                close();
-                return -1;
-            }
-
-            beforeNextCommand();
-
-            if ( isClosed() )
-            {
-                return -1;
-            }
-
-            Command cmd = nextCommand();
-            MasterProcessCommand cmdType = cmd.getCommandType();
-            currentBuffer = cmdType.hasDataType() ? cmdType.encode( cmd.getData() ) : cmdType.encode();
+            close();
+            return null;
         }
 
-        int b =  currentBuffer[currentPos++] & 0xff;
-        if ( currentPos == currentBuffer.length )
+        beforeNextCommand();
+
+        if ( isClosed() )
         {
-            currentBuffer = null;
-            currentPos = 0;
+            return null;
         }
-        return b;
+
+        Command cmd = nextCommand();
+        MasterProcessCommand cmdType = cmd.getCommandType();
+        return cmdType.hasDataType() ? cmdType.encode( cmd.getData() ) : cmdType.encode();
     }
 }

@@ -27,6 +27,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.Thread.State;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.Callable;
@@ -49,13 +50,13 @@ import static org.junit.Assert.assertTrue;
 public class TestProvidingInputStreamTest
 {
     @Test
-    public void closedStreamShouldReturnEndOfStream()
+    public void closedStreamShouldReturnNullAsEndOfStream()
         throws IOException
     {
         Queue<String> commands = new ArrayDeque<>();
         TestProvidingInputStream is = new TestProvidingInputStream( commands );
         is.close();
-        assertThat( is.read(), is( -1 ) );
+        assertThat( is.readNextCommand(), is( nullValue() ) );
     }
 
     @Test
@@ -78,7 +79,7 @@ public class TestProvidingInputStreamTest
         } );
         Thread assertionThread = new Thread( futureTask );
         assertionThread.start();
-        assertThat( is.read(), is( -1 ) );
+        assertThat( is.readNextCommand(), is( nullValue() ) );
         State state = futureTask.get();
         assertThat( state, is( State.WAITING ) );
     }
@@ -102,7 +103,7 @@ public class TestProvidingInputStreamTest
         StringBuilder stream = new StringBuilder();
         for ( int i = 0; i < 82; i++ )
         {
-            stream.append( (char) is.read() );
+            stream.append( new String( is.readNextCommand(), StandardCharsets.US_ASCII ) );
         }
         assertThat( stream.toString(),
                 is( ":maven-surefire-std-out:testset-finished::maven-surefire-std-out:testset-finished:" ) );
@@ -111,7 +112,7 @@ public class TestProvidingInputStreamTest
 
         is.close();
         assertTrue( emptyStream );
-        assertThat( is.read(), is( -1 ) );
+        assertThat( is.readNextCommand(), is( nullValue() ) );
     }
 
     @Test
@@ -133,7 +134,7 @@ public class TestProvidingInputStreamTest
         StringBuilder stream = new StringBuilder();
         for ( int i = 0; i < 43; i++ )
         {
-            stream.append( (char) is.read() );
+            stream.append( new String( is.readNextCommand(), StandardCharsets.US_ASCII ) );
         }
         assertThat( stream.toString(),
                 is( ":maven-surefire-std-out:run-testclass:Test:" ) );
@@ -145,8 +146,35 @@ public class TestProvidingInputStreamTest
     public void shouldDecodeTwoCommands()
             throws IOException
     {
-        TestProvidingInputStream pluginIs = new TestProvidingInputStream( new ConcurrentLinkedQueue<String>() );
-        MasterProcessChannelDecoder decoder = new DefaultMasterProcessChannelDecoder( pluginIs, null );
+        final TestProvidingInputStream pluginIs = new TestProvidingInputStream( new ConcurrentLinkedQueue<String>() );
+        InputStream is = new InputStream()
+        {
+            private byte[] buffer;
+            private int idx;
+
+            @Override
+            public int read() throws IOException
+            {
+                if ( buffer == null )
+                {
+                    idx = 0;
+                    buffer = pluginIs.readNextCommand();
+                }
+
+                if ( buffer != null )
+                {
+                    byte b = buffer[idx++];
+                    if ( idx == buffer.length )
+                    {
+                        buffer = null;
+                        idx = 0;
+                    }
+                    return b;
+                }
+                throw new IOException();
+            }
+        };
+        MasterProcessChannelDecoder decoder = new DefaultMasterProcessChannelDecoder( is, null );
         pluginIs.acknowledgeByeEventReceived();
         pluginIs.noop();
         Command bye = decoder.decode();
@@ -184,7 +212,7 @@ public class TestProvidingInputStreamTest
                 try
                 {
                     //noinspection ResultOfMethodCallIgnored
-                    is.read();
+                    is.readNextCommand();
                 }
                 catch ( IOException e )
                 {
