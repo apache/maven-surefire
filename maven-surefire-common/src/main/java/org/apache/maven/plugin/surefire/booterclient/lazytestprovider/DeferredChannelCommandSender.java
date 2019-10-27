@@ -31,7 +31,7 @@ import java.io.Closeable;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M4
  */
-public interface DifferedChannelCommandSender
+public interface DeferredChannelCommandSender
     extends NotifiableTestStream, Closeable
 {
     void setFlushReceiverProvider( FlushReceiverProvider flushReceiverProvider );

@@ -30,7 +30,7 @@ import static java.util.Objects.requireNonNull;
  * @since 2.19
  */
 public abstract class AbstractCommandReader
-    implements DifferedChannelCommandSender
+    implements DeferredChannelCommandSender
 {
     private volatile FlushReceiverProvider flushReceiverProvider;
 
