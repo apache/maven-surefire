@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.HashSet;
 import java.util.logging.Logger;
 
 import org.apache.maven.surefire.providerapi.AbstractProvider;
@@ -187,12 +188,12 @@ public class JUnitPlatformProvider
         LauncherDiscoveryRequestBuilder builder = request().filters( filters ).configurationParameters(
                 configurationParameters );
         // Iterate over recorded failures
-        for ( TestIdentifier identifier : adapter.getFailures().keySet() )
+        for ( TestIdentifier identifier : new HashSet<>( adapter.getFailures().keySet() ) )
         {
             // Extract quantified test name data
             String[] classMethodName = adapter.toClassMethodNameWithoutPlan( identifier );
-            String className = classMethodName[1];
-            String methodName = classMethodName[3];
+            String className = classMethodName[0];
+            String methodName = classMethodName[2];
             // Add filter for the specific failing method
             builder.selectors( selectMethod( className, methodName ) );
         }

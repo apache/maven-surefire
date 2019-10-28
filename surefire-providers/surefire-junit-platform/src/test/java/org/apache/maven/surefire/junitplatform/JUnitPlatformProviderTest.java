@@ -43,6 +43,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -211,6 +212,15 @@ public class JUnitPlatformProviderTest
         assertEquals( 1, summary.getTestsSucceededCount() );
         assertEquals( 1, summary.getTestsAbortedCount() );
         assertEquals( 3, summary.getTestsFailedCount() );
+        Set<String> failDisplays = new HashSet<>();
+        for ( TestExecutionSummary.Failure failure : summary.getFailures() )
+        {
+            failDisplays.add( failure.getTestIdentifier().getDisplayName() );
+        }
+        assertEquals( 3, failDisplays.size() );
+        assertTrue( failDisplays.contains( "Fails twice" ) );
+        assertTrue( failDisplays.contains( "testAlwaysFail()" ) );
+        assertTrue( failDisplays.contains( "testAlwaysError()" ) );
 
         // Should rerun both of the failures
         summary = executionListener.summaries.get( 1 );
@@ -220,6 +230,15 @@ public class JUnitPlatformProviderTest
         assertEquals( 0, summary.getTestsSucceededCount() );
         assertEquals( 0, summary.getTestsAbortedCount() );
         assertEquals( 3, summary.getTestsFailedCount() );
+        failDisplays.clear();
+        for ( TestExecutionSummary.Failure failure : summary.getFailures() )
+        {
+            failDisplays.add( failure.getTestIdentifier().getDisplayName() );
+        }
+        assertEquals( 3, failDisplays.size() );
+        assertTrue( failDisplays.contains( "Fails twice" ) );
+        assertTrue( failDisplays.contains( "testAlwaysFail()" ) );
+        assertTrue( failDisplays.contains( "testAlwaysError()" ) );
 
         // now only one failure should remain
         summary = executionListener.summaries.get( 2 );
@@ -229,6 +248,14 @@ public class JUnitPlatformProviderTest
         assertEquals( 1, summary.getTestsSucceededCount() );
         assertEquals( 0, summary.getTestsAbortedCount() );
         assertEquals( 2, summary.getTestsFailedCount() );
+        failDisplays.clear();
+        for ( TestExecutionSummary.Failure failure : summary.getFailures() )
+        {
+            failDisplays.add( failure.getTestIdentifier().getDisplayName() );
+        }
+        assertEquals( 2, failDisplays.size() );
+        assertTrue( failDisplays.contains( "testAlwaysFail()" ) );
+        assertTrue( failDisplays.contains( "testAlwaysError()" ) );
     }
 
     @Test
@@ -834,6 +861,7 @@ public class JUnitPlatformProviderTest
     {
         static int count;
 
+        @org.junit.jupiter.api.DisplayName( "Always passes" )
         @org.junit.jupiter.api.Test
         void testPass()
         {
@@ -843,7 +871,7 @@ public class JUnitPlatformProviderTest
         void testAborted()
         {
             assumeFalse( true );
-            throw new IllegalStateException( "this exception should neve happen" );
+            throw new IllegalStateException( "this exception should never happen" );
         }
 
         @org.junit.jupiter.api.Test
@@ -865,6 +893,7 @@ public class JUnitPlatformProviderTest
             throw new IllegalStateException( "this test should be never called" );
         }
 
+        @org.junit.jupiter.api.DisplayName( "Fails twice" )
         @org.junit.jupiter.api.Test
         void testFailTwice()
         {
