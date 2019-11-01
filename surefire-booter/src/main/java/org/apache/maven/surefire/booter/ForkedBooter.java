@@ -21,13 +21,16 @@ package org.apache.maven.surefire.booter;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.booter.spi.DefaultMasterProcessChannelDecoderFactory;
+import org.apache.maven.surefire.booter.spi.DefaultMasterProcessChannelFactory;
 import org.apache.maven.surefire.providerapi.CommandListener;
+import org.apache.maven.surefire.providerapi.MasterProcessChannel;
 import org.apache.maven.surefire.providerapi.MasterProcessChannelDecoder;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.spi.MasterProcessChannelDecoderFactory;
+import org.apache.maven.surefire.spi.MasterProcessChannelFactory;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.io.File;
@@ -76,7 +79,7 @@ public final class ForkedBooter
     private static final String LAST_DITCH_SHUTDOWN_THREAD = "surefire-forkedjvm-last-ditch-daemon-shutdown-thread-";
     private static final String PING_THREAD = "surefire-forkedjvm-ping-";
 
-    private final ForkedChannelEncoder eventChannel = new ForkedChannelEncoder( System.out );
+    private ForkedChannelEncoder eventChannel;
     private final Semaphore exitBarrier = new Semaphore( 0 );
 
     private volatile long systemExitTimeoutInSeconds = DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS;
@@ -109,11 +112,14 @@ public final class ForkedBooter
 
         startupConfiguration = booterDeserializer.getStartupConfiguration();
 
+        String communicationConfig = startupConfiguration.getInterProcessChannelConfiguration();
+        MasterProcessChannel channel = lookupChannelFactory().createChannel( communicationConfig );
+        eventChannel = new ForkedChannelEncoder( channel.getOutputStream() );
+
         forkingReporterFactory = createForkingReporterFactory();
 
         ConsoleLogger logger = (ConsoleLogger) forkingReporterFactory.createReporter();
-        String communicationConfig = startupConfiguration.getInterProcessChannelConfiguration();
-        MasterProcessChannelDecoder decoder = lookupDecoderFactory().createDecoder( communicationConfig, logger );
+        MasterProcessChannelDecoder decoder = lookupDecoderFactory().createDecoder( channel, logger );
         commandReader = new CommandReader( decoder, providerConfiguration.getShutdown(), logger );
 
         pingScheduler = isDebugging() ? null : listenToShutdownCommands( booterDeserializer.getPluginPid() );
@@ -451,7 +457,26 @@ public final class ForkedBooter
                 customDecoderFactory = decoderFactory;
             }
         }
-        return defaultDecoderFactory == null ? customDecoderFactory : defaultDecoderFactory;
+        return customDecoderFactory != null ? customDecoderFactory : defaultDecoderFactory;
+    }
+
+    private static MasterProcessChannelFactory lookupChannelFactory()
+    {
+        MasterProcessChannelFactory defaultChannelFactory = null;
+        MasterProcessChannelFactory customChannelFactory = null;
+        for ( MasterProcessChannelFactory channelFactory : ServiceLoader.load(
+                MasterProcessChannelFactory.class ) )
+        {
+            if ( channelFactory.getClass() == DefaultMasterProcessChannelFactory.class )
+            {
+                defaultChannelFactory = channelFactory;
+            }
+            else
+            {
+                customChannelFactory = channelFactory;
+            }
+        }
+        return customChannelFactory != null ? customChannelFactory : defaultChannelFactory;
     }
 
     /**

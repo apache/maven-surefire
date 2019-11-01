@@ -127,6 +127,7 @@ public class BooterDeserializer
         boolean useSystemClassLoader = properties.getBooleanProperty( USESYSTEMCLASSLOADER );
         boolean useManifestOnlyJar = properties.getBooleanProperty( USEMANIFESTONLYJAR );
         String providerConfiguration = properties.getProperty( PROVIDER_CONFIGURATION );
+        String forkedChannelConfiguration = properties.getProperty( FORKED_CHANNEL_SERVER_CONFIGURATION );
 
         ClassLoaderConfiguration classLoaderConfiguration =
             new ClassLoaderConfiguration( useSystemClassLoader, useManifestOnlyJar );
@@ -134,6 +135,6 @@ public class BooterDeserializer
         ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( properties );
 
         return StartupConfiguration.inForkedVm( providerConfiguration, classpathConfiguration,
-                                                classLoaderConfiguration );
+                                                classLoaderConfiguration, forkedChannelConfiguration );
     }
 }

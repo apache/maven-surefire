@@ -20,7 +20,6 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  */
 
 import org.apache.maven.surefire.booter.Command;
-import org.apache.maven.surefire.booter.MasterProcessCommand;
 
 import java.io.IOException;
 
@@ -63,7 +62,7 @@ public abstract class DefaultCommandReader
      * @throws IOException {@inheritDoc}
      */
     @Override
-    public byte[] readNextCommand()
+    public Command readNextCommand()
         throws IOException
     {
         tryFlush();
@@ -87,7 +86,6 @@ public abstract class DefaultCommandReader
         }
 
         Command cmd = nextCommand();
-        MasterProcessCommand cmdType = cmd.getCommandType();
-        return cmdType.hasDataType() ? cmdType.encode( cmd.getData() ) : cmdType.encode();
+        return cmd;
     }
 }

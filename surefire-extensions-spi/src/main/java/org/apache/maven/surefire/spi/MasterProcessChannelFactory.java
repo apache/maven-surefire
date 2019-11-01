@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter.spi;
+package org.apache.maven.surefire.spi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,22 +19,21 @@ package org.apache.maven.surefire.booter.spi;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.providerapi.MasterProcessChannel;
-import org.apache.maven.surefire.providerapi.MasterProcessChannelDecoder;
-import org.apache.maven.surefire.spi.MasterProcessChannelDecoderFactory;
 
 import java.io.IOException;
 
 /**
- *
+ * @author <a href="mailto:jon@jonbell.net">Jonathan Bell</a>
+ * @since 3.0.0-M4
  */
-public class DefaultMasterProcessChannelDecoderFactory implements MasterProcessChannelDecoderFactory
+public interface MasterProcessChannelFactory
 {
-    @Override
-    public MasterProcessChannelDecoder createDecoder( MasterProcessChannel channel,
-                                                      ConsoleLogger logger ) throws IOException
-    {
-        return new DefaultMasterProcessChannelDecoder( channel.getInputStream(), logger );
-    }
+    /**
+     * Channel factory method.
+     *
+     * @param channelConfig "pipe:std:in" or "tcp://localhost:65035"
+     * @return a new instance of decoder
+     */
+    MasterProcessChannel createChannel( String channelConfig ) throws IOException;
 }

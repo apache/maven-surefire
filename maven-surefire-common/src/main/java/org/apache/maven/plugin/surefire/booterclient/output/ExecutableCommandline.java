@@ -24,6 +24,7 @@ import org.apache.maven.shared.utils.cli.CommandLineCallable;
 import org.apache.maven.shared.utils.cli.CommandLineException;
 import org.apache.maven.shared.utils.cli.Commandline;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
+import org.apache.maven.surefire.extensions.ForkedChannelServer;
 
 import javax.annotation.Nonnull;
 
@@ -36,6 +37,7 @@ public interface ExecutableCommandline<T>
     @Nonnull CommandLineCallable executeCommandLineAsCallable( @Nonnull Commandline cli,
                                                                @Nonnull AbstractCommandReader commands,
                                                                @Nonnull EventHandler<T> events,
+                                                               @Nonnull ForkedChannelServer server,
                                                                StreamConsumer stdOut,
                                                                StreamConsumer stdErr,
                                                                @Nonnull Runnable runAfterProcessTermination )

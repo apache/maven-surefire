@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.extensions;
+package org.apache.maven.plugin.surefire.extensions;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,37 +20,33 @@ package org.apache.maven.surefire.extensions;
  */
 
 import org.apache.maven.surefire.booter.Command;
+import org.apache.maven.surefire.booter.MasterProcessCommand;
+import org.apache.maven.surefire.extensions.ForkedChannel;
+
 
 /**
- * Commands which are sent from plugin to the forked jvm.
- * <br>
- * <br>
- * magic number : opcode [: opcode specific data]*
- * <br>
- * or data encoded with Base64
- * <br>
- * magic number : opcode [: Base64(opcode specific data)]*
+ * A default implementation of the ForkedChannel interface which simply uses the existing encoding scheme in
+ * MasterProcessCommand.
  *
- * The command must be finished by New Line or the character ':'.
- *
- * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @author <a href="mailto:jon@jonbell.net">Jonathan Bell</a>
  * @since 3.0.0-M4
  */
-public abstract class ForkedChannel
+public class DefaultForkedChannel extends ForkedChannel
 {
-    private volatile String channelConfig;
-
-    public String getChannelConfig()
+    @Override
+    public byte[] encode( Command command )
     {
-        return channelConfig;
+        if ( command == null )
+        {
+            return null;
+        }
+        MasterProcessCommand cmdType = command.getCommandType();
+        return cmdType.hasDataType() ? cmdType.encode( command.getData() ) : cmdType.encode();
     }
 
-    public void setChannelConfig( String channelConfig )
+    @Override
+    public Command decode( byte[] data )
     {
-        this.channelConfig = channelConfig;
+        throw new UnsupportedOperationException( "Not Implemented" ); //TODO
     }
-
-    public abstract byte[] encode( Command command );
-
-    public abstract Command decode( byte[] data );
 }

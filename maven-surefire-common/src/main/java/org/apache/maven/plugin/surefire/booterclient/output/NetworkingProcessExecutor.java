@@ -25,8 +25,11 @@ import org.apache.maven.shared.utils.cli.CommandLineException;
 import org.apache.maven.shared.utils.cli.CommandLineUtils;
 import org.apache.maven.shared.utils.cli.Commandline;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
+import org.apache.maven.surefire.extensions.ForkedChannelServer;
 
 import javax.annotation.Nonnull;
+
+import java.io.IOException;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
@@ -34,20 +37,84 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M4
  */
-final class NetworkingProcessExecutor
-        implements ExecutableCommandline
+final class NetworkingProcessExecutor implements ExecutableCommandline
 {
     @Nonnull
     @Override
-    public CommandLineCallable executeCommandLineAsCallable( @Nonnull Commandline cli,
-                                                             @Nonnull AbstractCommandReader commands,
-                                                             @Nonnull EventHandler events,
-                                                             StreamConsumer stdOut,
-                                                             StreamConsumer stdErr,
-                                                             @Nonnull Runnable runAfterProcessTermination )
-            throws CommandLineException
+    public CommandLineCallable executeCommandLineAsCallable(
+            @Nonnull Commandline cli,
+            @Nonnull AbstractCommandReader commands,
+            @Nonnull EventHandler events,
+            @Nonnull ForkedChannelServer server, StreamConsumer stdOut, StreamConsumer stdErr,
+            @Nonnull Runnable runAfterProcessTermination ) throws CommandLineException
     {
-        return CommandLineUtils.executeCommandLineAsCallable( cli, null, stdOut, stdErr,
-                0, runAfterProcessTermination, ISO_8859_1 );
+        return new NetworkCommandLineCallable( cli, commands, events, server, stdOut, stdErr,
+                runAfterProcessTermination );
+    }
+
+    private static class NetworkCommandLineCallable implements CommandLineCallable
+    {
+        private final Commandline cli;
+        private final AbstractCommandReader commands;
+        private final EventHandler events;
+        private final ForkedChannelServer server;
+        private final StreamConsumer stdOut;
+        private final StreamConsumer stdErr;
+        private final Runnable runAfterProcessTermination;
+
+        NetworkCommandLineCallable(
+                @Nonnull Commandline cli,
+                @Nonnull AbstractCommandReader commands,
+                @Nonnull EventHandler events,
+                @Nonnull ForkedChannelServer server, StreamConsumer stdOut, StreamConsumer stdErr,
+                @Nonnull Runnable runAfterProcessTermination )
+        {
+            this.cli = cli;
+            this.commands = commands;
+            this.events = events;
+            this.server = server;
+            this.stdOut = stdOut;
+            this.stdErr = stdErr;
+            this.runAfterProcessTermination = runAfterProcessTermination;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Integer call() throws CommandLineException
+        {
+            //set up the thread to send commands to the remote process
+            final Thread pumper = new Thread( new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    while ( !commands.isClosed() )
+                    {
+                        try
+                        {
+                            server.send( commands.readNextCommand() );
+                        }
+                        catch ( IOException e )
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            } );
+            pumper.start();
+            Integer ret = CommandLineUtils.executeCommandLineAsCallable( cli, null, stdOut, stdErr, 0,
+                    runAfterProcessTermination, ISO_8859_1 ).call();
+            try
+            {
+                pumper.join();
+            }
+            catch ( InterruptedException e )
+            {
+                e.printStackTrace();
+            }
+            return ret;
+        }
     }
 }

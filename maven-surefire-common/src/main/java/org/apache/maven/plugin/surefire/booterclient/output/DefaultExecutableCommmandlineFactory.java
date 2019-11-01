@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter.spi;
+package org.apache.maven.plugin.surefire.booterclient.output;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,22 +19,25 @@ package org.apache.maven.surefire.booter.spi;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.providerapi.MasterProcessChannel;
-import org.apache.maven.surefire.providerapi.MasterProcessChannelDecoder;
-import org.apache.maven.surefire.spi.MasterProcessChannelDecoderFactory;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.ExecutableCommandlineFactory;
 
-import java.io.IOException;
+import javax.annotation.Nonnull;
 
 /**
- *
+ *  @author <a href="mailto:jon@jonbell.net">Jonathan Bell</a>
+ *  @since 3.0.0-M4
  */
-public class DefaultMasterProcessChannelDecoderFactory implements MasterProcessChannelDecoderFactory
+public class DefaultExecutableCommmandlineFactory implements ExecutableCommandlineFactory
 {
+    @Nonnull
     @Override
-    public MasterProcessChannelDecoder createDecoder( MasterProcessChannel channel,
-                                                      ConsoleLogger logger ) throws IOException
+    public ExecutableCommandline<String> createExecutableCommandline( String config )
     {
-        return new DefaultMasterProcessChannelDecoder( channel.getInputStream(), logger );
+        //TODO pass the actual config and parse it correctly
+//        if("pipe:std:in".equals( config ))
+//            return new PipeProcessExecutor();
+//        else if(config != null && config.startsWith( "tcp://" ))
+            return new NetworkingProcessExecutor();
+//        throw new IllegalArgumentException( "Unsupported command line configuration: " + config );
     }
 }

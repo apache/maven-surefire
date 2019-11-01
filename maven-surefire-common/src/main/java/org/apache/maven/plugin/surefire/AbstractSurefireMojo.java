@@ -26,6 +26,7 @@ import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.ExecutableCommandlineFactory;
+import org.apache.maven.plugin.surefire.booterclient.output.DefaultExecutableCommmandlineFactory;
 import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
@@ -2264,7 +2265,7 @@ public abstract class AbstractSurefireMojo
 
         //todo Enrico, here should be implementation for pipes and NettyIO depending on MOJO configuration
         // todo we will create a new @Parameter with POJO object of complex configuration for TCP/IP
-        ExecutableCommandlineFactory executableCommandlineFactory = null;
+        ExecutableCommandlineFactory executableCommandlineFactory = new DefaultExecutableCommmandlineFactory();
 
         if ( canExecuteProviderWithModularPath( platform ) )
         {

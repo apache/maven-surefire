@@ -35,22 +35,35 @@ public class StartupConfiguration
     private final ClassLoaderConfiguration classLoaderConfiguration;
     private final boolean isForkRequested;
     private final boolean isInForkedVm;
+    private final String interProcessChannelConfiguration;
 
-    public StartupConfiguration( @Nonnull String providerClassName,
-                                 @Nonnull AbstractPathConfiguration classpathConfiguration,
-                                 @Nonnull ClassLoaderConfiguration classLoaderConfiguration, boolean isForkRequested,
-                                 boolean inForkedVm )
+    public StartupConfiguration(
+            @Nonnull String providerClassName,
+            @Nonnull AbstractPathConfiguration classpathConfiguration, @Nonnull
+                    ClassLoaderConfiguration classLoaderConfiguration, boolean isForkRequested, boolean inForkedVm )
+    {
+        this( providerClassName, classpathConfiguration, classLoaderConfiguration, isForkRequested, inForkedVm,
+                "pipe:std:in" );
+
+    }
+
+    public StartupConfiguration(
+            @Nonnull String providerClassName,
+            @Nonnull AbstractPathConfiguration classpathConfiguration, @Nonnull
+                    ClassLoaderConfiguration classLoaderConfiguration, boolean isForkRequested, boolean inForkedVm,
+            String interProcessChannelConfiguration )
     {
         this.classpathConfiguration = classpathConfiguration;
         this.classLoaderConfiguration = classLoaderConfiguration;
         this.isForkRequested = isForkRequested;
         this.providerClassName = providerClassName;
+        this.interProcessChannelConfiguration = interProcessChannelConfiguration;
         isInForkedVm = inForkedVm;
     }
 
     public String getInterProcessChannelConfiguration()
     {
-        return "pipe:std:in";
+        return interProcessChannelConfiguration;
     }
 
     public boolean isProviderMainClass()
@@ -60,10 +73,11 @@ public class StartupConfiguration
 
     public static StartupConfiguration inForkedVm( String providerClassName,
                                                    ClasspathConfiguration classpathConfiguration,
-                                                   ClassLoaderConfiguration classLoaderConfiguration )
+                                                   ClassLoaderConfiguration classLoaderConfiguration,
+                                                   String forkedChannelConfiguration )
     {
         return new StartupConfiguration( providerClassName, classpathConfiguration, classLoaderConfiguration, true,
-                                         true );
+                true, forkedChannelConfiguration );
     }
 
     public AbstractPathConfiguration getClasspathConfiguration()

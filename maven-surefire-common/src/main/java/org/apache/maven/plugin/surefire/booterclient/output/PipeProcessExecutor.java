@@ -25,6 +25,8 @@ import org.apache.maven.shared.utils.cli.CommandLineException;
 import org.apache.maven.shared.utils.cli.Commandline;
 import org.apache.maven.shared.utils.cli.CommandLineUtils;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
+import org.apache.maven.surefire.extensions.ForkedChannel;
+import org.apache.maven.surefire.extensions.ForkedChannelServer;
 
 import javax.annotation.Nonnull;
 
@@ -40,17 +42,23 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 final class PipeProcessExecutor
     implements ExecutableCommandline<String>
 {
+
+    private ForkedChannel encoder;
+    //TODO for legacy reasons, I'm keeping the ForkedChannel here, just for now.
+    //Eventually the encoding will happen in the ForkedChannelServer implementation
+
     @Override
     @Nonnull
     public CommandLineCallable executeCommandLineAsCallable( @Nonnull Commandline cli,
                                                              @Nonnull AbstractCommandReader commands,
                                                              @Nonnull EventHandler<String> events,
+                                                             @Nonnull ForkedChannelServer server,
                                                              StreamConsumer stdOut,
                                                              StreamConsumer stdErr,
                                                              @Nonnull Runnable runAfterProcessTermination )
             throws CommandLineException
     {
-        return CommandLineUtils.executeCommandLineAsCallable( cli, new CommandReaderAdapter( commands ),
+        return CommandLineUtils.executeCommandLineAsCallable( cli, new CommandReaderAdapter( commands, encoder ),
                 new EventHandlerAdapter( events ), stdErr, 0, runAfterProcessTermination, ISO_8859_1 );
     }
 
@@ -77,10 +85,12 @@ final class PipeProcessExecutor
         private byte[] currentBuffer;
         private int currentPos;
         private volatile boolean closed;
+        private ForkedChannel channel;
 
-        CommandReaderAdapter( AbstractCommandReader commands )
+        CommandReaderAdapter( AbstractCommandReader commands, ForkedChannel channel )
         {
             this.commands = commands;
+            this.channel = channel;
         }
 
         @Override
@@ -98,7 +108,7 @@ final class PipeProcessExecutor
 
             if ( currentBuffer == null )
             {
-                currentBuffer = commands.readNextCommand();
+                currentBuffer = channel.encode( commands.readNextCommand() );
                 if ( currentBuffer == null )
                 {
                     return -1;

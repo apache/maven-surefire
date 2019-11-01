@@ -27,9 +27,9 @@ import javax.annotation.Nonnull;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M4
  */
+//TODO should this be in the spi project? -jb
 public interface ExecutableCommandlineFactory
 {
-    //todo Enrico, the parameter is not needed in Pipes. It is needed in TCP/IP
     @Nonnull
-    ExecutableCommandline<String> createExecutableCommandline( AbstractCommandReader forkInputStream );
+    ExecutableCommandline<String> createExecutableCommandline( String config );
 }

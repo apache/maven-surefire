@@ -20,6 +20,7 @@ package org.apache.maven.surefire.spi;
  */
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.providerapi.MasterProcessChannel;
 import org.apache.maven.surefire.providerapi.MasterProcessChannelDecoder;
 
 import java.io.IOException;
@@ -32,9 +33,9 @@ public interface MasterProcessChannelDecoderFactory
     /**
      * Decoder factory method.
      *
-     * @param channelConfig "pipe:std:in" or "tcp://localhost:65035"
+     * @param channel       channel to use for communication
      * @param logger        error logger
      * @return a new instance of decoder
      */
-    MasterProcessChannelDecoder createDecoder( String channelConfig, ConsoleLogger logger ) throws IOException;
+    MasterProcessChannelDecoder createDecoder( MasterProcessChannel channel, ConsoleLogger logger ) throws IOException;
 }

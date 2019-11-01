@@ -19,6 +19,8 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * under the License.
  */
 
+import org.apache.maven.surefire.booter.Command;
+
 import java.io.IOException;
 
 import static java.util.Objects.requireNonNull;
@@ -35,12 +37,11 @@ public abstract class AbstractCommandReader
     private volatile FlushReceiverProvider flushReceiverProvider;
 
     /**
-     * Waits for the next command and
-     * reads complete stream of encoded {@link org.apache.maven.surefire.booter.MasterProcessCommand command}.
+     * Waits for the next command and then returns it.
      *
-     * @return encoded command, or null if closed
+     * @return command, or null if closed
      */
-    public abstract byte[] readNextCommand() throws IOException;
+    public abstract Command readNextCommand() throws IOException;
     public abstract void close();
     public abstract boolean isClosed();
 

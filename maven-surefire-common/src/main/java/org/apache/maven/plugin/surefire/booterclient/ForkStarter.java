@@ -32,6 +32,8 @@ import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.plugin.surefire.booterclient.output.NativeStdErrStreamConsumer;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
+import org.apache.maven.plugin.surefire.extensions.DefaultForkedChannel;
+import org.apache.maven.plugin.surefire.extensions.TCPForkedChannelServer;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.shared.utils.cli.CommandLineCallable;
@@ -45,6 +47,8 @@ import org.apache.maven.surefire.booter.Shutdown;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
+import org.apache.maven.surefire.extensions.ForkedChannel;
+import org.apache.maven.surefire.extensions.ForkedChannelServer;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
@@ -281,7 +285,7 @@ public class ForkStarter
             ForkClient forkClient =
                     new ForkClient( forkedReporterFactory, stream, log, new AtomicBoolean(), forkNumber );
             ExecutableCommandline<String> executableCommandline =
-                    forkConfiguration.getExecutableCommandlineFactory().createExecutableCommandline( stream );
+                    forkConfiguration.getExecutableCommandlineFactory().createExecutableCommandline( null );
             return fork( null, props, forkClient, effectiveSystemProperties, forkNumber, stream,
                     executableCommandline, false );
         }
@@ -374,7 +378,7 @@ public class ForkStarter
                         {
                             ExecutableCommandline<String> executableCommandline =
                                     forkConfiguration.getExecutableCommandlineFactory()
-                                            .createExecutableCommandline( testProvidingInputStream );
+                                            .createExecutableCommandline( null );
                             return fork( null, new PropertiesWrapper( providerProperties ), forkClient,
                                     effectiveSystemProperties, forkNumber, testProvidingInputStream,
                                     executableCommandline, true );
@@ -451,7 +455,7 @@ public class ForkStarter
                         {
                             ExecutableCommandline<String> executableCommandline =
                                     forkConfiguration.getExecutableCommandlineFactory()
-                                            .createExecutableCommandline( stream );
+                                            .createExecutableCommandline( null );
                             return fork( testSet,
                                          new PropertiesWrapper( providerConfiguration.getProviderProperties() ),
                                          forkClient, effectiveSystemProperties, forkNumber, stream,
@@ -558,15 +562,32 @@ public class ForkStarter
         final String tempDir;
         final File surefireProperties;
         final File systPropsFile;
+
+        ThreadedStreamConsumer threadedStreamConsumer = new ThreadedStreamConsumer( forkClient );
+        /* START: only for network IPC */
+
+        //We should use a factory or something to make this based on the config
+        ForkedChannelServer server;
+        ForkedChannel encoder = new DefaultForkedChannel();
+        try
+        {
+            server = new TCPForkedChannelServer( threadedStreamConsumer, encoder );
+        }
+        catch ( IOException e )
+        {
+            throw new IllegalStateException( e );
+        }
+        /* END only for network IPC */
         try
         {
             tempDir = forkConfiguration.getTempDirectory().getCanonicalPath();
             BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
             Long pluginPid = forkConfiguration.getPluginPlatform().getPluginPid();
 
-            // todo Enrico, add the socket config in providerProperties. The fork VM will read it and connect.
+
             surefireProperties = booterSerializer.serialize( providerProperties, providerConfiguration,
-                    startupConfiguration, testSet, readTestsFromInStream, pluginPid, forkNumber );
+                    startupConfiguration, testSet, readTestsFromInStream, pluginPid, forkNumber,
+                    server.getChannelConfig() );
 
             log.debug( "Determined Maven Process ID " + pluginPid );
 
@@ -603,10 +624,10 @@ public class ForkStarter
             cli.createArg().setValue( systPropsFile.getName() );
         }
 
-        ThreadedStreamConsumer threadedStreamConsumer = new ThreadedStreamConsumer( forkClient );
-        CloseableCloser closer = new CloseableCloser( forkNumber, threadedStreamConsumer, commandSender );
+        CloseableCloser closer = new CloseableCloser( forkNumber, threadedStreamConsumer, commandSender, server );
 
         log.debug( "Forking command line: " + cli );
+
 
         Integer result = null;
         RunResult runResult = null;
@@ -617,7 +638,7 @@ public class ForkStarter
                     new NativeStdErrStreamConsumer( forkClient.getDefaultReporterFactory() );
 
             CommandLineCallable future = executableCommandline.executeCommandLineAsCallable( cli, commandSender,
-                    threadedStreamConsumer, /*todo stdOut*/ null, stdErrConsumer, closer );
+                    threadedStreamConsumer, server, /*todo stdOut*/ null, stdErrConsumer, closer );
 
             currentForkClients.add( forkClient );
 

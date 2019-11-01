@@ -21,14 +21,14 @@ package org.apache.maven.surefire.extensions;
 
 import org.apache.maven.surefire.booter.Command;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M4
  */
-public abstract class ForkedChannelServer
-    implements AutoCloseable
+public abstract class ForkedChannelServer implements Closeable
 {
     private final String channelConfig;
 

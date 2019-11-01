@@ -47,6 +47,7 @@ import static org.apache.maven.surefire.booter.AbstractPathConfiguration.SUREFIR
 import static org.apache.maven.surefire.booter.BooterConstants.EXCLUDES_PROPERTY_PREFIX;
 import static org.apache.maven.surefire.booter.BooterConstants.FAIL_FAST_COUNT;
 import static org.apache.maven.surefire.booter.BooterConstants.FAILIFNOTESTS;
+import static org.apache.maven.surefire.booter.BooterConstants.FORKED_CHANNEL_SERVER_CONFIGURATION;
 import static org.apache.maven.surefire.booter.BooterConstants.FORKTESTSET;
 import static org.apache.maven.surefire.booter.BooterConstants.FORKTESTSET_PREFER_TESTS_FROM_IN_STREAM;
 import static org.apache.maven.surefire.booter.BooterConstants.INCLUDES_PROPERTY_PREFIX;
@@ -100,7 +101,7 @@ class BooterSerializer
      */
     File serialize( KeyValueSource sourceProperties, ProviderConfiguration booterConfiguration,
                     StartupConfiguration providerConfiguration, Object testSet, boolean readTestsFromInStream,
-                    Long pid, int forkNumber )
+                    Long pid, int forkNumber, String forkedChannelServerConfiguration )
         throws IOException
     {
         SurefireProperties properties = new SurefireProperties( sourceProperties );
@@ -176,6 +177,11 @@ class BooterSerializer
             properties.addList( mainCliOptions, MAIN_CLI_OPTIONS );
         }
         properties.setNullableProperty( SYSTEM_EXIT_TIMEOUT, toString( booterConfiguration.getSystemExitTimeout() ) );
+
+        if ( forkedChannelServerConfiguration != null )
+        {
+            properties.setProperty( FORKED_CHANNEL_SERVER_CONFIGURATION, forkedChannelServerConfiguration );
+        }
 
         File surefireTmpDir = forkConfiguration.getTempDirectory();
         boolean debug = forkConfiguration.isDebug();

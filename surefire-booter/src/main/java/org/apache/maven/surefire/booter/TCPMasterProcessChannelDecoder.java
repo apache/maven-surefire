@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.extensions;
+package org.apache.maven.surefire.booter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,38 +19,36 @@ package org.apache.maven.surefire.extensions;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.Command;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.providerapi.MasterProcessChannelDecoder;
+
+import java.io.IOException;
+import java.net.Socket;
 
 /**
- * Commands which are sent from plugin to the forked jvm.
- * <br>
- * <br>
- * magic number : opcode [: opcode specific data]*
- * <br>
- * or data encoded with Base64
- * <br>
- * magic number : opcode [: Base64(opcode specific data)]*
- *
- * The command must be finished by New Line or the character ':'.
- *
- * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @author <a href="mailto:jon@jonbell.net">Jonathan Bell (jon-bell)</a>
  * @since 3.0.0-M4
  */
-public abstract class ForkedChannel
+public class TCPMasterProcessChannelDecoder implements MasterProcessChannelDecoder
 {
-    private volatile String channelConfig;
+    private final Socket socket;
 
-    public String getChannelConfig()
+    public TCPMasterProcessChannelDecoder( String remoteAddr, int remotePort, ConsoleLogger logger ) throws IOException
     {
-        return channelConfig;
+        socket = new Socket( remoteAddr, remotePort );
+        socket.setTcpNoDelay( true );
     }
 
-    public void setChannelConfig( String channelConfig )
+    @Override
+    public Command decode() throws IOException
     {
-        this.channelConfig = channelConfig;
+
+        return null;
     }
 
-    public abstract byte[] encode( Command command );
+    @Override
+    public void close() throws IOException
+    {
 
-    public abstract Command decode( byte[] data );
+    }
 }
