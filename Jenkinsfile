@@ -30,10 +30,10 @@ properties(
     ]
 )
 
-final def oses = ['linux':'ubuntu', 'windows':'Windows']
+final def oses = ['linux':'ubuntu && !H42', 'windows':'Windows && !jenkins-win-he-de-4']
 final def mavens = env.BRANCH_NAME == 'master' ? ['3.6.x', '3.2.x'] : ['3.6.x']
 // all non-EOL versions and the first EA
-final def jdks = [13, 12, 11, 8, 7]
+final def jdks = [14, 13, 11, 8, 7]
 
 final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
 final def goals = ['clean', 'install']
@@ -69,7 +69,10 @@ oses.eachWithIndex { osMapping, indexOfOs ->
                         def failsafeItPort = 8000 + 100 * indexOfMaven + 10 * indexOfJdk
                         def allOptions = options + ['-Djava.awt.headless=true', "-Dfailsafe-integration-test-port=${failsafeItPort}", "-Dfailsafe-integration-test-stop-port=${1 + failsafeItPort}"]
                         if (jdk == 7) {
-                            allOptions += ['-Dhttps.protocols=TLSv1.2']
+                            allOptions += '-Dhttps.protocols=TLSv1.2'
+                        }
+                        if (!maven.startsWith('3.2') && !maven.startsWith('3.3') && !maven.startsWith('3.5')) {
+                            allOptions += '--no-transfer-progress'
                         }
                         ws(dir: "${os == 'windows' ? "${TEMP}\\${BUILD_TAG}" : pwd()}") {
                             buildProcess(stageKey, jdkName, jdkTestName, mvnName, first ? goalsDepl : goals, allOptions, mavenOpts, first)

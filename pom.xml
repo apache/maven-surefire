@@ -90,13 +90,14 @@
     <mavenVersion>3.0</mavenVersion>
     <!-- <shadedVersion>3.0.0-M2</shadedVersion> commented out due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
     <commonsLang3Version>3.8.1</commonsLang3Version>
+    <commonsCompress>1.19</commonsCompress>
     <commonsIoVersion>2.6</commonsIoVersion>
     <doxiaVersion>1.9</doxiaVersion>
     <doxiaSitetoolsVersion>1.9.1</doxiaSitetoolsVersion>
     <!-- maven-shared-utils:3.2.0+ another behavior - broke Surefire performance - end of subprocess notification not arrived in ForkStarter -->
     <mavenSharedUtilsVersion>3.1.0</mavenSharedUtilsVersion>
-    <powermockVersion>2.0.2</powermockVersion>
-    <jacocoVersion>0.8.4</jacocoVersion>
+    <powermockVersion>2.0.4</powermockVersion>
+    <jacocoVersion>0.8.5</jacocoVersion>
     <maven.surefire.scm.devConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
     <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
     <!-- Override with Jigsaw JRE 9 -->
@@ -108,6 +109,11 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>${commonsCompress}</version>
+      </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
@@ -576,6 +582,7 @@
                 <exclude>README.md</exclude>
                 <exclude>.gitignore</exclude>
                 <exclude>.git/**/*</exclude>
+                <exclude>**/.github/**</exclude>
                 <exclude>**/.idea</exclude>
                 <exclude>**/.svn/**/*</exclude>
                 <exclude>**/*.iml</exclude>

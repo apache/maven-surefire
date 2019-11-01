@@ -373,7 +373,7 @@ public class StatelessXmlReporter
     {
         ppw.startElement( "testcase" );
         String name = phrasedMethodName ? report.getReportName() : report.getName();
-        ppw.addAttribute( "name", name == null ? "" : extraEscape( name, true ) );
+        ppw.addAttribute( "name", name == null ? "" : extraEscapeAttribute( name ) );
 
         if ( report.getGroup() != null )
         {
@@ -384,7 +384,7 @@ public class StatelessXmlReporter
                 : report.getSourceName( reportNameSuffix );
         if ( className != null )
         {
-            ppw.addAttribute( "classname", extraEscape( className, true ) );
+            ppw.addAttribute( "classname", extraEscapeAttribute( className ) );
         }
 
         ppw.addAttribute( "time", report.elapsedTimeAsString() );
@@ -400,7 +400,7 @@ public class StatelessXmlReporter
 
         String reportName = phrasedSuiteName ? report.getReportSourceName( reportNameSuffix )
                 : report.getSourceName( reportNameSuffix );
-        ppw.addAttribute( "name", reportName == null ? "" : extraEscape( reportName, true ) );
+        ppw.addAttribute( "name", reportName == null ? "" : extraEscapeAttribute( reportName ) );
 
         if ( report.getGroup() != null )
         {
@@ -428,7 +428,7 @@ public class StatelessXmlReporter
 
         if ( report.getMessage() != null && !report.getMessage().isEmpty() )
         {
-            ppw.addAttribute( "message", extraEscape( report.getMessage(), true ) );
+            ppw.addAttribute( "message", extraEscapeAttribute( report.getMessage() ) );
         }
 
         if ( report.getStackTraceWriter() != null )
@@ -459,7 +459,7 @@ public class StatelessXmlReporter
                 ppw.startElement( "stackTrace" );
             }
 
-            ppw.writeText( extraEscape( stackTrace, false ) );
+            extraEscapeElementValue( stackTrace, outputStreamWriter, ppw, fw );
 
             if ( hasNestedElements )
             {
@@ -534,7 +534,7 @@ public class StatelessXmlReporter
 
             xmlWriter.addAttribute( "name", key );
 
-            xmlWriter.addAttribute( "value", extraEscape( value, true ) );
+            xmlWriter.addAttribute( "value", extraEscapeAttribute( value ) );
 
             xmlWriter.endElement();
         }
@@ -542,16 +542,47 @@ public class StatelessXmlReporter
     }
 
     /**
-     * Handle stuff that may pop up in java that is not legal in xml
+     * Handle stuff that may pop up in java that is not legal in xml.
      *
      * @param message   The string
-     * @param attribute true if the escaped value is inside an attribute
-     * @return The escaped string
+     * @return The escaped string or returns itself if all characters are legal
      */
-    private static String extraEscape( String message, boolean attribute )
+    private static String extraEscapeAttribute( String message )
     {
         // Someday convert to xml 1.1 which handles everything but 0 inside string
-        return containsEscapesIllegalXml10( message ) ? escapeXml( message, attribute ) : message;
+        return containsEscapesIllegalXml10( message ) ? escapeXml( message, true ) : message;
+    }
+
+    /**
+     * Writes escaped string or the message within CDATA if all characters are legal.
+     *
+     * @param message   The string
+     */
+    private static void extraEscapeElementValue( String message, OutputStreamWriter outputStreamWriter,
+                                                 XMLWriter xmlWriter, OutputStream fw )
+    {
+        // Someday convert to xml 1.1 which handles everything but 0 inside string
+        if ( containsEscapesIllegalXml10( message ) )
+        {
+            xmlWriter.writeText( escapeXml( message, false ) );
+        }
+        else
+        {
+            try
+            {
+                EncodingOutputStream eos = new EncodingOutputStream( fw );
+                xmlWriter.writeText( "" ); // Cheat sax to emit element
+                outputStreamWriter.flush();
+                eos.getUnderlying().write( ByteConstantsHolder.CDATA_START_BYTES );
+                eos.write( message.getBytes( UTF_8 ) );
+                eos.getUnderlying().write( ByteConstantsHolder.CDATA_END_BYTES );
+                eos.flush();
+            }
+            catch ( IOException e )
+            {
+                throw new ReporterException( "When writing xml element", e );
+            }
+        }
     }
 
     private static final class EncodingOutputStream
@@ -628,6 +659,13 @@ public class StatelessXmlReporter
         return c >= 0 && c < 32 && c != '\n' && c != '\r' && c != '\t';
     }
 
+    /**
+     * escape for XML 1.0
+     *
+     * @param text      The string
+     * @param attribute true if the escaped value is inside an attribute
+     * @return The escaped string
+     */
     private static String escapeXml( String text, boolean attribute )
     {
         StringBuilder sb = new StringBuilder( text.length() * 2 );

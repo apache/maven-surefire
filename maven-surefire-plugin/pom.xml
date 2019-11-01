@@ -35,7 +35,7 @@
     <description>Maven Surefire MOJO in maven-surefire-plugin.</description>
 
     <prerequisites>
-        <maven>3.0</maven>
+        <maven>${mavenVersion}</maven>
     </prerequisites>
 
     <properties>

@@ -110,7 +110,7 @@ public final class ForkedBooter
                     .dumpText( "Found Maven process ID " + booterDeserializer.getPluginPid() );
         }
 
-        startupConfiguration = booterDeserializer.getStartupConfiguration();
+        startupConfiguration = booterDeserializer.getProviderConfiguration();
 
         String communicationConfig = startupConfiguration.getInterProcessChannelConfiguration();
         MasterProcessChannel channel = lookupChannelFactory().createChannel( communicationConfig );
@@ -122,7 +122,7 @@ public final class ForkedBooter
         MasterProcessChannelDecoder decoder = lookupDecoderFactory().createDecoder( channel, logger );
         commandReader = new CommandReader( decoder, providerConfiguration.getShutdown(), logger );
 
-        pingScheduler = isDebugging() ? null : listenToShutdownCommands( booterDeserializer.getPluginPid() );
+        pingScheduler = isDebugging() ? null : listenToShutdownCommands( booterDeserializer.getPluginPid(), logger );
 
         systemExitTimeoutInSeconds = providerConfiguration.systemExitTimeout( DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS );
 
@@ -204,14 +204,18 @@ public final class ForkedBooter
         }
     }
 
-    private PingScheduler listenToShutdownCommands( Long ppid )
+    private PingScheduler listenToShutdownCommands( String ppid, ConsoleLogger logger )
     {
-        commandReader.addShutdownListener( createExitHandler() );
+        PpidChecker ppidChecker = ppid == null ? null : new PpidChecker( ppid );
+        commandReader.addShutdownListener( createExitHandler( ppidChecker ) );
         AtomicBoolean pingDone = new AtomicBoolean( true );
         commandReader.addNoopListener( createPingHandler( pingDone ) );
+        PingScheduler pingMechanisms = new PingScheduler( createPingScheduler(), ppidChecker );
+        if ( ppidChecker != null )
+        {
+            logger.debug( ppidChecker.toString() );
+        }
 
-        PingScheduler pingMechanisms = new PingScheduler( createPingScheduler(),
-                                                          ppid == null ? null : new PpidChecker( ppid ) );
         if ( pingMechanisms.pluginProcessChecker != null )
         {
             Runnable checkerJob = processCheckerJob( pingMechanisms );
@@ -267,7 +271,7 @@ public final class ForkedBooter
         };
     }
 
-    private CommandListener createExitHandler()
+    private CommandListener createExitHandler( final PpidChecker ppidChecker )
     {
         return new CommandListener()
         {
@@ -277,6 +281,7 @@ public final class ForkedBooter
                 Shutdown shutdown = command.toShutdownData();
                 if ( shutdown.isKill() )
                 {
+                    ppidChecker.stop();
                     DumpErrorSingleton.getSingleton()
                             .dumpText( "Killing self fork JVM. Received SHUTDOWN command from Maven shutdown hook."
                                     + NL
@@ -287,6 +292,7 @@ public final class ForkedBooter
                 }
                 else if ( shutdown.isExit() )
                 {
+                    ppidChecker.stop();
                     cancelPingScheduler();
                     DumpErrorSingleton.getSingleton()
                             .dumpText( "Exiting self fork JVM. Received SHUTDOWN command from Maven shutdown hook."

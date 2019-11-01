@@ -19,6 +19,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -39,6 +40,7 @@ import static java.util.regex.Pattern.compile;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_HP_UX;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_UNIX;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.surefire.booter.ProcessInfo.unixProcessInfo;
@@ -72,21 +74,26 @@ final class PpidChecker
      * The etime is in the form of [[dd-]hh:]mm:ss on Unix like systems.
      * See the workaround https://issues.apache.org/jira/browse/SUREFIRE-1451.
      */
-    static final Pattern UNIX_CMD_OUT_PATTERN = compile( "^(((\\d+)-)?(\\d{1,2}):)?(\\d{1,2}):(\\d{1,2})$" );
+    static final Pattern UNIX_CMD_OUT_PATTERN = compile( "^(((\\d+)-)?(\\d{1,2}):)?(\\d{1,2}):(\\d{1,2})\\s+(\\d+)$" );
 
-    private final long ppid;
+    static final Pattern BUSYBOX_CMD_OUT_PATTERN = compile( "^(\\d+)[hH](\\d{1,2})\\s+(\\d+)$" );
+
+    private final String ppid;
 
     private volatile ProcessInfo parentProcessInfo;
     private volatile boolean stopped;
 
-    PpidChecker( long ppid )
+    PpidChecker( @Nonnull String ppid )
     {
         this.ppid = ppid;
-        //todo WARN logger (after new logger is finished) that (IS_OS_UNIX && canExecuteUnixPs()) is false
     }
 
     boolean canUse()
     {
+        if ( isStopped() )
+        {
+            return false;
+        }
         final ProcessInfo ppi = parentProcessInfo;
         return ppi == null ? IS_OS_WINDOWS || IS_OS_UNIX && canExecuteUnixPs() : ppi.canUse();
     }
@@ -99,7 +106,6 @@ final class PpidChecker
      *                               or this object has been {@link #destroyActiveCommands() destroyed}
      * @throws NullPointerException if extracted e-time is null
      */
-    @SuppressWarnings( "unchecked" )
     boolean isProcessAlive()
     {
         if ( !canUse() )
@@ -108,34 +114,26 @@ final class PpidChecker
         }
 
         final ProcessInfo previousInfo = parentProcessInfo;
-        try
+        if ( IS_OS_WINDOWS )
         {
-            if ( IS_OS_WINDOWS )
-            {
-                parentProcessInfo = windows();
-                checkProcessInfo();
+            parentProcessInfo = windows();
+            checkProcessInfo();
 
-                // let's compare creation time, should be same unless killed or PID is reused by OS into another process
-                return previousInfo == null || parentProcessInfo.isTimeEqualTo( previousInfo );
-            }
-            else if ( IS_OS_UNIX )
-            {
-                parentProcessInfo = unix();
-                checkProcessInfo();
-
-                // let's compare elapsed time, should be greater or equal if parent process is the same and still alive
-                return previousInfo == null || !parentProcessInfo.isTimeBefore( previousInfo );
-            }
-
-            throw new IllegalStateException( "unknown platform or you did not call canUse() before isProcessAlive()" );
+            // let's compare creation time, should be same unless killed or PID is reused by OS into another process
+            return !parentProcessInfo.isInvalid()
+                    && ( previousInfo == null || parentProcessInfo.isTimeEqualTo( previousInfo ) );
         }
-        finally
+        else if ( IS_OS_UNIX )
         {
-            if ( parentProcessInfo == null )
-            {
-                parentProcessInfo = INVALID_PROCESS_INFO;
-            }
+            parentProcessInfo = unix();
+            checkProcessInfo();
+
+            // let's compare elapsed time, should be greater or equal if parent process is the same and still alive
+            return !parentProcessInfo.isInvalid()
+                    && ( previousInfo == null || !parentProcessInfo.isTimeBefore( previousInfo ) );
         }
+        parentProcessInfo = ERR_PROCESS_INFO;
+        throw new IllegalStateException( "unknown platform or you did not call canUse() before isProcessAlive()" );
     }
 
     private void checkProcessInfo()
@@ -143,11 +141,6 @@ final class PpidChecker
         if ( isStopped() )
         {
             throw new IllegalStateException( "error [STOPPED] to read process " + ppid );
-        }
-
-        if ( parentProcessInfo.isError() )
-        {
-            throw new IllegalStateException( "error to read process " + ppid );
         }
 
         if ( !parentProcessInfo.canUse() )
@@ -169,12 +162,13 @@ final class PpidChecker
         ProcessInfoConsumer reader = new ProcessInfoConsumer( Charset.defaultCharset().name() )
         {
             @Override
+            @Nonnull
             ProcessInfo consumeLine( String line, ProcessInfo previousOutputLine )
             {
                 if ( previousOutputLine.isInvalid() )
                 {
                     Matcher matcher = UNIX_CMD_OUT_PATTERN.matcher( line );
-                    if ( matcher.matches() )
+                    if ( matcher.matches() && ppid.equals( fromPID( matcher ) ) )
                     {
                         long pidUptime = fromDays( matcher )
                                                  + fromHours( matcher )
@@ -182,12 +176,18 @@ final class PpidChecker
                                                  + fromSeconds( matcher );
                         return unixProcessInfo( ppid, pidUptime );
                     }
+                    matcher = BUSYBOX_CMD_OUT_PATTERN.matcher( line );
+                    if ( matcher.matches() && ppid.equals( fromBusyboxPID( matcher ) ) )
+                    {
+                        long pidUptime = fromBusyboxHours( matcher ) + fromBusyboxMinutes( matcher );
+                        return unixProcessInfo( ppid, pidUptime );
+                    }
                 }
                 return previousOutputLine;
             }
         };
-
-        return reader.execute( "/bin/sh", "-c", unixPathToPS() + " -o etime= -p " + ppid );
+        String cmd = unixPathToPS() + " -o etime,pid " + ( IS_OS_LINUX ? "" : "-p " ) + ppid;
+        return reader.execute( "/bin/sh", "-c", cmd );
     }
 
     ProcessInfo windows()
@@ -197,6 +197,7 @@ final class PpidChecker
             private boolean hasHeader;
 
             @Override
+            @Nonnull
             ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo ) throws Exception
             {
                 if ( previousProcessInfo.isInvalid() && !line.isEmpty() )
@@ -256,12 +257,26 @@ final class PpidChecker
 
     private static boolean canExecuteLocalUnixPs()
     {
-        return new File( "/usr/bin/ps" ).canExecute();
+        try
+        {
+            return new File( "/usr/bin/ps" ).canExecute();
+        }
+        catch ( SecurityException e )
+        {
+            return false;
+        }
     }
 
     private static boolean canExecuteStandardUnixPs()
     {
-        return new File( "/bin/ps" ).canExecute();
+        try
+        {
+            return new File( "/bin/ps" ).canExecute();
+        }
+        catch ( SecurityException e )
+        {
+            return false;
+        }
     }
 
     private static boolean hasWmicStandardSystemPath()
@@ -294,6 +309,28 @@ final class PpidChecker
         return s == null ? 0L : parseLong( s );
     }
 
+    static String fromPID( Matcher matcher )
+    {
+        return matcher.group( 7 );
+    }
+
+    static long fromBusyboxHours( Matcher matcher )
+    {
+        String s = matcher.group( 1 );
+        return s == null ? 0L : HOURS.toSeconds( parseLong( s ) );
+    }
+
+    static long fromBusyboxMinutes( Matcher matcher )
+    {
+        String s = matcher.group( 2 );
+        return s == null ? 0L : MINUTES.toSeconds( parseLong( s ) );
+    }
+
+    static String fromBusyboxPID( Matcher matcher )
+    {
+        return matcher.group( 3 );
+    }
+
     private static void checkValid( Scanner scanner )
             throws IOException
     {
@@ -318,6 +355,11 @@ final class PpidChecker
         return formatter;
     }
 
+    public void stop()
+    {
+        stopped = true;
+    }
+
     /**
      * Reads standard output from {@link Process}.
      * <br>
@@ -334,7 +376,7 @@ final class PpidChecker
             this.charset = charset;
         }
 
-        abstract ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo ) throws Exception;
+        abstract @Nonnull ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo ) throws Exception;
 
         ProcessInfo execute( String... command )
         {
@@ -358,7 +400,7 @@ final class PpidChecker
                 }
                 checkValid( scanner );
                 int exitCode = process.waitFor();
-                return exitCode == 0 ? processInfo : INVALID_PROCESS_INFO;
+                return isStopped() ? ERR_PROCESS_INFO : exitCode == 0 ? processInfo : INVALID_PROCESS_INFO;
             }
             catch ( Exception e )
             {
@@ -381,4 +423,25 @@ final class PpidChecker
         }
     }
 
+    @Override
+    public String toString()
+    {
+        String args = "ppid=" + ppid
+                + ", stopped=" + stopped;
+
+        ProcessInfo processInfo = parentProcessInfo;
+        if ( processInfo != null )
+        {
+            args += ", invalid=" + processInfo.isInvalid()
+                    + ", error=" + processInfo.isError();
+        }
+
+        if ( IS_OS_UNIX )
+        {
+            args += ", canExecuteLocalUnixPs=" + canExecuteLocalUnixPs()
+                    + ", canExecuteStandardUnixPs=" + canExecuteStandardUnixPs();
+        }
+
+        return "PpidChecker{" + args + '}';
+    }
 }

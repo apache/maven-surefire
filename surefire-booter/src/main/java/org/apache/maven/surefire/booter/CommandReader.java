@@ -377,26 +377,26 @@ public final class CommandReader implements CommandChainReader
                             if ( inserted )
                             {
                                 CommandReader.this.wakeupIterator();
-                                insertToListeners( command );
+                                callListeners( command );
                             }
                             break;
                         case TEST_SET_FINISHED:
                             CommandReader.this.makeQueueFull();
                             isTestSetFinished = true;
                             CommandReader.this.wakeupIterator();
-                            insertToListeners( command );
+                            callListeners( command );
                             break;
                         case SHUTDOWN:
                             CommandReader.this.makeQueueFull();
                             CommandReader.this.wakeupIterator();
-                            insertToListeners( command );
+                            callListeners( command );
                             break;
                         case BYE_ACK:
-                            insertToListeners( command );
+                            callListeners( command );
                             //After SHUTDOWN no more commands can come. Hence, do NOT go back to blocking in IO
                             return;
                         default:
-                            insertToListeners( command );
+                            callListeners( command );
                             break;
                     }
                 }
@@ -442,7 +442,7 @@ public final class CommandReader implements CommandChainReader
             }
         }
 
-        private void insertToListeners( Command cmd )
+        private void callListeners( Command cmd )
         {
             MasterProcessCommand expectedCommandType = cmd.getCommandType();
             for ( BiProperty<MasterProcessCommand, CommandListener> listenerWrapper : CommandReader.this.listeners )
@@ -463,18 +463,8 @@ public final class CommandReader implements CommandChainReader
             {
                 CommandReader.this.makeQueueFull();
                 CommandReader.this.wakeupIterator();
-                insertToListeners( toShutdown( shutdown ) );
-                if ( shutdown.isExit() )
-                {
-                    System.exit( 1 );
-                }
-                else if ( shutdown.isKill() )
-                {
-                    Runtime.getRuntime().halt( 1 );
-                }
-                // else is default: other than Shutdown.DEFAULT should not happen; otherwise you missed enum case
+                callListeners( toShutdown( shutdown ) );
             }
         }
     }
-
 }

@@ -44,7 +44,7 @@ Prerequisite
  Use ${project.artifactId} 2.19 or higher, JUnit 4.0 or higher, or 
  TestNG 5.10 or higher.
  
- If version of TestNG is lover than 5.10 while the parameter 
+ If version of TestNG is lower than 5.10 while the parameter 
  <<<skipAfterFailureCount>>> is set, the plugin fails with error:
  
  <<<[ERROR] Failed to execute goal ...: Parameter "skipAfterFailureCount"
@@ -53,7 +53,7 @@ Prerequisite
 
  
  
- If version of JUnit is lover than 4.0 while the parameter 
+ If version of JUnit is lower than 4.0 while the parameter 
  <<<skipAfterFailureCount>>> is set, the plugin fails with error:
  
  <<<[ERROR] Failed to execute goal ...: Parameter "skipAfterFailureCount"

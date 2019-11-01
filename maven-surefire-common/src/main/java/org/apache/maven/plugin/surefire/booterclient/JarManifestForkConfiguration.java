@@ -19,6 +19,9 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
+import org.apache.commons.compress.archivers.zip.Zip64Mode;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.ExecutableCommandlineFactory;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
@@ -29,9 +32,11 @@ import org.apache.maven.surefire.booter.SurefireBooterForkException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -41,9 +46,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.zip.Deflater;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.isDirectory;
@@ -111,12 +115,15 @@ public final class JarManifestForkConfiguration
             file.deleteOnExit();
         }
         Path parent = file.getParentFile().toPath();
-        FileOutputStream fos = new FileOutputStream( file );
-        try ( JarOutputStream jos = new JarOutputStream( fos ) )
+        OutputStream fos = new BufferedOutputStream( new FileOutputStream( file ), 64 * 1024 );
+
+        try ( ZipArchiveOutputStream zos = new ZipArchiveOutputStream( fos ) )
         {
-            jos.setLevel( JarOutputStream.STORED );
-            JarEntry je = new JarEntry( "META-INF/MANIFEST.MF" );
-            jos.putNextEntry( je );
+            zos.setUseZip64( Zip64Mode.Never );
+            zos.setLevel( Deflater.NO_COMPRESSION );
+
+            ZipArchiveEntry ze = new ZipArchiveEntry( "META-INF/MANIFEST.MF" );
+            zos.putArchiveEntry( ze );
 
             Manifest man = new Manifest();
 
@@ -148,10 +155,9 @@ public final class JarManifestForkConfiguration
             man.getMainAttributes().putValue( "Class-Path", cp.toString().trim() );
             man.getMainAttributes().putValue( "Main-Class", startClassName );
 
-            man.write( jos );
+            man.write( zos );
 
-            jos.closeEntry();
-            jos.flush();
+            zos.closeArchiveEntry();
 
             return file;
         }
