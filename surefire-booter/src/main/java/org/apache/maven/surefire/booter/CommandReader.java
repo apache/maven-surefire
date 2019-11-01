@@ -391,6 +391,10 @@ public final class CommandReader implements CommandChainReader
                             CommandReader.this.wakeupIterator();
                             insertToListeners( command );
                             break;
+                        case BYE_ACK:
+                            insertToListeners( command );
+                            //After SHUTDOWN no more commands can come. Hence, do NOT go back to blocking in IO
+                            return;
                         default:
                             insertToListeners( command );
                             break;
