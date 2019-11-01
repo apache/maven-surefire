@@ -69,7 +69,10 @@ oses.eachWithIndex { osMapping, indexOfOs ->
                         def failsafeItPort = 8000 + 100 * indexOfMaven + 10 * indexOfJdk
                         def allOptions = options + ['-Djava.awt.headless=true', "-Dfailsafe-integration-test-port=${failsafeItPort}", "-Dfailsafe-integration-test-stop-port=${1 + failsafeItPort}"]
                         if (jdk == 7) {
-                            allOptions += ['-Dhttps.protocols=TLSv1.2']
+                            allOptions += '-Dhttps.protocols=TLSv1.2'
+                        }
+                        if (!maven.startsWith('3.2') && !maven.startsWith('3.3') && !maven.startsWith('3.5')) {
+                            allOptions += '--no-transfer-progress'
                         }
                         ws(dir: "${os == 'windows' ? "${TEMP}\\${BUILD_TAG}" : pwd()}") {
                             buildProcess(stageKey, jdkName, jdkTestName, mvnName, first ? goalsDepl : goals, allOptions, mavenOpts, first)
