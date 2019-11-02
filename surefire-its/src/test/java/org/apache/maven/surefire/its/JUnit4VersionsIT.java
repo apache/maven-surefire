@@ -36,7 +36,7 @@ import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_8;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_8_1;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_8_2;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_9;
-import static org.junit.runners.Parameterized.*;
+import static org.junit.runners.Parameterized.Parameters;
 
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_0;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_1;
@@ -82,6 +82,7 @@ public class JUnit4VersionsIT
     }
 
     @Parameter
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public JUnitVersion version;
 
     @Test

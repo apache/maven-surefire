@@ -38,6 +38,7 @@ import static java.util.Locale.ENGLISH;
 /**
  *
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class SurefireReportParserTest
     extends TestCase
 {

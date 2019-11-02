@@ -30,6 +30,9 @@ import junit.framework.TestCase;
 public class TestMethodTest
     extends TestCase
 {
+
+    public static final int BIG_UPTIME = 100_000;
+
     public void testTestFailure()
     {
         ReportEntry reportEntry = new SimpleReportEntry( "a", null, "b", null );
@@ -37,6 +40,6 @@ public class TestMethodTest
         testMethod.testFailure( reportEntry );
         final int elapsed = testMethod.getElapsed();
         assertTrue( elapsed >= 0 );
-        assertTrue( elapsed < 100000 );
+        assertTrue( elapsed < BIG_UPTIME );
     }
 }

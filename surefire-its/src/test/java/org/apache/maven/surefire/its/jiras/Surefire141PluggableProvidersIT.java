@@ -135,7 +135,7 @@ public class Surefire141PluggableProvidersIT
                                                  {
                                                      return name.endsWith( "-jvmRun1.dump" );
                                                  }
-                                             });
+                                             } ) ;
         assertThat( dumpFiles )
                 .isNotNull()
                 .isNotEmpty();

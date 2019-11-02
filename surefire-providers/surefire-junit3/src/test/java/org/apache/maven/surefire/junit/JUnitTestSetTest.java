@@ -31,6 +31,9 @@ import org.apache.maven.surefire.report.TestSetReportEntry;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *
+ */
 public class JUnitTestSetTest
     extends TestCase
 {
@@ -51,6 +54,9 @@ public class JUnitTestSetTest
                       succeededTests.get( 0 ).getName() );
     }
 
+    /**
+     *
+     */
     public static final class AlwaysSucceeds
         extends TestCase
     {
@@ -60,6 +66,9 @@ public class JUnitTestSetTest
         }
     }
 
+    /**
+     *
+     */
     public static class SuccessListener
         implements RunListener
     {
@@ -133,6 +142,9 @@ public class JUnitTestSetTest
 
     }
 
+    /**
+     *
+     */
     public static class Suite
     {
 

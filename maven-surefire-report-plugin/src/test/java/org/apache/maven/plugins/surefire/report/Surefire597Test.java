@@ -21,6 +21,7 @@ package org.apache.maven.plugins.surefire.report;
 
 import junit.framework.TestCase;
 import org.apache.maven.doxia.module.xhtml5.Xhtml5Sink;
+import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 
@@ -39,6 +40,7 @@ import static org.apache.maven.plugins.surefire.report.Utils.toSystemNewLine;
 public class Surefire597Test
         extends TestCase
 {
+    @SuppressWarnings( "checkstyle:linelength" )
     public void testCorruptedTestCaseFailureWithMissingErrorTypeAndMessage()
         throws Exception
     {
@@ -47,7 +49,9 @@ public class Surefire597Test
         ConsoleLogger log = new NullConsoleLogger();
         SurefireReportGenerator gen = new SurefireReportGenerator( singletonList( report ), ENGLISH, true, null, log );
         StringWriter writer = new StringWriter();
-        gen.doGenerateReport( new SurefireReportMojo().getBundle( ENGLISH ), new Xhtml5Sink( writer ) {} );
+        Sink sink = new Xhtml5Sink( writer )
+                        {  };
+        gen.doGenerateReport( new SurefireReportMojo().getBundle( ENGLISH ), sink );
         String xml = writer.toString();
         assertThat( xml, containsString( toSystemNewLine(
             "<table border=\"1\" class=\"bodyTable\">\n"

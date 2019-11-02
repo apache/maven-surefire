@@ -51,6 +51,7 @@ import static org.hamcrest.Matchers.is;
 /**
  * @author Kristian Rosenvold
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class ForkingRunListenerTest
     extends TestCase
 {

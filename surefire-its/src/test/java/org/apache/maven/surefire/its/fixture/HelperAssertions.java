@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its.fixture;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -33,7 +34,10 @@ import static junit.framework.Assert.assertTrue;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assume.assumeTrue;
 
-@SuppressWarnings( { "JavaDoc" } )
+/**
+ *
+ */
+@SuppressWarnings( {"JavaDoc"} )
 public class HelperAssertions
 {
     /**
@@ -45,7 +49,8 @@ public class HelperAssertions
         assertTestSuiteResults( total, errors, failures, skipped, suite );
     }
 
-    public static void assertTestSuiteResults( int total, int errors, int failures, int skipped, int flakes, File testDir )
+    public static void assertTestSuiteResults( int total, int errors, int failures, int skipped, int flakes,
+                                               File testDir )
     {
         IntegrationTestSuiteResults suite = parseTestResults( testDir );
         assertTestSuiteResults( total, errors, failures, skipped, flakes, suite );
@@ -90,7 +95,7 @@ public class HelperAssertions
     public static void assertTestSuiteResults( int total, int errors, int failures, int skipped, int flakes,
                                                IntegrationTestSuiteResults actualSuite )
     {
-        assertTestSuiteResults(total, errors, failures, skipped, actualSuite);
+        assertTestSuiteResults( total, errors, failures, skipped, actualSuite );
         assertEquals( "wrong number of flaky tests", flakes, actualSuite.getFlakes() );
     }
 

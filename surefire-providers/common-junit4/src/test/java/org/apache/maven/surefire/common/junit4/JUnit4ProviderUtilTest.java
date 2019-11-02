@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.*;
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTestDescriptions;
 
 /**
  * @author Qingzhou Luo
@@ -56,13 +56,13 @@ public class JUnit4ProviderUtilTest
 
         assertEquals( 4, result.size() );
 
-        assertTrue( result.contains( test1Description) );
-        assertTrue( result.contains( test2Description) );
-        assertTrue( result.contains( test3Description) );
-        assertTrue( result.contains( test4Description) );
+        assertTrue( result.contains( test1Description ) );
+        assertTrue( result.contains( test2Description ) );
+        assertTrue( result.contains( test3Description ) );
+        assertTrue( result.contains( test4Description ) );
     }
 
-    public void testIllegalTestDescription$NegativeTest()
+    public void testIllegalTestDescriptionNegativeTest()
     {
         Description test = Description.createSuiteDescription( "someTestMethod" );
         ClassMethod classMethod = JUnit4ProviderUtil.toClassMethod( test );

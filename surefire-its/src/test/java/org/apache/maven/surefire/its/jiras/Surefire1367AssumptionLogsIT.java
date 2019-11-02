@@ -31,22 +31,16 @@ import static org.fest.assertions.Assertions.assertThat;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1367">SUREFIRE-1367</a>
  * @since 2.20.1
  */
-public class Surefire1367AssumptionLogsIT
-        extends SurefireJUnit4IntegrationTestCase
+public class Surefire1367AssumptionLogsIT extends SurefireJUnit4IntegrationTestCase
 {
     private static final String NL = System.getProperty( "line.separator" );
 
     @Test
     public void shouldSeeLogsParallelForked()
     {
-        OutputValidator outputValidator = unpack().setForkJvm()
-                                                  .forkMode( "once" )
-                                                  .parallelClassesAndMethods()
-                                                  .disablePerCoreThreadCount()
-                                                  .threadCountClasses( 2 )
-                                                  .threadCountMethods( 2 )
-                                                  .executeTest()
-                                                  .assertTestSuiteResults( 2, 0, 0, 2 );
+        OutputValidator outputValidator = unpack().setForkJvm().forkMode(
+                "once" ).parallelClassesAndMethods().disablePerCoreThreadCount().threadCountClasses(
+                2 ).threadCountMethods( 2 ).executeTest().assertTestSuiteResults( 2, 0, 0, 2 );
 
         verifyReportA( outputValidator );
         verifyReportB( outputValidator );
@@ -55,14 +49,9 @@ public class Surefire1367AssumptionLogsIT
     @Test
     public void shouldSeeLogsParallelInPlugin()
     {
-        OutputValidator outputValidator = unpack().setForkJvm()
-                                                  .forkMode( "never" )
-                                                  .parallelClassesAndMethods()
-                                                  .disablePerCoreThreadCount()
-                                                  .threadCountClasses( 2 )
-                                                  .threadCountMethods( 2 )
-                                                  .executeTest()
-                                                  .assertTestSuiteResults( 2, 0, 0, 2 );
+        OutputValidator outputValidator = unpack().setForkJvm().forkMode(
+                "never" ).parallelClassesAndMethods().disablePerCoreThreadCount().threadCountClasses(
+                2 ).threadCountMethods( 2 ).executeTest().assertTestSuiteResults( 2, 0, 0, 2 );
 
         verifyReportA( outputValidator );
         verifyReportB( outputValidator );
@@ -71,10 +60,8 @@ public class Surefire1367AssumptionLogsIT
     @Test
     public void shouldSeeLogsForked()
     {
-        OutputValidator outputValidator = unpack().setForkJvm()
-                                                  .forkMode( "once" )
-                                                  .executeTest()
-                                                  .assertTestSuiteResults( 2, 0, 0, 2 );
+        OutputValidator outputValidator = unpack().setForkJvm().forkMode( "once" ).executeTest().assertTestSuiteResults(
+                2, 0, 0, 2 );
 
         verifyReportA( outputValidator );
         verifyReportB( outputValidator );
@@ -83,10 +70,8 @@ public class Surefire1367AssumptionLogsIT
     @Test
     public void shouldSeeLogsInPlugin()
     {
-        OutputValidator outputValidator = unpack().setForkJvm()
-                                                  .forkMode( "never" )
-                                                  .executeTest()
-                                                  .assertTestSuiteResults( 2, 0, 0, 2 );
+        OutputValidator outputValidator = unpack().setForkJvm().forkMode(
+                "never" ).executeTest().assertTestSuiteResults( 2, 0, 0, 2 );
 
         verifyReportA( outputValidator );
         verifyReportB( outputValidator );
@@ -100,58 +85,34 @@ public class Surefire1367AssumptionLogsIT
 
     private void verifyReportA( OutputValidator outputValidator )
     {
-        String xmlReport = outputValidator.getSurefireReportsXmlFile( "TEST-ATest.xml" )
-                                   .readFileToString();
+        String xmlReport = outputValidator.getSurefireReportsXmlFile( "TEST-ATest.xml" ).readFileToString();
 
-        String outputCData = "<system-out><![CDATA[Hi" + NL +
-                                     NL +
-                                     "There!" + NL +
-                                     "]]></system-out>" + NL +
-                                     "    <system-err><![CDATA[Hello" + NL +
-                                     NL +
-                                     "What's up!" + NL +
-                                     "]]></system-err>";
+        String outputCData = "<system-out><![CDATA[Hi" + NL + NL + "There!" + NL + "]]></system-out>" + NL + "    "
+                + "<system-err><![CDATA[Hello" + NL + NL + "What's up!" + NL + "]]></system-err>";
 
-        assertThat( xmlReport )
-                .contains( outputCData );
+        assertThat( xmlReport ).contains( outputCData );
 
 
-        String output = outputValidator.getSurefireReportsFile( "ATest-output.txt" )
-                                .readFileToString();
+        String output = outputValidator.getSurefireReportsFile( "ATest-output.txt" ).readFileToString();
 
-        String outputExpected = "Hi" + NL +
-                                        NL +
-                                        "There!" + NL +
-                                        "Hello" + NL +
-                                        NL +
-                                        "What's up!" + NL;
+        String outputExpected = "Hi" + NL + NL + "There!" + NL + "Hello" + NL + NL + "What's up!" + NL;
 
-        assertThat( output )
-                .isEqualTo( outputExpected );
+        assertThat( output ).isEqualTo( outputExpected );
     }
 
     private void verifyReportB( OutputValidator outputValidator )
     {
-        String xmlReport = outputValidator.getSurefireReportsXmlFile( "TEST-BTest.xml" )
-                                   .readFileToString();
+        String xmlReport = outputValidator.getSurefireReportsXmlFile( "TEST-BTest.xml" ).readFileToString();
 
-        String outputCData = "<system-out><![CDATA[Hey" + NL +
-                                     NL +
-                                     "you!" + NL +
-                                     "]]></system-out>";
+        String outputCData = "<system-out><![CDATA[Hey" + NL + NL + "you!" + NL + "]]></system-out>";
 
-        assertThat( xmlReport )
-                .contains( outputCData );
+        assertThat( xmlReport ).contains( outputCData );
 
 
-        String output = outputValidator.getSurefireReportsFile( "BTest-output.txt" )
-                                .readFileToString();
+        String output = outputValidator.getSurefireReportsFile( "BTest-output.txt" ).readFileToString();
 
-        String outputExpected = "Hey" + NL +
-                                        NL +
-                                        "you!" + NL;
+        String outputExpected = "Hey" + NL + NL + "you!" + NL;
 
-        assertThat( output )
-                .isEqualTo( outputExpected );
+        assertThat( output ).isEqualTo( outputExpected );
     }
 }

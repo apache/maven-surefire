@@ -37,7 +37,8 @@ public class Surefire1024VerifyFailsafeIfTestedIT
 {
 
     @Test
-    public void shouldScanAndRunTestsInDependencyJars() throws Exception {
+    public void shouldScanAndRunTestsInDependencyJars() throws Exception
+    {
         SurefireLauncher launcher = unpack( "surefire-1024" );
         launcher.executeVerify()
             .verifyTextInLog( "class jiras.surefire1024.A1IT#test() dependency to scan" );

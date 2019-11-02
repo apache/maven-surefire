@@ -37,7 +37,11 @@ import java.util.ArrayList;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+/**
+ *
+ */
 @RunWith( ParallelParameterized.class )
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class Surefire946KillMainProcessInReusableForkIT
     extends SurefireJUnit4IntegrationTestCase
 {
@@ -50,12 +54,14 @@ public class Surefire946KillMainProcessInReusableForkIT
     private String classifierOfDummyDependency;
 
     @Parameter
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String shutdownMavenMethod;
 
     @Parameter( 1 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String shutdownSurefireMethod;
 
-    @Parameters( name = "{0}-{1}")
+    @Parameters( name = "{0}-{1}" )
     public static Iterable<Object[]> data()
     {
         ArrayList<Object[]> args = new ArrayList<>();

@@ -29,8 +29,13 @@ import junit.framework.ComparisonFailure;
 import junit.framework.TestCase;
 import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 
-import static org.apache.maven.surefire.report.SmartStackTraceParser.*;
+import static org.apache.maven.surefire.report.SmartStackTraceParser.findTopmostWithClass;
+import static org.apache.maven.surefire.report.SmartStackTraceParser.focusInsideClass;
+import static org.apache.maven.surefire.report.SmartStackTraceParser.stackTraceWithFocusOnClassAsString;
 
+/**
+ *
+ */
 @SuppressWarnings( "ThrowableResultOfMethodCallIgnored" )
 public class SmartStackTraceParserTest
     extends TestCase
@@ -44,9 +49,10 @@ public class SmartStackTraceParserTest
         }
         catch ( AssertionError e )
         {
-            SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser( ATestClass.class.getName(), e, null );
+            SmartStackTraceParser smartStackTraceParser =
+                    new SmartStackTraceParser( ATestClass.class.getName(), e, null );
             String res = smartStackTraceParser.getString();
-            assertEquals( "ATestClass.failInAssert:30 X is not Z", res );
+            assertEquals( "ATestClass.failInAssert:33 X is not Z", res );
         }
     }
 
@@ -62,7 +68,7 @@ public class SmartStackTraceParserTest
             SmartStackTraceParser smartStackTraceParser =
                     new SmartStackTraceParser( ATestClass.class.getName(), e, null );
             String res = smartStackTraceParser.getString();
-            assertEquals( "ATestClass.failInAssert:30 X is not Z", res );
+            assertEquals( "ATestClass.failInAssert:33 X is not Z", res );
         }
     }
 
@@ -94,7 +100,7 @@ public class SmartStackTraceParserTest
             SmartStackTraceParser smartStackTraceParser =
                     new SmartStackTraceParser( ATestClass.class.getName(), e, null );
             String res = smartStackTraceParser.getString();
-            assertEquals( "ATestClass.nestedFailInAssert:35->failInAssert:30 X is not Z", res );
+            assertEquals( "ATestClass.nestedFailInAssert:38->failInAssert:33 X is not Z", res );
         }
     }
 
@@ -110,7 +116,7 @@ public class SmartStackTraceParserTest
             SmartStackTraceParser smartStackTraceParser =
                     new SmartStackTraceParser( ATestClass.class.getName(), e, null );
             String res = smartStackTraceParser.getString();
-            assertEquals( "ATestClass.nestedNpe:45->npe:40 NullPointer It was null", res );
+            assertEquals( "ATestClass.nestedNpe:48->npe:43 NullPointer It was null", res );
         }
     }
 
@@ -126,7 +132,7 @@ public class SmartStackTraceParserTest
             SmartStackTraceParser smartStackTraceParser =
                     new SmartStackTraceParser( ATestClass.class.getName(), e, null );
             String res = smartStackTraceParser.getString();
-            assertEquals( "ATestClass.nestedNpeOutsideTest:55->npeOutsideTest:50 » NullPointer", res );
+            assertEquals( "ATestClass.nestedNpeOutsideTest:58->npeOutsideTest:53 » NullPointer", res );
         }
     }
 
@@ -142,7 +148,7 @@ public class SmartStackTraceParserTest
             SmartStackTraceParser smartStackTraceParser =
                     new SmartStackTraceParser( ATestClass.class.getName(), e, null );
             String res = smartStackTraceParser.getString();
-            assertEquals( "ATestClass.aLongTestErrorMessage:60 Runtime This message will be truncated, so...",
+            assertEquals( "ATestClass.aLongTestErrorMessage:63 Runtime This message will be truncated, so...",
                     res );
         }
     }
@@ -159,7 +165,7 @@ public class SmartStackTraceParserTest
             SmartStackTraceParser smartStackTraceParser =
                     new SmartStackTraceParser( ASubClass.class.getName(), e, null );
             String res = smartStackTraceParser.getString();
-            assertEquals( "ASubClass>ABaseClass.npe:27 » NullPointer It was null", res );
+            assertEquals( "ASubClass>ABaseClass.npe:29 » NullPointer It was null", res );
         }
     }
 
@@ -322,7 +328,8 @@ public class SmartStackTraceParserTest
         {
             String trace = stackTraceWithFocusOnClassAsString( e, StackTraceFocusedOnClass.B.class.getName() );
 
-            assertEquals( "java.lang.RuntimeException: java.lang.IllegalStateException: java.io.IOException: I/O error\n"
+            assertEquals(
+                    "java.lang.RuntimeException: java.lang.IllegalStateException: java.io.IOException: I/O error\n"
             + "\tat org.apache.maven.surefire.report.StackTraceFocusedOnClass$B.b(StackTraceFocusedOnClass.java:65)\n"
             + "Caused by: java.lang.IllegalStateException: java.io.IOException: I/O error\n"
             + "\tat org.apache.maven.surefire.report.StackTraceFocusedOnClass$B.b(StackTraceFocusedOnClass.java:61)\n"

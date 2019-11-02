@@ -47,6 +47,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+/**
+ *
+ */
 public class ForkConfigurationTest
 {
     private static final StartupConfiguration STARTUP_CONFIG = new StartupConfiguration( "",
@@ -75,6 +78,7 @@ public class ForkConfigurationTest
     }
 
     @Test
+    @SuppressWarnings( { "checkstyle:methodname", "checkstyle:magicnumber" } )
     public void testCreateCommandLine_UseSystemClassLoaderForkOnce_ShouldConstructManifestOnlyJar()
         throws IOException, SurefireBooterForkException
     {
@@ -223,6 +227,7 @@ public class ForkConfigurationTest
     }
 
     // based on http://stackoverflow.com/questions/2591083/getting-version-of-java-in-runtime
+    @SuppressWarnings( "checkstyle:magicnumber" )
     private static boolean isJavaVersionAtLeast7u60()
     {
         String[] javaVersionElements = System.getProperty( "java.runtime.version" ).split( "\\.|_|-b" );

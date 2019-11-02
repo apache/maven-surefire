@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,11 +18,15 @@ package org.apache.maven.surefire.its;
  * specific language governing permissions and limitations
  * under the License.
  */
+
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
 
+/**
+ *
+ */
 public class AssumptionFailureReportIT extends SurefireJUnit4IntegrationTestCase
 {
     @Test

@@ -48,6 +48,7 @@ import static org.powermock.reflect.Whitebox.setInternalState;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20.1
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class PpidCheckerTest
 {
     @Rule

@@ -50,7 +50,7 @@ public class TestFile
 
     public TestFile( File file, OutputValidator surefireVerifier )
     {
-        this( file, defaultCharset(), surefireVerifier);
+        this( file, defaultCharset(), surefireVerifier );
     }
 
     public TestFile( File file, Charset charset, OutputValidator surefireVerifier )

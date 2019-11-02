@@ -33,8 +33,7 @@ public class CheckTestNgBeforeMethodFailureIT
 {
 
     @Test
-    public void TestNgBeforeMethodFailure()
-        throws Exception
+    public void testNgBeforeMethodFailure()
     {
         unpack( "/testng-beforeMethodFailure" )
                 .maven()

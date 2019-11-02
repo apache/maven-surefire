@@ -34,9 +34,10 @@ public class Surefire1146RerunFailedAndParameterized
     public void testsAreRerun()
     {
         OutputValidator outputValidator = unpack( "surefire-1146-rerunFailingTests-with-Parameterized" ).executeTest();
-        verify(outputValidator, 8, 0, 0, 0, 5);
+        verify( outputValidator, 8, 0, 0, 0, 5 );
     }
 
+    @SuppressWarnings( "checkstyle:linelength" )
     private void verify( OutputValidator outputValidator, int run, int failures, int errors, int skipped, int flakes )
     {
         outputValidator.verifyTextInLog( "Flakes:" );

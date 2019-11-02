@@ -32,6 +32,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+/**
+ *
+ */
 public class Surefire985ParameterizedRunnerAndCategoriesIT
     extends SurefireJUnit4IntegrationTestCase
 {
@@ -43,7 +46,8 @@ public class Surefire985ParameterizedRunnerAndCategoriesIT
         OutputValidator validator = unpack( "surefire-985-parameterized-and-categories" ).maven().executeTest();
         validator.assertTestSuiteResults( 12, 0, 0, 0 );
 
-        assertFalse( validator.getSurefireReportsXmlFile( "TEST-sample.parameterized.Parameterized01Test.xml" ).exists() );
+        assertFalse( validator.getSurefireReportsXmlFile( "TEST-sample.parameterized.Parameterized01Test.xml" )
+                .exists() );
 
         TestFile reportFile2 =
             validator.getSurefireReportsXmlFile( "TEST-sample.parameterized.Parameterized02Test.xml" );

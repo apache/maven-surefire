@@ -30,7 +30,8 @@ import static org.fest.assertions.Assertions.assertThat;
 
 
 /**
- * Test for checking that the output from a forked suite is properly captured even if the suite encounters a severe error.
+ * Test for checking that the output from a forked suite is properly captured even if the suite encounters
+ * a severe error.
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
@@ -58,7 +59,7 @@ public class CheckTestNgExecuteErrorIT
                                                  {
                                                      return name.endsWith( "-jvmRun1.dump" );
                                                  }
-                                             });
+                                             } );
         assertThat( dumpFiles )
                 .isNotNull()
                 .isNotEmpty();

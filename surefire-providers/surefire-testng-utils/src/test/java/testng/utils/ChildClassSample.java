@@ -19,6 +19,9 @@ package testng.utils;
  * under the License.
  */
 
+/**
+ *
+ */
 public class ChildClassSample
         extends BaseClassSample
 {

@@ -32,11 +32,16 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.fest.assertions.Assertions.assertThat;
 
+/**
+ *
+ */
 public class Surefire1535TestNGParallelSuitesIT
         extends SurefireJUnit4IntegrationTestCase
 {
-    private static final String TEST_RESULT_1 = platformEncoding( "Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, " );
-    private static final String TEST_RESULT_2 = platformEncoding( "Tests run: 2, Failures: 0, Errors: 0, Skipped: 0" );
+    private static final String TEST_RESULT_1 =
+            platformEncoding( "Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, " );
+    private static final String TEST_RESULT_2 =
+            platformEncoding( "Tests run: 2, Failures: 0, Errors: 0, Skipped: 0" );
     private static final String SUITE1 = platformEncoding( "Suite1" );
     private static final String SUITE2 = platformEncoding( "Suite2" );
     private static final String TEST1 = platformEncoding( "test 1" );
@@ -190,7 +195,7 @@ public class Surefire1535TestNGParallelSuitesIT
 
     private SurefireLauncher unpack()
     {
-        return unpack("/surefire-1535-parallel-testng");
+        return unpack( "/surefire-1535-parallel-testng" );
     }
 
     private static String platformEncoding( String text )

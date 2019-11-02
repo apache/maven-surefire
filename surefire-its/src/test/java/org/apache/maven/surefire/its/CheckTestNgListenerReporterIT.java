@@ -39,13 +39,15 @@ import static org.junit.runners.Parameterized.Parameters;
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
 @RunWith( ParallelParameterized.class )
+@SuppressWarnings( { "checkstyle:magicnumber", "checkstyle:linelength" } )
 public class CheckTestNgListenerReporterIT
     extends SurefireJUnit4IntegrationTestCase
 {
     @Parameters( name = "{index}: TestNG {0}" )
     public static Collection<Object[]> data()
     {
-        return Arrays.asList(new Object[][] {
+        return Arrays.asList( new Object[][]
+                {
             { "5.6", "jdk15", 1.5d }, // First TestNG version with reporter support
             { "5.7", "jdk15", 1.5d }, // default version from pom of the test case
             { "5.10", "jdk15", 1.5d },
@@ -73,16 +75,19 @@ public class CheckTestNgListenerReporterIT
             { "6.0", null, 1.5d },
             { "6.14.3", null, 1.7d },
             { "7.0.0", null, 1.8d } // Currently latest TestNG version
-        });
+        } );
     }
 
     @Parameter
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String version;
 
     @Parameter( 1 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String classifier;
 
     @Parameter( 2 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public double javaVersion;
 
     @Test

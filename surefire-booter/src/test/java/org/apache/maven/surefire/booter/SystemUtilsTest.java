@@ -54,9 +54,13 @@ import static org.powermock.reflect.Whitebox.invokeMethod;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20.1
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 @RunWith( Enclosed.class )
 public class SystemUtilsTest
 {
+    /**
+     *
+     */
     public static class PlainUnitTests
     {
 
@@ -295,6 +299,9 @@ public class SystemUtilsTest
 
     }
 
+    /**
+     *
+     */
     @RunWith( PowerMockRunner.class )
     @PrepareForTest( SystemUtils.class )
     @PowerMockIgnore( { "org.jacoco.agent.rt.*", "com.vladium.emma.rt.*" } )

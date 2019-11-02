@@ -35,6 +35,7 @@ import static org.hamcrest.Matchers.lessThan;
  *
  * @author Kristian Rosenvold
  */
+@SuppressWarnings( { "checkstyle:magicnumber", "checkstyle:linelength" } )
 public class XmlReporterRunTimeIT
     extends SurefireJUnit4IntegrationTestCase
 {

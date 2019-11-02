@@ -1,4 +1,5 @@
 package org.apache.maven.plugin.surefire;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -24,6 +25,9 @@ import org.apache.maven.surefire.suite.RunResult;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+/**
+ *
+ */
 public class SurefirePluginTest extends TestCase
 {
     public void testDefaultIncludes()
@@ -76,7 +80,7 @@ public class SurefirePluginTest extends TestCase
         fail( "Expected MojoFailureException with message "
                 + "'There are test failures.\n\nPlease refer to null "
                 + "for the individual test results.\nPlease refer to dump files (if any exist) "
-                + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.'");
+                + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.'" );
     }
 
     public void testPluginName()

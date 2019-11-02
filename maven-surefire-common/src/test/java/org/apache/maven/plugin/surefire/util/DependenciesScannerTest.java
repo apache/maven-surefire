@@ -19,7 +19,9 @@ package org.apache.maven.plugin.surefire.util;
  * under the License.
  */
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
@@ -33,7 +35,12 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.*;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -50,7 +57,8 @@ public class DependenciesScannerTest
     public void testLocateTestClasses()
         throws Exception
     {
-        File testFile = writeTestFile( "DependenciesScannerTest-tests.jar", "org/test/TestA.class", "org/test/TestB.class" );
+        File testFile = writeTestFile( "DependenciesScannerTest-tests.jar",
+                "org/test/TestA.class", "org/test/TestB.class" );
 
         // use target as people can configure ide to compile in an other place than maven
         Artifact artifact =
@@ -65,7 +73,8 @@ public class DependenciesScannerTest
         include.add( "**/*A.java" );
         List<String> exclude = new ArrayList<>();
 
-        List<File> dependenciesToScan = filterArtifactsAsFiles(scanDependencies, Collections.singletonList(artifact));
+        List<File> dependenciesToScan =
+                filterArtifactsAsFiles( scanDependencies, Collections.singletonList( artifact ) );
 
         DependencyScanner scanner =
             new DependencyScanner( dependenciesToScan, new TestListResolver( include, exclude ) );
@@ -93,15 +102,15 @@ public class DependenciesScannerTest
                                  VersionRange.createFromVersion( "1.0" ), "test", "jar", "tests-jdk15", null );
         testArtifact.setFile( testJarFile );
 
-        List<String> scanDependencies = new ArrayList<String>();
+        List<String> scanDependencies = new ArrayList<>();
         scanDependencies.add( "org.surefire.dependency:dependent-artifact2:*:*:tests-jdk15" );
 
-        List<String> include = new ArrayList<String>();
+        List<String> include = new ArrayList<>();
         include.add( "**/*A.java" );
-        List<String> exclude = new ArrayList<String>();
+        List<String> exclude = new ArrayList<>();
 
 
-        List<File> filesToScan = filterArtifactsAsFiles(scanDependencies, Collections.singletonList(testArtifact));
+        List<File> filesToScan = filterArtifactsAsFiles( scanDependencies, Collections.singletonList( testArtifact ) );
 
         DependencyScanner scanner =
             new DependencyScanner( filesToScan, new TestListResolver( include, exclude ) );
@@ -110,7 +119,7 @@ public class DependenciesScannerTest
         assertNotNull( classNames );
         assertEquals( 2, classNames.size() );
 
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
         classNames.writeTo( props );
         assertEquals( 2, props.size() );
     }
@@ -136,7 +145,7 @@ public class DependenciesScannerTest
                                                      new DefaultArtifactHandler() );
         testArtifact.setFile( testJarFile );
 
-        List<String> scanDependencies = new ArrayList<String>();
+        List<String> scanDependencies = new ArrayList<>();
         scanDependencies.add( "org.surefire.dependency:dependent-artifact3:test-jar" );
 
         List<String> include = new ArrayList<String>();
@@ -145,7 +154,7 @@ public class DependenciesScannerTest
 
         List<Artifact> artifacts = Arrays.asList( mainArtifact, testArtifact );
 
-        List<File> filesToScan = filterArtifactsAsFiles(scanDependencies, artifacts);
+        List<File> filesToScan = filterArtifactsAsFiles( scanDependencies, artifacts );
 
         DependencyScanner scanner = new DependencyScanner( filesToScan, new TestListResolver( include, exclude ) );
 
@@ -154,7 +163,7 @@ public class DependenciesScannerTest
         assertEquals( 1, classNames.size() );
         assertEquals( "org.test.TestA", classNames.getClassName( 0 ) );
 
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
         classNames.writeTo( props );
         assertEquals( 1, props.size() );
     }
@@ -180,16 +189,16 @@ public class DependenciesScannerTest
                                                    new DefaultArtifactHandler() );
         artifact20.setFile( jarFile20 );
 
-        List<String> scanDependencies = new ArrayList<String>();
+        List<String> scanDependencies = new ArrayList<>();
         scanDependencies.add( "org.surefire.dependency:dependent-artifact4:*:2.0" );
 
-        List<String> include = new ArrayList<String>();
+        List<String> include = new ArrayList<>();
         include.add( "**/*A.java" );
-        List<String> exclude = new ArrayList<String>();
+        List<String> exclude = new ArrayList<>();
 
         List<Artifact> artifacts = Arrays.asList( artifact10, artifact20 );
 
-        List<File> filesToScan = filterArtifactsAsFiles(scanDependencies, artifacts);
+        List<File> filesToScan = filterArtifactsAsFiles( scanDependencies, artifacts );
         DependencyScanner scanner = new DependencyScanner( filesToScan, new TestListResolver( include, exclude ) );
 
         ScanResult classNames = scanner.scan();
@@ -203,10 +212,12 @@ public class DependenciesScannerTest
         assertFalse( props.values().contains( "org.test.ClassA" ) );
     }
 
-    private static List<File> filterArtifactsAsFiles(List<String> scanDependencies, List<Artifact> artifacts) {
+    private static List<File> filterArtifactsAsFiles( List<String> scanDependencies, List<Artifact> artifacts )
+    {
         List<File> filesToScan = new ArrayList<>();
-        for (Artifact a : DependencyScanner.filter(artifacts, scanDependencies)) {
-            filesToScan.add(a.getFile());
+        for ( Artifact a : DependencyScanner.filter( artifacts, scanDependencies ) )
+        {
+            filesToScan.add( a.getFile() );
         }
         return filesToScan;
     }

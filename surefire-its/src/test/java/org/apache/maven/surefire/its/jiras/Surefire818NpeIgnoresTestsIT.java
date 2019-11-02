@@ -33,7 +33,10 @@ public class Surefire818NpeIgnoresTestsIT
     @Test
     public void testBuildFailingWhenErrors()
     {
-        unpack( "surefire-818-ignored-tests-on-npe" ).maven().withFailure().executeTest().assertTestSuiteResults( 2, 0,
-                                                                                                                  1, 0 );
+        unpack( "surefire-818-ignored-tests-on-npe" )
+                .maven()
+                .withFailure()
+                .executeTest()
+                .assertTestSuiteResults( 2, 0, 1, 0 );
     }
 }

@@ -54,22 +54,25 @@ import static org.mockito.Mockito.when;
 import static org.powermock.reflect.Whitebox.getInternalState;
 import static org.powermock.reflect.Whitebox.invokeMethod;
 
+/**
+ *
+ */
 public class DefaultReporterFactoryTest
     extends TestCase
 {
-    private final static String TEST_ONE = "testOne";
+    private static final String TEST_ONE = "testOne";
 
-    private final static String TEST_TWO = "testTwo";
+    private static final String TEST_TWO = "testTwo";
 
-    private final static String TEST_THREE = "testThree";
+    private static final String TEST_THREE = "testThree";
 
-    private final static String TEST_FOUR = "testFour";
+    private static final String TEST_FOUR = "testFour";
 
-    private final static String TEST_FIVE = "testFive";
+    private static final String TEST_FIVE = "testFive";
 
-    private final static String ASSERTION_FAIL = "assertionFail";
+    private static final String ASSERTION_FAIL = "assertionFail";
 
-    private final static String ERROR = "error";
+    private static final String ERROR = "error";
 
     public void testMergeTestHistoryResult()
             throws Exception
@@ -395,7 +398,7 @@ public class DefaultReporterFactoryTest
 
         private final String stackTrace;
 
-        public DummyStackTraceWriter( String stackTrace )
+        DummyStackTraceWriter( String stackTrace )
         {
             this.stackTrace = stackTrace;
         }

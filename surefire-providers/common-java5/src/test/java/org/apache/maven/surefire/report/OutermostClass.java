@@ -19,7 +19,8 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-class OutermostClass {
+class OutermostClass
+{
     void junit()
     {
         new ATestClass().failInAssert();

@@ -32,7 +32,9 @@ public class Surefire1396CustomProviderClassPathIT
     @BeforeClass
     public static void installProvider()
     {
-        unpack( Surefire1396CustomProviderClassPathIT.class, "surefire-1396-pluggableproviders-classpath-provider", "prov" ).executeInstall();
+        unpack( Surefire1396CustomProviderClassPathIT.class,
+                "surefire-1396-pluggableproviders-classpath-provider", "prov" )
+                .executeInstall();
     }
     
     @Test

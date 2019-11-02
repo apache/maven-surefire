@@ -23,7 +23,7 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
-@SuppressWarnings( { "javadoc", "checkstyle:javadoctype" } )
+@SuppressWarnings( { "javadoc", "checkstyle:javadoctype", "checkstyle:linelength" } )
 /**
  *
  * In the surefire plugin, it is possible to specify one or more RunListener when running tests with JUnit.

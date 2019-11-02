@@ -24,7 +24,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 import org.apache.maven.it.VerificationException;
-import org.apache.maven.surefire.its.fixture.*;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

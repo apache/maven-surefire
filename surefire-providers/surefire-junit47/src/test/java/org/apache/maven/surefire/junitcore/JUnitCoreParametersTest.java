@@ -24,12 +24,15 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.hamcrest.core.Is.is;
 
-/*
+/**
  * @author Kristian Rosenvold, kristian.rosenvold@gmail com
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class JUnitCoreParametersTest
 {
     @Test
@@ -134,38 +137,38 @@ public class JUnitCoreParametersTest
     private Map<String, String> newPropertiesClasses()
     {
         Map<String, String> props = new HashMap<>();
-        props.put(JUnitCoreParameters.PARALLEL_KEY, "classes");
-        props.put(JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "false");
-        props.put(JUnitCoreParameters.THREADCOUNT_KEY, "2");
-        props.put(JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY, "false");
+        props.put( JUnitCoreParameters.PARALLEL_KEY, "classes" );
+        props.put( JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "false" );
+        props.put( JUnitCoreParameters.THREADCOUNT_KEY, "2" );
+        props.put( JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY, "false" );
         return props;
     }
 
     private Map<String, String> newPropertiesMethods()
     {
         Map<String, String> props = new HashMap<>();
-        props.put(JUnitCoreParameters.PARALLEL_KEY, "methods");
-        props.put(JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "false");
-        props.put(JUnitCoreParameters.THREADCOUNT_KEY, "2");
-        props.put(JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY, "true");
+        props.put( JUnitCoreParameters.PARALLEL_KEY, "methods" );
+        props.put( JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "false" );
+        props.put( JUnitCoreParameters.THREADCOUNT_KEY, "2" );
+        props.put( JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY, "true" );
         return props;
     }
 
     private Map<String, String> newPropertiesBoth()
     {
         Map<String, String> props = new HashMap<>();
-        props.put(JUnitCoreParameters.PARALLEL_KEY, "both");
-        props.put(JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "true");
-        props.put(JUnitCoreParameters.THREADCOUNT_KEY, "7");
-        props.put(JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY, "false");
+        props.put( JUnitCoreParameters.PARALLEL_KEY, "both" );
+        props.put( JUnitCoreParameters.PERCORETHREADCOUNT_KEY, "true" );
+        props.put( JUnitCoreParameters.THREADCOUNT_KEY, "7" );
+        props.put( JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY, "false" );
         return props;
     }
 
     private Map<String, String> newPropertiesTimeouts( double timeout, double forcedTimeout )
     {
         Map<String, String> props = new HashMap<>();
-        props.put(JUnitCoreParameters.PARALLEL_TIMEOUT_KEY, Double.toString(timeout));
-        props.put(JUnitCoreParameters.PARALLEL_TIMEOUTFORCED_KEY, Double.toString(forcedTimeout));
+        props.put( JUnitCoreParameters.PARALLEL_TIMEOUT_KEY, Double.toString( timeout ) );
+        props.put( JUnitCoreParameters.PARALLEL_TIMEOUTFORCED_KEY, Double.toString( forcedTimeout ) );
         return props;
     }
 

@@ -133,7 +133,8 @@ public class MockReporter
     }
 
     @Override
-    public RunMode markAs(RunMode currentRunMode) {
+    public RunMode markAs( RunMode currentRunMode )
+    {
         return null;
     }
 

@@ -71,6 +71,9 @@ import static org.mockito.Mockito.when;
 @RunWith( Enclosed.class )
 public class ForkedChannelDecoderTest
 {
+    /**
+     *
+     */
     public static class DecoderOperationsTest
     {
         @Rule
@@ -86,6 +89,7 @@ public class ForkedChannelDecoderTest
         }
 
         @Test
+        @SuppressWarnings( "checkstyle:innerassignment" )
         public void shouldHaveSystemProperty() throws IOException
         {
             Stream out = Stream.newStream();
@@ -129,6 +133,7 @@ public class ForkedChannelDecoderTest
         }
 
         @Test
+        @SuppressWarnings( "checkstyle:magicnumber" )
         public void testCreatingReportEntry()
         {
             final String exceptionMessage = "msg";
@@ -175,7 +180,7 @@ public class ForkedChannelDecoderTest
             assertThat( decodedReportEntry.getSourceName() ).isEqualTo( reportEntry.getSourceName() );
             assertThat( decodedReportEntry.getSourceText() ).isEqualTo( reportEntry.getSourceText() );
             assertThat( decodedReportEntry.getName() ).isEqualTo( reportEntry.getName() );
-            assertThat( decodedReportEntry.getNameText() ).isEqualTo(reportEntry.getNameText());
+            assertThat( decodedReportEntry.getNameText() ).isEqualTo( reportEntry.getNameText() );
             assertThat( decodedReportEntry.getGroup() ).isEqualTo( reportEntry.getGroup() );
             assertThat( decodedReportEntry.getMessage() ).isEqualTo( reportEntry.getMessage() );
             assertThat( decodedReportEntry.getStackTraceWriter() ).isNull();
@@ -187,7 +192,7 @@ public class ForkedChannelDecoderTest
             assertThat( decodedReportEntry.getSourceName() ).isEqualTo( reportEntry.getSourceName() );
             assertThat( decodedReportEntry.getSourceText() ).isEqualTo( reportEntry.getSourceText() );
             assertThat( decodedReportEntry.getName() ).isEqualTo( reportEntry.getName() );
-            assertThat( decodedReportEntry.getNameText() ).isEqualTo(reportEntry.getNameText());
+            assertThat( decodedReportEntry.getNameText() ).isEqualTo( reportEntry.getNameText() );
             assertThat( decodedReportEntry.getGroup() ).isEqualTo( reportEntry.getGroup() );
             assertThat( decodedReportEntry.getMessage() ).isEqualTo( reportEntry.getMessage() );
             assertThat( decodedReportEntry.getElapsed() ).isNull();
@@ -200,7 +205,7 @@ public class ForkedChannelDecoderTest
             assertThat( decodedReportEntry.getSourceName() ).isEqualTo( reportEntry.getSourceName() );
             assertThat( decodedReportEntry.getSourceText() ).isEqualTo( reportEntry.getSourceText() );
             assertThat( decodedReportEntry.getName() ).isEqualTo( reportEntry.getName() );
-            assertThat( decodedReportEntry.getNameText() ).isEqualTo(reportEntry.getNameText());
+            assertThat( decodedReportEntry.getNameText() ).isEqualTo( reportEntry.getNameText() );
             assertThat( decodedReportEntry.getGroup() ).isEqualTo( reportEntry.getGroup() );
             assertThat( decodedReportEntry.getMessage() ).isEqualTo( reportEntry.getMessage() );
             assertThat( decodedReportEntry.getElapsed() ).isEqualTo( 1003 );
@@ -214,7 +219,7 @@ public class ForkedChannelDecoderTest
             assertThat( decodedReportEntry.getSourceName() ).isEqualTo( reportEntry.getSourceName() );
             assertThat( decodedReportEntry.getSourceText() ).isEqualTo( reportEntry.getSourceText() );
             assertThat( decodedReportEntry.getName() ).isEqualTo( reportEntry.getName() );
-            assertThat( decodedReportEntry.getNameText() ).isEqualTo(reportEntry.getNameText());
+            assertThat( decodedReportEntry.getNameText() ).isEqualTo( reportEntry.getNameText() );
             assertThat( decodedReportEntry.getGroup() ).isEqualTo( reportEntry.getGroup() );
             assertThat( decodedReportEntry.getMessage() ).isEqualTo( reportEntry.getMessage() );
             assertThat( decodedReportEntry.getElapsed() ).isEqualTo( 1003 );
@@ -235,7 +240,7 @@ public class ForkedChannelDecoderTest
             assertThat( decodedReportEntry.getSourceName() ).isEqualTo( reportEntry.getSourceName() );
             assertThat( decodedReportEntry.getSourceText() ).isEqualTo( reportEntry.getSourceText() );
             assertThat( decodedReportEntry.getName() ).isEqualTo( reportEntry.getName() );
-            assertThat( decodedReportEntry.getNameText() ).isEqualTo(reportEntry.getNameText());
+            assertThat( decodedReportEntry.getNameText() ).isEqualTo( reportEntry.getNameText() );
             assertThat( decodedReportEntry.getGroup() ).isEqualTo( reportEntry.getGroup() );
             assertThat( decodedReportEntry.getMessage() ).isEqualTo( reportEntry.getMessage() );
             assertThat( decodedReportEntry.getElapsed() ).isEqualTo( 1003 );
@@ -590,10 +595,14 @@ public class ForkedChannelDecoderTest
         }
     }
 
+    /**
+     *
+     */
     @RunWith( Theories.class )
     public static class ReportEntryTest
     {
         @DataPoints( value = "operation" )
+        @SuppressWarnings( "checkstyle:visibilitymodifier" )
         public static String[][] operations = { { "testSetStarting", "setTestSetStartingListener" },
                                                 { "testSetCompleted", "setTestSetCompletedListener" },
                                                 { "testStarting", "setTestStartingListener" },
@@ -605,21 +614,27 @@ public class ForkedChannelDecoderTest
         };
 
         @DataPoints( value = "reportedMessage" )
+        @SuppressWarnings( "checkstyle:visibilitymodifier" )
         public static String[] reportedMessage = { null, "skipped test" };
 
         @DataPoints( value = "elapsed" )
+        @SuppressWarnings( { "checkstyle:visibilitymodifier", "checkstyle:magicnumber" } )
         public static Integer[] elapsed = { null, 102 };
 
         @DataPoints( value = "trim" )
+        @SuppressWarnings( "checkstyle:visibilitymodifier" )
         public static boolean[] trim = { false, true };
 
         @DataPoints( value = "msg" )
+        @SuppressWarnings( "checkstyle:visibilitymodifier" )
         public static boolean[] msg = { false, true };
 
         @DataPoints( value = "smart" )
+        @SuppressWarnings( "checkstyle:visibilitymodifier" )
         public static boolean[] smart = { false, true };
 
         @DataPoints( value = "trace" )
+        @SuppressWarnings( "checkstyle:visibilitymodifier" )
         public static boolean[] trace = { false, true };
 
         @Theory
@@ -657,7 +672,7 @@ public class ForkedChannelDecoderTest
             when( reportEntry.getName() ).thenReturn( "display name of test" );
             when( reportEntry.getNameWithGroup() ).thenReturn( "name with group" );
             when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
-            when( reportEntry.getSourceText() ).thenReturn("test class display name");
+            when( reportEntry.getSourceText() ).thenReturn( "test class display name" );
             when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
             Stream out = Stream.newStream();

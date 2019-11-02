@@ -23,7 +23,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
-import org.apache.maven.surefire.its.fixture.*;
+import org.apache.maven.surefire.its.fixture.HelperAssertions;
+import org.apache.maven.surefire.its.fixture.IntegrationTestSuiteResults;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

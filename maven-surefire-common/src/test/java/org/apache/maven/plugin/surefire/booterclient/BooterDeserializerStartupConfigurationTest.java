@@ -21,10 +21,22 @@ package org.apache.maven.plugin.surefire.booterclient;
 
 import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.surefire.booter.*;
+import org.apache.maven.surefire.booter.AbstractPathConfiguration;
+import org.apache.maven.surefire.booter.BooterDeserializer;
+import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.booter.ClasspathConfiguration;
+import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
+import org.apache.maven.surefire.booter.PropertiesWrapper;
+import org.apache.maven.surefire.booter.ProviderConfiguration;
+import org.apache.maven.surefire.booter.StartupConfiguration;
+import org.apache.maven.surefire.booter.Shutdown;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.testset.*;
+import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.RunOrderParameters;
+import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestRequest;
+import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.util.RunOrder;
 import org.junit.After;
 import org.junit.Before;
@@ -165,12 +177,12 @@ public class BooterDeserializerStartupConfigurationTest
         ReporterConfiguration reporterConfiguration = new ReporterConfiguration( cwd, true );
         TestRequest testSuiteDefinition =
             new TestRequest( Arrays.asList( getSuiteXmlFileStrings() ), getTestSourceDirectory(),
-                             new TestListResolver( "aUserRequestedTest#aUserRequestedTestMethod" ));
+                             new TestListResolver( "aUserRequestedTest#aUserRequestedTestMethod" ) );
 
         RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null );
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, true, reporterConfiguration,
                 new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new HashMap<String, String>(),
-                BooterDeserializerProviderConfigurationTest.aTestTyped, true, cli, 0, Shutdown.DEFAULT, 0 );
+                BooterDeserializerProviderConfigurationTest.TEST_TYPED, true, cli, 0, Shutdown.DEFAULT, 0 );
     }
 
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )

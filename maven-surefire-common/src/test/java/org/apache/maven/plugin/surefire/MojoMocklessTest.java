@@ -46,6 +46,9 @@ import static org.junit.Assert.fail;
 import static org.powermock.reflect.Whitebox.invokeMethod;
 import static org.powermock.reflect.Whitebox.setInternalState;
 
+/**
+ *
+ */
 public class MojoMocklessTest
 {
     @Test
@@ -104,6 +107,7 @@ public class MojoMocklessTest
     }
 
     @Test
+    @SuppressWarnings( "checkstyle:magicnumber" )
     public void testForkCountComputation()
     {
         AbstractSurefireMojo surefirePlugin = new Mojo( null, null );
@@ -362,7 +366,7 @@ public class MojoMocklessTest
                 .contains( "pkg.MyTest" );
     }
 
-    private final static class Mojo
+    private static final class Mojo
             extends AbstractSurefireMojo
     {
         private final List<Artifact> projectTestArtifacts;
@@ -675,7 +679,8 @@ public class MojoMocklessTest
         }
 
         @Override
-        protected String[] getExcludedEnvironmentVariables() {
+        protected String[] getExcludedEnvironmentVariables()
+        {
             return new String[0];
         }
 

@@ -33,6 +33,9 @@ public class Surefire1041FailingJUnitRunnerIT
     @Test
     public void reportErrorInJUnitRunnerAsTestError()
     {
-        unpack( "surefire-1041-exception-in-junit-runner" ).mavenTestFailureIgnore( true ).executeTest().assertTestSuiteResults( 1, 1, 0, 0 );
+        unpack( "surefire-1041-exception-in-junit-runner" )
+                .mavenTestFailureIgnore( true )
+                .executeTest()
+                .assertTestSuiteResults( 1, 1, 0, 0 );
     }
 }

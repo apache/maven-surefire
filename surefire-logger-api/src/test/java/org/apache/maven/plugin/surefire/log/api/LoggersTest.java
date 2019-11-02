@@ -21,8 +21,6 @@ package org.apache.maven.plugin.surefire.log.api;
 
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.mockito.internal.matchers.CapturesArguments;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -65,7 +63,7 @@ public class LoggersTest
         logger.error( e );
         assertThat( outputStream.toString() )
                 .contains( "java.lang.Exception: exception" )
-                .contains( "at " + getClass().getName() + ".testPrintStreamLogger(LoggersTest.java:63)" );
+                .contains( "at " + getClass().getName() + ".testPrintStreamLogger(LoggersTest.java:61)" );
     }
 
     @Test( expected = NullPointerException.class )

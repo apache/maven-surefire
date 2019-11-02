@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 
 import java.util.Collection;
 
@@ -28,21 +28,22 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
-public class Surefire1004RunTestFromDependencyJarsTypeAndClassifierIT
-    extends SurefireJUnit4IntegrationTestCase
+/**
+ *
+ */
+public class Surefire1004RunTestFromDependencyJarsTypeAndClassifierIT extends SurefireJUnit4IntegrationTestCase
 {
-    
+
     @Test
-    public void shouldScanAndRunTestsInDependencyJars()
-        throws Exception
+    public void shouldScanAndRunTestsInDependencyJars() throws Exception
     {
         SurefireLauncher launcher = unpack( "surefire-1004-RunTestFromDependencyJarsTypeAndClassifier" );
-        launcher.addGoal("test").addGoal("install");
+        launcher.addGoal( "test" ).addGoal( "install" );
         OutputValidator wholeExecValidator = launcher.executeCurrentGoals();
         wholeExecValidator.verifyErrorFreeLog();
 
-        OutputValidator module1 = launcher.getSubProjectValidator("surefire-1004-module1");
-        module1.assertTestSuiteResults(3, 0, 0, 0);
+        OutputValidator module1 = launcher.getSubProjectValidator( "surefire-1004-module1" );
+        module1.assertTestSuiteResults( 3, 0, 0, 0 );
 
         // Tests from dependencies
         wholeExecValidator.verifyTextInLog( "Running org.acme.tests.TestA" );

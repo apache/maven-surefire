@@ -33,9 +33,10 @@ import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaV
  * @author <a href="mailto:qingzhouluo@google.com">Qingzhou Luo</a>
  * @author Matt Coley
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class JUnitPlatformRerunFailingTestsIT extends SurefireJUnit4IntegrationTestCase
 {
-    private final static String VERSION = "5.5.1";
+    private static final String VERSION = "5.5.1";
 
     private SurefireLauncher unpack()
     {
@@ -49,10 +50,13 @@ public class JUnitPlatformRerunFailingTestsIT extends SurefireJUnit4IntegrationT
     }
 
     @Test
-    public void testRerunFailingErrorTestsWithOneRetry() throws Exception
+    public void testRerunFailingErrorTestsWithOneRetry()
     {
         OutputValidator outputValidator = unpack().setJUnitVersion( VERSION ).maven().addGoal(
-                "-Dsurefire.rerunFailingTestsCount=1" ).withFailure().debugLogging().executeTest()
+                "-Dsurefire.rerunFailingTestsCount=1" )
+                .withFailure()
+                .debugLogging()
+                .executeTest()
                 .assertTestSuiteResults( 5, 1, 1, 0, 0 );
         verifyFailuresOneRetryAllClasses( outputValidator );
 
@@ -73,11 +77,11 @@ public class JUnitPlatformRerunFailingTestsIT extends SurefireJUnit4IntegrationT
     }
 
     @Test
-    public void testRerunFailingErrorTestsTwoRetry() throws Exception
+    public void testRerunFailingErrorTestsTwoRetry()
     {
         // Four flakes, both tests have been re-run twice
-        OutputValidator outputValidator = unpack().setJUnitVersion( VERSION ).maven().debugLogging()
-                .addGoal( "-Dsurefire.rerunFailingTestsCount=2" ).executeTest().assertTestSuiteResults( 5, 0, 0, 0, 4 );
+        OutputValidator outputValidator = unpack().setJUnitVersion( VERSION ).maven().debugLogging().addGoal(
+                "-Dsurefire.rerunFailingTestsCount=2" ).executeTest().assertTestSuiteResults( 5, 0, 0, 0, 4 );
 
         verifyFailuresTwoRetryAllClasses( outputValidator );
 
@@ -101,7 +105,7 @@ public class JUnitPlatformRerunFailingTestsIT extends SurefireJUnit4IntegrationT
     }
 
     @Test
-    public void testRerunFailingErrorTestsFalse() throws Exception
+    public void testRerunFailingErrorTestsFalse()
     {
         OutputValidator outputValidator = unpack().setJUnitVersion(
                 VERSION ).maven().withFailure().debugLogging().executeTest().assertTestSuiteResults( 5, 1, 1, 0, 0 );
@@ -113,23 +117,21 @@ public class JUnitPlatformRerunFailingTestsIT extends SurefireJUnit4IntegrationT
 
         verifyFailuresNoRetryAllClasses( outputValidator );
 
-        outputValidator = unpack().setJUnitVersion( VERSION ).maven().addGoal(
-                "-Dparallel=methods" ).addGoal(
-                "-DuseUnlimitedThreads=true" ).withFailure().debugLogging().executeTest()
-                .assertTestSuiteResults( 5, 1, 1, 0, 0 );
+        outputValidator = unpack().setJUnitVersion( VERSION ).maven().addGoal( "-Dparallel=methods" ).addGoal(
+                "-DuseUnlimitedThreads=true" ).withFailure().debugLogging().executeTest().assertTestSuiteResults( 5, 1,
+                1, 0, 0 );
 
         verifyFailuresNoRetryAllClasses( outputValidator );
 
-        outputValidator = unpack().setJUnitVersion( VERSION ).maven().addGoal(
-                "-Dparallel=classes" ).addGoal(
-                "-DuseUnlimitedThreads=true" ).withFailure().debugLogging().executeTest()
-                .assertTestSuiteResults( 5, 1, 1, 0, 0 );
+        outputValidator = unpack().setJUnitVersion( VERSION ).maven().addGoal( "-Dparallel=classes" ).addGoal(
+                "-DuseUnlimitedThreads=true" ).withFailure().debugLogging().executeTest().assertTestSuiteResults( 5, 1,
+                1, 0, 0 );
 
         verifyFailuresNoRetryAllClasses( outputValidator );
     }
 
     @Test
-    public void testRerunOneTestClass() throws Exception
+    public void testRerunOneTestClass()
     {
         OutputValidator outputValidator = unpack().setJUnitVersion( VERSION ).maven().debugLogging().addGoal(
                 "-Dsurefire.rerunFailingTestsCount=1" ).addGoal(
@@ -139,30 +141,30 @@ public class JUnitPlatformRerunFailingTestsIT extends SurefireJUnit4IntegrationT
 
         outputValidator = unpack().setJUnitVersion( VERSION ).maven().addGoal(
                 "-Dsurefire.rerunFailingTestsCount=1" ).addGoal( "-DforkCount=3" ).addGoal(
-                "-Dtest=FlakyFirstTimeTest" ).withFailure().debugLogging().executeTest()
-                .assertTestSuiteResults( 3, 1, 1, 0, 0 );
+                "-Dtest=FlakyFirstTimeTest" ).withFailure().debugLogging().executeTest().assertTestSuiteResults( 3, 1,
+                1, 0, 0 );
 
         verifyFailuresOneRetryOneClass( outputValidator );
 
         outputValidator = unpack().setJUnitVersion( VERSION ).maven().addGoal(
                 "-Dsurefire.rerunFailingTestsCount=1" ).addGoal( "-Dparallel=methods" ).addGoal(
                 "-DuseUnlimitedThreads=true" ).addGoal(
-                "-Dtest=FlakyFirstTimeTest" ).withFailure().debugLogging().executeTest()
-                .assertTestSuiteResults( 3, 1, 1, 0, 0 );
+                "-Dtest=FlakyFirstTimeTest" ).withFailure().debugLogging().executeTest().assertTestSuiteResults( 3, 1,
+                1, 0, 0 );
 
         verifyFailuresOneRetryOneClass( outputValidator );
 
         outputValidator = unpack().setJUnitVersion( VERSION ).maven().addGoal(
                 "-Dsurefire.rerunFailingTestsCount=1" ).addGoal( "-Dparallel=classes" ).addGoal(
                 "-DuseUnlimitedThreads=true" ).addGoal(
-                "-Dtest=FlakyFirstTimeTest" ).withFailure().debugLogging().executeTest()
-                .assertTestSuiteResults( 3, 1, 1, 0, 0 );
+                "-Dtest=FlakyFirstTimeTest" ).withFailure().debugLogging().executeTest().assertTestSuiteResults( 3, 1,
+                1, 0, 0 );
 
         verifyFailuresOneRetryOneClass( outputValidator );
     }
 
     @Test
-    public void testRerunOneTestMethod() throws Exception
+    public void testRerunOneTestMethod()
     {
         OutputValidator outputValidator = unpack().setJUnitVersion( VERSION ).maven().addGoal(
                 "-Dsurefire.rerunFailingTestsCount=1" ).addGoal(
@@ -181,7 +183,10 @@ public class JUnitPlatformRerunFailingTestsIT extends SurefireJUnit4IntegrationT
         outputValidator = unpack().setJUnitVersion( VERSION ).maven().addGoal(
                 "-Dsurefire.rerunFailingTestsCount=1" ).addGoal( "-Dparallel=methods" ).addGoal(
                 "-DuseUnlimitedThreads=true" ).addGoal(
-                "-Dtest=FlakyFirstTimeTest#testFailing*" ).withFailure().debugLogging().executeTest()
+                "-Dtest=FlakyFirstTimeTest#testFailing*" )
+                .withFailure()
+                .debugLogging()
+                .executeTest()
                 .assertTestSuiteResults( 1, 0, 1, 0, 0 );
 
         verifyFailuresOneRetryOneMethod( outputValidator );
@@ -189,7 +194,10 @@ public class JUnitPlatformRerunFailingTestsIT extends SurefireJUnit4IntegrationT
         outputValidator = unpack().setJUnitVersion( VERSION ).maven().addGoal(
                 "-Dsurefire.rerunFailingTestsCount=1" ).addGoal( "-Dparallel=classes" ).addGoal(
                 "-DuseUnlimitedThreads=true" ).addGoal(
-                "-Dtest=FlakyFirstTimeTest#testFailing*" ).withFailure().debugLogging().executeTest()
+                "-Dtest=FlakyFirstTimeTest#testFailing*" )
+                .withFailure()
+                .debugLogging()
+                .executeTest()
                 .assertTestSuiteResults( 1, 0, 1, 0, 0 );
 
         verifyFailuresOneRetryOneMethod( outputValidator );
@@ -220,7 +228,8 @@ public class JUnitPlatformRerunFailingTestsIT extends SurefireJUnit4IntegrationT
         verifyOnlyFailuresOneRetry( outputValidator, 1, 1, 0, 0 );
     }
 
-    private void verifyFailuresOneRetry( OutputValidator outputValidator, int run, int failures, int errors, int flakes )
+    private void verifyFailuresOneRetry( OutputValidator outputValidator, int run, int failures, int errors,
+                                         int flakes )
     {
         outputValidator.verifyTextInLog( "Failures:" );
         outputValidator.verifyTextInLog( "Run 1: FlakyFirstTimeTest.testFailingTestOne" );
@@ -233,7 +242,8 @@ public class JUnitPlatformRerunFailingTestsIT extends SurefireJUnit4IntegrationT
         verifyStatistics( outputValidator, run, failures, errors, flakes );
     }
 
-    private void verifyOnlyFailuresOneRetry( OutputValidator outputValidator, int run, int failures, int errors, int flakes )
+    private void verifyOnlyFailuresOneRetry( OutputValidator outputValidator, int run, int failures, int errors,
+                                             int flakes )
     {
         outputValidator.verifyTextInLog( "Failures:" );
         outputValidator.verifyTextInLog( "Run 1: FlakyFirstTimeTest.testFailingTestOne" );
@@ -242,7 +252,8 @@ public class JUnitPlatformRerunFailingTestsIT extends SurefireJUnit4IntegrationT
         verifyStatistics( outputValidator, run, failures, errors, flakes );
     }
 
-    private void verifyFailuresTwoRetry( OutputValidator outputValidator, int run, int failures, int errors, int flakes )
+    private void verifyFailuresTwoRetry( OutputValidator outputValidator, int run, int failures, int errors,
+                                         int flakes )
     {
         outputValidator.verifyTextInLog( "Flakes:" );
         outputValidator.verifyTextInLog( "Run 1: FlakyFirstTimeTest.testFailingTestOne" );
@@ -270,7 +281,8 @@ public class JUnitPlatformRerunFailingTestsIT extends SurefireJUnit4IntegrationT
         if ( flakes > 0 )
         {
             outputValidator.verifyTextInLog(
-                    "Tests run: " + run + ", Failures: " + failures + ", Errors: " + errors + ", Skipped: 0, Flakes: " + flakes );
+                    "Tests run: " + run + ", Failures: " + failures + ", Errors: " + errors + ", Skipped: 0, Flakes: "
+                            + flakes );
         }
         else
         {

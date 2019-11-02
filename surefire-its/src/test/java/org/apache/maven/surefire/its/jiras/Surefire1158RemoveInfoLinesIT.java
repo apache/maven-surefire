@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its.jiras;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -27,11 +28,11 @@ import org.junit.runner.RunWith;
 import java.util.ArrayList;
 
 import static org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase.unpack;
-import static org.junit.runners.Parameterized.*;
-import static org.junit.Assert.*;
+import static org.junit.runners.Parameterized.Parameter;
+import static org.junit.runners.Parameterized.Parameters;
+import static org.junit.Assert.fail;
 
 /**
- *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1158">SUREFIRE-1158</a>
  * @since 2.19
@@ -40,40 +41,45 @@ import static org.junit.Assert.*;
 public class Surefire1158RemoveInfoLinesIT
 {
 
-    @Parameters(name = "{0}")
+    @Parameters( name = "{0}" )
     public static Iterable<Object[]> data()
     {
         ArrayList<Object[]> args = new ArrayList<>();
-        args.add( new Object[] { "junit-option-ff", "JUnitTest", "-ff", "surefire-junit47", false, true } );
-        args.add( new Object[] { "testng-option-ff", "TestNGSuiteTest", "-ff", "surefire-testng", false, false } );
-        args.add( new Object[] { "junit-option-X", "JUnitTest", "-X", "surefire-junit47", true, true } );
-        args.add( new Object[] { "testng-option-X", "TestNGSuiteTest", "-X", "surefire-testng", true, false } );
-        args.add( new Object[] { "junit-option-e", "JUnitTest", "-e", "surefire-junit47", true, true } );
-        args.add( new Object[] { "testng-option-e", "TestNGSuiteTest", "-e", "surefire-testng", true, false } );
+        args.add( new Object[] {"junit-option-ff", "JUnitTest", "-ff", "surefire-junit47", false, true} );
+        args.add( new Object[] {"testng-option-ff", "TestNGSuiteTest", "-ff", "surefire-testng", false, false} );
+        args.add( new Object[] {"junit-option-X", "JUnitTest", "-X", "surefire-junit47", true, true} );
+        args.add( new Object[] {"testng-option-X", "TestNGSuiteTest", "-X", "surefire-testng", true, false} );
+        args.add( new Object[] {"junit-option-e", "JUnitTest", "-e", "surefire-junit47", true, true} );
+        args.add( new Object[] {"testng-option-e", "TestNGSuiteTest", "-e", "surefire-testng", true, false} );
         return args;
     }
 
-    @Parameter(0)
+    @Parameter( 0 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String description;
 
-    @Parameter(1)
+    @Parameter( 1 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String testToRun;
 
-    @Parameter(2)
+    @Parameter( 2 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String cliOption;
 
-    @Parameter(3)
+    @Parameter( 3 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String provider;
 
-    @Parameter(4)
+    @Parameter( 4 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public boolean printsInfoLines;
 
-    @Parameter(5)
+    @Parameter( 5 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public boolean isJUnit;
 
     @Test
-    public void shouldRunWithCliOption()
-        throws Exception
+    public void shouldRunWithCliOption() throws Exception
     {
         OutputValidator validator = assertTest();
         if ( isJUnit )
@@ -86,14 +92,12 @@ public class Surefire1158RemoveInfoLinesIT
         }
     }
 
-    private OutputValidator assertTest()
-        throws Exception
+    private OutputValidator assertTest() throws Exception
     {
         final String[] cli = {"--batch-mode"};
-        return unpack( getClass(), "/surefire-1158-remove-info-lines", "_" + description, cli )
-            .sysProp( "provider", provider ).addGoal( cliOption ).setTestToRun( testToRun )
-            .executeTest()
-            .verifyErrorFreeLog().assertTestSuiteResults( 1, 0, 0, 0 );
+        return unpack( getClass(), "/surefire-1158-remove-info-lines", "_" + description, cli ).sysProp( "provider",
+                provider ).addGoal( cliOption ).setTestToRun(
+                testToRun ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
     private void assertJUnitTestLogs( OutputValidator validator )
@@ -101,10 +105,11 @@ public class Surefire1158RemoveInfoLinesIT
         try
         {
             validator.verifyTextInLog( "Surefire report directory:" );
-            validator.verifyTextInLog( "Using configured provider org.apache.maven.surefire.junitcore.JUnitCoreProvider" );
+            validator.verifyTextInLog(
+                    "Using configured provider org.apache.maven.surefire.junitcore.JUnitCoreProvider" );
             validator.verifyTextInLog( "parallel='none', perCoreThreadCount=true, threadCount=0, "
-                                           + "useUnlimitedThreads=false, threadCountSuites=0, threadCountClasses=0, "
-                                           + "threadCountMethods=0, parallelOptimized=true" );
+                    + "useUnlimitedThreads=false, threadCountSuites=0, threadCountClasses=0, "
+                    + "threadCountMethods=0, parallelOptimized=true" );
             if ( !printsInfoLines )
             {
                 fail();

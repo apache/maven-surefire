@@ -37,10 +37,13 @@ import org.xmlunit.validation.ValidationProblem;
 import org.xmlunit.validation.ValidationResult;
 import org.xmlunit.validation.Validator;
 
+/**
+ *
+ */
 public class SurefireSchemaValidationTest
         extends TestCase
 {
-
+    @SuppressWarnings( "checkstyle:methodname" )
     public void testValidate_XMLs_against_schema()
         throws Exception
     {

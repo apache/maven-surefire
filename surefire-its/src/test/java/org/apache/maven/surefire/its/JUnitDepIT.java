@@ -28,8 +28,7 @@ import org.junit.Test;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-public class JUnitDepIT
-    extends SurefireJUnit4IntegrationTestCase
+public class JUnitDepIT extends SurefireJUnit4IntegrationTestCase
 {
     public SurefireLauncher unpack()
     {
@@ -37,34 +36,30 @@ public class JUnitDepIT
     }
 
     @Test
-    public void testJUnit44Dep()
-        throws Exception
+    public void testJUnit44Dep() throws Exception
     {
-        unpack().debugLogging().sysProp( "junit-dep.version", "4.4" ).executeTest().verifyErrorFree( 1 ).verifyTextInLog(
-            "surefire-junit4" ); // Ahem. Will match on the 4.7 provider too
+        unpack().debugLogging().sysProp( "junit-dep.version", "4.4" ).executeTest().verifyErrorFree(
+                1 ).verifyTextInLog( "surefire-junit4" ); // Ahem. Will match on the 4.7 provider too
     }
 
     @Test
-    public void testJUnit44DepWithSneaky381()
-        throws Exception
+    public void testJUnit44DepWithSneaky381() throws Exception
     {
         unpack().debugLogging().sysProp( "junit-dep.version", "4.4" ).activateProfile(
-            "provided381" ).executeTest().verifyErrorFree( 1 );
+                "provided381" ).executeTest().verifyErrorFree( 1 );
     }
 
     @Test
-    public void testJUnit47Dep()
-        throws Exception
+    public void testJUnit47Dep() throws Exception
     {
-        unpack().debugLogging().sysProp( "junit-dep.version", "4.7" ).executeTest().verifyErrorFree( 1 ).verifyTextInLog(
-            "surefire-junit47" );
+        unpack().debugLogging().sysProp( "junit-dep.version", "4.7" ).executeTest().verifyErrorFree(
+                1 ).verifyTextInLog( "surefire-junit47" );
     }
 
     @Test
-    public void testJUnit48Dep()
-        throws Exception
+    public void testJUnit48Dep() throws Exception
     {
-        unpack().debugLogging().sysProp( "junit-dep.version", "4.8" ).executeTest().verifyErrorFree( 1 ).verifyTextInLog(
-            "surefire-junit47" );
+        unpack().debugLogging().sysProp( "junit-dep.version", "4.8" ).executeTest().verifyErrorFree(
+                1 ).verifyTextInLog( "surefire-junit47" );
     }
 }

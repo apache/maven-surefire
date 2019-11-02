@@ -33,6 +33,9 @@ import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.verifyZeroInteractions;
 
+/**
+ *
+ */
 public class OutputStreamFlushableCommandlineTest
 {
 

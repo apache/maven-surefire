@@ -23,7 +23,6 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 

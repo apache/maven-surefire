@@ -29,6 +29,9 @@ import java.io.IOException;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertTrue;
 
+/**
+ *
+ */
 public class Surefire1534ReuseForksFalseWithJavaModuleIT
         extends AbstractJigsawIT
 {

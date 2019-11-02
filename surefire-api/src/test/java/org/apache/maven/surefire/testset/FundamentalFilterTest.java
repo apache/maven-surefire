@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.testset;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,7 +22,7 @@ package org.apache.maven.surefire.testset;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 
 @SuppressWarnings( { "javadoc", "checkstyle:javadoctype" } )
 /**

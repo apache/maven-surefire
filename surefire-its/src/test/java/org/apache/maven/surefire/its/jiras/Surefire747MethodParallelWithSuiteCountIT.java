@@ -45,6 +45,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Kristian Rosenvold
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class Surefire747MethodParallelWithSuiteCountIT
         extends SurefireJUnit4IntegrationTestCase
 {

@@ -21,6 +21,9 @@ package org.apache.maven.surefire.report;
 
 import junit.framework.TestCase;
 
+/**
+ *
+ */
 public class PojoStackTraceWriterTest
     extends TestCase
 {
@@ -30,10 +33,9 @@ public class PojoStackTraceWriterTest
         PojoStackTraceWriter w =
             new PojoStackTraceWriter( ATestClass.AnotherTestClass.class.getName(), "testQuote", getAThrowAble() );
         String out = w.writeTrimmedTraceToString();
-        String expected =
-            "org.apache.maven.surefire.report.PojoStackTraceWriterTest$ATestClass$AnotherTestClass.getAThrowable(PojoStackTraceWriterTest.java";
+        String expected = "org.apache.maven.surefire.report.PojoStackTraceWriterTest$ATestClass$AnotherTestClass"
+                + ".getAThrowable(PojoStackTraceWriterTest.java";
         assertTrue( out.contains( expected ) );
-
     }
 
     public void testMultiLineMessage()

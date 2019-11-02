@@ -32,7 +32,13 @@ import static org.junit.platform.engine.TestExecutionResult.aborted;
 import static org.junit.platform.engine.TestExecutionResult.failed;
 import static org.junit.platform.engine.TestExecutionResult.successful;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 import static org.powermock.reflect.Whitebox.getInternalState;
 
 import java.lang.reflect.Method;
@@ -274,7 +280,7 @@ public class RunListenerAdapterTest
         assertThat( report.getValue().getStackTraceWriter() )
                 .isNotNull();
         assertThat( report.getValue().getStackTraceWriter().getThrowable().getTarget() )
-                .isSameAs(assumptionFailure);
+                .isSameAs( assumptionFailure );
         inOrder.verifyNoMoreInteractions();
 
         adapter.executionFinished( TestIdentifier.from( parent ), successful() );
@@ -335,7 +341,7 @@ public class RunListenerAdapterTest
                 .isEqualTo( "engine" );
         assertThat( report.getValue().getNameText() )
                 .isNull();
-        assertThat(report.getValue().getElapsed())
+        assertThat( report.getValue().getElapsed() )
                 .isNotNull();
         assertThat( report.getValue().getStackTraceWriter() )
                 .isNull();
@@ -476,7 +482,7 @@ public class RunListenerAdapterTest
 
         ArgumentCaptor<SimpleReportEntry> report = ArgumentCaptor.forClass( SimpleReportEntry.class );
         verify( listener )
-                .testSetCompleted(report.capture() );
+                .testSetCompleted( report.capture() );
 
         assertThat( report.getValue().getSourceName() )
                 .isEqualTo( className );
@@ -494,7 +500,7 @@ public class RunListenerAdapterTest
                 .isNotEmpty();
 
         verify( listener, never() )
-                .testSucceeded(any() );
+                .testSucceeded( any() );
 
         verifyNoMoreInteractions( listener );
     }
@@ -516,7 +522,7 @@ public class RunListenerAdapterTest
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
         verify( listener ).testStarting( entryCaptor.capture() );
         assertEquals( parentDisplay, entryCaptor.getValue().getSourceName() );
-        assertNull(entryCaptor.getValue().getSourceText());
+        assertNull( entryCaptor.getValue().getSourceText() );
         assertNull( entryCaptor.getValue().getName() );
         assertNull( entryCaptor.getValue().getNameText() );
     }
@@ -577,7 +583,7 @@ public class RunListenerAdapterTest
         ReportEntry value = entryCaptor.getValue();
 
         assertEquals( MyTestClass.class.getName(), value.getSourceName() );
-        assertNull(value.getSourceText());
+        assertNull( value.getSourceText() );
         assertEquals( "myNamedTestMethod", value.getName() );
         assertEquals( "some display name", value.getNameText() );
     }
@@ -605,7 +611,8 @@ public class RunListenerAdapterTest
     private static TestDescriptor newClassDescriptor( String displayName )
     {
         return new ClassTestDescriptor( UniqueId.root( "class", MyTestClass.class.getName() ),
-                c -> displayName, MyTestClass.class, CONFIG_PARAMS ) {};
+                c -> displayName, MyTestClass.class, CONFIG_PARAMS )
+                  { };
     }
 
     private static TestDescriptor newClassDescriptor()

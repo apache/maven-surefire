@@ -1,4 +1,5 @@
 package org.apache.maven.plugin.surefire;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -123,7 +124,8 @@ public class SurefirePropertiesTest
     private static int size( Iterator<?> iterator )
     {
         int count = 0;
-        while ( iterator.hasNext() ) {
+        while ( iterator.hasNext() )
+        {
             iterator.next();
             count++;
         }

@@ -18,6 +18,7 @@ package org.apache.maven.surefire.report;
  * specific language governing permissions and limitations
  * under the License.
  */
+
 class TestClass1
 {
     static class InnerBTestClass

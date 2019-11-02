@@ -34,6 +34,9 @@ import org.apache.maven.shared.utils.io.FileUtils;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.fest.assertions.Assertions.assertThat;
 
+/**
+ *
+ */
 public class ConsoleOutputFileReporterTest
     extends TestCase
 {
@@ -127,7 +130,8 @@ public class ConsoleOutputFileReporterTest
         final ArrayList<Callable<Void>> jobs = new ArrayList<>();
         for ( int i = 0; i < 10; i++ )
         {
-            jobs.add( new Callable<Void>() {
+            jobs.add( new Callable<Void>()
+            {
                 @Override
                 public Void call()
                 {

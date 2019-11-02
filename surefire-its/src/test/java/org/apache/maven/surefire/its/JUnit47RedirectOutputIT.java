@@ -30,6 +30,9 @@ import java.io.IOException;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
+/**
+ *
+ */
 public class JUnit47RedirectOutputIT
     extends SurefireJUnit4IntegrationTestCase
 {

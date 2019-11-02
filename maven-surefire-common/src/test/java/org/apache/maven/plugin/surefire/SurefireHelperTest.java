@@ -89,7 +89,7 @@ public class SurefireHelperTest
         assertThat( SurefireHelper.DUMPSTREAM_FILENAME_FORMATTER )
                 .isEqualTo( SurefireHelper.DUMP_FILE_PREFIX + "%d.dumpstream" );
 
-        assertThat( String.format( SurefireHelper.DUMPSTREAM_FILENAME_FORMATTER, 5) )
+        assertThat( String.format( SurefireHelper.DUMPSTREAM_FILENAME_FORMATTER, 5 ) )
                 .endsWith( "-jvmRun5.dumpstream" );
     }
 
@@ -99,6 +99,7 @@ public class SurefireHelperTest
         assumeTrue( IS_OS_WINDOWS );
         String root = "X:\\path\\to\\project\\";
         String pathToJar = "target\\surefire\\surefirebooter4942721306300108667.jar";
+        @SuppressWarnings( "checkstyle:magicnumber" )
         int projectNameLength = 247 - root.length() - pathToJar.length();
         StringBuilder projectFolder = new StringBuilder();
         for ( int i = 0; i < projectNameLength; i++ )
@@ -153,6 +154,6 @@ public class SurefireHelperTest
         fail( "Expected MojoFailureException with message "
                 + "'There are test failures.\n\nPlease refer to null "
                 + "for the individual test results.\nPlease refer to dump files (if any exist) "
-                + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.'");
+                + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.'" );
     }
 }

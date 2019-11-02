@@ -25,6 +25,10 @@ import org.junit.Test;
 
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 
+/**
+ *
+ */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class Surefire1585IT
         extends SurefireJUnit4IntegrationTestCase
 {

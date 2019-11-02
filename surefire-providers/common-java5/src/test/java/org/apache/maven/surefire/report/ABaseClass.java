@@ -19,7 +19,9 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-
+/**
+ *
+ */
 public class ABaseClass
 {
     public void npe()

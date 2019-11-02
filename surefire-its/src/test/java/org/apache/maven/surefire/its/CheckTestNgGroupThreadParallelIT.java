@@ -32,7 +32,7 @@ public class CheckTestNgGroupThreadParallelIT
     extends SurefireJUnit4IntegrationTestCase
 {
     @Test
-    public void TestNgGroupThreadParallel()
+    public void testNgGroupThreadParallel()
     {
         unpack( "testng-group-thread-parallel" )
                 .sysProp( "testNgVersion", "5.7" )

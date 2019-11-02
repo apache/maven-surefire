@@ -131,7 +131,7 @@ public final class SurefireLauncher
         return this;
     }
 
-    public SurefireLauncher setMavenOpts(String opts)
+    public SurefireLauncher setMavenOpts( String opts )
     {
         return addEnvVar( "MAVEN_OPTS", opts );
     }

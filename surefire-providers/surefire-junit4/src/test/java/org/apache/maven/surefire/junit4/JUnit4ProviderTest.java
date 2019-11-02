@@ -28,7 +28,12 @@ import java.util.HashMap;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.runner.Description.createSuiteDescription;
 
@@ -55,10 +60,12 @@ public class JUnit4ProviderTest
     @Test
     public void testShouldCreateDescription()
     {
-        class A {
+        class A
+        {
         }
 
-        class B {
+        class B
+        {
         }
 
         Description d = JUnit4Provider.createTestsDescription( asList( A.class, B.class ) );
@@ -70,5 +77,4 @@ public class JUnit4ProviderTest
         Description b = createSuiteDescription( B.class );
         assertThat( d.getChildren(), contains( a, b ) );
     }
-
 }

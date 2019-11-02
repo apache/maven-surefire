@@ -19,7 +19,6 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.IOException;
 import java.util.Calendar;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
@@ -78,8 +77,13 @@ public class RunOrderIT
     public void testNonExistingRunOrder()
         throws Exception
     {
-        unpack().forkMode( getForkMode() ).runOrder( "nonExistingRunOrder" ).maven().withFailure().executeTest().verifyTextInLog(
-            "There's no RunOrder with the name nonExistingRunOrder." );
+        unpack()
+                .forkMode( getForkMode() )
+                .runOrder( "nonExistingRunOrder" )
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog( "There's no RunOrder with the name nonExistingRunOrder." );
     }
 
     private OutputValidator executeWithRunOrder( String runOrder )

@@ -64,7 +64,7 @@ public class IncludesExcludesFromFileIT
     @Test
     public void testMissingExcludes()
     {
-        expectBuildFailure("missing-excludes-file", "Failed to load list from file", "no-such-excludes-file");
+        expectBuildFailure( "missing-excludes-file", "Failed to load list from file", "no-such-excludes-file" );
     }
 
     @Test

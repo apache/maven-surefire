@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.util;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -33,14 +34,12 @@ public class RunOrderCalculatorTest
 {
 
     public void testOrderTestClasses()
-        throws Exception
     {
         getClassesToRun();
         TestsToRun testsToRun = new TestsToRun( getClassesToRun() );
         RunOrderCalculator runOrderCalculator = new DefaultRunOrderCalculator( RunOrderParameters.alphabetical(), 1 );
         final TestsToRun testsToRun1 = runOrderCalculator.orderTestClasses( testsToRun );
         assertEquals( A.class, testsToRun1.iterator().next() );
-
     }
 
     private Set<Class<?>> getClassesToRun()
@@ -51,15 +50,13 @@ public class RunOrderCalculatorTest
         return classesToRun;
     }
 
-    class A
+    static class A
     {
 
     }
 
-    class B
+    static class B
     {
 
     }
-
-
 }

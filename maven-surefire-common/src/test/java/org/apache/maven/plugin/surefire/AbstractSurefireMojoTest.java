@@ -69,14 +69,18 @@ import java.util.Set;
 
 import static java.io.File.separatorChar;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonMap;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersion;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.MapAssert.entry;
 import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
@@ -86,7 +90,6 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.spy;
 import static org.powermock.api.mockito.PowerMockito.verifyPrivate;
 import static org.powermock.reflect.Whitebox.invokeMethod;
-import static org.powermock.reflect.Whitebox.setInternalState;
 
 /**
  * Test for {@link AbstractSurefireMojo}.
@@ -273,6 +276,7 @@ public class AbstractSurefireMojoTest
     }
 
     @Test
+    @SuppressWarnings( "checkstyle:linelength" )
     public void shouldHaveStartupConfigForNonModularClasspath()
             throws Exception
     {
@@ -380,25 +384,28 @@ public class AbstractSurefireMojoTest
     }
 
     @Test
-    public void providerClasspathCachingIsNotSharedAcrossMojoInstances() throws Exception {
+    public void providerClasspathCachingIsNotSharedAcrossMojoInstances() throws Exception
+    {
         ProviderInfo providerInfo = mock( ProviderInfo.class );
         when( providerInfo.getProviderName() ).thenReturn( "test-provider" );
-        Artifact provider = new DefaultArtifact( "com.example", "provider", createFromVersion( "1" ), "runtime", "jar", "", handler );
+        Artifact provider = new DefaultArtifact( "com.example", "provider", createFromVersion( "1" ), "runtime",
+                "jar", "", handler );
         provider.setFile( mockFile( "original-test-provider.jar" ) );
-        HashSet<Artifact> providerClasspath = new HashSet<Artifact>( asList( provider ) );
-        when( providerInfo.getProviderClasspath()).thenReturn( providerClasspath );
+        HashSet<Artifact> providerClasspath = new HashSet<>( asList( provider ) );
+        when( providerInfo.getProviderClasspath() ).thenReturn( providerClasspath );
 
-        StartupConfiguration startupConfiguration = startupConfigurationForProvider(providerInfo);
+        StartupConfiguration startupConfiguration = startupConfigurationForProvider( providerInfo );
         assertThat( startupConfiguration.getClasspathConfiguration().getProviderClasspath().getClassPath() )
                 .containsExactly( "original-test-provider.jar" );
 
         provider.setFile( mockFile( "modified-test-provider.jar" ) );
-        startupConfiguration = startupConfigurationForProvider(providerInfo);
+        startupConfiguration = startupConfigurationForProvider( providerInfo );
         assertThat( startupConfiguration.getClasspathConfiguration().getProviderClasspath().getClassPath() )
                 .containsExactly( "modified-test-provider.jar" );
     }
 
-    private StartupConfiguration startupConfigurationForProvider(ProviderInfo providerInfo) throws Exception {
+    private StartupConfiguration startupConfigurationForProvider( ProviderInfo providerInfo ) throws Exception
+    {
         AbstractSurefireMojo mojo = spy( new Mojo() );
 
         Logger logger = mock( Logger.class );
@@ -408,7 +415,8 @@ public class AbstractSurefireMojoTest
 
         File classesDir = mockFile( "classes" );
         File testClassesDir = mockFile( "test-classes" );
-        TestClassPath testClassPath = new TestClassPath( new ArrayList<Artifact>(), classesDir, testClassesDir, new String[0] );
+        TestClassPath testClassPath =
+                new TestClassPath( new ArrayList<Artifact>(), classesDir, testClassesDir, new String[0] );
 
         Artifact common = new DefaultArtifact( "org.apache.maven.surefire", "maven-surefire-common",
                 createFromVersion( "1" ), "runtime", "jar", "", handler );
@@ -436,8 +444,7 @@ public class AbstractSurefireMojoTest
 
         doReturn( 1 ).when( mojo, "getEffectiveForkCount" );
 
-        StartupConfiguration startupConfiguration = invokeMethod( mojo, "createStartupConfiguration", providerInfo, false, null, null, null, testClassPath);
-        return startupConfiguration;
+        return invokeMethod( mojo, "createStartupConfiguration", providerInfo, false, null, null, null, testClassPath );
     }
 
     @Test
@@ -1682,6 +1689,9 @@ public class AbstractSurefireMojoTest
         return surefirePlatformResolutionResult;
     }
 
+    /**
+     *
+     */
     public static class Mojo
             extends AbstractSurefireMojo implements SurefireReportParameters
     {
@@ -2105,7 +2115,7 @@ public class AbstractSurefireMojoTest
         List<Dependency> dependencies = new ArrayList<>();
         for ( Artifact artifact : artifacts )
         {
-            dependencies.add( toDependency( artifact) );
+            dependencies.add( toDependency( artifact ) );
         }
         return dependencies;
     }

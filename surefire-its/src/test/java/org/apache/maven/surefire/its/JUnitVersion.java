@@ -24,7 +24,8 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 /**
  * Enum listing all the JUnit version.
  */
-public enum JUnitVersion {
+public enum JUnitVersion
+{
 
     JUNIT_4_0( "4.0" ),
     JUNIT_4_1( "4.1" ),

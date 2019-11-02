@@ -27,15 +27,13 @@ import org.junit.Test;
  *
  * @author Kristian Rosenvold
  */
-public class Surefire257NotRerunningTestsIT
-    extends SurefireJUnit4IntegrationTestCase
+public class Surefire257NotRerunningTestsIT extends SurefireJUnit4IntegrationTestCase
 {
     @Test
-    public void shouldNotRerun()
-        throws Exception
+    public void shouldNotRerun() throws Exception
     {
-        unpack(
-            "/surefire-257-rerunningTests" ).addSurefireReportGoal().addSurefireReportGoal().executeCurrentGoals().verifyTextInLog(
-            "Skipping execution of surefire because it has already been run for this configuration" );
+        unpack( "/surefire-257-rerunningTests" )
+                .addSurefireReportGoal().addSurefireReportGoal().executeCurrentGoals().verifyTextInLog(
+                "Skipping execution of surefire because it has already been run for this configuration" );
     }
 }

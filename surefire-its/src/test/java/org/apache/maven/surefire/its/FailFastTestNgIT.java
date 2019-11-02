@@ -33,7 +33,7 @@ public class FailFastTestNgIT
     extends AbstractFailFastIT
 {
 
-    @Parameters(name = "{0}")
+    @Parameters( name = "{0}" )
     public static Iterable<Object[]> data()
     {
         /**

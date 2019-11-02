@@ -37,10 +37,32 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.copyOfRange;
 import static org.apache.commons.codec.binary.Base64.encodeBase64String;
-import static org.apache.maven.plugin.surefire.booterclient.MockReporter.*;
+import static org.apache.maven.plugin.surefire.booterclient.MockReporter.CONSOLE_DEBUG;
+import static org.apache.maven.plugin.surefire.booterclient.MockReporter.CONSOLE_ERR;
+import static org.apache.maven.plugin.surefire.booterclient.MockReporter.CONSOLE_WARN;
+import static org.apache.maven.plugin.surefire.booterclient.MockReporter.CONSOLE_INFO;
+import static org.apache.maven.plugin.surefire.booterclient.MockReporter.SET_COMPLETED;
+import static org.apache.maven.plugin.surefire.booterclient.MockReporter.SET_STARTING;
+import static org.apache.maven.plugin.surefire.booterclient.MockReporter.STDOUT;
+import static org.apache.maven.plugin.surefire.booterclient.MockReporter.STDERR;
+import static org.apache.maven.plugin.surefire.booterclient.MockReporter.TEST_ASSUMPTION_FAIL;
+import static org.apache.maven.plugin.surefire.booterclient.MockReporter.TEST_ERROR;
+import static org.apache.maven.plugin.surefire.booterclient.MockReporter.TEST_FAILED;
+import static org.apache.maven.plugin.surefire.booterclient.MockReporter.TEST_STARTING;
+import static org.apache.maven.plugin.surefire.booterclient.MockReporter.TEST_SKIPPED;
+import static org.apache.maven.plugin.surefire.booterclient.MockReporter.TEST_SUCCEEDED;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.MapAssert.entry;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.startsWith;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 /**
  * Test for {@link ForkClient}.
@@ -50,6 +72,8 @@ import static org.mockito.Mockito.*;
  */
 public class ForkClientTest
 {
+    private static final int ELAPSED_TIME = 102;
+
     @Test
     public void shouldNotFailOnEmptyInput1()
     {
@@ -890,7 +914,7 @@ public class ForkClientTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
-        when( reportEntry.getElapsed() ).thenReturn( 102 );
+        when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
         when( reportEntry.getName() ).thenReturn( "my test" );
@@ -917,7 +941,7 @@ public class ForkClientTest
                 + ":"
                 + encodedMessage
                 + ":"
-                + 102
+                + ELAPSED_TIME
                 + ":"
 
                 + encodedExceptionMsg
@@ -950,7 +974,7 @@ public class ForkClientTest
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getNameText() )
                 .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getElapsed() )
-                .isEqualTo( 102 );
+                .isEqualTo( ELAPSED_TIME );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getMessage() )
                 .isEqualTo( "some test" );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getGroup() )
@@ -1021,7 +1045,7 @@ public class ForkClientTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
-        when( reportEntry.getElapsed() ).thenReturn( 102 );
+        when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
         when( reportEntry.getName() ).thenReturn( "my test" );
@@ -1052,7 +1076,7 @@ public class ForkClientTest
                 + ":"
                 + encodedMessage
                 + ":"
-                + 102
+                + ELAPSED_TIME
                 + ":"
 
                 + encodedExceptionMsg
@@ -1083,7 +1107,7 @@ public class ForkClientTest
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getNameText() )
                 .isEqualTo( "dn2" );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getElapsed() )
-                .isEqualTo( 102 );
+                .isEqualTo( ELAPSED_TIME );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getMessage() )
                 .isEqualTo( "some test" );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getGroup() )
@@ -1156,7 +1180,7 @@ public class ForkClientTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
-        when( reportEntry.getElapsed() ).thenReturn( 102 );
+        when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
         when( reportEntry.getName() ).thenReturn( "my test" );
@@ -1183,7 +1207,7 @@ public class ForkClientTest
                 + ":"
                 + encodedMessage
                 + ":"
-                + 102
+                + ELAPSED_TIME
                 + ":"
 
                 + encodedExceptionMsg
@@ -1212,7 +1236,7 @@ public class ForkClientTest
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getNameText() )
                 .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getElapsed() )
-                .isEqualTo( 102 );
+                .isEqualTo( ELAPSED_TIME );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getMessage() )
                 .isEqualTo( "some test" );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getGroup() )
@@ -1285,7 +1309,7 @@ public class ForkClientTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
-        when( reportEntry.getElapsed() ).thenReturn( 102 );
+        when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
         when( reportEntry.getName() ).thenReturn( "my test" );
@@ -1312,7 +1336,7 @@ public class ForkClientTest
                 + ":"
                 + encodedMessage
                 + ":"
-                + 102
+                + ELAPSED_TIME
                 + ":"
 
                 + encodedExceptionMsg
@@ -1346,7 +1370,7 @@ public class ForkClientTest
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getNameText() )
                 .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getElapsed() )
-                .isEqualTo( 102 );
+                .isEqualTo( ELAPSED_TIME );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getMessage() )
                 .isEqualTo( "some test" );
         assertThat( ( (ReportEntry) receiver.getData().get( 0 ) ).getGroup() )
@@ -1415,7 +1439,7 @@ public class ForkClientTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
-        when( reportEntry.getElapsed() ).thenReturn( 102 );
+        when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
         when( reportEntry.getName() ).thenReturn( "my test" );
@@ -1451,7 +1475,7 @@ public class ForkClientTest
                 + ":"
                 + encodedMessage
                 + ":"
-                + 102
+                + ELAPSED_TIME
                 + ":"
 
                 + encodedExceptionMsg
@@ -1484,7 +1508,7 @@ public class ForkClientTest
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getName() )
                 .isEqualTo( "my test" );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getElapsed() )
-                .isEqualTo( 102 );
+                .isEqualTo( ELAPSED_TIME );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getMessage() )
                 .isEqualTo( "some test" );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getGroup() )
@@ -1557,7 +1581,7 @@ public class ForkClientTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
-        when( reportEntry.getElapsed() ).thenReturn( 102 );
+        when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
         when( reportEntry.getName() ).thenReturn( "my test" );
@@ -1593,7 +1617,7 @@ public class ForkClientTest
                 + ":"
                 + encodedMessage
                 + ":"
-                + 102
+                + ELAPSED_TIME
                 + ":"
 
                 + encodedExceptionMsg
@@ -1630,7 +1654,7 @@ public class ForkClientTest
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getNameText() )
                 .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getElapsed() )
-                .isEqualTo( 102 );
+                .isEqualTo( ELAPSED_TIME );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getMessage() )
                 .isEqualTo( "some test" );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getGroup() )
@@ -1703,7 +1727,7 @@ public class ForkClientTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
-        when( reportEntry.getElapsed() ).thenReturn( 102 );
+        when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
         when( reportEntry.getName() ).thenReturn( "my test" );
@@ -1739,7 +1763,7 @@ public class ForkClientTest
                 + ":"
                 + encodedMessage
                 + ":"
-                + 102
+                + ELAPSED_TIME
                 + ":"
 
                 + encodedExceptionMsg
@@ -1776,7 +1800,7 @@ public class ForkClientTest
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getNameText() )
                 .isNull();
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getElapsed() )
-                .isEqualTo( 102 );
+                .isEqualTo( ELAPSED_TIME );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getMessage() )
                 .isEqualTo( "some test" );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getGroup() )
@@ -1849,7 +1873,7 @@ public class ForkClientTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
-        when( reportEntry.getElapsed() ).thenReturn( 102 );
+        when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
         when( reportEntry.getName() ).thenReturn( "my test" );
@@ -1889,7 +1913,7 @@ public class ForkClientTest
                 + ":"
                 + encodedMessage
                 + ":"
-                + 102
+                + ELAPSED_TIME
                 + ":"
 
                 + encodedExceptionMsg
@@ -1922,7 +1946,7 @@ public class ForkClientTest
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getName() )
                 .isEqualTo( "my test" );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getElapsed() )
-                .isEqualTo( 102 );
+                .isEqualTo( ELAPSED_TIME );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getMessage() )
                 .isEqualTo( "some test" );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getGroup() )
@@ -1995,11 +2019,11 @@ public class ForkClientTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
-        when( reportEntry.getElapsed() ).thenReturn( 102 );
+        when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
         when( reportEntry.getName() ).thenReturn( "my test" );
-        when( reportEntry.getNameText() ).thenReturn("display name");
+        when( reportEntry.getNameText() ).thenReturn( "display name" );
         when( reportEntry.getNameWithGroup() ).thenReturn( "name with group" );
         when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
@@ -2033,7 +2057,7 @@ public class ForkClientTest
                 + ":"
                 + encodedMessage
                 + ":"
-                + 102
+                + ELAPSED_TIME
                 + ":"
 
                 + encodedExceptionMsg
@@ -2066,7 +2090,7 @@ public class ForkClientTest
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getNameText() )
                 .isEqualTo( "display name" );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getElapsed() )
-                .isEqualTo( 102 );
+                .isEqualTo( ELAPSED_TIME );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getMessage() )
                 .isEqualTo( "some test" );
         assertThat( ( (ReportEntry) receiver.getData().get( 1 ) ).getGroup() )

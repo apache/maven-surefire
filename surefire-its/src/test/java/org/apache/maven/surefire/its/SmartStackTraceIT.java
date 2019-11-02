@@ -37,8 +37,10 @@ public class SmartStackTraceIT
         throws Exception
     {
         OutputValidator outputValidator = unpack( "/junit48-smartStackTrace" ).maven().withFailure().executeTest();
-        outputValidator.verifyTextInLog( "SmartStackTraceTest.shouldFailInMethodButDoesnt Expected exception: java.lang.RuntimeException" );
-        outputValidator.verifyTextInLog( "SmartStackTraceTest.shortName Expected exception: java.io.IOException" );
+        outputValidator.verifyTextInLog(
+                "SmartStackTraceTest.shouldFailInMethodButDoesnt Expected exception: java.lang.RuntimeException" );
+        outputValidator.verifyTextInLog(
+                "SmartStackTraceTest.shortName Expected exception: java.io.IOException" );
 
     }
 }

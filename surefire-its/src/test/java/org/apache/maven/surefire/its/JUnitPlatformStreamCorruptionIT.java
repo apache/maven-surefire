@@ -31,6 +31,10 @@ import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaV
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.startsWith;
 
+/**
+ *
+ */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class JUnitPlatformStreamCorruptionIT
         extends SurefireJUnit4IntegrationTestCase
 {

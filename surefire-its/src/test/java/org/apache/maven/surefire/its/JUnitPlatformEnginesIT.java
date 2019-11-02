@@ -40,33 +40,40 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertThat;
 
+/**
+ *
+ */
 @RunWith( ParallelParameterized.class )
-public class JUnitPlatformEnginesIT
-        extends SurefireJUnit4IntegrationTestCase
+@SuppressWarnings( "checkstyle:magicnumber" )
+public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase
 {
     @Parameter
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String platform;
 
     @Parameter( 1 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String jupiter;
 
     @Parameter( 2 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String opentest;
 
     @Parameter( 3 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String apiguardian;
 
-    @Parameters(name = "{0}")
+    @Parameters( name = "{0}" )
     public static Iterable<Object[]> artifactVersions()
     {
         ArrayList<Object[]> args = new ArrayList<>();
-        args.add( new Object[] { "1.0.3", "5.0.3", "1.0.0", "1.0.0" } );
-        args.add( new Object[] { "1.1.1", "5.1.1", "1.0.0", "1.0.0" } );
-        args.add( new Object[] { "1.2.0", "5.2.0", "1.1.0", "1.0.0" } );
-        args.add( new Object[] { "1.3.2", "5.3.2", "1.1.1", "1.0.0" } );
-        args.add( new Object[] { "1.4.2", "5.4.2", "1.1.1", "1.0.0" } );
-        args.add( new Object[] { "1.5.2", "5.5.2", "1.2.0", "1.1.0" } );
-        args.add( new Object[] { "1.6.0-M1", "5.6.0-M1", "1.2.0", "1.1.0" } );
+        args.add( new Object[] {"1.0.3", "5.0.3", "1.0.0", "1.0.0"} );
+        args.add( new Object[] {"1.1.1", "5.1.1", "1.0.0", "1.0.0"} );
+        args.add( new Object[] {"1.2.0", "5.2.0", "1.1.0", "1.0.0"} );
+        args.add( new Object[] {"1.3.2", "5.3.2", "1.1.1", "1.0.0"} );
+        args.add( new Object[] {"1.4.2", "5.4.2", "1.1.1", "1.0.0"} );
+        args.add( new Object[] {"1.5.2", "5.5.2", "1.2.0", "1.1.0"} );
+        args.add( new Object[] {"1.6.0-M1", "5.6.0-M1", "1.2.0", "1.1.0"} );
         //args.add( new Object[] { "1.6.0-SNAPSHOT", "5.6.0-SNAPSHOT", "1.2.0", "1.1.0" } );
         return args;
     }
@@ -81,8 +88,7 @@ public class JUnitPlatformEnginesIT
     public void testToRegex()
     {
         String regex = toRegex( ".[]()*" );
-        assertThat( regex )
-                .isEqualTo( "\\.\\[\\]\\(\\).*" );
+        assertThat( regex ).isEqualTo( "\\.\\[\\]\\(\\).*" );
     }
 
     @Test
@@ -96,8 +102,7 @@ public class JUnitPlatformEnginesIT
 
         List<String> lines = validator.loadLogLines( startsWith( "[DEBUG] test(compact) classpath" ) );
 
-        assertThat( lines )
-                .hasSize( 1 );
+        assertThat( lines ).hasSize( 1 );
 
         String line = lines.get( 0 );
 
@@ -115,8 +120,7 @@ public class JUnitPlatformEnginesIT
 
         lines = validator.loadLogLines( startsWith( "[DEBUG] provider(compact) classpath" ) );
 
-        assertThat( lines )
-                .hasSize( 1 );
+        assertThat( lines ).hasSize( 1 );
 
         line = lines.get( 0 );
 
@@ -131,8 +135,7 @@ public class JUnitPlatformEnginesIT
 
         lines = validator.loadLogLines( startsWith( "[DEBUG] boot(compact) classpath" ) );
 
-        assertThat( lines )
-                .hasSize( 1 );
+        assertThat( lines ).hasSize( 1 );
 
         line = lines.get( 0 );
 
@@ -144,17 +147,17 @@ public class JUnitPlatformEnginesIT
                 regex( toRegex( "*  test-classes*" ) ),
                 regex( toRegex( "*  classes*" ) ),
                 regex( toRegex( "*junit-jupiter-engine-" + jupiter + ".jar*" ) ),
-                regex( toRegex("*apiguardian-api-" + apiguardian + ".jar*"  ) ),
+                regex( toRegex( "*apiguardian-api-" + apiguardian + ".jar*"  ) ),
                 regex( toRegex( "*junit-platform-engine-" + platform + ".jar*" ) ),
-                regex( toRegex(  "*junit-platform-commons-" + platform + ".jar*" ) ),
+                regex( toRegex( "*junit-platform-commons-" + platform + ".jar*" ) ),
                 regex( toRegex( "*opentest4j-" + opentest + ".jar*" ) ),
                 regex( toRegex( "*junit-jupiter-api-" + jupiter + ".jar*" ) ),
                 regex( toRegex( "*surefire-junit-platform-*.jar*" ) ),
-                regex( toRegex(  "*junit-platform-launcher-" + platform + ".jar*" ) )
-        ) );
+                regex( toRegex( "*junit-platform-launcher-" + platform + ".jar*" ) ) ) );
     }
 
-    private static String toRegex(String text) {
+    private static String toRegex( String text )
+    {
         return text.replaceAll( "\\.", "\\\\." )
                 .replaceAll( "\\[", "\\\\[" )
                 .replaceAll( "]", "\\\\]" )

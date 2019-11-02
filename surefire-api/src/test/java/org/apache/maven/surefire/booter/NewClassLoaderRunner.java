@@ -189,7 +189,7 @@ public class NewClassLoaderRunner
         }
     }
 
-    public static class TestClassLoader
+    private static class TestClassLoader
         extends URLClassLoader
     {
         TestClassLoader()

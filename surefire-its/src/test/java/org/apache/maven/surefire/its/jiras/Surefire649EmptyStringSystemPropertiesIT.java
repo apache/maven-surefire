@@ -32,13 +32,11 @@ import static org.junit.Assert.fail;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-649">SUREFIRE-649</a>
  * @since 2.18
  */
-public class Surefire649EmptyStringSystemPropertiesIT
-    extends SurefireJUnit4IntegrationTestCase
+public class Surefire649EmptyStringSystemPropertiesIT extends SurefireJUnit4IntegrationTestCase
 {
 
     @Test
-    public void systemProperties()
-        throws VerificationException
+    public void systemProperties() throws VerificationException
     {
         SurefireLauncher launcher = unpack1();
 
@@ -51,12 +49,11 @@ public class Surefire649EmptyStringSystemPropertiesIT
                 return;
             }
         }
-        fail("Could not find text in log: emptyProperty=''");
+        fail( "Could not find text in log: emptyProperty=''" );
     }
 
     @Test
-    public void systemPropertyVariables()
-        throws VerificationException
+    public void systemPropertyVariables() throws VerificationException
     {
         SurefireLauncher launcher = unpack2();
 
@@ -69,7 +66,7 @@ public class Surefire649EmptyStringSystemPropertiesIT
                 return;
             }
         }
-        fail("Could not find text in log: emptyProperty=''");
+        fail( "Could not find text in log: emptyProperty=''" );
     }
 
     private SurefireLauncher unpack1()

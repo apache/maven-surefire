@@ -25,10 +25,9 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
-/*
+/**
  * @author Kristian Rosenvold
  */
-
 public class TestsToRunTest
     extends TestCase
 {
@@ -109,12 +108,12 @@ public class TestsToRunTest
         assertFalse( it1.hasNext() );
     }
 
-    class T1
+    static class T1
     {
 
     }
 
-    class T2
+    static class T2
     {
 
     }

@@ -74,6 +74,7 @@ public class RunEntryStatisticsMapTest
         return new ByteArrayInputStream( content.getBytes( UTF_8 ) );
     }
 
+    @SuppressWarnings( "checkstyle:magicnumber" )
     public void testSerialize()
         throws Exception
     {
@@ -90,7 +91,7 @@ public class RunEntryStatisticsMapTest
         newResults.add( existingEntries.createNextGeneration( reportEntry3 ) );
 
         newResults.serialize( data );
-        try ( InputStream io = new FileInputStream( data) )
+        try ( InputStream io = new FileInputStream( data ) )
         {
             List<String> lines = readLines( io, UTF_8 );
 
@@ -125,6 +126,7 @@ public class RunEntryStatisticsMapTest
         }
     }
 
+    @SuppressWarnings( "checkstyle:magicnumber" )
     public void testMultiLineTestMethodName() throws IOException
     {
         File data = File.createTempFile( "surefire-unit", "test" );
@@ -159,6 +161,7 @@ public class RunEntryStatisticsMapTest
         }
     }
 
+    @SuppressWarnings( "checkstyle:magicnumber" )
     public void testCombinedMethodNames() throws IOException
     {
         File data = File.createTempFile( "surefire-unit", "test" );

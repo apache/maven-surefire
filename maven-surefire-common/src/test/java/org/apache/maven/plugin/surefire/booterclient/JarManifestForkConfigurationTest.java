@@ -149,7 +149,7 @@ public class JarManifestForkConfigurationTest
         when( parent.toString() ).thenReturn( "C:\\Windows\\Temp\\surefire" );
         Path classPathElement = mock( Path.class );
         when( classPathElement.toString() )
-                .thenReturn("C:\\Test User\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar");
+                .thenReturn( "C:\\Test User\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar" );
         when( relativize( parent, classPathElement ) )
                 .thenReturn( "..\\..\\..\\Test User\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar" );
         when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ), anyBoolean() ) )
@@ -194,6 +194,7 @@ public class JarManifestForkConfigurationTest
     }
 
     @Test
+    @SuppressWarnings( "checkstyle:magicnumber" )
     public void shouldEscapeUri()
             throws Exception
     {

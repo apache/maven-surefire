@@ -40,15 +40,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
 
+/**
+ *
+ */
 @SuppressWarnings( "ResultOfMethodCallIgnored" )
 public class StatelessXmlReporterTest
         extends TestCase
 {
     private static final String XSD =
             "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd";
-    private final static String TEST_ONE = "aTestMethod";
-    private final static String TEST_TWO = "bTestMethod";
-    private final static String TEST_THREE = "cTestMethod";
+    private static final String TEST_ONE = "aTestMethod";
+    private static final String TEST_TWO = "bTestMethod";
+    private static final String TEST_THREE = "cTestMethod";
     private static final AtomicInteger FOLDER_POSTFIX = new AtomicInteger();
 
     private TestSetStats stats;
@@ -140,7 +143,7 @@ public class StatelessXmlReporterTest
 
         FileInputStream fileInputStream = new FileInputStream( expectedReportFile );
 
-        Xpp3Dom testSuite = Xpp3DomBuilder.build( new InputStreamReader( fileInputStream, UTF_8) );
+        Xpp3Dom testSuite = Xpp3DomBuilder.build( new InputStreamReader( fileInputStream, UTF_8 ) );
         assertEquals( "testsuite", testSuite.getName() );
         Xpp3Dom properties = testSuite.getChild( "properties" );
         assertEquals( System.getProperties().size(), properties.getChildCount() );

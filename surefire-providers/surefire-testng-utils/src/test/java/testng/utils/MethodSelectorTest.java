@@ -30,6 +30,9 @@ import org.testng.internal.DefaultMethodSelectorContext;
 
 import java.lang.reflect.Method;
 
+/**
+ *
+ */
 public class MethodSelectorTest
         extends TestCase
 {

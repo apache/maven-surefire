@@ -57,20 +57,27 @@ import static org.fest.assertions.Assertions.assertThat;
 @RunWith( NewClassLoaderRunner.class )
 public class CommandReaderTest
 {
+    private static final long DELAY = 200L;
+    private static final long TEST_TIMEOUT = 15_000L;
+
     private final BlockingQueue<Byte> blockingStream = new LinkedBlockingQueue<>();
     private InputStream realInputStream;
     private CommandReader reader;
 
-    static class A {
+    static class A
+    {
     }
 
-    static class B {
+    static class B
+    {
     }
 
-    static class C {
+    static class C
+    {
     }
 
-    static class D {
+    static class D
+    {
     }
 
     @Before
@@ -135,7 +142,7 @@ public class CommandReaderTest
         assertThat( it1.next(), is( A.class.getName() ) );
         addTestToPipeline( B.class.getName() );
 
-        TimeUnit.MILLISECONDS.sleep( 200 ); // give the test chance to fail
+        TimeUnit.MILLISECONDS.sleep( DELAY ); // give the test chance to fail
 
         Iterator<String> it2 = reader.iterated();
 
@@ -154,8 +161,7 @@ public class CommandReaderTest
     }
 
     @Test( expected = NoSuchElementException.class )
-    public void stopBeforeReadInThread()
-        throws Throwable
+    public void stopBeforeReadInThread() throws Throwable
     {
         Runnable runnable = new Runnable()
         {
@@ -181,8 +187,7 @@ public class CommandReaderTest
     }
 
     @Test
-    public void readTwoClassesInThread()
-        throws Throwable
+    public void readTwoClassesInThread() throws Throwable
     {
         final CountDownLatch counter = new CountDownLatch( 1 );
         Runnable runnable = new Runnable()
@@ -211,21 +216,18 @@ public class CommandReaderTest
         }
     }
 
-    @Test( timeout = 15000 )
-    public void shouldAwaitReaderUp()
-        throws TestSetFailedException
+    @Test( timeout = TEST_TIMEOUT )
+    public void shouldAwaitReaderUp() throws TestSetFailedException
     {
         assertTrue( reader.awaitStarted() );
         reader.stop();
         assertFalse( reader.awaitStarted() );
     }
 
-    private class SystemInputStream
-        extends InputStream
+    private class SystemInputStream extends InputStream
     {
         @Override
-        public int read()
-            throws IOException
+        public int read() throws IOException
         {
             try
             {
@@ -241,10 +243,8 @@ public class CommandReaderTest
     private void addTestToPipeline( String cls )
     {
         byte[] clazz = cls.getBytes( ISO_8859_1 );
-        ByteBuffer buffer = ByteBuffer.allocate( 8 + clazz.length )
-            .putInt( MasterProcessCommand.RUN_CLASS.getId() )
-            .putInt( clazz.length )
-            .put( clazz );
+        ByteBuffer buffer = ByteBuffer.allocate( 8 + clazz.length ).putInt(
+                MasterProcessCommand.RUN_CLASS.getId() ).putInt( clazz.length ).put( clazz );
         buffer.rewind();
         for ( ; buffer.hasRemaining(); )
         {
@@ -254,9 +254,8 @@ public class CommandReaderTest
 
     private void addEndOfPipeline()
     {
-        ByteBuffer buffer = ByteBuffer.allocate( 8 )
-                .putInt( MasterProcessCommand.TEST_SET_FINISHED.getId() )
-                .putInt( 0 );
+        ByteBuffer buffer = ByteBuffer.allocate( 8 ).putInt( MasterProcessCommand.TEST_SET_FINISHED.getId() ).putInt(
+                0 );
         buffer.rewind();
         for ( ; buffer.hasRemaining(); )
         {

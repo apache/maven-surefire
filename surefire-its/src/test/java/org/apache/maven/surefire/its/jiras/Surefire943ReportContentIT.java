@@ -28,11 +28,15 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ *
+ */
 public class Surefire943ReportContentIT
     extends SurefireJUnit4IntegrationTestCase
 {
 
     @Test
+    @SuppressWarnings( "checkstyle:methodname" )
     public void test_noParallel()
         throws Exception
     {
@@ -40,6 +44,7 @@ public class Surefire943ReportContentIT
     }
 
     @Test
+    @SuppressWarnings( "checkstyle:methodname" )
     public void test_parallelBoth()
         throws Exception
     {
@@ -149,10 +154,9 @@ public class Surefire943ReportContentIT
         throws FileNotFoundException
     {
         Xpp3Dom testResult =
-            Xpp3DomBuilder.build( validator.getSurefireReportsXmlFile( "TEST-" + className + ".xml" ).getFileInputStream(),
-                                  "UTF-8" );
-        Xpp3Dom[] children = testResult.getChildren( "testcase" );
-        return children;
+            Xpp3DomBuilder.build(
+                    validator.getSurefireReportsXmlFile( "TEST-" + className + ".xml" )
+                            .getFileInputStream(), "UTF-8" );
+        return testResult.getChildren( "testcase" );
     }
-
 }

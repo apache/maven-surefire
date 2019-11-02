@@ -26,7 +26,6 @@ import java.io.File;
 
 import static org.apache.maven.surefire.its.fixture.SurefireLauncher.EXT_JDK_HOME;
 import static org.apache.maven.surefire.its.fixture.SurefireLauncher.EXT_JDK_HOME_KEY;
-import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 
@@ -43,6 +42,7 @@ public class Java9FullApiIT
     private static final String JVM_SPEC_VERSION = System.getProperty( "java.specification.version" );
 
     @Test
+    @SuppressWarnings( "checkstyle:methodname" )
     public void shouldLoadMultipleJavaModules_JavaHome() throws Exception
     {
         OutputValidator validator = assumeJava9()
@@ -61,6 +61,7 @@ public class Java9FullApiIT
     }
 
     @Test
+    @SuppressWarnings( "checkstyle:methodname" )
     public void shouldLoadMultipleJavaModules_JvmParameter() throws Exception
     {
         OutputValidator validator = assumeJava9Property()
@@ -80,6 +81,7 @@ public class Java9FullApiIT
     }
 
     @Test
+    @SuppressWarnings( "checkstyle:methodname" )
     public void shouldLoadMultipleJavaModules_ToolchainsXML() throws Exception
     {
         OutputValidator validator = assumeJava9Property()

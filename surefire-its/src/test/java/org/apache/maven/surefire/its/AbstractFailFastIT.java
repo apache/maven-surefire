@@ -42,24 +42,31 @@ public abstract class AbstractFailFastIT
     extends SurefireJUnit4IntegrationTestCase
 {
     @Parameter( 0 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String description;
 
     @Parameter( 1 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String profile;
 
     @Parameter( 2 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public Map<String, String> properties;
 
     @Parameter( 3 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public int total;
 
     @Parameter( 4 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public int failures;
 
     @Parameter( 5 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public int errors;
 
     @Parameter( 6 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public int skipped;
 
     protected abstract String withProvider();

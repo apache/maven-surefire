@@ -1,4 +1,5 @@
 package org.apache.maven.plugin.surefire.report;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -23,7 +24,10 @@ import org.apache.maven.surefire.report.SimpleReportEntry;
 
 import junit.framework.TestCase;
 
-import static org.apache.maven.plugin.surefire.report.ReportEntryType.*;
+import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
+import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
+import static org.apache.maven.plugin.surefire.report.ReportEntryType.SKIPPED;
+import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
 
 /**
  * @author Kristian Rosenvold
@@ -55,7 +59,7 @@ public class WrappedReportEntryTest
         assertEquals( "surefire.testcase.JunitParamsTest", wr.getSourceName( "" ) );
         assertEquals( "surefire.testcase.JunitParamsTest(BDD)", wr.getSourceName( "BDD" ) );
         assertEquals( "testSum", wr.getReportName() );
-        assertFalse(wr.isSucceeded());
+        assertFalse( wr.isSucceeded() );
         assertFalse( wr.isErrorOrFailure() );
         assertFalse( wr.isSkipped() );
         assertTrue( wr.getSystemProperties().isEmpty() );
@@ -73,8 +77,8 @@ public class WrappedReportEntryTest
         assertEquals( "dn1(BDD)", wr.getReportSourceName( "BDD" ) );
         assertEquals( "surefire.testcase.JunitParamsTest(BDD)", wr.getSourceName( "BDD" ) );
         assertEquals( "dn2", wr.getReportName() );
-        assertFalse(wr.isSucceeded());
-        assertTrue(wr.isErrorOrFailure());
+        assertFalse( wr.isSucceeded() );
+        assertTrue( wr.isErrorOrFailure() );
         assertFalse( wr.isSkipped() );
         assertNull( wr.getStackTraceWriter() );
         assertEquals( "surefire.testcase.JunitParamsTest.testSum  Time elapsed: 0.012 s",
@@ -92,7 +96,7 @@ public class WrappedReportEntryTest
         assertEquals( "surefire.testcase.JunitParamsTest", wr.getReportSourceName() );
         assertEquals( "surefire.testcase.JunitParamsTest(BDD)", wr.getReportSourceName( "BDD" ) );
         assertEquals( "testSum", wr.getReportName() );
-        assertFalse(wr.isSucceeded());
+        assertFalse( wr.isSucceeded() );
         assertTrue( wr.isErrorOrFailure() );
         assertFalse( wr.isSkipped() );
     }
@@ -105,7 +109,7 @@ public class WrappedReportEntryTest
         final String reportName = wr.getReportSourceName();
         assertEquals( "[0] 1, 2, 3 (testSum)", reportName );
         assertFalse( wr.isSucceeded() );
-        assertFalse (wr.isErrorOrFailure() );
+        assertFalse ( wr.isErrorOrFailure() );
         assertTrue( wr.isSkipped() );
     }
 

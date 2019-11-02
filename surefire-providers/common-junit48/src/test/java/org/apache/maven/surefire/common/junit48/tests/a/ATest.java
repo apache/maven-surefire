@@ -18,6 +18,10 @@ package org.apache.maven.surefire.common.junit48.tests.a;
  * specific language governing permissions and limitations
  * under the License.
  */
+
+/**
+ *
+ */
 public class ATest
 {
 }

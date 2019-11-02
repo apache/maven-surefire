@@ -39,7 +39,7 @@ import org.junit.Test;
 import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
 
-/*
+/**
  * @author Kristian Rosenvold
  */
 public class ConcurrentRunListenerTest
@@ -206,6 +206,9 @@ public class ConcurrentRunListenerTest
     }
 
 
+    /**
+     *
+     */
     public static class DummyWithOneIgnore
     {
         @Test
@@ -225,6 +228,9 @@ public class ConcurrentRunListenerTest
         }
     }
 
+    /**
+     *
+     */
     public static class DummyWithFailure
     {
         @Test
@@ -244,6 +250,9 @@ public class ConcurrentRunListenerTest
         }
     }
 
+    /**
+     *
+     */
     public static class DummyAllOk
     {
 
@@ -263,6 +272,9 @@ public class ConcurrentRunListenerTest
         }
     }
 
+    /**
+     *
+     */
     public static class Dummy3
     {
 
@@ -281,6 +293,9 @@ public class ConcurrentRunListenerTest
         }
     }
 
+    /**
+     *
+     */
     public static class Junit3Tc1
         extends TestCase
     {
@@ -304,6 +319,9 @@ public class ConcurrentRunListenerTest
         }
     }
 
+    /**
+     *
+     */
     public static class Junit3Tc2
         extends TestCase
     {
@@ -331,6 +349,9 @@ public class ConcurrentRunListenerTest
         }
     }
 
+    /**
+     *
+     */
     public static class Junit3OddTest1
         extends TestCase
     {
@@ -355,6 +376,9 @@ public class ConcurrentRunListenerTest
         }
     }
 
+    /**
+     *
+     */
     public static class Junit3WithNestedSuite
         extends TestCase
     {

@@ -21,6 +21,9 @@ package org.apache.maven.surefire.util;
 
 import junit.framework.TestCase;
 
+/**
+ *
+ */
 public class RunOrderTest
     extends TestCase
 {

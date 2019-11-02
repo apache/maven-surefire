@@ -42,7 +42,7 @@ import org.junit.platform.engine.UniqueId;
  */
 public class TestMethodFilterTest
 {
-    private static final ConfigurationParameters CONFIG_PARAMS = mock(ConfigurationParameters.class);
+    private static final ConfigurationParameters CONFIG_PARAMS = mock( ConfigurationParameters.class );
 
     private final TestListResolver resolver = mock( TestListResolver.class );
 
@@ -96,6 +96,9 @@ public class TestMethodFilterTest
         return new ClassTestDescriptor( uniqueId, TestClass.class, CONFIG_PARAMS );
     }
 
+    /**
+     *
+     */
     public static class TestClass
     {
         public void testMethod()

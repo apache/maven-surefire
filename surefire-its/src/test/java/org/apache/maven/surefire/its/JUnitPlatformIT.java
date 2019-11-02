@@ -33,7 +33,11 @@ import java.util.ArrayList;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 
+/**
+ *
+ */
 @RunWith( ParallelParameterized.class )
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class JUnitPlatformIT
         extends SurefireJUnit4IntegrationTestCase
 {
@@ -43,9 +47,11 @@ public class JUnitPlatformIT
                     + "version=\"3.0\" name=\"&lt;&lt; ✨ &gt;&gt;\"";
 
     @Parameter
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String junit5Version;
 
     @Parameter( 1 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String jqwikVersion;
 
     @Parameters( name = "{0}" )

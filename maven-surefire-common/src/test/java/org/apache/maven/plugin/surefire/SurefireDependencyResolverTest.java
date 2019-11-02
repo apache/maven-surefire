@@ -49,9 +49,16 @@ import static org.apache.maven.artifact.versioning.VersionRange.createFromVersio
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
 import static org.apache.maven.plugin.surefire.SurefireDependencyResolver.PROVIDER_GROUP_ID;
 import static org.fest.assertions.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.powermock.reflect.Whitebox.invokeMethod;
 
+/**
+ *
+ */
 public class SurefireDependencyResolverTest
 {
     @Rule
@@ -107,8 +114,9 @@ public class SurefireDependencyResolverTest
         final Artifact provider = createArtifact( "surefire-junit-platform" );
         RepositorySystem repositorySystem = mock( RepositorySystem.class );
         final ArtifactResolutionResult expectedResult = mock( ArtifactResolutionResult.class );
-        when( repositorySystem.resolve( any(  ArtifactResolutionRequest.class) ) )
-                .then( new Answer<ArtifactResolutionResult>() {
+        when( repositorySystem.resolve( any(  ArtifactResolutionRequest.class ) ) )
+                .then( new Answer<ArtifactResolutionResult>()
+                {
                     @Override
                     public ArtifactResolutionResult answer( InvocationOnMock invocation )
                     {
@@ -182,7 +190,8 @@ public class SurefireDependencyResolverTest
 
         RepositorySystem repositorySystem = mock( RepositorySystem.class );
         when( repositorySystem.resolve( any( ArtifactResolutionRequest.class ) ) )
-                .then( new Answer<ArtifactResolutionResult>() {
+                .then( new Answer<ArtifactResolutionResult>()
+                {
                     @Override
                     public ArtifactResolutionResult answer( InvocationOnMock invocation )
                     {
@@ -218,7 +227,8 @@ public class SurefireDependencyResolverTest
                     }
                 } );
         when( repositorySystem.createDependencyArtifact( any( Dependency.class ) ) )
-                .then( new Answer<Artifact>() {
+                .then( new Answer<Artifact>()
+                {
                     @Override
                     public Artifact answer( InvocationOnMock invocation )
                     {
@@ -315,8 +325,9 @@ public class SurefireDependencyResolverTest
                 .thenReturn( new HashSet<>( asList( provider, api, logger, ext ) ) );
 
         RepositorySystem repositorySystem = mock( RepositorySystem.class );
-        when( repositorySystem.resolve( any(  ArtifactResolutionRequest.class) ) )
-                .then( new Answer<ArtifactResolutionResult>() {
+        when( repositorySystem.resolve( any(  ArtifactResolutionRequest.class ) ) )
+                .then( new Answer<ArtifactResolutionResult>()
+                {
                     @Override
                     public ArtifactResolutionResult answer( InvocationOnMock invocation )
                     {
@@ -417,7 +428,7 @@ public class SurefireDependencyResolverTest
     private static Artifact createArtifact( String groupId, String artifactId )
             throws InvalidVersionSpecificationException
     {
-        return createArtifact(groupId, artifactId, "1");
+        return createArtifact( groupId, artifactId, "1" );
     }
 
     private static Artifact createArtifact( String groupId, String artifactId, String version )

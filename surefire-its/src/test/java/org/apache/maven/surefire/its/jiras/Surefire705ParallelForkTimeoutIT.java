@@ -27,14 +27,14 @@ import org.junit.Test;
  *
  * @author Kristian Rosenvold
  */
-public class Surefire705ParallelForkTimeoutIT
-    extends SurefireJUnit4IntegrationTestCase
+public class Surefire705ParallelForkTimeoutIT extends SurefireJUnit4IntegrationTestCase
 {
     @Test
     public void testTimeoutForked()
     {
         unpack( "/fork-timeout" ).setJUnitVersion( "4.8.1" ).addGoal( "-Djunit.version=4.8.1" ).addGoal(
-            "-Djunit.parallel=classes" ).addGoal( "-DtimeOut=1" ).maven().withFailure().executeTest()
-			.verifyTextInLog( "There was a timeout or other error in the fork" );
+                "-Djunit.parallel=classes" ).addGoal(
+                "-DtimeOut=1" ).maven().withFailure().executeTest().verifyTextInLog(
+                "There was a timeout or other error in the fork" );
     }
 }

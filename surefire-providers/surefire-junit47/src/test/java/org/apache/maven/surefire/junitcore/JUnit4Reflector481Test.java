@@ -21,6 +21,7 @@ package org.apache.maven.surefire.junitcore;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+
 import org.apache.maven.surefire.common.junit4.JUnit4Reflector;
 import org.apache.maven.surefire.util.ReflectionUtils;
 
@@ -28,7 +29,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Description;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
 /**
  * Reflector Test with junit 4.8.1
@@ -42,33 +46,33 @@ public class JUnit4Reflector481Test
     @Test
     public void testGetAnnotatedIgnore()
     {
-        final Method testSomething2 =
-            ReflectionUtils.getMethod( IgnoreWithDescription.class, "testSomething2", EMPTY_CLASS_ARRAY );
+        final Method testSomething2 = ReflectionUtils.getMethod( IgnoreWithDescription.class, "testSomething2",
+                EMPTY_CLASS_ARRAY );
         final Annotation[] annotations = testSomething2.getAnnotations();
-        Description desc =
-            Description.createTestDescription( IgnoreWithDescription.class, "testSomething2", annotations );
+        Description desc = Description.createTestDescription( IgnoreWithDescription.class, "testSomething2",
+                annotations );
         Ignore annotatedIgnore = JUnit4Reflector.getAnnotatedIgnore( desc );
         assertNotNull( annotatedIgnore );
         assertEquals(
-            "testSomething2" + "(org.apache.maven.surefire.junitcore.JUnit4Reflector481Test$IgnoreWithDescription)",
-            desc.getDisplayName() );
-        assertEquals( "testSomething2"
-                          + "(org.apache.maven.surefire.junitcore.JUnit4Reflector481Test$IgnoreWithDescription)",
-                      desc.toString() );
+                "testSomething2" + "(org.apache.maven.surefire.junitcore.JUnit4Reflector481Test$IgnoreWithDescription)",
+                desc.getDisplayName() );
+        assertEquals(
+                "testSomething2" + "(org.apache.maven.surefire.junitcore.JUnit4Reflector481Test$IgnoreWithDescription)",
+                desc.toString() );
         assertEquals( "org.apache.maven.surefire.junitcore.JUnit4Reflector481Test$IgnoreWithDescription",
-                      desc.getClassName() );
+                desc.getClassName() );
         assertEquals( "testSomething2", desc.getMethodName() );
         assertEquals( 0, desc.getChildren().size() );
         assertEquals( 2, desc.getAnnotations().size() );
         assertSame( annotatedIgnore, desc.getAnnotation( Ignore.class ) );
-        assertEquals( reason, annotatedIgnore.value() );
+        assertEquals( REASON, annotatedIgnore.value() );
     }
 
     @Test
     public void testGetAnnotatedIgnoreWithoutClass()
     {
-        final Method testSomething2 =
-            ReflectionUtils.getMethod( IgnoreWithDescription.class, "testSomething2", EMPTY_CLASS_ARRAY );
+        final Method testSomething2 = ReflectionUtils.getMethod( IgnoreWithDescription.class, "testSomething2",
+                EMPTY_CLASS_ARRAY );
         final Annotation[] annotations = testSomething2.getAnnotations();
         Description desc = Description.createSuiteDescription( "testSomething2", annotations );
         Ignore annotatedIgnore = JUnit4Reflector.getAnnotatedIgnore( desc );
@@ -80,16 +84,19 @@ public class JUnit4Reflector481Test
         assertEquals( 0, desc.getChildren().size() );
         assertEquals( 2, desc.getAnnotations().size() );
         assertSame( annotatedIgnore, desc.getAnnotation( Ignore.class ) );
-        assertEquals( reason, annotatedIgnore.value() );
+        assertEquals( REASON, annotatedIgnore.value() );
     }
 
-    private static final String reason = "Ignorance is bliss";
+    private static final String REASON = "Ignorance is bliss";
 
+    /**
+     *
+     */
     public static class IgnoreWithDescription
     {
 
         @Test
-        @Ignore( reason )
+        @Ignore( REASON )
         public void testSomething2()
         {
         }

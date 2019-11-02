@@ -87,7 +87,9 @@ public class JUnit4RunListenerTest
         Assert.assertEquals( "Succeeded tests", 1, reporter.getTestSucceeded() );
     }
 
-
+    /**
+     *
+     */
     public static class STest1
     {
         @Test
@@ -97,6 +99,9 @@ public class JUnit4RunListenerTest
         }
     }
 
+    /**
+     *
+     */
     public static class STest2
     {
         @Test
@@ -105,5 +110,4 @@ public class JUnit4RunListenerTest
 
         }
     }
-
 }

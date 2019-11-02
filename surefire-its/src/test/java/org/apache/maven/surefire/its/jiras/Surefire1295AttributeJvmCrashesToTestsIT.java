@@ -55,6 +55,9 @@ import static org.junit.Assume.assumeTrue;
 public class Surefire1295AttributeJvmCrashesToTestsIT
         extends SurefireJUnit4IntegrationTestCase
 {
+    /**
+     *
+     */
     public enum ForkMode
     {
         DEFAULT,
@@ -65,7 +68,7 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
     @Parameters
     public static Iterable<Object[]> parameters()
     {
-        return asList(new Object[][] {
+        return asList( new Object[][] {
 //                exit() does not stop all Threads immediately,
 //                see https://github.com/michaeltandy/crashjvm/issues/1
                 { "exit", DEFAULT },
@@ -77,13 +80,15 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
                 { "segfault", DEFAULT },
                 { "segfault", ONE_FORK_NO_REUSE },
                 { "segfault", ONE_FORK_REUSE }
-        });
+        } );
     }
 
     @Parameter( 0 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String crashStyle;
 
     @Parameter( 1 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public ForkMode forkStyle;
 
     @Test

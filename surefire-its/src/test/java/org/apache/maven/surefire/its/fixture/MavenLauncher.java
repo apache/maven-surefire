@@ -96,8 +96,7 @@ public final class MavenLauncher
         return unpackedAt;
     }
 
-    public void moveUnpackTo( File dest )
-        throws IOException
+    public void moveUnpackTo( File dest ) throws IOException
     {
         FileUtils.deleteDirectory( dest );
         //noinspection ResultOfMethodCallIgnored
@@ -159,8 +158,7 @@ public final class MavenLauncher
         return mavenLauncher;
     }
 
-    public OutputValidator getSubProjectValidator( String subProject )
-        throws VerificationException
+    public OutputValidator getSubProjectValidator( String subProject ) throws VerificationException
     {
         String subProjectBasedir = getValidator().getSubFile( subProject ).getAbsolutePath();
         String settingsXml = settingsXmlPath().getAbsolutePath();
@@ -235,18 +233,17 @@ public final class MavenLauncher
     {
         if ( newGoal != null && newGoal.startsWith( "-D" ) )
         {
-            final String sysPropKey =
-                    newGoal.contains( "=" ) ? newGoal.substring( 0, newGoal.indexOf( '=' ) ) : newGoal;
+            String sysPropKey = newGoal.contains( "=" ) ? newGoal.substring( 0, newGoal.indexOf( '=' ) ) : newGoal;
 
-            final String sysPropStarter = sysPropKey + "=";
+            String sysPropStarter = sysPropKey + "=";
 
             for ( ListIterator<String> it = goals.listIterator(); it.hasNext(); )
             {
                 String goal = it.next();
                 if ( goal.equals( sysPropKey ) || goal.startsWith( sysPropStarter ) )
                 {
-                    System.out.printf( "[WARNING] System property already exists '%s'. Overriding to '%s'.\n",
-                                             goal, newGoal );
+                    System.out.printf( "[WARNING] System property already exists '%s'. Overriding to '%s'.\n", goal,
+                            newGoal );
                     it.set( newGoal );
                     return;
                 }
@@ -255,7 +252,7 @@ public final class MavenLauncher
         goals.add( newGoal );
     }
 
-    private OutputValidator conditionalExec(String goal)
+    private OutputValidator conditionalExec( String goal )
     {
         OutputValidator verify;
         try
@@ -372,7 +369,8 @@ public final class MavenLauncher
         return validator;
     }
 
-    public void setForkJvm( boolean forkJvm ) {
+    public void setForkJvm( boolean forkJvm )
+    {
         getVerifier().setForkJvm( forkJvm );
     }
 
@@ -403,7 +401,7 @@ public final class MavenLauncher
         }
         return verifier;
     }
-    
+
     private File simpleExtractResources( Class<?> cl, String resourcePath )
     {
         if ( !resourcePath.startsWith( "/" ) )
@@ -415,7 +413,8 @@ public final class MavenLauncher
         try
         {
             File parentPom = new File( tempDir.getParentFile(), "pom.xml" );
-            if (!parentPom.exists()){
+            if ( !parentPom.exists() )
+            {
                 URL resource = cl.getResource( "/pom.xml" );
                 FileUtils.copyURLToFile( resource, parentPom );
             }
@@ -433,8 +432,7 @@ public final class MavenLauncher
     private File getUnpackDir()
     {
         String tempDirPath = System.getProperty( "maven.test.tmpdir", System.getProperty( "java.io.tmpdir" ) );
-        return new File( tempDirPath,
-                         testCaseBeingRun.getSimpleName() + "_" + getTestMethodName() + suffix );
+        return new File( tempDirPath, testCaseBeingRun.getSimpleName() + "_" + getTestMethodName() + suffix );
     }
 
     public File getArtifactPath( String gid, String aid, String version, String ext )
@@ -463,12 +461,10 @@ public final class MavenLauncher
     private static Verifier createVerifier( String basedir, String settingsFile, String[] defaultCliOptions )
             throws VerificationException
     {
-        Verifier verifier = defaultCliOptions == null ?
-                new Verifier( basedir, settingsFile, false )
-                : new Verifier( basedir, settingsFile, false, defaultCliOptions );
+        Verifier verifier = defaultCliOptions == null ? new Verifier( basedir, settingsFile, false ) : new Verifier(
+                basedir, settingsFile, false, defaultCliOptions );
 
-        verifier.getVerifierProperties()
-                .setProperty( "use.mavenRepoLocal", "true" );
+        verifier.getVerifierProperties().setProperty( "use.mavenRepoLocal", "true" );
 
         return verifier;
     }
@@ -477,8 +473,7 @@ public final class MavenLauncher
     {
         try
         {
-            return new File( System.getProperty( "maven.settings.file" ) )
-                    .getCanonicalFile();
+            return new File( System.getProperty( "maven.settings.file" ) ).getCanonicalFile();
         }
         catch ( IOException e )
         {

@@ -56,6 +56,7 @@ import static org.mockito.Mockito.when;
  */
 public class ForkedChannelEncoderTest
 {
+    private static final int ELAPSED_TIME = 102;
 
     @Test
     public void shouldBeFailSafe()
@@ -163,7 +164,7 @@ public class ForkedChannelEncoderTest
 
 
         ReportEntry reportEntry = mock( ReportEntry.class );
-        when( reportEntry.getElapsed() ).thenReturn( 102 );
+        when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "skipped test" );
         when( reportEntry.getName() ).thenReturn( "my test" );
@@ -191,7 +192,7 @@ public class ForkedChannelEncoderTest
                                 + ":"
                                 + encodedMessage
                                 + ":"
-                                + 102
+                                + ELAPSED_TIME
                                 + ":"
 
                                 + encodedExceptionMsg
@@ -216,7 +217,7 @@ public class ForkedChannelEncoderTest
                                 + ":"
                                 + encodedMessage
                                 + ":"
-                                + 102
+                                + ELAPSED_TIME
                                 + ":"
 
                                 + encodedExceptionMsg
@@ -245,7 +246,7 @@ public class ForkedChannelEncoderTest
                                     + ":"
                                     + encodedMessage
                                     + ":"
-                                    + 102
+                                    + ELAPSED_TIME
                                     + ":"
 
                                     + encodedExceptionMsg
@@ -275,7 +276,7 @@ public class ForkedChannelEncoderTest
                                     + ":"
                                     + encodedMessage
                                     + ":"
-                                    + 102
+                                    + ELAPSED_TIME
                                     + ":"
 
                                     + encodedExceptionMsg
@@ -310,7 +311,7 @@ public class ForkedChannelEncoderTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
-        when( reportEntry.getElapsed() ).thenReturn( 102 );
+        when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "skipped test" );
         when( reportEntry.getName() ).thenReturn( "my test" );
@@ -342,7 +343,7 @@ public class ForkedChannelEncoderTest
                         + ":"
                         + encodedMessage
                         + ":"
-                        + 102
+                        + ELAPSED_TIME
                         + ":"
 
                         + encodedExceptionMsg
@@ -377,7 +378,7 @@ public class ForkedChannelEncoderTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
-        when( reportEntry.getElapsed() ).thenReturn( 102 );
+        when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "skipped test" );
         when( reportEntry.getName() ).thenReturn( "my test" );
@@ -409,7 +410,7 @@ public class ForkedChannelEncoderTest
                         + ":"
                         + encodedMessage
                         + ":"
-                        + 102
+                        + ELAPSED_TIME
                         + ":"
 
                         + encodedExceptionMsg
@@ -444,7 +445,7 @@ public class ForkedChannelEncoderTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
-        when( reportEntry.getElapsed() ).thenReturn( 102 );
+        when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "skipped test" );
         when( reportEntry.getName() ).thenReturn( "my test" );
@@ -476,7 +477,7 @@ public class ForkedChannelEncoderTest
                         + ":"
                         + encodedMessage
                         + ":"
-                        + 102
+                        + ELAPSED_TIME
                         + ":"
 
                         + encodedExceptionMsg
@@ -511,7 +512,7 @@ public class ForkedChannelEncoderTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
-        when( reportEntry.getElapsed() ).thenReturn( 102 );
+        when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "skipped test" );
         when( reportEntry.getName() ).thenReturn( "my test" );
@@ -543,7 +544,7 @@ public class ForkedChannelEncoderTest
                         + ":"
                         + encodedMessage
                         + ":"
-                        + 102
+                        + ELAPSED_TIME
                         + ":"
 
                         + encodedExceptionMsg
@@ -577,7 +578,7 @@ public class ForkedChannelEncoderTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
-        when( reportEntry.getElapsed() ).thenReturn( 102 );
+        when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "skipped test" );
         when( reportEntry.getName() ).thenReturn( "my test" );
@@ -609,7 +610,7 @@ public class ForkedChannelEncoderTest
                         + ":"
                         + encodedMessage
                         + ":"
-                        + 102
+                        + ELAPSED_TIME
                         + ":"
 
                         + encodedExceptionMsg
@@ -642,7 +643,7 @@ public class ForkedChannelEncoderTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
-        when( reportEntry.getElapsed() ).thenReturn( 102 );
+        when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "skipped test" );
         when( reportEntry.getName() ).thenReturn( "my test" );
@@ -674,7 +675,7 @@ public class ForkedChannelEncoderTest
                         + ":"
                         + encodedMessage
                         + ":"
-                        + 102
+                        + ELAPSED_TIME
                         + ":"
 
                         + encodedExceptionMsg
@@ -771,7 +772,7 @@ public class ForkedChannelEncoderTest
         forkedChannelEncoder.stopOnNextTest();
         LineNumberReader printedLines = out.newReader( UTF_8 );
         assertThat( printedLines.readLine() )
-                .isEqualTo( ":maven:surefire:std:out:stop-on-next-test");
+                .isEqualTo( ":maven:surefire:std:out:stop-on-next-test" );
         assertThat( printedLines.readLine() ).isNull();
     }
 
@@ -1000,6 +1001,7 @@ public class ForkedChannelEncoderTest
     }
 
     @Test
+    @SuppressWarnings( "checkstyle:innerassignment" )
     public void shouldCountSameNumberOfSystemProperties() throws IOException
     {
         Stream out = Stream.newStream();

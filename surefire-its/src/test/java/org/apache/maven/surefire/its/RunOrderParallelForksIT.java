@@ -19,6 +19,9 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+/**
+ *
+ */
 public class RunOrderParallelForksIT
     extends RunOrderIT
 {

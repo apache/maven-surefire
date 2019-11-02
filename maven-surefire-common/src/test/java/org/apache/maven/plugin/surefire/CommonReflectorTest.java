@@ -34,6 +34,9 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.powermock.reflect.Whitebox.getInternalState;
 
+/**
+ *
+ */
 public class CommonReflectorTest
 {
     private StartupReportConfiguration startupReportConfiguration;
@@ -55,7 +58,7 @@ public class CommonReflectorTest
 
         startupReportConfiguration = new StartupReportConfiguration( true, true, "PLAIN", false, reportsDirectory,
                 false, null, statistics, false, 1, null, null, false,
-                xmlReporter, consoleOutputReporter, infoReporter);
+                xmlReporter, consoleOutputReporter, infoReporter );
 
         consoleLogger = mock( ConsoleLogger.class );
     }

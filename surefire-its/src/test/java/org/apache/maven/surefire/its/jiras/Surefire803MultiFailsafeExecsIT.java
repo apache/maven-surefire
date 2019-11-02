@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its.jiras;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,6 +23,9 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
+/**
+ *
+ */
 public class Surefire803MultiFailsafeExecsIT
     extends SurefireJUnit4IntegrationTestCase
 {
@@ -30,8 +34,11 @@ public class Surefire803MultiFailsafeExecsIT
     public void testSecondExecutionRunsAfterFirstExecutionFails()
     {
         unpack(
-            "/surefire-803-multiFailsafeExec-failureInFirst" ).maven().withFailure().executeVerify().assertIntegrationTestSuiteResults(
-            4, 0, 2, 0 );
+            "/surefire-803-multiFailsafeExec-failureInFirst" )
+                .maven()
+                .withFailure()
+                .executeVerify()
+                .assertIntegrationTestSuiteResults( 4, 0, 2, 0 );
     }
 
     @Test

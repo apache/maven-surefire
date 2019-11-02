@@ -32,8 +32,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.runners.Parameterized.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.runners.Parameterized.Parameter;
+import static org.junit.runners.Parameterized.Parameters;
 
 /**
  * @author Kristian Rosenvold
@@ -42,20 +46,24 @@ import static org.junit.runners.Parameterized.*;
 public class DirectoryScannerTest
 {
     @Parameters( name = "\"{0}\" should count {1} classes" )
-    public static Iterable<Object[]> data() {
-        return Arrays.asList( new Object[][] {
-            { "**/*ZT*A.java", is( 3 ) },
-            { "**/*ZT*A.java#testMethod", is( 3 ) },
-            { "**/*ZT?A.java#testMethod, !*ZT2A", is( 2 ) },
-            { "**/*ZT?A.java#testMethod, !*ZT2A#testMethod", is( 3 ) },
-            { "#testMethod", is( greaterThanOrEqualTo( 3 ) ) },
-        } );
+    public static Iterable<Object[]> data()
+    {
+        return Arrays.asList( new Object[][]
+                {
+                        { "**/*ZT*A.java", is( 3 ) },
+                        { "**/*ZT*A.java#testMethod", is( 3 ) },
+                        { "**/*ZT?A.java#testMethod, !*ZT2A", is( 2 ) },
+                        { "**/*ZT?A.java#testMethod, !*ZT2A#testMethod", is( 3 ) },
+                        { "#testMethod", is( greaterThanOrEqualTo( 3 ) ) }
+                } );
     }
 
     @Parameter( 0 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String filter;
 
     @Parameter( 1 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public Matcher<? super Integer> expectedClassesCount;
 
     @Test

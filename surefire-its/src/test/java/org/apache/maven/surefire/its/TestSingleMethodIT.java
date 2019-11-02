@@ -124,8 +124,8 @@ public class TestSingleMethodIT
     public void fullyQualifiedJunit48Provider47()
             throws Exception
     {
-        singleMethod("junit48-single-method", Collections.<String, String>emptyMap(),
-                            "junit4.BasicTest#testSuccessOne", "-P surefire-junit47");
+        singleMethod( "junit48-single-method", Collections.<String, String>emptyMap(),
+                            "junit4.BasicTest#testSuccessOne", "-P surefire-junit47" );
     }
 
     @Test

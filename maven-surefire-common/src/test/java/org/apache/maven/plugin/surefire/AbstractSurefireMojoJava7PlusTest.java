@@ -44,7 +44,11 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
@@ -79,6 +83,7 @@ public class AbstractSurefireMojoJava7PlusTest
     private LocationManager locationManager;
 
     @Test
+    @SuppressWarnings( "checkstyle:linelength" )
     public void shouldHaveStartupConfigForModularClasspath()
             throws Exception
     {
@@ -240,6 +245,9 @@ public class AbstractSurefireMojoJava7PlusTest
         return f;
     }
 
+    /**
+     *
+     */
     public static class Mojo
             extends AbstractSurefireMojo
     {
@@ -545,7 +553,8 @@ public class AbstractSurefireMojoJava7PlusTest
         }
 
         @Override
-        protected String[] getExcludedEnvironmentVariables() {
+        protected String[] getExcludedEnvironmentVariables()
+        {
             return new String[0];
         }
 

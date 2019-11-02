@@ -36,11 +36,8 @@ import static org.hamcrest.core.AnyOf.anyOf;
 
 /**
  * The purpose of this IT is to assert that the run order of test classes is according to the settings:<br>
- *
- * runOrder=balanced<br>
- * parallel=classes<br>
- * threadCount=2<br>
- * perCoreThreadCount=false<br>
+ * <p>
+ * runOrder=balanced<br> parallel=classes<br> threadCount=2<br> perCoreThreadCount=false<br>
  * <br>
  * The list of tests should be reordered to (DTest, CTest, BTest, ATest) in the second run.
  *
@@ -48,28 +45,23 @@ import static org.hamcrest.core.AnyOf.anyOf;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1098">SUREFIRE-1098</a>
  * @since 2.18
  */
-public class Surefire1098BalancedRunOrderIT
-    extends SurefireJUnit4IntegrationTestCase
+public class Surefire1098BalancedRunOrderIT extends SurefireJUnit4IntegrationTestCase
 {
 
     @Test
-    public void reorderedParallelClasses()
-        throws VerificationException
+    public void reorderedParallelClasses() throws VerificationException
     {
         SurefireLauncher launcher = unpack();
 
         launcher
-            // .runOrder( "balanced" ) call it in 3.x and remove it in surefire-1098-balanced-runorder/pom.xml
-            // as soon as there is prefix available "failsafe" and "surefire" in system property for this parameter.
-            .parallelClasses().threadCount( 2 ).disablePerCoreThreadCount()
-            .executeTest().verifyErrorFree( 4 );
-
-        OutputValidator validator =
-            launcher
                 // .runOrder( "balanced" ) call it in 3.x and remove it in surefire-1098-balanced-runorder/pom.xml
                 // as soon as there is prefix available "failsafe" and "surefire" in system property for this parameter.
-                .parallelClasses().threadCount( 2 ).disablePerCoreThreadCount()
-                .executeTest().verifyErrorFree( 4 );
+                .parallelClasses().threadCount( 2 ).disablePerCoreThreadCount().executeTest().verifyErrorFree( 4 );
+
+        OutputValidator validator = launcher
+                // .runOrder( "balanced" ) call it in 3.x and remove it in surefire-1098-balanced-runorder/pom.xml
+                // as soon as there is prefix available "failsafe" and "surefire" in system property for this parameter.
+                .parallelClasses().threadCount( 2 ).disablePerCoreThreadCount().executeTest().verifyErrorFree( 4 );
 
         List<String> log = printOnlyTestLines( validator );
         assertThat( log.size(), is( 4 ) );
@@ -91,28 +83,29 @@ public class Surefire1098BalancedRunOrderIT
         return unpack( "surefire-1098-balanced-runorder" );
     }
 
-    private static List<String> printOnlyTestLines( OutputValidator validator )
-        throws VerificationException
+    private static List<String> printOnlyTestLines( OutputValidator validator ) throws VerificationException
     {
         List<String> log = new ArrayList<>( validator.loadLogLines() );
-        for ( Iterator<String> it = log.iterator(); it.hasNext(); ) {
+        for ( Iterator<String> it = log.iterator(); it.hasNext(); )
+        {
             String line = it.next();
-            if ( !line.startsWith( "class jiras.surefire1098." ) ) {
+            if ( !line.startsWith( "class jiras.surefire1098." ) )
+            {
                 it.remove();
             }
         }
         return log;
     }
 
-    private static int[] extractThreadPoolIds(String logLine)
+    private static int[] extractThreadPoolIds( String logLine )
     {
         //Example to parse "class jiras.surefire1098.DTest pool-2-thread-1" into {2, 1}.
         String t = logLine.split( " " )[2];
         String[] ids = t.split( "-" );
-        return new int[]{ Integer.parseInt( ids[1] ), Integer.parseInt( ids[3] )};
+        return new int[] {Integer.parseInt( ids[1] ), Integer.parseInt( ids[3] )};
     }
 
-    private String testLine(String test, int pool, int thread)
+    private String testLine( String test, int pool, int thread )
     {
         return String.format( "class jiras.surefire1098.%sTest pool-%d-thread-%d", test, pool, thread );
     }

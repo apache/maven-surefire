@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.junit4;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -120,6 +121,9 @@ public class JUnit4TestCheckerTest
         assertTrue( checker.accept( testClass ) );
     }
 
+    /**
+     *
+     */
     public static class AlsoValid
         extends TestCase
     {
@@ -129,6 +133,9 @@ public class JUnit4TestCheckerTest
         }
     }
 
+    /**
+     *
+     */
     public static class SuiteOnlyTest
     {
         public static junit.framework.Test suite()
@@ -137,6 +144,9 @@ public class JUnit4TestCheckerTest
         }
     }
 
+    /**
+     *
+     */
     public static class CustomSuiteOnlyTest
     {
         public static MySuite2 suite()
@@ -145,6 +155,9 @@ public class JUnit4TestCheckerTest
         }
     }
 
+    /**
+     *
+     */
     public static class MySuite2
         implements junit.framework.Test
     {
@@ -160,7 +173,9 @@ public class JUnit4TestCheckerTest
         }
     }
 
-
+    /**
+     *
+     */
     @SuppressWarnings( { "UnusedDeclaration" } )
     public static class NotValidTest
     {
@@ -169,6 +184,9 @@ public class JUnit4TestCheckerTest
         }
     }
 
+    /**
+     *
+     */
     public abstract static class BaseClassWithTest
     {
         @Test
@@ -177,11 +195,17 @@ public class JUnit4TestCheckerTest
         }
     }
 
+    /**
+     *
+     */
     public static class SubClassWithoutOwnTestMethods
         extends BaseClassWithTest
     {
     }
 
+    /**
+     *
+     */
     @RunWith( Suite.class )
     public static class SuiteValid1
     {
@@ -206,6 +230,9 @@ public class JUnit4TestCheckerTest
         }
     }
 
+    /**
+     *
+     */
     @RunWith( CustomRunner.class )
     public static class SuiteValidCustomRunner
     {
@@ -216,6 +243,9 @@ public class JUnit4TestCheckerTest
     }
 
 
+    /**
+     *
+     */
     @RunWith( MySuite.class )
     public static class SuiteValid2
     {
@@ -225,6 +255,9 @@ public class JUnit4TestCheckerTest
         }
     }
 
+    /**
+     *
+     */
     public static class SimpleJUnit4TestClass
     {
         @Test
@@ -251,5 +284,4 @@ public class JUnit4TestCheckerTest
 
         }
     }
-
 }

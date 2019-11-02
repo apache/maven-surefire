@@ -27,6 +27,7 @@ import junit.framework.TestCase;
 /**
  *
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class ReportTestSuiteTest
     extends TestCase
 {

@@ -47,7 +47,9 @@ public class ClasspathTest
 
     public void testShouldWriteSeparatedElementsAsSystemProperty()
     {
-        Classpath classpath = Classpath.emptyClasspath().addClassPathElementUrl( DUMMY_URL_1 ).addClassPathElementUrl( DUMMY_URL_2 );
+        Classpath classpath = Classpath.emptyClasspath()
+                .addClassPathElementUrl( DUMMY_URL_1 )
+                .addClassPathElementUrl( DUMMY_URL_2 );
         classpath.writeToSystemProperty( DUMMY_PROPERTY_NAME );
         assertEquals( DUMMY_URL_1 + File.pathSeparatorChar + DUMMY_URL_2 + File.pathSeparatorChar,
                       System.getProperty( DUMMY_PROPERTY_NAME ) );
@@ -55,8 +57,9 @@ public class ClasspathTest
 
     public void testShouldAddNoDuplicateElements()
     {
-        Classpath classpath =
-            emptyClasspath().addClassPathElementUrl( DUMMY_URL_1 ).addClassPathElementUrl( DUMMY_URL_1 );
+        Classpath classpath = emptyClasspath()
+                .addClassPathElementUrl( DUMMY_URL_1 )
+                .addClassPathElementUrl( DUMMY_URL_1 );
         assertClasspathConsistsOfElements( classpath, new String[]{ DUMMY_URL_1 } );
     }
 
@@ -69,7 +72,8 @@ public class ClasspathTest
     public void testShouldHaveAllElementsAfterJoiningTwoDifferentClasspaths()
     {
         Classpath firstClasspath = Classpath.emptyClasspath();
-        Classpath secondClasspath = firstClasspath.addClassPathElementUrl( DUMMY_URL_1 ).addClassPathElementUrl( DUMMY_URL_2 );
+        Classpath secondClasspath = firstClasspath.addClassPathElementUrl( DUMMY_URL_1 )
+                .addClassPathElementUrl( DUMMY_URL_2 );
         Classpath joinedClasspath = Classpath.join( firstClasspath, secondClasspath );
         assertClasspathConsistsOfElements( joinedClasspath, new String[]{ DUMMY_URL_1, DUMMY_URL_2 } );
     }

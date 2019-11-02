@@ -39,6 +39,7 @@ import static org.powermock.reflect.Whitebox.invokeMethod;
 /**
  * Tests for {@link ForkedBooter}.
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class ForkedBooterTest
 {
     @Test

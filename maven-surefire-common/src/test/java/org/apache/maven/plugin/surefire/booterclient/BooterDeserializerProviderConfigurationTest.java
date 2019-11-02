@@ -22,10 +22,22 @@ package org.apache.maven.plugin.surefire.booterclient;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.surefire.booter.*;
+import org.apache.maven.surefire.booter.BooterDeserializer;
+import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
+import org.apache.maven.surefire.booter.ClasspathConfiguration;
+import org.apache.maven.surefire.booter.PropertiesWrapper;
+import org.apache.maven.surefire.booter.ProviderConfiguration;
+import org.apache.maven.surefire.booter.Shutdown;
+import org.apache.maven.surefire.booter.StartupConfiguration;
+import org.apache.maven.surefire.booter.TypeEncodedValue;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.testset.*;
+import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.ResolvedTest;
+import org.apache.maven.surefire.testset.RunOrderParameters;
+import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestListResolver;
+import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.util.RunOrder;
 import org.junit.After;
 import org.junit.Before;
@@ -33,7 +45,11 @@ import org.junit.Before;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
 import static org.apache.maven.surefire.cli.CommandLineOption.REACTOR_FAIL_FAST;
@@ -48,13 +64,13 @@ public class BooterDeserializerProviderConfigurationTest
     extends TestCase
 {
 
-    static final TypeEncodedValue aTestTyped = new TypeEncodedValue( String.class.getName(), "aTest" );
+    static final TypeEncodedValue TEST_TYPED = new TypeEncodedValue( String.class.getName(), "aTest" );
 
-    private static final String aUserRequestedTest = "aUserRequestedTest";
+    private static final String USER_REQUESTED_TEST = "aUserRequestedTest";
 
-    private static final String aUserRequestedTestMethod = "aUserRequestedTestMethod";
+    private static final String USER_REQUESTED_TEST_METHOD = "aUserRequestedTestMethod";
 
-    private static final int rerunFailingTestsCount = 3;
+    private static final int RERUN_FAILING_TEST_COUNT = 3;
 
     private static int idx = 0;
 
@@ -149,15 +165,16 @@ public class BooterDeserializerProviderConfigurationTest
         TestListResolver resolver = testSuiteDefinition.getTestListResolver();
         Assert.assertNotNull( resolver );
         Assert.assertFalse( resolver.isEmpty() );
-        Assert.assertEquals( aUserRequestedTest + "#" + aUserRequestedTestMethod, resolver.getPluginParameterTest() );
+        Assert.assertEquals( USER_REQUESTED_TEST + "#" + USER_REQUESTED_TEST_METHOD,
+                resolver.getPluginParameterTest() );
         Assert.assertFalse( resolver.getIncludedPatterns().isEmpty() );
         Assert.assertTrue( resolver.getExcludedPatterns().isEmpty() );
         Assert.assertEquals( 1, resolver.getIncludedPatterns().size() );
         ResolvedTest filter = resolver.getIncludedPatterns().iterator().next();
         Assert.assertNotNull( filter );
-        Assert.assertEquals( "**/" + aUserRequestedTest, filter.getTestClassPattern() );
-        Assert.assertEquals( aUserRequestedTestMethod, filter.getTestMethodPattern() );
-        Assert.assertEquals( rerunFailingTestsCount, testSuiteDefinition.getRerunFailingTestsCount() );
+        Assert.assertEquals( "**/" + USER_REQUESTED_TEST, filter.getTestClassPattern() );
+        Assert.assertEquals( USER_REQUESTED_TEST_METHOD, filter.getTestMethodPattern() );
+        Assert.assertEquals( RERUN_FAILING_TEST_COUNT, testSuiteDefinition.getRerunFailingTestsCount() );
         assertEquals( cli, reloaded.getMainCliOptions() );
     }
 
@@ -165,7 +182,7 @@ public class BooterDeserializerProviderConfigurationTest
         throws IOException
     {
         final ProviderConfiguration reloaded = getReloadedProviderConfiguration();
-        Assert.assertEquals( aTestTyped, reloaded.getTestForFork() );
+        Assert.assertEquals( TEST_TYPED, reloaded.getTestForFork() );
         assertEquals( cli, reloaded.getMainCliOptions() );
     }
 
@@ -255,11 +272,11 @@ public class BooterDeserializerProviderConfigurationTest
         ReporterConfiguration reporterConfiguration = new ReporterConfiguration( cwd, true );
         TestRequest testSuiteDefinition =
             new TestRequest( getSuiteXmlFileStrings(), getTestSourceDirectory(),
-                             new TestListResolver( aUserRequestedTest + "#aUserRequestedTestMethod" ),
-                             rerunFailingTestsCount );
+                             new TestListResolver( USER_REQUESTED_TEST + "#aUserRequestedTestMethod" ),
+                    RERUN_FAILING_TEST_COUNT );
         RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null );
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, true, reporterConfiguration,
-                new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new HashMap<String, String>(), aTestTyped,
+                new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new HashMap<String, String>(), TEST_TYPED,
                 readTestsFromInStream, cli, 0, Shutdown.DEFAULT, 0 );
     }
 

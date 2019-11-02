@@ -44,6 +44,7 @@ import static org.apache.maven.plugins.surefire.report.Utils.toSystemNewLine;
 /**
  * @author <a href="mailto:aramirez@apache.org">Allan Ramirez</a>
  */
+@SuppressWarnings( "checkstyle:linelength" )
 public class SurefireReportMojoTest
     extends AbstractMojoTestCase
 {
@@ -198,7 +199,8 @@ public class SurefireReportMojoTest
 
         assertTrue( idx < 0 );
     }
-    
+
+    @SuppressWarnings( "checkstyle:methodname" )
     public void testBasicSurefireReport_AnchorTestCases()
         throws Exception
     {
