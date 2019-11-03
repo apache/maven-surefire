@@ -206,7 +206,7 @@ public final class ForkedBooter
             pingMechanisms.pingScheduler.scheduleWithFixedDelay( checkerJob, 0L, 1L, SECONDS );
         }
         Runnable pingJob = createPingJob( pingDone, pingMechanisms.pluginProcessChecker );
-        pingMechanisms.pingScheduler.scheduleAtFixedRate( pingJob, 0L, PING_TIMEOUT_IN_SECONDS, SECONDS );
+        pingMechanisms.pingScheduler.scheduleWithFixedDelay( pingJob, 0L, PING_TIMEOUT_IN_SECONDS, SECONDS );
 
         return pingMechanisms;
     }
