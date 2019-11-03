@@ -214,16 +214,6 @@ final class RunListenerAdapter
         return new PojoStackTraceWriter( realClassName, realMethodName, throwable );
     }
 
-    private String[] toClassMethodName( TestIdentifier testIdentifier )
-    {
-        return toClassMethodName( testIdentifier, true );
-    }
-
-    String[] toClassMethodNameWithoutPlan( TestIdentifier testIdentifier )
-    {
-        return toClassMethodName( testIdentifier, false );
-    }
-
     /**
      * <ul>
      *     <li>[0] class name - used in stacktrace parser</li>
@@ -233,11 +223,9 @@ final class RunListenerAdapter
      * </ul>
      *
      * @param testIdentifier a class or method
-     * @param usePlan {@code true} for using the test-plan to fetch sources.
-     *                {@code false} to rely on fallbacks.
      * @return 4 elements string array
      */
-    private String[] toClassMethodName( TestIdentifier testIdentifier, boolean usePlan )
+    private String[] toClassMethodName( TestIdentifier testIdentifier )
     {
         Optional<TestSource> testSource = testIdentifier.getSource();
         String display = testIdentifier.getDisplayName();
@@ -247,18 +235,10 @@ final class RunListenerAdapter
             MethodSource methodSource = testSource.map( MethodSource.class::cast ).get();
             String realClassName = methodSource.getClassName();
 
-            String[] source;
-            if ( usePlan )
-            {
-               source = testPlan.getParent( testIdentifier )
-                        .map( i -> toClassMethodName( i, usePlan ) )
-                        .map( s -> new String[] { s[0], s[1] } )
-                        .orElse( new String[] { realClassName, realClassName } );
-            }
-            else
-            {
-                source = new String[] { realClassName, realClassName };
-            }
+            String[] source = testPlan.getParent( testIdentifier )
+                    .map( i -> toClassMethodName( i ) )
+                    .map( s -> new String[] { s[0], s[1] } )
+                    .orElse( new String[] { realClassName, realClassName } );
 
             String methodName = methodSource.getMethodName();
             boolean useMethod = display.equals( methodName ) || display.equals( methodName + "()" );
@@ -276,7 +256,7 @@ final class RunListenerAdapter
         }
         else
         {
-            String source = !usePlan ? display : testPlan.getParent( testIdentifier )
+            String source = testPlan.getParent( testIdentifier )
                     .map( TestIdentifier::getDisplayName ).orElse( display );
             return new String[] {source, source, display, display};
         }

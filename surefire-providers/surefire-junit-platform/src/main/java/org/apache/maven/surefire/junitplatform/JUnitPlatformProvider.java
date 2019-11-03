@@ -31,7 +31,7 @@ import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture
 import static org.apache.maven.surefire.util.TestsToRun.fromClass;
 import static org.junit.platform.commons.util.StringUtils.isBlank;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
-import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMethod;
+import static org.junit.platform.engine.discovery.DiscoverySelectors.selectUniqueId;
 import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
 
 import java.io.IOException;
@@ -190,12 +190,7 @@ public class JUnitPlatformProvider
         // Iterate over recorded failures
         for ( TestIdentifier identifier : new HashSet<>( adapter.getFailures().keySet() ) )
         {
-            // Extract quantified test name data
-            String[] classMethodName = adapter.toClassMethodNameWithoutPlan( identifier );
-            String className = classMethodName[0];
-            String methodName = classMethodName[2];
-            // Add filter for the specific failing method
-            builder.selectors( selectMethod( className, methodName ) );
+            builder.selectors( selectUniqueId( identifier.getUniqueId() ) );
         }
         return builder.build();
     }

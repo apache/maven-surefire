@@ -297,6 +297,44 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
+    public void rerunParameterized()
+            throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        ProviderParameters parameters = providerParametersMock();
+        // Mock the rerun variable
+        when( parameters.getTestRequest().getRerunFailingTestsCount() ).thenReturn( 2 );
+        when( parameters.getProviderProperties() )
+                .thenReturn( singletonMap( JUnitPlatformProvider.CONFIGURATION_PARAMETERS,
+                        "forkCount = 1\nreuseForks = true" ) );
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( parameters, launcher );
+        TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
+        launcher.registerTestExecutionListeners( executionListener );
+
+        invokeProvider( provider, TestClass7.class );
+
+        assertThat( executionListener.summaries ).hasSize( 3 );
+        TestExecutionSummary summary = executionListener.summaries.get( 0 );
+        assertEquals( 2, summary.getTestsFoundCount() );
+        assertEquals( 2, summary.getTestsStartedCount() );
+        assertEquals( 1, summary.getTestsSucceededCount() );
+        assertEquals( 1, summary.getTestsFailedCount() );
+
+        summary = executionListener.summaries.get( 1 );
+        assertEquals( 1, summary.getTestsFoundCount() );
+        assertEquals( 1, summary.getTestsStartedCount() );
+        assertEquals( 0, summary.getTestsSucceededCount() );
+        assertEquals( 1, summary.getTestsFailedCount() );
+
+        summary = executionListener.summaries.get( 1 );
+        assertEquals( 1, summary.getTestsFoundCount() );
+        assertEquals( 1, summary.getTestsStartedCount() );
+        assertEquals( 0, summary.getTestsSucceededCount() );
+        assertEquals( 1, summary.getTestsFailedCount() );
+    }
+
+    @Test
     public void allDiscoveredTestsAreInvokedForNullArgument()
                     throws Exception
     {
@@ -920,5 +958,21 @@ public class JUnitPlatformProviderTest
             count += 1;
             assertTrue( count >= 3 );
         }*/
+    }
+
+    static class TestClass7
+    {
+        static List<Object[]> params()
+        {
+            return Arrays.asList(  new Object[] { "Always pass", true },
+                    new Object[] { "Always fail", false }  );
+        }
+
+        @org.junit.jupiter.params.ParameterizedTest
+        @org.junit.jupiter.params.provider.MethodSource("params")
+        void testParameterizedTestCases( String testName, boolean value )
+        {
+            assertTrue( value );
+        }
     }
 }
