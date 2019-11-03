@@ -19,12 +19,11 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.AbstractCommandReader;
 import org.apache.maven.shared.utils.cli.CommandLineCallable;
 import org.apache.maven.shared.utils.cli.CommandLineException;
 import org.apache.maven.shared.utils.cli.Commandline;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
-import org.apache.maven.surefire.extensions.ForkedChannelServer;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.ForkedChannelServer;
 
 import javax.annotation.Nonnull;
 
@@ -32,12 +31,10 @@ import javax.annotation.Nonnull;
  * todo add javadoc
  * @param <T> type of event
  */
-public interface ExecutableCommandline<T>
+public interface ExecutableCommandline<T extends ForkedChannelServer>
 {
     @Nonnull CommandLineCallable executeCommandLineAsCallable( @Nonnull Commandline cli,
-                                                               @Nonnull AbstractCommandReader commands,
-                                                               @Nonnull EventHandler<T> events,
-                                                               @Nonnull ForkedChannelServer server,
+                                                               @Nonnull T server,
                                                                StreamConsumer stdOut,
                                                                StreamConsumer stdErr,
                                                                @Nonnull Runnable runAfterProcessTermination )

@@ -175,8 +175,8 @@ public class BooterDeserializerStartupConfigurationTest
 
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )
     {
-        return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, false,
-                                         false );
+        return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, false, false,
+                "pipe:std:in" );
     }
 
     private File getTestSourceDirectory()

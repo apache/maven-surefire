@@ -768,6 +768,24 @@ public abstract class AbstractSurefireMojo
     private String[] dependenciesToScan;
 
     /**
+     * Configuration string to select the communication channel to forked JVMs (applicable when forkCount &gt; 0)
+     *
+     * <p>Examples:</p>
+     * <ul>
+     *  <li>"tcp://127.0.0.1/0" (Use a TCP socket on localhost, bind to any free port)</li>
+     *  <li>"pipe:std:in" (Use stdin/stdout)</li>
+     * </ul>
+     *
+     * //TODO add pointer here to how to create new channels
+     *
+     * <p>In versions prior to 3.0.0-M4, the only available option was "pipe:std:in"</p>
+     *
+     * @since 3.0.0-M4
+     */
+    @Parameter( property = "forkChannel", defaultValue = "tcp://127.0.0.1/0" )
+    private String forkChannel;
+
+    /**
      *
      */
     @Component
@@ -1813,7 +1831,7 @@ public abstract class AbstractSurefireMojo
                 inProcClasspath, effectiveIsEnableAssertions(), isChildDelegation() );
 
         return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration, isForking(),
-                false );
+                false, forkChannel );
     }
 
     private static Set<Artifact> retainInProcArtifactsUnique( Set<Artifact> providerArtifacts,
@@ -1921,7 +1939,7 @@ public abstract class AbstractSurefireMojo
         getConsoleLogger().debug( inProcClasspath.getCompactLogMessage( "in-process(compact) classpath:" ) );
 
         return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration, isForking(),
-                false );
+                false, forkChannel );
     }
 
     private Artifact getCommonArtifact()
@@ -2263,8 +2281,7 @@ public abstract class AbstractSurefireMojo
 
         Classpath bootClasspath = getArtifactClasspath( shadeFire != null ? shadeFire : surefireBooterArtifact );
 
-        //todo Enrico, here should be implementation for pipes and NettyIO depending on MOJO configuration
-        // todo we will create a new @Parameter with POJO object of complex configuration for TCP/IP
+        //TODO should use service provider to find correct factory implementation
         ExecutableCommandlineFactory executableCommandlineFactory = new DefaultExecutableCommmandlineFactory();
 
         if ( canExecuteProviderWithModularPath( platform ) )
@@ -2281,7 +2298,7 @@ public abstract class AbstractSurefireMojo
                     reuseForks,
                     platform,
                     getConsoleLogger(),
-                    executableCommandlineFactory );
+                    executableCommandlineFactory, forkChannel );
         }
         else if ( getClassLoaderConfiguration().isManifestOnlyJarRequestedAndUsable() )
         {
@@ -2297,7 +2314,7 @@ public abstract class AbstractSurefireMojo
                     reuseForks,
                     platform,
                     getConsoleLogger(),
-                    executableCommandlineFactory );
+                    executableCommandlineFactory, forkChannel );
         }
         else
         {
@@ -2313,7 +2330,7 @@ public abstract class AbstractSurefireMojo
                     reuseForks,
                     platform,
                     getConsoleLogger(),
-                    executableCommandlineFactory );
+                    executableCommandlineFactory, forkChannel );
         }
     }
 

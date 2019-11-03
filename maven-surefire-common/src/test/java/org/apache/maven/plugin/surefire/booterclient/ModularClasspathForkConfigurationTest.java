@@ -66,7 +66,7 @@ public class ModularClasspathForkConfigurationTest
 
         ModularClasspathForkConfiguration config = new ModularClasspathForkConfiguration( booter, tmp, "", pwd,
                 new Properties(), "", new HashMap<String, String>(), true, 1, true, new Platform(),
-                new NullConsoleLogger(), null )
+                new NullConsoleLogger(), null, "pipe:std:in" )
         {
             @Nonnull
             @Override
@@ -149,8 +149,8 @@ public class ModularClasspathForkConfigurationTest
                 new ModularClasspathConfiguration( modularClasspath, testClasspathUrls, surefireClasspathUrls,
                         emptyClasspath(), true, true );
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
-        StartupConfiguration startupConfiguration =
-                new StartupConfiguration( "JUnitCoreProvider", modularClasspathConfiguration, clc, true, true );
+        StartupConfiguration startupConfiguration = new StartupConfiguration( "JUnitCoreProvider",
+                modularClasspathConfiguration, clc, true, true, "pipe:std:in" );
         OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
         config.resolveClasspath( cli, ForkedBooter.class.getName(), startupConfiguration,
                 createTempFile( "surefire", "surefire-reports" ) );

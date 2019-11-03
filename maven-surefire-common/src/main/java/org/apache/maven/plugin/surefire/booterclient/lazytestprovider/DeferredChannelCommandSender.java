@@ -19,8 +19,6 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * under the License.
  */
 
-import org.apache.maven.surefire.extensions.ForkedChannelServer;
-
 import java.io.Closeable;
 
 /**

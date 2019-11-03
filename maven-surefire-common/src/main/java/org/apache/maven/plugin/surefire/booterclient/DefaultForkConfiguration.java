@@ -66,6 +66,7 @@ public abstract class DefaultForkConfiguration
     @Nonnull private final Platform pluginPlatform;
     @Nonnull private final ConsoleLogger log;
     @Nonnull private final ExecutableCommandlineFactory executableCommandlineFactory;
+    @Nonnull private final String forkChannelConfiguration;
 
     @SuppressWarnings( "checkstyle:parameternumber" )
     protected DefaultForkConfiguration( @Nonnull Classpath booterClasspath,
@@ -80,7 +81,8 @@ public abstract class DefaultForkConfiguration
                                      boolean reuseForks,
                                      @Nonnull Platform pluginPlatform,
                                      @Nonnull ConsoleLogger log,
-                                     @Nonnull ExecutableCommandlineFactory executableCommandlineFactory )
+                                     @Nonnull ExecutableCommandlineFactory executableCommandlineFactory,
+                                     @Nonnull String forkChannelConfiguration )
     {
         this.booterClasspath = booterClasspath;
         this.tempDirectory = tempDirectory;
@@ -95,6 +97,7 @@ public abstract class DefaultForkConfiguration
         this.pluginPlatform = pluginPlatform;
         this.log = log;
         this.executableCommandlineFactory = executableCommandlineFactory;
+        this.forkChannelConfiguration = forkChannelConfiguration;
     }
 
     protected abstract void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
@@ -337,6 +340,13 @@ public abstract class DefaultForkConfiguration
     protected Classpath getBooterClasspath()
     {
         return booterClasspath;
+    }
+
+    @Override
+    @Nonnull
+    public String getForkChannelConfiguration()
+    {
+        return forkChannelConfiguration;
     }
 
     @Nonnull

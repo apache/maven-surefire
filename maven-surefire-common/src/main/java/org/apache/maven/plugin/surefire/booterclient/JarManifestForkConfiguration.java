@@ -70,10 +70,12 @@ public final class JarManifestForkConfiguration
                                          @Nonnull Map<String, String> environmentVariables, boolean debug,
                                          int forkCount, boolean reuseForks, @Nonnull Platform pluginPlatform,
                                          @Nonnull ConsoleLogger log,
-                                         @Nonnull ExecutableCommandlineFactory executableCommandlineFactory )
+                                         @Nonnull ExecutableCommandlineFactory executableCommandlineFactory,
+                                         @Nonnull String channelConfiguration )
     {
         super( bootClasspath, tempDirectory, debugLine, workingDirectory, modelProperties, argLine,
-                environmentVariables, debug, forkCount, reuseForks, pluginPlatform, log, executableCommandlineFactory );
+                environmentVariables, debug, forkCount, reuseForks, pluginPlatform, log, executableCommandlineFactory,
+                channelConfiguration );
     }
 
     @Override

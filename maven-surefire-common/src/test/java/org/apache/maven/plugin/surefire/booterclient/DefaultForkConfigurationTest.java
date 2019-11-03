@@ -99,7 +99,7 @@ public class DefaultForkConfigurationTest
     {
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
                 workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log, executableCommandlineFactory )
+                pluginPlatform, log, executableCommandlineFactory, "pipe:std:in" )
         {
 
             @Override
@@ -124,7 +124,7 @@ public class DefaultForkConfigurationTest
         argLine = "";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
                 workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log, executableCommandlineFactory )
+                pluginPlatform, log, executableCommandlineFactory, "pipe:std:in" )
         {
 
             @Override
@@ -149,7 +149,7 @@ public class DefaultForkConfigurationTest
         argLine = "\n\r";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
                 workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log, executableCommandlineFactory )
+                pluginPlatform, log, executableCommandlineFactory, "pipe:std:in" )
         {
 
             @Override
@@ -174,7 +174,7 @@ public class DefaultForkConfigurationTest
         argLine = "-Dfile.encoding=UTF-8";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
                 workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log, executableCommandlineFactory )
+                pluginPlatform, log, executableCommandlineFactory, "pipe:std:in" )
         {
 
             @Override
@@ -200,7 +200,7 @@ public class DefaultForkConfigurationTest
         argLine = "-Dfile.encoding=@{encoding}";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
                 workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log, executableCommandlineFactory )
+                pluginPlatform, log, executableCommandlineFactory, "pipe:std:in" )
         {
 
             @Override
@@ -225,7 +225,7 @@ public class DefaultForkConfigurationTest
         argLine = "a\n\rb";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
                 workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log, executableCommandlineFactory )
+                pluginPlatform, log, executableCommandlineFactory, "pipe:std:in" )
         {
 
             @Override
@@ -250,7 +250,7 @@ public class DefaultForkConfigurationTest
         argLine = "-Dthread=${surefire.threadNumber}";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
                 workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log, executableCommandlineFactory )
+                pluginPlatform, log, executableCommandlineFactory, "pipe:std:in" )
         {
 
             @Override
@@ -275,7 +275,7 @@ public class DefaultForkConfigurationTest
         argLine = "-Dthread=${surefire.forkNumber}";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
                 workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log, executableCommandlineFactory )
+                pluginPlatform, log, executableCommandlineFactory, "pipe:std:in" )
         {
 
             @Override
@@ -299,8 +299,8 @@ public class DefaultForkConfigurationTest
     {
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
         ClasspathConfiguration cc = new ClasspathConfiguration( true, true );
-        StartupConfiguration conf =
-                new StartupConfiguration( "org.apache.maven.shadefire.surefire.MyProvider", cc, clc, false, false );
+        StartupConfiguration conf = new StartupConfiguration( "org.apache.maven.shadefire.surefire.MyProvider", cc, clc,
+                false, false, "pipe:std:in" );
         StartupConfiguration confMock = spy( conf );
         mockStatic( Relocator.class );
         when( Relocator.relocate( anyString() ) ).thenCallRealMethod();
@@ -320,8 +320,8 @@ public class DefaultForkConfigurationTest
     {
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
         ClasspathConfiguration cc = new ClasspathConfiguration( true, true );
-        StartupConfiguration conf =
-                new StartupConfiguration( "org.apache.maven.surefire.MyProvider", cc, clc, false, false );
+        StartupConfiguration conf = new StartupConfiguration( "org.apache.maven.surefire.MyProvider", cc, clc, false,
+                false, "pipe:std:in" );
         StartupConfiguration confMock = spy( conf );
         mockStatic( Relocator.class );
         when( Relocator.relocate( anyString() ) ).thenCallRealMethod();

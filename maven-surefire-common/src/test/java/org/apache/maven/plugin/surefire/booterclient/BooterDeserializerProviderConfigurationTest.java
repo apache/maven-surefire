@@ -268,7 +268,7 @@ public class BooterDeserializerProviderConfigurationTest
         ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( true, true );
 
         return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, false,
-                                         false );
+                                         false, "pipe:std:in" );
     }
 
     private File getTestSourceDirectory()

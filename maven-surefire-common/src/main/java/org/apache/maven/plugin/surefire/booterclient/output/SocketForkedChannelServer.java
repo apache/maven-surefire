@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.extensions;
+package org.apache.maven.plugin.surefire.booterclient.output;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,11 +19,11 @@ package org.apache.maven.plugin.surefire.extensions;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.AbstractCommandReader;
 import org.apache.maven.shared.utils.cli.StreamPumper;
 import org.apache.maven.surefire.booter.Command;
 import org.apache.maven.surefire.extensions.ForkedChannel;
-import org.apache.maven.surefire.extensions.ForkedChannelServer;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.ForkedChannelServer;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -34,7 +34,7 @@ import java.net.Socket;
  * @author <a href="mailto:jon@jonbell.net">Jonathan Bell</a>
  * @since 3.0.0-M4
  */
-public class TCPForkedChannelServer extends ForkedChannelServer
+public class SocketForkedChannelServer extends ForkedChannelServer
 {
 
     private final int port;
@@ -47,13 +47,22 @@ public class TCPForkedChannelServer extends ForkedChannelServer
     private IOException exceptionThrownInStart;
     private OutputStream outputStream;
     private final ForkedChannel encoder;
+    private final ThreadedStreamConsumer threadedStreamConsumer;
 
-    public TCPForkedChannelServer( final ThreadedStreamConsumer threadedStreamConsumer,
-                                   final ForkedChannel encoder ) throws IOException
+    public SocketForkedChannelServer( String channelConfig, final ForkClient forkClient, final ForkedChannel encoder,
+                                      final AbstractCommandReader commandSender )
     {
-        super( "tcp://127.0.0.1/0" ); //TODO allow for configuring where we bind to?
-        this.serverSocket = new ServerSocket( 0 );
+        super( channelConfig, forkClient, encoder, commandSender ); //TODO allow for configuring where we bind to?
+        try
+        {
+            this.serverSocket = new ServerSocket( 0 );
+        }
+        catch ( IOException ex )
+        {
+            throw new IllegalStateException( ex );
+        }
         this.port = this.serverSocket.getLocalPort();
+        this.threadedStreamConsumer = new ThreadedStreamConsumer( forkClient );
         //Create a new thread to manage this client connection
         this.clientThread = new Thread( new Runnable()
         {
@@ -66,9 +75,9 @@ public class TCPForkedChannelServer extends ForkedChannelServer
                     outputPumper = new StreamPumper( client.getInputStream(), threadedStreamConsumer );
                     outputPumper.start();
                     outputStream = client.getOutputStream();
-                    synchronized ( TCPForkedChannelServer.this )
+                    synchronized ( SocketForkedChannelServer.this )
                     {
-                        TCPForkedChannelServer.this.notify();
+                        SocketForkedChannelServer.this.notify();
                     }
                 }
                 catch ( IOException e )
@@ -126,18 +135,25 @@ public class TCPForkedChannelServer extends ForkedChannelServer
     }
 
     @Override
-    public void close() throws IOException
+    public void closeInternal() throws IOException
     {
+        this.threadedStreamConsumer.close();
         //Make sure streams are done
-        try
+        if ( outputPumper != null )
         {
-            outputPumper.waitUntilDone();
+            try
+            {
+                outputPumper.waitUntilDone();
+            }
+            catch ( InterruptedException e )
+            {
+            }
+            outputPumper.close();
         }
-        catch ( InterruptedException e )
+        if ( client != null )
         {
+            client.close();
         }
-        outputPumper.close();
-        client.close();
         if ( exceptionThrownInStart != null )
         {
             throw exceptionThrownInStart;

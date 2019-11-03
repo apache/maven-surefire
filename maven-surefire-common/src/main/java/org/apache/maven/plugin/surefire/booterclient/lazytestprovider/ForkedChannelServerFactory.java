@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.booter;
+package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,36 +19,18 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.providerapi.MasterProcessChannelDecoder;
+import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
+import org.apache.maven.surefire.extensions.ForkedChannel;
 
-import java.io.IOException;
-import java.net.Socket;
+import javax.annotation.Nonnull;
 
 /**
- * @author <a href="mailto:jon@jonbell.net">Jonathan Bell (jon-bell)</a>
+ * @author <a href="mailto:jon@jonbell.net">Jonathan Bell</a>
  * @since 3.0.0-M4
  */
-public class TCPMasterProcessChannelDecoder implements MasterProcessChannelDecoder
+public interface ForkedChannelServerFactory
 {
-    private final Socket socket;
-
-    public TCPMasterProcessChannelDecoder( String remoteAddr, int remotePort, ConsoleLogger logger ) throws IOException
-    {
-        socket = new Socket( remoteAddr, remotePort );
-        socket.setTcpNoDelay( true );
-    }
-
-    @Override
-    public Command decode() throws IOException
-    {
-
-        return null;
-    }
-
-    @Override
-    public void close() throws IOException
-    {
-
-    }
+    @Nonnull
+    ForkedChannelServer createForkedChannelServer( String channelConfig, ForkClient forkClient, ForkedChannel encoder,
+                                                   AbstractCommandReader commandSender );
 }

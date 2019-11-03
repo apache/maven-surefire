@@ -24,20 +24,23 @@ import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Executable
 import javax.annotation.Nonnull;
 
 /**
- *  @author <a href="mailto:jon@jonbell.net">Jonathan Bell</a>
- *  @since 3.0.0-M4
+ * @author <a href="mailto:jon@jonbell.net">Jonathan Bell</a>
+ * @since 3.0.0-M4
  */
 public class DefaultExecutableCommmandlineFactory implements ExecutableCommandlineFactory
 {
     @Nonnull
     @Override
-    public ExecutableCommandline<String> createExecutableCommandline( String config )
+    public ExecutableCommandline createExecutableCommandline( String config )
     {
-        //TODO pass the actual config and parse it correctly
-//        if("pipe:std:in".equals( config ))
-//            return new PipeProcessExecutor();
-//        else if(config != null && config.startsWith( "tcp://" ))
+        if ( "pipe:std:in".equals( config ) )
+        {
+            return new PipeProcessExecutor();
+        }
+        else if ( config != null && config.startsWith( "tcp://" ) )
+        {
             return new NetworkingProcessExecutor();
-//        throw new IllegalArgumentException( "Unsupported command line configuration: " + config );
+        }
+        throw new IllegalArgumentException( "Unsupported command line configuration: " + config );
     }
 }

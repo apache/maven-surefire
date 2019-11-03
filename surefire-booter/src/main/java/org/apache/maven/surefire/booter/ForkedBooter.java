@@ -110,7 +110,7 @@ public final class ForkedBooter
                     .dumpText( "Found Maven process ID " + booterDeserializer.getPluginPid() );
         }
 
-        startupConfiguration = booterDeserializer.getProviderConfiguration();
+        startupConfiguration = booterDeserializer.getStartupConfiguration();
 
         String communicationConfig = startupConfiguration.getInterProcessChannelConfiguration();
         MasterProcessChannel channel = lookupChannelFactory().createChannel( communicationConfig );

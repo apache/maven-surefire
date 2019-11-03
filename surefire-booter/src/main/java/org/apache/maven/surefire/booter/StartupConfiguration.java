@@ -40,16 +40,6 @@ public class StartupConfiguration
     public StartupConfiguration(
             @Nonnull String providerClassName,
             @Nonnull AbstractPathConfiguration classpathConfiguration, @Nonnull
-                    ClassLoaderConfiguration classLoaderConfiguration, boolean isForkRequested, boolean inForkedVm )
-    {
-        this( providerClassName, classpathConfiguration, classLoaderConfiguration, isForkRequested, inForkedVm,
-                "pipe:std:in" );
-
-    }
-
-    public StartupConfiguration(
-            @Nonnull String providerClassName,
-            @Nonnull AbstractPathConfiguration classpathConfiguration, @Nonnull
                     ClassLoaderConfiguration classLoaderConfiguration, boolean isForkRequested, boolean inForkedVm,
             String interProcessChannelConfiguration )
     {

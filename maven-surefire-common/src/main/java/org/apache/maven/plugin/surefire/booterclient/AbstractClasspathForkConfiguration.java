@@ -50,10 +50,12 @@ abstract class AbstractClasspathForkConfiguration
                                         boolean reuseForks,
                                         @Nonnull Platform pluginPlatform,
                                         @Nonnull ConsoleLogger log,
-                                        @Nonnull ExecutableCommandlineFactory executableCommandlineFactory )
+                                        @Nonnull ExecutableCommandlineFactory executableCommandlineFactory,
+                                        @Nonnull String forkChannelConfiguration )
     {
         super( bootClasspath, tempDirectory, debugLine, workingDirectory, modelProperties, argLine,
-                environmentVariables, debug, forkCount, reuseForks, pluginPlatform, log, executableCommandlineFactory );
+                environmentVariables, debug, forkCount, reuseForks, pluginPlatform, log, executableCommandlineFactory,
+                forkChannelConfiguration );
     }
 
     @Override

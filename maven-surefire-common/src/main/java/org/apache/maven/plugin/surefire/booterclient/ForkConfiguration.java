@@ -53,6 +53,7 @@ public abstract class ForkConfiguration
     @Nonnull protected abstract Platform getPluginPlatform();
     @Nonnull protected abstract JdkAttributes getJdkForTests();
     @Nonnull protected abstract Classpath getBooterClasspath();
+    @Nonnull protected abstract String getForkChannelConfiguration();
 
     /**
      * @param config               The startup configuration

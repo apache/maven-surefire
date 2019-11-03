@@ -23,6 +23,9 @@ import org.apache.maven.plugin.surefire.CommonReflector;
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.SurefireProperties;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.AbstractCommandReader;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.DefaultForkedChannelServerFactory;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.ForkedChannelServer;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.ForkedChannelServerFactory;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream;
@@ -31,9 +34,7 @@ import org.apache.maven.plugin.surefire.booterclient.output.ExecutableCommandlin
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.plugin.surefire.booterclient.output.NativeStdErrStreamConsumer;
-import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
 import org.apache.maven.plugin.surefire.extensions.DefaultForkedChannel;
-import org.apache.maven.plugin.surefire.extensions.TCPForkedChannelServer;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.shared.utils.cli.CommandLineCallable;
@@ -48,7 +49,6 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.extensions.ForkedChannel;
-import org.apache.maven.surefire.extensions.ForkedChannelServer;
 import org.apache.maven.surefire.providerapi.SurefireProvider;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.suite.RunResult;
@@ -63,6 +63,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Queue;
+import java.util.ServiceLoader;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -89,8 +90,7 @@ import static org.apache.maven.plugin.surefire.SurefireHelper.DUMP_FILE_PREFIX;
 import static org.apache.maven.plugin.surefire.SurefireHelper.replaceForkThreadsInPath;
 import static org.apache.maven.plugin.surefire.booterclient.ForkNumberBucket.drawNumber;
 import static org.apache.maven.plugin.surefire.booterclient.ForkNumberBucket.returnNumber;
-import static org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream
-                      .TestLessInputStreamBuilder;
+import static org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream.TestLessInputStreamBuilder;
 import static org.apache.maven.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
 import static org.apache.maven.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.writePropertiesFile;
@@ -284,10 +284,11 @@ public class ForkStarter
             defaultReporterFactories.add( forkedReporterFactory );
             ForkClient forkClient =
                     new ForkClient( forkedReporterFactory, stream, log, new AtomicBoolean(), forkNumber );
-            ExecutableCommandline<String> executableCommandline =
-                    forkConfiguration.getExecutableCommandlineFactory().createExecutableCommandline( null );
-            return fork( null, props, forkClient, effectiveSystemProperties, forkNumber, stream,
-                    executableCommandline, false );
+            ExecutableCommandline executableCommandline =
+                    forkConfiguration.getExecutableCommandlineFactory().createExecutableCommandline(
+                    startupConfiguration.getInterProcessChannelConfiguration() );
+            return fork( null, props, forkClient, effectiveSystemProperties, forkNumber, stream, executableCommandline,
+                    false );
         }
         finally
         {
@@ -376,9 +377,9 @@ public class ForkStarter
                         Map<String, String> providerProperties = providerConfiguration.getProviderProperties();
                         try
                         {
-                            ExecutableCommandline<String> executableCommandline =
-                                    forkConfiguration.getExecutableCommandlineFactory()
-                                            .createExecutableCommandline( null );
+                            ExecutableCommandline executableCommandline =
+                                    forkConfiguration.getExecutableCommandlineFactory().createExecutableCommandline(
+                                    startupConfiguration.getInterProcessChannelConfiguration() );
                             return fork( null, new PropertiesWrapper( providerProperties ), forkClient,
                                     effectiveSystemProperties, forkNumber, testProvidingInputStream,
                                     executableCommandline, true );
@@ -453,9 +454,9 @@ public class ForkStarter
                         TestLessInputStream stream = builder.build();
                         try
                         {
-                            ExecutableCommandline<String> executableCommandline =
-                                    forkConfiguration.getExecutableCommandlineFactory()
-                                            .createExecutableCommandline( null );
+                            ExecutableCommandline executableCommandline =
+                                    forkConfiguration.getExecutableCommandlineFactory().createExecutableCommandline(
+                                            startupConfiguration.getInterProcessChannelConfiguration() );
                             return fork( testSet,
                                          new PropertiesWrapper( providerConfiguration.getProviderProperties() ),
                                          forkClient, effectiveSystemProperties, forkNumber, stream,
@@ -555,7 +556,7 @@ public class ForkStarter
 
     private RunResult fork( Object testSet, KeyValueSource providerProperties, ForkClient forkClient,
                             SurefireProperties effectiveSystemProperties, int forkNumber,
-                            AbstractCommandReader commandSender, ExecutableCommandline<String> executableCommandline,
+                            AbstractCommandReader commandSender, ExecutableCommandline executableCommandline,
                             boolean readTestsFromInStream )
         throws SurefireBooterForkException
     {
@@ -563,21 +564,10 @@ public class ForkStarter
         final File surefireProperties;
         final File systPropsFile;
 
-        ThreadedStreamConsumer threadedStreamConsumer = new ThreadedStreamConsumer( forkClient );
-        /* START: only for network IPC */
-
-        //We should use a factory or something to make this based on the config
-        ForkedChannelServer server;
+        //TODO what should we do with ForkedChannel? Keep it and  make a factory? Or fold into ForkedChannelServer
         ForkedChannel encoder = new DefaultForkedChannel();
-        try
-        {
-            server = new TCPForkedChannelServer( threadedStreamConsumer, encoder );
-        }
-        catch ( IOException e )
-        {
-            throw new IllegalStateException( e );
-        }
-        /* END only for network IPC */
+        ForkedChannelServer server = lookupChannelServerFactory().createForkedChannelServer(
+                startupConfiguration.getInterProcessChannelConfiguration(), forkClient, encoder, commandSender );
         try
         {
             tempDir = forkConfiguration.getTempDirectory().getCanonicalPath();
@@ -624,7 +614,7 @@ public class ForkStarter
             cli.createArg().setValue( systPropsFile.getName() );
         }
 
-        CloseableCloser closer = new CloseableCloser( forkNumber, threadedStreamConsumer, commandSender, server );
+        CloseableCloser closer = new CloseableCloser( forkNumber, server );
 
         log.debug( "Forking command line: " + cli );
 
@@ -637,8 +627,9 @@ public class ForkStarter
             NativeStdErrStreamConsumer stdErrConsumer =
                     new NativeStdErrStreamConsumer( forkClient.getDefaultReporterFactory() );
 
-            CommandLineCallable future = executableCommandline.executeCommandLineAsCallable( cli, commandSender,
-                    threadedStreamConsumer, server, /*todo stdOut*/ null, stdErrConsumer, closer );
+
+            CommandLineCallable future = executableCommandline.executeCommandLineAsCallable( cli,
+                     server, /*todo stdOut*/ null, stdErrConsumer, closer );
 
             currentForkClients.add( forkClient );
 
@@ -749,6 +740,25 @@ public class ForkStarter
         {
             throw new SurefireBooterForkException( "Unable to create classloader to find test suites", e );
         }
+    }
+
+    private static ForkedChannelServerFactory lookupChannelServerFactory()
+    {
+        ForkedChannelServerFactory defaultChannelServerFactory = null;
+        ForkedChannelServerFactory customChannelServerFactory = null;
+        for ( ForkedChannelServerFactory channelServerFactory : ServiceLoader.load(
+                ForkedChannelServerFactory.class ) )
+        {
+            if ( channelServerFactory.getClass() == DefaultForkedChannelServerFactory.class )
+            {
+                defaultChannelServerFactory = channelServerFactory;
+            }
+            else
+            {
+                customChannelServerFactory = channelServerFactory;
+            }
+        }
+        return customChannelServerFactory != null ? customChannelServerFactory : defaultChannelServerFactory;
     }
 
     private static Thread createImmediateShutdownHookThread( final TestLessInputStreamBuilder builder,

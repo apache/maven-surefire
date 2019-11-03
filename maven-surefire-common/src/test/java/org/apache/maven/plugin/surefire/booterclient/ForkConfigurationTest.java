@@ -52,10 +52,8 @@ import static org.mockito.Mockito.mock;
 public class ForkConfigurationTest
 {
     private static final StartupConfiguration STARTUP_CONFIG = new StartupConfiguration( "",
-            new ClasspathConfiguration( true, true ),
-            new ClassLoaderConfiguration( true, true ),
-            false,
-            false );
+            new ClasspathConfiguration( true, true ), new ClassLoaderConfiguration( true, true ), false, false,
+            "pipe:std:in" );
 
     private static int idx = 0;
 
@@ -87,7 +85,7 @@ public class ForkConfigurationTest
         ClasspathConfiguration cpConfig = new ClasspathConfiguration( new Classpath( cp ), emptyClasspath(),
                 emptyClasspath(), true, true );
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
-        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false );
+        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false, "pipe:std:in" );
 
         Commandline cli = config.createCommandLine( startup, 1, temporaryFolder() );
 
@@ -107,7 +105,7 @@ public class ForkConfigurationTest
         ClasspathConfiguration cpConfig = new ClasspathConfiguration( new Classpath( cp ), emptyClasspath(),
                 emptyClasspath(), true, true );
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
-        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false );
+        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false," pipe:std:in" );
 
         Commandline commandLine = config.createCommandLine( startup, 1, temporaryFolder() );
         assertTrue( commandLine.toString().contains( "abc def" ) );
@@ -122,7 +120,7 @@ public class ForkConfigurationTest
         ClasspathConfiguration cpConfig = new ClasspathConfiguration( emptyClasspath(), emptyClasspath(),
                 emptyClasspath(), true, true );
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
-        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false );
+        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false, "pipe:std:in" );
         ForkConfiguration config = getForkConfiguration( cwd.getCanonicalFile() );
         Commandline commandLine = config.createCommandLine( startup, 1, temporaryFolder() );
 
@@ -220,7 +218,7 @@ public class ForkConfigurationTest
         assertTrue( tmpDir.mkdirs() );
         return new JarManifestForkConfiguration( emptyClasspath(), tmpDir, null,
                 cwd, new Properties(), argLine, Collections.<String, String>emptyMap(), false, 1, false,
-                platform, new NullConsoleLogger(), mock(ExecutableCommandlineFactory.class) );
+                platform, new NullConsoleLogger(), mock(ExecutableCommandlineFactory.class), "pipe:std:in" );
     }
 
     // based on http://stackoverflow.com/questions/2591083/getting-version-of-java-in-runtime
