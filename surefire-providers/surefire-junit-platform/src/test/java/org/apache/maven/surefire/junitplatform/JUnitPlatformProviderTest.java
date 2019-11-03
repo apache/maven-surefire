@@ -969,7 +969,7 @@ public class JUnitPlatformProviderTest
         }
 
         @org.junit.jupiter.params.ParameterizedTest
-        @org.junit.jupiter.params.provider.MethodSource("params")
+        @org.junit.jupiter.params.provider.MethodSource( "params" )
         void testParameterizedTestCases( String testName, boolean value )
         {
             assertTrue( value );
