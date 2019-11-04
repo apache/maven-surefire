@@ -24,7 +24,7 @@ cache:
 
 install: true
 jdk: openjdk8
-script: mvn clean verify -e -B -V -nsu -P run-its -DskipITs
+script: mvn clean install -e -B -V -nsu -P run-its -DskipITs
 
 branches:
   only:
