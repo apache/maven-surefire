@@ -29,7 +29,6 @@ import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
@@ -67,15 +66,7 @@ public class ModularClasspathForkConfigurationTest
         ModularClasspathForkConfiguration config = new ModularClasspathForkConfiguration( booter, tmp, "", pwd,
                 new Properties(), "",
                 Collections.<String, String>emptyMap(), new String[0], true, 1, true,
-                new Platform(), new NullConsoleLogger() )
-        {
-            @Nonnull
-            @Override
-            String toModuleName( @Nonnull File moduleDescriptor )
-            {
-                return "abc";
-            }
-        };
+                new Platform(), new NullConsoleLogger() );
 
         File patchFile = new File( "target" + separatorChar + "test-classes" );
         File descriptor = new File( tmp, "module-info.class" );
@@ -87,7 +78,7 @@ public class ModularClasspathForkConfigurationTest
         String startClassName = ForkedBooter.class.getName();
 
         File jigsawArgsFile =
-                config.createArgsFile( descriptor, modulePath, classPath, packages, patchFile, startClassName );
+                config.createArgsFile( "abc", modulePath, classPath, packages, patchFile, startClassName );
 
         assertThat( jigsawArgsFile )
                 .isNotNull();
@@ -143,7 +134,7 @@ public class ModularClasspathForkConfigurationTest
         assertThat( argsFileLines.get( 12 ) )
                 .isEqualTo( ForkedBooter.class.getName() );
 
-        ModularClasspath modularClasspath = new ModularClasspath( descriptor, modulePath, packages, patchFile );
+        ModularClasspath modularClasspath = new ModularClasspath( "abc", modulePath, packages, patchFile );
         Classpath testClasspathUrls = new Classpath( singleton( "target" + separator + "test-classes" ) );
         Classpath surefireClasspathUrls = Classpath.emptyClasspath();
         ModularClasspathConfiguration modularClasspathConfiguration =

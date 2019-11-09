@@ -28,15 +28,11 @@ import org.apache.maven.surefire.booter.ModularClasspath;
 import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ModuleVisitor;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
@@ -50,7 +46,6 @@ import static java.io.File.pathSeparatorChar;
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
 import static org.apache.maven.shared.utils.StringUtils.replace;
 import static org.apache.maven.surefire.util.internal.StringUtils.NL;
-import static org.objectweb.asm.Opcodes.ASM7;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -92,13 +87,13 @@ public class ModularClasspathForkConfiguration
 
             ModularClasspath modularClasspath = modularClasspathConfiguration.getModularClasspath();
 
-            File descriptor = modularClasspath.getModuleDescriptor();
+            String moduleName = modularClasspath.getModuleNameFromDescriptor();
             List<String> modulePath = modularClasspath.getModulePath();
             Collection<String> packages = modularClasspath.getPackages();
             File patchFile = modularClasspath.getPatchFile();
             List<String> classpath = toCompleteClasspath( config );
 
-            File argsFile = createArgsFile( descriptor, modulePath, classpath, packages, patchFile, startClass );
+            File argsFile = createArgsFile( moduleName, modulePath, classpath, packages, patchFile, startClass );
 
             cli.createArg().setValue( "@" + escapeToPlatformPath( argsFile.getAbsolutePath() ) );
         }
@@ -112,7 +107,7 @@ public class ModularClasspathForkConfiguration
     }
 
     @Nonnull
-    File createArgsFile( @Nonnull File moduleDescriptor, @Nonnull List<String> modulePath,
+    File createArgsFile( @Nonnull String moduleName, @Nonnull List<String> modulePath,
                          @Nonnull List<String> classPath, @Nonnull Collection<String> packages,
                          @Nonnull File patchFile, @Nonnull String startClassName )
             throws IOException
@@ -169,8 +164,6 @@ public class ModularClasspathForkConfiguration
                         .append( NL );
             }
 
-            final String moduleName = toModuleName( moduleDescriptor );
-
             args.append( "--patch-module" )
                     .append( NL )
                     .append( moduleName )
@@ -217,28 +210,5 @@ public class ModularClasspathForkConfiguration
 
             return surefireArgs;
         }
-    }
-
-    @Nonnull
-    String toModuleName( @Nonnull File moduleDescriptor ) throws IOException
-    {
-        if ( !moduleDescriptor.isFile() )
-        {
-            throw new IOException( "No such Jigsaw module-descriptor exists " + moduleDescriptor.getAbsolutePath() );
-        }
-
-        final StringBuilder sb = new StringBuilder();
-        new ClassReader( new FileInputStream( moduleDescriptor ) ).accept( new ClassVisitor( ASM7 )
-        {
-            @Override
-            public ModuleVisitor visitModule( String name, int access, String version )
-            {
-                sb.setLength( 0 );
-                sb.append( name );
-                return super.visitModule( name, access, version );
-            }
-        }, 0 );
-
-        return sb.toString();
     }
 }

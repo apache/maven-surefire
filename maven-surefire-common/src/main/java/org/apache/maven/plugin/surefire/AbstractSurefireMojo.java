@@ -1901,8 +1901,10 @@ public abstract class AbstractSurefireMojo
             packages.add( substringBeforeLast( className, "." ) );
         }
 
-        ModularClasspath modularClasspath = new ModularClasspath( moduleDescriptor, testModulepath.getClassPath(),
-                packages, getTestClassesDirectory() );
+        getConsoleLogger().debug( "main module descriptor name: " + result.getMainModuleDescriptor().name() );
+
+        ModularClasspath modularClasspath = new ModularClasspath( result.getMainModuleDescriptor().name(),
+                testModulepath.getClassPath(), packages, getTestClassesDirectory() );
 
         Artifact[] additionalInProcArtifacts =
                 { getCommonArtifact(), getExtensionsArtifact(), getApiArtifact(), getLoggerApiArtifact() };

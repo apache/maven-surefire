@@ -30,6 +30,7 @@ import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.util.DefaultScanResult;
+import org.codehaus.plexus.languages.java.jpms.JavaModuleDescriptor;
 import org.codehaus.plexus.languages.java.jpms.LocationManager;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
@@ -81,6 +82,9 @@ public class AbstractSurefireMojoJava7PlusTest
 
     @Mock
     private LocationManager locationManager;
+
+    @Mock
+    private JavaModuleDescriptor descriptor;
 
     @Test
     @SuppressWarnings( "checkstyle:linelength" )
@@ -142,8 +146,11 @@ public class AbstractSurefireMojoJava7PlusTest
         when( req.setJdkHome( anyString() ) ).thenReturn( req );
         when( req.setMainModuleDescriptor( eq( moduleInfo.getAbsolutePath() ) ) ).thenReturn( req );
 
+        when( descriptor.name() ).thenReturn( "abc" );
+
         @SuppressWarnings( "unchecked" )
         ResolvePathsResult<String> res = mock( ResolvePathsResult.class );
+        when( res.getMainModuleDescriptor() ).thenReturn( descriptor );
         when( res.getClasspathElements() ).thenReturn( asList( "non-modular.jar", "junit.jar", "hamcrest.jar" ) );
         Map<String, ModuleNameSource> mod = new LinkedHashMap<>();
         mod.put( "modular.jar", null );
@@ -203,9 +210,10 @@ public class AbstractSurefireMojoJava7PlusTest
         assertThat( argument2.getValue().getMessage() )
                 .isEqualTo( "low version" );
         ArgumentCaptor<String> argument = ArgumentCaptor.forClass( String.class );
-        verify( logger, times( 8 ) ).debug( argument.capture() );
+        verify( logger, times( 9 ) ).debug( argument.capture() );
         assertThat( argument.getAllValues() )
-                .containsExactly( "test classpath:  non-modular.jar  junit.jar  hamcrest.jar",
+                .containsExactly( "main module descriptor name: abc",
+                        "test classpath:  non-modular.jar  junit.jar  hamcrest.jar",
                         "test modulepath:  modular.jar  classes",
                         "provider classpath:  surefire-provider.jar",
                         "test(compact) classpath:  non-modular.jar  junit.jar  hamcrest.jar",
@@ -229,13 +237,12 @@ public class AbstractSurefireMojoJava7PlusTest
                 .isEqualTo( new Classpath( singleton( "surefire-provider.jar" ) ) );
         assertThat( conf.getClasspathConfiguration() ).isInstanceOf( ModularClasspathConfiguration.class );
         ModularClasspathConfiguration mcc = ( ModularClasspathConfiguration ) conf.getClasspathConfiguration();
-        assertThat( mcc.getModularClasspath().getModuleDescriptor() ).isEqualTo( moduleInfo );
+        assertThat( mcc.getModularClasspath().getModuleNameFromDescriptor() ).isEqualTo( "abc" );
         assertThat( mcc.getModularClasspath().getPackages() ).containsOnly( "org.apache" );
         assertThat( mcc.getModularClasspath().getPatchFile().getAbsolutePath() )
                 .isEqualTo( "test-classes" );
         assertThat( mcc.getModularClasspath().getModulePath() )
                 .containsExactly( "modular.jar", "classes" );
-        assertThat( ( Object ) mcc.getTestClasspath() ).isEqualTo( new Classpath( res.getClasspathElements() ) );
     }
 
     private static File mockFile( String absolutePath )
