@@ -28,9 +28,8 @@
     <version>1.0</version>
 
     <properties>
-        <junit-platform.version>5.5.2</junit-platform.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>9</maven.compiler.release>
+        <maven.compiler.release>${java.specification.version}</maven.compiler.release>
     </properties>
 
     <dependencies>
