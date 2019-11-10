@@ -120,7 +120,6 @@ timeout(time: 12, unit: 'HOURS') {
 }
 
 def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvnName, goals, options, mavenOpts, boolean makeReports) {
-    cleanWs()
     try {
         def mvnLocalRepoDir
         if (isUnix()) {
@@ -171,7 +170,7 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
         }
     } finally {
         if (makeReports) {
-            openTasks(ignoreCase: true, canComputeNew: false, defaultEncoding: 'UTF-8', pattern: sourcesPatternCsv(),
+            openTasks(ignoreCase: true, canComputeNew: true, defaultEncoding: 'UTF-8', pattern: sourcesPatternCsv(),
                     high: tasksViolationHigh(), normal: tasksViolationNormal(), low: tasksViolationLow())
 
             jacoco(changeBuildStatus: false,
