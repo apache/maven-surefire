@@ -779,7 +779,7 @@ public class ForkStarter
 
     private ScheduledFuture<?> triggerPingTimerForShutdown( final TestLessInputStreamBuilder builder )
     {
-        return pingThreadScheduler.scheduleAtFixedRate( new Runnable()
+        return pingThreadScheduler.scheduleWithFixedDelay( new Runnable()
         {
             @Override
             public void run()
@@ -791,7 +791,7 @@ public class ForkStarter
 
     private ScheduledFuture<?> triggerPingTimerForShutdown( final Iterable<TestProvidingInputStream> streams )
     {
-        return pingThreadScheduler.scheduleAtFixedRate( new Runnable()
+        return pingThreadScheduler.scheduleWithFixedDelay( new Runnable()
         {
             @Override
             public void run()
@@ -806,7 +806,7 @@ public class ForkStarter
 
     private ScheduledFuture<?> triggerTimeoutCheck()
     {
-        return timeoutCheckScheduler.scheduleAtFixedRate( new Runnable()
+        return timeoutCheckScheduler.scheduleWithFixedDelay( new Runnable()
         {
             @Override
             public void run()
