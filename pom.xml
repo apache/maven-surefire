@@ -61,6 +61,7 @@
     <module>maven-failsafe-plugin</module>
     <module>maven-surefire-report-plugin</module>
     <module>surefire-its</module>
+    <module>surefire-shared-utils</module>
   </modules>
 
   <scm>
