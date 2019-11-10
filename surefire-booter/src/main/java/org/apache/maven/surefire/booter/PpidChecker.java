@@ -47,6 +47,7 @@ import static org.apache.maven.surefire.booter.ProcessInfo.unixProcessInfo;
 import static org.apache.maven.surefire.booter.ProcessInfo.windowsProcessInfo;
 import static org.apache.maven.surefire.booter.ProcessInfo.ERR_PROCESS_INFO;
 import static org.apache.maven.surefire.booter.ProcessInfo.INVALID_PROCESS_INFO;
+import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 
 /**
  * Recognizes PID of Plugin process and determines lifetime.
@@ -384,6 +385,7 @@ final class PpidChecker
             processBuilder.redirectErrorStream( true );
             Process process = null;
             ProcessInfo processInfo = INVALID_PROCESS_INFO;
+            StringBuilder out = new StringBuilder( 64 );
             try
             {
                 if ( IS_OS_HP_UX ) // force to run shell commands in UNIX Standard mode on HP-UX
@@ -395,15 +397,25 @@ final class PpidChecker
                 Scanner scanner = new Scanner( process.getInputStream(), charset );
                 while ( scanner.hasNextLine() )
                 {
-                    String line = scanner.nextLine().trim();
-                    processInfo = consumeLine( line, processInfo );
+                    String line = scanner.nextLine();
+                    out.append( line ).append( NL );
+                    processInfo = consumeLine( line.trim(), processInfo );
                 }
                 checkValid( scanner );
                 int exitCode = process.waitFor();
+                if ( exitCode != 0 || isStopped() )
+                {
+                    out.append( "<<exit>> <<" ).append( exitCode ).append( ">>" ).append( NL );
+                    DumpErrorSingleton.getSingleton()
+                            .dumpText( out.toString() );
+                }
                 return isStopped() ? ERR_PROCESS_INFO : exitCode == 0 ? processInfo : INVALID_PROCESS_INFO;
             }
             catch ( Exception e )
             {
+                DumpErrorSingleton.getSingleton()
+                        .dumpText( out.toString() );
+
                 DumpErrorSingleton.getSingleton()
                         .dumpException( e );
 
