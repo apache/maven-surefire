@@ -128,8 +128,8 @@ public class RunListenerAdapterTest
         verify( listener ).testStarting( entryCaptor.capture() );
 
         ReportEntry entry = entryCaptor.getValue();
-        assertEquals( MY_TEST_METHOD_NAME, entry.getName() );
-        assertEquals( MY_TEST_METHOD_NAME + "(String)", entry.getNameText() );
+        assertEquals( MY_TEST_METHOD_NAME + "(String)", entry.getName() );
+        assertNull( entry.getNameText() );
         assertEquals( MyTestClass.class.getName(), entry.getSourceName() );
         assertNull( entry.getSourceText() );
         assertNull( entry.getStackTraceWriter() );
@@ -258,7 +258,7 @@ public class RunListenerAdapterTest
         adapter.executionStarted( TestIdentifier.from( child2 ) );
         inOrder.verify( listener )
                 .testStarting( new SimpleReportEntry( MyTestClass.class.getName(), "parent",
-                        MY_TEST_METHOD_NAME, MY_TEST_METHOD_NAME + "(String)" ) );
+                        MY_TEST_METHOD_NAME + "(String)", null ) );
         inOrder.verifyNoMoreInteractions();
 
         Exception assumptionFailure = new Exception();
@@ -270,9 +270,9 @@ public class RunListenerAdapterTest
         assertThat( report.getValue().getSourceText() )
                 .isEqualTo( "parent" );
         assertThat( report.getValue().getName() )
-                .isEqualTo( MY_TEST_METHOD_NAME );
-        assertThat( report.getValue().getNameText() )
                 .isEqualTo( MY_TEST_METHOD_NAME + "(String)" );
+        assertThat( report.getValue().getNameText() )
+                .isNull();
         assertThat( report.getValue().getElapsed() )
                 .isNotNull();
         assertThat( report.getValue().getSystemProperties() )

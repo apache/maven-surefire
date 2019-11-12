@@ -26,6 +26,7 @@ import static org.apache.maven.surefire.booter.ProviderParameterNames.TESTNG_EXC
 import static org.apache.maven.surefire.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -64,6 +65,7 @@ import org.apache.maven.surefire.util.TestsToRun;
 import org.fest.assertions.Assertions;
 import org.junit.Test;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
@@ -297,6 +299,32 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
+    public void runDisplayNameTest() throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        ProviderParameters parameters = providerParametersMock();
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( parameters, launcher );
+
+        RunListener listener = mock( RunListener.class );
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
+        RunListenerAdapter adapter = new RunListenerAdapter( listener );
+
+        launcher.registerTestExecutionListeners( adapter );
+
+        invokeProvider( provider, DisplayNameTest.class );
+
+        verify( listener, times( 1 ) ).testStarting( entryCaptor.capture() );
+        List<ReportEntry> reportEntries = entryCaptor.getAllValues();
+
+        assertEquals( 1, reportEntries.size() );
+
+        assertEquals( DisplayNameTest.class.getName(), reportEntries.get( 0 ).getSourceName() );
+        assertEquals( "<< ✨ >>", reportEntries.get( 0 ).getSourceText() );
+        assertEquals( "test1", reportEntries.get( 0 ).getName() );
+        assertEquals( "73$71 ✔", reportEntries.get( 0 ).getNameText() );
+    }
+
+    @Test
     public void rerunParameterized()
             throws Exception
     {
@@ -309,12 +337,42 @@ public class JUnitPlatformProviderTest
                         "forkCount = 1\nreuseForks = true" ) );
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider( parameters, launcher );
+
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
-        launcher.registerTestExecutionListeners( executionListener );
+
+        RunListener listener = mock( RunListener.class );
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
+        RunListenerAdapter adapter = new RunListenerAdapter( listener );
+
+        launcher.registerTestExecutionListeners( executionListener, adapter );
 
         invokeProvider( provider, TestClass7.class );
 
         assertThat( executionListener.summaries ).hasSize( 3 );
+
+        verify( listener, times( 4 ) ).testStarting( entryCaptor.capture() );
+        List<ReportEntry> reportEntries = entryCaptor.getAllValues();
+
+        assertEquals( TestClass7.class.getName(), reportEntries.get( 0 ).getSourceName() );
+        assertNull( reportEntries.get( 0 ).getSourceText() );
+        assertEquals( "testParameterizedTestCases(String, boolean)[1]", reportEntries.get( 0 ).getName() );
+        assertEquals( "[1] Always pass, true", reportEntries.get( 0 ).getNameText() );
+
+        assertEquals( TestClass7.class.getName(), reportEntries.get( 1 ).getSourceName() );
+        assertNull( reportEntries.get( 1 ).getSourceText() );
+        assertEquals( "testParameterizedTestCases(String, boolean)[2]", reportEntries.get( 1 ).getName() );
+        assertEquals( "[2] Always fail, false", reportEntries.get( 1 ).getNameText() );
+
+        assertEquals( TestClass7.class.getName(), reportEntries.get( 2 ).getSourceName() );
+        assertNull( reportEntries.get( 2 ).getSourceText() );
+        assertEquals( "testParameterizedTestCases(String, boolean)[2]", reportEntries.get( 2 ).getName() );
+        assertEquals( "[2] Always fail, false", reportEntries.get( 2 ).getNameText() );
+
+        assertEquals( TestClass7.class.getName(), reportEntries.get( 3 ).getSourceName() );
+        assertNull( reportEntries.get( 3 ).getSourceText() );
+        assertEquals( "testParameterizedTestCases(String, boolean)[2]", reportEntries.get( 3 ).getName() );
+        assertEquals( "[2] Always fail, false", reportEntries.get( 3 ).getNameText() );
+
         TestExecutionSummary summary = executionListener.summaries.get( 0 );
         assertEquals( 2, summary.getTestsFoundCount() );
         assertEquals( 2, summary.getTestsStartedCount() );
@@ -327,7 +385,7 @@ public class JUnitPlatformProviderTest
         assertEquals( 0, summary.getTestsSucceededCount() );
         assertEquals( 1, summary.getTestsFailedCount() );
 
-        summary = executionListener.summaries.get( 1 );
+        summary = executionListener.summaries.get( 2 );
         assertEquals( 1, summary.getTestsFoundCount() );
         assertEquals( 1, summary.getTestsStartedCount() );
         assertEquals( 0, summary.getTestsSucceededCount() );
@@ -715,7 +773,6 @@ public class JUnitPlatformProviderTest
     private static class TestPlanSummaryListener
                     extends SummaryGeneratingListener
     {
-
         private final List<TestExecutionSummary> summaries = new ArrayList<>();
 
         @Override
@@ -950,14 +1007,6 @@ public class JUnitPlatformProviderTest
             count += 1;
             assertTrue( count >= 3 );
         }
-
-        /*@org.junit.jupiter.api.Test
-        @org.junit.jupiter.api.Order( 2 )
-        void testFailTwice2()
-        {
-            count += 1;
-            assertTrue( count >= 3 );
-        }*/
     }
 
     static class TestClass7
@@ -973,6 +1022,16 @@ public class JUnitPlatformProviderTest
         void testParameterizedTestCases( String testName, boolean value )
         {
             assertTrue( value );
+        }
+    }
+
+    @DisplayName( "<< ✨ >>" )
+    static class DisplayNameTest
+    {
+        @org.junit.jupiter.api.Test
+        @DisplayName( "73$71 ✔" )
+        void test1()
+        {
         }
     }
 }

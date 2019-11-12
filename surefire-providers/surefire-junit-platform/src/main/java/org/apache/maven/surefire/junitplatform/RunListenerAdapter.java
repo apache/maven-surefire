@@ -20,6 +20,7 @@ package org.apache.maven.surefire.junitplatform;
  */
 
 import static java.util.Collections.emptyMap;
+import static java.util.stream.Collectors.joining;
 import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
 
 import java.util.Map;
@@ -27,6 +28,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Pattern;
 
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.RunListener;
@@ -46,6 +48,8 @@ import org.junit.platform.launcher.TestPlan;
 final class RunListenerAdapter
     implements TestExecutionListener
 {
+    private static final Pattern COMMA_PATTERN = Pattern.compile( "," );
+
     private final ConcurrentMap<TestIdentifier, Long> testStartTime = new ConcurrentHashMap<>();
     private final ConcurrentMap<TestIdentifier, TestExecutionResult> failures = new ConcurrentHashMap<>();
     private final RunListener runListener;
@@ -236,15 +240,23 @@ final class RunListenerAdapter
             String realClassName = methodSource.getClassName();
 
             String[] source = testPlan.getParent( testIdentifier )
-                    .map( i -> toClassMethodName( i ) )
+                    .map( this::toClassMethodName )
                     .map( s -> new String[] { s[0], s[1] } )
                     .orElse( new String[] { realClassName, realClassName } );
 
-            String methodName = methodSource.getMethodName();
-            boolean useMethod = display.equals( methodName ) || display.equals( methodName + "()" );
-            String resolvedMethodName = useMethod ? methodName : display;
+            String simpleClassNames = COMMA_PATTERN.splitAsStream( methodSource.getMethodParameterTypes() )
+                    .map( s -> s.substring( 1 + s.lastIndexOf( '.' ) ) )
+                    .collect( joining( "," ) );
 
-            return new String[] {source[0], source[1], methodName, resolvedMethodName};
+            boolean hasParams = !simpleClassNames.isEmpty();
+            String methodName = methodSource.getMethodName();
+            String methodSign = methodName + '(' + simpleClassNames + ')';
+            String description = testIdentifier.getLegacyReportingName();
+            boolean useDesc = description.startsWith( methodSign );
+            String methodDesc = hasParams ? ( useDesc ? description : methodSign ) : methodName;
+            String methodDisp = methodSign.equals( display ) ? methodDesc : display;
+
+            return new String[] {source[0], source[1], methodDesc, methodDisp};
         }
         else if ( testSource.filter( ClassSource.class::isInstance ).isPresent() )
         {

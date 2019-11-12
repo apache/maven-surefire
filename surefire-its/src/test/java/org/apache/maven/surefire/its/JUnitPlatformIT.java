@@ -120,6 +120,19 @@ public class JUnitPlatformIT
                 .assertContainsText( "testcase name=\"73$71 ✔\" classname=\"&lt;&lt; ✨ &gt;&gt;\"" )
                 .assertContainsText( "testcase name=\"73$72 ✔\" classname=\"&lt;&lt; ✨ &gt;&gt;\"" )
                 .assertContainsText( XML_TESTSUITE_FRAGMENT );
+
+
+        validator.getSurefireReportsFile( "TEST-junitplatformenginejupiter.BasicJupiterTest.xml", UTF_8 )
+                .assertContainsText( "<testcase name=\"test(TestInfo)\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
+                .assertContainsText( "<testcase name=\"0 + 1 = 1\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
+                .assertContainsText( "<testcase name=\"1 + 2 = 3\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
+                .assertContainsText( "<testcase name=\"49 + 51 = 100\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
+                .assertContainsText( "<testcase name=\"1 + 100 = 101\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" );
     }
 
     @Test
@@ -145,11 +158,25 @@ public class JUnitPlatformIT
     @Test
     public void testMultipleEngines()
     {
-        unpack( "junit-platform-multiple-engines", "-" + junit5Version + "-" + jqwikVersion )
+        OutputValidator validator =
+                unpack( "junit-platform-multiple-engines", "-" + junit5Version + "-" + jqwikVersion )
                 .sysProp( "junit5.version", junit5Version )
                 .sysProp( "jqwik.version", jqwikVersion )
                 .executeTest()
                 .verifyErrorFree( 7 );
+
+
+        validator.getSurefireReportsFile( "TEST-junitplatformenginejupiter.BasicJupiterTest.xml", UTF_8 )
+                .assertContainsText( "<testcase name=\"test(TestInfo)\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
+                .assertContainsText( "<testcase name=\"add(int, int, int)[1]\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
+                .assertContainsText( "<testcase name=\"add(int, int, int)[2]\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
+                .assertContainsText( "<testcase name=\"add(int, int, int)[3]\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
+                .assertContainsText( "<testcase name=\"add(int, int, int)[4]\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" );
     }
 
     @Test
