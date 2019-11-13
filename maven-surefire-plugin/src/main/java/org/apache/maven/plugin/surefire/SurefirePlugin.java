@@ -373,12 +373,54 @@ public class SurefirePlugin
      * their environment variable.
      * <br>
      * Example to exclude three environment variables:
+     * <br>
      * <i>mvn test -Dsurefire.excludedEnvironmentVariables=ACME1,ACME2,ACME3</i>
      *
      * @since 3.0.0-M4
      */
     @Parameter( property = "surefire.excludedEnvironmentVariables" )
     private String[] excludedEnvironmentVariables;
+
+    /**
+     * Since 3.0.0-M4 the process checkers are disabled.
+     * You can enable them namely by setting {@code ping} and {@code native} or {@code all} in this parameter.
+     * <br>
+     * The checker is useful in situations when you kill the build on CI and you want the Surefire forked JVM to kill
+     * the tests asap and free all handlers on the file system been previously used by the JVM and by the tests.
+     *
+     * <br>
+     *
+     * The {@code ping} should be safely used together with ZGC or Shenandoah Garbage Collector.
+     * Due to the {@code ping} relies on timing the PING (triggered every 30 seconds), slow GC may pause
+     * the timers and pretend that the parent process of the fork JVM does not exist.
+     *
+     * <br>
+     *
+     * The {@code native} is very fast checker.
+     * It is useful mechanism on Unix based systems, Linux distributions and Alpine/BusyBox Linux.
+     * See the JIRA <a href="https://issues.apache.org/jira/browse/SUREFIRE-1631">SUREFIRE-1631</a> for Windows issues.
+     *
+     * <br>
+     *
+     * Another useful configuration parameter is {@code forkedProcessTimeoutInSeconds}.
+     * <br>
+     * See the Frequently Asked Questions page with more details:<br>
+     * <a href="http://maven.apache.org/surefire/maven-surefire-plugin/faq.html#kill-jvm">
+     *     http://maven.apache.org/surefire/maven-surefire-plugin/faq.html#kill-jvm</a>
+     * <br>
+     * <a href="http://maven.apache.org/surefire/maven-failsafe-plugin/faq.html#kill-jvm">
+     *     http://maven.apache.org/surefire/maven-failsafe-plugin/faq.html#kill-jvm</a>
+     *
+     * <br>
+     *
+     * Example of use:
+     * <br>
+     * <i>mvn test -Dsurefire.enableProcessChecker=all</i>
+     *
+     * @since 3.0.0-M4
+     */
+    @Parameter( property = "surefire.enableProcessChecker" )
+    private String enableProcessChecker;
 
     @Override
     protected int getRerunFailingTestsCount()
@@ -766,5 +808,11 @@ public class SurefirePlugin
     void setExcludedEnvironmentVariables( String[] excludedEnvironmentVariables )
     {
         this.excludedEnvironmentVariables = excludedEnvironmentVariables;
+    }
+
+    @Override
+    protected final String getEnableProcessChecker()
+    {
+        return enableProcessChecker;
     }
 }

@@ -156,5 +156,19 @@ under the License.
         </p>
       </answer>
     </faq>
+    <faq id="kill-jvm">
+      <question>The files cannot be deleted when Jenkins CI killed Maven process and the tests still continue running.</question>
+      <answer>
+        <p>
+          Surefire and Failsafe plugin may kill forked Surefire JVM when the standard-input stream is closed.
+          This works when you stop Maven process by CTRL+C but it is not guaranteed on all platforms and this mechanism
+          will be removed after the version 3.0.0-M5 (setup of TCP sockets for interprocess communication).
+          The Surefire and Failsafe 3.0.0-M4 disabled mechanism PINGing parent process and natively killing mechanism.
+          In order to enable these mechanisms, see the documentation of the configuration parameter
+          "enableProcessChecker" and enable these mechanisms. These mechanisms have some drawbacks regarding your
+          OS systems and GC, therefore see the documentation for the parameter "enableProcessChecker".
+        </p>
+      </answer>
+    </faq>
   </part>
 </faqs>

@@ -21,6 +21,7 @@
           <version>${surefire.version}</version>
           <configuration>
             <forkMode>never</forkMode>
+            <enableProcessChecker>all</enableProcessChecker>
           </configuration>
         </plugin>
         <plugin>
@@ -28,6 +29,7 @@
           <version>${surefire.version}</version>
           <configuration>
             <forkMode>never</forkMode>
+            <enableProcessChecker>all</enableProcessChecker>
           </configuration>
         </plugin>
         <plugin>

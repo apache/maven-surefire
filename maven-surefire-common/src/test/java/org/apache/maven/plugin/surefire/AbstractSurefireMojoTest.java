@@ -29,6 +29,7 @@ import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo.JUnitPlatformProviderInfo;
 import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
@@ -43,7 +44,9 @@ import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.suite.RunResult;
 import org.codehaus.plexus.logging.Logger;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
@@ -99,6 +102,9 @@ import static org.powermock.reflect.Whitebox.invokeMethod;
 @PowerMockIgnore( { "org.jacoco.agent.rt.*", "com.vladium.emma.rt.*" } )
 public class AbstractSurefireMojoTest
 {
+    @Rule
+    public final ExpectedException e = ExpectedException.none();
+
     @Mock
     private ArtifactHandler handler;
 
@@ -1689,6 +1695,29 @@ public class AbstractSurefireMojoTest
         return surefirePlatformResolutionResult;
     }
 
+    @Test
+    public void shouldVerifyConfigParameters() throws Exception
+    {
+        Mojo mojo = new Mojo()
+        {
+            @Override
+            public File getTestClassesDirectory()
+            {
+                return new File( System.getProperty( "user.dir" ), "target/test-classes" );
+            }
+
+            @Override
+            protected String getEnableProcessChecker()
+            {
+                return "fake";
+            }
+        };
+
+        e.expect( MojoFailureException.class );
+        e.expectMessage( "Unexpected value 'fake' in the configuration parameter 'enableProcessChecker'." );
+        mojo.verifyParameters();
+    }
+
     /**
      *
      */
@@ -2083,6 +2112,12 @@ public class AbstractSurefireMojoTest
         protected void setUseModulePath( boolean useModulePath )
         {
 
+        }
+
+        @Override
+        protected String getEnableProcessChecker()
+        {
+            return null;
         }
 
         @Override

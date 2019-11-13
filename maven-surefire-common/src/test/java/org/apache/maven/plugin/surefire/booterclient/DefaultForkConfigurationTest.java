@@ -312,8 +312,8 @@ public class DefaultForkConfigurationTest
     {
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
         ClasspathConfiguration cc = new ClasspathConfiguration( true, true );
-        StartupConfiguration conf =
-                new StartupConfiguration( "org.apache.maven.shadefire.surefire.MyProvider", cc, clc, false, false );
+        StartupConfiguration conf = new StartupConfiguration( "org.apache.maven.shadefire.surefire.MyProvider",
+                cc, clc, false, false, null );
         StartupConfiguration confMock = spy( conf );
         mockStatic( Relocator.class );
         when( Relocator.relocate( anyString() ) ).thenCallRealMethod();
@@ -334,7 +334,7 @@ public class DefaultForkConfigurationTest
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
         ClasspathConfiguration cc = new ClasspathConfiguration( true, true );
         StartupConfiguration conf =
-                new StartupConfiguration( "org.apache.maven.surefire.MyProvider", cc, clc, false, false );
+                new StartupConfiguration( "org.apache.maven.surefire.MyProvider", cc, clc, false, false, null );
         StartupConfiguration confMock = spy( conf );
         mockStatic( Relocator.class );
         when( Relocator.relocate( anyString() ) ).thenCallRealMethod();

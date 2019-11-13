@@ -258,6 +258,75 @@ public class PpidCheckerTest
         assertThat( new File( System.getenv( "SystemRoot" ), "System32\\Wbem\\wmic.exe" ) ).isFile();
     }
 
+    @Test
+    public void shouldBeTypeNull()
+    {
+        assertThat( ProcessCheckerType.toEnum( null ) )
+                .isNull();
+
+        assertThat( ProcessCheckerType.toEnum( "   " ) )
+                .isNull();
+
+        assertThat( ProcessCheckerType.isValid( null ) )
+                .isTrue();
+    }
+
+    @Test
+    public void shouldBeException()
+    {
+        exceptions.expect( IllegalArgumentException.class );
+        exceptions.expectMessage( "unknown process checker" );
+
+        assertThat( ProcessCheckerType.toEnum( "anything else" ) )
+                .isNull();
+    }
+
+    @Test
+    public void shouldNotBeValid()
+    {
+        assertThat( ProcessCheckerType.isValid( "anything" ) )
+                .isFalse();
+    }
+
+    @Test
+    public void shouldBeTypePing()
+    {
+        assertThat( ProcessCheckerType.toEnum( "ping" ) )
+                .isEqualTo( ProcessCheckerType.PING );
+
+        assertThat( ProcessCheckerType.isValid( "ping" ) )
+                .isTrue();
+
+        assertThat( ProcessCheckerType.PING.getType() )
+                .isEqualTo( "ping" );
+    }
+
+    @Test
+    public void shouldBeTypeNative()
+    {
+        assertThat( ProcessCheckerType.toEnum( "native" ) )
+                .isEqualTo( ProcessCheckerType.NATIVE );
+
+        assertThat( ProcessCheckerType.isValid( "native" ) )
+                .isTrue();
+
+        assertThat( ProcessCheckerType.NATIVE.getType() )
+                .isEqualTo( "native" );
+    }
+
+    @Test
+    public void shouldBeTypeAll()
+    {
+        assertThat( ProcessCheckerType.toEnum( "all" ) )
+                .isEqualTo( ProcessCheckerType.ALL );
+
+        assertThat( ProcessCheckerType.isValid( "all" ) )
+                .isTrue();
+
+        assertThat( ProcessCheckerType.ALL.getType() )
+                .isEqualTo( "all" );
+    }
+
     private static long windowsProcessStartTime( PpidChecker checker )
     {
         return (long) checker.windows().getTime();

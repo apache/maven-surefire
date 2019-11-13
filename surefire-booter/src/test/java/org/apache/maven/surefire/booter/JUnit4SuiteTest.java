@@ -39,6 +39,7 @@ public class JUnit4SuiteTest extends TestCase
         suite.addTest( new JUnit4TestAdapter( SystemUtilsTest.class ) );
         suite.addTest( new JUnit4TestAdapter( ForkedBooterTest.class ) );
         suite.addTest( new JUnit4TestAdapter( ForkedBooterMockTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( BooterDeserializerTest.class ) );
         suite.addTestSuite( ClasspathTest.class );
         suite.addTestSuite( PropertiesWrapperTest.class );
         return suite;

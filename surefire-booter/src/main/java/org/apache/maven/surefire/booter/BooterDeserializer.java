@@ -122,7 +122,7 @@ public class BooterDeserializer
                                           systemExitTimeout );
     }
 
-    public StartupConfiguration getProviderConfiguration()
+    public StartupConfiguration getStartupConfiguration()
     {
         boolean useSystemClassLoader = properties.getBooleanProperty( USESYSTEMCLASSLOADER );
         boolean useManifestOnlyJar = properties.getBooleanProperty( USEMANIFESTONLYJAR );
@@ -133,7 +133,10 @@ public class BooterDeserializer
 
         ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( properties );
 
+        String processChecker = properties.getProperty( PROCESS_CHECKER );
+        ProcessCheckerType processCheckerType = ProcessCheckerType.toEnum( processChecker );
+
         return StartupConfiguration.inForkedVm( providerConfiguration, classpathConfiguration,
-                                                classLoaderConfiguration );
+                                                classLoaderConfiguration, processCheckerType );
     }
 }

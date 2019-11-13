@@ -57,4 +57,5 @@ public final class BooterConstants
     public static final String SHUTDOWN = "shutdown";
     public static final String SYSTEM_EXIT_TIMEOUT = "systemExitTimeout";
     public static final String PLUGIN_PID = "pluginPid";
+    public static final String PROCESS_CHECKER = "processChecker";
 }

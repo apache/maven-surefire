@@ -142,7 +142,7 @@ public class ModularClasspathForkConfigurationTest
                         emptyClasspath(), true, true );
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
         StartupConfiguration startupConfiguration =
-                new StartupConfiguration( "JUnitCoreProvider", modularClasspathConfiguration, clc, true, true );
+                new StartupConfiguration( "JUnitCoreProvider", modularClasspathConfiguration, clc, true, true, null );
         OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
         config.resolveClasspath( cli, ForkedBooter.class.getName(), startupConfiguration,
                 createTempFile( "surefire", "surefire-reports" ) );

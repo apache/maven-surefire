@@ -25,6 +25,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.maven.surefire.booter.BooterDeserializer;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
+import org.apache.maven.surefire.booter.ProcessCheckerType;
 import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.Shutdown;
@@ -285,7 +286,7 @@ public class BooterDeserializerProviderConfigurationTest
         ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( true, true );
 
         return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, false,
-                                         false );
+                                         false, ProcessCheckerType.ALL );
     }
 
     private File getTestSourceDirectory()

@@ -68,6 +68,8 @@ final class PpidChecker
     private static final String RELATIVE_PATH_TO_WMIC = "System32\\Wbem";
     private static final String SYSTEM_PATH_TO_WMIC =
             "%" + WINDOWS_SYSTEM_ROOT_ENV + "%\\" + RELATIVE_PATH_TO_WMIC + "\\";
+    private static final String PS_ETIME_HEADER = "ELAPSED";
+    private static final String PS_PID_HEADER = "PID";
 
     private final Queue<Process> destroyableCommands = new ConcurrentLinkedQueue<>();
 
@@ -168,20 +170,27 @@ final class PpidChecker
             {
                 if ( previousOutputLine.isInvalid() )
                 {
-                    Matcher matcher = UNIX_CMD_OUT_PATTERN.matcher( line );
-                    if ( matcher.matches() && ppid.equals( fromPID( matcher ) ) )
+                    if ( hasHeader )
                     {
-                        long pidUptime = fromDays( matcher )
-                                                 + fromHours( matcher )
-                                                 + fromMinutes( matcher )
-                                                 + fromSeconds( matcher );
-                        return unixProcessInfo( ppid, pidUptime );
+                        Matcher matcher = UNIX_CMD_OUT_PATTERN.matcher( line );
+                        if ( matcher.matches() && ppid.equals( fromPID( matcher ) ) )
+                        {
+                            long pidUptime = fromDays( matcher )
+                                                     + fromHours( matcher )
+                                                     + fromMinutes( matcher )
+                                                     + fromSeconds( matcher );
+                            return unixProcessInfo( ppid, pidUptime );
+                        }
+                        matcher = BUSYBOX_CMD_OUT_PATTERN.matcher( line );
+                        if ( matcher.matches() && ppid.equals( fromBusyboxPID( matcher ) ) )
+                        {
+                            long pidUptime = fromBusyboxHours( matcher ) + fromBusyboxMinutes( matcher );
+                            return unixProcessInfo( ppid, pidUptime );
+                        }
                     }
-                    matcher = BUSYBOX_CMD_OUT_PATTERN.matcher( line );
-                    if ( matcher.matches() && ppid.equals( fromBusyboxPID( matcher ) ) )
+                    else
                     {
-                        long pidUptime = fromBusyboxHours( matcher ) + fromBusyboxMinutes( matcher );
-                        return unixProcessInfo( ppid, pidUptime );
+                        hasHeader = line.contains( PS_ETIME_HEADER ) && line.contains( PS_PID_HEADER );
                     }
                 }
                 return previousOutputLine;
@@ -195,8 +204,6 @@ final class PpidChecker
     {
         ProcessInfoConsumer reader = new ProcessInfoConsumer( "US-ASCII" )
         {
-            private boolean hasHeader;
-
             @Override
             @Nonnull
             ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo ) throws Exception
@@ -372,6 +379,8 @@ final class PpidChecker
     {
         private final String charset;
 
+        boolean hasHeader;
+
         ProcessInfoConsumer( String charset )
         {
             this.charset = charset;
@@ -413,11 +422,14 @@ final class PpidChecker
             }
             catch ( Exception e )
             {
-                DumpErrorSingleton.getSingleton()
-                        .dumpText( out.toString() );
+                if ( !( e instanceof InterruptedException ) && !( e.getCause() instanceof InterruptedException ) )
+                {
+                    DumpErrorSingleton.getSingleton()
+                            .dumpText( out.toString() );
 
-                DumpErrorSingleton.getSingleton()
-                        .dumpException( e );
+                    DumpErrorSingleton.getSingleton()
+                            .dumpException( e );
+                }
 
                 return ERR_PROCESS_INFO;
             }

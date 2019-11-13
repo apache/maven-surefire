@@ -65,6 +65,7 @@ import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.KeyValueSource;
 import org.apache.maven.surefire.booter.ModularClasspath;
 import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
+import org.apache.maven.surefire.booter.ProcessCheckerType;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.ProviderParameterNames;
 import org.apache.maven.surefire.booter.Shutdown;
@@ -836,6 +837,8 @@ public abstract class AbstractSurefireMojo
 
     protected abstract void setUseModulePath( boolean useModulePath );
 
+    protected abstract String getEnableProcessChecker();
+
     /**
      * This plugin MOJO artifact.
      *
@@ -1029,6 +1032,7 @@ public abstract class AbstractSurefireMojo
         }
         else
         {
+            ensureEnableProcessChecker();
             convertDeprecatedForkMode();
             ensureWorkingDirectoryExists();
             ensureParallelRunningCompatibility();
@@ -1814,7 +1818,7 @@ public abstract class AbstractSurefireMojo
                 inProcClasspath, effectiveIsEnableAssertions(), isChildDelegation() );
 
         return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration, isForking(),
-                false );
+                false, ProcessCheckerType.toEnum( getEnableProcessChecker() ) );
     }
 
     private static Set<Artifact> retainInProcArtifactsUnique( Set<Artifact> providerArtifacts,
@@ -1924,7 +1928,7 @@ public abstract class AbstractSurefireMojo
         getConsoleLogger().debug( inProcClasspath.getCompactLogMessage( "in-process(compact) classpath:" ) );
 
         return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration, isForking(),
-                false );
+                false, ProcessCheckerType.toEnum( getEnableProcessChecker() ) );
     }
 
     private Artifact getCommonArtifact()
@@ -2316,6 +2320,16 @@ public abstract class AbstractSurefireMojo
         }
     }
 
+    private void ensureEnableProcessChecker() throws MojoFailureException
+    {
+        if ( !ProcessCheckerType.isValid( getEnableProcessChecker() ) )
+        {
+            throw new MojoFailureException( "Unexpected value '"
+                    + getEnableProcessChecker()
+                    + "' in the configuration parameter 'enableProcessChecker'." );
+        }
+    }
+
     private void convertDeprecatedForkMode()
     {
         String effectiveForkMode = getEffectiveForkMode();
@@ -2547,6 +2561,7 @@ public abstract class AbstractSurefireMojo
         checksum.add( getRerunFailingTestsCount() );
         checksum.add( getTempDir() );
         checksum.add( useModulePath() );
+        checksum.add( getEnableProcessChecker() );
         addPluginSpecificChecksumItems( checksum );
         return checksum.getSha1();
     }

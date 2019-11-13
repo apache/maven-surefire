@@ -26,6 +26,7 @@ import org.apache.maven.surefire.booter.BooterDeserializer;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
+import org.apache.maven.surefire.booter.ProcessCheckerType;
 import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
@@ -102,6 +103,11 @@ public class BooterDeserializerStartupConfigurationTest
         assertCpConfigEquals( classpathConfiguration, (ClasspathConfiguration) reloadedClasspathConfiguration );
     }
 
+    public void testProcessChecker() throws IOException
+    {
+        assertEquals( ProcessCheckerType.ALL, getReloadedStartupConfiguration().getProcessChecker() );
+    }
+
     private void assertCpConfigEquals( ClasspathConfiguration expectedConfiguration,
                                ClasspathConfiguration actualConfiguration )
     {
@@ -128,6 +134,18 @@ public class BooterDeserializerStartupConfigurationTest
         assertEquals( current, saveAndReload( testStartupConfiguration ).isManifestOnlyJarRequestedAndUsable() );
     }
 
+    public void testProcessCheckerAll() throws IOException
+    {
+        assertEquals( ProcessCheckerType.ALL, getReloadedStartupConfiguration().getProcessChecker() );
+    }
+
+    public void testProcessCheckerNull() throws IOException
+    {
+        StartupConfiguration startupConfiguration = new StartupConfiguration( "com.provider", classpathConfiguration,
+                getManifestOnlyJarForkConfiguration(), false, false, null );
+        assertNull( saveAndReload( startupConfiguration ).getProcessChecker() );
+    }
+
     private ClasspathConfiguration createClasspathConfiguration()
     {
         Classpath testClassPath = new Classpath( Arrays.asList( "CP1", "CP2" ) );
@@ -144,7 +162,6 @@ public class BooterDeserializerStartupConfigurationTest
     {
         return new ClassLoaderConfiguration( true, true );
     }
-
 
     private StartupConfiguration getReloadedStartupConfiguration()
         throws IOException
@@ -164,7 +181,7 @@ public class BooterDeserializerStartupConfigurationTest
                 false, null, 1 );
         BooterDeserializer booterDeserializer = new BooterDeserializer( new FileInputStream( propsTest ) );
         assertNull( booterDeserializer.getPluginPid() );
-        return booterDeserializer.getProviderConfiguration();
+        return booterDeserializer.getStartupConfiguration();
     }
 
     private ProviderConfiguration getProviderConfiguration()
@@ -188,7 +205,7 @@ public class BooterDeserializerStartupConfigurationTest
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )
     {
         return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, false,
-                                         false );
+                                         false, ProcessCheckerType.ALL );
     }
 
     private File getTestSourceDirectory()

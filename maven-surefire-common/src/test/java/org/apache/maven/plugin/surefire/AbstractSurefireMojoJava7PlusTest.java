@@ -626,6 +626,12 @@ public class AbstractSurefireMojoJava7PlusTest
         }
 
         @Override
+        protected String getEnableProcessChecker()
+        {
+            return null;
+        }
+
+        @Override
         protected Artifact getMojoArtifact()
         {
             return null;

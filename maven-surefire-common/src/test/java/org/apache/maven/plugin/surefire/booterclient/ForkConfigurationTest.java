@@ -42,6 +42,7 @@ import java.util.Properties;
 
 import static java.util.Collections.singletonList;
 import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
+import static org.apache.maven.surefire.booter.ProcessCheckerType.ALL;
 import static org.fest.util.Files.temporaryFolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -56,7 +57,8 @@ public class ForkConfigurationTest
             new ClasspathConfiguration( true, true ),
             new ClassLoaderConfiguration( true, true ),
             false,
-            false );
+            false,
+            ALL );
 
     private static int idx = 0;
 
@@ -89,7 +91,7 @@ public class ForkConfigurationTest
         ClasspathConfiguration cpConfig = new ClasspathConfiguration( new Classpath( cp ), emptyClasspath(),
                 emptyClasspath(), true, true );
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
-        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false );
+        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false, ALL );
 
         Commandline cli = config.createCommandLine( startup, 1, temporaryFolder() );
 
@@ -109,7 +111,7 @@ public class ForkConfigurationTest
         ClasspathConfiguration cpConfig = new ClasspathConfiguration( new Classpath( cp ), emptyClasspath(),
                 emptyClasspath(), true, true );
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
-        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false );
+        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false, ALL );
 
         Commandline commandLine = config.createCommandLine( startup, 1, temporaryFolder() );
         assertTrue( commandLine.toString().contains( "abc def" ) );
@@ -124,7 +126,7 @@ public class ForkConfigurationTest
         ClasspathConfiguration cpConfig = new ClasspathConfiguration( emptyClasspath(), emptyClasspath(),
                 emptyClasspath(), true, true );
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
-        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false );
+        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, false, false, ALL );
         ForkConfiguration config = getForkConfiguration( cwd.getCanonicalFile() );
         Commandline commandLine = config.createCommandLine( startup, 1, temporaryFolder() );
 

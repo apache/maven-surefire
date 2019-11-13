@@ -47,6 +47,9 @@ import static java.lang.Math.max;
 import static java.lang.Thread.currentThread;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.maven.surefire.booter.ProcessCheckerType.ALL;
+import static org.apache.maven.surefire.booter.ProcessCheckerType.NATIVE;
+import static org.apache.maven.surefire.booter.ProcessCheckerType.PING;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.setSystemProperties;
 import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
@@ -101,7 +104,7 @@ public final class ForkedBooter
                     .dumpText( "Found Maven process ID " + booterDeserializer.getPluginPid() );
         }
 
-        startupConfiguration = booterDeserializer.getProviderConfiguration();
+        startupConfiguration = booterDeserializer.getStartupConfiguration();
 
         forkingReporterFactory = createForkingReporterFactory();
 
@@ -200,13 +203,19 @@ public final class ForkedBooter
             logger.debug( ppidChecker.toString() );
         }
 
-        if ( pingMechanisms.pluginProcessChecker != null )
+        ProcessCheckerType checkerType = startupConfiguration.getProcessChecker();
+
+        if ( ( checkerType == ALL || checkerType == NATIVE ) && pingMechanisms.pluginProcessChecker != null )
         {
             Runnable checkerJob = processCheckerJob( pingMechanisms );
             pingMechanisms.pingScheduler.scheduleWithFixedDelay( checkerJob, 0L, 1L, SECONDS );
         }
-        Runnable pingJob = createPingJob( pingDone, pingMechanisms.pluginProcessChecker );
-        pingMechanisms.pingScheduler.scheduleWithFixedDelay( pingJob, 0L, PING_TIMEOUT_IN_SECONDS, SECONDS );
+
+        if ( checkerType == ALL || checkerType == PING )
+        {
+            Runnable pingJob = createPingJob( pingDone, pingMechanisms.pluginProcessChecker );
+            pingMechanisms.pingScheduler.scheduleWithFixedDelay( pingJob, 0L, PING_TIMEOUT_IN_SECONDS, SECONDS );
+        }
 
         return pingMechanisms;
     }
@@ -527,11 +536,6 @@ public final class ForkedBooter
             {
                 pluginProcessChecker.destroyActiveCommands();
             }
-        }
-
-        boolean isShutdown()
-        {
-            return pingScheduler.isShutdown();
         }
     }
 
