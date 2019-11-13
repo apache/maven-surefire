@@ -28,9 +28,13 @@ import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.fest.assertions.Assertions.assertThat;
@@ -141,5 +145,70 @@ public class ForkedBooterTest
                 scheduler.shutdownNow();
             }
         }
+    }
+
+    @Test( timeout = 10_000 )
+    public void testBarrier() throws Exception
+    {
+        Semaphore semaphore = new Semaphore( 2 );
+        invokeMethod( ForkedBooter.class, "acquireOnePermit", semaphore, 30_000L );
+
+        assertThat( semaphore.availablePermits() ).isEqualTo( 1 );
+    }
+
+    @Test
+    public void testScheduler() throws Exception
+    {
+        ScheduledThreadPoolExecutor executor = invokeMethod( ForkedBooter.class, "createPingScheduler" );
+        executor.shutdown();
+        assertThat( executor.getCorePoolSize() ).isEqualTo( 1 );
+        assertThat( executor.getKeepAliveTime( TimeUnit.SECONDS ) ).isEqualTo( 3L );
+        assertThat( executor.getMaximumPoolSize() ).isEqualTo( 2 );
+    }
+
+    @Test
+    public void testIsDebug() throws Exception
+    {
+        boolean isDebug = invokeMethod( ForkedBooter.class, "isDebugging" );
+        assertThat( isDebug ).isFalse();
+    }
+
+    @Test
+    public void testPropsNotExist() throws Exception
+    {
+        String target = System.getProperty( "user.dir" );
+        String file = "not exists";
+        InputStream is = invokeMethod( ForkedBooter.class, "createSurefirePropertiesIfFileExists", target, file );
+        assertThat( is ).isNull();
+    }
+
+    @Test
+    public void testPropsExist() throws Exception
+    {
+        File props = File.createTempFile( "surefire", ".properties" );
+        String target = props.getParent();
+        String file = props.getName();
+        FileUtils.write( props, "Hi", StandardCharsets.US_ASCII );
+        try ( InputStream is =
+                      invokeMethod( ForkedBooter.class, "createSurefirePropertiesIfFileExists", target, file ) )
+        {
+            assertThat( is ).isNotNull();
+            byte[] data = new byte[5];
+            int bytes = is.read( data );
+            assertThat( bytes ).isEqualTo( 2 );
+            assertThat( data[0] ).isEqualTo( (byte) 'H' );
+            assertThat( data[1] ).isEqualTo( (byte) 'i' );
+        }
+    }
+
+    @Test
+    public void testThreadDump() throws Exception
+    {
+        String threads = invokeMethod( ForkedBooter.class, "generateThreadDump" );
+        assertThat( threads )
+                .isNotNull();
+        assertThat( threads )
+                .contains( "\"main\"" )
+                .contains( "java.lang.Thread.State: RUNNABLE" );
     }
 }
