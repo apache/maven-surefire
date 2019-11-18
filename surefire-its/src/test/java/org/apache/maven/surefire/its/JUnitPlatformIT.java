@@ -88,6 +88,20 @@ public class JUnitPlatformIT
     }
 
     @Test
+    public void testJupiterEngineWithFailingBeforeAllMethod()
+    {
+        OutputValidator validator = unpack( "junit-platform-engine-jupiter", "-" + junit5Version + "-" + jqwikVersion )
+                .setTestToRun( "FailingBeforeAllJupiterTest" )
+                .sysProp( "junit5.version", junit5Version )
+                .sysProp( "jqwik.version", jqwikVersion )
+                .executeTest()
+                .verifyTextInLog( "oneTimeSetUp() failed" );
+
+        validator.getSurefireReportsFile( "junitplatformenginejupiter.FailingBeforeAllJupiterTest.txt", UTF_8 )
+                .assertContainsText( "oneTimeSetUp() failed" );
+    }
+
+    @Test
     public void testJupiterEngineWithDisplayNames()
     {
         OutputValidator validator = unpack( "junit-platform-engine-jupiter", "-" + junit5Version + "-" + jqwikVersion )
