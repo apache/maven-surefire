@@ -434,7 +434,7 @@ public class IntegrationTestMojo
      *
      * Example of use:
      * <br>
-     * <i>mvn test -Dsurefire.enableProcessChecker=all</i>
+     * <i>mvn test -Dfailsafe.enableProcessChecker=all</i>
      *
      * @since 3.0.0-M4
      */
