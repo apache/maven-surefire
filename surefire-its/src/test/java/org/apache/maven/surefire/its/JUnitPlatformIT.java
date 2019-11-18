@@ -41,11 +41,6 @@ import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaV
 public class JUnitPlatformIT
         extends SurefireJUnit4IntegrationTestCase
 {
-    private static final String XML_TESTSUITE_FRAGMENT =
-            "<testsuite xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation="
-                    + "\"https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd\" "
-                    + "version=\"3.0\" name=\"&lt;&lt; ✨ &gt;&gt;\"";
-
     @Parameter
     @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String junit5Version;
@@ -74,65 +69,6 @@ public class JUnitPlatformIT
     public void setUp()
     {
         assumeJavaVersion( 1.8d );
-    }
-
-    @Test
-    public void testJupiterEngine()
-    {
-        unpack( "junit-platform-engine-jupiter", "-" + junit5Version + "-" + jqwikVersion )
-                .setTestToRun( "Basic*Test" )
-                .sysProp( "junit5.version", junit5Version )
-                .sysProp( "jqwik.version", jqwikVersion )
-                .executeTest()
-                .verifyErrorFree( 5 );
-    }
-
-    @Test
-    public void testJupiterEngineWithDisplayNames()
-    {
-        OutputValidator validator = unpack( "junit-platform-engine-jupiter", "-" + junit5Version + "-" + jqwikVersion )
-                .sysProp( "junit5.version", junit5Version )
-                .sysProp( "jqwik.version", jqwikVersion )
-                .executeTest()
-                .verifyErrorFree( 7 );
-
-        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest.txt", UTF_8 )
-                 .assertContainsText( "<< ✨ >>" );
-
-        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest.txt", UTF_8 )
-                .assertContainsText( "Test set: << ✨ >>" );
-
-        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest.txt", UTF_8 )
-                .assertContainsText( " - in << ✨ >>" );
-
-
-        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest-output.txt", UTF_8 )
-                .assertContainsText( "<< ✨ >>" );
-
-        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest-output.txt", UTF_8 )
-                .assertContainsText( "73$71 ✔" );
-
-        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest-output.txt", UTF_8 )
-                .assertContainsText( "73$72 ✔" );
-
-
-        validator.getSurefireReportsFile( "TEST-junitplatformenginejupiter.DisplayNameTest.xml", UTF_8 )
-                .assertContainsText( "testcase name=\"73$71 ✔\" classname=\"&lt;&lt; ✨ &gt;&gt;\"" )
-                .assertContainsText( "testcase name=\"73$72 ✔\" classname=\"&lt;&lt; ✨ &gt;&gt;\"" )
-                .assertContainsText( XML_TESTSUITE_FRAGMENT );
-
-
-        validator.getSurefireReportsFile( "TEST-junitplatformenginejupiter.BasicJupiterTest.xml", UTF_8 )
-                .assertContainsText( "<testcase name=\"test(TestInfo)\" "
-                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
-                .assertContainsText( "<testcase name=\"0 + 1 = 1\" "
-                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
-                .assertContainsText( "<testcase name=\"1 + 2 = 3\" "
-                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
-                .assertContainsText( "<testcase name=\"49 + 51 = 100\" "
-                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
-                .assertContainsText( "<testcase name=\"1 + 100 = 101\" "
-                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" );
     }
 
     @Test
@@ -177,14 +113,5 @@ public class JUnitPlatformIT
                         + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
                 .assertContainsText( "<testcase name=\"add(int, int, int)[4]\" "
                         + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" );
-    }
-
-    @Test
-    public void testTags()
-    {
-        unpack( "junit-platform-tags", "-" + junit5Version + "-" + jqwikVersion )
-                .sysProp( "junit5.version", junit5Version )
-                .executeTest()
-                .verifyErrorFree( 2 );
     }
 }

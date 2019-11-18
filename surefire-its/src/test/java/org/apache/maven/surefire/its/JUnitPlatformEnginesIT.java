@@ -32,13 +32,17 @@ import org.junit.runners.Parameterized.Parameters;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.apache.maven.surefire.its.fixture.IsRegex.regex;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.util.Collections.set;
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assume.assumeThat;
 
 /**
  *
@@ -47,6 +51,11 @@ import static org.junit.Assert.assertThat;
 @SuppressWarnings( "checkstyle:magicnumber" )
 public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase
 {
+    private static final String XML_TESTSUITE_FRAGMENT =
+            "<testsuite xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation="
+                    + "\"https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd\" "
+                    + "version=\"3.0\" name=\"&lt;&lt; ✨ &gt;&gt;\"";
+
     @Parameter
     @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String platform;
@@ -154,6 +163,92 @@ public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase
                 regex( toRegex( "*junit-jupiter-api-" + jupiter + ".jar*" ) ),
                 regex( toRegex( "*surefire-junit-platform-*.jar*" ) ),
                 regex( toRegex( "*junit-platform-launcher-" + platform + ".jar*" ) ) ) );
+    }
+
+    @Test
+    public void testJupiterEngine()
+    {
+        unpack( "junit-platform-engine-jupiter", "-" + jupiter )
+                .setTestToRun( "Basic*Test" )
+                .sysProp( "junit5.version", jupiter )
+                .executeTest()
+                .verifyErrorFree( 5 );
+    }
+
+    @Test
+    public void failingBeforeAllMethod()
+    {
+        OutputValidator validator = unpack( "surefire-1688", "-" + jupiter )
+                .setTestToRun( "FailingBeforeAllJupiterTest" )
+                .sysProp( "junit5.version", jupiter )
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog( "oneTimeSetUp() failed" )
+                .assertTestSuiteResults( 1, 0, 1, 0 );
+
+        validator.getSurefireReportsFile( "jira1688.FailingBeforeAllJupiterTest.txt", UTF_8 )
+                .assertContainsText( "oneTimeSetUp() failed" );
+    }
+
+    @Test
+    public void testJupiterEngineWithDisplayNames()
+    {
+        OutputValidator validator = unpack( "junit-platform-engine-jupiter", "-" + jupiter )
+                .sysProp( "junit5.version", jupiter )
+                .executeTest()
+                .verifyErrorFree( 7 );
+
+        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest.txt", UTF_8 )
+                .assertContainsText( "<< ✨ >>" );
+
+        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest.txt", UTF_8 )
+                .assertContainsText( "Test set: << ✨ >>" );
+
+        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest.txt", UTF_8 )
+                .assertContainsText( " - in << ✨ >>" );
+
+
+        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest-output.txt", UTF_8 )
+                .assertContainsText( "<< ✨ >>" );
+
+        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest-output.txt", UTF_8 )
+                .assertContainsText( "73$71 ✔" );
+
+        validator.getSurefireReportsFile( "junitplatformenginejupiter.DisplayNameTest-output.txt", UTF_8 )
+                .assertContainsText( "73$72 ✔" );
+
+
+        validator.getSurefireReportsFile( "TEST-junitplatformenginejupiter.DisplayNameTest.xml", UTF_8 )
+                .assertContainsText( "testcase name=\"73$71 ✔\" classname=\"&lt;&lt; ✨ &gt;&gt;\"" )
+                .assertContainsText( "testcase name=\"73$72 ✔\" classname=\"&lt;&lt; ✨ &gt;&gt;\"" )
+                .assertContainsText( XML_TESTSUITE_FRAGMENT );
+
+
+        validator.getSurefireReportsFile( "TEST-junitplatformenginejupiter.BasicJupiterTest.xml", UTF_8 )
+                .assertContainsText( "<testcase name=\"test(TestInfo)\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
+                .assertContainsText( "<testcase name=\"0 + 1 = 1\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
+                .assertContainsText( "<testcase name=\"1 + 2 = 3\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
+                .assertContainsText( "<testcase name=\"49 + 51 = 100\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
+                .assertContainsText( "<testcase name=\"1 + 100 = 101\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" );
+    }
+
+    @Test
+    public void testTags()
+    {
+        // [don't & !forced] not supported in 5.0.3 as it seems
+        // PreconditionViolationException: Tag name [don't & !forced] must be syntactically valid
+        assumeThat( jupiter, is( not( "5.0.3" ) ) );
+
+        unpack( "junit-platform-tags", "-" + jupiter )
+                .sysProp( "junit5.version", jupiter )
+                .executeTest()
+                .verifyErrorFree( 2 );
     }
 
     private static String toRegex( String text )
