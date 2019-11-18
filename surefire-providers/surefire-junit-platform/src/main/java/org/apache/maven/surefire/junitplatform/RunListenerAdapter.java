@@ -118,7 +118,8 @@ final class RunListenerAdapter
                 case FAILED:
                     if ( !isTest )
                     {
-                        runListener.testSetCompleted( createReportEntry( testIdentifier, testExecutionResult,
+                        runListener.testFailed( createReportEntry( testIdentifier, testExecutionResult, elapsed ) );
+                        runListener.testSetCompleted( createReportEntry( testIdentifier, null,
                                 systemProps(), null, elapsed ) );
                     }
                     else if ( testExecutionResult.getThrowable()

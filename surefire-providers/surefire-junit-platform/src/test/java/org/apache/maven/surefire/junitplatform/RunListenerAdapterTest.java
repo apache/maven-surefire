@@ -50,7 +50,6 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.surefire.report.TestSetReportEntry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -439,13 +438,13 @@ public class RunListenerAdapterTest
     @Test
     public void notifiedWithCorrectNamesWhenClassExecutionFailed()
     {
-        ArgumentCaptor<TestSetReportEntry> entryCaptor = ArgumentCaptor.forClass( TestSetReportEntry.class );
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
         TestPlan testPlan = TestPlan.from( singletonList( new EngineDescriptor( newId(), "Luke's Plan" ) ) );
         adapter.testPlanExecutionStarted( testPlan );
 
         adapter.executionFinished( identifiersAsParentOnTestPlan( testPlan, newClassDescriptor() ),
                 failed( new AssertionError() ) );
-        verify( listener ).testSetCompleted( entryCaptor.capture() );
+        verify( listener ).testFailed( entryCaptor.capture() );
 
         ReportEntry entry = entryCaptor.getValue();
         assertEquals( MyTestClass.class.getTypeName(), entry.getSourceName() );

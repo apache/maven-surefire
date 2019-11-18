@@ -29,12 +29,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -56,6 +58,7 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
@@ -64,6 +67,7 @@ import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
 import org.fest.assertions.Assertions;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.platform.launcher.Launcher;
@@ -83,6 +87,52 @@ import org.mockito.InOrder;
  */
 public class JUnitPlatformProviderTest
 {
+    @Test
+    public void shouldFailClassOnBeforeAll()
+            throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParametersMock(), launcher );
+        RunListener listener = mock( RunListener.class );
+
+        ArgumentCaptor<ReportEntry> testCaptor = ArgumentCaptor.forClass( ReportEntry.class );
+        ArgumentCaptor<TestSetReportEntry> testSetCaptor = ArgumentCaptor.forClass( TestSetReportEntry.class );
+
+        RunListenerAdapter adapter = new RunListenerAdapter( listener );
+        launcher.registerTestExecutionListeners( adapter );
+
+        TestsToRun testsToRun = newTestsToRun( FailingBeforeAllJupiterTest.class );
+        invokeProvider( provider, testsToRun );
+        InOrder inOrder = inOrder( listener );
+        inOrder.verify( listener, times( 1 ) ).testSetStarting( testSetCaptor.capture() );
+        inOrder.verify( listener, never() ).testStarting( any( ReportEntry.class ) );
+        inOrder.verify( listener, times( 1 ) ).testFailed( testCaptor.capture() );
+        inOrder.verify( listener, times( 1 ) ).testSetCompleted( testSetCaptor.capture() );
+
+        assertThat( testSetCaptor.getAllValues() )
+                .hasSize( 2 );
+
+        assertThat( testSetCaptor.getAllValues().get( 0 ).getSourceName() )
+                .isEqualTo( FailingBeforeAllJupiterTest.class.getName() );
+
+        assertThat( testSetCaptor.getAllValues().get( 0 ).getName() )
+                .isNull();
+
+        assertThat( testCaptor.getAllValues() )
+                .hasSize( 1 );
+
+        assertThat( testCaptor.getValue().getSourceName() )
+                .isEqualTo( FailingBeforeAllJupiterTest.class.getName() );
+
+        assertThat( testCaptor.getValue().getName() )
+                .isNull();
+
+        assertThat( testSetCaptor.getAllValues().get( 1 ).getSourceName() )
+                .isEqualTo( FailingBeforeAllJupiterTest.class.getName() );
+
+        assertThat( testSetCaptor.getAllValues().get( 1 ).getName() )
+                .isNull();
+    }
 
     @Test
     public void getSuitesReturnsScannedClasses()
@@ -1033,5 +1083,21 @@ public class JUnitPlatformProviderTest
         void test1()
         {
         }
+    }
+
+    static class FailingBeforeAllJupiterTest
+    {
+
+        @BeforeAll
+        static void oneTimeSetUp()
+        {
+            fail( "oneTimeSetUp() failed" );
+        }
+
+        @org.junit.jupiter.api.Test
+        void test()
+        {
+        }
+
     }
 }

@@ -1,4 +1,4 @@
-package tags;
+package jira1688;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,37 +21,19 @@ package tags;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-class JUnitPlatformWithTagsTest
+class FailingBeforeAllJupiterTest
 {
-
-    @Test
-    @Tag("run")
-    void run()
+    @BeforeAll
+    static void oneTimeSetUp()
     {
+        fail( "oneTimeSetUp() failed" );
     }
 
     @Test
-    @Tag("don't")
-    @Tag("run")
-    void dontRun()
+    void test()
     {
-        fail( "unexpected to call" );
-    }
-
-    @Test
-    @Tag("don't")
-    @Tag("run")
-    @Tag("forced")
-    void doRun()
-    {
-    }
-
-    @Test
-    void tagless()
-    {
-        fail( "unexpected to call" );
     }
 }
