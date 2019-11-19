@@ -26,6 +26,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FilenameFilter;
 
+import static java.util.Objects.requireNonNull;
 import static org.fest.assertions.Assertions.assertThat;
 
 
@@ -41,15 +42,16 @@ public class CheckTestNgExecuteErrorIT
 {
     @Test
     public void executionError()
-        throws Exception
     {
         OutputValidator outputValidator = unpack( "/testng-execute-error" )
-                                                  .maven()
-                                                  .sysProp( "testNgVersion", "5.7" )
-                                                  .sysProp( "testNgClassifier", "jdk15" )
-                                                  .showErrorStackTraces()
-                                                  .withFailure()
-                                                  .executeTest();
+                .maven()
+                .sysProp( "testNgVersion", "5.7" )
+                .sysProp( "testNgClassifier", "jdk15" )
+                .showErrorStackTraces()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog( "Cyclic graph of methods" )
+                .verifyTextInLog( "at org.apache.maven.surefire.testng.TestNGExecutor.run" );
 
         File reportDir = outputValidator.getSurefireReportsDirectory();
         String[] dumpFiles = reportDir.list( new FilenameFilter()
@@ -60,13 +62,15 @@ public class CheckTestNgExecuteErrorIT
                                                      return name.endsWith( "-jvmRun1.dump" );
                                                  }
                                              } );
+
         assertThat( dumpFiles )
                 .isNotNull()
                 .isNotEmpty();
-        for ( String dump : dumpFiles )
+
+        for ( String dump : requireNonNull( dumpFiles ) )
         {
             outputValidator.getSurefireReportsFile( dump )
-                    .assertContainsText( "at org.apache.maven.surefire.testng.TestNGExecutor.run" );
+                    .assertContainsText( "Cyclic graph of methods" );
         }
     }
 }
