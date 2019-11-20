@@ -17,18 +17,20 @@
 Contributing to [Apache Maven Surefire](https://maven.apache.org/surefire/)
 ======================
 
-[![Apache License, Version 2.0, January 2004](https://img.shields.io/github/license/apache/maven.svg?label=License)][license]
-[![Maven Central](https://img.shields.io/maven-central/v/org.apache.maven.surefire/surefire.svg?label=Maven%20Central)](https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.apache.maven.plugins%22%20AND%20a%3A%22maven-surefire-plugin%22)
+[![Maven Central](https://img.shields.io/maven-central/v/org.apache.maven.surefire/surefire.svg?label=Maven%20Central&style=plastic)](https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.apache.maven.plugins%22%20AND%20a%3A%22maven-surefire-plugin%22)
+[![Apache License, Version 2.0, January 2004](https://img.shields.io/github/license/apache/maven.svg?label=License&style=plastic)][license]
+
+[![CI](https://img.shields.io/badge/CI-Jenkins-blue.svg?style=plastic)](https://jenkins-ci.org/)
 [![Jenkins Status](https://img.shields.io/jenkins/s/https/builds.apache.org/job/maven-box/job/maven-surefire/job/master.svg?style=plastic)][build]
 [![Jenkins tests](https://img.shields.io/jenkins/t/https/builds.apache.org/job/maven-box/job/maven-surefire/job/master.svg?style=plastic)][test-results]
-[![CI](https://img.shields.io/badge/CI-Jenkins-red.svg?style=plastic)](https://jenkins-ci.org/)
-[![forks](https://img.shields.io/github/forks/apache/maven-surefire.svg?style=social&label=Fork)](https://github.com/apache/maven-surefire/)
+[![Jenkins JaCoCo](https://img.shields.io/jenkins/coverage/jacoco/https/builds.apache.org/job/maven-box/job/maven-surefire/job/master.svg?style=plastic)](https://builds.apache.org/job/maven-box/job/maven-surefire/job/master/lastBuild/jacoco/)
 
+[![Actions Status](https://github.com/apache/maven-surefire/workflows/GitHub%20CI/badge.svg?branch=master)](https://github.com/apache/maven-surefire/actions)
 
 # The Maven Community
 
 [![slack](https://img.shields.io/badge/slack-18/1138-pink.svg)](https://the-asf.slack.com)
-[![chat](https://www.irccloud.com/invite-svg?channel=maven&amp;hostname=irc.freenode.net&amp;port=6697&amp;ssl=1)](https://maven.apache.org/community.html) [Join us @ irc://freenode/maven] or [Webchat with us @channel maven]
+[![forks](https://img.shields.io/github/forks/apache/maven-surefire.svg?style=social&label=Fork)](https://github.com/apache/maven-surefire/)
 
 
 # Project Documentation
