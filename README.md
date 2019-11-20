@@ -23,7 +23,7 @@ Contributing to [Apache Maven Surefire](https://maven.apache.org/surefire/)
 [![CI](https://img.shields.io/badge/CI-Jenkins-blue.svg?style=plastic)](https://jenkins-ci.org/)
 [![Jenkins Status](https://img.shields.io/jenkins/s/https/builds.apache.org/job/maven-box/job/maven-surefire/job/master.svg?style=plastic)][build]
 [![Jenkins tests](https://img.shields.io/jenkins/t/https/builds.apache.org/job/maven-box/job/maven-surefire/job/master.svg?style=plastic)][test-results]
-[![Jenkins JaCoCo](https://img.shields.io/jenkins/coverage/jacoco/https/builds.apache.org/job/maven-box/job/maven-surefire/job/master.svg?style=plastic)](https://builds.apache.org/job/maven-box/job/maven-surefire/job/master/lastBuild/jacoco/)
+[![Jenkins JaCoCo](https://img.shields.io/jenkins/coverage/jacoco/https/builds.apache.org/job/maven-box/job/maven-surefire/job/master.svg?style=plastic&color=green)](https://builds.apache.org/job/maven-box/job/maven-surefire/job/master/lastBuild/jacoco/)
 
 [![Actions Status](https://github.com/apache/maven-surefire/workflows/GitHub%20CI/badge.svg?branch=master)](https://github.com/apache/maven-surefire/actions)
 
