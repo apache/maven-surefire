@@ -30,7 +30,7 @@ import java.util.List;
 
 import static java.util.Collections.addAll;
 import static java.util.Collections.singleton;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
 import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
 import static org.fest.assertions.Assertions.assertThat;

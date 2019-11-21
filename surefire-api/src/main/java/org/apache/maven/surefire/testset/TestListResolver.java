@@ -26,11 +26,11 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import static java.util.Collections.unmodifiableSet;
-import static org.apache.maven.shared.utils.StringUtils.isBlank;
-import static org.apache.maven.shared.utils.StringUtils.isNotBlank;
-import static org.apache.maven.shared.utils.StringUtils.split;
-import static org.apache.maven.shared.utils.io.SelectorUtils.PATTERN_HANDLER_SUFFIX;
-import static org.apache.maven.shared.utils.io.SelectorUtils.REGEX_HANDLER_PREFIX;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.split;
+import static org.apache.maven.surefire.shared.utils.io.SelectorUtils.PATTERN_HANDLER_SUFFIX;
+import static org.apache.maven.surefire.shared.utils.io.SelectorUtils.REGEX_HANDLER_PREFIX;
 import static java.util.Collections.singleton;
 import static org.apache.maven.surefire.testset.ResolvedTest.Type.CLASS;
 import static org.apache.maven.surefire.testset.ResolvedTest.Type.METHOD;

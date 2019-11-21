@@ -33,10 +33,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.reporting.MavenReportException;
-import org.apache.maven.shared.utils.io.DirectoryScanner;
+import org.apache.maven.surefire.shared.utils.io.DirectoryScanner;
 import org.xml.sax.SAXException;
 
-import static org.apache.maven.shared.utils.StringUtils.split;
+import static org.apache.maven.surefire.shared.utils.StringUtils.split;
 
 /**
  *

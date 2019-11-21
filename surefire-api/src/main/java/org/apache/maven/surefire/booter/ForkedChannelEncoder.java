@@ -19,7 +19,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.commons.codec.binary.Base64;
+import org.apache.maven.surefire.shared.codec.binary.Base64;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLoggerUtils;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunMode;

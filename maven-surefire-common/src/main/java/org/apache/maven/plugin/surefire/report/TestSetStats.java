@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.shared.utils.logging.MessageBuilder;
+import org.apache.maven.surefire.shared.utils.logging.MessageBuilder;
 import org.apache.maven.surefire.report.ReportEntry;
 
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
+import static org.apache.maven.surefire.shared.utils.logging.MessageUtils.buffer;
 import static org.apache.maven.surefire.report.CategorizedReportEntry.GROUP_PREFIX;
 
 /**

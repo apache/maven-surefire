@@ -36,7 +36,7 @@ import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.copyOfRange;
-import static org.apache.commons.codec.binary.Base64.encodeBase64String;
+import static org.apache.maven.surefire.shared.codec.binary.Base64.encodeBase64String;
 import static org.apache.maven.surefire.booter.ForkedChannelEncoder.encode;
 import static org.apache.maven.surefire.booter.ForkedChannelEncoder.encodeHeader;
 import static org.apache.maven.surefire.booter.ForkedChannelEncoder.encodeMessage;

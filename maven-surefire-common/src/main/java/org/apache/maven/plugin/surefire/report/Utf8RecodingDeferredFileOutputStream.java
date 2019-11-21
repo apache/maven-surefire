@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import org.apache.commons.io.output.DeferredFileOutputStream;
+import org.apache.maven.surefire.shared.io.output.DeferredFileOutputStream;
 
 import java.io.IOException;
 import java.io.OutputStream;

@@ -26,7 +26,7 @@ import org.apache.maven.plugin.surefire.report.ConsoleReporter;
 import org.apache.maven.plugin.surefire.report.FileReporter;
 import org.apache.maven.plugin.surefire.report.TestSetStats;
 import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
-import org.apache.maven.shared.utils.logging.MessageUtils;
+import org.apache.maven.surefire.shared.utils.logging.MessageUtils;
 import org.apache.maven.surefire.report.TestSetReportEntry;
 import org.junit.Test;
 import org.junit.runner.RunWith;

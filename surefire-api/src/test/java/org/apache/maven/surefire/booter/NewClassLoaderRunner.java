@@ -19,7 +19,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.shared.utils.io.FileUtils;
+import org.apache.maven.surefire.shared.utils.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

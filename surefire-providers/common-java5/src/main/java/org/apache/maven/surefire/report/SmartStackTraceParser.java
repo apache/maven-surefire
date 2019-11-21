@@ -25,8 +25,8 @@ import java.util.List;
 import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static java.util.Collections.reverse;
-import static org.apache.maven.shared.utils.StringUtils.chompLast;
-import static org.apache.maven.shared.utils.StringUtils.isNotEmpty;
+import static org.apache.maven.surefire.shared.utils.StringUtils.chompLast;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isNotEmpty;
 
 /**
  * @author Kristian Rosenvold
@@ -171,7 +171,7 @@ public class SmartStackTraceParser
         if ( i >= 0 && msg != null )
         {
             truncatedMessage.append( ' ' )
-                    .append( msg.substring( 0, min( i, msg.length() ) ) );
+                    .append( msg, 0, min( i, msg.length() ) );
 
             if ( i < msg.length() )
             {

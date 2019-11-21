@@ -28,8 +28,8 @@ import java.lang.management.ManagementFactory;
 import java.util.regex.Matcher;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_UNIX;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_UNIX;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.surefire.booter.ProcessInfo.unixProcessInfo;
 import static org.apache.maven.surefire.booter.ProcessInfo.windowsProcessInfo;
 import static org.fest.assertions.Assertions.assertThat;

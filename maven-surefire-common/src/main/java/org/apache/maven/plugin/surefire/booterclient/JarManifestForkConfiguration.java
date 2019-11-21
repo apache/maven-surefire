@@ -19,9 +19,9 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import org.apache.commons.compress.archivers.zip.Zip64Mode;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.maven.surefire.shared.compress.archivers.zip.Zip64Mode;
+import org.apache.maven.surefire.shared.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.maven.surefire.shared.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;

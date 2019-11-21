@@ -33,7 +33,7 @@ import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.shared.utils.logging.MessageUtils;
+import org.apache.maven.surefire.shared.utils.logging.MessageUtils;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.report.SafeThrowable;
 import org.apache.maven.surefire.report.StackTraceWriter;

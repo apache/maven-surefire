@@ -36,11 +36,11 @@ import java.util.StringTokenizer;
 import static java.lang.Character.isDigit;
 import static java.lang.Thread.currentThread;
 import static java.util.Objects.requireNonNull;
-import static org.apache.commons.lang3.StringUtils.isNumeric;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_FREE_BSD;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_NET_BSD;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_OPEN_BSD;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isNumeric;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_FREE_BSD;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_LINUX;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_NET_BSD;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_OPEN_BSD;
 import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodChain;
 import static org.apache.maven.surefire.util.ReflectionUtils.tryLoadClass;
 
@@ -178,7 +178,7 @@ public final class SystemUtils
     private static BigDecimal getJavaSpecificationVersion()
     {
         StringBuilder fractionalVersion = new StringBuilder( "0" );
-        for ( char c : org.apache.commons.lang3.SystemUtils.JAVA_SPECIFICATION_VERSION.toCharArray() )
+        for ( char c : org.apache.maven.surefire.shared.lang3.SystemUtils.JAVA_SPECIFICATION_VERSION.toCharArray() )
         {
             if ( isDigit( c ) )
             {

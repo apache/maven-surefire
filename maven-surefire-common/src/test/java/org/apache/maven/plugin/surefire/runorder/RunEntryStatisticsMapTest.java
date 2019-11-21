@@ -33,7 +33,7 @@ import org.apache.maven.surefire.report.SimpleReportEntry;
 import junit.framework.TestCase;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.io.IOUtils.readLines;
+import static org.apache.maven.surefire.shared.io.IOUtils.readLines;
 import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 import static org.fest.assertions.Assertions.assertThat;
 

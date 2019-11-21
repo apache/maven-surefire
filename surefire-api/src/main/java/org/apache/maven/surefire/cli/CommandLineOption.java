@@ -45,14 +45,4 @@ public enum CommandLineOption
         }
         return options;
     }
-
-    public static List<String> toStrings( Collection<CommandLineOption> options )
-    {
-        List<String> elements = new ArrayList<>( options.size() );
-        for ( CommandLineOption option : options )
-        {
-            elements.add( option.name() );
-        }
-        return elements;
-    }
 }

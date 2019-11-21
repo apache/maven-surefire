@@ -20,7 +20,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import junit.framework.TestCase;
-import org.apache.commons.io.FileUtils;
+import org.apache.maven.surefire.shared.io.FileUtils;
 import org.apache.maven.surefire.booter.AbstractPathConfiguration;
 import org.apache.maven.surefire.booter.BooterDeserializer;
 import org.apache.maven.surefire.booter.Classpath;

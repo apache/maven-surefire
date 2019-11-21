@@ -22,7 +22,7 @@ package org.apache.maven.surefire;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.apache.maven.shared.utils.io.SelectorUtils;
+import org.apache.maven.surefire.shared.utils.io.SelectorUtils;
 import org.apache.maven.surefire.util.ScannerFilter;
 
 /**

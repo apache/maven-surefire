@@ -41,7 +41,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.lang3.StringUtils.trimToNull;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.trimToNull;
 import static org.apache.maven.plugin.surefire.SurefireHelper.replaceForkThreadsInPath;
 import static org.apache.maven.plugin.surefire.report.ConsoleReporter.BRIEF;
 import static org.apache.maven.plugin.surefire.report.ConsoleReporter.PLAIN;
