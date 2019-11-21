@@ -44,7 +44,7 @@ import java.util.Properties;
 import static java.io.File.createTempFile;
 import static java.io.File.pathSeparatorChar;
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
-import static org.apache.maven.shared.utils.StringUtils.replace;
+import static org.apache.maven.surefire.shared.utils.StringUtils.replace;
 import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 
 /**

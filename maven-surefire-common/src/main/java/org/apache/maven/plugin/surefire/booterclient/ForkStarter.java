@@ -33,10 +33,13 @@ import org.apache.maven.plugin.surefire.booterclient.output.NativeStdErrStreamCo
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
-import org.apache.maven.shared.utils.cli.CommandLineCallable;
-import org.apache.maven.shared.utils.cli.CommandLineException;
+import org.apache.maven.surefire.extensions.util.CommandlineExecutor;
+import org.apache.maven.surefire.extensions.util.CommandlineStreams;
+import org.apache.maven.surefire.extensions.util.CountdownCloseable;
+import org.apache.maven.surefire.extensions.util.LineConsumerThread;
+import org.apache.maven.surefire.extensions.util.StreamFeeder;
+import org.apache.maven.surefire.shared.utils.cli.CommandLineException;
 import org.apache.maven.surefire.booter.AbstractPathConfiguration;
-import org.apache.maven.surefire.booter.KeyValueSource;
 import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.ProviderFactory;
@@ -75,7 +78,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.lang.StrictMath.min;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.currentThread;
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.util.Collections.addAll;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
@@ -88,9 +90,8 @@ import static org.apache.maven.plugin.surefire.booterclient.ForkNumberBucket.dra
 import static org.apache.maven.plugin.surefire.booterclient.ForkNumberBucket.returnNumber;
 import static org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream
                       .TestLessInputStreamBuilder;
-import static org.apache.maven.shared.utils.cli.CommandLineUtils.executeCommandLineAsCallable;
-import static org.apache.maven.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
-import static org.apache.maven.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
+import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
+import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.writePropertiesFile;
 import static org.apache.maven.surefire.cli.CommandLineOption.SHOW_ERRORS;
 import static org.apache.maven.surefire.suite.RunResult.SUCCESS;
@@ -212,10 +213,16 @@ public class ForkStarter
         public void close()
         {
             run();
+            testProvidingInputStream.clear();
             if ( inputStreamCloserHook != null )
             {
                 removeShutdownHook( inputStreamCloserHook );
             }
+        }
+
+        void addCloseable( Closeable closeable )
+        {
+            testProvidingInputStream.add( closeable );
         }
     }
 
@@ -540,9 +547,9 @@ public class ForkStarter
         }
     }
 
-    private RunResult fork( Object testSet, KeyValueSource providerProperties, ForkClient forkClient,
+    private RunResult fork( Object testSet, PropertiesWrapper providerProperties, ForkClient forkClient,
                             SurefireProperties effectiveSystemProperties, int forkNumber,
-                            AbstractForkInputStream testProvidingInputStream, boolean readTestsFromInStream )
+                            AbstractForkInputStream commandInputStream, boolean readTestsFromInStream )
         throws SurefireBooterForkException
     {
         final String tempDir;
@@ -581,9 +588,9 @@ public class ForkStarter
         OutputStreamFlushableCommandline cli =
                 forkConfiguration.createCommandLine( startupConfiguration, forkNumber, dumpLogDir );
 
-        if ( testProvidingInputStream != null )
+        if ( commandInputStream != null )
         {
-            testProvidingInputStream.setFlushReceiverProvider( cli );
+            commandInputStream.setFlushReceiverProvider( cli );
         }
 
         cli.createArg().setValue( tempDir );
@@ -594,41 +601,60 @@ public class ForkStarter
             cli.createArg().setValue( systPropsFile.getName() );
         }
 
-        final ThreadedStreamConsumer threadedStreamConsumer = new ThreadedStreamConsumer( forkClient );
-        final CloseableCloser closer = new CloseableCloser( forkNumber, threadedStreamConsumer,
-                                                            requireNonNull( testProvidingInputStream, "null param" ) );
+        ThreadedStreamConsumer eventConsumer = new ThreadedStreamConsumer( forkClient );
+        CloseableCloser closer = new CloseableCloser( forkNumber, eventConsumer, requireNonNull( commandInputStream ) );
 
         log.debug( "Forking command line: " + cli );
 
         Integer result = null;
         RunResult runResult = null;
         SurefireBooterForkException booterForkException = null;
-        try
+        StreamFeeder in = null;
+        LineConsumerThread out = null;
+        LineConsumerThread err = null;
+        DefaultReporterFactory reporter = forkClient.getDefaultReporterFactory();
+        currentForkClients.add( forkClient );
+        CountdownCloseable countdownCloseable = new CountdownCloseable( eventConsumer, 2 );
+        try ( CommandlineExecutor exec = new CommandlineExecutor( cli, countdownCloseable ) )
         {
-            NativeStdErrStreamConsumer stdErrConsumer =
-                    new NativeStdErrStreamConsumer( forkClient.getDefaultReporterFactory() );
-
-            CommandLineCallable future =
-                    executeCommandLineAsCallable( cli, testProvidingInputStream, threadedStreamConsumer,
-                                                        stdErrConsumer, 0, closer, ISO_8859_1 );
-
-            currentForkClients.add( forkClient );
-
-            result = future.call();
+            // default impl of the extension - solves everything including the encoder/decoder, Process starter,
+            // adaptation of the streams to pipes and sockets
+            // non-default impl may use another classes and not the LineConsumerThread, StreamFeeder - freedom
+            // BEGIN: beginning of the call of the extension
+            CommandlineStreams streams = exec.execute();
+            closer.addCloseable( streams );
+            in = new StreamFeeder( "std-in-fork-" + forkNumber, streams.getStdInChannel(), commandInputStream );
+            in.start();
+            out = new LineConsumerThread( "std-out-fork-" + forkNumber, streams.getStdOutChannel(),
+                                          eventConsumer, countdownCloseable );
+            out.start();
+            NativeStdErrStreamConsumer stdErrConsumer = new NativeStdErrStreamConsumer( reporter );
+            err = new LineConsumerThread( "std-err-fork-" + forkNumber, streams.getStdErrChannel(),
+                                          stdErrConsumer, countdownCloseable );
+            err.start();
+            result = exec.awaitExit();
+            // END: end of the call of the extension
 
             if ( forkClient.hadTimeout() )
             {
-                runResult = timeout( forkClient.getDefaultReporterFactory().getGlobalRunStatistics().getRunResult() );
+                runResult = timeout( reporter.getGlobalRunStatistics().getRunResult() );
             }
-            else if ( result == null || result != SUCCESS )
+            else if ( result != SUCCESS )
             {
                 booterForkException =
                         new SurefireBooterForkException( "Error occurred in starting fork, check output in log" );
             }
         }
+        catch ( InterruptedException e )
+        {
+            // maybe implement it in the Future.cancel() of the extension or similar
+            in.disable();
+            out.disable();
+            err.disable();
+        }
         catch ( CommandLineException e )
         {
-            runResult = failure( forkClient.getDefaultReporterFactory().getGlobalRunStatistics().getRunResult(), e );
+            runResult = failure( reporter.getGlobalRunStatistics().getRunResult(), e );
             String cliErr = e.getLocalizedMessage();
             Throwable cause = e.getCause();
             booterForkException =
@@ -637,10 +663,20 @@ public class ForkStarter
         finally
         {
             currentForkClients.remove( forkClient );
-            closer.close();
+            try
+            {
+                Closeable c = forkClient.isSaidGoodBye() ? closer : commandInputStream;
+                c.close();
+            }
+            catch ( IOException e )
+            {
+                InPluginProcessDumpSingleton.getSingleton()
+                    .dumpException( e, e.getLocalizedMessage(), dumpLogDir, forkNumber );
+            }
+
             if ( runResult == null )
             {
-                runResult = forkClient.getDefaultReporterFactory().getGlobalRunStatistics().getRunResult();
+                runResult = reporter.getGlobalRunStatistics().getRunResult();
             }
             forkClient.close( runResult.isTimeout() );
 

@@ -19,7 +19,7 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
-import static org.apache.maven.shared.utils.StringUtils.isNotBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
 
 /**
  *

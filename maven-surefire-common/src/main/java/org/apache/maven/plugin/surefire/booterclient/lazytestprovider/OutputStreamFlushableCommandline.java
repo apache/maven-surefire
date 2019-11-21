@@ -24,9 +24,9 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-import org.apache.maven.shared.utils.cli.CommandLineException;
-import org.apache.maven.shared.utils.cli.CommandLineUtils;
-import org.apache.maven.shared.utils.cli.Commandline;
+import org.apache.maven.surefire.shared.utils.cli.CommandLineException;
+import org.apache.maven.surefire.shared.utils.cli.CommandLineUtils;
+import org.apache.maven.surefire.shared.utils.cli.Commandline;
 
 /**
  * A {@link Commandline} implementation that provides the output stream of

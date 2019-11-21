@@ -31,7 +31,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.apache.maven.shared.utils.StringUtils.join;
+import static org.apache.maven.surefire.shared.utils.StringUtils.join;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>

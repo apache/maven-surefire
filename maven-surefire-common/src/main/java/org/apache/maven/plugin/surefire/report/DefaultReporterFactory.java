@@ -23,7 +23,7 @@ import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.Level;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
-import org.apache.maven.shared.utils.logging.MessageBuilder;
+import org.apache.maven.surefire.shared.utils.logging.MessageBuilder;
 import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
@@ -54,7 +54,7 @@ import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.Tes
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
-import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
+import static org.apache.maven.surefire.shared.utils.logging.MessageUtils.buffer;
 import static org.apache.maven.surefire.util.internal.ObjectUtils.useNonNull;
 
 /**

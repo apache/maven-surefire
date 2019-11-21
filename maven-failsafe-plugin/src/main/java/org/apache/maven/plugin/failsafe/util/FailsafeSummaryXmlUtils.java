@@ -19,7 +19,7 @@ package org.apache.maven.plugin.failsafe.util;
  * under the License.
  */
 
-import org.apache.commons.io.IOUtils;
+import org.apache.maven.surefire.shared.io.IOUtils;
 import org.apache.maven.surefire.suite.RunResult;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -37,8 +37,8 @@ import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.lang3.StringEscapeUtils.escapeXml10;
-import static org.apache.commons.lang3.StringEscapeUtils.unescapeXml;
+import static org.apache.maven.surefire.shared.lang3.StringEscapeUtils.escapeXml10;
+import static org.apache.maven.surefire.shared.lang3.StringEscapeUtils.unescapeXml;
 import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 
 /**

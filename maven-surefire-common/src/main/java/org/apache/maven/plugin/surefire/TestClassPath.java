@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.addAll;
-import static org.apache.maven.shared.utils.StringUtils.split;
+import static org.apache.maven.surefire.shared.utils.StringUtils.split;
 
 final class TestClassPath
 {

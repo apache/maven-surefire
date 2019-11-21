@@ -39,7 +39,7 @@ import java.io.File;
 import java.util.Collection;
 
 import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
-import static org.apache.maven.shared.utils.StringUtils.capitalizeFirstLetter;
+import static org.apache.maven.surefire.shared.utils.StringUtils.capitalizeFirstLetter;
 import static org.apache.maven.surefire.suite.RunResult.noTestsRun;
 
 /**

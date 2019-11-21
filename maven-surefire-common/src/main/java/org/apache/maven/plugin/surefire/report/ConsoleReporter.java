@@ -22,14 +22,14 @@ package org.apache.maven.plugin.surefire.report;
 import java.util.List;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.shared.utils.logging.MessageBuilder;
+import org.apache.maven.surefire.shared.utils.logging.MessageBuilder;
 import org.apache.maven.plugin.surefire.log.api.Level;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
 import org.apache.maven.surefire.report.TestSetReportEntry;
 
 import static org.apache.maven.plugin.surefire.log.api.Level.resolveLevel;
 import static org.apache.maven.plugin.surefire.report.TestSetStats.concatenateWithTestGroup;
-import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
+import static org.apache.maven.surefire.shared.utils.logging.MessageUtils.buffer;
 
 /**
  * Base class for console reporters.

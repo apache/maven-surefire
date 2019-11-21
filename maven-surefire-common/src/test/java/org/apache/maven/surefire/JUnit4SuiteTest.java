@@ -34,6 +34,7 @@ import org.apache.maven.plugin.surefire.booterclient.BooterDeserializerProviderC
 import org.apache.maven.plugin.surefire.booterclient.BooterDeserializerStartupConfigurationTest;
 import org.apache.maven.plugin.surefire.booterclient.DefaultForkConfigurationTest;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfigurationTest;
+import org.apache.maven.plugin.surefire.booterclient.ForkStarterTest;
 import org.apache.maven.plugin.surefire.booterclient.ForkingRunListenerTest;
 import org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfigurationTest;
 import org.apache.maven.plugin.surefire.booterclient.ModularClasspathForkConfigurationTest;
@@ -104,6 +105,7 @@ public class JUnit4SuiteTest extends TestCase
         suite.addTest( new JUnit4TestAdapter( TestSetStatsTest.class ) );
         suite.addTest( new JUnit4TestAdapter( StatelessTestsetInfoReporterTest.class ) );
         suite.addTest( new JUnit4TestAdapter( CommonReflectorTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( ForkStarterTest.class ) );
         return suite;
     }
 }

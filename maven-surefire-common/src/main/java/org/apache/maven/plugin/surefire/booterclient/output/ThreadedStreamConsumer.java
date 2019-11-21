@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
-import org.apache.maven.shared.utils.cli.StreamConsumer;
+import org.apache.maven.surefire.shared.utils.cli.StreamConsumer;
 import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 
 import java.io.Closeable;
@@ -76,7 +76,7 @@ public final class ThreadedStreamConsumer
         @Override
         public void run()
         {
-            while ( !ThreadedStreamConsumer.this.stop.get() )
+            while ( !ThreadedStreamConsumer.this.stop.get() || !ThreadedStreamConsumer.this.items.isEmpty() )
             {
                 try
                 {
@@ -115,7 +115,11 @@ public final class ThreadedStreamConsumer
     @Override
     public void consumeLine( String s )
     {
-        if ( stop.get() && !thread.isAlive() )
+        if ( stop.get() )
+        {
+            return;
+        }
+        else if ( !thread.isAlive() )
         {
             items.clear();
             return;
@@ -138,7 +142,6 @@ public final class ThreadedStreamConsumer
     {
         if ( stop.compareAndSet( false, true ) )
         {
-            items.clear();
             try
             {
                 items.put( END_ITEM );

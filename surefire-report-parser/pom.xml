@@ -39,8 +39,9 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.maven.shared</groupId>
-      <artifactId>maven-shared-utils</artifactId>
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>surefire-shared-utils</artifactId>
+      <version>3.0.0-M4</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.reporting</groupId>
@@ -79,31 +80,6 @@
             <include>**/JUnit4SuiteTest.java</include>
           </includes>
         </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-shade-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <minimizeJar>true</minimizeJar>
-              <artifactSet>
-                <includes>
-                  <include>org.apache.maven.shared:maven-shared-utils</include>
-                </includes>
-              </artifactSet>
-              <relocations>
-                <relocation>
-                  <pattern>org.apache.maven.shared.utils</pattern>
-                  <shadedPattern>org.apache.maven.surefire.shade.report.org.apache.maven.shared.utils</shadedPattern>
-                </relocation>
-              </relocations>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>

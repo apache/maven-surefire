@@ -19,12 +19,12 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.SystemUtils;
+import org.apache.maven.surefire.shared.io.FileUtils;
+import org.apache.maven.surefire.shared.lang3.SystemUtils;
 import org.apache.maven.plugin.surefire.JdkAttributes;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
-import org.apache.maven.shared.utils.StringUtils;
-import org.apache.maven.shared.utils.cli.Commandline;
+import org.apache.maven.surefire.shared.utils.StringUtils;
+import org.apache.maven.surefire.shared.utils.cli.Commandline;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;

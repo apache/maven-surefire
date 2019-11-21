@@ -75,7 +75,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersion;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
 import static org.fest.assertions.Assertions.assertThat;

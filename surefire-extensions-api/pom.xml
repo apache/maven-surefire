@@ -43,6 +43,21 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.surefire</groupId>
+            <artifactId>surefire-shared-utils</artifactId>
+            <version>3.0.0-M4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jacoco</groupId>
             <artifactId>org.jacoco.agent</artifactId>
             <classifier>runtime</classifier>
@@ -84,6 +99,9 @@
                 </dependencies>
                 <configuration>
                     <argLine>${jvm.args.tests}</argLine>
+                    <includes>
+                        <include>**/JUnit4SuiteTest.java</include>
+                    </includes>
                     <systemPropertyVariables>
                         <jacoco-agent.destfile>${project.build.directory}/jacoco.exec</jacoco-agent.destfile>
                     </systemPropertyVariables>

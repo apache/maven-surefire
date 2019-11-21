@@ -38,7 +38,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static java.util.Collections.unmodifiableList;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.surefire.booter.DumpErrorSingleton.DUMPSTREAM_FILE_EXT;
 import static org.apache.maven.surefire.booter.DumpErrorSingleton.DUMP_FILE_EXT;
 import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
