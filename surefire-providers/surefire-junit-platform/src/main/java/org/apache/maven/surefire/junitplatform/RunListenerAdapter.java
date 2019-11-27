@@ -35,6 +35,7 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.engine.TestExecutionResult.Status;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
@@ -98,9 +99,10 @@ final class RunListenerAdapter
 
         boolean isTest = testIdentifier.isTest();
 
+        Integer elapsed = computeElapsedTime( testIdentifier );
+
         if ( isClass || isTest )
         {
-            Integer elapsed = computeElapsedTime( testIdentifier );
             switch ( testExecutionResult.getStatus() )
             {
                 case ABORTED:
@@ -142,6 +144,13 @@ final class RunListenerAdapter
                         runListener.testSetCompleted(
                                 createReportEntry( testIdentifier, null, systemProps(), null, elapsed ) );
                     }
+            }
+        }
+        else
+        {
+            if ( testExecutionResult.getStatus() != Status.SUCCESSFUL )
+            {
+                runListener.testError( createReportEntry( testIdentifier, testExecutionResult, elapsed ) );
             }
         }
     }
