@@ -117,7 +117,7 @@ Shutdown of Forked JVM
   are killed separately after every individual process elapsed certain
   amount of time and the whole plugin fails with the error message:
 
-  <<<There was a timeout or other error in the fork>>>
+  <<<There was a timeout in the fork>>>
 
 
 * Crashed forked JVM caused listing the crashed test(s)

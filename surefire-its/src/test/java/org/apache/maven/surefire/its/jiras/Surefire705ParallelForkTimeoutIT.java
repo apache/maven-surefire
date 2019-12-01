@@ -35,6 +35,6 @@ public class Surefire705ParallelForkTimeoutIT extends SurefireJUnit4IntegrationT
         unpack( "/fork-timeout" ).setJUnitVersion( "4.8.1" ).addGoal( "-Djunit.version=4.8.1" ).addGoal(
                 "-Djunit.parallel=classes" ).addGoal(
                 "-DtimeOut=1" ).maven().withFailure().executeTest().verifyTextInLog(
-                "There was a timeout or other error in the fork" );
+                "There was a timeout in the fork" );
     }
 }

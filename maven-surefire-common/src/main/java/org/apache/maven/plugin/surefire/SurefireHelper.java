@@ -280,7 +280,7 @@ public final class SurefireHelper
 
         if ( result.isTimeout() )
         {
-            msg.append( "There was a timeout or other error in the fork" );
+            msg.append( "There was a timeout in the fork" );
         }
         else
         {
