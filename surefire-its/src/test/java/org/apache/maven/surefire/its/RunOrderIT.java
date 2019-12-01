@@ -26,11 +26,14 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
+
 /**
  * Verifies the runOrder setting and its effect
  *
  * @author Kristian Rosenvold
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class RunOrderIT
     extends SurefireJUnit4IntegrationTestCase
 {
@@ -41,27 +44,45 @@ public class RunOrderIT
     // testing random is left as an exercise to the reader. Patches welcome
 
     @Test
-    public void testAlphabetical()
+    public void testAlphabeticalJUnit4()
         throws Exception
     {
-        OutputValidator validator = executeWithRunOrder( "alphabetical" );
+        OutputValidator validator = executeWithRunOrder( "alphabetical", "junit4" );
         assertTestnamesAppearInSpecificOrder( validator, TESTS_IN_ALPHABETICAL_ORDER );
     }
 
     @Test
-    public void testReverseAlphabetical()
+    public void testAlphabeticalJUnit5()
         throws Exception
     {
-        OutputValidator validator = executeWithRunOrder( "reversealphabetical" );
+        assumeJavaVersion( 1.8d );
+        OutputValidator validator = executeWithRunOrder( "alphabetical", "junit5" );
+        assertTestnamesAppearInSpecificOrder( validator, TESTS_IN_ALPHABETICAL_ORDER );
+    }
+
+    @Test
+    public void testReverseAlphabeticalJUnit4()
+        throws Exception
+    {
+        OutputValidator validator = executeWithRunOrder( "reversealphabetical", "junit4" );
         assertTestnamesAppearInSpecificOrder( validator, TESTS_IN_REVERSE_ALPHABETICAL_ORDER );
     }
 
     @Test
-    public void testHourly()
+    public void testReverseAlphabeticalJUnit5()
+        throws Exception
+    {
+        assumeJavaVersion( 1.8d );
+        OutputValidator validator = executeWithRunOrder( "reversealphabetical", "junit5" );
+        assertTestnamesAppearInSpecificOrder( validator, TESTS_IN_REVERSE_ALPHABETICAL_ORDER );
+    }
+
+    @Test
+    public void testHourlyJUnit4()
         throws Exception
     {
         int startHour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
-        OutputValidator validator = executeWithRunOrder( "hourly" );
+        OutputValidator validator = executeWithRunOrder( "hourly", "junit4" );
         int endHour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
         if ( startHour != endHour )
         {
@@ -74,21 +95,58 @@ public class RunOrderIT
     }
 
     @Test
-    public void testNonExistingRunOrder()
+    public void testHourlyJUnit5()
         throws Exception
     {
-        unpack()
-                .forkMode( getForkMode() )
-                .runOrder( "nonExistingRunOrder" )
-                .maven()
-                .withFailure()
-                .executeTest()
-                .verifyTextInLog( "There's no RunOrder with the name nonExistingRunOrder." );
+        assumeJavaVersion( 1.8d );
+        int startHour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
+        OutputValidator validator = executeWithRunOrder( "hourly", "junit5" );
+        int endHour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
+        if ( startHour != endHour )
+        {
+            return; // Race condition, cannot test when hour changed mid-run
+        }
+
+        String[] testnames =
+            ( ( startHour % 2 ) == 0 ) ? TESTS_IN_ALPHABETICAL_ORDER : TESTS_IN_REVERSE_ALPHABETICAL_ORDER;
+        assertTestnamesAppearInSpecificOrder( validator, testnames );
     }
 
-    private OutputValidator executeWithRunOrder( String runOrder )
+    @Test
+    public void testNonExistingRunOrderJUnit4()
     {
-        return unpack().forkMode( getForkMode() ).runOrder( runOrder ).executeTest().verifyErrorFree( 3 );
+        unpack()
+            .activateProfile( "junit4" )
+            .forkMode( getForkMode() )
+            .runOrder( "nonExistingRunOrder" )
+            .maven()
+            .withFailure()
+            .executeTest()
+            .verifyTextInLog( "There's no RunOrder with the name nonExistingRunOrder." );
+    }
+
+    @Test
+    public void testNonExistingRunOrderJUnit5()
+    {
+        assumeJavaVersion( 1.8d );
+        unpack()
+            .activateProfile( "junit5" )
+            .forkMode( getForkMode() )
+            .runOrder( "nonExistingRunOrder" )
+            .maven()
+            .withFailure()
+            .executeTest()
+            .verifyTextInLog( "There's no RunOrder with the name nonExistingRunOrder." );
+    }
+
+    private OutputValidator executeWithRunOrder( String runOrder, String profile )
+    {
+        return unpack()
+            .activateProfile( profile )
+            .forkMode( getForkMode() )
+            .runOrder( runOrder )
+            .executeTest()
+            .verifyErrorFree( 3 );
     }
 
     protected String getForkMode()
