@@ -94,6 +94,7 @@
     <commonsIoVersion>2.6</commonsIoVersion>
     <doxiaVersion>1.9</doxiaVersion>
     <doxiaSitetoolsVersion>1.9.1</doxiaSitetoolsVersion>
+    <plexus-java-version>1.0.3</plexus-java-version>
     <!-- maven-shared-utils:3.2.0+ another behavior - broke Surefire performance - end of subprocess notification not arrived in ForkStarter -->
     <mavenSharedUtilsVersion>3.1.0</mavenSharedUtilsVersion>
     <powermockVersion>2.0.4</powermockVersion>
@@ -328,7 +329,7 @@
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-java</artifactId>
-        <version>1.0.3</version>
+        <version>${plexus-java-version}</version>
       </dependency>
       <dependency>
         <groupId>org.junit.platform</groupId>
