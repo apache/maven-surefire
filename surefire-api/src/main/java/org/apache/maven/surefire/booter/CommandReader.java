@@ -413,9 +413,9 @@ public final class CommandReader
                                 callListeners( command );
                                 break;
                             case BYE_ACK:
-                                //After SHUTDOWN no more commands can come. Hence, do NOT go back to blocking in I/O
                                 callListeners( command );
-                                return;
+                                //After SHUTDOWN no more commands can come. Hence, do NOT go back to blocking in I/O
+                                CommandReader.this.state.set( TERMINATED );
                             default:
                                 callListeners( command );
                                 break;
