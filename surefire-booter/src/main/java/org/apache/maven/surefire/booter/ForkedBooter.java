@@ -198,15 +198,12 @@ public final class ForkedBooter
         AtomicBoolean pingDone = new AtomicBoolean( true );
         commandReader.addNoopListener( createPingHandler( pingDone ) );
         PingScheduler pingMechanisms = new PingScheduler( createPingScheduler(), ppidChecker );
-        if ( ppidChecker != null )
-        {
-            logger.debug( ppidChecker.toString() );
-        }
 
         ProcessCheckerType checkerType = startupConfiguration.getProcessChecker();
 
         if ( ( checkerType == ALL || checkerType == NATIVE ) && pingMechanisms.pluginProcessChecker != null )
         {
+            logger.debug( pingMechanisms.pluginProcessChecker.toString() );
             Runnable checkerJob = processCheckerJob( pingMechanisms );
             pingMechanisms.pingScheduler.scheduleWithFixedDelay( checkerJob, 0L, 1L, SECONDS );
         }
