@@ -404,14 +404,14 @@ public class IntegrationTestMojo
      * Since 3.0.0-M4 the process checkers are disabled.
      * You can enable them namely by setting {@code ping} and {@code native} or {@code all} in this parameter.
      * <br>
-     * The checker is useful in situations when you kill the build on CI and you want the Surefire forked JVM to kill
-     * the tests asap and free all handlers on the file system been previously used by the JVM and by the tests.
+     * The checker is useful in situations when you kill the build on a CI system and you want the Surefire forked JVM
+     * to kill the tests asap and free all handlers on the file system been previously used by the JVM and by the tests.
      *
      * <br>
      *
      * The {@code ping} should be safely used together with ZGC or Shenandoah Garbage Collector.
-     * Due to the {@code ping} relies on timing of PING (triggered every 30 seconds), slow GC may pause
-     * the timers and pretend that the parent process of the fork JVM does not exist.
+     * Due to the {@code ping} relies on timing of the PING (triggered every 30 seconds), slow GCs may pause
+     * the timers and pretend that the parent process of the forked JVM does not exist.
      *
      * <br>
      *
