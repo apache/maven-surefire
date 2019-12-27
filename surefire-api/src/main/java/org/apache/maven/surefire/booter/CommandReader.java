@@ -412,6 +412,12 @@ public final class CommandReader
                                 CommandReader.this.wakeupIterator();
                                 callListeners( command );
                                 break;
+                            case BYE_ACK:
+                                callListeners( command );
+                                // After SHUTDOWN no more commands can come.
+                                // Hence, do NOT go back to blocking in I/O.
+                                CommandReader.this.state.set( TERMINATED );
+                                break;
                             default:
                                 callListeners( command );
                                 break;

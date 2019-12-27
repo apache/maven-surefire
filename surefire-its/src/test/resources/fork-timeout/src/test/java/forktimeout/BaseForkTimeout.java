@@ -23,7 +23,7 @@ public abstract class BaseForkTimeout
 {
     protected void dumpStuff( String prefix )
     {
-        reallySleep( 990 );
+        reallySleep( 1350L );
         for ( int i = 0; i < 200; i++ )
         {
             System.out.println( prefix + " with lots of output " + i );
