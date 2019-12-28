@@ -228,11 +228,27 @@ public final class TestLessInputStream
             }
         }
 
+        /**
+         * Only {@link NotifiableTestStream#noop()} and {@link NotifiableTestStream#shutdown(Shutdown)} are supported.
+         * Another methods throw {@link UnsupportedOperationException}.
+         *
+         * @return commands which are immediately transmitted once to all alive forked JVMs, not cached. As opposite
+         * to cached commands, the immediate commands disappear and cannot be seen by any fork initiated after
+         * the command has dispatched.
+         */
         public NotifiableTestStream getImmediateCommands()
         {
             return immediateCommands;
         }
 
+        /**
+         * Cached commands are sent to all alive or future alive forks. These are termination commands which are not
+         * reversible and therefore only {@link NotifiableTestStream#shutdown(Shutdown)} and
+         * {@link NotifiableTestStream#skipSinceNextTest()} are supported.
+         * Another methods throw {@link UnsupportedOperationException}.
+         *
+         * @return commands which are cached for currently alive or future forks.
+         */
         public NotifiableTestStream getCachableCommands()
         {
             return cachableCommands;
@@ -318,24 +334,13 @@ public final class TestLessInputStream
             @Override
             public void provideNewTest()
             {
+                throw new UnsupportedOperationException();
             }
 
             @Override
             public void skipSinceNextTest()
             {
-                Lock lock = rwLock.readLock();
-                lock.lock();
-                try
-                {
-                    for ( TestLessInputStream aliveStream : TestLessInputStreamBuilder.this.aliveStreams )
-                    {
-                        aliveStream.skipSinceNextTest();
-                    }
-                }
-                finally
-                {
-                    lock.unlock();
-                }
+                throw new UnsupportedOperationException();
             }
 
             @Override
@@ -377,19 +382,7 @@ public final class TestLessInputStream
             @Override
             public void acknowledgeByeEventReceived()
             {
-                Lock lock = rwLock.readLock();
-                lock.lock();
-                try
-                {
-                    for ( TestLessInputStream aliveStream : TestLessInputStreamBuilder.this.aliveStreams )
-                    {
-                        aliveStream.acknowledgeByeEventReceived();
-                    }
-                }
-                finally
-                {
-                    lock.unlock();
-                }
+                throw new UnsupportedOperationException();
             }
         }
 
@@ -402,6 +395,7 @@ public final class TestLessInputStream
             @Override
             public void provideNewTest()
             {
+                throw new UnsupportedOperationException();
             }
 
             @Override
@@ -443,37 +437,13 @@ public final class TestLessInputStream
             @Override
             public void noop()
             {
-                Lock lock = rwLock.readLock();
-                lock.lock();
-                try
-                {
-                    if ( TestLessInputStreamBuilder.this.addTailNodeIfAbsent( NOOP ) )
-                    {
-                        release();
-                    }
-                }
-                finally
-                {
-                    lock.unlock();
-                }
+                throw new UnsupportedOperationException();
             }
 
             @Override
             public void acknowledgeByeEventReceived()
             {
-                Lock lock = rwLock.readLock();
-                lock.lock();
-                try
-                {
-                    if ( TestLessInputStreamBuilder.this.addTailNodeIfAbsent( BYE_ACK ) )
-                    {
-                        release();
-                    }
-                }
-                finally
-                {
-                    lock.unlock();
-                }
+                throw new UnsupportedOperationException();
             }
 
             private void release()
