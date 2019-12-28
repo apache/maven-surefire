@@ -436,7 +436,8 @@ public class ForkStarter
                         DefaultReporterFactory forkedReporterFactory =
                             new DefaultReporterFactory( startupReportConfiguration, log, forkNumber );
                         defaultReporterFactories.add( forkedReporterFactory );
-                        ForkClient forkClient = new ForkClient( forkedReporterFactory, builder.getImmediateCommands(),
+                        TestLessInputStream stream = builder.build();
+                        ForkClient forkClient = new ForkClient( forkedReporterFactory, stream,
                                 log, printedErrorStream, forkNumber )
                         {
                             @Override
@@ -448,7 +449,6 @@ public class ForkStarter
                                 }
                             }
                         };
-                        TestLessInputStream stream = builder.build();
                         try
                         {
                             return fork( testSet,

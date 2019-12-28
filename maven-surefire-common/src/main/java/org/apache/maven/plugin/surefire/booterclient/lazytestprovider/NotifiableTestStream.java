@@ -22,15 +22,23 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
 import org.apache.maven.surefire.booter.Shutdown;
 
 /**
- * Forked jvm notifies master process to provide a new test.
+ * Remote interface of forked JVM with command methods.
+ * <br>
+ * Implemented by {@link TestProvidingInputStream} and {@link TestLessInputStream} where the method
+ * {@link TestLessInputStream#provideNewTest()} purposefully does nothing. Some methods in
+ * {@link org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream.TestLessInputStreamBuilder}
+ * throw {@link UnsupportedOperationException}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  * @see TestProvidingInputStream
+ * @see TestLessInputStream
  */
 public interface NotifiableTestStream
 {
     /**
+     * Forked jvm notifies master process to provide a new test.
+     * <br>
      * Notifies {@link TestProvidingInputStream} in order to dispatch a new test back to the forked
      * jvm (particular fork which hits this call); or do nothing in {@link TestLessInputStream}.
      */
