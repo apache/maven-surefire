@@ -35,7 +35,7 @@ public class JUnit47RerunFailingTestWithCucumberIT extends SurefireJUnit4Integra
 
     private SurefireLauncher unpack()
     {
-        return unpack( "junit47-rerun-failing-tests-with-cucumber" ).setJUnitVersion( "4.12" );
+        return unpack( "junit47-rerun-failing-tests-with-cucumber" ).setJUnitVersion( "4.13" );
     }
 
     @Test

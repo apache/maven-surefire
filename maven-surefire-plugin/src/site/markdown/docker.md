@@ -73,7 +73,7 @@ The `pom.xml`:
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.12</version>
+                <version>4.13</version>
             </dependency>
         </dependencies>
     
