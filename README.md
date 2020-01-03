@@ -14,28 +14,31 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
+
+<img src="https://maven.apache.org/images/maven-logo-black-on-white.png" width="100%" height="30%" alt="Maven"/>
+
 Contributing to [Apache Maven Surefire](https://maven.apache.org/surefire/)
 ======================
 
-[![Maven Central](https://img.shields.io/maven-central/v/org.apache.maven.surefire/surefire.svg?label=Maven%20Central&style=plastic)](https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.apache.maven.plugins%22%20AND%20a%3A%22maven-surefire-plugin%22)
-[![Apache License, Version 2.0, January 2004](https://img.shields.io/github/license/apache/maven.svg?label=License&style=plastic)][license]
+[![Maven Central](https://img.shields.io/maven-central/v/org.apache.maven.surefire/surefire.svg?label=Maven%20Central&style=for-the-badge)](https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.apache.maven.plugins%22%20AND%20a%3A%22maven-surefire-plugin%22)
+[![Apache License, Version 2.0, January 2004](https://img.shields.io/github/license/apache/maven.svg?label=License&style=for-the-badge)][license]
 
-[![CI](https://img.shields.io/badge/CI-Jenkins-blue.svg?style=plastic)](https://jenkins-ci.org/)
-[![Jenkins Status](https://img.shields.io/jenkins/s/https/builds.apache.org/job/maven-box/job/maven-surefire/job/master.svg?style=plastic)][build]
-[![Jenkins tests](https://img.shields.io/jenkins/t/https/builds.apache.org/job/maven-box/job/maven-surefire/job/master.svg?style=plastic)][test-results]
-[![Jenkins JaCoCo](https://img.shields.io/jenkins/coverage/jacoco/https/builds.apache.org/job/maven-box/job/maven-surefire/job/master.svg?style=plastic&color=green)](https://builds.apache.org/job/maven-box/job/maven-surefire/job/master/lastBuild/jacoco/)
+[![CI](https://img.shields.io/badge/CI-Jenkins-blue.svg?style=for-the-badge)](https://jenkins-ci.org/)
+[![Jenkins Status](https://img.shields.io/jenkins/s/https/builds.apache.org/job/maven-box/job/maven-surefire/job/master.svg?style=for-the-badge)][build]
+[![Jenkins tests](https://img.shields.io/jenkins/t/https/builds.apache.org/job/maven-box/job/maven-surefire/job/master.svg?style=for-the-badge)][test-results]
+[![Jenkins JaCoCo](https://img.shields.io/jenkins/coverage/jacoco/https/builds.apache.org/job/maven-box/job/maven-surefire/job/master.svg?style=for-the-badge&color=green)](https://builds.apache.org/job/maven-box/job/maven-surefire/job/master/lastBuild/jacoco/)
 
 [![Actions Status](https://github.com/apache/maven-surefire/workflows/GitHub%20CI/badge.svg?branch=master)](https://github.com/apache/maven-surefire/actions)
 
 # The Maven Community
 
-[![slack](https://img.shields.io/badge/slack-18/1138-pink.svg)](https://the-asf.slack.com)
-[![forks](https://img.shields.io/github/forks/apache/maven-surefire.svg?style=social&label=Fork)](https://github.com/apache/maven-surefire/)
+[![slack](https://img.shields.io/badge/slack-18/1138-pink.svg?style=for-the-badge)](https://the-asf.slack.com)
+[![forks](https://img.shields.io/github/forks/apache/maven-surefire.svg?style=for-the-badge&label=Fork)](https://github.com/apache/maven-surefire/)
 
 
 # Project Documentation
 
-[![Maven 3.0 Plugin API](https://img.shields.io/badge/maven%20site-documentation-blue.svg?style=plastic)](https://maven.apache.org/surefire/)
+[![Maven 3.0 Plugin API](https://img.shields.io/badge/maven%20site-documentation-blue.svg?style=for-the-badge)](https://maven.apache.org/surefire/)
 
 Usage of [maven-surefire-plugin], [maven-failsafe-plugin], [maven-surefire-report-plugin]
 
