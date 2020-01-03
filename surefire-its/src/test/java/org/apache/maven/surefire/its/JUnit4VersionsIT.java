@@ -32,6 +32,7 @@ import static java.util.Arrays.asList;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_10;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_11;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_12;
+import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_13;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_8;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_8_1;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_8_2;
@@ -77,7 +78,8 @@ public class JUnit4VersionsIT
                 { JUNIT_4_9 },
                 { JUNIT_4_10 },
                 { JUNIT_4_11 },
-                { JUNIT_4_12 }
+                { JUNIT_4_12 },
+                { JUNIT_4_13 }
         } );
     }
 
