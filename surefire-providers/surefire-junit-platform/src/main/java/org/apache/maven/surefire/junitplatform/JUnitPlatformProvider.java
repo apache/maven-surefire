@@ -39,11 +39,11 @@ import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.HashSet;
 import java.util.logging.Logger;
 
 import org.apache.maven.surefire.providerapi.AbstractProvider;
@@ -188,7 +188,7 @@ public class JUnitPlatformProvider
         LauncherDiscoveryRequestBuilder builder = request().filters( filters ).configurationParameters(
                 configurationParameters );
         // Iterate over recorded failures
-        for ( TestIdentifier identifier : new HashSet<>( adapter.getFailures().keySet() ) )
+        for ( TestIdentifier identifier : new LinkedHashSet<>( adapter.getFailures().keySet() ) )
         {
             builder.selectors( selectUniqueId( identifier.getUniqueId() ) );
         }
