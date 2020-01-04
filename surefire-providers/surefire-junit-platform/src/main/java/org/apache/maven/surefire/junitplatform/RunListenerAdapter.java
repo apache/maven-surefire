@@ -64,7 +64,6 @@ final class RunListenerAdapter
     public void testPlanExecutionStarted( TestPlan testPlan )
     {
         this.testPlan = testPlan;
-        failures.clear();
     }
 
     @Override

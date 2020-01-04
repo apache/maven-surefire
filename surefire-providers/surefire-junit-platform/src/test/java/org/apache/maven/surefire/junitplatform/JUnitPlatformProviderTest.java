@@ -202,6 +202,28 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
+    public void singleTestClassIsInvokedLazily()
+        throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParametersMock(), launcher );
+
+        TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
+        launcher.registerTestExecutionListeners( executionListener );
+
+        invokeProvider( provider, newTestsToRunLazily( TestClass1.class ) );
+
+        assertThat( executionListener.summaries ).hasSize( 1 );
+        TestExecutionSummary summary = executionListener.summaries.get( 0 );
+        assertEquals( TestClass1.TESTS_FOUND, summary.getTestsFoundCount() );
+        assertEquals( TestClass1.TESTS_STARTED, summary.getTestsStartedCount() );
+        assertEquals( TestClass1.TESTS_SKIPPED, summary.getTestsSkippedCount() );
+        assertEquals( TestClass1.TESTS_SUCCEEDED, summary.getTestsSucceededCount() );
+        assertEquals( TestClass1.TESTS_ABORTED, summary.getTestsAbortedCount() );
+        assertEquals( TestClass1.TESTS_FAILED, summary.getTestsFailedCount() );
+    }
+
+    @Test
     public void failingTestCaseAfterRerun()
             throws Exception
     {
@@ -818,6 +840,25 @@ public class JUnitPlatformProviderTest
     {
         List<Class<?>> classesList = Arrays.asList( testClasses );
         return new TestsToRun( new LinkedHashSet<>( classesList ) );
+    }
+
+    private static TestsToRun newTestsToRunLazily( Class<?>... testClasses )
+    {
+        class LazyTestsToRunFake extends TestsToRun
+        {
+            LazyTestsToRunFake( Set<Class<?>> locatedClasses )
+            {
+                super( locatedClasses );
+            }
+
+            @Override
+            public boolean allowEagerReading()
+            {
+                return false;
+            }
+        }
+        List<Class<?>> classesList = Arrays.asList( testClasses );
+        return new LazyTestsToRunFake( new LinkedHashSet<>( classesList ) );
     }
 
     private static class TestPlanSummaryListener

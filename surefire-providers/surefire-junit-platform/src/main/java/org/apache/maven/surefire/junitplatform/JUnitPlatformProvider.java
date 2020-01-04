@@ -58,6 +58,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
 import org.junit.platform.commons.util.StringUtils;
+import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
@@ -149,9 +150,8 @@ public class JUnitPlatformProvider
 
     private void invokeAllTests( TestsToRun testsToRun, RunListener runListener )
     {
-        LauncherDiscoveryRequest discoveryRequest = buildLauncherDiscoveryRequest( testsToRun );
         RunListenerAdapter adapter = new RunListenerAdapter( runListener );
-        launcher.execute( discoveryRequest, adapter );
+        execute( testsToRun, adapter );
         // Rerun failing tests if requested
         int count = parameters.getTestRequest().getRerunFailingTestsCount();
         if ( count > 0 && adapter.hasFailingTests() )
@@ -159,7 +159,7 @@ public class JUnitPlatformProvider
             for ( int i = 0; i < count; i++ )
             {
                 // Replace the "discoveryRequest" so that it only specifies the failing tests
-                discoveryRequest = buildLauncherDiscoveryRequestForRerunFailures( adapter );
+                LauncherDiscoveryRequest discoveryRequest = buildLauncherDiscoveryRequestForRerunFailures( adapter );
                 // Reset adapter's recorded failures and invoke the failed tests again
                 adapter.reset();
                 launcher.execute( discoveryRequest, adapter );
@@ -172,15 +172,33 @@ public class JUnitPlatformProvider
         }
     }
 
-    private LauncherDiscoveryRequest buildLauncherDiscoveryRequest( TestsToRun testsToRun )
+    private void execute( TestsToRun testsToRun, RunListenerAdapter adapter )
     {
-        LauncherDiscoveryRequestBuilder builder =
-                        request().filters( filters ).configurationParameters( configurationParameters );
-        for ( Class<?> testClass : testsToRun )
+        if ( testsToRun.allowEagerReading() )
         {
-            builder.selectors( selectClass( testClass.getName() ) );
+            List<DiscoverySelector> selectors = new ArrayList<>();
+            testsToRun.iterator()
+                .forEachRemaining( c -> selectors.add( selectClass( c.getName() )  ) );
+
+            LauncherDiscoveryRequestBuilder builder = request()
+                .filters( filters )
+                .configurationParameters( configurationParameters )
+                .selectors( selectors );
+
+            launcher.execute( builder.build(), adapter );
         }
-        return builder.build();
+        else
+        {
+            testsToRun.iterator()
+                .forEachRemaining( c ->
+                {
+                    LauncherDiscoveryRequestBuilder builder = request()
+                        .filters( filters )
+                        .configurationParameters( configurationParameters )
+                        .selectors( selectClass( c.getName() ) );
+                    launcher.execute( builder.build(), adapter );
+                } );
+        }
     }
 
     private LauncherDiscoveryRequest buildLauncherDiscoveryRequestForRerunFailures( RunListenerAdapter adapter )
