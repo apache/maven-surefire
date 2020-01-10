@@ -224,8 +224,8 @@ public class StatelessXmlReporter
             {
                 getTestProblems( fw, ppw, methodEntry, trimStackTrace, outputStream,
                         methodEntry.getReportEntryType().getXmlTag(), false );
-                createOutErrElements( fw, ppw, methodEntry, outputStream );
             }
+            createOutErrElements( fw, ppw, methodEntry, outputStream );
             ppw.endElement();
         }
     }
