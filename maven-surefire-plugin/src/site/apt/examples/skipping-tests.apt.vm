@@ -85,7 +85,7 @@ mvn install -DskipTests
  You can also skip the tests via the command line by executing the following command:
 
 +---+
-mvn install -DskipITs
+mvn install -DskipTests
 +---+
 
  Since <<<skipTests>>> is also supported by the ${thatPlugin} Plugin, this will have the effect
