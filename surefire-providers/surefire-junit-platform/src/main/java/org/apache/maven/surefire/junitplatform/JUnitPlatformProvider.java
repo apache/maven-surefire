@@ -29,7 +29,7 @@ import static org.apache.maven.surefire.booter.ProviderParameterNames.TESTNG_EXC
 import static org.apache.maven.surefire.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
 import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.util.TestsToRun.fromClass;
-import static org.junit.platform.commons.util.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectUniqueId;
 import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
@@ -57,7 +57,7 @@ import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
-import org.junit.platform.commons.util.StringUtils;
+import org.apache.maven.surefire.shared.utils.StringUtils;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.launcher.Launcher;
