@@ -44,6 +44,7 @@ import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.suite.RunResult;
 import org.codehaus.plexus.logging.Logger;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -109,6 +110,13 @@ public class AbstractSurefireMojoTest
     private ArtifactHandler handler;
 
     private final Mojo mojo = new Mojo();
+
+    @Before
+    public void setSession()
+    {
+        MavenSession session = mock( MavenSession.class );
+        mojo.setSession( session );
+    }
 
     @Test
     public void shouldShowArray() throws Exception
@@ -630,9 +638,7 @@ public class AbstractSurefireMojoTest
 
         invokeMethod( mojo, "setupStuff" );
 
-        MavenSession session = mock( MavenSession.class );
-        mojo.setSession( session );
-        when( session.getProjectBuildingRequest() )
+        when( mojo.getSession().getProjectBuildingRequest() )
                 .thenReturn( mock( ProjectBuildingRequest.class ) );
 
         PluginDescriptor pluginDescriptor = mock( PluginDescriptor.class );
@@ -929,9 +935,7 @@ public class AbstractSurefireMojoTest
 
         invokeMethod( mojo, "setupStuff" );
 
-        MavenSession session = mock( MavenSession.class );
-        mojo.setSession( session );
-        when( session.getProjectBuildingRequest() )
+        when( mojo.getSession().getProjectBuildingRequest() )
                 .thenReturn( mock( ProjectBuildingRequest.class ) );
 
         PluginDescriptor pluginDescriptor = mock( PluginDescriptor.class );
@@ -1199,9 +1203,7 @@ public class AbstractSurefireMojoTest
 
         invokeMethod( mojo, "setupStuff" );
 
-        MavenSession session = mock( MavenSession.class );
-        mojo.setSession( session );
-        when( session.getProjectBuildingRequest() )
+        when( mojo.getSession().getProjectBuildingRequest() )
                 .thenReturn( mock( ProjectBuildingRequest.class ) );
 
         PluginDescriptor pluginDescriptor = mock( PluginDescriptor.class );
@@ -1538,9 +1540,7 @@ public class AbstractSurefireMojoTest
         JUnitPlatformProviderInfo prov =
                 mojo.createJUnitPlatformProviderInfo( junitPlatformArtifact, testClasspathWrapper );
 
-        MavenSession session = mock( MavenSession.class );
-        mojo.setSession( session );
-        when( session.getProjectBuildingRequest() )
+        when( mojo.getSession().getProjectBuildingRequest() )
                 .thenReturn( mock( ProjectBuildingRequest.class ) );
 
         PluginDescriptor pluginDescriptor = mock( PluginDescriptor.class );

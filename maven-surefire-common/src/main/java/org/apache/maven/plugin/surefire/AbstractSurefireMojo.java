@@ -24,7 +24,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
@@ -909,7 +909,8 @@ public abstract class AbstractSurefireMojo
                 getConsoleLogger(), getLocalRepository(),
                 getRemoteRepositories(),
                 getProjectRemoteRepositories(),
-                getPluginName(), getDependencyResolver() );
+                getPluginName(), getDependencyResolver(),
+                getSession().isOffline() );
 
         surefireBooterArtifact = getBooterArtifact();
         if ( surefireBooterArtifact == null )
@@ -3015,9 +3016,8 @@ public abstract class AbstractSurefireMojo
             else
             {
                 ProjectBuildingRequest request = getSession().getProjectBuildingRequest();
-                Collection<Dependency> pluginDependencies = getPluginDescriptor().getPlugin().getDependencies();
-                Set<Artifact> engines =
-                        surefireDependencyResolver.resolvePluginDependencies( request, pluginDependencies );
+                Plugin plugin = getPluginDescriptor().getPlugin();
+                Set<Artifact> engines = surefireDependencyResolver.resolvePluginDependencies( request, plugin );
                 if ( hasDependencyPlatformEngine( engines ) )
                 {
                     Map<String, Artifact> engineArtifacts = artifactMapByVersionlessId( engines );
@@ -3220,10 +3220,11 @@ public abstract class AbstractSurefireMojo
 
         @Override
         @Nonnull
-        public Set<Artifact> getProviderClasspath()
+        public Set<Artifact> getProviderClasspath() throws MojoExecutionException
         {
-            return surefireDependencyResolver.addProviderToClasspath( getPluginArtifactMap(), getMojoArtifact(),
-                    getApiArtifact(), getLoggerApiArtifact() );
+            ProjectBuildingRequest request = getSession().getProjectBuildingRequest();
+            Plugin plugin = getPluginDescriptor().getPlugin();
+            return surefireDependencyResolver.resolvePluginDependencies( request, plugin );
         }
     }
 
