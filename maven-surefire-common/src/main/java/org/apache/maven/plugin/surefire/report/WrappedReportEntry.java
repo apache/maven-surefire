@@ -29,7 +29,7 @@ import java.util.Map;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.maven.plugin.surefire.report.ReporterUtils.formatElapsedTime;
 import static org.apache.maven.surefire.util.internal.StringUtils.NL;
-import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 
 /**
  * @author Kristian Rosenvold

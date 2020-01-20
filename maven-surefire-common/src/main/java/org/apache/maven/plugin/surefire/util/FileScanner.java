@@ -24,7 +24,7 @@ import org.apache.maven.surefire.testset.TestFilter;
 import java.io.File;
 import java.util.Collection;
 
-import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 
 final class FileScanner
 {

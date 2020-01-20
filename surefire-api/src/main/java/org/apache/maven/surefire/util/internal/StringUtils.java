@@ -80,32 +80,6 @@ public final class StringUtils
     }
 
     /**
-     * <p>
-     * Checks if a (trimmed) String is {@code null} or blank.
-     * </p>
-     *
-     * @param str the String to check
-     * @return {@code true} if the String is {@code null}, or length zero once trimmed
-     */
-    public static boolean isBlank( String str )
-    {
-        return str == null || str.trim().isEmpty();
-    }
-
-    /**
-     * <p>
-     * Checks if a (trimmed) String is not {@code null} and not blank.
-     * </p>
-     *
-     * @param str the String to check
-     * @return {@code true} if the String is not {@code null} and length of trimmed {@code str} is not zero.
-     */
-    public static boolean isNotBlank( String str )
-    {
-        return !isBlank( str );
-    }
-
-    /**
      * Determines if {@code buffer} starts with specific literal(s).
      *
      * @param buffer     Examined StringBuffer

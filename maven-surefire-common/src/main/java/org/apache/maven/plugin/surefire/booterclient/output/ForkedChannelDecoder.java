@@ -54,8 +54,8 @@ import static org.apache.maven.surefire.booter.ForkedProcessEvent.BOOTERCODE_TES
 import static org.apache.maven.surefire.booter.ForkedProcessEvent.EVENTS;
 import static org.apache.maven.surefire.report.CategorizedReportEntry.reportEntry;
 import static org.apache.maven.surefire.report.RunMode.MODES;
-import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
-import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
 import static java.util.Objects.requireNonNull;
 
 /**

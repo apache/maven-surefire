@@ -28,7 +28,7 @@ import org.apache.maven.surefire.testng.utils.FailFastListener;
 import org.apache.maven.surefire.testng.utils.Stoppable;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.internal.StringUtils;
+import org.apache.maven.surefire.shared.utils.StringUtils;
 import org.testng.TestNG;
 import org.testng.annotations.Test;
 import org.testng.xml.XmlClass;

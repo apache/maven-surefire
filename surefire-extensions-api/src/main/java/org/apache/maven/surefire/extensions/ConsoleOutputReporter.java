@@ -22,7 +22,7 @@ package org.apache.maven.surefire.extensions;
 import java.io.File;
 import java.io.PrintStream;
 
-import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 
 /**
  * Extension for logger.

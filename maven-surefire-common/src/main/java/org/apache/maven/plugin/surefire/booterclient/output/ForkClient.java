@@ -47,8 +47,8 @@ import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.maven.surefire.booter.Shutdown.KILL;
 import static org.apache.maven.surefire.report.CategorizedReportEntry.reportEntry;
-import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
-import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
 
 // todo move to the same package with ForkStarter
 

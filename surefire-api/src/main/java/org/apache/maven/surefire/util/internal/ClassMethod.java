@@ -21,7 +21,7 @@ package org.apache.maven.surefire.util.internal;
 
 import java.util.Objects;
 
-import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 
 /**
  * Data transfer object of class and method literals.

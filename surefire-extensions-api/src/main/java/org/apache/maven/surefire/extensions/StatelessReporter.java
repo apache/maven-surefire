@@ -21,7 +21,7 @@ package org.apache.maven.surefire.extensions;
 
 import org.apache.maven.surefire.report.TestSetReportEntry;
 
-import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 
 /**
  * Extension for stateless reporter.

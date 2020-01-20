@@ -19,7 +19,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 
 /**
  *

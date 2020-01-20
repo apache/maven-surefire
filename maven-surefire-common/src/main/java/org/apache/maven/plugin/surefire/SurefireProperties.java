@@ -35,7 +35,7 @@ import java.util.Set;
 
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.KeyValueSource;
-import org.apache.maven.surefire.util.internal.StringUtils;
+import org.apache.maven.surefire.shared.utils.StringUtils;
 
 import static java.util.Arrays.asList;
 
