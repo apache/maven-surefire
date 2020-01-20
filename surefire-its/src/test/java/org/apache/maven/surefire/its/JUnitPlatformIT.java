@@ -60,8 +60,8 @@ public class JUnitPlatformIT
         args.add( new Object[] { "5.4.2", "1.0.0" } );
         args.add( new Object[] { "5.5.0", "1.1.0" } );
         args.add( new Object[] { "5.5.2", "1.1.0" } );
-        args.add( new Object[] { "5.6.0-M1", "1.1.0" } );
-        //args.add( new Object[] { "5.6.0-SNAPSHOT", "1.1.6" } );
+        args.add( new Object[] { "5.6.0", "1.2.2" } );
+        //args.add( new Object[] { "5.7.0-SNAPSHOT", "1.2.2" } );
         return args;
     }
 
