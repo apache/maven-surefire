@@ -26,7 +26,7 @@ import org.apache.maven.surefire.util.ReflectionUtils;
 
 import org.junit.runner.notification.RunListener;
 
-import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
 
 /**
  * @author Kristian Rosenvold

@@ -35,7 +35,7 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.TestsToRun;
 
 import static org.apache.maven.surefire.testng.TestNGExecutor.run;
-import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 
 /**
  * Test suite for TestNG based on a directory of Java test classes. Can also execute JUnit tests.
