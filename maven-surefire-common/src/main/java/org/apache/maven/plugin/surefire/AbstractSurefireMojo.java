@@ -940,7 +940,6 @@ public abstract class AbstractSurefireMojo
         return scanner.scan();
     }
 
-    @SuppressWarnings( "unchecked" )
     List<Artifact> getProjectTestArtifacts()
     {
         return project.getTestArtifacts();
@@ -1730,7 +1729,7 @@ public abstract class AbstractSurefireMojo
     private static Map<String, String> toStringProperties( Properties properties )
     {
         Map<String, String> h = new ConcurrentHashMap<>( properties.size() );
-        for ( Enumeration e = properties.keys() ; e.hasMoreElements() ; )
+        for ( Enumeration<?> e = properties.keys() ; e.hasMoreElements() ; )
         {
             Object k = e.nextElement();
             Object v = properties.get( k );
@@ -3151,7 +3150,7 @@ public abstract class AbstractSurefireMojo
 
         private boolean is47CompatibleJunitDep()
         {
-            return junitDepArtifact != null && isJunit47Compatible( junitDepArtifact );
+            return isJunit47Compatible( junitDepArtifact );
         }
 
         @Override
@@ -3346,7 +3345,7 @@ public abstract class AbstractSurefireMojo
         return systemProperties;
     }
 
-    @SuppressWarnings( { "UnusedDeclaration", "deprecation" } )
+    @SuppressWarnings( "UnusedDeclaration" )
     public void setSystemProperties( Properties systemProperties )
     {
         this.systemProperties = systemProperties;
