@@ -24,7 +24,14 @@ cache:
 
 install: true
 jdk: openjdk8
-script: mvn clean install -e -B -V -nsu -P run-its -DskipITs -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
+jobs:
+  include:
+    - stage: repo cleanup
+      script: mvn -e -B -V -nsu org.apache.maven.plugins:maven-dependency-plugin:3.1.1:purge-local-repository
+
+    - stage: mvn build
+      script: mvn clean install -e -B -V -nsu -P run-its -DskipITs -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
 branches:
   only:
