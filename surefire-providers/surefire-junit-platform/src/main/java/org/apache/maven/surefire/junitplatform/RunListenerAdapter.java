@@ -97,7 +97,9 @@ final class RunListenerAdapter
 
         boolean isTest = testIdentifier.isTest();
 
-        if ( isClass || isTest )
+        boolean isFailedContainer = isFailedContainer( testIdentifier, testExecutionResult );
+
+        if ( isFailedContainer || isClass || isTest )
         {
             Integer elapsed = computeElapsedTime( testIdentifier );
             switch ( testExecutionResult.getStatus() )
@@ -173,8 +175,9 @@ final class RunListenerAdapter
         {
             classText = null;
         }
-        String methodName = testIdentifier.isTest() ? classMethodName[2] : null;
-        String methodText = testIdentifier.isTest() ? classMethodName[3] : null;
+        boolean isFailedContainer = isFailedContainer( testIdentifier, testExecutionResult );
+        String methodName = ( isFailedContainer || testIdentifier.isTest() ) ? classMethodName[2] : null;
+        String methodText = ( isFailedContainer || testIdentifier.isTest() ) ? classMethodName[3] : null;
         if ( Objects.equals( methodName, methodText ) )
         {
             methodText = null;
@@ -183,6 +186,13 @@ final class RunListenerAdapter
                 testExecutionResult == null ? null : toStackTraceWriter( className, methodName, testExecutionResult );
         return new SimpleReportEntry( className, classText, methodName, methodText,
                 stw, elapsedTime, reason, systemProperties );
+    }
+
+    private boolean isFailedContainer( TestIdentifier testIdentifier,
+                                      TestExecutionResult testExecutionResult )
+    {
+        return testIdentifier.isContainer() && testExecutionResult != null
+                && testExecutionResult.getStatus() == TestExecutionResult.Status.FAILED;
     }
 
     private SimpleReportEntry createReportEntry( TestIdentifier testIdentifier )
