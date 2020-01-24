@@ -397,6 +397,43 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
+    public void detectFailedParameterized()
+        throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        ProviderParameters parameters = providerParametersMock();
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( parameters, launcher );
+
+        TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
+
+        RunListener listener = mock( RunListener.class );
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
+        RunListenerAdapter adapter = new RunListenerAdapter( listener );
+
+        launcher.registerTestExecutionListeners( executionListener, adapter );
+
+        invokeProvider( provider, TestClass8.class );
+
+        assertThat( executionListener.summaries ).hasSize( 1 );
+
+        verify( listener, times( 1 ) ).testFailed( entryCaptor.capture() );
+        List<ReportEntry> reportEntries = entryCaptor.getAllValues();
+
+        assertEquals( TestClass8.class.getName(), reportEntries.get( 0 ).getSourceName() );
+        assertNull( reportEntries.get( 0 ).getSourceText() );
+        assertEquals( "testParameterizedTestCases", reportEntries.get( 0 ).getName() );
+        assertNull( reportEntries.get( 0 ).getNameText() );
+
+        TestExecutionSummary summary = executionListener.summaries.get( 0 );
+        assertEquals( 0, summary.getTestsFoundCount() );
+        assertEquals( 1, summary.getContainersFailedCount() );
+        assertEquals( 0, summary.getTestsStartedCount() );
+        assertEquals( 0, summary.getTestsSucceededCount() );
+        assertEquals( 0, summary.getTestsFailedCount() );
+    }
+
+    @Test
     public void rerunParameterized()
             throws Exception
     {
@@ -1113,6 +1150,20 @@ public class JUnitPlatformProviderTest
         void testParameterizedTestCases( String testName, boolean value )
         {
             assertTrue( value );
+        }
+    }
+
+    static class TestClass8
+    {
+        static List<Object[]> params()
+        {
+            throw new RuntimeException();
+        }
+
+        @org.junit.jupiter.params.ParameterizedTest
+        @org.junit.jupiter.params.provider.MethodSource( "params" )
+        void testParameterizedTestCases()
+        {
         }
     }
 
