@@ -425,7 +425,7 @@ public class RunListenerAdapterTest
                     throws Exception
     {
         adapter.executionFinished( newContainerIdentifier(), failed( new RuntimeException() ) );
-        verify( listener ).testFailed( any() );
+        verify( listener ).testError( any() );
     }
 
     @Test
@@ -473,7 +473,7 @@ public class RunListenerAdapterTest
         adapter.testPlanExecutionStarted( testPlan );
 
         adapter.executionFinished( newContainerIdentifier(), failed( new RuntimeException() ) );
-        verify( listener ).testFailed( entryCaptor.capture() );
+        verify( listener ).testError( entryCaptor.capture() );
 
         ReportEntry entry = entryCaptor.getValue();
         assertEquals( MyTestClass.class.getTypeName(), entry.getSourceName() );

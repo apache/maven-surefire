@@ -417,7 +417,8 @@ public class JUnitPlatformProviderTest
 
         assertThat( executionListener.summaries ).hasSize( 1 );
 
-        verify( listener, times( 1 ) ).testFailed( entryCaptor.capture() );
+        verify( listener, times( 1 ) ).testSetCompleted( any() );
+        verify( listener, times( 1 ) ).testError( entryCaptor.capture() );
         List<ReportEntry> reportEntries = entryCaptor.getAllValues();
 
         assertEquals( TestClass8.class.getName(), reportEntries.get( 0 ).getSourceName() );
