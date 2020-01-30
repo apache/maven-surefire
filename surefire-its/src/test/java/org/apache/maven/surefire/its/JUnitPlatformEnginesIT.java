@@ -192,6 +192,54 @@ public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase
     }
 
     @Test
+    public void errorInBeforeAllMethod()
+    {
+        OutputValidator validator = unpack( "surefire-1741", "-" + jupiter )
+                .setTestToRun( "ErrorInBeforeAllJupiterTest" )
+                .sysProp( "junit5.version", jupiter )
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog( "oneTimeSetUp() encountered an error" )
+                .assertTestSuiteResults( 1, 1, 0, 0 );
+
+        validator.getSurefireReportsFile( "jira1741.ErrorInBeforeAllJupiterTest.txt", UTF_8 )
+                .assertContainsText( "oneTimeSetUp() encountered an error" );
+    }
+
+    @Test
+    public void testJupiterEngineWithErrorInParameterizedSource()
+    {
+        OutputValidator validator = unpack( "surefire-1741", "-" + jupiter )
+                .setTestToRun( "ErrorInParameterizedSourceJupiterTest" )
+                .sysProp( "junit5.version", jupiter )
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog( "args() method source encountered an error" )
+                .assertTestSuiteResults( 1, 1, 0, 0 );
+
+        validator.getSurefireReportsFile( "jira1741.ErrorInParameterizedSourceJupiterTest.txt", UTF_8 )
+                .assertContainsText( "args() method source encountered an error" );
+    }
+
+    @Test
+    public void testJupiterEngineWithFailureInParameterizedSource()
+    {
+        OutputValidator validator = unpack( "surefire-1741", "-" + jupiter )
+                .setTestToRun( "FailureInParameterizedSourceJupiterTest" )
+                .sysProp( "junit5.version", jupiter )
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog( "args() method source failed" )
+                .assertTestSuiteResults( 1, 0, 1, 0 );
+
+        validator.getSurefireReportsFile( "jira1741.FailureInParameterizedSourceJupiterTest.txt", UTF_8 )
+                .assertContainsText( "args() method source failed" );
+    }
+
+    @Test
     public void testJupiterEngineWithDisplayNames()
     {
         OutputValidator validator = unpack( "junit-platform-engine-jupiter", "-" + jupiter )
