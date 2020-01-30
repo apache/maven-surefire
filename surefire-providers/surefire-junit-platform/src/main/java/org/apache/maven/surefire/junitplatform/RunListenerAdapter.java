@@ -100,6 +100,11 @@ final class RunListenerAdapter
 
         boolean failed = testExecutionResult.getStatus() == FAILED;
 
+        boolean isAssertionError = testExecutionResult.getThrowable()
+                .filter( AssertionError.class::isInstance ).isPresent();
+
+        boolean isRootContainer = testIdentifier.isContainer() && !testIdentifier.getParentId().isPresent();
+
         if ( failed || isClass || isTest )
         {
             Integer elapsed = computeElapsedTime( testIdentifier );
@@ -118,29 +123,18 @@ final class RunListenerAdapter
                     }
                     break;
                 case FAILED:
-                    if ( isClass )
-                    {
-                        runListener.testFailed( createReportEntry( testIdentifier, testExecutionResult, elapsed ) );
-                        runListener.testSetCompleted( createReportEntry( testIdentifier, null,
-                                systemProps(), null, elapsed ) );
-                    }
-                    else if ( testIdentifier.isContainer() )
-                    {
-                        runListener.testError( createReportEntry( testIdentifier, testExecutionResult, elapsed ) );
-                        if ( !testIdentifier.getParentId().isPresent() )
-                        {
-                            runListener.testSetCompleted(
-                                    createReportEntry( testIdentifier, null, systemProps(), null, elapsed ) );
-                        }
-                    }
-                    else if ( testExecutionResult.getThrowable()
-                            .filter( AssertionError.class::isInstance ).isPresent() )
+                    if ( isAssertionError )
                     {
                         runListener.testFailed( createReportEntry( testIdentifier, testExecutionResult, elapsed ) );
                     }
                     else
                     {
                         runListener.testError( createReportEntry( testIdentifier, testExecutionResult, elapsed ) );
+                    }
+                    if ( isClass || isRootContainer )
+                    {
+                        runListener.testSetCompleted( createReportEntry( testIdentifier, null,
+                                systemProps(), null, elapsed ) );
                     }
                     failures.put( testIdentifier, testExecutionResult );
                     break;
