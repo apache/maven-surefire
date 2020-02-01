@@ -22,6 +22,7 @@ package org.apache.maven.surefire.junitplatform;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
 import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
+import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
 
 import java.util.Map;
 import java.util.Objects;
@@ -97,7 +98,14 @@ final class RunListenerAdapter
 
         boolean isTest = testIdentifier.isTest();
 
-        if ( isClass || isTest )
+        boolean failed = testExecutionResult.getStatus() == FAILED;
+
+        boolean isAssertionError = testExecutionResult.getThrowable()
+                .filter( AssertionError.class::isInstance ).isPresent();
+
+        boolean isRootContainer = testIdentifier.isContainer() && !testIdentifier.getParentId().isPresent();
+
+        if ( failed || isClass || isTest )
         {
             Integer elapsed = computeElapsedTime( testIdentifier );
             switch ( testExecutionResult.getStatus() )
@@ -115,20 +123,18 @@ final class RunListenerAdapter
                     }
                     break;
                 case FAILED:
-                    if ( !isTest )
-                    {
-                        runListener.testFailed( createReportEntry( testIdentifier, testExecutionResult, elapsed ) );
-                        runListener.testSetCompleted( createReportEntry( testIdentifier, null,
-                                systemProps(), null, elapsed ) );
-                    }
-                    else if ( testExecutionResult.getThrowable()
-                            .filter( AssertionError.class::isInstance ).isPresent() )
+                    if ( isAssertionError )
                     {
                         runListener.testFailed( createReportEntry( testIdentifier, testExecutionResult, elapsed ) );
                     }
                     else
                     {
                         runListener.testError( createReportEntry( testIdentifier, testExecutionResult, elapsed ) );
+                    }
+                    if ( isClass || isRootContainer )
+                    {
+                        runListener.testSetCompleted( createReportEntry( testIdentifier, null,
+                                systemProps(), null, elapsed ) );
                     }
                     failures.put( testIdentifier, testExecutionResult );
                     break;
@@ -173,8 +179,9 @@ final class RunListenerAdapter
         {
             classText = null;
         }
-        String methodName = testIdentifier.isTest() ? classMethodName[2] : null;
-        String methodText = testIdentifier.isTest() ? classMethodName[3] : null;
+        boolean failed = testExecutionResult != null && testExecutionResult.getStatus() == FAILED;
+        String methodName = failed || testIdentifier.isTest() ? classMethodName[2] : null;
+        String methodText = failed || testIdentifier.isTest() ? classMethodName[3] : null;
         if ( Objects.equals( methodName, methodText ) )
         {
             methodText = null;

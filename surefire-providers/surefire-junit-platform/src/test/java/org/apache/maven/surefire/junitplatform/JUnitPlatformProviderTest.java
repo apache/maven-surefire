@@ -135,6 +135,53 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
+    public void shouldErrorClassOnBeforeAll()
+            throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParametersMock(), launcher );
+        RunListener listener = mock( RunListener.class );
+
+        ArgumentCaptor<ReportEntry> testCaptor = ArgumentCaptor.forClass( ReportEntry.class );
+        ArgumentCaptor<TestSetReportEntry> testSetCaptor = ArgumentCaptor.forClass( TestSetReportEntry.class );
+
+        RunListenerAdapter adapter = new RunListenerAdapter( listener );
+        launcher.registerTestExecutionListeners( adapter );
+
+        TestsToRun testsToRun = newTestsToRun( FailingWithErrorBeforeAllJupiterTest.class );
+        invokeProvider( provider, testsToRun );
+        InOrder inOrder = inOrder( listener );
+        inOrder.verify( listener, times( 1 ) ).testSetStarting( testSetCaptor.capture() );
+        inOrder.verify( listener, never() ).testStarting( any( ReportEntry.class ) );
+        inOrder.verify( listener, times( 1 ) ).testError( testCaptor.capture() );
+        inOrder.verify( listener, times( 1 ) ).testSetCompleted( testSetCaptor.capture() );
+
+        assertThat( testSetCaptor.getAllValues() )
+                .hasSize( 2 );
+
+        assertThat( testSetCaptor.getAllValues().get( 0 ).getSourceName() )
+                .isEqualTo( FailingWithErrorBeforeAllJupiterTest.class.getName() );
+
+        assertThat( testSetCaptor.getAllValues().get( 0 ).getName() )
+                .isNull();
+
+        assertThat( testCaptor.getAllValues() )
+                .hasSize( 1 );
+
+        assertThat( testCaptor.getValue().getSourceName() )
+                .isEqualTo( FailingWithErrorBeforeAllJupiterTest.class.getName() );
+
+        assertThat( testCaptor.getValue().getName() )
+                .isNull();
+
+        assertThat( testSetCaptor.getAllValues().get( 1 ).getSourceName() )
+                .isEqualTo( FailingWithErrorBeforeAllJupiterTest.class.getName() );
+
+        assertThat( testSetCaptor.getAllValues().get( 1 ).getName() )
+                .isNull();
+    }
+
+    @Test
     public void getSuitesReturnsScannedClasses()
     {
         ProviderParameters providerParameters = providerParametersMock( TestClass1.class, TestClass2.class );
@@ -394,6 +441,82 @@ public class JUnitPlatformProviderTest
         assertEquals( "<< ✨ >>", reportEntries.get( 0 ).getSourceText() );
         assertEquals( "test1", reportEntries.get( 0 ).getName() );
         assertEquals( "73$71 ✔", reportEntries.get( 0 ).getNameText() );
+    }
+
+    @Test
+    public void detectErroredParameterized()
+        throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        ProviderParameters parameters = providerParametersMock();
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( parameters, launcher );
+
+        TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
+
+        RunListener listener = mock( RunListener.class );
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
+        RunListenerAdapter adapter = new RunListenerAdapter( listener );
+
+        launcher.registerTestExecutionListeners( executionListener, adapter );
+
+        invokeProvider( provider, TestClass8.class );
+
+        assertThat( executionListener.summaries ).hasSize( 1 );
+
+        verify( listener, times( 1 ) ).testSetCompleted( any() );
+        verify( listener, times( 1 ) ).testError( entryCaptor.capture() );
+        List<ReportEntry> reportEntries = entryCaptor.getAllValues();
+
+        assertEquals( TestClass8.class.getName(), reportEntries.get( 0 ).getSourceName() );
+        assertNull( reportEntries.get( 0 ).getSourceText() );
+        assertEquals( "testParameterizedTestCases", reportEntries.get( 0 ).getName() );
+        assertNull( reportEntries.get( 0 ).getNameText() );
+
+        TestExecutionSummary summary = executionListener.summaries.get( 0 );
+        assertEquals( 0, summary.getTestsFoundCount() );
+        assertEquals( 1, summary.getContainersFailedCount() );
+        assertEquals( 0, summary.getTestsStartedCount() );
+        assertEquals( 0, summary.getTestsSucceededCount() );
+        assertEquals( 0, summary.getTestsFailedCount() );
+    }
+
+    @Test
+    public void detectFailedParameterized()
+            throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        ProviderParameters parameters = providerParametersMock();
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( parameters, launcher );
+
+        TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
+
+        RunListener listener = mock( RunListener.class );
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
+        RunListenerAdapter adapter = new RunListenerAdapter( listener );
+
+        launcher.registerTestExecutionListeners( executionListener, adapter );
+
+        invokeProvider( provider, TestClass9.class );
+
+        assertThat( executionListener.summaries ).hasSize( 1 );
+
+        verify( listener, times( 1 ) ).testSetCompleted( any() );
+        verify( listener, times( 1 ) ).testFailed( entryCaptor.capture() );
+        List<ReportEntry> reportEntries = entryCaptor.getAllValues();
+
+        assertEquals( TestClass9.class.getName(), reportEntries.get( 0 ).getSourceName() );
+        assertNull( reportEntries.get( 0 ).getSourceText() );
+        assertEquals( "testParameterizedTestCases", reportEntries.get( 0 ).getName() );
+        assertNull( reportEntries.get( 0 ).getNameText() );
+
+        TestExecutionSummary summary = executionListener.summaries.get( 0 );
+        assertEquals( 0, summary.getTestsFoundCount() );
+        assertEquals( 1, summary.getContainersFailedCount() );
+        assertEquals( 0, summary.getTestsStartedCount() );
+        assertEquals( 0, summary.getTestsSucceededCount() );
+        assertEquals( 0, summary.getTestsFailedCount() );
     }
 
     @Test
@@ -1116,6 +1239,35 @@ public class JUnitPlatformProviderTest
         }
     }
 
+    static class TestClass8
+    {
+        static List<Object[]> params()
+        {
+            throw new RuntimeException();
+        }
+
+        @org.junit.jupiter.params.ParameterizedTest
+        @org.junit.jupiter.params.provider.MethodSource( "params" )
+        void testParameterizedTestCases()
+        {
+        }
+    }
+
+    static class TestClass9
+    {
+        static List<Object[]> params()
+        {
+            assertTrue( false );
+            return new ArrayList<>();
+        }
+
+        @org.junit.jupiter.params.ParameterizedTest
+        @org.junit.jupiter.params.provider.MethodSource( "params" )
+        void testParameterizedTestCases()
+        {
+        }
+    }
+
     @DisplayName( "<< ✨ >>" )
     static class DisplayNameTest
     {
@@ -1133,6 +1285,22 @@ public class JUnitPlatformProviderTest
         static void oneTimeSetUp()
         {
             fail( "oneTimeSetUp() failed" );
+        }
+
+        @org.junit.jupiter.api.Test
+        void test()
+        {
+        }
+
+    }
+
+    static class FailingWithErrorBeforeAllJupiterTest
+    {
+
+        @BeforeAll
+        static void oneTimeSetUp()
+        {
+            throw new RuntimeException( "oneTimeSetUp() threw an exception" );
         }
 
         @org.junit.jupiter.api.Test

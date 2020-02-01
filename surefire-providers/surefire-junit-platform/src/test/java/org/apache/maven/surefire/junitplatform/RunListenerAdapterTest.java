@@ -55,6 +55,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.engine.descriptor.ClassTestDescriptor;
 import org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor;
+import org.junit.jupiter.engine.descriptor.TestTemplateTestDescriptor;
 import org.junit.platform.engine.ConfigurationParameters;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestSource;
@@ -420,6 +421,22 @@ public class RunListenerAdapterTest
     }
 
     @Test
+    public void notifiedOfContainerFailureWhenErrored()
+                    throws Exception
+    {
+        adapter.executionFinished( newContainerIdentifier(), failed( new RuntimeException() ) );
+        verify( listener ).testError( any() );
+    }
+
+    @Test
+    public void notifiedOfContainerFailureWhenFailed()
+                    throws Exception
+    {
+        adapter.executionFinished( newContainerIdentifier(), failed( new AssertionError() ) );
+        verify( listener ).testFailed( any() );
+    }
+
+    @Test
     public void notifiedWhenMethodExecutionFailed()
                     throws Exception
     {
@@ -453,6 +470,46 @@ public class RunListenerAdapterTest
         assertNotNull( entry.getStackTraceWriter().getThrowable() );
         assertThat( entry.getStackTraceWriter().getThrowable().getTarget() )
                 .isInstanceOf( AssertionError.class );
+    }
+
+    @Test
+    public void notifiedWithCorrectNamesWhenClassExecutionErrored()
+    {
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
+        TestPlan testPlan = TestPlan.from( singletonList( new EngineDescriptor( newId(), "Luke's Plan" ) ) );
+        adapter.testPlanExecutionStarted( testPlan );
+
+        adapter.executionFinished( identifiersAsParentOnTestPlan( testPlan, newClassDescriptor() ),
+                failed( new RuntimeException() ) );
+        verify( listener ).testError( entryCaptor.capture() );
+
+        ReportEntry entry = entryCaptor.getValue();
+        assertEquals( MyTestClass.class.getTypeName(), entry.getSourceName() );
+        assertNull( entry.getName() );
+        assertNotNull( entry.getStackTraceWriter() );
+        assertNotNull( entry.getStackTraceWriter().getThrowable() );
+        assertThat( entry.getStackTraceWriter().getThrowable().getTarget() )
+                .isInstanceOf( RuntimeException.class );
+    }
+
+    @Test
+    public void notifiedWithCorrectNamesWhenContainerFailed()
+                    throws Exception
+    {
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
+        TestPlan testPlan = TestPlan.from( singletonList( new EngineDescriptor( newId(), "Luke's Plan" ) ) );
+        adapter.testPlanExecutionStarted( testPlan );
+
+        adapter.executionFinished( newContainerIdentifier(), failed( new RuntimeException() ) );
+        verify( listener ).testError( entryCaptor.capture() );
+
+        ReportEntry entry = entryCaptor.getValue();
+        assertEquals( MyTestClass.class.getTypeName(), entry.getSourceName() );
+        assertEquals( MY_TEST_METHOD_NAME, entry.getName() );
+        assertNotNull( entry.getStackTraceWriter() );
+        assertNotNull( entry.getStackTraceWriter().getThrowable() );
+        assertThat( entry.getStackTraceWriter().getThrowable().getTarget() )
+                .isInstanceOf( RuntimeException.class );
     }
 
     @Test
@@ -647,6 +704,15 @@ public class RunListenerAdapterTest
         testPlan.add( parentId );
 
         return childId;
+    }
+
+    private static TestIdentifier newContainerIdentifier()
+        throws Exception
+    {
+        return TestIdentifier.from(
+                new TestTemplateTestDescriptor( UniqueId.forEngine( "method" ),
+                    MyTestClass.class,
+                    MyTestClass.class.getDeclaredMethod( MY_TEST_METHOD_NAME ) ) );
     }
 
     private static TestIdentifier newEngineIdentifier()

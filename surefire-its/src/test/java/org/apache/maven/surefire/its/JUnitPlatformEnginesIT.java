@@ -192,6 +192,118 @@ public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase
     }
 
     @Test
+    public void errorInBeforeAllMethod()
+    {
+        OutputValidator validator = unpack( "surefire-1741", "-" + jupiter )
+                .setTestToRun( "ErrorInBeforeAllJupiterTest" )
+                .sysProp( "junit5.version", jupiter )
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog( "oneTimeSetUp() encountered an error" )
+                .assertTestSuiteResults( 1, 1, 0, 0 );
+
+        validator.getSurefireReportsFile( "jira1741.ErrorInBeforeAllJupiterTest.txt", UTF_8 )
+                .assertContainsText( "oneTimeSetUp() encountered an error" );
+    }
+
+    @Test
+    public void testJupiterEngineWithErrorInParameterizedSource()
+    {
+        OutputValidator validator = unpack( "surefire-1741", "-" + jupiter )
+                .setTestToRun( "ErrorInParameterizedSourceJupiterTest" )
+                .sysProp( "junit5.version", jupiter )
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog( "args() method source encountered an error" )
+                .assertTestSuiteResults( 1, 1, 0, 0 );
+
+        validator.getSurefireReportsFile( "jira1741.ErrorInParameterizedSourceJupiterTest.txt", UTF_8 )
+                .assertContainsText( "args() method source encountered an error" );
+    }
+
+    @Test
+    public void testJupiterEngineWithFailureInParameterizedSource()
+    {
+        OutputValidator validator = unpack( "surefire-1741", "-" + jupiter )
+                .setTestToRun( "FailureInParameterizedSourceJupiterTest" )
+                .sysProp( "junit5.version", jupiter )
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog( "args() method source failed" )
+                .assertTestSuiteResults( 1, 0, 1, 0 );
+
+        validator.getSurefireReportsFile( "jira1741.FailureInParameterizedSourceJupiterTest.txt", UTF_8 )
+                .assertContainsText( "args() method source failed" );
+    }
+
+    @Test
+    public void testJupiterEngineWithErrorInTestFactory()
+    {
+        OutputValidator validator = unpack( "surefire-1727", "-" + jupiter )
+                .setTestToRun( "ErrorInTestFactoryJupiterTest" )
+                .sysProp( "junit5.version", jupiter )
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog( "Encountered error in TestFactory testFactory()" )
+                .assertTestSuiteResults( 1, 1, 0, 0 );
+
+        validator.getSurefireReportsFile( "jira1727.ErrorInTestFactoryJupiterTest.txt", UTF_8 )
+                .assertContainsText( "Encountered error in TestFactory testFactory()" );
+    }
+
+    @Test
+    public void testJupiterEngineWithFailureInTestFactory()
+    {
+        OutputValidator validator = unpack( "surefire-1727", "-" + jupiter )
+                .setTestToRun( "FailureInTestFactoryJupiterTest" )
+                .sysProp( "junit5.version", jupiter )
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog( "Encountered failure in TestFactory testFactory()" )
+                .assertTestSuiteResults( 1, 0, 1, 0 );
+
+        validator.getSurefireReportsFile( "jira1727.FailureInTestFactoryJupiterTest.txt", UTF_8 )
+                .assertContainsText( "Encountered failure in TestFactory testFactory()" );
+    }
+
+    @Test
+    public void testJupiterEngineWithErrorInTestTemplateProvider()
+    {
+        OutputValidator validator = unpack( "surefire-1727", "-" + jupiter )
+                .setTestToRun( "ErrorInTestTemplateProviderTest" )
+                .sysProp( "junit5.version", jupiter )
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog( "Encountered error in TestTemplate provideTestTemplateInvocationContexts()" )
+                .assertTestSuiteResults( 1, 1, 0, 0 );
+
+        validator.getSurefireReportsFile( "jira1727.ErrorInTestTemplateProviderTest.txt", UTF_8 )
+                .assertContainsText( "Encountered error in TestTemplate provideTestTemplateInvocationContexts()" );
+    }
+
+    @Test
+    public void testJupiterEngineWithFailureInTestTemplateProvider()
+    {
+        OutputValidator validator = unpack( "surefire-1727", "-" + jupiter )
+                .setTestToRun( "FailureInTestTemplateProviderTest" )
+                .sysProp( "junit5.version", jupiter )
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog( "Encountered failure in TestTemplate provideTestTemplateInvocationContexts()" )
+                .assertTestSuiteResults( 1, 0, 1, 0 );
+
+        validator.getSurefireReportsFile( "jira1727.FailureInTestTemplateProviderTest.txt", UTF_8 )
+                .assertContainsText( "Encountered failure in TestTemplate provideTestTemplateInvocationContexts()" );
+    }
+
+    @Test
     public void testJupiterEngineWithDisplayNames()
     {
         OutputValidator validator = unpack( "junit-platform-engine-jupiter", "-" + jupiter )
