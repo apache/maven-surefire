@@ -295,6 +295,43 @@ public class ForkedChannelDecoderTest
         }
 
         @Test
+        public void shouldCorrectlyDecodeStackTracesWithEmptyStringTraceMessages()
+        {
+            String exceptionMessage = "";
+            String smartStackTrace = "JUnit5Test.failWithEmptyString:16";
+            String exceptionStackTrace = "org.opentest4j.AssertionFailedError: \n"
+                    + "\tat JUnit5Test.failWithEmptyString(JUnit5Test.java:16)\n";
+
+            StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
+            SafeThrowable safeThrowable = new SafeThrowable( exceptionMessage );
+            when( stackTraceWriter.getThrowable() ).thenReturn( safeThrowable );
+            when( stackTraceWriter.smartTrimmedStackTrace() ).thenReturn( smartStackTrace );
+            when( stackTraceWriter.writeTrimmedTraceToString() ).thenReturn( exceptionStackTrace );
+            when( stackTraceWriter.writeTraceToString() ).thenReturn( exceptionStackTrace );
+
+            ReportEntry reportEntry = mock( ReportEntry.class );
+            when( reportEntry.getElapsed() ).thenReturn( 7 );
+            when( reportEntry.getGroup() ).thenReturn( null );
+            when( reportEntry.getMessage() ).thenReturn( null );
+            when( reportEntry.getName() ).thenReturn( "failWithEmptyString" );
+            when( reportEntry.getNameWithGroup() ).thenReturn( "JUnit5Test" );
+            when( reportEntry.getSourceName() ).thenReturn( "JUnit5Test" );
+            when( reportEntry.getSourceText() ).thenReturn( null );
+            when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
+
+            Stream out = Stream.newStream();
+            ForkedChannelEncoder forkedChannelEncoder = new ForkedChannelEncoder( out );
+            forkedChannelEncoder.testFailed( reportEntry, true );
+            String line = new String( out.toByteArray(), UTF_8 );
+
+            ForkedChannelDecoder decoder = new ForkedChannelDecoder();
+            decoder.setTestFailedListener( new ReportEventAssertionListener( reportEntry ) );
+            AssertionErrorHandler errorHandler = mock( AssertionErrorHandler.class );
+            decoder.handleEvent( line, errorHandler );
+            verifyZeroInteractions( errorHandler );
+        }
+
+        @Test
         public void shouldSendNextTestEvent() throws IOException
         {
 
