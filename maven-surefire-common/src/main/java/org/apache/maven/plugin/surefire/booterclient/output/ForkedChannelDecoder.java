@@ -27,7 +27,6 @@ import org.apache.maven.surefire.report.StackTraceWriter;
 
 import java.nio.charset.Charset;
 import java.util.Collections;
-import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -189,8 +188,9 @@ public final class ForkedChannelDecoder
             return;
         }
 
-        StringTokenizer tokenizer = new StringTokenizer( line.substring( MAGIC_NUMBER.length() ), ":" );
-        String opcode = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
+        String[] tokens = line.substring( MAGIC_NUMBER.length() ).split( ":" );
+        int index = -1;
+        String opcode = tokens.length > ++index ? tokens[index] : null;
         ForkedProcessEvent event = opcode == null ? null : EVENTS.get( opcode );
         if ( event == null )
         {
@@ -211,65 +211,65 @@ public final class ForkedChannelDecoder
             else if ( event.isConsoleCategory() )
             {
                 ForkedProcessStringEventListener listener = consoleEventListeners.get( event );
-                Charset encoding = tokenizer.hasMoreTokens() ? Charset.forName( tokenizer.nextToken() ) : null;
+                Charset encoding = tokens.length > ++index ? Charset.forName( tokens[index] ) : null;
                 if ( listener != null && encoding != null )
                 {
-                    String msg = tokenizer.hasMoreTokens() ? decode( tokenizer.nextToken(), encoding ) : "";
+                    String msg = tokens.length > ++index ? decode( tokens[index], encoding ) : "";
                     listener.handle( msg );
                 }
             }
             else if ( event.isConsoleErrorCategory() )
             {
-                Charset encoding = tokenizer.hasMoreTokens() ? Charset.forName( tokenizer.nextToken() ) : null;
+                Charset encoding = tokens.length > ++index ? Charset.forName( tokens[index] ) : null;
                 if ( consoleErrorEventListener != null && encoding != null )
                 {
-                    String msg = tokenizer.hasMoreTokens() ? decode( tokenizer.nextToken(), encoding ) : null;
+                    String msg = tokens.length > ++index ? decode( tokens[index], encoding ) : null;
                     String smartStackTrace =
-                            tokenizer.hasMoreTokens() ? decode( tokenizer.nextToken(), encoding ) : null;
-                    String stackTrace = tokenizer.hasMoreTokens() ? decode( tokenizer.nextToken(), encoding ) : null;
+                            tokens.length > ++index ? decode( tokens[index], encoding ) : null;
+                    String stackTrace = tokens.length > ++index ? decode( tokens[index], encoding ) : null;
                     consoleErrorEventListener.handle( msg, smartStackTrace, stackTrace );
                 }
             }
             else if ( event.isStandardStreamCategory() )
             {
                 ForkedProcessStandardOutErrEventListener listener = stdOutErrEventListeners.get( event );
-                RunMode mode = tokenizer.hasMoreTokens() ? MODES.get( tokenizer.nextToken() ) : null;
-                Charset encoding = tokenizer.hasMoreTokens() ? Charset.forName( tokenizer.nextToken() ) : null;
+                RunMode mode = tokens.length > ++index ? MODES.get( tokens[index] ) : null;
+                Charset encoding = tokens.length > ++index ? Charset.forName( tokens[index] ) : null;
                 if ( listener != null && encoding != null && mode != null )
                 {
                     boolean newLine = event == BOOTERCODE_STDOUT_NEW_LINE || event == BOOTERCODE_STDERR_NEW_LINE;
-                    String output = tokenizer.hasMoreTokens() ? decode( tokenizer.nextToken(), encoding ) : "";
+                    String output = tokens.length > ++index ? decode( tokens[index], encoding ) : "";
                     listener.handle( mode, output, newLine );
                 }
             }
             else if ( event.isSysPropCategory() )
             {
-                RunMode mode = tokenizer.hasMoreTokens() ? MODES.get( tokenizer.nextToken() ) : null;
-                Charset encoding = tokenizer.hasMoreTokens() ? Charset.forName( tokenizer.nextToken() ) : null;
-                String key = tokenizer.hasMoreTokens() ? decode( tokenizer.nextToken(), encoding ) : "";
+                RunMode mode = tokens.length > ++index ? MODES.get( tokens[index] ) : null;
+                Charset encoding = tokens.length > ++index ? Charset.forName( tokens[index] ) : null;
+                String key = tokens.length > ++index ? decode( tokens[index], encoding ) : "";
                 if ( propertyEventListener != null && isNotBlank( key ) )
                 {
-                    String value = tokenizer.hasMoreTokens() ? decode( tokenizer.nextToken(), encoding ) : "";
+                    String value = tokens.length > ++index ? decode( tokens[index], encoding ) : "";
                     propertyEventListener.handle( mode, key, value );
                 }
             }
             else if ( event.isTestCategory() )
             {
                 ForkedProcessReportEventListener listener = reportEventListeners.get( event );
-                RunMode mode = tokenizer.hasMoreTokens() ? MODES.get( tokenizer.nextToken() ) : null;
-                Charset encoding = tokenizer.hasMoreTokens() ? Charset.forName( tokenizer.nextToken() ) : null;
+                RunMode mode = tokens.length > ++index ? MODES.get( tokens[index] ) : null;
+                Charset encoding = tokens.length > ++index ? Charset.forName( tokens[index] ) : null;
                 if ( listener != null && encoding != null && mode != null )
                 {
-                    String sourceName = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
-                    String sourceText = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
-                    String name = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
-                    String nameText = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
-                    String group = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
-                    String message = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
-                    String elapsed = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
-                    String traceMessage = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
-                    String smartTrimmedStackTrace = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
-                    String stackTrace = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
+                    String sourceName = tokens.length > ++index ? tokens[index] : null;
+                    String sourceText = tokens.length > ++index ? tokens[index] : null;
+                    String name = tokens.length > ++index ? tokens[index] : null;
+                    String nameText = tokens.length > ++index ? tokens[index] : null;
+                    String group = tokens.length > ++index ? tokens[index] : null;
+                    String message = tokens.length > ++index ? tokens[index] : null;
+                    String elapsed = tokens.length > ++index ? tokens[index] : null;
+                    String traceMessage = tokens.length > ++index ? tokens[index] : null;
+                    String smartTrimmedStackTrace = tokens.length > ++index ? tokens[index] : null;
+                    String stackTrace = tokens.length > ++index ? tokens[index] : null;
                     ReportEntry reportEntry = toReportEntry( encoding, sourceName, sourceText, name, nameText,
                             group, message, elapsed, traceMessage, smartTrimmedStackTrace, stackTrace );
                     listener.handle( mode, reportEntry );
@@ -279,11 +279,11 @@ public final class ForkedChannelDecoder
             {
                 if ( exitErrorEventListener != null )
                 {
-                    Charset encoding = tokenizer.hasMoreTokens() ? Charset.forName( tokenizer.nextToken() ) : null;
-                    String message = tokenizer.hasMoreTokens() ? decode( tokenizer.nextToken(), encoding ) : "";
+                    Charset encoding = tokens.length > ++index ? Charset.forName( tokens[index] ) : null;
+                    String message = tokens.length > ++index ? decode( tokens[index], encoding ) : "";
                     String smartTrimmedStackTrace =
-                            tokenizer.hasMoreTokens() ? decode( tokenizer.nextToken(), encoding ) : "";
-                    String stackTrace = tokenizer.hasMoreTokens() ? decode( tokenizer.nextToken(), encoding ) : "";
+                            tokens.length > ++index ? decode( tokens[index], encoding ) : "";
+                    String stackTrace = tokens.length > ++index ? decode( tokens[index], encoding ) : "";
                     exitErrorEventListener.handle( message, smartTrimmedStackTrace, stackTrace );
                 }
             }
