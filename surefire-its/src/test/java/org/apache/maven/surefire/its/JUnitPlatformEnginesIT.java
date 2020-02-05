@@ -304,6 +304,44 @@ public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase
     }
 
     @Test
+    public void testJupiterEngineWithAssertionsFailNoParameters()
+    {
+        // `Assertions.fail()` not supported until 5.2.0
+        assumeThat( jupiter, is( not( "5.0.3" ) ) );
+        assumeThat( jupiter, is( not( "5.1.1" ) ) );
+
+        OutputValidator validator = unpack( "surefire-1748-fail-no-parameters", "-" + jupiter )
+                .setTestToRun( "AssertionsFailNoParametersJupiterTest" )
+                .sysProp( "junit5.version", jupiter )
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog( "AssertionsFailNoParametersJupiterTest.doTest:31" )
+                .assertTestSuiteResults( 1, 0, 1, 0 );
+
+        validator.getSurefireReportsFile( "jira1748.AssertionsFailNoParametersJupiterTest.txt", UTF_8 )
+                .assertContainsText( "AssertionsFailNoParametersJupiterTest.doTest"
+                        + "(AssertionsFailNoParametersJupiterTest.java:31)" );
+    }
+
+    @Test
+    public void testJupiterEngineWithAssertionsFailEmptyStringParameters()
+    {
+        OutputValidator validator = unpack( "surefire-1748", "-" + jupiter )
+                .setTestToRun( "AssertionsFailEmptyStringParameterJupiterTest" )
+                .sysProp( "junit5.version", jupiter )
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog( "AssertionsFailEmptyStringParameterJupiterTest.doTest:31" )
+                .assertTestSuiteResults( 1, 0, 1, 0 );
+
+        validator.getSurefireReportsFile( "jira1748.AssertionsFailEmptyStringParameterJupiterTest.txt", UTF_8 )
+                .assertContainsText( "AssertionsFailEmptyStringParameterJupiterTest.doTest"
+                        + "(AssertionsFailEmptyStringParameterJupiterTest.java:31)" );
+    }
+
+    @Test
     public void testJupiterEngineWithDisplayNames()
     {
         OutputValidator validator = unpack( "junit-platform-engine-jupiter", "-" + jupiter )
