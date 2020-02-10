@@ -2731,7 +2731,7 @@ public abstract class AbstractSurefireMojo
     {
         if ( isUseSystemClassLoader() && isNotForking() )
         {
-            getConsoleLogger().warning( "useSystemClassloader setting has no effect when not forking" );
+            getConsoleLogger().warning( "useSystemClassLoader setting has no effect when not forking" );
         }
     }
 
