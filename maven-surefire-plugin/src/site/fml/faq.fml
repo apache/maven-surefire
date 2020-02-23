@@ -79,8 +79,8 @@ under the License.
     <faq id="GWT">
       <question>How can I run GWT tests?</question>
       <answer>
-        There is a specific gwt-maven-plugin at codehaus, but if you want to run
-        with Surefire, you need the following settings:
+        Mojohaus publishes a [gwt-maven-plugin](https://gwt-maven-plugin.github.io/gwt-maven-plugin/),
+        but if you want to run with Surefire, you need the following settings:
         <p>
         Use the following configuration:<br/>
         <code>
