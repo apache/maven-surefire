@@ -459,9 +459,11 @@ public abstract class AbstractSurefireMojo
     private boolean childDelegation;
 
     /**
-     * (TestNG/JUnit47 provider with JUnit4.8+ only) Groups for this test. Only classes/methods/etc decorated with one
-     * of the groups specified here will be included in test run, if specified.<br>
-     * For JUnit, this parameter forces the use of the 4.7 provider<br>
+     * (TestNG/JUnit47 provider with JUnit4.8+ only and JUnit5+ provider since 2.22.0) Groups/categories/tags for this
+     * test. Only classes/methods/etc decorated with one of the groups/categories/tags specified here will be included
+     * in test run, if specified.<br>
+     * For JUnit4 tests, this parameter forces the use of the 4.7 provider. For JUnit5 tests, this parameter forces
+     * the use of the JUnit platform provider.<br>
      * This parameter is ignored if the {@code suiteXmlFiles} parameter is specified.<br>
      * Since version 2.18.1 and JUnit 4.12, the {@code @Category} annotation type is automatically inherited from
      * superclasses, see {@code @java.lang.annotation.Inherited}. Make sure that test class inheritance still makes
@@ -473,9 +475,11 @@ public abstract class AbstractSurefireMojo
     private String groups;
 
     /**
-     * (TestNG/JUnit47 provider with JUnit4.8+ only) Excluded groups. Any methods/classes/etc with one of the groups
-     * specified in this list will specifically not be run.<br>
-     * For JUnit, this parameter forces the use of the 4.7 provider.<br>
+     * (TestNG/JUnit47 provider with JUnit4.8+ only and JUnit5+ provider since 2.22.0) Excluded groups/categories/tags.
+     * Any methods/classes/etc with one of the groups/categories/tags specified in this list will specifically not be
+     * run.<br>
+     * For JUnit4, this parameter forces the use of the 4.7 provider. For JUnit5, this parameter forces the use of the
+     * JUnit platform provider.<br>
      * This parameter is ignored if the {@code suiteXmlFiles} parameter is specified.<br>
      * Since version 2.18.1 and JUnit 4.12, the {@code @Category} annotation type is automatically inherited from
      * superclasses, see {@code @java.lang.annotation.Inherited}. Make sure that test class inheritance still makes
