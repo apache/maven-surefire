@@ -103,7 +103,7 @@ Removing Dependency Classpath Elements
         <version>${project.version}</version>
         <configuration>
           <classpathDependencyExcludes>
-            <classpathDependencyExcludes>org.apache.commons:commons-email</classpathDependencyExcludes>
+            <classpathDependencyExclude>org.apache.commons:commons-email</classpathDependencyExclude>
           </classpathDependencyExcludes>
         </configuration>
       </plugin>

@@ -29,6 +29,9 @@ import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
 
 import junit.framework.TestCase;
 
+/**
+ *
+ */
 public class FileReporterTest
     extends TestCase
 {
@@ -37,18 +40,18 @@ public class FileReporterTest
 
     private ReportEntry reportEntry;
 
-    private static final String testName = "org.apache.maven.surefire.report.FileReporterTest";
+    private static final String TEST_NAME = "org.apache.maven.surefire.report.FileReporterTest";
 
     public void testFileNameWithoutSuffix()
     {
         File reportDir = new File( "target" );
-        reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
+        reportEntry = new SimpleReportEntry( getClass().getName(), null, TEST_NAME, null );
         WrappedReportEntry wrappedReportEntry =
             new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null );
-        reporter = new FileReporter( reportDir, null, Charset.defaultCharset() );
+        reporter = new FileReporter( reportDir, null, Charset.defaultCharset(), false, false, false );
         reporter.testSetCompleted( wrappedReportEntry, createTestSetStats(), new ArrayList<String>() );
 
-        File expectedReportFile = new File( reportDir, testName + ".txt" );
+        File expectedReportFile = new File( reportDir, TEST_NAME + ".txt" );
         assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
                     expectedReportFile.exists() );
         //noinspection ResultOfMethodCallIgnored
@@ -64,13 +67,13 @@ public class FileReporterTest
     {
         File reportDir = new File( "target" );
         String suffixText = "sampleSuffixText";
-        reportEntry = new SimpleReportEntry( this.getClass().getName(), testName );
+        reportEntry = new SimpleReportEntry( getClass().getName(), null, TEST_NAME, null );
         WrappedReportEntry wrappedReportEntry =
             new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null );
-        reporter = new FileReporter( reportDir, suffixText, Charset.defaultCharset() );
+        reporter = new FileReporter( reportDir, suffixText, Charset.defaultCharset(), false, false, false );
         reporter.testSetCompleted( wrappedReportEntry, createTestSetStats(), new ArrayList<String>() );
 
-        File expectedReportFile = new File( reportDir, testName + "-" + suffixText + ".txt" );
+        File expectedReportFile = new File( reportDir, TEST_NAME + "-" + suffixText + ".txt" );
         assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
                     expectedReportFile.exists() );
         //noinspection ResultOfMethodCallIgnored

@@ -115,8 +115,8 @@ public abstract class ParallelComputer
 
             try
             {
-                final TreeSet<String> executedTests = new TreeSet<String>();
-                final TreeSet<String> incompleteTests = new TreeSet<String>();
+                final TreeSet<String> executedTests = new TreeSet<>();
+                final TreeSet<String> incompleteTests = new TreeSet<>();
 
                 if ( isShutdownTimeout )
                 {

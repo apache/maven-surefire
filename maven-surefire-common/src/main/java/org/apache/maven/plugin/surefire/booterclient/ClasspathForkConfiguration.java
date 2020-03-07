@@ -31,7 +31,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.apache.maven.shared.utils.StringUtils.join;
+import static org.apache.maven.surefire.shared.utils.StringUtils.join;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -44,18 +44,21 @@ public final class ClasspathForkConfiguration
     public ClasspathForkConfiguration( @Nonnull Classpath bootClasspath, @Nonnull File tempDirectory,
                                        @Nullable String debugLine, @Nonnull File workingDirectory,
                                        @Nonnull Properties modelProperties, @Nullable String argLine,
-                                       @Nonnull Map<String, String> environmentVariables, boolean debug, int forkCount,
+                                       @Nonnull Map<String, String> environmentVariables,
+                                       @Nonnull String[] excludedEnvironmentVariables,
+                                       boolean debug, int forkCount,
                                        boolean reuseForks, @Nonnull Platform pluginPlatform,
                                        @Nonnull ConsoleLogger log )
     {
         super( bootClasspath, tempDirectory, debugLine, workingDirectory, modelProperties, argLine,
-                environmentVariables, debug, forkCount, reuseForks, pluginPlatform, log );
+                environmentVariables, excludedEnvironmentVariables, debug, forkCount, reuseForks, pluginPlatform, log );
     }
 
     @Override
     protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                      @Nonnull String booterThatHasMainMethod,
-                                     @Nonnull StartupConfiguration config )
+                                     @Nonnull StartupConfiguration config,
+                                     @Nonnull File dumpLogDirectory )
             throws SurefireBooterForkException
     {
         cli.addEnvironment( "CLASSPATH", join( toCompleteClasspath( config ).iterator(), File.pathSeparator ) );

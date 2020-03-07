@@ -20,7 +20,7 @@ package org.apache.maven.surefire.testprovider;
  */
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.Map.Entry;
 
 import org.apache.maven.surefire.providerapi.AbstractProvider;
@@ -42,21 +42,24 @@ public class ClassPathTestProvider
         for ( Entry<String, String> propEntry : params.getProviderProperties().entrySet() )
         {
             if ( propEntry.getKey().startsWith( "surefireClassPathUrl" ) && propEntry.getValue().contains( "slf4j" ) )
+            {
                 hasSLF4J = true;
+            }
         }
     }
 
     public Iterable<Class<?>> getSuites()
     {
-        LinkedList<Class<?>> ret = new LinkedList<Class<?>>();
-        return ret;
+        return Collections.<Class<?>>emptySet();
     }
 
     public RunResult invoke( Object arg0 )
         throws TestSetFailedException, ReporterException, InvocationTargetException
     {
         if ( hasSLF4J )
+        {
             throw new TestSetFailedException( "SLF4J was found on the boot classpath" );
+        }
         return new RunResult( 1, 0, 0, 0 );
     }
 

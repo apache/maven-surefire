@@ -19,13 +19,12 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.report.TestSetStats;
 import org.apache.maven.surefire.suite.RunResult;
 
 /**
  * @author Kristian Rosenvold
  */
-public class RunStatistics
+public final class RunStatistics
 {
     private int completedCount;
 
@@ -36,16 +35,6 @@ public class RunStatistics
     private int skipped;
 
     private int flakes;
-
-    public synchronized boolean hadFailures()
-    {
-        return failures > 0;
-    }
-
-    public synchronized boolean hadErrors()
-    {
-        return errors > 0;
-    }
 
     public synchronized int getCompletedCount()
     {
@@ -70,14 +59,6 @@ public class RunStatistics
     public synchronized int getFlakes()
     {
         return flakes;
-    }
-
-    public synchronized void add( TestSetStats testSetStats )
-    {
-        this.completedCount += testSetStats.getCompletedCount();
-        this.errors += testSetStats.getErrors();
-        this.failures += testSetStats.getFailures();
-        this.skipped += testSetStats.getSkipped();
     }
 
     public synchronized void set( int completedCount, int errors, int failures, int skipped, int flakes )

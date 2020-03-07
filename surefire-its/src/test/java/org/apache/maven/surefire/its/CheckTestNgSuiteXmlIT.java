@@ -21,7 +21,6 @@ package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -35,20 +34,25 @@ public class CheckTestNgSuiteXmlIT
     @Test
     public void suiteXml()
     {
-        unpack().executeTest().verifyErrorFree( 2 );
+        unpack().executeTest()
+                .verifyErrorFree( 2 );
     }
 
     @Test
-    @Ignore( "Fails - see SUREFIRE-1123" )
     public void suiteXmlForkModeAlways()
     {
-        unpack().forkAlways().executeTest().verifyErrorFree( 2 );
+        unpack().forkAlways()
+                .executeTest()
+                .verifyTextInLog( "Tests run: 2, Failures: 0, Errors: 0, Skipped: 0" );
     }
 
     @Test
     public void suiteXmlForkCountTwoReuse()
     {
-        unpack().forkCount( 2 ).reuseForks( true ).executeTest().verifyErrorFree( 2 );
+        unpack().forkCount( 2 )
+                .reuseForks( true )
+                .executeTest()
+                .verifyErrorFree( 2 );
     }
 
     private SurefireLauncher unpack()

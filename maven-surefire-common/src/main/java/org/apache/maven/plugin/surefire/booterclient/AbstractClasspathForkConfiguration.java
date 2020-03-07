@@ -44,6 +44,7 @@ abstract class AbstractClasspathForkConfiguration
                                         @Nonnull Properties modelProperties,
                                         @Nullable String argLine,
                                         @Nonnull Map<String, String> environmentVariables,
+                                        @Nonnull String[] excludedEnvironmentVariables,
                                         boolean debug,
                                         int forkCount,
                                         boolean reuseForks,
@@ -51,7 +52,7 @@ abstract class AbstractClasspathForkConfiguration
                                         @Nonnull ConsoleLogger log )
     {
         super( bootClasspath, tempDirectory, debugLine, workingDirectory, modelProperties, argLine,
-                environmentVariables, debug, forkCount, reuseForks, pluginPlatform, log );
+                environmentVariables, excludedEnvironmentVariables, debug, forkCount, reuseForks, pluginPlatform, log );
     }
 
     @Override

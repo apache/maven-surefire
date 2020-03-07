@@ -29,6 +29,9 @@ import static org.apache.maven.surefire.testng.conf.TestNGMapConfiguratorTest.FI
 import static org.apache.maven.surefire.testng.conf.TestNGMapConfiguratorTest.LISTENER_PROP;
 import static org.apache.maven.surefire.testng.conf.TestNGMapConfiguratorTest.SECOND_LISTENER;
 
+/**
+ *
+ */
 public class TestNG513ConfiguratorTest
     extends TestCase
 {
@@ -65,7 +68,7 @@ public class TestNG513ConfiguratorTest
             throws TestSetFailedException
     {
         TestNGMapConfigurator testNGMapConfigurator = new TestNG513Configurator();
-        Map<String, String> raw = new HashMap<String, String>();
+        Map<String, String> raw = new HashMap<>();
         raw.put( key, value );
         return testNGMapConfigurator.getConvertedOptions( raw );
     }

@@ -93,4 +93,13 @@ public interface RunListener
      * (The event is fired after the Nth test failed to signal skipping the rest of test-set.)
      */
     void testExecutionSkippedByUser();
+
+    /**
+     * Marks the listener with run mode, e.g. normal run or re-run.
+     *
+     * @param currentRunMode    set current run
+     * @return previous run mode; never returns null
+     * @throws NullPointerException if <code>currentRunMode</code> is null
+     */
+    RunMode markAs( RunMode currentRunMode );
 }

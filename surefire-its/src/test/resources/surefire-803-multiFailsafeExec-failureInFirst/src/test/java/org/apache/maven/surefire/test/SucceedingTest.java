@@ -59,26 +59,9 @@ public class SucceedingTest
     {
         final File f = new File( "target/tests-run", getClass().getName() + ".txt" );
         f.getParentFile().mkdirs();
-
-        FileWriter w = null;
-
-        try
+        try ( FileWriter w = new FileWriter( f, true ) )
         {
-            w = new FileWriter( f, true );
             w.write( name.getMethodName() );
-        }
-        finally
-        {
-            if ( w != null )
-            {
-                try
-                {
-                    w.close();
-                }
-                catch ( final IOException e )
-                {
-                }
-            }
         }
     }
 }

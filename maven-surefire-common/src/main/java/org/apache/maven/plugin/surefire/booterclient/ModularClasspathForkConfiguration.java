@@ -20,6 +20,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
+import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.booter.AbstractPathConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
@@ -27,16 +28,11 @@ import org.apache.maven.surefire.booter.ModularClasspath;
 import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ModuleVisitor;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
@@ -48,7 +44,8 @@ import java.util.Properties;
 import static java.io.File.createTempFile;
 import static java.io.File.pathSeparatorChar;
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
-import static org.objectweb.asm.Opcodes.ASM6;
+import static org.apache.maven.surefire.shared.utils.StringUtils.replace;
+import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -65,6 +62,7 @@ public class ModularClasspathForkConfiguration
                                               @Nonnull Properties modelProperties,
                                               @Nullable String argLine,
                                               @Nonnull Map<String, String> environmentVariables,
+                                              @Nonnull String[] excludedEnvironmentVariables,
                                               boolean debug,
                                               @Nonnegative int forkCount,
                                               boolean reuseForks,
@@ -72,12 +70,12 @@ public class ModularClasspathForkConfiguration
                                               @Nonnull ConsoleLogger log )
     {
         super( bootClasspath, tempDirectory, debugLine, workingDirectory, modelProperties, argLine,
-                environmentVariables, debug, forkCount, reuseForks, pluginPlatform, log );
+                environmentVariables, excludedEnvironmentVariables, debug, forkCount, reuseForks, pluginPlatform, log );
     }
 
     @Override
     protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli, @Nonnull String startClass,
-                                     @Nonnull StartupConfiguration config )
+                                     @Nonnull StartupConfiguration config, @Nonnull File dumpLogDirectory )
             throws SurefireBooterForkException
     {
         try
@@ -89,144 +87,128 @@ public class ModularClasspathForkConfiguration
 
             ModularClasspath modularClasspath = modularClasspathConfiguration.getModularClasspath();
 
-            File descriptor = modularClasspath.getModuleDescriptor();
+            String moduleName = modularClasspath.getModuleNameFromDescriptor();
             List<String> modulePath = modularClasspath.getModulePath();
             Collection<String> packages = modularClasspath.getPackages();
             File patchFile = modularClasspath.getPatchFile();
             List<String> classpath = toCompleteClasspath( config );
 
-            File argsFile = createArgsFile( descriptor, modulePath, classpath, packages, patchFile, startClass );
+            File argsFile = createArgsFile( moduleName, modulePath, classpath, packages, patchFile, startClass );
 
             cli.createArg().setValue( "@" + escapeToPlatformPath( argsFile.getAbsolutePath() ) );
         }
         catch ( IOException e )
         {
-            throw new SurefireBooterForkException( "Error creating args file", e );
+            String error = "Error creating args file";
+            InPluginProcessDumpSingleton.getSingleton()
+                    .dumpException( e, error, dumpLogDirectory );
+            throw new SurefireBooterForkException( error, e );
         }
     }
 
     @Nonnull
-    File createArgsFile( @Nonnull File moduleDescriptor, @Nonnull List<String> modulePath,
+    File createArgsFile( @Nonnull String moduleName, @Nonnull List<String> modulePath,
                          @Nonnull List<String> classPath, @Nonnull Collection<String> packages,
                          @Nonnull File patchFile, @Nonnull String startClassName )
             throws IOException
     {
         File surefireArgs = createTempFile( "surefireargs", "", getTempDirectory() );
-        if ( !isDebug() )
+        if ( isDebug() )
+        {
+            getLogger().debug( "Path to args file: " +  surefireArgs.getCanonicalPath() );
+        }
+        else
         {
             surefireArgs.deleteOnExit();
         }
 
-        BufferedWriter writer = null;
-        try
+        try ( FileWriter io = new FileWriter( surefireArgs ) )
         {
-            writer = new BufferedWriter( new FileWriter( surefireArgs ) );
-
+            StringBuilder args = new StringBuilder( 64 * 1024 );
             if ( !modulePath.isEmpty() )
             {
-                writer.write( "--module-path" );
-                writer.newLine();
+                // https://docs.oracle.com/en/java/javase/11/tools/java.html#GUID-4856361B-8BFD-4964-AE84-121F5F6CF111
+                args.append( "--module-path" )
+                        .append( NL )
+                        .append( '"' );
 
                 for ( Iterator<String> it = modulePath.iterator(); it.hasNext(); )
                 {
-                    writer.append( it.next() );
+                    args.append( replace( it.next(), "\\", "\\\\" ) );
                     if ( it.hasNext() )
                     {
-                        writer.append( pathSeparatorChar );
+                        args.append( pathSeparatorChar );
                     }
                 }
 
-                writer.newLine();
+                args.append( '"' )
+                        .append( NL );
             }
 
             if ( !classPath.isEmpty() )
             {
-                writer.write( "--class-path" );
-                writer.newLine();
+                args.append( "--class-path" )
+                        .append( NL )
+                        .append( '"' );
+
                 for ( Iterator<String> it = classPath.iterator(); it.hasNext(); )
                 {
-                    writer.append( it.next() );
+                    args.append( replace( it.next(), "\\", "\\\\" ) );
                     if ( it.hasNext() )
                     {
-                        writer.append( pathSeparatorChar );
+                        args.append( pathSeparatorChar );
                     }
                 }
 
-                writer.newLine();
+                args.append( '"' )
+                        .append( NL );
             }
 
-            final String moduleName = toModuleName( moduleDescriptor );
-
-            writer.write( "--patch-module" );
-            writer.newLine();
-            writer.append( moduleName )
+            args.append( "--patch-module" )
+                    .append( NL )
+                    .append( moduleName )
                     .append( '=' )
-                    .append( patchFile.getPath() );
-
-            writer.newLine();
+                    .append( '"' )
+                    .append( replace( patchFile.getPath(), "\\", "\\\\" ) )
+                    .append( '"' )
+                    .append( NL );
 
             for ( String pkg : packages )
             {
-                writer.write( "--add-exports" );
-                writer.newLine();
-                writer.append( moduleName )
+                args.append( "--add-exports" )
+                        .append( NL )
+                        .append( moduleName )
                         .append( '/' )
                         .append( pkg )
                         .append( '=' )
-                        .append( "ALL-UNNAMED" );
-
-                writer.newLine();
+                        .append( "ALL-UNNAMED" )
+                        .append( NL );
             }
 
-            writer.write( "--add-modules" );
-            writer.newLine();
-            writer.append( moduleName );
+            args.append( "--add-modules" )
+                    .append( NL )
+                    .append( moduleName )
+                    .append( NL );
 
-            writer.newLine();
-
-            writer.write( "--add-reads" );
-            writer.newLine();
-            writer.append( moduleName )
+            args.append( "--add-reads" )
+                    .append( NL )
+                    .append( moduleName )
                     .append( '=' )
-                    .append( "ALL-UNNAMED" );
+                    .append( "ALL-UNNAMED" )
+                    .append( NL );
 
-            writer.newLine();
+            args.append( startClassName );
 
-            writer.write( startClassName );
+            String argsFileContent = args.toString();
 
-            writer.newLine();
-        }
-        finally
-        {
-            if ( writer != null )
+            if ( isDebug() )
             {
-                writer.close();
+                getLogger().debug( "args file content:" + NL + argsFileContent );
             }
+
+            io.write( argsFileContent );
+
+            return surefireArgs;
         }
-
-        return surefireArgs;
-    }
-
-    @Nonnull
-    String toModuleName( @Nonnull File moduleDescriptor ) throws IOException
-    {
-        if ( !moduleDescriptor.isFile() )
-        {
-            throw new IOException( "No such Jigsaw module-descriptor exists " + moduleDescriptor.getAbsolutePath() );
-        }
-
-        final StringBuilder sb = new StringBuilder();
-        new ClassReader( new FileInputStream( moduleDescriptor ) ).accept( new ClassVisitor( ASM6 )
-        {
-            @Override
-            public ModuleVisitor visitModule( String name, int access, String version )
-            {
-                sb.setLength( 0 );
-                sb.append( name );
-                return super.visitModule( name, access, version );
-            }
-        }, 0 );
-
-        return sb.toString();
     }
 }

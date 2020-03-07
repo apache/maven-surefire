@@ -38,7 +38,7 @@ class JUnitPlatformWithTagsTest
     @Tag("run")
     void dontRun()
     {
-        fail();
+        fail( "unexpected to call" );
     }
 
     @Test
@@ -52,8 +52,6 @@ class JUnitPlatformWithTagsTest
     @Test
     void tagless()
     {
-        fail();
+        fail( "unexpected to call" );
     }
-
-
 }

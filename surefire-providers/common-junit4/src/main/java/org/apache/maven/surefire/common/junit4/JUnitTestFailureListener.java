@@ -33,7 +33,7 @@ import java.util.List;
 public class JUnitTestFailureListener
     extends RunListener
 {
-    private final List<Failure> allFailures = new ArrayList<Failure>();
+    private final List<Failure> allFailures = new ArrayList<>();
 
     @Override
     public void testFailure( Failure failure )

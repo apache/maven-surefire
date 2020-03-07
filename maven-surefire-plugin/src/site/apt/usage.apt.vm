@@ -104,14 +104,14 @@ mvn verify
 
    * TestNG
 
-   * JUnit (3.8 or 4.x)
+   * JUnit (3.8, 4.x or 5.x)
 
    * POJO
 
   Which providers are available is controlled simply by the inclusion of the
-  appropriate dependencies (i.e., <<<junit:junit>>> or <<<junit:junit-dep>>> for JUnit and <<<org.testng:testng>>> 4.7+
-  for TestNG). Since this is required to compile the test classes anyway, no
-  additional configuration is required.
+  appropriate dependencies (i.e., <<<junit:junit>>> or <<<junit:junit-dep>>> for JUnit4, <<junit-jupiter-engine>> or
+  <<junit-vintage-engine>> for JUnit5 and <<<org.testng:testng>>> 4.7+ for TestNG). Since this is required to compile the test
+  classes anyway, no additional configuration is required.
 
   Note that any normal Surefire integration works identically no matter which
   providers are in use - so you can still produce a Cobertura report and a

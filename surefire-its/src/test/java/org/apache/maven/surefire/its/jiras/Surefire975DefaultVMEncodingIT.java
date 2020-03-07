@@ -25,6 +25,9 @@ import org.junit.Test;
 
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.convertUnicodeToUTF8;
 
+/**
+ *
+ */
 public class Surefire975DefaultVMEncodingIT
     extends SurefireJUnit4IntegrationTestCase
 {

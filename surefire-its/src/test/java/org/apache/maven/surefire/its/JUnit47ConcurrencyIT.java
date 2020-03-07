@@ -23,9 +23,11 @@ import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.endsWith;
 
 /**
  * Basic suite test using all known versions of JUnit 4.x
@@ -51,8 +53,11 @@ public class JUnit47ConcurrencyIT
                 break;
             }
         }
-        assertNotNull( result);
-        assertThat( result, anyOf( containsString( "Time elapsed: 1." ), containsString( "Time elapsed: 0.9" ) ) );
+        assertNotNull( result );
+        assertThat( result, anyOf(
+            containsString( "Time elapsed: 1." ),
+            containsString( "Time elapsed: 1 s" ),
+            containsString( "Time elapsed: 0.9" ) ) );
         assertThat( result, endsWith( " s - in concurrentjunit47.src.test.java.junit47.BasicTest" ) );
     }
 }

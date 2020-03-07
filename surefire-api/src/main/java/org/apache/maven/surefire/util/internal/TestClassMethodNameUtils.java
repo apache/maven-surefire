@@ -19,24 +19,15 @@ package org.apache.maven.surefire.util.internal;
  * under the License.
  */
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * JUnit Description parser.
- * Used by JUnit Version lower than 4.7.
+ * Used by JUnit4+.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20
  */
 public final class TestClassMethodNameUtils
 {
-    /**
-     * This pattern is verbatim copy from JUnit's code in class {@code Description}.
-     * Parsing class and method from junit description would provide identical result to JUnit internal parser.
-     */
-    private static final Pattern METHOD_CLASS_PATTERN = Pattern.compile( "([\\s\\S]*)\\((.*)\\)" );
-
     private TestClassMethodNameUtils()
     {
         throw new IllegalStateException( "no instantiable constructor" );
@@ -44,13 +35,26 @@ public final class TestClassMethodNameUtils
 
     public static String extractClassName( String displayName )
     {
-        Matcher m = METHOD_CLASS_PATTERN.matcher( displayName );
-        return m.matches() ? m.group( 2 ) : displayName;
+        String clazz = displayName;
+        if ( displayName.endsWith( ")" ) )
+        {
+            int paren = displayName.lastIndexOf( '(' );
+            if ( paren != -1 )
+            {
+                clazz = displayName.substring( paren + 1, displayName.length() - 1 );
+            }
+        }
+        return clazz;
     }
 
     public static String extractMethodName( String displayName )
     {
-        Matcher m = METHOD_CLASS_PATTERN.matcher( displayName );
-        return m.matches() ? m.group( 1 ) : displayName;
+        String method = null;
+        int parent = displayName.lastIndexOf( '(' );
+        if ( parent != -1 )
+        {
+            method = displayName.substring( 0, parent );
+        }
+        return method;
     }
 }

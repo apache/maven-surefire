@@ -29,12 +29,31 @@ Maven Surefire Report Plugin
   <<<$\{basedir\}/target/surefire-reports>>> and renders them using DOXIA,
   which creates the web interface version of the test results.
 
+*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+||Roadmap                                     ||Release Targets                                                                                                                                                                |
+*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|                                             | Maven API 3.0 and Java 1.7                                                                                                                                                   \ |
+|                                             |                                                                                                                                                                              \ |
+| 3.0.0-M1                                    | {{{https://issues.apache.org/jira/browse/SUREFIRE-1493}Maven Plugin API 3.0}}                                                                                                \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1474}Java 1.7 as minimum}}                                                                                                 \ |
+|                                             | {{{https://issues.apache.org/jira/projects/SUREFIRE/versions/12342871}See the Release Notes for the version 3.0.0-M1}}                                                       \ |
+*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|                                             | Fixed JDK9 and Windows Class-Path issues, 3.0 and Legacy Report XSD, 3.0.0-M2 shadefire                                                                                      \ |
+|                                             |                                                                                                                                                                              \ |
+| 3.0.0-M2                                    | {{{https://issues.apache.org/jira/browse/SUREFIRE-1590}3.0 and Legacy Report XSD}}                                                                                           \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1600}3.0.0-M2 shadefire}}                                                                                                  \ |
+|                                             | {{{https://issues.apache.org/jira/projects/SUREFIRE/versions/12344396}See the Release Notes for the version 3.0.0-M2}}                                                       \ |
+*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 3.0.0-M3                                    | New interprocess communication and TCP/IP which fixes current blocker and critical bugs.                                                                                       |
+*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 3.0.0-M4                                    | Extensions API                                                                                                                                                                 |
+*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 3.0.0-M5                                    | Breaking backwards compatibility with system properties in configuration parameters, removing deprecated configuration parameters and removing deprecated code, etc.           |
+*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
 * Goals Overview
 
-  The Surefire Report Plugin only has one goal (the other is a workaround):
-
-  * {{{./failsafe-report-only-mojo.html}surefire-report:failsafe-report-only}} This goal does not
-  run the tests, it only builds the IT reports. See {{{https://issues.apache.org/jira/browse/SUREFIRE-257}SUREFIRE-257}}
+  The Surefire Report Plugin has three goals:
 
   * {{{./report-mojo.html}surefire-report:report}} Generates the test
   results report into HTML format.
@@ -42,6 +61,9 @@ Maven Surefire Report Plugin
   * {{{./report-only-mojo.html}surefire-report:report-only}} This goal does 
   not run the tests, it only builds the reports. It is provided as a work 
   around for {{{https://issues.apache.org/jira/browse/SUREFIRE-257}SUREFIRE-257}}
+
+  * {{{./failsafe-report-only-mojo.html}surefire-report:failsafe-report-only}} This goal does not
+  run the tests, it only builds the IT reports. See {{{https://issues.apache.org/jira/browse/SUREFIRE-257}SUREFIRE-257}}
 
   []
 
@@ -51,9 +73,8 @@ Maven Surefire Report Plugin
 * Usage
 
   General instructions on how to use the Surefire Report Plugin can be found on the {{{./usage.html}usage page}}. Some more
-  specific use cases are described in the examples listed below. Last but not least, users occasionally contribute
-  additional examples, tips or errata to the
-  {{{http://docs.codehaus.org/display/MAVENUSER/Surefire+Report+Plugin}plugin's wiki page}}.
+  specific use cases are described in the examples listed below. Additionally, users can contribute to the
+  {{{https://github.com/apache/maven-surefire}GitHub project}}.
 
   In case you still have questions regarding the plugin's usage, please have a look at the {{{./faq.html}FAQ}} and feel
   free to contact the {{{./mail-lists.html}user mailing list}}. The posts to the mailing list are archived and could

@@ -31,7 +31,7 @@ public class CheckTestNgSuiteXmlSingleIT
     extends SurefireJUnit4IntegrationTestCase
 {
     @Test
-    public void TestNgSuite()
+    public void testNgSuite()
     {
         unpack( "/testng-twoTestCaseSuite" )
                 .sysProp( "testNgVersion", "5.7" )

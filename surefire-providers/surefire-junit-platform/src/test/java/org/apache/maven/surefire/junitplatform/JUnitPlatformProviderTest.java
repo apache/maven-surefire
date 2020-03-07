@@ -26,14 +26,17 @@ import static org.apache.maven.surefire.booter.ProviderParameterNames.TESTNG_EXC
 import static org.apache.maven.surefire.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.mockito.AdditionalMatchers.gt;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,6 +46,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -54,14 +58,18 @@ import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.RunOrderCalculator;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
+import org.fest.assertions.Assertions;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
@@ -79,6 +87,99 @@ import org.mockito.InOrder;
  */
 public class JUnitPlatformProviderTest
 {
+    @Test
+    public void shouldFailClassOnBeforeAll()
+            throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParametersMock(), launcher );
+        RunListener listener = mock( RunListener.class );
+
+        ArgumentCaptor<ReportEntry> testCaptor = ArgumentCaptor.forClass( ReportEntry.class );
+        ArgumentCaptor<TestSetReportEntry> testSetCaptor = ArgumentCaptor.forClass( TestSetReportEntry.class );
+
+        RunListenerAdapter adapter = new RunListenerAdapter( listener );
+        launcher.registerTestExecutionListeners( adapter );
+
+        TestsToRun testsToRun = newTestsToRun( FailingBeforeAllJupiterTest.class );
+        invokeProvider( provider, testsToRun );
+        InOrder inOrder = inOrder( listener );
+        inOrder.verify( listener, times( 1 ) ).testSetStarting( testSetCaptor.capture() );
+        inOrder.verify( listener, never() ).testStarting( any( ReportEntry.class ) );
+        inOrder.verify( listener, times( 1 ) ).testFailed( testCaptor.capture() );
+        inOrder.verify( listener, times( 1 ) ).testSetCompleted( testSetCaptor.capture() );
+
+        assertThat( testSetCaptor.getAllValues() )
+                .hasSize( 2 );
+
+        assertThat( testSetCaptor.getAllValues().get( 0 ).getSourceName() )
+                .isEqualTo( FailingBeforeAllJupiterTest.class.getName() );
+
+        assertThat( testSetCaptor.getAllValues().get( 0 ).getName() )
+                .isNull();
+
+        assertThat( testCaptor.getAllValues() )
+                .hasSize( 1 );
+
+        assertThat( testCaptor.getValue().getSourceName() )
+                .isEqualTo( FailingBeforeAllJupiterTest.class.getName() );
+
+        assertThat( testCaptor.getValue().getName() )
+                .isNull();
+
+        assertThat( testSetCaptor.getAllValues().get( 1 ).getSourceName() )
+                .isEqualTo( FailingBeforeAllJupiterTest.class.getName() );
+
+        assertThat( testSetCaptor.getAllValues().get( 1 ).getName() )
+                .isNull();
+    }
+
+    @Test
+    public void shouldErrorClassOnBeforeAll()
+            throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParametersMock(), launcher );
+        RunListener listener = mock( RunListener.class );
+
+        ArgumentCaptor<ReportEntry> testCaptor = ArgumentCaptor.forClass( ReportEntry.class );
+        ArgumentCaptor<TestSetReportEntry> testSetCaptor = ArgumentCaptor.forClass( TestSetReportEntry.class );
+
+        RunListenerAdapter adapter = new RunListenerAdapter( listener );
+        launcher.registerTestExecutionListeners( adapter );
+
+        TestsToRun testsToRun = newTestsToRun( FailingWithErrorBeforeAllJupiterTest.class );
+        invokeProvider( provider, testsToRun );
+        InOrder inOrder = inOrder( listener );
+        inOrder.verify( listener, times( 1 ) ).testSetStarting( testSetCaptor.capture() );
+        inOrder.verify( listener, never() ).testStarting( any( ReportEntry.class ) );
+        inOrder.verify( listener, times( 1 ) ).testError( testCaptor.capture() );
+        inOrder.verify( listener, times( 1 ) ).testSetCompleted( testSetCaptor.capture() );
+
+        assertThat( testSetCaptor.getAllValues() )
+                .hasSize( 2 );
+
+        assertThat( testSetCaptor.getAllValues().get( 0 ).getSourceName() )
+                .isEqualTo( FailingWithErrorBeforeAllJupiterTest.class.getName() );
+
+        assertThat( testSetCaptor.getAllValues().get( 0 ).getName() )
+                .isNull();
+
+        assertThat( testCaptor.getAllValues() )
+                .hasSize( 1 );
+
+        assertThat( testCaptor.getValue().getSourceName() )
+                .isEqualTo( FailingWithErrorBeforeAllJupiterTest.class.getName() );
+
+        assertThat( testCaptor.getValue().getName() )
+                .isNull();
+
+        assertThat( testSetCaptor.getAllValues().get( 1 ).getSourceName() )
+                .isEqualTo( FailingWithErrorBeforeAllJupiterTest.class.getName() );
+
+        assertThat( testSetCaptor.getAllValues().get( 1 ).getName() )
+                .isNull();
+    }
 
     @Test
     public void getSuitesReturnsScannedClasses()
@@ -148,6 +249,345 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
+    public void singleTestClassIsInvokedLazily()
+        throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParametersMock(), launcher );
+
+        TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
+        launcher.registerTestExecutionListeners( executionListener );
+
+        invokeProvider( provider, newTestsToRunLazily( TestClass1.class ) );
+
+        assertThat( executionListener.summaries ).hasSize( 1 );
+        TestExecutionSummary summary = executionListener.summaries.get( 0 );
+        assertEquals( TestClass1.TESTS_FOUND, summary.getTestsFoundCount() );
+        assertEquals( TestClass1.TESTS_STARTED, summary.getTestsStartedCount() );
+        assertEquals( TestClass1.TESTS_SKIPPED, summary.getTestsSkippedCount() );
+        assertEquals( TestClass1.TESTS_SUCCEEDED, summary.getTestsSucceededCount() );
+        assertEquals( TestClass1.TESTS_ABORTED, summary.getTestsAbortedCount() );
+        assertEquals( TestClass1.TESTS_FAILED, summary.getTestsFailedCount() );
+    }
+
+    @Test
+    public void failingTestCaseAfterRerun()
+            throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        ProviderParameters parameters = providerParametersMock();
+        // Mock the rerun variable
+        when( parameters.getTestRequest().getRerunFailingTestsCount() ).thenReturn( 1 );
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( parameters, launcher );
+
+        TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
+        launcher.registerTestExecutionListeners( executionListener );
+
+        invokeProvider( provider, TestClass2.class );
+
+        assertThat( executionListener.summaries ).hasSize( 2 );
+        TestExecutionSummary summary = executionListener.summaries.get( 0 );
+        assertEquals( TestClass2.TESTS_FOUND, summary.getTestsFoundCount() );
+        assertEquals( TestClass2.TESTS_STARTED, summary.getTestsStartedCount() );
+        assertEquals( TestClass2.TESTS_SKIPPED, summary.getTestsSkippedCount() );
+        assertEquals( TestClass2.TESTS_SUCCEEDED, summary.getTestsSucceededCount() );
+        assertEquals( TestClass2.TESTS_ABORTED, summary.getTestsAbortedCount() );
+        assertEquals( TestClass2.TESTS_FAILED, summary.getTestsFailedCount() );
+
+        // Should only be re-running one unit test
+        // - And it should only fail
+        summary = executionListener.summaries.get( 1 );
+        assertEquals( 1, summary.getTestsFoundCount() );
+        assertEquals( 1, summary.getTestsStartedCount() );
+        assertEquals( 0, summary.getTestsSkippedCount() );
+        assertEquals( 0, summary.getTestsSucceededCount() );
+        assertEquals( 0, summary.getTestsAbortedCount() );
+        assertEquals( 1, summary.getTestsFailedCount() );
+    }
+
+    @Test
+    public void rerunStillFailing()
+                    throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        ProviderParameters parameters = providerParametersMock();
+        // Mock the rerun variable
+        when( parameters.getTestRequest().getRerunFailingTestsCount() ).thenReturn( 2 );
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( parameters, launcher );
+        TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
+        launcher.registerTestExecutionListeners( executionListener );
+
+        // 3 unit tests:
+        // - fail always
+        // - fail twice (pass on 2nd rerun)
+        // - pass always
+        invokeProvider( provider, TestClass4.class );
+
+        assertThat( executionListener.summaries ).hasSize( 3 );
+        TestExecutionSummary summary = executionListener.summaries.get( 0 );
+        assertEquals( 6, summary.getTestsFoundCount() );
+        assertEquals( 5, summary.getTestsStartedCount() );
+        assertEquals( 1, summary.getTestsSkippedCount() );
+        assertEquals( 1, summary.getTestsSucceededCount() );
+        assertEquals( 1, summary.getTestsAbortedCount() );
+        assertEquals( 3, summary.getTestsFailedCount() );
+        Set<String> failDisplays = new HashSet<>();
+        for ( TestExecutionSummary.Failure failure : summary.getFailures() )
+        {
+            failDisplays.add( failure.getTestIdentifier().getDisplayName() );
+        }
+        assertEquals( 3, failDisplays.size() );
+        assertTrue( failDisplays.contains( "Fails twice" ) );
+        assertTrue( failDisplays.contains( "testAlwaysFail()" ) );
+        assertTrue( failDisplays.contains( "testAlwaysError()" ) );
+
+        // Should rerun both of the failures
+        summary = executionListener.summaries.get( 1 );
+        assertEquals( 3, summary.getTestsFoundCount() );
+        assertEquals( 3, summary.getTestsStartedCount() );
+        assertEquals( 0, summary.getTestsSkippedCount() );
+        assertEquals( 0, summary.getTestsSucceededCount() );
+        assertEquals( 0, summary.getTestsAbortedCount() );
+        assertEquals( 3, summary.getTestsFailedCount() );
+        failDisplays.clear();
+        for ( TestExecutionSummary.Failure failure : summary.getFailures() )
+        {
+            failDisplays.add( failure.getTestIdentifier().getDisplayName() );
+        }
+        assertEquals( 3, failDisplays.size() );
+        assertTrue( failDisplays.contains( "Fails twice" ) );
+        assertTrue( failDisplays.contains( "testAlwaysFail()" ) );
+        assertTrue( failDisplays.contains( "testAlwaysError()" ) );
+
+        // now only one failure should remain
+        summary = executionListener.summaries.get( 2 );
+        assertEquals( 3, summary.getTestsFoundCount() );
+        assertEquals( 3, summary.getTestsStartedCount() );
+        assertEquals( 0, summary.getTestsSkippedCount() );
+        assertEquals( 1, summary.getTestsSucceededCount() );
+        assertEquals( 0, summary.getTestsAbortedCount() );
+        assertEquals( 2, summary.getTestsFailedCount() );
+        failDisplays.clear();
+        for ( TestExecutionSummary.Failure failure : summary.getFailures() )
+        {
+            failDisplays.add( failure.getTestIdentifier().getDisplayName() );
+        }
+        assertEquals( 2, failDisplays.size() );
+        assertTrue( failDisplays.contains( "testAlwaysFail()" ) );
+        assertTrue( failDisplays.contains( "testAlwaysError()" ) );
+    }
+
+    @Test
+    public void rerunWithSuccess()
+            throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        ProviderParameters parameters = providerParametersMock();
+        // Mock the rerun variable
+        when( parameters.getTestRequest().getRerunFailingTestsCount() ).thenReturn( 2 );
+        when( parameters.getProviderProperties() )
+                .thenReturn( singletonMap( JUnitPlatformProvider.CONFIGURATION_PARAMETERS,
+                        "forkCount = 1\nreuseForks = true" ) );
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( parameters, launcher );
+        TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
+        launcher.registerTestExecutionListeners( executionListener );
+
+        invokeProvider( provider, TestClass5.class );
+
+        assertThat( executionListener.summaries ).hasSize( 3 );
+        TestExecutionSummary summary = executionListener.summaries.get( 0 );
+        assertEquals( 1, summary.getTestsFoundCount() );
+        assertEquals( 1, summary.getTestsStartedCount() );
+        assertEquals( 0, summary.getTestsSucceededCount() );
+        assertEquals( 1, summary.getTestsFailedCount() );
+
+        summary = executionListener.summaries.get( 1 );
+        assertEquals( 1, summary.getTestsFoundCount() );
+        assertEquals( 1, summary.getTestsStartedCount() );
+        assertEquals( 0, summary.getTestsSucceededCount() );
+        assertEquals( 1, summary.getTestsFailedCount() );
+
+        summary = executionListener.summaries.get( 2 );
+        assertEquals( 1, summary.getTestsFoundCount() );
+        assertEquals( 1, summary.getTestsStartedCount() );
+        assertEquals( 1, summary.getTestsSucceededCount() );
+        assertEquals( 0, summary.getTestsFailedCount() );
+    }
+
+    @Test
+    public void runDisplayNameTest() throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        ProviderParameters parameters = providerParametersMock();
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( parameters, launcher );
+
+        RunListener listener = mock( RunListener.class );
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
+        RunListenerAdapter adapter = new RunListenerAdapter( listener );
+
+        launcher.registerTestExecutionListeners( adapter );
+
+        invokeProvider( provider, DisplayNameTest.class );
+
+        verify( listener, times( 1 ) ).testStarting( entryCaptor.capture() );
+        List<ReportEntry> reportEntries = entryCaptor.getAllValues();
+
+        assertEquals( 1, reportEntries.size() );
+
+        assertEquals( DisplayNameTest.class.getName(), reportEntries.get( 0 ).getSourceName() );
+        assertEquals( "<< ✨ >>", reportEntries.get( 0 ).getSourceText() );
+        assertEquals( "test1", reportEntries.get( 0 ).getName() );
+        assertEquals( "73$71 ✔", reportEntries.get( 0 ).getNameText() );
+    }
+
+    @Test
+    public void detectErroredParameterized()
+        throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        ProviderParameters parameters = providerParametersMock();
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( parameters, launcher );
+
+        TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
+
+        RunListener listener = mock( RunListener.class );
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
+        RunListenerAdapter adapter = new RunListenerAdapter( listener );
+
+        launcher.registerTestExecutionListeners( executionListener, adapter );
+
+        invokeProvider( provider, TestClass8.class );
+
+        assertThat( executionListener.summaries ).hasSize( 1 );
+
+        verify( listener, times( 1 ) ).testSetCompleted( any() );
+        verify( listener, times( 1 ) ).testError( entryCaptor.capture() );
+        List<ReportEntry> reportEntries = entryCaptor.getAllValues();
+
+        assertEquals( TestClass8.class.getName(), reportEntries.get( 0 ).getSourceName() );
+        assertNull( reportEntries.get( 0 ).getSourceText() );
+        assertEquals( "testParameterizedTestCases", reportEntries.get( 0 ).getName() );
+        assertNull( reportEntries.get( 0 ).getNameText() );
+
+        TestExecutionSummary summary = executionListener.summaries.get( 0 );
+        assertEquals( 0, summary.getTestsFoundCount() );
+        assertEquals( 1, summary.getContainersFailedCount() );
+        assertEquals( 0, summary.getTestsStartedCount() );
+        assertEquals( 0, summary.getTestsSucceededCount() );
+        assertEquals( 0, summary.getTestsFailedCount() );
+    }
+
+    @Test
+    public void detectFailedParameterized()
+            throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        ProviderParameters parameters = providerParametersMock();
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( parameters, launcher );
+
+        TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
+
+        RunListener listener = mock( RunListener.class );
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
+        RunListenerAdapter adapter = new RunListenerAdapter( listener );
+
+        launcher.registerTestExecutionListeners( executionListener, adapter );
+
+        invokeProvider( provider, TestClass9.class );
+
+        assertThat( executionListener.summaries ).hasSize( 1 );
+
+        verify( listener, times( 1 ) ).testSetCompleted( any() );
+        verify( listener, times( 1 ) ).testFailed( entryCaptor.capture() );
+        List<ReportEntry> reportEntries = entryCaptor.getAllValues();
+
+        assertEquals( TestClass9.class.getName(), reportEntries.get( 0 ).getSourceName() );
+        assertNull( reportEntries.get( 0 ).getSourceText() );
+        assertEquals( "testParameterizedTestCases", reportEntries.get( 0 ).getName() );
+        assertNull( reportEntries.get( 0 ).getNameText() );
+
+        TestExecutionSummary summary = executionListener.summaries.get( 0 );
+        assertEquals( 0, summary.getTestsFoundCount() );
+        assertEquals( 1, summary.getContainersFailedCount() );
+        assertEquals( 0, summary.getTestsStartedCount() );
+        assertEquals( 0, summary.getTestsSucceededCount() );
+        assertEquals( 0, summary.getTestsFailedCount() );
+    }
+
+    @Test
+    public void rerunParameterized()
+            throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        ProviderParameters parameters = providerParametersMock();
+        // Mock the rerun variable
+        when( parameters.getTestRequest().getRerunFailingTestsCount() ).thenReturn( 2 );
+        when( parameters.getProviderProperties() )
+                .thenReturn( singletonMap( JUnitPlatformProvider.CONFIGURATION_PARAMETERS,
+                        "forkCount = 1\nreuseForks = true" ) );
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( parameters, launcher );
+
+        TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
+
+        RunListener listener = mock( RunListener.class );
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
+        RunListenerAdapter adapter = new RunListenerAdapter( listener );
+
+        launcher.registerTestExecutionListeners( executionListener, adapter );
+
+        invokeProvider( provider, TestClass7.class );
+
+        assertThat( executionListener.summaries ).hasSize( 3 );
+
+        verify( listener, times( 4 ) ).testStarting( entryCaptor.capture() );
+        List<ReportEntry> reportEntries = entryCaptor.getAllValues();
+
+        assertEquals( TestClass7.class.getName(), reportEntries.get( 0 ).getSourceName() );
+        assertNull( reportEntries.get( 0 ).getSourceText() );
+        assertEquals( "testParameterizedTestCases(String, boolean)[1]", reportEntries.get( 0 ).getName() );
+        assertEquals( "[1] Always pass, true", reportEntries.get( 0 ).getNameText() );
+
+        assertEquals( TestClass7.class.getName(), reportEntries.get( 1 ).getSourceName() );
+        assertNull( reportEntries.get( 1 ).getSourceText() );
+        assertEquals( "testParameterizedTestCases(String, boolean)[2]", reportEntries.get( 1 ).getName() );
+        assertEquals( "[2] Always fail, false", reportEntries.get( 1 ).getNameText() );
+
+        assertEquals( TestClass7.class.getName(), reportEntries.get( 2 ).getSourceName() );
+        assertNull( reportEntries.get( 2 ).getSourceText() );
+        assertEquals( "testParameterizedTestCases(String, boolean)[2]", reportEntries.get( 2 ).getName() );
+        assertEquals( "[2] Always fail, false", reportEntries.get( 2 ).getNameText() );
+
+        assertEquals( TestClass7.class.getName(), reportEntries.get( 3 ).getSourceName() );
+        assertNull( reportEntries.get( 3 ).getSourceText() );
+        assertEquals( "testParameterizedTestCases(String, boolean)[2]", reportEntries.get( 3 ).getName() );
+        assertEquals( "[2] Always fail, false", reportEntries.get( 3 ).getNameText() );
+
+        TestExecutionSummary summary = executionListener.summaries.get( 0 );
+        assertEquals( 2, summary.getTestsFoundCount() );
+        assertEquals( 2, summary.getTestsStartedCount() );
+        assertEquals( 1, summary.getTestsSucceededCount() );
+        assertEquals( 1, summary.getTestsFailedCount() );
+
+        summary = executionListener.summaries.get( 1 );
+        assertEquals( 1, summary.getTestsFoundCount() );
+        assertEquals( 1, summary.getTestsStartedCount() );
+        assertEquals( 0, summary.getTestsSucceededCount() );
+        assertEquals( 1, summary.getTestsFailedCount() );
+
+        summary = executionListener.summaries.get( 2 );
+        assertEquals( 1, summary.getTestsFoundCount() );
+        assertEquals( 1, summary.getTestsStartedCount() );
+        assertEquals( 0, summary.getTestsSucceededCount() );
+        assertEquals( 1, summary.getTestsFailedCount() );
+    }
+
+    @Test
     public void allDiscoveredTestsAreInvokedForNullArgument()
                     throws Exception
     {
@@ -163,30 +603,38 @@ public class JUnitPlatformProviderTest
         invokeProvider( provider, null );
 
         InOrder inOrder = inOrder( runListener );
-        inOrder
-                        .verify( runListener )
-                        .testSetStarting(
-                                        new SimpleReportEntry(
-                                                        JUnitPlatformProvider.class.getName(),
-                                                        TestClass1.class.getName() ) );
-        inOrder
-                        .verify( runListener )
-                        .testSetCompleted(
-                                        new SimpleReportEntry(
-                                                        JUnitPlatformProvider.class.getName(),
-                                                        TestClass1.class.getName() ) );
-        inOrder
-                        .verify( runListener )
-                        .testSetStarting(
-                                        new SimpleReportEntry(
-                                                        JUnitPlatformProvider.class.getName(),
-                                                        TestClass2.class.getName() ) );
-        inOrder
-                        .verify( runListener )
-                        .testSetCompleted(
-                                        new SimpleReportEntry(
-                                                        JUnitPlatformProvider.class.getName(),
-                                                        TestClass2.class.getName() ) );
+
+        ArgumentCaptor<SimpleReportEntry> report = ArgumentCaptor.forClass( SimpleReportEntry.class );
+        inOrder.verify( runListener )
+                .testSetStarting( report.capture() );
+        Assertions.assertThat( report.getValue().getSourceName() )
+                .isEqualTo( TestClass1.class.getName() );
+        Assertions.assertThat( report.getValue().getName() )
+                .isNull();
+
+        report = ArgumentCaptor.forClass( SimpleReportEntry.class );
+        inOrder.verify( runListener )
+                .testSetCompleted( report.capture() );
+        Assertions.assertThat( report.getValue().getSourceName() )
+                .isEqualTo( TestClass1.class.getName() );
+        Assertions.assertThat( report.getValue().getName() )
+                .isNull();
+
+        report = ArgumentCaptor.forClass( SimpleReportEntry.class );
+        inOrder.verify( runListener )
+                .testSetStarting( report.capture() );
+        Assertions.assertThat( report.getValue().getSourceName() )
+                .isEqualTo( TestClass2.class.getName() );
+        Assertions.assertThat( report.getValue().getName() )
+                .isNull();
+
+        report = ArgumentCaptor.forClass( SimpleReportEntry.class );
+        inOrder.verify( runListener )
+                .testSetCompleted( report.capture() );
+        Assertions.assertThat( report.getValue().getSourceName() )
+                .isEqualTo( TestClass2.class.getName() );
+        Assertions.assertThat( report.getValue().getName() )
+                .isNull();
 
         assertThat( executionListener.summaries ).hasSize( 1 );
         TestExecutionSummary summary = executionListener.summaries.get( 0 );
@@ -212,16 +660,14 @@ public class JUnitPlatformProviderTest
 
         invokeProvider( provider, VerboseTestClass.class );
 
-        ArgumentCaptor<byte[]> captor = ArgumentCaptor.forClass( byte[].class );
-        // @formatter:off
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass( String.class );
         verify( (ConsoleOutputReceiver) runListener )
-                        .writeTestOutput( captor.capture(), eq( 0 ), gt( 6 ), eq( true ) );
+                        .writeTestOutput( captor.capture(), eq( true ), eq( true ) );
         verify( (ConsoleOutputReceiver) runListener )
-                        .writeTestOutput( captor.capture(), eq( 0 ), gt( 6 ), eq( false ) );
+                        .writeTestOutput( captor.capture(), eq( true ), eq( false ) );
         assertThat( captor.getAllValues() )
-                        .extracting( bytes -> new String( bytes, 0, 6 ) )
-                        .containsExactly( "stdout", "stderr" );
-        // @formatter:on
+                .hasSize( 2 )
+                .containsExactly( "stdout", "stderr" );
     }
 
     @Test
@@ -519,10 +965,28 @@ public class JUnitPlatformProviderTest
         return new TestsToRun( new LinkedHashSet<>( classesList ) );
     }
 
+    private static TestsToRun newTestsToRunLazily( Class<?>... testClasses )
+    {
+        class LazyTestsToRunFake extends TestsToRun
+        {
+            LazyTestsToRunFake( Set<Class<?>> locatedClasses )
+            {
+                super( locatedClasses );
+            }
+
+            @Override
+            public boolean allowEagerReading()
+            {
+                return false;
+            }
+        }
+        List<Class<?>> classesList = Arrays.asList( testClasses );
+        return new LazyTestsToRunFake( new LinkedHashSet<>( classesList ) );
+    }
+
     private static class TestPlanSummaryListener
                     extends SummaryGeneratingListener
     {
-
         private final List<TestExecutionSummary> summaries = new ArrayList<>();
 
         @Override
@@ -700,5 +1164,149 @@ public class JUnitPlatformProviderTest
         {
             throw new RuntimeException();
         }
+    }
+
+    static class TestClass4
+    {
+        static int count;
+
+        @org.junit.jupiter.api.DisplayName( "Always passes" )
+        @org.junit.jupiter.api.Test
+        void testPass()
+        {
+        }
+
+        @org.junit.jupiter.api.Test
+        void testAborted()
+        {
+            assumeFalse( true );
+            throw new IllegalStateException( "this exception should never happen" );
+        }
+
+        @org.junit.jupiter.api.Test
+        void testAlwaysError()
+        {
+            throw new Error( "some error" );
+        }
+
+        @org.junit.jupiter.api.Test
+        void testAlwaysFail()
+        {
+            assertTrue( false );
+        }
+
+        @org.junit.jupiter.api.Test
+        @org.junit.jupiter.api.Disabled
+        void testAlwaysSkipped()
+        {
+            throw new IllegalStateException( "this test should be never called" );
+        }
+
+        @org.junit.jupiter.api.DisplayName( "Fails twice" )
+        @org.junit.jupiter.api.Test
+        void testFailTwice()
+        {
+            count += 1;
+            assertTrue( count >= 3 );
+        }
+    }
+
+    static class TestClass5
+    {
+        static int count;
+
+        @org.junit.jupiter.api.Test
+        void testFailTwice1()
+        {
+            count += 1;
+            assertTrue( count >= 3 );
+        }
+    }
+
+    static class TestClass7
+    {
+        static List<Object[]> params()
+        {
+            return Arrays.asList(  new Object[] { "Always pass", true },
+                    new Object[] { "Always fail", false }  );
+        }
+
+        @org.junit.jupiter.params.ParameterizedTest
+        @org.junit.jupiter.params.provider.MethodSource( "params" )
+        void testParameterizedTestCases( String testName, boolean value )
+        {
+            assertTrue( value );
+        }
+    }
+
+    static class TestClass8
+    {
+        static List<Object[]> params()
+        {
+            throw new RuntimeException();
+        }
+
+        @org.junit.jupiter.params.ParameterizedTest
+        @org.junit.jupiter.params.provider.MethodSource( "params" )
+        void testParameterizedTestCases()
+        {
+        }
+    }
+
+    static class TestClass9
+    {
+        static List<Object[]> params()
+        {
+            assertTrue( false );
+            return new ArrayList<>();
+        }
+
+        @org.junit.jupiter.params.ParameterizedTest
+        @org.junit.jupiter.params.provider.MethodSource( "params" )
+        void testParameterizedTestCases()
+        {
+        }
+    }
+
+    @DisplayName( "<< ✨ >>" )
+    static class DisplayNameTest
+    {
+        @org.junit.jupiter.api.Test
+        @DisplayName( "73$71 ✔" )
+        void test1()
+        {
+        }
+    }
+
+    static class FailingBeforeAllJupiterTest
+    {
+
+        @BeforeAll
+        static void oneTimeSetUp()
+        {
+            fail( "oneTimeSetUp() failed" );
+        }
+
+        @org.junit.jupiter.api.Test
+        void test()
+        {
+        }
+
+    }
+
+    static class FailingWithErrorBeforeAllJupiterTest
+    {
+
+        @BeforeAll
+        static void oneTimeSetUp()
+        {
+            throw new RuntimeException( "oneTimeSetUp() threw an exception" );
+        }
+
+        @org.junit.jupiter.api.Test
+        void test()
+        {
+        }
+
     }
 }

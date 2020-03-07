@@ -21,21 +21,23 @@
 
 properties(
     [
-        buildDiscarder(logRotator(artifactDaysToKeepStr: env.BRANCH_NAME == 'master' ? '30' : '7',
-                                  artifactNumToKeepStr: '10',
-                                  daysToKeepStr: env.BRANCH_NAME == 'master' ? '30' : '7',
-                                  numToKeepStr: '10')
+        buildDiscarder(logRotator(artifactDaysToKeepStr: env.BRANCH_NAME == 'master' ? '1' : '2',
+                                  artifactNumToKeepStr: '50',
+                                  daysToKeepStr: env.BRANCH_NAME == 'master' ? '10' : '5',
+                                  numToKeepStr: env.BRANCH_NAME == 'master' ? '5' : '3')
         ),
         disableConcurrentBuilds()
     ]
 )
 
-final def oses = ['linux':'ubuntu', 'windows':'Windows && !windows-2012-3']
-final def mavens = env.BRANCH_NAME == 'master' ? ['3.2.x', '3.3.x', '3.5.x'] : ['3.5.x']
-final def jdks = [7, 8, 9, 10]
+final def oses = ['linux':'ubuntu && !H23 && !H24 && !H29 && !H30 && !H40 && !H41', 'windows':'Windows']
+final def mavens = env.BRANCH_NAME == 'master' ? ['3.6.x', '3.2.x'] : ['3.6.x']
+// all non-EOL versions and the first EA
+final def jdks = [14, 13, 11, 8, 7]
 
 final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
-final def goals = ['clean', 'install', 'jacoco:report']
+final def goals = ['clean', 'install']
+final def goalsDepl = ['clean', 'deploy', 'jacoco:report']
 final Map stages = [:]
 
 oses.eachWithIndex { osMapping, indexOfOs ->
@@ -48,16 +50,14 @@ oses.eachWithIndex { osMapping, indexOfOs ->
             final String mvnName = jenkinsEnv.mvnFromVersion(os, maven)
             final String stageKey = "${os}-jdk${jdk}-maven${maven}"
 
-            def mavenOpts = '-server -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseNUMA \
--Xms64m -Djava.awt.headless=true'
-            if (jdk > 7) {
-                mavenOpts += ' -XX:+UseStringDeduplication'
-            }
+// Referenses for TLS:
+// https://central.sonatype.org/articles/2018/May/04/discontinued-support-for-tlsv11-and-below/?__hstc=31049440.ab2fd229e7f8b6176196d9f78621e1f5.1534324377408.1534324377408.1534324377408.1&__hssc=31049440.1.1534324377409&__hsfp=2729160845
+            def mavenOpts = '-Xms64m -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn'
             mavenOpts += (os == 'linux' ? ' -Xmx1g' : ' -Xmx256m')
 
             if (label == null || jdkTestName == null || mvnName == null) {
                 println "Skipping ${stageKey} as unsupported by Jenkins Environment."
-                return;
+                return
             }
 
             println "${stageKey}  ==>  Label: ${label}, JDK: ${jdkTestName}, Maven: ${mvnName}."
@@ -65,11 +65,18 @@ oses.eachWithIndex { osMapping, indexOfOs ->
             stages[stageKey] = {
                 node(label) {
                     timestamps {
-                        //https://github.com/jacoco/jacoco/issues/629
-                        def boolean makeReports = os == 'linux' && indexOfMaven == mavens.size() - 1 && jdk == 9
+                        boolean first = indexOfOs == 0 && indexOfMaven == 0 && indexOfJdk == 0
                         def failsafeItPort = 8000 + 100 * indexOfMaven + 10 * indexOfJdk
-                        def allOptions = options + ["-Dfailsafe-integration-test-port=${failsafeItPort}", "-Dfailsafe-integration-test-stop-port=${1 + failsafeItPort}"]
-                        buildProcess(stageKey, jdkName, jdkTestName, mvnName, goals, allOptions, mavenOpts, makeReports)
+                        def allOptions = options + ['-Djava.awt.headless=true', "-Dfailsafe-integration-test-port=${failsafeItPort}", "-Dfailsafe-integration-test-stop-port=${1 + failsafeItPort}"]
+                        if (jdk == 7) {
+                            allOptions += '-Dhttps.protocols=TLSv1.2'
+                        }
+                        if (!maven.startsWith('3.2') && !maven.startsWith('3.3') && !maven.startsWith('3.5')) {
+                            allOptions += '--no-transfer-progress'
+                        }
+                        ws(dir: "${os == 'windows' ? "${TEMP}\\${BUILD_TAG}" : pwd()}") {
+                            buildProcess(stageKey, jdkName, jdkTestName, mvnName, first ? goalsDepl : goals, allOptions, mavenOpts, first)
+                        }
                     }
                 }
             }
@@ -108,16 +115,13 @@ timeout(time: 12, unit: 'HOURS') {
         currentBuild.result = 'FAILURE'
         throw e
     } finally {
-        stage("notifications") {
-            //jenkinsNotify()
-        }
+        jenkinsNotify()
     }
 }
 
 def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvnName, goals, options, mavenOpts, boolean makeReports) {
-    cleanWs()
     try {
-        def mvnLocalRepoDir = null
+        def mvnLocalRepoDir
         if (isUnix()) {
             sh 'mkdir -p .m2'
             mvnLocalRepoDir = "${pwd()}/.m2"
@@ -134,7 +138,7 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
         }
 
         def properties = ["-Djacoco.skip=${!makeReports}", "\"-Dmaven.repo.local=${mvnLocalRepoDir}\""]
-        println "Setting JDK for testing ${jdkName}"
+        println "Setting JDK for testing ${jdkTestName}"
         def cmd = ['mvn'] + goals + options + properties
 
         stage("build ${stageKey}") {
@@ -142,45 +146,49 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
                 withEnv(["JAVA_HOME=${tool(jdkName)}",
                          "JAVA_HOME_IT=${tool(jdkTestName)}",
                          "MAVEN_OPTS=${mavenOpts}",
-                         "PATH+MAVEN=${tool(mvnName)}/bin:${env.JAVA_HOME}/bin"
+                         "PATH+MAVEN=${tool(mvnName)}/bin:${tool(jdkName)}/bin"
                 ]) {
-                    sh 'echo JAVA_HOME=$JAVA_HOME, JAVA_HOME_IT=$JAVA_HOME_IT'
+                    sh '$JAVA_HOME_IT/bin/java -version'
+                    sh 'echo JAVA_HOME=$JAVA_HOME, JAVA_HOME_IT=$JAVA_HOME_IT, PATH=$PATH'
                     def script = cmd + ['\"-Djdk.home=$JAVA_HOME_IT\"']
-                    sh script.join(' ')
+                    def error = sh(returnStatus: true, script: script.join(' '))
+                    currentBuild.result = error == 0 ? 'SUCCESS' : 'FAILURE'
                 }
             } else {
                 withEnv(["JAVA_HOME=${tool(jdkName)}",
                          "JAVA_HOME_IT=${tool(jdkTestName)}",
                          "MAVEN_OPTS=${mavenOpts}",
-                         "PATH+MAVEN=${tool(mvnName)}\\bin;${env.JAVA_HOME}\\bin"
+                         "PATH+MAVEN=${tool(mvnName)}\\bin;${tool(jdkName)}\\bin"
                 ]) {
-                    bat 'echo JAVA_HOME=%JAVA_HOME%, JAVA_HOME_IT=%JAVA_HOME_IT%'
+                    bat '%JAVA_HOME_IT%\\bin\\java -version'
+                    bat 'echo JAVA_HOME=%JAVA_HOME%, JAVA_HOME_IT=%JAVA_HOME_IT%, PATH=%PATH%'
                     def script = cmd + ['\"-Djdk.home=%JAVA_HOME_IT%\"']
-                    bat script.join(' ')
+                    def error = bat(returnStatus: true, script: script.join(' '))
+                    currentBuild.result = error == 0 ? 'SUCCESS' : 'FAILURE'
                 }
             }
         }
     } finally {
-        stage("reporting ${stageKey}") {
-            if (makeReports) {
-                openTasks(ignoreCase: true, canComputeNew: false, defaultEncoding: 'UTF-8', pattern: sourcesPatternCsv(),
-                        high: tasksViolationHigh(), normal: tasksViolationNormal(), low: tasksViolationLow())
+        if (makeReports) {
+            openTasks(ignoreCase: true, canComputeNew: true, defaultEncoding: 'UTF-8', pattern: sourcesPatternCsv(),
+                    high: tasksViolationHigh(), normal: tasksViolationNormal(), low: tasksViolationLow())
 
-                jacoco(changeBuildStatus: false,
-                        execPattern: '**/*.exec',
-                        sourcePattern: sourcesPatternCsv(),
-                        classPattern: classPatternCsv())
+            jacoco(changeBuildStatus: false,
+                    execPattern: '**/*.exec',
+                    sourcePattern: sourcesPatternCsv(),
+                    classPattern: classPatternCsv())
 
-                junit(healthScaleFactor: 0.0,
-                        allowEmptyResults: true,
-                        keepLongStdio: true,
-                        testResults: testReportsPatternCsv())
+            junit(healthScaleFactor: 0.0,
+                    allowEmptyResults: true,
+                    keepLongStdio: true,
+                    testResults: testReportsPatternCsv())
 
-                if (currentBuild.result == 'UNSTABLE') {
-                    currentBuild.result = 'FAILURE'
-                }
+            if (currentBuild.result == 'UNSTABLE') {
+                currentBuild.result = 'FAILURE'
             }
+        }
 
+        if (currentBuild.result != null && currentBuild.result != 'SUCCESS') {
             if (fileExists('maven-failsafe-plugin/target/it')) {
                 zip(zipFile: "maven-failsafe-plugin--${stageKey}.zip", dir: 'maven-failsafe-plugin/target/it', archive: true)
             }
@@ -191,11 +199,8 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
 
             archiveArtifacts(artifacts: "*--${stageKey}.zip", allowEmptyArchive: true, onlyIfSuccessful: false)
         }
-
-        stage("cleanup ${stageKey}") {
-            // clean up after ourselves to reduce disk space
-            cleanWs()
-        }
+        // clean up after ourselves to reduce disk space
+        cleanWs()
     }
 }
 
@@ -207,6 +212,7 @@ static def sourcesPatternCsv() {
             '**/maven-surefire-report-plugin/src/main/java,' +
             '**/surefire-api/src/main/java,' +
             '**/surefire-booter/src/main/java,' +
+            '**/surefire-extensions-api/src/main/java,' +
             '**/surefire-grouper/src/main/java,' +
             '**/surefire-its/src/main/java,' +
             '**/surefire-logger-api/src/main/java,' +
@@ -222,6 +228,7 @@ static def classPatternCsv() {
             '**/maven-surefire-report-plugin/target/classes,' +
             '**/surefire-api/target/classes,' +
             '**/surefire-booter/target/classes,' +
+            '**/surefire-extensions-api/target/classes,' +
             '**/surefire-grouper/target/classes,' +
             '**/surefire-its/target/classes,' +
             '**/surefire-logger-api/target/classes,' +

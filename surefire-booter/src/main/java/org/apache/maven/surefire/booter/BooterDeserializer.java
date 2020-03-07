@@ -61,9 +61,9 @@ public class BooterDeserializer
     /**
      * @return PID of Maven process where plugin is executed; or null if PID could not be determined.
      */
-    public Long getPluginPid()
+    public String getPluginPid()
     {
-        return properties.getLongProperty( PLUGIN_PID );
+        return properties.getProperty( PLUGIN_PID );
     }
 
     public ProviderConfiguration deserialize()
@@ -122,7 +122,7 @@ public class BooterDeserializer
                                           systemExitTimeout );
     }
 
-    public StartupConfiguration getProviderConfiguration()
+    public StartupConfiguration getStartupConfiguration()
     {
         boolean useSystemClassLoader = properties.getBooleanProperty( USESYSTEMCLASSLOADER );
         boolean useManifestOnlyJar = properties.getBooleanProperty( USEMANIFESTONLYJAR );
@@ -133,7 +133,10 @@ public class BooterDeserializer
 
         ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( properties );
 
+        String processChecker = properties.getProperty( PROCESS_CHECKER );
+        ProcessCheckerType processCheckerType = ProcessCheckerType.toEnum( processChecker );
+
         return StartupConfiguration.inForkedVm( providerConfiguration, classpathConfiguration,
-                                                classLoaderConfiguration );
+                                                classLoaderConfiguration, processCheckerType );
     }
 }

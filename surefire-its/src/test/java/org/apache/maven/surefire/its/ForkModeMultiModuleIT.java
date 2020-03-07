@@ -19,7 +19,11 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.*;
+import org.apache.maven.surefire.its.fixture.HelperAssertions;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
 
 import java.io.File;
@@ -33,22 +37,21 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Test forkMode in a multi module project with parallel maven builds
- * 
+ *
  * @author Andreas Gudian
  */
-public class ForkModeMultiModuleIT
-    extends SurefireJUnit4IntegrationTestCase
+public class ForkModeMultiModuleIT extends SurefireJUnit4IntegrationTestCase
 {
     @Test
     public void testForkCountOneNoReuse()
     {
         List<String> pids = doTest( unpack( getProject() ).forkCount( 1 ).reuseForks( false ) );
         assertAllDifferentPids( pids );
-        int matchesOne = countSuffixMatches( pids, "_1_1");
+        int matchesOne = countSuffixMatches( pids, "_1_1" );
         int matchesTwo = countSuffixMatches( pids, "_2_2" );
         assertTrue( "At least one fork had forkNumber 1", matchesOne >= 1 );
         assertTrue( "At least one fork had forkNumber 2", matchesTwo >= 1 );
-        assertEquals( "No other forkNumbers than 1 and 2 have been used", 6, matchesOne + matchesTwo);
+        assertEquals( "No other forkNumbers than 1 and 2 have been used", 6, matchesOne + matchesTwo );
     }
 
 
@@ -66,33 +69,34 @@ public class ForkModeMultiModuleIT
     {
         List<String> pids = doTest( unpack( getProject() ).forkCount( 2 ).reuseForks( false ) );
         assertAllDifferentPids( pids );
-        int matchesOne = countSuffixMatches( pids, "_1_1");
+        int matchesOne = countSuffixMatches( pids, "_1_1" );
         int matchesTwo = countSuffixMatches( pids, "_2_2" );
-        int matchesThree = countSuffixMatches( pids, "_3_3");
+        int matchesThree = countSuffixMatches( pids, "_3_3" );
         int matchesFour = countSuffixMatches( pids, "_4_4" );
         assertTrue( "At least one fork had forkNumber 1", matchesOne >= 1 );
         assertTrue( "At least one fork had forkNumber 2", matchesTwo >= 1 );
         assertTrue( "At least one fork had forkNumber 3", matchesThree >= 1 );
         assertTrue( "At least one fork had forkNumber 4", matchesFour >= 1 );
-        assertEquals( "No other forkNumbers than 1, 2, 3, or 4 have been used", 6, matchesOne + matchesTwo + matchesThree + matchesFour );
+        assertEquals( "No other forkNumbers than 1, 2, 3, or 4 have been used", 6,
+                matchesOne + matchesTwo + matchesThree + matchesFour );
     }
 
     @Test
     public void testForkCountTwoReuse()
     {
-        List<String> pids =
-            doTest( unpack( getProject() ).forkCount( 2 ).reuseForks( true ) );
+        List<String> pids = doTest( unpack( getProject() ).forkCount( 2 ).reuseForks( true ) );
         assertDifferentPids( pids, 4 );
-        
-        int matchesOne = countSuffixMatches( pids, "_1_1");
+
+        int matchesOne = countSuffixMatches( pids, "_1_1" );
         int matchesTwo = countSuffixMatches( pids, "_2_2" );
-        int matchesThree = countSuffixMatches( pids, "_3_3");
+        int matchesThree = countSuffixMatches( pids, "_3_3" );
         int matchesFour = countSuffixMatches( pids, "_4_4" );
         assertTrue( "At least one fork had forkNumber 1", matchesOne >= 1 );
         assertTrue( "At least one fork had forkNumber 2", matchesTwo >= 1 );
         assertTrue( "At least one fork had forkNumber 3", matchesThree >= 1 );
         assertTrue( "At least one fork had forkNumber 4", matchesFour >= 1 );
-        assertEquals( "No other forkNumbers than 1, 2, 3, or 4 have been used", 6, matchesOne + matchesTwo + matchesThree + matchesFour );
+        assertEquals( "No other forkNumbers than 1, 2, 3, or 4 have been used", 6,
+                matchesOne + matchesTwo + matchesThree + matchesFour );
     }
 
     private void assertEndWith( List<String> pids, String suffix, int expectedMatches )
@@ -117,7 +121,7 @@ public class ForkModeMultiModuleIT
 
     private void assertDifferentPids( List<String> pids, int numOfDifferentPids )
     {
-        Set<String> pidSet = new HashSet<String>( pids );
+        Set<String> pidSet = new HashSet<>( pids );
         assertEquals( "number of different pids is not as expected", numOfDifferentPids, pidSet.size() );
     }
 
@@ -131,7 +135,7 @@ public class ForkModeMultiModuleIT
         forkMode.addGoal( "-T2" );
         forkMode.sysProp( "testProperty", "testValue_${surefire.threadNumber}_${surefire.forkNumber}" );
         final OutputValidator outputValidator = forkMode.setForkJvm().executeTest();
-        List<String> pids = new ArrayList<String>( 6 );
+        List<String> pids = new ArrayList<>( 6 );
         pids.addAll( validateModule( outputValidator, "module-a" ) );
         pids.addAll( validateModule( outputValidator, "module-b" ) );
 
@@ -142,14 +146,14 @@ public class ForkModeMultiModuleIT
     {
         HelperAssertions.assertTestSuiteResults( 3, 0, 0, 0, new File( outputValidator.getBaseDir(), module ) );
 
-        List<String> pids = new ArrayList<String>( 3 );
+        List<String> pids = new ArrayList<>( 3 );
         for ( int i = 1; i <= 3; i++ )
         {
             final TestFile targetFile = outputValidator.getTargetFile( module, "test" + i + "-pid" );
             String pid = targetFile.slurpFile();
             pids.add( pid );
         }
-        
+
         return pids;
     }
 

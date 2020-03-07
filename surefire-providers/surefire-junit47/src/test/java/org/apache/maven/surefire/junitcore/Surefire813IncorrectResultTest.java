@@ -45,6 +45,9 @@ public class Surefire813IncorrectResultTest
         assertEquals( 0, run.getFailureCount() );
     }
 
+    /**
+     *
+     */
     public static class Test6
     {
         private final CountDownLatch latch = new CountDownLatch( 1 );
@@ -64,13 +67,13 @@ public class Surefire813IncorrectResultTest
             latch.await();
         }
 
-        private static final String s = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+        private static final String STR = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
         public void synchPrint()
         {
             for ( int i = 0; i < 1000; ++i ) // Increase this number if it does no fail
             {
-                System.out.println( i + ":" + s );
+                System.out.println( i + ":" + STR );
             }
         }
 
@@ -80,7 +83,7 @@ public class Surefire813IncorrectResultTest
             @Override
             public void run()
             {
-                System.out.println( s );
+                System.out.println( STR );
                 latch.countDown();
                 synchPrint();
             }

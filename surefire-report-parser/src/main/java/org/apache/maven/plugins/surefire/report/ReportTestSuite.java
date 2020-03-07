@@ -27,7 +27,7 @@ import java.util.List;
  */
 public final class ReportTestSuite
 {
-    private final List<ReportTestCase> testCases = new ArrayList<ReportTestCase>();
+    private final List<ReportTestCase> testCases = new ArrayList<>();
 
     private int numberOfErrors;
 

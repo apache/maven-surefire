@@ -23,14 +23,31 @@ import org.junit.Test;
 
 import java.io.IOException;
 
+/**
+ *
+ */
 public class ModulePathIT
         extends AbstractJigsawIT
 {
+    private String suffix;
+
     @Test
     public void testModulePath()
             throws IOException
     {
-        assumeJigsaw()
+        assumeJava9()
+                .debugLogging()
+                .executeTest()
+                .verifyErrorFreeLog()
+                .assertTestSuiteResults( 2 );
+    }
+
+    @Test
+    public void testModulePathWithSpaces()
+            throws IOException
+    {
+        suffix = " with spaces";
+        assumeJava9()
                 .debugLogging()
                 .executeTest()
                 .verifyErrorFreeLog()
@@ -41,5 +58,11 @@ public class ModulePathIT
     protected String getProjectDirectoryName()
     {
         return "modulepath";
+    }
+
+    @Override
+    protected String getSuffix()
+    {
+        return suffix;
     }
 }

@@ -35,7 +35,7 @@ class NullFileReporter
 
     private NullFileReporter()
     {
-        super( null, null, null );
+        super( null, null, null, false, false, false );
     }
 
     @Override

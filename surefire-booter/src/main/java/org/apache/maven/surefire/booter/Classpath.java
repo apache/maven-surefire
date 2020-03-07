@@ -22,7 +22,6 @@ package org.apache.maven.surefire.booter;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,7 +30,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import static java.io.File.pathSeparatorChar;
-import static org.apache.maven.surefire.util.internal.UrlUtils.toURL;
 
 /**
  * An ordered list of classpath elements with set behaviour
@@ -42,13 +40,13 @@ import static org.apache.maven.surefire.util.internal.UrlUtils.toURL;
  *
  * @author Kristian Rosenvold
  */
-public final class Classpath implements Iterable<String>
+public final class Classpath implements Iterable<String>, Cloneable
 {
     private final List<String> unmodifiableElements;
 
     public static Classpath join( Classpath firstClasspath, Classpath secondClasspath )
     {
-        LinkedHashSet<String> accumulated =  new LinkedHashSet<String>();
+        LinkedHashSet<String> accumulated =  new LinkedHashSet<>();
         if ( firstClasspath != null )
         {
             firstClasspath.addTo( accumulated );
@@ -72,14 +70,14 @@ public final class Classpath implements Iterable<String>
 
     public Classpath( @Nonnull Classpath other, @Nonnull String additionalElement )
     {
-        ArrayList<String> elems = new ArrayList<String>( other.unmodifiableElements );
+        ArrayList<String> elems = new ArrayList<>( other.unmodifiableElements );
         elems.add( additionalElement );
         unmodifiableElements = Collections.unmodifiableList( elems );
     }
 
     public Classpath( @Nonnull Collection<String> elements )
     {
-        List<String> newCp = new ArrayList<String>( elements.size() );
+        List<String> newCp = new ArrayList<>( elements.size() );
         for ( String element : elements )
         {
             element = element.trim();
@@ -109,26 +107,6 @@ public final class Classpath implements Iterable<String>
     public List<String> getClassPath()
     {
         return unmodifiableElements;
-    }
-
-    /**
-     * @deprecated this should be package private method which returns List of Files. It will be
-     * removed in the next major version.
-     *
-     * @return list of {@link URL jar files paths} with {@code file} protocol in URL.
-     * @throws MalformedURLException if {@link URL} could not be created upon given class-path element(s)
-     */
-    @Deprecated
-    public List<URL> getAsUrlList()
-        throws MalformedURLException
-    {
-        List<URL> urls = new ArrayList<URL>();
-        for ( String url : unmodifiableElements )
-        {
-            File f = new File( url );
-            urls.add( toURL( f ) );
-        }
-        return urls;
     }
 
     public void writeToSystemProperty( @Nonnull String propertyName )
@@ -223,5 +201,11 @@ public final class Classpath implements Iterable<String>
     public Iterator<String> iterator()
     {
         return unmodifiableElements.iterator();
+    }
+
+    @Override
+    public Classpath clone()
+    {
+        return new Classpath( unmodifiableElements );
     }
 }

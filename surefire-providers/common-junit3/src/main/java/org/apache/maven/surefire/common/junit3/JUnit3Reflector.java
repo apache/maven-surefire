@@ -45,6 +45,10 @@ public final class JUnit3Reflector
 
     private static final String TEST_SUITE = "junit.framework.TestSuite";
 
+    private static final Class[] EMPTY_CLASS_ARRAY = { };
+
+    private static final Object[] EMPTY_OBJECT_ARRAY = { };
+
     private final Class[] interfacesImplementedByDynamicProxy;
 
     private final Class<?> testResultClass;
@@ -52,10 +56,6 @@ public final class JUnit3Reflector
     private final Method addListenerMethod;
 
     private final Method testInterfaceRunMethod;
-
-    private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
-
-    private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
     private final Class<?> testInterface;
 
@@ -76,12 +76,12 @@ public final class JUnit3Reflector
 
         // The interface implemented by the dynamic proxy (TestListener), happens to be
         // the same as the param types of TestResult.addTestListener
-        Class[] addListenerParamTypes = interfacesImplementedByDynamicProxy;
 
         if ( isJUnit3Available() )
         {
             testsSuiteConstructor = ReflectionUtils.getConstructor( testSuite, constructorParamTypes );
-            addListenerMethod = tryGetMethod( testResultClass, ADD_LISTENER_METHOD, addListenerParamTypes );
+            addListenerMethod =
+                    tryGetMethod( testResultClass, ADD_LISTENER_METHOD, interfacesImplementedByDynamicProxy );
             testInterfaceRunMethod = getMethod( testInterface, RUN_METHOD, testResultClass );
         }
         else
@@ -154,7 +154,7 @@ public final class JUnit3Reflector
 
             if ( Modifier.isPublic( suiteMethod.getModifiers() ) && Modifier.isStatic( suiteMethod.getModifiers() ) )
             {
-                testObject = suiteMethod.invoke( null, EMPTY_CLASS_ARRAY );
+                testObject = suiteMethod.invoke( null, EMPTY_OBJECT_ARRAY );
             }
         }
         catch ( NoSuchMethodException e )

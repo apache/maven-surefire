@@ -42,7 +42,7 @@ public class ConcurrencyUtilsTest
 {
 
     @Test
-    public void countDownShouldBeUnchangedAsZero$NegativeTest()
+    public void countDownShouldBeUnchangedAsZeroNegativeTest()
     {
         AtomicInteger atomicCounter = new AtomicInteger( 0 );
         assertFalse( countDownToZero( atomicCounter ) );
@@ -50,7 +50,7 @@ public class ConcurrencyUtilsTest
     }
 
     @Test
-    public void countDownShouldBeUnchangedAsNegative$NegativeTest()
+    public void countDownShouldBeUnchangedAsNegativeNegativeTest()
     {
         AtomicInteger atomicCounter = new AtomicInteger( -1 );
         assertFalse( countDownToZero( atomicCounter ) );

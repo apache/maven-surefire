@@ -40,6 +40,14 @@
   <build>
     <plugins>
       <plugin>
+        <!-- There is no test - TEST-*.xml reports are attached in project -->
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire.version}</version>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
         <version>${surefire.version}</version>

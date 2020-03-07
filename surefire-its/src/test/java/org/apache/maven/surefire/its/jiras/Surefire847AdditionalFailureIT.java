@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its.jiras;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,6 +22,9 @@ package org.apache.maven.surefire.its.jiras;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
+/**
+ *
+ */
 public class Surefire847AdditionalFailureIT
     extends SurefireJUnit4IntegrationTestCase
 {

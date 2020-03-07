@@ -22,7 +22,9 @@ package org.apache.maven.surefire.its.jiras;
 import java.io.IOException;
 import java.net.URI;
 
-import org.apache.maven.surefire.its.fixture.*;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.TestFile;
 
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
@@ -30,6 +32,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlDivision;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.junit.Test;
 
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -39,6 +42,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Kristian Rosenvold
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class Surefire260TestWithIdenticalNamesIT
     extends SurefireJUnit4IntegrationTestCase
 {
@@ -47,26 +51,27 @@ public class Surefire260TestWithIdenticalNamesIT
     public void testWithIdenticalNames()
         throws IOException
     {
-        SurefireLauncher surefireLauncher = unpack( "surefire-260-testWithIdenticalNames" ).failNever();
-        surefireLauncher.executeTest();
-        surefireLauncher.reset();
-        OutputValidator validator = surefireLauncher.addSurefireReportGoal().executeCurrentGoals();
+        assumeJavaVersion( 1.8d );
+        OutputValidator validator = unpack( "surefire-260-testWithIdenticalNames" )
+                .failNever()
+                .addGoal( "site" )
+                .addSurefireReportGoal()
+                .executeCurrentGoals();
 
         TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
         final URI uri = siteFile.toURI();
 
-        final WebClient webClient = new WebClient();
-        webClient.setJavaScriptEnabled( true );
-        final HtmlPage page = webClient.getPage( uri.toURL() );
-
-        final HtmlAnchor a =
-            (HtmlAnchor) page.getByXPath( "//a[@href = \"javascript:toggleDisplay('surefire260.TestB.testDup');\"]" )
+        try ( WebClient webClient = new WebClient() )
+        {
+            HtmlPage page = webClient.getPage( uri.toURL() );
+            HtmlAnchor a = ( HtmlAnchor ) page.getByXPath(
+                    "//a[@href = \"javascript:toggleDisplay('surefire260.TestB.testDup');\"]" )
                     .get( 0 );
-        final HtmlDivision content = (HtmlDivision) page.getElementById( "surefire260.TestB.testDup-failure" );
-        assertNotNull( content );
-        assertTrue( content.getAttribute( "style" ).contains( "none" ) );
-        a.click();
-        assertFalse( content.getAttribute( "style" ).contains( "none" ) );
-        webClient.closeAllWindows();
+            HtmlDivision content = ( HtmlDivision ) page.getElementById( "surefire260.TestB.testDup-failure" );
+            assertNotNull( content );
+            assertTrue( content.getAttribute( "style" ).contains( "none" ) );
+            a.click();
+            assertFalse( content.getAttribute( "style" ).contains( "none" ) );
+        }
     }
 }

@@ -31,7 +31,7 @@ public class CheckTestNgPathWithSpacesIT
     extends SurefireJUnit4IntegrationTestCase
 {
     @Test
-    public void TestWithSpaces()
+    public void testWithSpaces()
     {
         unpack( "testng-path with spaces" )
                 .sysProp( "testNgVersion", "5.7" )

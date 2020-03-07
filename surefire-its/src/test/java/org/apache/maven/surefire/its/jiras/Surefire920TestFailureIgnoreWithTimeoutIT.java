@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.its.jiras;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -23,6 +24,9 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 
 import org.junit.Test;
 
+/**
+ *
+ */
 public class Surefire920TestFailureIgnoreWithTimeoutIT
     extends SurefireJUnit4IntegrationTestCase
 {
@@ -31,7 +35,7 @@ public class Surefire920TestFailureIgnoreWithTimeoutIT
     {
         OutputValidator validator =
             unpack( "fork-timeout" ).sysProp( "junit.parallel", "none" ).maven().withFailure().executeTest();
-        validator.verifyTextInLog( "There was a timeout or other error in the fork" );
+        validator.verifyTextInLog( "There was a timeout in the fork" );
     }
 
     @Test
@@ -39,7 +43,7 @@ public class Surefire920TestFailureIgnoreWithTimeoutIT
     {
         OutputValidator validator =
             unpack( "fork-timeout" ).sysProp( "junit.parallel", "none" ).mavenTestFailureIgnore( true ).executeTest();
-        validator.verifyTextInLog( "[ERROR] There was a timeout or other error in the fork" );
+        validator.verifyTextInLog( "[ERROR] There was a timeout in the fork" );
     }
 
 }

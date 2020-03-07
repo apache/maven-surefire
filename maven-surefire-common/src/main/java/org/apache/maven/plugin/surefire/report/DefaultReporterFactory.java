@@ -23,7 +23,11 @@ import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.Level;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
-import org.apache.maven.shared.utils.logging.MessageBuilder;
+import org.apache.maven.surefire.shared.utils.logging.MessageBuilder;
+import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
+import org.apache.maven.surefire.extensions.StatelessReportEventListener;
+import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
+import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.RunStatistics;
@@ -50,7 +54,7 @@ import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.Tes
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
-import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
+import static org.apache.maven.surefire.shared.utils.logging.MessageUtils.buffer;
 import static org.apache.maven.surefire.util.internal.ObjectUtils.useNonNull;
 
 /**
@@ -63,9 +67,10 @@ import static org.apache.maven.surefire.util.internal.ObjectUtils.useNonNull;
 public class DefaultReporterFactory
     implements ReporterFactory
 {
+    private final Collection<TestSetRunListener> listeners = new ConcurrentLinkedQueue<>();
     private final StartupReportConfiguration reportConfiguration;
     private final ConsoleLogger consoleLogger;
-    private final Collection<TestSetRunListener> listeners;
+    private final Integer forkNumber;
 
     private RunStatistics globalStats = new RunStatistics();
 
@@ -80,9 +85,15 @@ public class DefaultReporterFactory
 
     public DefaultReporterFactory( StartupReportConfiguration reportConfiguration, ConsoleLogger consoleLogger )
     {
+        this( reportConfiguration, consoleLogger, null );
+    }
+
+    public DefaultReporterFactory( StartupReportConfiguration reportConfiguration, ConsoleLogger consoleLogger,
+                                   Integer forkNumber )
+    {
         this.reportConfiguration = reportConfiguration;
         this.consoleLogger = consoleLogger;
-        listeners = new ConcurrentLinkedQueue<TestSetRunListener>();
+        this.forkNumber = forkNumber;
     }
 
     @Override
@@ -106,51 +117,45 @@ public class DefaultReporterFactory
         return reportConfiguration.getReportsDirectory();
     }
 
-    private ConsoleReporter createConsoleReporter()
+    private StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats> createConsoleReporter()
     {
-        return shouldReportToConsole() ? new ConsoleReporter( consoleLogger ) : NullConsoleReporter.INSTANCE;
+        StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats> consoleReporter =
+                reportConfiguration.instantiateConsoleReporter( consoleLogger );
+        return useNonNull( consoleReporter, NullConsoleReporter.INSTANCE );
     }
 
-    private FileReporter createFileReporter()
+    private StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats> createFileReporter()
     {
-        final FileReporter fileReporter = reportConfiguration.instantiateFileReporter();
+        StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats> fileReporter =
+                reportConfiguration.instantiateFileReporter( forkNumber );
         return useNonNull( fileReporter, NullFileReporter.INSTANCE );
     }
 
-    private StatelessXmlReporter createSimpleXMLReporter()
+    private StatelessReportEventListener<WrappedReportEntry, TestSetStats> createSimpleXMLReporter()
     {
-        final StatelessXmlReporter xmlReporter = reportConfiguration.instantiateStatelessXmlReporter();
+        StatelessReportEventListener<WrappedReportEntry, TestSetStats> xmlReporter =
+                reportConfiguration.instantiateStatelessXmlReporter( forkNumber );
         return useNonNull( xmlReporter, NullStatelessXmlReporter.INSTANCE );
     }
 
-    private TestcycleConsoleOutputReceiver createConsoleOutputReceiver()
+    private ConsoleOutputReportEventListener createConsoleOutputReceiver()
     {
-        final TestcycleConsoleOutputReceiver consoleOutputReceiver =
-                reportConfiguration.instantiateConsoleOutputFileReporter();
-        return useNonNull( consoleOutputReceiver, NullConsoleOutputReceiver.INSTANCE );
+        ConsoleOutputReportEventListener outputReporter =
+                reportConfiguration.instantiateConsoleOutputFileReporter( forkNumber );
+        return useNonNull( outputReporter, NullConsoleOutputReceiver.INSTANCE );
     }
 
     private StatisticsReporter createStatisticsReporter()
     {
-        final StatisticsReporter statisticsReporter = reportConfiguration.getStatisticsReporter();
+        StatisticsReporter statisticsReporter = reportConfiguration.getStatisticsReporter();
         return useNonNull( statisticsReporter, NullStatisticsReporter.INSTANCE );
-    }
-
-    private boolean shouldReportToConsole()
-    {
-        return reportConfiguration.isUseFile()
-                       ? reportConfiguration.isPrintSummary()
-                       : reportConfiguration.isRedirectTestOutputToFile() || reportConfiguration.isBriefOrPlainFormat();
     }
 
     public void mergeFromOtherFactories( Collection<DefaultReporterFactory> factories )
     {
         for ( DefaultReporterFactory factory : factories )
         {
-            for ( TestSetRunListener listener : factory.listeners )
-            {
-                listeners.add( listener );
-            }
+            listeners.addAll( factory.listeners );
         }
     }
 
@@ -173,10 +178,13 @@ public class DefaultReporterFactory
 
     public void runStarting()
     {
-        log( "" );
-        log( "-------------------------------------------------------" );
-        log( " T E S T S" );
-        log( "-------------------------------------------------------" );
+        if ( reportConfiguration.isPrintSummary() )
+        {
+            log( "" );
+            log( "-------------------------------------------------------" );
+            log( " T E S T S" );
+            log( "-------------------------------------------------------" );
+        }
     }
 
     private void runCompleted()
@@ -190,14 +198,17 @@ public class DefaultReporterFactory
         boolean printedFailures = printTestFailures( failure );
         boolean printedErrors = printTestFailures( error );
         boolean printedFlakes = printTestFailures( flake );
-        if ( printedFailures | printedErrors | printedFlakes )
+        if ( reportConfiguration.isPrintSummary() )
         {
+            if ( printedFailures | printedErrors | printedFlakes )
+            {
+                log( "" );
+            }
+            boolean hasSuccessful = globalStats.getCompletedCount() > 0;
+            boolean hasSkipped = globalStats.getSkipped() > 0;
+            log( globalStats.getSummary(), hasSuccessful, printedFailures, printedErrors, hasSkipped, printedFlakes );
             log( "" );
         }
-        boolean hasSuccessful = globalStats.getCompletedCount() > 0;
-        boolean hasSkipped = globalStats.getSkipped() > 0;
-        log( globalStats.getSummary(), hasSuccessful, printedFailures, printedErrors, hasSkipped, printedFlakes );
-        log( "" );
     }
 
     public RunStatistics getGlobalRunStatistics()
@@ -264,25 +275,24 @@ public class DefaultReporterFactory
      * Merge all the TestMethodStats in each TestRunListeners and put results into flakyTests, failedTests and
      * errorTests, indexed by test class and method name. Update globalStatistics based on the result of the merge.
      */
-    void mergeTestHistoryResult()
+    private void mergeTestHistoryResult()
     {
         globalStats = new RunStatistics();
-        flakyTests = new TreeMap<String, List<TestMethodStats>>();
-        failedTests = new TreeMap<String, List<TestMethodStats>>();
-        errorTests = new TreeMap<String, List<TestMethodStats>>();
+        flakyTests = new TreeMap<>();
+        failedTests = new TreeMap<>();
+        errorTests = new TreeMap<>();
 
-        Map<String, List<TestMethodStats>> mergedTestHistoryResult = new HashMap<String, List<TestMethodStats>>();
+        Map<String, List<TestMethodStats>> mergedTestHistoryResult = new HashMap<>();
         // Merge all the stats for tests from listeners
         for ( TestSetRunListener listener : listeners )
         {
-            List<TestMethodStats> testMethodStats = listener.getTestMethodStats();
-            for ( TestMethodStats methodStats : testMethodStats )
+            for ( TestMethodStats methodStats : listener.getTestMethodStats() )
             {
                 List<TestMethodStats> currentMethodStats =
                     mergedTestHistoryResult.get( methodStats.getTestClassMethodName() );
                 if ( currentMethodStats == null )
                 {
-                    currentMethodStats = new ArrayList<TestMethodStats>();
+                    currentMethodStats = new ArrayList<>();
                     currentMethodStats.add( methodStats );
                     mergedTestHistoryResult.put( methodStats.getTestClassMethodName(), currentMethodStats );
                 }
@@ -302,7 +312,7 @@ public class DefaultReporterFactory
             String testClassMethodName = entry.getKey();
             completedCount++;
 
-            List<ReportEntryType> resultTypes = new ArrayList<ReportEntryType>();
+            List<ReportEntryType> resultTypes = new ArrayList<>();
             for ( TestMethodStats methodStats : testMethodStats )
             {
                 resultTypes.add( methodStats.getResultType() );
@@ -381,7 +391,6 @@ public class DefaultReporterFactory
 
         for ( Map.Entry<String, List<TestMethodStats>> entry : testStats.entrySet() )
         {
-            printed = true;
             List<TestMethodStats> testMethodStats = entry.getValue();
             if ( testMethodStats.size() == 1 )
             {
@@ -441,20 +450,19 @@ public class DefaultReporterFactory
 
     private void log( String s, Level level )
     {
-        MessageBuilder builder = buffer();
         switch ( level )
         {
             case FAILURE:
-                consoleLogger.error( builder.failure( s ).toString() );
+                failure( s );
                 break;
             case UNSTABLE:
-                consoleLogger.warning( builder.warning( s ).toString() );
+                warning( s );
                 break;
             case SUCCESS:
-                consoleLogger.info( builder.success( s ).toString() );
+                success( s );
                 break;
             default:
-                consoleLogger.info( builder.a( s ).toString() );
+                info( s );
         }
     }
 
@@ -466,13 +474,13 @@ public class DefaultReporterFactory
     private void info( String s )
     {
         MessageBuilder builder = buffer();
-        consoleLogger.info( builder.info( s ).toString() );
+        consoleLogger.info( builder.a( s ).toString() );
     }
 
-    private void err( String s )
+    private void warning( String s )
     {
         MessageBuilder builder = buffer();
-        consoleLogger.error( builder.error( s ).toString() );
+        consoleLogger.warning( builder.warning( s ).toString() );
     }
 
     private void success( String s )

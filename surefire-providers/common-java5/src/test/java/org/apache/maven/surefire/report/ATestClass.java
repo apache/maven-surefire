@@ -21,6 +21,9 @@ package org.apache.maven.surefire.report;
 
 import java.io.File;
 
+/**
+ *
+ */
 @SuppressWarnings( "UnusedDeclaration" )
 public class ATestClass
 {
@@ -58,6 +61,6 @@ public class ATestClass
     public void aLongTestErrorMessage()
     {
         throw new RuntimeException( "This message will be truncated, somewhere over the rainbow. "
-                                        + "Gangnam style, Gangnam style, Gangnam style, , Gangnam style, Gangnam style" );
+                                    + "Gangnam style, Gangnam style, Gangnam style, , Gangnam style, Gangnam style" );
     }
 }

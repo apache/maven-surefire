@@ -19,12 +19,12 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.nio.charset.Charset;
-
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Basic suite test using all known versions of JUnit 4.x
@@ -65,13 +65,13 @@ public class ConsoleOutputIT
     {
         TestFile xmlReportFile = outputValidator.getSurefireReportsXmlFile( "TEST-consoleOutput.Test1.xml" );
         xmlReportFile.assertContainsText( "SoutLine" );
-        xmlReportFile.assertContainsText( normalizeToDefaultCharset( "äöüß" ) );
-        xmlReportFile.assertContainsText( normalizeToDefaultCharset( "failing with ü" ) );
+        xmlReportFile.assertContainsText(  "äöüß" );
+        xmlReportFile.assertContainsText(  "failing with ü" );
 
-        TestFile outputFile = outputValidator.getSurefireReportsFile( "consoleOutput.Test1-output.txt" );
+        TestFile outputFile = outputValidator.getSurefireReportsFile( "consoleOutput.Test1-output.txt", UTF_8 );
         outputFile.assertContainsText( "SoutAgain" );
         outputFile.assertContainsText( "SoutLine" );
-        outputFile.assertContainsText( normalizeToDefaultCharset( "äöüß" ) );
+        outputFile.assertContainsText( "äöüß" );
 
         if ( includeShutdownHook )
         {
@@ -79,28 +79,12 @@ public class ConsoleOutputIT
         }
     }
 
-    /**
-     * @param string the string to normalize
-     * @return the string with all characters not available in the current charset being replaced, e.g. for US-ASCII,
-     *         German umlauts would be replaced to ?
-     */
-    private String normalizeToDefaultCharset( String string )
-    {
-        Charset cs = Charset.defaultCharset();
-        if ( cs.canEncode() )
-        {
-            string = cs.decode( cs.encode( string ) ).toString();
-        }
-
-        return string;
-    }
-
     @Test
     public void largerSoutThanMemory()
-        throws Exception
     {
-        unpack( "consoleoutput-noisy" ).setMavenOpts( "-Xmx64m" ).sysProp( "thousand", "32000" ).executeTest();
+        unpack( "consoleoutput-noisy" )
+                .setMavenOpts( "-Xmx64m" )
+                .sysProp( "thousand", "32000" )
+                .executeTest();
     }
-
-
 }

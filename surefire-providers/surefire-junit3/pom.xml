@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire-providers</artifactId>
-    <version>2.22.1-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>surefire-junit3</artifactId>
@@ -46,33 +46,35 @@
   </dependencies>
 
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources/META-INF</directory>
-        <targetPath>META-INF</targetPath>
-      </resource>
-    </resources>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
         <executions>
           <execution>
-            <phase>package</phase>
+            <id>jacoco-agent</id>
             <goals>
-              <goal>shade</goal>
+              <goal>prepare-agent</goal>
             </goals>
-            <configuration>
-              <artifactSet>
-                <includes>
-                  <include>org.apache.maven.surefire:common-junit3</include>
-                </includes>
-              </artifactSet>
-            </configuration>
           </execution>
         </executions>
+        <configuration>
+          <propertyName>jacoco.agent</propertyName>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>${jvm.args.tests} ${jacoco.agent}</argLine>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.surefire</groupId>
+            <artifactId>surefire-shadefire</artifactId>
+            <version>3.0.0-M4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>
-
 </project>

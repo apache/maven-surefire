@@ -19,14 +19,11 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.surefire.report.TestSetReportEntry;
+
 import java.io.PrintStream;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
 
-import org.apache.maven.surefire.report.ReportEntry;
-
-import static java.nio.charset.Charset.defaultCharset;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Outputs test system out/system err directly to the console
@@ -39,39 +36,37 @@ import static java.nio.charset.Charset.defaultCharset;
 public class DirectConsoleOutput
     implements TestcycleConsoleOutputReceiver
 {
-    private final PrintStream sout;
+    private final PrintStream out;
 
-    private final PrintStream serr;
+    private final PrintStream err;
 
-    public DirectConsoleOutput( PrintStream sout, PrintStream serr )
+    public DirectConsoleOutput( PrintStream out, PrintStream err )
     {
-        this.sout = sout;
-        this.serr = serr;
+        this.out = requireNonNull( out );
+        this.err = requireNonNull( err );
     }
 
-
     @Override
-    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    public void writeTestOutput( String output, boolean newLine, boolean stdout )
     {
-        final PrintStream stream = stdout ? sout : serr;
-        try
+        PrintStream stream = stdout ? out : err;
+        if ( newLine )
         {
-            CharBuffer decode = defaultCharset().newDecoder().decode( ByteBuffer.wrap( buf, off, len ) );
-            stream.append( decode );
+            stream.println( output );
         }
-        catch ( CharacterCodingException e )
+        else
         {
-            stream.write( buf, off, len );
+            stream.print( output );
         }
     }
 
     @Override
-    public void testSetStarting( ReportEntry reportEntry )
+    public void testSetStarting( TestSetReportEntry reportEntry )
     {
     }
 
     @Override
-    public void testSetCompleted( ReportEntry report )
+    public void testSetCompleted( TestSetReportEntry report )
     {
     }
 

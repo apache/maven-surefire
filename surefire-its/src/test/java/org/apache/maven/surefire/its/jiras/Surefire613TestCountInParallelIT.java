@@ -28,6 +28,7 @@ import org.junit.Test;
  *
  * @author Kristian Rosenvold
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class Surefire613TestCountInParallelIT
     extends SurefireJUnit4IntegrationTestCase
 {

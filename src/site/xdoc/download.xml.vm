@@ -34,7 +34,7 @@ under the License.
 
       <p>In order to guard against corrupted downloads/installations, it is highly recommended to
       <a href="http://www.apache.org/dev/release-signing#verifying-signature">verify the signature</a>
-      of the release bundles against the public <a href="http://www.apache.org/dist/maven/KEYS">KEYS</a> used by the Apache Maven
+      of the release bundles against the public <a href="https://www.apache.org/dist/maven/KEYS">KEYS</a> used by the Apache Maven
       developers.</p>
 
       <p>${project.name} is distributed under the <a href="http://www.apache.org/licenses/">Apache License, version 2.0</a>.</p>
@@ -108,8 +108,8 @@ under the License.
           <tr>
             <td>${project.name} ${project.version} (Source zip)</td>
             <td><a href="[preferred]maven/surefire/${project.artifactId}-${project.version}-source-release.zip">maven/surefire/${project.artifactId}-${project.version}-source-release.zip</a></td>
-            <td><a href="http://www.apache.org/dist/maven/surefire/${project.artifactId}-${project.version}-source-release.zip.sha1">maven/surefire/${project.artifactId}-${project.version}-source-release.zip.sha1</a></td>
-            <td><a href="http://www.apache.org/dist/maven/surefire/${project.artifactId}-${project.version}-source-release.zip.asc">maven/surefire/${project.artifactId}-${project.version}-source-release.zip.asc</a></td>
+            <td><a href="https://www.apache.org/dist/maven/surefire/${project.artifactId}-${project.version}-source-release.zip.sha512">maven/surefire/${project.artifactId}-${project.version}-source-release.zip.sha512</a></td>
+            <td><a href="https://www.apache.org/dist/maven/surefire/${project.artifactId}-${project.version}-source-release.zip.asc">maven/surefire/${project.artifactId}-${project.version}-source-release.zip.asc</a></td>
           </tr>
         </tbody>
       </table>

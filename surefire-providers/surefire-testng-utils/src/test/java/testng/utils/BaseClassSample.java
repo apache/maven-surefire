@@ -19,6 +19,9 @@ package testng.utils;
  * under the License.
  */
 
+/**
+ *
+ */
 public abstract class BaseClassSample
 {
     public void baseClassMethodToBeIncluded()

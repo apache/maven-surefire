@@ -19,7 +19,9 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
-
+/**
+ *
+ */
 public class IntegrationTestSuiteResults
 {
     private int total, errors, failures, skipped, flakes;
@@ -34,7 +36,7 @@ public class IntegrationTestSuiteResults
 
     public IntegrationTestSuiteResults( int total, int errors, int failures, int skipped, int flakes )
     {
-        this(total, errors, failures, skipped);
+        this( total, errors, failures, skipped );
         this.flakes = flakes;
     }
 

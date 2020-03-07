@@ -23,7 +23,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.apache.maven.surefire.util.internal.StringUtils;
+import org.apache.maven.surefire.shared.utils.StringUtils;
 
 /**
  * @author Kristian Rosenvold
@@ -89,7 +89,7 @@ public class PropertiesWrapper
 
     public List<String> getStringList( String propertyPrefix )
     {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for ( int i = 0; ; i++ )
         {
             String value = getProperty( propertyPrefix + i );

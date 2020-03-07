@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.maven.surefire.util.internal.StringUtils.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 /**
  * @author Kristian Rosenvold
@@ -38,7 +38,7 @@ public class ChecksumCalculator
 {
     private static final String HEX = "0123456789ABCDEF";
 
-    private final List<Object> checksumItems = new ArrayList<Object>();
+    private final List<Object> checksumItems = new ArrayList<>();
 
     private void appendObject( Object item )
     {

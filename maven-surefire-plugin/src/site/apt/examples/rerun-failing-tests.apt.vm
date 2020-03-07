@@ -102,8 +102,9 @@ mvn -D${thisPlugin.toLowerCase()}.rerunFailingTestsCount=2 test
 
 +---+
 <testcase name=".." classname=".." time="0.1">
-  <flakyFailure message="" type=""> flaky failure stack trace
-    <system-out> flaky failure </system-out>
+  <flakyFailure message="exception message" type="assertion exception">
+    <stackTrace>flaky failure stack trace</stackTrace>
+    <system-out> flaky failure System.out log message </system-out>
   </flakyFailure>
   <system-out> success </system-out>
 </testcase>
@@ -126,7 +127,8 @@ mvn -D${thisPlugin.toLowerCase()}.rerunFailingTestsCount=2 test
 <testcase name=".." classname=".." time="0.1">
   <failure message="" type=""> first failure stack trace </failure>
   <system-out> first failure </system-out>
-  <rerunFailure message="" type=""> rerun failure stack trace
+  <rerunFailure message="exception message" type="assertion exception">
+    <stackTrace>rerun failure stack trace</stackTrace>
     <system-out> rerun failure </system-out>
   </rerunFailure>
 </testcase>

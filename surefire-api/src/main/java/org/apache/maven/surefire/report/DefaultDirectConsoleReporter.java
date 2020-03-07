@@ -39,10 +39,4 @@ public final class DefaultDirectConsoleReporter
     {
         systemOut.println( message );
     }
-
-    @Override
-    public void println( byte[] buf, int off, int len )
-    {
-        println( new String( buf, off, len ) );
-    }
 }

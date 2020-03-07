@@ -24,7 +24,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -52,7 +51,7 @@ public final class ServiceLoader
     {
         try
         {
-            Set<T> implementations = new HashSet<T>();
+            Set<T> implementations = new HashSet<>();
             for ( String fullyQualifiedClassName : lookup( clazz, classLoader ) )
             {
                 Class<?> implClass = classLoader.loadClass( fullyQualifiedClassName );
@@ -60,23 +59,7 @@ public final class ServiceLoader
             }
             return implementations;
         }
-        catch ( IOException e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage(), e );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage(), e );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage(), e );
-        }
-        catch ( InstantiationException e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage(), e );
-        }
-        catch ( IllegalAccessException e )
+        catch ( IOException | ReflectiveOperationException e )
         {
             throw new IllegalStateException( e.getLocalizedMessage(), e );
         }
@@ -109,13 +92,12 @@ public final class ServiceLoader
     private static Set<String> lookupSpiImplementations( final Enumeration<URL> urlEnumeration )
             throws IOException
     {
-        final Set<String> names = new HashSet<String>();
+        final Set<String> names = new HashSet<>();
         nextUrl:
         while ( urlEnumeration.hasMoreElements() )
         {
             final URL url = urlEnumeration.nextElement();
-            final BufferedReader reader = getReader( url );
-            try
+            try ( BufferedReader reader = getReader( url ) )
             {
                 for ( String line; ( line = reader.readLine() ) != null; )
                 {
@@ -153,10 +135,6 @@ public final class ServiceLoader
                         names.add( line );
                     }
                 }
-            }
-            finally
-            {
-                reader.close();
             }
         }
 

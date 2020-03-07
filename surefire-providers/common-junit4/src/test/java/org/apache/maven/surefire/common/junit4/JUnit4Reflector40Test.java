@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.common.junit4;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -36,13 +37,16 @@ public class JUnit4Reflector40Test
         assertNull( annotatedIgnore );
     }
 
-    private static final String reason = "Ignorance is bliss";
+    private static final String REASON = "Ignorance is bliss";
 
+    /**
+     *
+     */
     public static class IgnoreWithDescription
     {
 
         @Test
-        @Ignore( reason )
+        @Ignore( REASON )
         public void testSomething2()
         {
         }

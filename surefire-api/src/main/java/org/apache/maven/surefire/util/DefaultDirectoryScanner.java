@@ -68,7 +68,7 @@ public class DefaultDirectoryScanner
     public TestsToRun locateTestClasses( ClassLoader classLoader, ScannerFilter scannerFilter )
     {
         String[] testClassNames = collectTests();
-        Set<Class<?>> result = new LinkedHashSet<Class<?>>();
+        Set<Class<?>> result = new LinkedHashSet<>();
 
         String[] specific = specificTests == null ? new String[0] : processIncludesExcludes( specificTests );
         SpecificTestClassFilter specificTestFilter = new SpecificTestClassFilter( specific );
@@ -109,8 +109,8 @@ public class DefaultDirectoryScanner
         String[] tests = EMPTY_STRING_ARRAY;
         if ( basedir.exists() )
         {
-            org.apache.maven.shared.utils.io.DirectoryScanner scanner =
-                new org.apache.maven.shared.utils.io.DirectoryScanner();
+            org.apache.maven.surefire.shared.utils.io.DirectoryScanner scanner =
+                new org.apache.maven.surefire.shared.utils.io.DirectoryScanner();
 
             scanner.setBasedir( basedir );
 
@@ -139,7 +139,7 @@ public class DefaultDirectoryScanner
 
     private static String[] processIncludesExcludes( List<String> list )
     {
-        List<String> newList = new ArrayList<String>();
+        List<String> newList = new ArrayList<>();
         for ( String include : list )
         {
             String[] includes = include.split( "," );

@@ -20,6 +20,7 @@ package org.apache.maven.surefire.common.junit4;
  */
 
 import junit.framework.TestCase;
+import org.apache.maven.surefire.util.internal.ClassMethod;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 
@@ -27,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.*;
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTestDescriptions;
 
 /**
  * @author Qingzhou Luo
@@ -37,7 +38,7 @@ public class JUnit4ProviderUtilTest
 {
     public void testGenerateFailingTestDescriptions()
     {
-        List<Failure> failures = new ArrayList<Failure>();
+        List<Failure> failures = new ArrayList<>();
 
         Description test1Description = Description.createTestDescription( T1.class, "testOne" );
         Description test2Description = Description.createTestDescription( T1.class, "testTwo" );
@@ -55,34 +56,34 @@ public class JUnit4ProviderUtilTest
 
         assertEquals( 4, result.size() );
 
-        assertTrue( result.contains( test1Description) );
-        assertTrue( result.contains( test2Description) );
-        assertTrue( result.contains( test3Description) );
-        assertTrue( result.contains( test4Description) );
+        assertTrue( result.contains( test1Description ) );
+        assertTrue( result.contains( test2Description ) );
+        assertTrue( result.contains( test3Description ) );
+        assertTrue( result.contains( test4Description ) );
     }
 
-    public void testIllegalTestDescription$NegativeTest()
+    public void testIllegalTestDescriptionNegativeTest()
     {
         Description test = Description.createSuiteDescription( "someTestMethod" );
-        ClassMethod classMethod = cutTestClassAndMethod( test );
-        assertFalse( classMethod.isValid() );
+        ClassMethod classMethod = JUnit4ProviderUtil.toClassMethod( test );
+        assertFalse( classMethod.isValidTest() );
     }
 
     public void testOldJUnitParameterizedDescriptionParser()
     {
         Description test = Description.createTestDescription( T1.class, " \n testMethod[5] " );
         assertEquals( " \n testMethod[5] (" + T1.class.getName() + ")", test.getDisplayName() );
-        ClassMethod classMethod = cutTestClassAndMethod( test );
-        assertTrue( classMethod.isValid() );
-        assertEquals( "testMethod[5]", classMethod.getMethod() );
+        ClassMethod classMethod = JUnit4ProviderUtil.toClassMethod( test );
+        assertTrue( classMethod.isValidTest() );
+        assertEquals( " \n testMethod[5] ", classMethod.getMethod() );
         assertEquals( T1.class.getName(), classMethod.getClazz() );
     }
 
     public void testNewJUnitParameterizedDescriptionParser()
     {
         Description test = Description.createTestDescription( T1.class, "flakyTest[3: (Test11); Test12; Test13;]" );
-        ClassMethod classMethod = cutTestClassAndMethod( test );
-        assertTrue( classMethod.isValid() );
+        ClassMethod classMethod = JUnit4ProviderUtil.toClassMethod( test );
+        assertTrue( classMethod.isValidTest() );
         assertEquals( "flakyTest[3: (Test11); Test12; Test13;]", classMethod.getMethod() );
         assertEquals( T1.class.getName(), classMethod.getClazz() );
     }

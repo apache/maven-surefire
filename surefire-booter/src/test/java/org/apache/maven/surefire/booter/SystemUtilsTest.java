@@ -22,6 +22,7 @@ package org.apache.maven.surefire.booter;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -31,12 +32,12 @@ import java.lang.management.ManagementFactory;
 import java.math.BigDecimal;
 
 import static java.io.File.separator;
-import static org.apache.commons.lang3.JavaVersion.JAVA_9;
-import static org.apache.commons.lang3.JavaVersion.JAVA_RECENT;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_FREE_BSD;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_NET_BSD;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_OPEN_BSD;
+import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_9;
+import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_RECENT;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_FREE_BSD;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_LINUX;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_NET_BSD;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_OPEN_BSD;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.Matchers.any;
@@ -53,9 +54,13 @@ import static org.powermock.reflect.Whitebox.invokeMethod;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20.1
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 @RunWith( Enclosed.class )
 public class SystemUtilsTest
 {
+    /**
+     *
+     */
     public static class PlainUnitTests
     {
 
@@ -63,7 +68,8 @@ public class SystemUtilsTest
         public void shouldMatchJavaSpecVersion() throws Exception
         {
             BigDecimal actual = invokeMethod( SystemUtils.class, "getJavaSpecificationVersion" );
-            BigDecimal expected = new BigDecimal( System.getProperty( "java.specification.version" ) ).stripTrailingZeros();
+            BigDecimal expected =
+                    new BigDecimal( System.getProperty( "java.specification.version" ) ).stripTrailingZeros();
             assertThat( actual ).isEqualTo( expected );
             assertThat( SystemUtils.JAVA_SPECIFICATION_VERSION ).isEqualTo( expected );
         }
@@ -293,8 +299,12 @@ public class SystemUtilsTest
 
     }
 
+    /**
+     *
+     */
     @RunWith( PowerMockRunner.class )
     @PrepareForTest( SystemUtils.class )
+    @PowerMockIgnore( { "org.jacoco.agent.rt.*", "com.vladium.emma.rt.*" } )
     public static class MockTest
     {
 

@@ -26,7 +26,6 @@ import org.apache.maven.surefire.testset.TestSetFailedException;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Queue;
@@ -36,12 +35,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static java.util.Objects.requireNonNull;
 import static java.lang.Thread.State.NEW;
 import static java.lang.Thread.State.RUNNABLE;
 import static java.lang.Thread.State.TERMINATED;
 import static java.lang.StrictMath.max;
 import static org.apache.maven.surefire.booter.Command.toShutdown;
-import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_NEXT_TEST;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.BYE_ACK;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.NOOP;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.RUN_CLASS;
@@ -50,10 +49,8 @@ import static org.apache.maven.surefire.booter.MasterProcessCommand.SKIP_SINCE_N
 import static org.apache.maven.surefire.booter.MasterProcessCommand.TEST_SET_FINISHED;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.decode;
 import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThread;
-import static org.apache.maven.surefire.util.internal.StringUtils.encodeStringForForkCommunication;
-import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
-import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
-import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
 
 /**
  * Reader of commands coming from plugin(master) process.
@@ -67,18 +64,17 @@ public final class CommandReader
 
     private static final CommandReader READER = new CommandReader();
 
-    private final Queue<BiProperty<MasterProcessCommand, CommandListener>> listeners
-        = new ConcurrentLinkedQueue<BiProperty<MasterProcessCommand, CommandListener>>();
+    private final Queue<BiProperty<MasterProcessCommand, CommandListener>> listeners = new ConcurrentLinkedQueue<>();
 
     private final Thread commandThread = newDaemonThread( new CommandRunnable(), "surefire-forkedjvm-command-thread" );
 
-    private final AtomicReference<Thread.State> state = new AtomicReference<Thread.State>( NEW );
+    private final AtomicReference<Thread.State> state = new AtomicReference<>( NEW );
 
     private final CountDownLatch startMonitor = new CountDownLatch( 1 );
 
     private final Semaphore nextCommandNotifier = new Semaphore( 0 );
 
-    private final CopyOnWriteArrayList<String> testClasses = new CopyOnWriteArrayList<String>();
+    private final CopyOnWriteArrayList<String> testClasses = new CopyOnWriteArrayList<>();
 
     private volatile Shutdown shutdown;
 
@@ -174,7 +170,7 @@ public final class CommandReader
 
     private void addListener( MasterProcessCommand cmd, CommandListener listener )
     {
-        listeners.add( new BiProperty<MasterProcessCommand, CommandListener>( cmd, listener ) );
+        listeners.add( new BiProperty<>( cmd, listener ) );
     }
 
     public void removeListener( CommandListener listener )
@@ -190,7 +186,7 @@ public final class CommandReader
     }
 
     /**
-     * @return test classes which have been retrieved by {@link CommandReader#getIterableClasses(PrintStream)}.
+     * @return test classes which have been retrieved by {@link CommandReader#getIterableClasses(ForkedChannelEncoder)}.
      */
     Iterator<String> iterated()
     {
@@ -201,18 +197,19 @@ public final class CommandReader
      * The iterator can be used only in one Thread.
      * Two simultaneous instances are not allowed for sake of only one {@link #nextCommandNotifier}.
      *
-     * @param originalOutStream original stream in current JVM process
+     * @param eventChannel original stream in current JVM process
      * @return Iterator with test classes lazily loaded as commands from the main process
      */
-    Iterable<String> getIterableClasses( PrintStream originalOutStream )
+    Iterable<String> getIterableClasses( ForkedChannelEncoder eventChannel )
     {
-        return new ClassesIterable( originalOutStream );
+        return new ClassesIterable( eventChannel );
     }
 
     public void stop()
     {
-        if ( state.compareAndSet( NEW, TERMINATED ) || state.compareAndSet( RUNNABLE, TERMINATED ) )
+        if ( !isStopped() )
         {
+            state.set( TERMINATED );
             makeQueueFull();
             listeners.clear();
             commandThread.interrupt();
@@ -254,32 +251,32 @@ public final class CommandReader
     private final class ClassesIterable
         implements Iterable<String>
     {
-        private final PrintStream originalOutStream;
+        private final ForkedChannelEncoder eventChannel;
 
-        ClassesIterable( PrintStream originalOutStream )
+        ClassesIterable( ForkedChannelEncoder eventChannel )
         {
-            this.originalOutStream = originalOutStream;
+            this.eventChannel = eventChannel;
         }
 
         @Override
         public Iterator<String> iterator()
         {
-            return new ClassesIterator( originalOutStream );
+            return new ClassesIterator( eventChannel );
         }
     }
 
     private final class ClassesIterator
         implements Iterator<String>
     {
-        private final PrintStream originalOutStream;
+        private final ForkedChannelEncoder eventChannel;
 
         private String clazz;
 
         private int nextQueueIndex;
 
-        private ClassesIterator( PrintStream originalOutStream )
+        private ClassesIterator( ForkedChannelEncoder eventChannel )
         {
-            this.originalOutStream = originalOutStream;
+            this.eventChannel = eventChannel;
         }
 
         @Override
@@ -345,12 +342,7 @@ public final class CommandReader
 
         private void requestNextTest()
         {
-            byte[] encoded = encodeStringForForkCommunication( ( (char) BOOTERCODE_NEXT_TEST ) + ",0,want more!\n" );
-            synchronized ( originalOutStream )
-            {
-                originalOutStream.write( encoded, 0, encoded.length );
-                originalOutStream.flush();
-            }
+            eventChannel.acquireNextTest();
         }
 
         private boolean shouldFinish()
@@ -406,22 +398,28 @@ public final class CommandReader
                                 if ( inserted )
                                 {
                                     CommandReader.this.wakeupIterator();
-                                    insertToListeners( command );
+                                    callListeners( command );
                                 }
                                 break;
                             case TEST_SET_FINISHED:
                                 CommandReader.this.makeQueueFull();
                                 isTestSetFinished = true;
                                 CommandReader.this.wakeupIterator();
-                                insertToListeners( command );
+                                callListeners( command );
                                 break;
                             case SHUTDOWN:
                                 CommandReader.this.makeQueueFull();
                                 CommandReader.this.wakeupIterator();
-                                insertToListeners( command );
+                                callListeners( command );
+                                break;
+                            case BYE_ACK:
+                                callListeners( command );
+                                // After SHUTDOWN no more commands can come.
+                                // Hence, do NOT go back to blocking in I/O.
+                                CommandReader.this.state.set( TERMINATED );
                                 break;
                             default:
-                                insertToListeners( command );
+                                callListeners( command );
                                 break;
                         }
                     }
@@ -463,7 +461,7 @@ public final class CommandReader
             }
         }
 
-        private void insertToListeners( Command cmd )
+        private void callListeners( Command cmd )
         {
             MasterProcessCommand expectedCommandType = cmd.getCommandType();
             for ( BiProperty<MasterProcessCommand, CommandListener> listenerWrapper : CommandReader.this.listeners )
@@ -484,18 +482,8 @@ public final class CommandReader
             {
                 CommandReader.this.makeQueueFull();
                 CommandReader.this.wakeupIterator();
-                insertToListeners( toShutdown( shutdown ) );
-                if ( shutdown.isExit() )
-                {
-                    System.exit( 1 );
-                }
-                else if ( shutdown.isKill() )
-                {
-                    Runtime.getRuntime().halt( 1 );
-                }
-                // else is default: other than Shutdown.DEFAULT should not happen; otherwise you missed enum case
+                callListeners( toShutdown( shutdown ) );
             }
         }
     }
-
 }

@@ -25,16 +25,19 @@ import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Test that parallel tests actually run and complete within the expected time.
  */
 public class TestNGParallelTest
 {
-
-    static int testCount = 0;
-
-    static long startTime;
+    private static final long DELAY = 3_000L;
+    private static final int THREAD_POOL_SIZE = 2;
+    private static final int INVOCATION_COUNT = 3;
+    private static final AtomicInteger TEST_COUNT = new AtomicInteger();
+    private static int testCount = 0;
+    private static long startTime;
 
     @BeforeSuite( alwaysRun = true )
     public void startClock()
@@ -47,23 +50,19 @@ public class TestNGParallelTest
     {
         long runtime = new Date().getTime() - startTime;
         System.out.println( "Runtime was: " + runtime );
-        assertTrue( testCount == 3, "Expected test to be run 3 times, but was " + testCount );
-        // Note, this can be < 1000 on Windows.
-        assertTrue( runtime < 1400, "Runtime was " + runtime + ". It should be a little over 1000ms" );
+        long testCount = TEST_COUNT.get();
+        assertTrue( testCount == INVOCATION_COUNT, "Expected test to be run 3 times, but was " + testCount );
+        // Note, this can be < 6000 on Windows.
+        assertTrue( runtime < INVOCATION_COUNT * DELAY - 300L,
+                "Runtime was " + runtime + ". It should be a little over 3000ms but less than 6000ms." );
     }
 
-    @Test( threadPoolSize = 2, invocationCount = 3 )
+    @Test( threadPoolSize = THREAD_POOL_SIZE, invocationCount = INVOCATION_COUNT )
     public void incrementTestCountAndSleepForOneSecond()
         throws InterruptedException
     {
-        incrementTestCount();
-        Thread.sleep( 500 );
+        TEST_COUNT.incrementAndGet();
+        Thread.sleep( DELAY );
         System.out.println( "Ran test" );
     }
-
-    private synchronized void incrementTestCount()
-    {
-        testCount++;
-    }
-
 }

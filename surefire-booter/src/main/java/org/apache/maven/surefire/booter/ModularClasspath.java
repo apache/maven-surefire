@@ -35,25 +35,25 @@ import static java.util.Collections.unmodifiableList;
  */
 public final class ModularClasspath
 {
-    private final File moduleDescriptor;
+    private final String moduleNameFromDescriptor;
     private final List<String> modulePath;
     private final Collection<String> packages;
     private final File patchFile;
 
-    public ModularClasspath( @Nonnull File moduleDescriptor, @Nonnull List<String> modulePath,
+    public ModularClasspath( @Nonnull String moduleNameFromDescriptor, @Nonnull List<String> modulePath,
                              @Nonnull Collection<String> packages,
                              @Nonnull File patchFile )
     {
-        this.moduleDescriptor = moduleDescriptor;
+        this.moduleNameFromDescriptor = moduleNameFromDescriptor;
         this.modulePath = modulePath;
         this.packages = packages;
         this.patchFile = patchFile;
     }
 
     @Nonnull
-    public File getModuleDescriptor()
+    public String getModuleNameFromDescriptor()
     {
-        return moduleDescriptor;
+        return moduleNameFromDescriptor;
     }
 
     @Nonnull

@@ -41,7 +41,7 @@ public abstract class AbstractDirectConfigurator
 
     AbstractDirectConfigurator()
     {
-        Map<String, Setter> options = new HashMap<String, Setter>();
+        Map<String, Setter> options = new HashMap<>();
         // options.put( ProviderParameterNames.TESTNG_GROUPS_PROP, new Setter( "setGroups", String.class ) );
         // options.put( ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP, new Setter( "setExcludedGroups", String.class
         // ) );
@@ -76,7 +76,7 @@ public abstract class AbstractDirectConfigurator
 
     protected Map<String, String> filterForSuite( Map<String, String> options )
     {
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = new HashMap<>();
         addPropIfNotNull( options, result, ProviderParameterNames.PARALLEL_PROP );
         addPropIfNotNull( options, result, ProviderParameterNames.THREADCOUNT_PROP );
         return result;
@@ -116,10 +116,10 @@ public abstract class AbstractDirectConfigurator
     {
         if ( listenerClasses == null || listenerClasses.trim().isEmpty() )
         {
-            return new ArrayList<Class>();
+            return new ArrayList<>();
         }
 
-        List<Class> classes = new ArrayList<Class>();
+        List<Class> classes = new ArrayList<>();
         String[] classNames = listenerClasses.split( "\\s*,\\s*(\\r?\\n)?\\s*" );
         for ( String className : classNames )
         {

@@ -19,7 +19,10 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.*;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;

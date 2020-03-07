@@ -31,7 +31,15 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public class ReflectionUtilsTest
 {
-    @Test(expected = RuntimeException.class)
+    @Test
+    public void shouldReloadClass() throws Exception
+    {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        assertThat( ReflectionUtils.reloadClass( cl, new B() ) )
+                .isEqualTo( B.class );
+    }
+
+    @Test( expected = RuntimeException.class )
     public void shouldNotInvokeStaticMethod()
     {
         ReflectionUtils.invokeStaticMethod( ReflectionUtilsTest.class, "notCallable",
@@ -88,7 +96,7 @@ public class ReflectionUtilsTest
         return 3L;
     }
 
-    public static class A
+    static class A
     {
         public static A current()
         {
@@ -106,7 +114,7 @@ public class ReflectionUtilsTest
         }
     }
 
-    public static class B
+    static class B
     {
         public long pid()
         {

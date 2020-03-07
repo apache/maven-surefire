@@ -10,9 +10,8 @@
     <description>surefire-930</description>
 
     <properties>
-        <surefire.version>2.12.4</surefire.version>
-        <maven.compiler.source>1.6</maven.compiler.source>
-        <maven.compiler.target>1.6</maven.compiler.target>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
     <dependencies>
         <dependency>
@@ -26,7 +25,9 @@
     <build>
         <plugins>
             <plugin>
+                <!-- Test reports were generated from the test sources by the developer. -->
                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.version}</version>
                 <configuration>
                   <skip>true</skip>
                 </configuration>

@@ -1,4 +1,5 @@
 package org.apache.maven.plugin.surefire;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -85,7 +86,7 @@ public class SurefirePropertiesTest
         assertTrue( list( orderedProperties.keys() ).contains( "b" ) );
 
         Iterator it = orderedProperties.getStringKeySet().iterator();
-        SortedSet<Object> keys = new TreeSet<Object>();
+        SortedSet<Object> keys = new TreeSet<>();
         keys.add( it.next() );
         keys.add( it.next() );
         it = keys.iterator();
@@ -112,7 +113,7 @@ public class SurefirePropertiesTest
         assertTrue( list( orderedProperties.keys() ).contains( "b" ) );
 
         Iterator it = orderedProperties.getStringKeySet().iterator();
-        SortedSet<Object> keys = new TreeSet<Object>();
+        SortedSet<Object> keys = new TreeSet<>();
         keys.add( it.next() );
         keys.add( it.next() );
         it = keys.iterator();
@@ -123,7 +124,8 @@ public class SurefirePropertiesTest
     private static int size( Iterator<?> iterator )
     {
         int count = 0;
-        while ( iterator.hasNext() ) {
+        while ( iterator.hasNext() )
+        {
             iterator.next();
             count++;
         }

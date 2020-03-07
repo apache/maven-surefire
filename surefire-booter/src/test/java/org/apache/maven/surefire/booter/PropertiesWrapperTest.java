@@ -19,7 +19,10 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -30,10 +33,9 @@ public class PropertiesWrapperTest
     extends TestCase
 {
     public void testAddList()
-        throws Exception
     {
         PropertiesWrapper propertiesWrapper = new PropertiesWrapper( new HashMap<String, String>() );
-        List<String> items = new ArrayList<String>();
+        List<String> items = new ArrayList<>();
         items.add( "String1" );
         items.add( "String2,String3" );
         items.add( "String4" );
@@ -45,7 +47,6 @@ public class PropertiesWrapperTest
         assertEquals( "String5", test.get( 4 ) );
         assertEquals( "String3", test.get( 2 ) );
         assertEquals( "String2", test.get( 1 ) );
-
     }
 
     private static final String DUMMY_PREFIX = "dummyPrefix";
@@ -54,14 +55,13 @@ public class PropertiesWrapperTest
 
     private static final String SECOND_ELEMENT = "foo1";
 
-    private final Map<String, String> properties = new HashMap<String, String>();
+    private final Map<String, String> properties = new HashMap<>();
 
     private final PropertiesWrapper mapper = new PropertiesWrapper( properties );
 
     private final Classpath classpathWithTwoElements = createClasspathWithTwoElements();
 
     public void testReadFromProperties()
-        throws Exception
     {
         properties.put( DUMMY_PREFIX + "0", FIRST_ELEMENT );
         properties.put( DUMMY_PREFIX + "1", SECOND_ELEMENT );
@@ -70,14 +70,12 @@ public class PropertiesWrapperTest
     }
 
     public void testReadFromPropertiesWithEmptyProperties()
-        throws Exception
     {
         Classpath recreatedClasspath = readClasspathFromProperties();
         assertTrue( recreatedClasspath.getClassPath().isEmpty() );
     }
 
     public void testWriteToProperties()
-        throws Exception
     {
         mapper.setClasspath( DUMMY_PREFIX, classpathWithTwoElements );
         assertEquals( FIRST_ELEMENT, mapper.getProperty( DUMMY_PREFIX + "0" ) );
@@ -85,7 +83,6 @@ public class PropertiesWrapperTest
     }
 
     public void testRoundtrip()
-        throws Exception
     {
         mapper.setClasspath( DUMMY_PREFIX, classpathWithTwoElements );
         Classpath recreatedClasspath = readClasspathFromProperties();

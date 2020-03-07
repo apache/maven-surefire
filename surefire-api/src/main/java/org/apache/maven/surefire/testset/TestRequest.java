@@ -96,7 +96,7 @@ public class TestRequest
     {
         if ( suiteXmlFiles != null )
         {
-            List<File> files = new ArrayList<File>();
+            List<File> files = new ArrayList<>();
             Object element;
             for ( Object suiteXmlFile : suiteXmlFiles )
             {

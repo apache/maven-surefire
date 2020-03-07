@@ -33,10 +33,10 @@ import java.util.NoSuchElementException;
 import static org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream.TestLessInputStreamBuilder;
 import static org.apache.maven.surefire.booter.Command.NOOP;
 import static org.apache.maven.surefire.booter.Command.SKIP_SINCE_NEXT_TEST;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.BYE_ACK;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.SHUTDOWN;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.decode;
 import static org.apache.maven.surefire.booter.Shutdown.EXIT;
+import static org.apache.maven.surefire.booter.Shutdown.KILL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -69,9 +69,9 @@ public class TestLessInputStreamBuilderTest
 
         assertFalse( iterator.hasNext() );
 
-        builder.getCachableCommands().noop();
+        builder.getCachableCommands().shutdown( KILL );
         assertTrue( iterator.hasNext() );
-        assertThat( iterator.next(), is( NOOP ) );
+        assertThat( iterator.next(), is( new Command( SHUTDOWN, "KILL" ) ) );
 
         builder.removeStream( is );
     }
@@ -138,14 +138,57 @@ public class TestLessInputStreamBuilderTest
     {
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
         TestLessInputStream pluginIs = builder.build();
-        builder.getImmediateCommands().acknowledgeByeEventReceived();
+        builder.getImmediateCommands().shutdown( KILL );
         builder.getImmediateCommands().noop();
         DataInputStream is = new DataInputStream( pluginIs );
         Command bye = decode( is );
         assertThat( bye, is( notNullValue() ) );
-        assertThat( bye.getCommandType(), is( BYE_ACK ) );
+        assertThat( bye.getCommandType(), is( SHUTDOWN ) );
+        assertThat( bye.getData(), is( KILL.name() ) );
         Command noop = decode( is );
         assertThat( noop, is( notNullValue() ) );
         assertThat( noop.getCommandType(), is( MasterProcessCommand.NOOP ) );
+    }
+
+    @Test( expected = UnsupportedOperationException.class )
+    public void shouldThrowUnsupportedException1()
+    {
+        TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
+        builder.getImmediateCommands().provideNewTest();
+    }
+
+    @Test( expected = UnsupportedOperationException.class )
+    public void shouldThrowUnsupportedException2()
+    {
+        TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
+        builder.getImmediateCommands().skipSinceNextTest();
+    }
+
+    @Test( expected = UnsupportedOperationException.class )
+    public void shouldThrowUnsupportedException3()
+    {
+        TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
+        builder.getImmediateCommands().acknowledgeByeEventReceived();
+    }
+
+    @Test( expected = UnsupportedOperationException.class )
+    public void shouldThrowUnsupportedException4()
+    {
+        TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
+        builder.getCachableCommands().acknowledgeByeEventReceived();
+    }
+
+    @Test( expected = UnsupportedOperationException.class )
+    public void shouldThrowUnsupportedException5()
+    {
+        TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
+        builder.getCachableCommands().provideNewTest();
+    }
+
+    @Test( expected = UnsupportedOperationException.class )
+    public void shouldThrowUnsupportedException6()
+    {
+        TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
+        builder.getCachableCommands().noop();
     }
 }

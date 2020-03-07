@@ -24,8 +24,13 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
-import static org.apache.maven.surefire.its.fixture.TestFramework.*;
-import static org.apache.maven.surefire.its.fixture.Configuration.*;
+import static org.apache.maven.surefire.its.fixture.TestFramework.JUNIT47;
+import static org.apache.maven.surefire.its.fixture.TestFramework.TestNG;
+import static org.apache.maven.surefire.its.fixture.Configuration.INCLUDES;
+import static org.apache.maven.surefire.its.fixture.Configuration.INCLUDES_EXCLUDES;
+import static org.apache.maven.surefire.its.fixture.Configuration.INCLUDES_EXCLUDES_FILE;
+import static org.apache.maven.surefire.its.fixture.Configuration.INCLUDES_FILE;
+import static org.apache.maven.surefire.its.fixture.Configuration.TEST;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assume.assumeThat;
@@ -48,7 +53,8 @@ public abstract class AbstractTestMultipleMethodPatterns
     {
         SurefireLauncher launcher = unpack().addGoal( "-P " + getSettings().profile() );
         String[] includedExcluded = splitIncludesExcludes( tests );
-        switch ( getSettings().getConfiguration() ) {
+        switch ( getSettings().getConfiguration() )
+        {
             case TEST:
                 launcher.setTestToRun( tests );
                 break;
@@ -361,11 +367,11 @@ public abstract class AbstractTestMultipleMethodPatterns
         throws Exception
     {
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
-        String test = "jiras/surefire745/BasicTest#testSuccessOne+testSuccessTwo"//2
-            + ',' + "jiras/**/TestTwo"//2
-            + ',' + "jiras/surefire745/TestThree#testSuccess*"//2
-            + ',' + "TestFour#testSuccess???"//2
-            + ',' + "jiras/surefire745/*Five#test*One";//1
+        String test = "jiras/surefire745/BasicTest#testSuccessOne+testSuccessTwo" //2
+            + ',' + "jiras/**/TestTwo" //2
+            + ',' + "jiras/surefire745/TestThree#testSuccess*" //2
+            + ',' + "TestFour#testSuccess???" //2
+            + ',' + "jiras/surefire745/*Five#test*One"; //1
 
         prepare( test )
             .executeTest()
@@ -379,11 +385,11 @@ public abstract class AbstractTestMultipleMethodPatterns
     {
         assumeThat( getSettings().getFramework(), anyOf( is( JUNIT47 ), is( TestNG ) ) );
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
-        String test = "jiras/surefire745/BasicTest#testSuccessOne+testSuccessTwo"//2
-            + ',' + "jiras/**/TestTwo"//2
-            + ',' + "jiras/surefire745/TestThree#testSuccess*"//2
-            + ',' + "TestFour#testSuccess???"//2
-            + ',' + "jiras/surefire745/*Five#test*One";//1
+        String test = "jiras/surefire745/BasicTest#testSuccessOne+testSuccessTwo" //2
+            + ',' + "jiras/**/TestTwo" //2
+            + ',' + "jiras/surefire745/TestThree#testSuccess*" //2
+            + ',' + "TestFour#testSuccess???" //2
+            + ',' + "jiras/surefire745/*Five#test*One"; //1
 
         prepare( test )
             .parallel( "classes" )
@@ -398,11 +404,11 @@ public abstract class AbstractTestMultipleMethodPatterns
         throws Exception
     {
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
-        String test = "**/BasicTest#testSuccessOne+testSuccessTwo"//2
-            + ',' + "jiras/**/TestTwo"//2
-            + ',' + "?????/surefire745/TestThree#testSuccess*"//2
-            + ',' + "jiras/surefire745/TestFour.java#testSuccess???"//2
-            + ',' + "jiras/surefire745/*Five#test*One";//1
+        String test = "**/BasicTest#testSuccessOne+testSuccessTwo" //2
+            + ',' + "jiras/**/TestTwo" //2
+            + ',' + "?????/surefire745/TestThree#testSuccess*" //2
+            + ',' + "jiras/surefire745/TestFour.java#testSuccess???" //2
+            + ',' + "jiras/surefire745/*Five#test*One"; //1
 
         prepare( test )
             .executeTest()
@@ -416,11 +422,11 @@ public abstract class AbstractTestMultipleMethodPatterns
     {
         assumeThat( getSettings().getFramework(), anyOf( is( JUNIT47 ), is( TestNG ) ) );
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
-        String test = "**/BasicTest#testSuccessOne+testSuccessTwo"//2
-            + ',' + "jiras/**/TestTwo"//2
-            + ',' + "?????/surefire745/TestThree#testSuccess*"//2
-            + ',' + "jiras/surefire745/TestFour.java#testSuccess???"//2
-            + ',' + "jiras/surefire745/*Five#test*One";//1
+        String test = "**/BasicTest#testSuccessOne+testSuccessTwo" //2
+            + ',' + "jiras/**/TestTwo" //2
+            + ',' + "?????/surefire745/TestThree#testSuccess*" //2
+            + ',' + "jiras/surefire745/TestFour.java#testSuccess???" //2
+            + ',' + "jiras/surefire745/*Five#test*One"; //1
 
         prepare( test )
             .parallel( "classes" )

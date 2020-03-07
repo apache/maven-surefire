@@ -29,11 +29,10 @@ public interface ConsoleOutputReceiver
     /**
      * Forwards process output from the running test-case into the reporting system
      *
-     * @param buf    the buffer to write
-     * @param off    offset
-     * @param len    len
+     * @param output stdout/sterr output from running tests
+     * @param newLine print on new line
      * @param stdout Indicates if this is stdout
      */
-    void writeTestOutput( byte[] buf, int off, int len, boolean stdout );
+    void writeTestOutput( String output, boolean newLine, boolean stdout );
 
 }

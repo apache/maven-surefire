@@ -21,12 +21,12 @@ package org.apache.maven.surefire.junitcore;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 import org.apache.maven.surefire.junitcore.pc.OptimizedParallelComputerTest;
 import org.apache.maven.surefire.junitcore.pc.ParallelComputerBuilderTest;
 import org.apache.maven.surefire.junitcore.pc.ParallelComputerUtilTest;
 import org.apache.maven.surefire.junitcore.pc.SchedulingStrategiesTest;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
 
 /**
  * Adapt the JUnit47 tests which use only annotations to the JUnit3 test suite.
@@ -34,27 +34,25 @@ import org.junit.runners.Suite;
  * @author Tibor Digana (tibor17)
  * @since 2.16
  */
-@Suite.SuiteClasses( {
-    Surefire746Test.class,
-    Surefire813IncorrectResultTest.class,
-    ParallelComputerUtilTest.class,
-    ParallelComputerBuilderTest.class,
-    SchedulingStrategiesTest.class,
-    OptimizedParallelComputerTest.class,
-    ConcurrentRunListenerTest.class,
-    ConfigurableParallelComputerTest.class,
-    JUnit4Reflector481Test.class,
-    JUnitCoreParametersTest.class,
-    JUnitCoreRunListenerTest.class,
-    MavenSurefireJUnit47RunnerTest.class,
-    MavenSurefireJUnit48RunnerTest.class,
-    TestMethodTest.class
-} )
-@RunWith( Suite.class )
-public class JUnit47SuiteTest
+public class JUnit47SuiteTest extends TestCase
 {
     public static Test suite()
     {
-        return new JUnit4TestAdapter( JUnit47SuiteTest.class );
+        TestSuite suite = new TestSuite();
+        suite.addTestSuite( ConcurrentRunListenerTest.class );
+        suite.addTestSuite( ConfigurableParallelComputerTest.class );
+        suite.addTestSuite( JUnitCoreRunListenerTest.class );
+        suite.addTestSuite( MavenSurefireJUnit47RunnerTest.class );
+        suite.addTestSuite( MavenSurefireJUnit48RunnerTest.class );
+        suite.addTestSuite( TestMethodTest.class );
+        suite.addTest( new JUnit4TestAdapter( Surefire746Test.class ) );
+        suite.addTest( new JUnit4TestAdapter( Surefire813IncorrectResultTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( ParallelComputerUtilTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( ParallelComputerBuilderTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( SchedulingStrategiesTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( OptimizedParallelComputerTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( JUnit4Reflector481Test.class ) );
+        suite.addTest( new JUnit4TestAdapter( JUnitCoreParametersTest.class ) );
+        return suite;
     }
 }

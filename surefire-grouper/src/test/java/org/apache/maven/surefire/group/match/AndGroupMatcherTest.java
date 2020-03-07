@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.group.match;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,6 +21,9 @@ package org.apache.maven.surefire.group.match;
 
 import junit.framework.TestCase;
 
+/**
+ *
+ */
 public class AndGroupMatcherTest
     extends TestCase
 {

@@ -93,26 +93,22 @@ public final class FooIT
         File booter = new File( System.getProperty( "surefire.real.class.path" ) );
         assertThat( booter ).exists();
         assertThat( booter ).isFile();
-        JarFile jarFile = new JarFile( booter );
-        try
+        try ( JarFile jarFile = new JarFile( booter ) )
         {
             Manifest manifest = jarFile.getManifest();
             return manifest.getMainAttributes().getValue( "Class-Path" );
-        }
-        finally
-        {
-            jarFile.close();
         }
     }
 
     private static Properties loadProperties( Class clazz, String resourcePath )
         throws IOException
     {
-        InputStream is = clazz.getResourceAsStream( resourcePath );
-        Properties prop = new Properties();
-        prop.load( is );
-        is.close();
-        return prop;
+        try ( InputStream is = clazz.getResourceAsStream( resourcePath ) )
+        {
+            Properties prop = new Properties();
+            prop.load( is );
+            return prop;
+        }
     }
 
     private static Properties loadMainProperties( Class clazz )
@@ -135,7 +131,7 @@ public final class FooIT
         System.out.println( "CLASS PATH:" );
         System.out.println( classPath );
 
-        assertThat( classPath, containsString( "/target/classes" ) );
+        assertThat( classPath, anyOf( containsString( "../classes" ), containsString( "/target/classes" ) ) );
 
         File[] descriptors = surefireProviderProperties();
         assertThat( descriptors ).hasSize( 1 );

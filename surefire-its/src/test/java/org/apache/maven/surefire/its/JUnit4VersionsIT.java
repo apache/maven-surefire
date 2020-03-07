@@ -21,22 +21,23 @@ package org.apache.maven.surefire.its;
 
 import java.util.Collection;
 
+import com.googlecode.junittoolbox.ParallelParameterized;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 
 import static java.util.Arrays.asList;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_10;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_11;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_12;
+import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_13;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_8;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_8_1;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_8_2;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_9;
-import static org.junit.runners.Parameterized.*;
+import static org.junit.runners.Parameterized.Parameters;
 
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_0;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_1;
@@ -53,7 +54,7 @@ import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_7;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-@RunWith( Parameterized.class )
+@RunWith( ParallelParameterized.class )
 public class JUnit4VersionsIT
     extends SurefireJUnit4IntegrationTestCase
 {
@@ -77,11 +78,13 @@ public class JUnit4VersionsIT
                 { JUNIT_4_9 },
                 { JUNIT_4_10 },
                 { JUNIT_4_11 },
-                { JUNIT_4_12 }
+                { JUNIT_4_12 },
+                { JUNIT_4_13 }
         } );
     }
 
     @Parameter
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public JUnitVersion version;
 
     @Test

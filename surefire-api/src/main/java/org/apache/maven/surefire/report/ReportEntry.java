@@ -33,11 +33,25 @@ public interface ReportEntry
     String getSourceName();
 
     /**
+     * Human readable {@link #getSourceName() test class}.
+     *
+     * @return source text
+     */
+    String getSourceText();
+
+    /**
      * The name of the test case
      *
      * @return A string describing the test case
      */
     String getName();
+
+    /**
+     * Human readable {@link #getName() test case}.
+     *
+     * @return name text
+     */
+    String getNameText();
 
     /**
      * The group/category of the testcase
@@ -61,6 +75,14 @@ public interface ReportEntry
      */
     Integer getElapsed();
 
+    /**
+     * Returns same value as {@link #getElapsed()} and fallbacks to {@code fallback} for <tt>null</tt> elapsed timed.
+     *
+     * @param fallback usually 0
+     * @return elapsed time if {@link #getElapsed()} is not null; otherwise returns {@code fallback}
+     */
+    int getElapsed( int fallback );
+
 
     /**
      * A message relating to a non-successful termination.
@@ -71,9 +93,16 @@ public interface ReportEntry
     String getMessage();
 
     /**
-     * A name of the test case together with the group or category (if any exists).
+     * A source name of the test case together with the group or category (if any exists).
      *
      * @return A string with the test case name and group/category, or just the name.
      */
     String getNameWithGroup();
+
+    /**
+     * A source text of the test case together with the group or category (if any exists).
+     *
+     * @return A string with the test case text and group/category, or just the source text.
+     */
+    String getReportNameWithGroup();
 }

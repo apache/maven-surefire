@@ -19,21 +19,20 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
 import org.apache.maven.surefire.report.ReporterException;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.List;
 
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
-import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
 
 /**
  * Base class for file reporters.
@@ -42,74 +41,71 @@ import static org.apache.maven.surefire.util.internal.StringUtils.isNotBlank;
  * @author Kristian Rosenvold
  */
 public class FileReporter
+        extends StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats>
 {
-    private final File reportsDirectory;
-    private final String reportNameSuffix;
-    private final Charset encoding;
+    private final boolean usePhrasedFileName;
+    private final boolean usePhrasedClassNameInRunning;
+    private final boolean usePhrasedClassNameInTestCaseSummary;
 
-    public FileReporter( File reportsDirectory, String reportNameSuffix, Charset encoding )
+    public FileReporter( File reportsDirectory, String reportNameSuffix, Charset encoding, boolean usePhrasedFileName,
+                         boolean usePhrasedClassNameInRunning, boolean usePhrasedClassNameInTestCaseSummary )
     {
-        this.reportsDirectory = reportsDirectory;
-        this.reportNameSuffix = reportNameSuffix;
-        this.encoding = encoding;
-    }
-
-    private PrintWriter testSetStarting( ReportEntry report )
-    {
-        File reportFile = getReportFile( reportsDirectory, report.getName(), reportNameSuffix, ".txt" );
-
-        File reportDir = reportFile.getParentFile();
-
-        // noinspection ResultOfMethodCallIgnored
-        reportDir.mkdirs();
-
-        try
-        {
-            Writer encodedStream = new OutputStreamWriter( new FileOutputStream( reportFile ), encoding );
-
-            PrintWriter writer = new PrintWriter( new BufferedWriter( encodedStream, 16 * 1024 ) );
-
-            writer.println( "-------------------------------------------------------------------------------" );
-
-            writer.println( "Test set: " + report.getName() );
-
-            writer.println( "-------------------------------------------------------------------------------" );
-
-            return writer;
-        }
-        catch ( IOException e )
-        {
-            throw new ReporterException( "Unable to create file for report: " + e.getMessage(), e );
-        }
+        super( reportsDirectory, reportNameSuffix, encoding );
+        this.usePhrasedFileName = usePhrasedFileName;
+        this.usePhrasedClassNameInRunning = usePhrasedClassNameInRunning;
+        this.usePhrasedClassNameInTestCaseSummary = usePhrasedClassNameInTestCaseSummary;
     }
 
     static File getReportFile( File reportsDirectory, String reportEntryName, String reportNameSuffix,
-                                      String fileExtension )
+                               String fileExtension )
     {
         String fileName =
                 reportEntryName + ( isNotBlank( reportNameSuffix ) ? "-" + reportNameSuffix : "" ) + fileExtension;
         return new File( reportsDirectory, stripIllegalFilenameChars( fileName ) );
     }
 
+    @Override
     public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
     {
-        PrintWriter writer = null;
-        try
+        File reportFile = getReportFile( getReportsDirectory(),
+                                         usePhrasedFileName ? report.getReportSourceName() : report.getSourceName(),
+                                         getReportNameSuffix(),
+                                         ".txt" );
+
+        File reportDir = reportFile.getParentFile();
+
+        // noinspection ResultOfMethodCallIgnored
+        reportDir.mkdirs();
+
+        try ( BufferedWriter writer = createFileReporterWriter( reportFile, getEncoding() ) )
         {
-            writer = testSetStarting( report );
-            writer.println( testSetStats.getTestSetSummary( report ) );
+            writer.write( "-------------------------------------------------------------------------------" );
+            writer.newLine();
+
+            String tesSet = usePhrasedClassNameInRunning ? report.getReportSourceName() : report.getSourceName();
+            writer.write( "Test set: " + tesSet );
+            writer.newLine();
+
+            writer.write( "-------------------------------------------------------------------------------" );
+            writer.newLine();
+
+            writer.write( testSetStats.getTestSetSummary( report, usePhrasedClassNameInTestCaseSummary ) );
+            writer.newLine();
             for ( String testResult : testResults )
             {
-                writer.println( testResult );
+                writer.write( testResult );
+                writer.newLine();
             }
-            writer.flush();
         }
-        finally
+        catch ( IOException e )
         {
-            if ( writer != null )
-            {
-                writer.close();
-            }
+            throw new ReporterException( "Unable to create file for report: " + e.getLocalizedMessage(), e );
         }
+    }
+
+    private static BufferedWriter createFileReporterWriter( File reportFile, Charset encoding )
+            throws FileNotFoundException
+    {
+        return new BufferedWriter( new OutputStreamWriter( new FileOutputStream( reportFile ), encoding ), 64 * 1024 );
     }
 }

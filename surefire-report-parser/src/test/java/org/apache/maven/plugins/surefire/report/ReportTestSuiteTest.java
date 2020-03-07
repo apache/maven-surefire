@@ -27,6 +27,7 @@ import junit.framework.TestCase;
 /**
  *
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class ReportTestSuiteTest
     extends TestCase
 {
@@ -47,7 +48,7 @@ public class ReportTestSuiteTest
     {
         ReportTestCase tCase = new ReportTestCase();
 
-        List<ReportTestCase> tCaseList = new ArrayList<ReportTestCase>();
+        List<ReportTestCase> tCaseList = new ArrayList<>();
 
         tCaseList.add( tCase );
 

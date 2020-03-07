@@ -19,6 +19,9 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+/**
+ *
+ */
 public class ASubClass extends ABaseClass
 {
 }

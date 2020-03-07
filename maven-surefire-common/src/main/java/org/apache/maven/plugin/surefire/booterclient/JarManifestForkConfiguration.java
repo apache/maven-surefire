@@ -19,7 +19,11 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
+import org.apache.maven.surefire.shared.compress.archivers.zip.Zip64Mode;
+import org.apache.maven.surefire.shared.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.maven.surefire.shared.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
+import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.StartupConfiguration;
@@ -27,18 +31,29 @@ import org.apache.maven.surefire.booter.SurefireBooterForkException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.zip.Deflater;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.Files.isDirectory;
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
+import static org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.ClasspathElementUri.absolute;
+import static org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.ClasspathElementUri.relative;
+import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -51,23 +66,26 @@ public final class JarManifestForkConfiguration
     public JarManifestForkConfiguration( @Nonnull Classpath bootClasspath, @Nonnull File tempDirectory,
                                          @Nullable String debugLine, @Nonnull File workingDirectory,
                                          @Nonnull Properties modelProperties, @Nullable String argLine,
-                                         @Nonnull Map<String, String> environmentVariables, boolean debug,
+                                         @Nonnull Map<String, String> environmentVariables,
+                                         @Nonnull String[] excludedEnvironmentVariables,
+                                         boolean debug,
                                          int forkCount, boolean reuseForks, @Nonnull Platform pluginPlatform,
                                          @Nonnull ConsoleLogger log )
     {
         super( bootClasspath, tempDirectory, debugLine, workingDirectory, modelProperties, argLine,
-                environmentVariables, debug, forkCount, reuseForks, pluginPlatform, log );
+                environmentVariables, excludedEnvironmentVariables, debug, forkCount, reuseForks, pluginPlatform, log );
     }
 
     @Override
     protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                      @Nonnull String booterThatHasMainMethod,
-                                     @Nonnull StartupConfiguration config )
+                                     @Nonnull StartupConfiguration config,
+                                     @Nonnull File dumpLogDirectory )
             throws SurefireBooterForkException
     {
         try
         {
-            File jar = createJar( toCompleteClasspath( config ), booterThatHasMainMethod );
+            File jar = createJar( toCompleteClasspath( config ), booterThatHasMainMethod, dumpLogDirectory );
             cli.createArg().setValue( "-jar" );
             cli.createArg().setValue( escapeToPlatformPath( jar.getAbsolutePath() ) );
         }
@@ -87,7 +105,8 @@ public final class JarManifestForkConfiguration
      * @throws IOException When a file operation fails.
      */
     @Nonnull
-    private File createJar( @Nonnull List<String> classPath, @Nonnull String startClassName )
+    private File createJar( @Nonnull List<String> classPath, @Nonnull String startClassName,
+                            @Nonnull File dumpLogDirectory )
             throws IOException
     {
         File file = File.createTempFile( "surefirebooter", ".jar", getTempDirectory() );
@@ -95,25 +114,33 @@ public final class JarManifestForkConfiguration
         {
             file.deleteOnExit();
         }
-        FileOutputStream fos = new FileOutputStream( file );
-        JarOutputStream jos = new JarOutputStream( fos );
-        try
+        Path parent = file.getParentFile().toPath();
+        OutputStream fos = new BufferedOutputStream( new FileOutputStream( file ), 64 * 1024 );
+
+        try ( ZipArchiveOutputStream zos = new ZipArchiveOutputStream( fos ) )
         {
-            jos.setLevel( JarOutputStream.STORED );
-            JarEntry je = new JarEntry( "META-INF/MANIFEST.MF" );
-            jos.putNextEntry( je );
+            zos.setUseZip64( Zip64Mode.Never );
+            zos.setLevel( Deflater.NO_COMPRESSION );
+
+            ZipArchiveEntry ze = new ZipArchiveEntry( "META-INF/MANIFEST.MF" );
+            zos.putArchiveEntry( ze );
 
             Manifest man = new Manifest();
+
+            boolean dumpError = true;
 
             // we can't use StringUtils.join here since we need to add a '/' to
             // the end of directory entries - otherwise the jvm will ignore them.
             StringBuilder cp = new StringBuilder();
             for ( Iterator<String> it = classPath.iterator(); it.hasNext(); )
             {
-                File file1 = new File( it.next() );
-                String uri = file1.toURI().toASCIIString();
-                cp.append( uri );
-                if ( file1.isDirectory() && !uri.endsWith( "/" ) )
+                Path classPathElement = Paths.get( it.next() );
+                ClasspathElementUri classpathElementUri =
+                        toClasspathElementUri( parent, classPathElement, dumpLogDirectory, dumpError );
+                // too many errors in dump file with the same root cause may slow down the Boot Manifest-JAR startup
+                dumpError &= !classpathElementUri.absolute;
+                cp.append( classpathElementUri.uri );
+                if ( isDirectory( classPathElement ) && !classpathElementUri.uri.endsWith( "/" ) )
                 {
                     cp.append( '/' );
                 }
@@ -128,16 +155,90 @@ public final class JarManifestForkConfiguration
             man.getMainAttributes().putValue( "Class-Path", cp.toString().trim() );
             man.getMainAttributes().putValue( "Main-Class", startClassName );
 
-            man.write( jos );
+            man.write( zos );
 
-            jos.closeEntry();
-            jos.flush();
+            zos.closeArchiveEntry();
 
             return file;
         }
-        finally
+    }
+
+    static String relativize( @Nonnull Path parent, @Nonnull Path child )
+            throws IllegalArgumentException
+    {
+        return parent.relativize( child )
+                .toString();
+    }
+
+    static String toAbsoluteUri( @Nonnull Path absolutePath )
+    {
+        return absolutePath.toUri()
+                .toASCIIString();
+    }
+
+    static ClasspathElementUri toClasspathElementUri( @Nonnull Path parent,
+                                         @Nonnull Path classPathElement,
+                                         @Nonnull File dumpLogDirectory,
+                                         boolean dumpError )
+    {
+        try
         {
-            jos.close();
+            String relativePath = relativize( parent, classPathElement );
+            return relative( escapeUri( relativePath, UTF_8 ) );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            if ( dumpError )
+            {
+                String error = "Boot Manifest-JAR contains absolute paths in classpath '"
+                        + classPathElement
+                        + "'"
+                        + NL
+                        + "Hint: <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>";
+                InPluginProcessDumpSingleton.getSingleton()
+                        .dumpStreamText( error, dumpLogDirectory );
+            }
+
+            return absolute( toAbsoluteUri( classPathElement ) );
+        }
+    }
+
+    static final class ClasspathElementUri
+    {
+        final String uri;
+        final boolean absolute;
+
+        private ClasspathElementUri( String uri, boolean absolute )
+        {
+            this.uri = uri;
+            this.absolute = absolute;
+        }
+
+        static ClasspathElementUri absolute( String uri )
+        {
+            return new ClasspathElementUri( uri, true );
+        }
+
+        static ClasspathElementUri relative( String uri )
+        {
+            return new ClasspathElementUri( uri, false );
+        }
+    }
+
+    static String escapeUri( String input, Charset encoding )
+    {
+        try
+        {
+            String uriFormEncoded = URLEncoder.encode( input, encoding.name() );
+
+            String uriPathEncoded = uriFormEncoded.replaceAll( "\\+", "%20" );
+            uriPathEncoded = uriPathEncoded.replaceAll( "%2F|%5C", "/" );
+
+            return uriPathEncoded;
+        }
+        catch ( UnsupportedEncodingException e )
+        {
+            throw new IllegalStateException( "avoided by using Charset" );
         }
     }
 }

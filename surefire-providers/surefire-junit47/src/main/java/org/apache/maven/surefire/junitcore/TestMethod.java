@@ -36,9 +36,9 @@ import java.util.concurrent.atomic.AtomicReference;
 class TestMethod
     implements ConsoleOutputReceiver
 {
-    private static final InheritableThreadLocal<TestMethod> TEST_METHOD = new InheritableThreadLocal<TestMethod>();
+    private static final InheritableThreadLocal<TestMethod> TEST_METHOD = new InheritableThreadLocal<>();
 
-    private final AtomicReference<LogicalStream> output = new AtomicReference<LogicalStream>();
+    private final AtomicReference<LogicalStream> output = new AtomicReference<>();
 
     private final ReportEntry description;
 
@@ -185,12 +185,12 @@ class TestMethod
     }
 
     @Override
-    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    public void writeTestOutput( String output, boolean newLine, boolean stdout )
     {
-        getLogicalStream().write( stdout, buf, off, len );
+        getLogicalStream().write( stdout, output, newLine );
     }
 
-    public TestSet getTestSet()
+    TestSet getTestSet()
     {
         return testSet;
     }

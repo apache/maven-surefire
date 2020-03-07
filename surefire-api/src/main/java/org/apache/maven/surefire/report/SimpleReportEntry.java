@@ -23,6 +23,7 @@ import org.apache.maven.surefire.util.internal.ImmutableMap;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Kristian Rosenvold
@@ -34,7 +35,11 @@ public class SimpleReportEntry
 
     private final String source;
 
+    private final String sourceText;
+
     private final String name;
+
+    private final String nameText;
 
     private final StackTraceWriter stackTraceWriter;
 
@@ -42,85 +47,76 @@ public class SimpleReportEntry
 
     private final String message;
 
-    public SimpleReportEntry()
+    public SimpleReportEntry( String source, String sourceText, String name, String nameText )
     {
-        this( null, null );
+        this( source, sourceText, name, nameText, null, null );
     }
 
-    public SimpleReportEntry( String source, String name )
-    {
-        this( source, name, null, null );
-    }
-
-    public SimpleReportEntry( String source, String name, Map<String, String> systemProperties )
-    {
-        this( source, name, null, null, systemProperties );
-    }
-
-    private SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter )
-    {
-        this( source, name, stackTraceWriter, null );
-    }
-
-    public SimpleReportEntry( String source, String name, Integer elapsed )
-    {
-        this( source, name, null, elapsed );
-    }
-
-    public SimpleReportEntry( String source, String name, String message )
-    {
-        this( source, name, null, null, message, Collections.<String, String>emptyMap() );
-    }
-
-    protected SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed,
-                                 String message, Map<String, String> systemProperties )
-    {
-        if ( source == null )
-        {
-            source = "null";
-        }
-        if ( name == null )
-        {
-            name = "null";
-        }
-
-        this.source = source;
-
-        this.name = name;
-
-        this.stackTraceWriter = stackTraceWriter;
-
-        this.message = message;
-
-        this.elapsed = elapsed;
-
-        this.systemProperties = new ImmutableMap<String, String>( systemProperties );
-    }
-
-    public SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed )
-    {
-        this( source, name, stackTraceWriter, elapsed, Collections.<String, String>emptyMap() );
-    }
-
-    public SimpleReportEntry( String source, String name, StackTraceWriter stackTraceWriter, Integer elapsed,
+    public SimpleReportEntry( String source, String sourceText, String name, String nameText,
                               Map<String, String> systemProperties )
     {
-        this( source, name, stackTraceWriter, elapsed, safeGetMessage( stackTraceWriter ), systemProperties );
+        this( source, sourceText, name, nameText, null, null, systemProperties );
     }
 
-    public static SimpleReportEntry assumption( String source, String name, String message )
+    private SimpleReportEntry( String source, String sourceText, String name, String nameText,
+                               StackTraceWriter stackTraceWriter )
     {
-        return new SimpleReportEntry( source, name, message );
+        this( source, sourceText, name, nameText, stackTraceWriter, null );
     }
 
-    public static SimpleReportEntry ignored( String source, String name, String message )
+    public SimpleReportEntry( String source, String sourceText, String name, String nameText, Integer elapsed )
     {
-        return new SimpleReportEntry( source, name, message );
+        this( source, sourceText, name, nameText, null, elapsed );
     }
 
-    public static SimpleReportEntry withException( String source, String name, StackTraceWriter stackTraceWriter )
+    public SimpleReportEntry( String source, String sourceText, String name, String nameText, String message )
     {
-        return new SimpleReportEntry( source, name, stackTraceWriter );
+        this( source, sourceText, name, nameText, null, null, message, Collections.<String, String>emptyMap() );
+    }
+
+    public SimpleReportEntry( String source, String sourceText, String name, String nameText,
+                                 StackTraceWriter stackTraceWriter, Integer elapsed, String message,
+                                 Map<String, String> systemProperties )
+    {
+        this.source = source;
+        this.sourceText = sourceText;
+        this.name = name;
+        this.nameText = nameText;
+        this.stackTraceWriter = stackTraceWriter;
+        this.message = message;
+        this.elapsed = elapsed;
+        this.systemProperties = new ImmutableMap<>( systemProperties );
+    }
+
+    public SimpleReportEntry( String source, String sourceText, String name, String nameText,
+                              StackTraceWriter stackTraceWriter, Integer elapsed )
+    {
+        this( source, sourceText, name, nameText, stackTraceWriter, elapsed, Collections.<String, String>emptyMap() );
+    }
+
+    public SimpleReportEntry( String source, String sourceText, String name, String nameText,
+                              StackTraceWriter stackTraceWriter, Integer elapsed, Map<String, String> systemProperties )
+    {
+        this( source, sourceText, name, nameText,
+                stackTraceWriter, elapsed, safeGetMessage( stackTraceWriter ), systemProperties );
+    }
+
+    public static SimpleReportEntry assumption( String source, String sourceText, String name, String nameText,
+                                                String message )
+    {
+        return new SimpleReportEntry( source, sourceText, name, nameText, message );
+    }
+
+    public static SimpleReportEntry ignored( String source, String sourceText, String name, String nameText,
+                                             String message )
+    {
+        return new SimpleReportEntry( source, sourceText, name, nameText, message );
+    }
+
+    public static SimpleReportEntry withException( String source, String sourceText, String name, String nameText,
+                                                   StackTraceWriter stackTraceWriter )
+    {
+        return new SimpleReportEntry( source, sourceText, name, nameText, stackTraceWriter );
     }
 
     private static String safeGetMessage( StackTraceWriter stackTraceWriter )
@@ -143,9 +139,21 @@ public class SimpleReportEntry
     }
 
     @Override
+    public String getSourceText()
+    {
+        return sourceText;
+    }
+
+    @Override
     public String getName()
     {
         return name;
+    }
+
+    @Override
+    public String getNameText()
+    {
+        return nameText;
     }
 
     @Override
@@ -167,10 +175,17 @@ public class SimpleReportEntry
     }
 
     @Override
+    public int getElapsed( int fallback )
+    {
+        return elapsed == null ? fallback : elapsed;
+    }
+
+    @Override
     public String toString()
     {
-        return "ReportEntry{" + "source='" + source + '\'' + ", name='" + name + '\'' + ", stackTraceWriter="
-            + stackTraceWriter + ", elapsed=" + elapsed + ",message=" + message + '}';
+        return "ReportEntry{" + "source='" + source + "', sourceText='" + sourceText
+                + "', name='" + name + "', nameText='" + nameText + "', stackTraceWriter='"
+                + stackTraceWriter + "', elapsed='" + elapsed + "', message='" + message + "'}";
     }
 
     @Override
@@ -192,23 +207,38 @@ public class SimpleReportEntry
         }
 
         SimpleReportEntry that = (SimpleReportEntry) o;
-        return isElapsedTimeEqual( that ) && isNameEqual( that ) && isSourceEqual( that ) && isStackEqual( that );
+        return isSourceEqual( that ) && isSourceTextEqual( that )
+                && isNameEqual( that ) && isNameTextEqual( that )
+                && isStackEqual( that )
+                && isElapsedTimeEqual( that )
+                && isSystemPropertiesEqual( that )
+                && isMessageEqual( that );
     }
 
     @Override
     public int hashCode()
     {
-        int result = source != null ? source.hashCode() : 0;
-        result = 31 * result + ( name != null ? name.hashCode() : 0 );
-        result = 31 * result + ( stackTraceWriter != null ? stackTraceWriter.hashCode() : 0 );
-        result = 31 * result + ( elapsed != null ? elapsed.hashCode() : 0 );
+        int result = Objects.hashCode( getSourceName() );
+        result = 31 * result + Objects.hashCode( getSourceText() );
+        result = 31 * result + Objects.hashCode( getName() );
+        result = 31 * result + Objects.hashCode( getNameText() );
+        result = 31 * result + Objects.hashCode( getStackTraceWriter() );
+        result = 31 * result + Objects.hashCode( getElapsed() );
+        result = 31 * result + Objects.hashCode( getSystemProperties() );
+        result = 31 * result + Objects.hashCode( getMessage() );
         return result;
     }
 
     @Override
     public String getNameWithGroup()
     {
-        return getName();
+        return getSourceName();
+    }
+
+    @Override
+    public String getReportNameWithGroup()
+    {
+        return getSourceText();
     }
 
     @Override
@@ -219,21 +249,41 @@ public class SimpleReportEntry
 
     private boolean isElapsedTimeEqual( SimpleReportEntry en )
     {
-        return elapsed != null ? elapsed.equals( en.elapsed ) : en.elapsed == null;
+        return Objects.equals( getElapsed(), en.getElapsed() );
+    }
+
+    private boolean isNameTextEqual( SimpleReportEntry en )
+    {
+        return Objects.equals( getNameText(), en.getNameText() );
     }
 
     private boolean isNameEqual( SimpleReportEntry en )
     {
-        return name != null ? name.equals( en.name ) : en.name == null;
+        return Objects.equals( getName(), en.getName() );
     }
 
     private boolean isSourceEqual( SimpleReportEntry en )
     {
-        return source != null ? source.equals( en.source ) : en.source == null;
+        return Objects.equals( getSourceName(), en.getSourceName() );
+    }
+
+    private boolean isSourceTextEqual( SimpleReportEntry en )
+    {
+        return Objects.equals( getSourceText(), en.getSourceText() );
     }
 
     private boolean isStackEqual( SimpleReportEntry en )
     {
-        return stackTraceWriter != null ? stackTraceWriter.equals( en.stackTraceWriter ) : en.stackTraceWriter == null;
+        return Objects.equals( getStackTraceWriter(), en.getStackTraceWriter() );
+    }
+
+    private boolean isSystemPropertiesEqual( SimpleReportEntry en )
+    {
+        return Objects.equals( getSystemProperties(), en.getSystemProperties() );
+    }
+
+    private boolean isMessageEqual( SimpleReportEntry en )
+    {
+        return Objects.equals( getMessage(), en.getMessage() );
     }
 }

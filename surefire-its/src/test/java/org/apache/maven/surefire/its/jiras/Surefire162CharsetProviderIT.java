@@ -21,7 +21,10 @@ package org.apache.maven.surefire.its.jiras;
 
 import java.io.File;
 
-import org.apache.maven.surefire.its.fixture.*;
+import org.apache.maven.surefire.its.fixture.MavenLauncher;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.codehaus.plexus.util.FileUtils;
 import org.junit.Test;
 

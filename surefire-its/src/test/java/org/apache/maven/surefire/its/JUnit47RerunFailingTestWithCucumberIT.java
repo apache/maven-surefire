@@ -19,62 +19,46 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
-
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests using the JUnit 47 provider to rerun failing tests with the cucumber runner. The main
- * problem that the junit4 provider has with the cucumber runner is that the junit Description
- * instance created by the runner has a null test class attribute. This requires that tests are
- * rerun based on their description.
+ * Tests using the JUnit 47 provider to rerun failing tests with the cucumber runner. The main problem that the junit4
+ * provider has with the cucumber runner is that the junit Description instance created by the runner has a null test
+ * class attribute. This requires that tests are rerun based on their description.
  *
  * @author mpkorstanje
  */
-public class JUnit47RerunFailingTestWithCucumberIT
-    extends SurefireJUnit4IntegrationTestCase {
+public class JUnit47RerunFailingTestWithCucumberIT extends SurefireJUnit4IntegrationTestCase
+{
 
-    @Before
-    public void assumeJdk17() {
-        assumeJavaVersion(1.7d);
-    }
-
-
-    private SurefireLauncher unpack() {
-        return unpack("junit47-rerun-failing-tests-with-cucumber")
-            .setJUnitVersion("4.12");
+    private SurefireLauncher unpack()
+    {
+        return unpack( "junit47-rerun-failing-tests-with-cucumber" ).setJUnitVersion( "4.13" );
     }
 
     @Test
-    public void testRerunFailingErrorTestsFalse() {
-        unpack()
-            .maven()
-            .addGoal("-Dsurefire.rerunFailingTestsCount=" + 0)
-            .withFailure()
-            .executeTest()
-            .assertTestSuiteResults(1, 0, 1, 0, 0);
+    public void testRerunFailingErrorTestsFalse()
+    {
+        unpack().maven().addGoal(
+                "-Dsurefire.rerunFailingTestsCount=" + 0 ).withFailure().executeTest().assertTestSuiteResults( 1, 0, 1,
+                0, 0 );
     }
 
     @Test
-    public void testRerunFailingErrorTestsWithOneRetry() {
-        unpack()
-            .maven()
-            .addGoal("-Dsurefire.rerunFailingTestsCount=" + 1)
-            .withFailure()
-            .executeTest()
-            .assertTestSuiteResults(1, 0, 1, 0, 0);
+    public void testRerunFailingErrorTestsWithOneRetry()
+    {
+        unpack().maven().addGoal(
+                "-Dsurefire.rerunFailingTestsCount=" + 1 ).withFailure().executeTest().assertTestSuiteResults( 1, 0, 1,
+                0, 0 );
     }
 
     @Test
-    public void testRerunFailingErrorTestsTwoRetry() {
-        unpack()
-            .maven()
-            .addGoal("-Dsurefire.rerunFailingTestsCount=" + 2)
-            .executeTest()
-            .assertTestSuiteResults(1, 0, 0, 0, 2);
+    public void testRerunFailingErrorTestsTwoRetry()
+    {
+        unpack().maven().addGoal( "-Dsurefire.rerunFailingTestsCount=" + 2 ).executeTest().assertTestSuiteResults( 1, 0,
+                0, 0, 2 );
     }
 
 }

@@ -27,8 +27,11 @@ import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toList;
 import static org.apache.maven.surefire.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
 import static org.apache.maven.surefire.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
-import static org.junit.platform.commons.util.StringUtils.isBlank;
+import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture;
+import static org.apache.maven.surefire.util.TestsToRun.fromClass;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
+import static org.junit.platform.engine.discovery.DiscoverySelectors.selectUniqueId;
 import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
 
 import java.io.IOException;
@@ -36,6 +39,7 @@ import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,7 +48,6 @@ import java.util.logging.Logger;
 
 import org.apache.maven.surefire.providerapi.AbstractProvider;
 import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.report.ReporterFactory;
@@ -54,11 +57,13 @@ import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.ScanResult;
 import org.apache.maven.surefire.util.TestsToRun;
-import org.junit.platform.commons.util.StringUtils;
+import org.apache.maven.surefire.shared.utils.StringUtils;
+import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TagFilter;
+import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 
@@ -104,22 +109,35 @@ public class JUnitPlatformProvider
     public RunResult invoke( Object forkTestSet )
                     throws TestSetFailedException, ReporterException
     {
-        if ( forkTestSet instanceof TestsToRun )
+        ReporterFactory reporterFactory = parameters.getReporterFactory();
+        final RunResult runResult;
+        try
         {
-            return invokeAllTests( (TestsToRun) forkTestSet );
+            RunListener runListener = reporterFactory.createReporter();
+            startCapture( ( ConsoleOutputReceiver ) runListener );
+            if ( forkTestSet instanceof TestsToRun )
+            {
+                invokeAllTests( (TestsToRun) forkTestSet, runListener );
+            }
+            else if ( forkTestSet instanceof Class )
+            {
+                invokeAllTests( fromClass( ( Class<?> ) forkTestSet ), runListener );
+            }
+            else if ( forkTestSet == null )
+            {
+                invokeAllTests( scanClasspath(), runListener );
+            }
+            else
+            {
+                throw new IllegalArgumentException(
+                        "Unexpected value of forkTestSet: " + forkTestSet );
+            }
         }
-        else if ( forkTestSet instanceof Class )
+        finally
         {
-            return invokeAllTests( TestsToRun.fromClass( (Class<?>) forkTestSet ) );
+            runResult = reporterFactory.close();
         }
-        else if ( forkTestSet == null )
-        {
-            return invokeAllTests( scanClasspath() );
-        }
-        else
-        {
-            throw new IllegalArgumentException( "Unexpected value of forkTestSet: " + forkTestSet );
-        }
+        return runResult;
     }
 
     private TestsToRun scanClasspath()
@@ -130,31 +148,67 @@ public class JUnitPlatformProvider
         return parameters.getRunOrderCalculator().orderTestClasses( scannedClasses );
     }
 
-    private RunResult invokeAllTests( TestsToRun testsToRun )
+    private void invokeAllTests( TestsToRun testsToRun, RunListener runListener )
     {
-        RunResult runResult;
-        ReporterFactory reporterFactory = parameters.getReporterFactory();
-        try
+        RunListenerAdapter adapter = new RunListenerAdapter( runListener );
+        execute( testsToRun, adapter );
+        // Rerun failing tests if requested
+        int count = parameters.getTestRequest().getRerunFailingTestsCount();
+        if ( count > 0 && adapter.hasFailingTests() )
         {
-            RunListener runListener = reporterFactory.createReporter();
-            ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) runListener );
-            LauncherDiscoveryRequest discoveryRequest = buildLauncherDiscoveryRequest( testsToRun );
-            launcher.execute( discoveryRequest, new RunListenerAdapter( runListener ) );
+            for ( int i = 0; i < count; i++ )
+            {
+                // Replace the "discoveryRequest" so that it only specifies the failing tests
+                LauncherDiscoveryRequest discoveryRequest = buildLauncherDiscoveryRequestForRerunFailures( adapter );
+                // Reset adapter's recorded failures and invoke the failed tests again
+                adapter.reset();
+                launcher.execute( discoveryRequest, adapter );
+                // If no tests fail in the rerun, we're done
+                if ( !adapter.hasFailingTests() )
+                {
+                    break;
+                }
+            }
         }
-        finally
-        {
-            runResult = reporterFactory.close();
-        }
-        return runResult;
     }
 
-    private LauncherDiscoveryRequest buildLauncherDiscoveryRequest( TestsToRun testsToRun )
+    private void execute( TestsToRun testsToRun, RunListenerAdapter adapter )
     {
-        LauncherDiscoveryRequestBuilder builder =
-                        request().filters( filters ).configurationParameters( configurationParameters );
-        for ( Class<?> testClass : testsToRun )
+        if ( testsToRun.allowEagerReading() )
         {
-            builder.selectors( selectClass( testClass ) );
+            List<DiscoverySelector> selectors = new ArrayList<>();
+            testsToRun.iterator()
+                .forEachRemaining( c -> selectors.add( selectClass( c.getName() )  ) );
+
+            LauncherDiscoveryRequestBuilder builder = request()
+                .filters( filters )
+                .configurationParameters( configurationParameters )
+                .selectors( selectors );
+
+            launcher.execute( builder.build(), adapter );
+        }
+        else
+        {
+            testsToRun.iterator()
+                .forEachRemaining( c ->
+                {
+                    LauncherDiscoveryRequestBuilder builder = request()
+                        .filters( filters )
+                        .configurationParameters( configurationParameters )
+                        .selectors( selectClass( c.getName() ) );
+                    launcher.execute( builder.build(), adapter );
+                } );
+        }
+    }
+
+    private LauncherDiscoveryRequest buildLauncherDiscoveryRequestForRerunFailures( RunListenerAdapter adapter )
+    {
+        LauncherDiscoveryRequestBuilder builder = request().filters( filters ).configurationParameters(
+                configurationParameters );
+        // Iterate over recorded failures
+        for ( TestIdentifier identifier : new LinkedHashSet<>( adapter.getFailures().keySet() ) )
+        {
+            builder.selectors( selectUniqueId( identifier.getUniqueId() ) );
         }
         return builder.build();
     }

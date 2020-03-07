@@ -51,15 +51,14 @@ public class Test1
             target = new File( "." );
         }
         File pidFile = new File( target, fileName );
-        FileWriter fw = new FileWriter( pidFile );
-        // DGF little known trick... this is guaranteed to be unique to the PID
-        // In fact, it usually contains the pid and the local host name!
-        String pid = ManagementFactory.getRuntimeMXBean().getName();
-        fw.write( pid );
-        fw.write( " " );
-        fw.write( System.getProperty( "testProperty", String.valueOf( RANDOM.nextLong() ) ) );
-        fw.flush();
-        fw.close();
+        try ( FileWriter fw = new FileWriter( pidFile ) )
+        {
+            // DGF little known trick... this is guaranteed to be unique to the PID
+            // In fact, it usually contains the pid and the local host name!
+            String pid = ManagementFactory.getRuntimeMXBean().getName();
+            fw.write( pid );
+            fw.write( " " );
+            fw.write( System.getProperty( "testProperty", String.valueOf( RANDOM.nextLong() ) ) );
+        }
     }
-
 }

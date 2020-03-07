@@ -32,8 +32,7 @@ public class CheckTestNgBeforeMethodIT
     extends SurefireJUnit4IntegrationTestCase
 {
     @Test
-    public void TestNgBeforeMethod()
-        throws Exception
+    public void testNgBeforeMethod()
     {
         unpack( "/testng-beforeMethod" )
                 .sysProp( "testNgVersion", "5.7" )

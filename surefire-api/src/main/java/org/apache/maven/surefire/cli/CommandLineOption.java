@@ -38,21 +38,11 @@ public enum CommandLineOption
 
     public static List<CommandLineOption> fromStrings( Collection<String> elements )
     {
-        List<CommandLineOption> options = new ArrayList<CommandLineOption>( elements.size() );
+        List<CommandLineOption> options = new ArrayList<>( elements.size() );
         for ( String element : elements )
         {
             options.add( valueOf( element ) );
         }
         return options;
-    }
-
-    public static List<String> toStrings( Collection<CommandLineOption> options )
-    {
-        List<String> elements = new ArrayList<String>( options.size() );
-        for ( CommandLineOption option : options )
-        {
-            elements.add( option.name() );
-        }
-        return elements;
     }
 }

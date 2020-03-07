@@ -38,7 +38,7 @@ import static org.junit.Assert.assertEquals;
 public class Surefire224WellFormedXmlFailuresIT
     extends SurefireJUnit4IntegrationTestCase
 {
-    @SuppressWarnings("ConstantConditions")
+    @SuppressWarnings( "ConstantConditions" )
     @Test
     public void testWellFormedXmlFailures()
     {

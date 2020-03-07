@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 final class ShutdownStatus
 {
     private final AtomicReference<ExecutionStatus> status =
-        new AtomicReference<ExecutionStatus>( ExecutionStatus.STARTED );
+        new AtomicReference<>( ExecutionStatus.STARTED );
 
     private Future<ShutdownResult> descriptionsBeforeShutdown;
 

@@ -25,30 +25,38 @@ import junit.framework.TestSuite;
 import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.RunMode;
 import org.apache.maven.surefire.report.TestSetReportEntry;
-import org.apache.maven.surefire.testset.TestSetFailedException;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *
+ */
 public class JUnitTestSetTest
     extends TestCase
 {
 
     public void testExecuteSuiteClass()
-        throws TestSetFailedException
+        throws Exception
     {
         ClassLoader testClassLoader = this.getClass().getClassLoader();
         JUnit3Reflector reflector = new JUnit3Reflector( testClassLoader );
         JUnitTestSet testSet = new JUnitTestSet( Suite.class, reflector );
         SuccessListener listener = new SuccessListener();
         testSet.execute( listener, testClassLoader );
-        List succeededTests = listener.getSucceededTests();
+        List<ReportEntry> succeededTests = listener.getSucceededTests();
         assertEquals( 1, succeededTests.size() );
-        assertEquals( "testSuccess(org.apache.maven.surefire.junit.JUnitTestSetTest$AlwaysSucceeds)",
-                      ( (ReportEntry) succeededTests.get( 0 ) ).getName() );
+        assertEquals( "org.apache.maven.surefire.junit.JUnitTestSetTest$AlwaysSucceeds",
+                succeededTests.get( 0 ).getSourceName() );
+        assertEquals( "testSuccess",
+                      succeededTests.get( 0 ).getName() );
     }
 
+    /**
+     *
+     */
     public static final class AlwaysSucceeds
         extends TestCase
     {
@@ -58,11 +66,14 @@ public class JUnitTestSetTest
         }
     }
 
+    /**
+     *
+     */
     public static class SuccessListener
         implements RunListener
     {
 
-        private List<ReportEntry> succeededTests = new ArrayList<ReportEntry>();
+        private List<ReportEntry> succeededTests = new ArrayList<>();
 
         @Override
         public void testSetStarting( TestSetReportEntry report )
@@ -82,7 +93,7 @@ public class JUnitTestSetTest
         @Override
         public void testSucceeded( ReportEntry report )
         {
-            this.succeededTests.add( report );
+            succeededTests.add( report );
         }
 
         @Override
@@ -114,18 +125,26 @@ public class JUnitTestSetTest
         {
         }
 
+        public RunMode markAs( RunMode currentRunMode )
+        {
+            return RunMode.NORMAL_RUN;
+        }
+
         public void testSkippedByUser( ReportEntry report )
         {
             testSkipped( report );
         }
 
-        public List getSucceededTests()
+        List<ReportEntry> getSucceededTests()
         {
             return succeededTests;
         }
 
     }
 
+    /**
+     *
+     */
     public static class Suite
     {
 

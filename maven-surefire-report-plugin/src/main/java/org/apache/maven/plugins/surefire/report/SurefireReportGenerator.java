@@ -26,7 +26,7 @@ import java.util.Locale;
 import java.util.Map;
 import org.apache.maven.doxia.markup.HtmlMarkup;
 import org.apache.maven.doxia.sink.Sink;
-import org.apache.maven.doxia.sink.SinkEventAttributeSet;
+import org.apache.maven.doxia.sink.impl.SinkEventAttributeSet;
 import org.apache.maven.doxia.util.DoxiaUtils;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.reporting.MavenReportException;
@@ -78,7 +78,7 @@ public final class SurefireReportGenerator
         sink.body();
 
         SinkEventAttributeSet atts = new SinkEventAttributeSet();
-        atts.addAttribute( TYPE, "text/javascript" );
+        atts.addAttribute( TYPE, "application/javascript" );
         sink.unknown( "script", new Object[]{ HtmlMarkup.TAG_TYPE_START }, atts );
         sink.unknown( "cdata", new Object[]{ HtmlMarkup.CDATA_TYPE, javascriptToggleDisplayCode() }, null );
         sink.unknown( "script", new Object[]{ HtmlMarkup.TAG_TYPE_END }, null );

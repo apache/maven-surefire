@@ -19,8 +19,6 @@ package org.apache.maven.surefire.common.junit3;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.TestSetFailedException;
-
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 
@@ -33,25 +31,21 @@ public class JUnit3TestCheckerTest
     private final JUnit3TestChecker jUnit3TestChecker = new JUnit3TestChecker( this.getClass().getClassLoader() );
 
     public void testValidJunit4Annotated()
-        throws TestSetFailedException
     {
         assertTrue( jUnit3TestChecker.accept( JUnit3TestCheckerTest.class ) );
     }
 
     public void testValidJunit4itsAJunit3Test()
-        throws TestSetFailedException
     {
         assertTrue( jUnit3TestChecker.accept( AlsoValid.class ) );
     }
 
     public void testValidJunitSubclassWithoutOwnTestmethods()
-        throws TestSetFailedException
     {
         assertTrue( jUnit3TestChecker.accept( SubClassWithoutOwnTestMethods.class ) );
     }
 
     public void testInvalidTest()
-        throws TestSetFailedException
     {
         assertFalse( jUnit3TestChecker.accept( NotValidTest.class ) );
     }
@@ -77,7 +71,9 @@ public class JUnit3TestCheckerTest
         assertFalse( jUnit3TestChecker.accept( NestedTC.Inner.class ) );
     }
 
-
+    /**
+     *
+     */
     public static class AlsoValid
         extends TestCase
     {
@@ -87,6 +83,9 @@ public class JUnit3TestCheckerTest
         }
     }
 
+    /**
+     *
+     */
     public static class SuiteOnlyTest
     {
         public static junit.framework.Test suite()
@@ -95,6 +94,9 @@ public class JUnit3TestCheckerTest
         }
     }
 
+    /**
+     *
+     */
     public static class CustomSuiteOnlyTest
     {
         public static MySuite2 suite()
@@ -103,6 +105,9 @@ public class JUnit3TestCheckerTest
         }
     }
 
+    /**
+     *
+     */
     public static class MySuite2
         implements junit.framework.Test
     {
@@ -119,6 +124,9 @@ public class JUnit3TestCheckerTest
     }
 
 
+    /**
+     *
+     */
     public static class NotValidTest
     {
         public void testSomething()
@@ -126,6 +134,9 @@ public class JUnit3TestCheckerTest
         }
     }
 
+    /**
+     *
+     */
     public abstract static class BaseClassWithTest
         extends TestCase
     {
@@ -134,6 +145,9 @@ public class JUnit3TestCheckerTest
         }
     }
 
+    /**
+     *
+     */
     public static class SubClassWithoutOwnTestMethods
         extends BaseClassWithTest
     {

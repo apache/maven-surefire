@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
@@ -30,6 +30,9 @@ import java.io.IOException;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
+/**
+ *
+ */
 public class JUnit47RedirectOutputIT
     extends SurefireJUnit4IntegrationTestCase
 {

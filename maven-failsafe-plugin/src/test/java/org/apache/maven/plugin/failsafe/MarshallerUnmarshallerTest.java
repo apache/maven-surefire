@@ -27,6 +27,9 @@ import java.io.File;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+/**
+ *
+ */
 public class MarshallerUnmarshallerTest
 {
     @Test

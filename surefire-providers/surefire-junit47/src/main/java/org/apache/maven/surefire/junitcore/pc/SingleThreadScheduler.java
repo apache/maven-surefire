@@ -87,7 +87,7 @@ final class SingleThreadScheduler
 
     private Collection<Description> copyExisting( Collection<Description> descriptions )
     {
-        Collection<Description> activeChildren = new ConcurrentLinkedQueue<Description>( descriptions );
+        Collection<Description> activeChildren = new ConcurrentLinkedQueue<>( descriptions );
         ParallelComputerUtil.removeUnusedDescriptions( activeChildren );
         return activeChildren;
     }

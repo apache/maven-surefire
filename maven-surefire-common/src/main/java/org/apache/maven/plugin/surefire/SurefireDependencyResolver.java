@@ -19,29 +19,42 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
-import org.apache.maven.artifact.resolver.filter.ExcludesArtifactFilter;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.repository.RepositorySystem;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
+import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import static java.util.Arrays.asList;
+import static org.apache.maven.artifact.Artifact.SCOPE_COMPILE;
+import static org.apache.maven.artifact.Artifact.SCOPE_COMPILE_PLUS_RUNTIME;
+import static org.apache.maven.artifact.Artifact.SCOPE_RUNTIME;
+import static org.apache.maven.artifact.ArtifactUtils.artifactMapByVersionlessId;
+import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
+import static org.apache.maven.shared.artifact.filter.resolve.ScopeFilter.including;
 
 /**
  * Does dependency resolution and artifact handling for the surefire plugin.
@@ -49,40 +62,58 @@ import javax.annotation.Nullable;
  * @author Stephen Connolly
  * @author Kristian Rosenvold
  */
-public class SurefireDependencyResolver
+final class SurefireDependencyResolver
 {
+    static final String PROVIDER_GROUP_ID = "org.apache.maven.surefire";
 
-    private final ArtifactResolver artifactResolver;
+    private static final String[] PROVIDER_CLASSPATH_ORDER = {
+            "surefire-junit3",
+            "surefire-junit4",
+            "surefire-junit47",
+            "surefire-testng",
+            "surefire-junit-platform",
+            "surefire-api",
+            "surefire-logger-api",
+            "common-java5",
+            "common-junit3",
+            "common-junit4",
+            "common-junit48",
+            "common-testng-utils"
+    };
 
-    private final ArtifactFactory artifactFactory;
+    private final RepositorySystem repositorySystem;
 
     private final ConsoleLogger log;
 
     private final ArtifactRepository localRepository;
 
-    private final List<ArtifactRepository> remoteRepositories;
+    private final List<ArtifactRepository> pluginRemoteRepositories;
 
-    private final ArtifactMetadataSource artifactMetadataSource;
+    private final List<ArtifactRepository> projectRemoteRepositories;
 
     private final String pluginName;
 
-    protected SurefireDependencyResolver( ArtifactResolver artifactResolver, ArtifactFactory artifactFactory,
-                                          ConsoleLogger log,
-                                          ArtifactRepository localRepository,
-                                          List<ArtifactRepository> remoteRepositories,
-                                          ArtifactMetadataSource artifactMetadataSource, String pluginName )
+    private final DependencyResolver depencencyResolver;
+
+    private final boolean offline;
+
+    SurefireDependencyResolver( RepositorySystem repositorySystem, ConsoleLogger log,
+                                ArtifactRepository localRepository,
+                                List<ArtifactRepository> pluginRemoteRepositories,
+                                List<ArtifactRepository> projectRemoteRepositories, String pluginName,
+                                DependencyResolver depencencyResolver, boolean offline )
     {
-        this.artifactResolver = artifactResolver;
-        this.artifactFactory = artifactFactory;
+        this.repositorySystem = repositorySystem;
         this.log = log;
         this.localRepository = localRepository;
-        this.remoteRepositories = remoteRepositories;
-        this.artifactMetadataSource = artifactMetadataSource;
+        this.pluginRemoteRepositories = pluginRemoteRepositories;
+        this.projectRemoteRepositories = projectRemoteRepositories;
         this.pluginName = pluginName;
+        this.depencencyResolver = depencencyResolver;
+        this.offline = offline;
     }
 
-
-    public boolean isWithinVersionSpec( @Nullable Artifact artifact, @Nonnull String versionSpec )
+    static boolean isWithinVersionSpec( @Nullable Artifact artifact, @Nonnull String versionSpec )
     {
         if ( artifact == null )
         {
@@ -90,7 +121,7 @@ public class SurefireDependencyResolver
         }
         try
         {
-            VersionRange range = VersionRange.createFromVersionSpec( versionSpec );
+            VersionRange range = createFromVersionSpec( versionSpec );
             try
             {
                 return range.containsVersion( artifact.getSelectedVersion() );
@@ -100,88 +131,149 @@ public class SurefireDependencyResolver
                 return range.containsVersion( new DefaultArtifactVersion( artifact.getBaseVersion() ) );
             }
         }
-        catch ( InvalidVersionSpecificationException e )
-        {
-            throw new RuntimeException( "Bug in plugin. Please report with stacktrace" );
-        }
-        catch ( OverConstrainedVersionException e )
+        catch ( InvalidVersionSpecificationException | OverConstrainedVersionException e )
         {
             throw new RuntimeException( "Bug in plugin. Please report with stacktrace" );
         }
     }
 
-
-    private ArtifactResolutionResult resolveArtifact( Artifact filteredArtifact, Artifact providerArtifact )
-        throws ArtifactResolutionException, ArtifactNotFoundException
+    Set<Artifact> resolvePluginDependencies( ProjectBuildingRequest request, Plugin plugin )
+            throws MojoExecutionException
     {
-        ArtifactFilter filter = null;
-        if ( filteredArtifact != null )
+        Collection<Dependency> pluginDependencies = plugin.getDependencies();
+        try
         {
-            filter = new ExcludesArtifactFilter(
-                Collections.singletonList( filteredArtifact.getGroupId() + ":" + filteredArtifact.getArtifactId() ) );
+            Iterable<ArtifactResult> resolvedPluginDependencies = depencencyResolver.resolveDependencies( request,
+                pluginDependencies, null, including( SCOPE_COMPILE, SCOPE_COMPILE_PLUS_RUNTIME, SCOPE_RUNTIME ) );
+
+            Set<Artifact> resolved = new LinkedHashSet<>();
+            for ( ArtifactResult resolvedPluginDependency : resolvedPluginDependencies )
+            {
+                resolved.add( resolvedPluginDependency.getArtifact() );
+            }
+            return resolved;
         }
+        catch ( DependencyResolverException e )
+        {
+            throw new MojoExecutionException( e.getLocalizedMessage(), e );
+        }
+    }
 
-        Artifact originatingArtifact = artifactFactory.createBuildArtifact( "dummy", "dummy", "1.0", "jar" );
+    ArtifactResolutionResult resolvePluginArtifact( Artifact artifact )
+    {
+        return resolvePluginArtifact( artifact, new RuntimeArtifactFilter() );
+    }
 
-        return artifactResolver.resolveTransitively( Collections.singleton( providerArtifact ), originatingArtifact,
-                                                     localRepository, remoteRepositories, artifactMetadataSource,
-                                                     filter );
+    ArtifactResolutionResult resolveProjectArtifact( Artifact artifact )
+    {
+        return resolveProjectArtifact( artifact, new RuntimeArtifactFilter() );
+    }
+
+    private ArtifactResolutionResult resolvePluginArtifact( Artifact artifact, ArtifactFilter filter )
+    {
+        return resolveArtifact( artifact, pluginRemoteRepositories, filter );
+    }
+
+    private ArtifactResolutionResult resolveProjectArtifact( Artifact artifact, ArtifactFilter filter )
+    {
+        return resolveArtifact( artifact, projectRemoteRepositories, filter );
+    }
+
+    private ArtifactResolutionResult resolveArtifact( Artifact artifact, List<ArtifactRepository> repositories,
+                                                      ArtifactFilter filter )
+    {
+        ArtifactResolutionRequest request = new ArtifactResolutionRequest()
+                .setOffline( offline )
+                .setArtifact( artifact )
+                .setLocalRepository( localRepository )
+                .setResolveTransitively( true )
+                .setCollectionFilter( filter )
+                .setRemoteRepositories( repositories );
+
+        return repositorySystem.resolve( request );
     }
 
     @Nonnull
-    public Classpath getProviderClasspath( String provider, String version, Artifact filteredArtifact )
-        throws ArtifactNotFoundException, ArtifactResolutionException
+    Set<Artifact> getProviderClasspath( String providerArtifactId, String providerVersion )
     {
-        Classpath classPath = ClasspathCache.getCachedClassPath( provider );
-        if ( classPath == null )
+        Dependency provider = toProviderDependency( providerArtifactId, providerVersion );
+
+        Artifact providerArtifact = repositorySystem.createDependencyArtifact( provider );
+
+        ArtifactResolutionResult result = resolvePluginArtifact( providerArtifact );
+
+        if ( log.isDebugEnabled() )
         {
-            Artifact providerArtifact = artifactFactory.createDependencyArtifact( "org.apache.maven.surefire", provider,
-                                                                                  VersionRange.createFromVersion(
-                                                                                      version ), "jar", null,
-                                                                                  Artifact.SCOPE_TEST );
-            ArtifactResolutionResult result = resolveArtifact( filteredArtifact, providerArtifact );
-            List<String> files = new ArrayList<String>();
-
-            for ( Object o : result.getArtifacts() )
+            for ( Artifact artifact : result.getArtifacts() )
             {
-                Artifact artifact = (Artifact) o;
-
-                log.debug(
-                    "Adding to " + pluginName + " test classpath: " + artifact.getFile().getAbsolutePath() + " Scope: "
-                        + artifact.getScope() );
-
-                files.add( artifact.getFile().getAbsolutePath() );
+                String artifactPath = artifact.getFile().getAbsolutePath();
+                String scope = artifact.getScope();
+                log.debug( "Adding to " + pluginName + " test classpath: " + artifactPath + " Scope: " + scope );
             }
-            classPath = new Classpath( files );
-            ClasspathCache.setCachedClasspath( provider, classPath );
         }
-        return classPath;
+
+        return orderProviderArtifacts( result.getArtifacts() );
     }
 
-    public Classpath addProviderToClasspath( Map<String, Artifact> pluginArtifactMap, Artifact surefireArtifact )
-        throws ArtifactResolutionException, ArtifactNotFoundException
+    @Nonnull
+    Map<String, Artifact> getProviderClasspathAsMap( String providerArtifactId, String providerVersion )
     {
-        List<String> files = new ArrayList<String>();
-        if ( surefireArtifact != null )
+        return artifactMapByVersionlessId( getProviderClasspath( providerArtifactId, providerVersion ) );
+    }
+
+    private static Set<Artifact> orderProviderArtifacts( Set<Artifact> providerArtifacts )
+    {
+        Set<Artifact> orderedProviderArtifacts = new LinkedHashSet<>();
+        for ( String order : PROVIDER_CLASSPATH_ORDER )
         {
-            final ArtifactResolutionResult artifactResolutionResult = resolveArtifact( null, surefireArtifact );
-            for ( Artifact artifact : pluginArtifactMap.values() )
+            Iterator<Artifact> providerArtifactsIt = providerArtifacts.iterator();
+            while ( providerArtifactsIt.hasNext() )
             {
-                if ( !artifactResolutionResult.getArtifacts().contains( artifact ) )
+                Artifact providerArtifact = providerArtifactsIt.next();
+                if ( providerArtifact.getArtifactId().equals( order ) )
                 {
-                    files.add( artifact.getFile().getAbsolutePath() );
+                    orderedProviderArtifacts.add( providerArtifact );
+                    providerArtifactsIt.remove();
                 }
             }
         }
-        else
-        {
-            // Bit of a brute force strategy if not found. Should probably be improved
-            for ( Artifact artifact : pluginArtifactMap.values() )
-            {
-                files.add( artifact.getFile().getPath() );
-            }
-        }
-        return new Classpath( files );
+        orderedProviderArtifacts.addAll( providerArtifacts );
+        return orderedProviderArtifacts;
     }
 
+    private static Dependency toProviderDependency( String providerArtifactId, String providerVersion )
+    {
+        Dependency dependency = new Dependency();
+        dependency.setGroupId( PROVIDER_GROUP_ID );
+        dependency.setArtifactId( providerArtifactId );
+        dependency.setVersion( providerVersion );
+        dependency.setType( "jar" );
+        return dependency;
+    }
+
+    static class RuntimeArtifactFilter implements ArtifactFilter
+    {
+        private static final Collection<String> SCOPES =
+                asList( SCOPE_COMPILE, SCOPE_COMPILE_PLUS_RUNTIME, SCOPE_RUNTIME );
+
+        private final Artifact filter;
+
+        RuntimeArtifactFilter()
+        {
+            this( null );
+        }
+
+        RuntimeArtifactFilter( Artifact filter )
+        {
+            this.filter = filter;
+        }
+
+        @Override
+        public boolean include( Artifact artifact )
+        {
+            String scope = artifact.getScope();
+            return ( filter == null || artifact.equals( filter ) )
+                && !artifact.isOptional() && ( scope == null || SCOPES.contains( scope ) );
+        }
+    }
 }

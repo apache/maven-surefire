@@ -39,7 +39,7 @@ import org.junit.Test;
 import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
 
-/*
+/**
  * @author Kristian Rosenvold
  */
 public class ConcurrentRunListenerTest
@@ -147,7 +147,7 @@ public class ConcurrentRunListenerTest
         throws TestSetFailedException
     {
         DefaultReporterFactory reporterFactory = createReporterFactory();
-        HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
+        HashMap<String, TestSet> classMethodCounts = new HashMap<>();
         final ConsoleStream defaultConsoleReporter = new DefaultDirectConsoleReporter( System.out );
         RunListener reporter =
             new ClassesParallelRunListener( classMethodCounts, reporterFactory, defaultConsoleReporter );
@@ -166,7 +166,7 @@ public class ConcurrentRunListenerTest
     private RunStatistics runClasses( Class<?>... classes )
         throws TestSetFailedException
     {
-        HashMap<String, TestSet> classMethodCounts = new HashMap<String, TestSet>();
+        HashMap<String, TestSet> classMethodCounts = new HashMap<>();
         final DefaultReporterFactory reporterManagerFactory = createReporterFactory();
         org.junit.runner.notification.RunListener demultiplexingRunListener =
             createRunListener( reporterManagerFactory, classMethodCounts );
@@ -206,6 +206,9 @@ public class ConcurrentRunListenerTest
     }
 
 
+    /**
+     *
+     */
     public static class DummyWithOneIgnore
     {
         @Test
@@ -225,6 +228,9 @@ public class ConcurrentRunListenerTest
         }
     }
 
+    /**
+     *
+     */
     public static class DummyWithFailure
     {
         @Test
@@ -244,6 +250,9 @@ public class ConcurrentRunListenerTest
         }
     }
 
+    /**
+     *
+     */
     public static class DummyAllOk
     {
 
@@ -263,6 +272,9 @@ public class ConcurrentRunListenerTest
         }
     }
 
+    /**
+     *
+     */
     public static class Dummy3
     {
 
@@ -281,6 +293,9 @@ public class ConcurrentRunListenerTest
         }
     }
 
+    /**
+     *
+     */
     public static class Junit3Tc1
         extends TestCase
     {
@@ -304,6 +319,9 @@ public class ConcurrentRunListenerTest
         }
     }
 
+    /**
+     *
+     */
     public static class Junit3Tc2
         extends TestCase
     {
@@ -331,6 +349,9 @@ public class ConcurrentRunListenerTest
         }
     }
 
+    /**
+     *
+     */
     public static class Junit3OddTest1
         extends TestCase
     {
@@ -355,6 +376,9 @@ public class ConcurrentRunListenerTest
         }
     }
 
+    /**
+     *
+     */
     public static class Junit3WithNestedSuite
         extends TestCase
     {

@@ -21,6 +21,8 @@ package org.apache.maven.plugins.surefire.report.stubs;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 
 /**
@@ -33,8 +35,8 @@ public class SurefireRepMavenProjectStub2
      * {@inheritDoc}
      */
     @Override
-    public List getReportPlugins()
+    public List<ReportPlugin> getReportPlugins()
     {
-        return new ArrayList();
+        return new ArrayList<>();
     }
 }

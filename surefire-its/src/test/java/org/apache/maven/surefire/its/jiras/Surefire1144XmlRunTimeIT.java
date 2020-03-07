@@ -37,6 +37,7 @@ import static org.hamcrest.Matchers.is;
  *
  * @author <a href="mailto:eloussi2@illinois.edu">Lamyaa Eloussi</a>
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class Surefire1144XmlRunTimeIT
     extends SurefireJUnit4IntegrationTestCase
 {
@@ -52,7 +53,7 @@ public class Surefire1144XmlRunTimeIT
         ReportTestSuite report = reports.get( 0 );
         float xmlTime = report.getTimeElapsed();
 
-        assertThat( xmlTime, is(greaterThanOrEqualTo( 1.6f ) ) ); //include beforeClass and afterClass
+        assertThat( xmlTime, is( greaterThanOrEqualTo( 1.6f ) ) ); //include beforeClass and afterClass
         outputValidator.verifyTextInLog( Float.toString( xmlTime ) ); //same time in console
     }
 }

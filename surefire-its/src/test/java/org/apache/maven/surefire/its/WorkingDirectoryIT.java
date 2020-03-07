@@ -24,7 +24,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 import org.apache.maven.it.VerificationException;
-import org.apache.maven.surefire.its.fixture.*;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -47,6 +50,7 @@ public class WorkingDirectoryIT
     {
         final SurefireLauncher unpack = getUnpacked();
         final OutputValidator child = getPreparedChild( unpack );
+        child.getTargetFile( "out.txt" ).delete();
         unpack.executeTest().verifyErrorFreeLog();
         child.assertTestSuiteResults( 1, 0, 0, 0 );
         verifyOutputDirectory( child );
@@ -58,6 +62,7 @@ public class WorkingDirectoryIT
     {
         final SurefireLauncher unpack = getUnpacked();
         final OutputValidator child = getPreparedChild( unpack );
+        child.getTargetFile( "out.txt" ).delete();
         unpack.forkNever().executeTest().verifyErrorFreeLog();
         child.assertTestSuiteResults( 1, 0, 0, 0 );
         verifyOutputDirectory( child );
@@ -69,7 +74,7 @@ public class WorkingDirectoryIT
     {
         final SurefireLauncher unpack = getUnpacked();
         final SurefireLauncher child = unpack.getSubProjectLauncher( "child" );
-        //child.getTargetFile( "out.txt" ).delete();
+        child.getSubProjectValidator( "child" ).getTargetFile( "out.txt" ).delete();
         final OutputValidator outputValidator = child.executeTest().assertTestSuiteResults( 1, 0, 0, 0 );
         verifyOutputDirectory( outputValidator );
     }
@@ -78,16 +83,14 @@ public class WorkingDirectoryIT
     public void testWorkingDirectoryChildOnlyNoFork()
         throws Exception
     {
-
         final SurefireLauncher unpack = getUnpacked();
         final SurefireLauncher child = unpack.getSubProjectLauncher( "child" );
-        //child.getTargetFile( "out.txt" ).delete();
+        child.getSubProjectValidator( "child" ).getTargetFile( "out.txt" ).delete();
         final OutputValidator outputValidator = child.forkNever().executeTest().assertTestSuiteResults( 1, 0, 0, 0 );
         verifyOutputDirectory( outputValidator );
     }
 
     private SurefireLauncher getUnpacked()
-        throws VerificationException, IOException
     {
         return unpack( "working-directory" );
     }
@@ -106,15 +109,16 @@ public class WorkingDirectoryIT
         return child.getTargetFile( "out.txt" );
     }
 
-    public void verifyOutputDirectory( OutputValidator childTestDir )
+    private void verifyOutputDirectory( OutputValidator childTestDir )
         throws IOException
     {
         final TestFile outFile = getOutFile( childTestDir );
         assertTrue( "out.txt doesn't exist: " + outFile.getAbsolutePath(), outFile.exists() );
         Properties p = new Properties();
-        FileInputStream is = outFile.getFileInputStream();
-        p.load( is );
-        is.close();
+        try ( FileInputStream is = outFile.getFileInputStream() )
+        {
+            p.load( is );
+        }
         String userDirPath = p.getProperty( "user.dir" );
         assertNotNull( "user.dir was null in property file", userDirPath );
         File userDir = new File( userDirPath );
@@ -130,5 +134,4 @@ public class WorkingDirectoryIT
                           userDir.getCanonicalPath() );
         }
     }
-
 }

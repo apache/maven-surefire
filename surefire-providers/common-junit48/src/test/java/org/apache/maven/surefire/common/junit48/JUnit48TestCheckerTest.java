@@ -1,13 +1,5 @@
 package org.apache.maven.surefire.common.junit48;
 
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -27,6 +19,14 @@ import static org.junit.Assert.assertTrue;
  * under the License.
  */
 
+import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
  * @author Kristian Rosenvold
  */
@@ -34,7 +34,6 @@ public class JUnit48TestCheckerTest
 {
     @Test
     public void valid48Class()
-        throws Exception
     {
         JUnit48TestChecker tc = new JUnit48TestChecker( this.getClass().getClassLoader() );
         assertTrue( tc.accept( BasicTest.class ) );
@@ -42,16 +41,20 @@ public class JUnit48TestCheckerTest
 
     @Test
     public void notValid48Class()
-        throws Exception
     {
         JUnit48TestChecker tc = new JUnit48TestChecker( this.getClass().getClassLoader() );
         assertFalse( tc.accept( BasicTest2.class ) );
     }
 
-
+    /**
+     *
+     */
     @RunWith( Enclosed.class )
     public abstract static class BasicTest
     {
+        /**
+         *
+         */
         public static class InnerTest
         {
             @Test
@@ -61,9 +64,15 @@ public class JUnit48TestCheckerTest
         }
     }
 
+    /**
+     *
+     */
     @RunWith( Parameterized.class )
     public abstract static class BasicTest2
     {
+        /**
+         *
+         */
         public static class InnerTest
         {
             @Test

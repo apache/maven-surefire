@@ -33,11 +33,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.reporting.MavenReportException;
-import org.apache.maven.shared.utils.StringUtils;
-import org.apache.maven.shared.utils.io.DirectoryScanner;
+import org.apache.maven.surefire.shared.utils.io.DirectoryScanner;
 import org.xml.sax.SAXException;
 
-import static java.util.Collections.singletonList;
+import static org.apache.maven.surefire.shared.utils.StringUtils.split;
 
 /**
  *
@@ -51,13 +50,13 @@ public final class SurefireReportParser
 
     private static final int PCENT = 100;
 
-    private final List<ReportTestSuite> testSuites = new ArrayList<ReportTestSuite>();
+    private final List<ReportTestSuite> testSuites = new ArrayList<>();
 
     private final NumberFormat numberFormat;
 
     private final ConsoleLogger consoleLogger;
 
-    private List<File> reportsDirectories;
+    private final List<File> reportsDirectories;
 
     public SurefireReportParser( List<File> reportsDirectories, Locale locale, ConsoleLogger consoleLogger )
     {
@@ -69,7 +68,7 @@ public final class SurefireReportParser
     public List<ReportTestSuite> parseXMLReportFiles()
         throws MavenReportException
     {
-        final Collection<File> xmlReportFiles = new ArrayList<File>();
+        final Collection<File> xmlReportFiles = new ArrayList<>();
         for ( File reportsDirectory : reportsDirectories )
         {
             if ( reportsDirectory.exists() )
@@ -104,24 +103,9 @@ public final class SurefireReportParser
         return testSuites;
     }
 
-    protected String parseTestSuiteName( String lineString )
-    {
-        return lineString.substring( lineString.lastIndexOf( "." ) + 1, lineString.length() );
-    }
-
-    protected String parseTestSuitePackageName( String lineString )
-    {
-        return lineString.substring( lineString.indexOf( ":" ) + 2, lineString.lastIndexOf( "." ) );
-    }
-
-    protected String parseTestCaseName( String lineString )
-    {
-        return lineString.substring( 0, lineString.indexOf( "(" ) );
-    }
-
     public Map<String, String> getSummary( List<ReportTestSuite> suites )
     {
-        Map<String, String> totalSummary = new HashMap<String, String>();
+        Map<String, String> totalSummary = new HashMap<>();
 
         int totalNumberOfTests = 0;
 
@@ -164,11 +148,6 @@ public final class SurefireReportParser
         return totalSummary;
     }
 
-    public void setReportsDirectory( File reportsDirectory )
-    {
-        reportsDirectories = singletonList( reportsDirectory );
-    }
-
     public NumberFormat getNumberFormat()
     {
         return numberFormat;
@@ -176,11 +155,11 @@ public final class SurefireReportParser
 
     public Map<String, List<ReportTestSuite>> getSuitesGroupByPackage( List<ReportTestSuite> testSuitesList )
     {
-        Map<String, List<ReportTestSuite>> suitePackage = new HashMap<String, List<ReportTestSuite>>();
+        Map<String, List<ReportTestSuite>> suitePackage = new HashMap<>();
 
         for ( ReportTestSuite suite : testSuitesList )
         {
-            List<ReportTestSuite> suiteList = new ArrayList<ReportTestSuite>();
+            List<ReportTestSuite> suiteList = new ArrayList<>();
 
             if ( suitePackage.get( suite.getPackageName() ) != null )
             {
@@ -204,7 +183,7 @@ public final class SurefireReportParser
 
     public List<ReportTestCase> getFailureDetails( List<ReportTestSuite> testSuites )
     {
-        List<ReportTestCase> failureDetails = new ArrayList<ReportTestCase>();
+        List<ReportTestCase> failureDetails = new ArrayList<>();
 
         for ( ReportTestSuite suite : testSuites )
         {
@@ -238,9 +217,9 @@ public final class SurefireReportParser
 
         scanner.setBasedir( directory );
 
-        scanner.setIncludes( StringUtils.split( includes, "," ) );
+        scanner.setIncludes( split( includes, "," ) );
 
-        scanner.setExcludes( StringUtils.split( excludes, "," ) );
+        scanner.setExcludes( split( excludes, "," ) );
 
         scanner.scan();
 

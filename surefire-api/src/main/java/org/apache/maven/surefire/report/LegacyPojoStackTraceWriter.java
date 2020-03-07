@@ -54,15 +54,9 @@ public class LegacyPojoStackTraceWriter
         if ( t != null )
         {
             StringWriter w = new StringWriter();
-            PrintWriter stackTrace = new PrintWriter( w );
-            try
+            try ( PrintWriter stackTrace = new PrintWriter( w ) )
             {
                 t.printStackTrace( stackTrace );
-                stackTrace.flush();
-            }
-            finally
-            {
-                stackTrace.close();
             }
             StringBuffer builder = w.getBuffer();
             if ( isMultiLineExceptionMessage( t ) )

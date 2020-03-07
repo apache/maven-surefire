@@ -23,15 +23,18 @@
     <parent>
         <groupId>org.apache.maven.surefire</groupId>
         <artifactId>surefire-providers</artifactId>
-        <version>2.22.1-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>surefire-junit-platform</artifactId>
+
     <name>SureFire JUnit Platform Runner</name>
     <description>SureFire JUnit Platform Runner</description>
+
     <properties>
         <javaVersion>8</javaVersion>
     </properties>
+
     <contributors>
         <contributor>
             <name>Konstantin Lutovich</name>
@@ -86,17 +89,25 @@
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-launcher</artifactId>
-            <version>1.2.0</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.2.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-reflect</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -108,6 +119,21 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>jacoco-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <propertyName>jacoco.agent</propertyName>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>animal-sniffer-maven-plugin</artifactId>
@@ -134,41 +160,16 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
                 <configuration>
+                    <argLine>${jvm.args.tests} ${jacoco.agent}</argLine>
                     <jvm>${java.home}/bin/java</jvm>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <includes>
+                        <include>**/JUnit47SuiteTest.java</include>
+                    </includes>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <minimizeJar>true</minimizeJar>
-                            <artifactSet>
-                                <includes>
-                                    <include>org.apache.maven.surefire:common-java5</include>
-                                </includes>
-                            </artifactSet>
-                            <relocations>
-                                <relocation>
-                                    <pattern>javax.annotation</pattern>
-                                    <shadedPattern>org.apache.maven.surefire.javax.annotation</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.apache.maven.shared</pattern>
-                                    <shadedPattern>org.apache.maven.surefire.org.apache.maven.shared</shadedPattern>
-                                </relocation>
-                            </relocations>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

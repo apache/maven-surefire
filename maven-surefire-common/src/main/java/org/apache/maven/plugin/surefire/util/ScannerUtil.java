@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.util;
  * under the License.
  */
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.surefire.shared.lang3.StringUtils;
 import javax.annotation.Nonnull;
 
 final class ScannerUtil

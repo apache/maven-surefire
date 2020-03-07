@@ -24,7 +24,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.apache.maven.shared.utils.io.SelectorUtils;
+import org.apache.maven.surefire.shared.utils.io.SelectorUtils;
 
 import static org.apache.maven.plugin.surefire.util.ScannerUtil.convertSlashToSystemFileSeparator;
 
@@ -42,7 +42,7 @@ public class SpecificFileFilter
     {
         if ( classNames != null && classNames.length > 0 )
         {
-            this.names = new HashSet<String>();
+            this.names = new HashSet<>();
             for ( String name : classNames )
             {
                 names.add( convertSlashToSystemFileSeparator( name ) );

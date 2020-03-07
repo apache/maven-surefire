@@ -21,6 +21,9 @@ package org.apache.maven.surefire.its.fixture;
 
 import org.apache.maven.it.VerificationException;
 
+/**
+ *
+ */
 public class FailsafeOutputValidator
     extends OutputValidator
 {

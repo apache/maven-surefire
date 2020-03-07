@@ -37,9 +37,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.FORK_NUMBER_PLACEHOLDER;
-import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.THREAD_NUMBER_PLACEHOLDER;
+import static org.apache.maven.plugin.surefire.SurefireHelper.replaceForkThreadsInPath;
 import static org.apache.maven.plugin.surefire.util.Relocator.relocate;
+import static org.apache.maven.plugin.surefire.SurefireHelper.replaceThreadNumberPlaceholders;
 import static org.apache.maven.surefire.booter.Classpath.join;
 
 /**
@@ -59,6 +59,7 @@ public abstract class DefaultForkConfiguration
     @Nonnull private final Properties modelProperties;
     @Nullable private final String argLine;
     @Nonnull private final Map<String, String> environmentVariables;
+    @Nonnull private final String[] excludedEnvironmentVariables;
     private final boolean debug;
     private final int forkCount;
     private final boolean reuseForks;
@@ -73,6 +74,7 @@ public abstract class DefaultForkConfiguration
                                      @Nonnull Properties modelProperties,
                                      @Nullable String argLine,
                                      @Nonnull Map<String, String> environmentVariables,
+                                     @Nonnull String[] excludedEnvironmentVariables,
                                      boolean debug,
                                      int forkCount,
                                      boolean reuseForks,
@@ -86,6 +88,7 @@ public abstract class DefaultForkConfiguration
         this.modelProperties = modelProperties;
         this.argLine = argLine;
         this.environmentVariables = toImmutable( environmentVariables );
+        this.excludedEnvironmentVariables = excludedEnvironmentVariables;
         this.debug = debug;
         this.forkCount = forkCount;
         this.reuseForks = reuseForks;
@@ -95,7 +98,8 @@ public abstract class DefaultForkConfiguration
 
     protected abstract void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                               @Nonnull String booterThatHasMainMethod,
-                                              @Nonnull StartupConfiguration config )
+                                              @Nonnull StartupConfiguration config,
+                                              @Nonnull File dumpLogDirectory )
             throws SurefireBooterForkException;
 
     @Nonnull
@@ -107,15 +111,19 @@ public abstract class DefaultForkConfiguration
     /**
      * @param config       The startup configuration
      * @param forkNumber   index of forked JVM, to be the replacement in the argLine
+     * @param dumpLogDirectory     directory for dump log file
      * @return CommandLine able to flush entire command going to be sent to forked JVM
      * @throws org.apache.maven.surefire.booter.SurefireBooterForkException when unable to perform the fork
      */
     @Nonnull
     @Override
-    public OutputStreamFlushableCommandline createCommandLine( @Nonnull StartupConfiguration config, int forkNumber )
+    public OutputStreamFlushableCommandline createCommandLine( @Nonnull StartupConfiguration config,
+                                                               int forkNumber,
+                                                               @Nonnull File dumpLogDirectory )
             throws SurefireBooterForkException
     {
-        OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
+        OutputStreamFlushableCommandline cli =
+                new OutputStreamFlushableCommandline( getExcludedEnvironmentVariables() );
 
         cli.setWorkingDirectory( getWorkingDirectory( forkNumber ).getAbsolutePath() );
 
@@ -140,9 +148,14 @@ public abstract class DefaultForkConfiguration
                     .setLine( getDebugLine() );
         }
 
-        resolveClasspath( cli, findStartClass( config ), config );
+        resolveClasspath( cli, findStartClass( config ), config, dumpLogDirectory );
 
         return cli;
+    }
+
+    protected ConsoleLogger getLogger()
+    {
+        return log;
     }
 
     @Nonnull
@@ -159,8 +172,8 @@ public abstract class DefaultForkConfiguration
         Classpath providerClasspath = pathConfig.getProviderClasspath();
         Classpath completeClasspath = join( join( bootClasspath, testClasspath ), providerClasspath );
 
-        log.debug( completeClasspath.getLogMessage( "boot classpath:" ) );
-        log.debug( completeClasspath.getCompactLogMessage( "boot(compact) classpath:" ) );
+        getLogger().debug( completeClasspath.getLogMessage( "boot classpath:" ) );
+        getLogger().debug( completeClasspath.getCompactLogMessage( "boot(compact) classpath:" ) );
 
         return completeClasspath.getClassPath();
     }
@@ -169,7 +182,7 @@ public abstract class DefaultForkConfiguration
     private File getWorkingDirectory( int forkNumber )
             throws SurefireBooterForkException
     {
-        File cwd = new File( replaceThreadNumberPlaceholder( getWorkingDirectory().getAbsolutePath(), forkNumber ) );
+        File cwd = replaceForkThreadsInPath( getWorkingDirectory(), forkNumber );
 
         if ( !cwd.exists() && !cwd.mkdirs() )
         {
@@ -182,14 +195,6 @@ public abstract class DefaultForkConfiguration
                     "WorkingDirectory " + cwd.getAbsolutePath() + " exists and is not a directory" );
         }
         return cwd;
-    }
-
-    @Nonnull
-    private static String replaceThreadNumberPlaceholder( @Nonnull String argLine, int threadNumber )
-    {
-        String threadNumberAsString = String.valueOf( threadNumber );
-        return argLine.replace( THREAD_NUMBER_PLACEHOLDER, threadNumberAsString )
-                .replace( FORK_NUMBER_PLACEHOLDER, threadNumberAsString );
     }
 
     /**
@@ -243,7 +248,7 @@ public abstract class DefaultForkConfiguration
     @Nonnull
     private static <K, V> Map<K, V> toImmutable( @Nullable Map<K, V> map )
     {
-        return map == null ? Collections.<K, V>emptyMap() : new ImmutableMap<K, V>( map );
+        return map == null ? Collections.<K, V>emptyMap() : new ImmutableMap<>( map );
     }
 
     @Override
@@ -286,6 +291,13 @@ public abstract class DefaultForkConfiguration
     protected Map<String, String> getEnvironmentVariables()
     {
         return environmentVariables;
+    }
+
+    @Nonnull
+    @Override
+    protected String[] getExcludedEnvironmentVariables()
+    {
+        return excludedEnvironmentVariables;
     }
 
     @Override
@@ -331,7 +343,7 @@ public abstract class DefaultForkConfiguration
     private String newJvmArgLine( int forks )
     {
         String interpolatedArgs = stripNewLines( interpolateArgLineWithPropertyExpressions() );
-        String argsWithReplacedForkNumbers = replaceThreadNumberPlaceholder( interpolatedArgs, forks );
+        String argsWithReplacedForkNumbers = replaceThreadNumberPlaceholders( interpolatedArgs, forks );
         return extendJvmArgLine( argsWithReplacedForkNumbers );
     }
 

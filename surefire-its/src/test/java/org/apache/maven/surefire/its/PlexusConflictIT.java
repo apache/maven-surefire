@@ -40,7 +40,7 @@ public class PlexusConflictIT
     @Test
     public void testPlexusConflictIsolatedClassLoader()
     {
-        unpack().useSystemClassLoader(false).executeTest().verifyErrorFree( 1 );
+        unpack().useSystemClassLoader( false ).executeTest().verifyErrorFree( 1 );
     }
 
     private SurefireLauncher unpack()

@@ -19,7 +19,7 @@ package org.apache.maven.plugin.failsafe.util;
  * under the License.
  */
 
-import org.apache.commons.io.IOUtils;
+import org.apache.maven.surefire.shared.io.IOUtils;
 import org.apache.maven.surefire.suite.RunResult;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -35,10 +35,11 @@ import java.util.Locale;
 
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
-import static org.apache.commons.lang3.StringEscapeUtils.escapeXml10;
-import static org.apache.commons.lang3.StringEscapeUtils.unescapeXml;
-import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
-import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
+import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.maven.surefire.shared.lang3.StringEscapeUtils.escapeXml10;
+import static org.apache.maven.surefire.shared.lang3.StringEscapeUtils.unescapeXml;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -49,8 +50,11 @@ public final class FailsafeSummaryXmlUtils
     private static final String FAILSAFE_SUMMARY_XML_SCHEMA_LOCATION =
             "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/failsafe-summary.xsd";
 
-    private static final String FAILSAFE_SUMMARY_XML_NIL_ATTR =
-            " xsi:nil=\"true\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
+    private static final String MESSAGE_NIL_ELEMENT =
+            "<failureMessage xsi:nil=\"true\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"/>";
+
+    private static final String MESSAGE_ELEMENT =
+            "<failureMessage>%s</failureMessage>";
 
     private static final String FAILSAFE_SUMMARY_XML_TEMPLATE =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -61,7 +65,7 @@ public final class FailsafeSummaryXmlUtils
                     + "    <errors>%d</errors>\n"
                     + "    <failures>%d</failures>\n"
                     + "    <skipped>%d</skipped>\n"
-                    + "    <failureMessage%s>%s</failureMessage>\n"
+                    + "    %s\n"
                     + "</failsafe-summary>";
 
     private FailsafeSummaryXmlUtils()
@@ -74,11 +78,9 @@ public final class FailsafeSummaryXmlUtils
         XPathFactory xpathFactory = XPathFactory.newInstance();
         XPath xpath = xpathFactory.newXPath();
 
-        FileInputStream is = new FileInputStream( failsafeSummaryXml );
-
-        try
+        try ( FileInputStream is = new FileInputStream( failsafeSummaryXml ) )
         {
-            Node root = (Node) xpath.evaluate( "/", new InputSource( is ), XPathConstants.NODE );
+            Node root = ( Node ) xpath.evaluate( "/", new InputSource( is ), XPathConstants.NODE );
 
             String completed = xpath.evaluate( "/failsafe-summary/completed", root );
             String errors = xpath.evaluate( "/failsafe-summary/errors", root );
@@ -88,13 +90,9 @@ public final class FailsafeSummaryXmlUtils
             String timeout = xpath.evaluate( "/failsafe-summary/@timeout", root );
 
             return new RunResult( parseInt( completed ), parseInt( errors ), parseInt( failures ), parseInt( skipped ),
-                                        isBlank( failureMessage ) ? null : unescapeXml( failureMessage ),
-                                        parseBoolean( timeout )
+                    isBlank( failureMessage ) ? null : unescapeXml( failureMessage ),
+                    parseBoolean( timeout )
             );
-        }
-        finally
-        {
-            is.close();
         }
     }
 
@@ -102,25 +100,19 @@ public final class FailsafeSummaryXmlUtils
             throws IOException
     {
         String failure = fromRunResult.getFailure();
-        String xml = String.format( Locale.ROOT, FAILSAFE_SUMMARY_XML_TEMPLATE,
-                                          fromRunResult.getFailsafeCode(),
-                                          String.valueOf( fromRunResult.isTimeout() ),
-                                          fromRunResult.getCompletedCount(),
-                                          fromRunResult.getErrors(),
-                                          fromRunResult.getFailures(),
-                                          fromRunResult.getSkipped(),
-                                          isBlank( failure ) ? FAILSAFE_SUMMARY_XML_NIL_ATTR : "",
-                                          isBlank( failure ) ? "" : escapeXml10( failure )
-        );
+        String msg = isBlank( failure ) ? MESSAGE_NIL_ELEMENT : format( MESSAGE_ELEMENT, escapeXml10( failure ) );
+        String xml = format( Locale.ROOT, FAILSAFE_SUMMARY_XML_TEMPLATE,
+                fromRunResult.getFailsafeCode(),
+                String.valueOf( fromRunResult.isTimeout() ),
+                fromRunResult.getCompletedCount(),
+                fromRunResult.getErrors(),
+                fromRunResult.getFailures(),
+                fromRunResult.getSkipped(),
+                msg );
 
-        FileOutputStream os = new FileOutputStream( toFailsafeSummaryXml );
-        try
+        try ( FileOutputStream os = new FileOutputStream( toFailsafeSummaryXml ) )
         {
             IOUtils.write( xml, os, UTF_8 );
-        }
-        finally
-        {
-            os.close();
         }
     }
 

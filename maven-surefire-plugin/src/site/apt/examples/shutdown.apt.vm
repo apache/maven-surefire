@@ -70,6 +70,10 @@ Shutdown of Forked JVM
   (pressed CTRL+C, received SIGTERM signal), forked JVM is killed after
   timing out waiting period.
 
+
+  NOTICE: After version <<<3.0.0-M4>>> this feature has to be enabled by setting the configuration
+  parameter <<<enableProcessChecker>>> to <<<ping>>> or <<<all>>>.
+
 * Shutdown of forked JVM by stopping the build
 
   After the master process of the build is shutdown by sending SIGTERM signal
@@ -103,13 +107,17 @@ Shutdown of Forked JVM
 </project>
 +---+
 
+
+  NOTICE: After version <<<3.0.0-M4>>> this feature has to be enabled by setting the configuration
+  parameter <<<enableProcessChecker>>> to <<<ping>>> or <<<native>>> or <<<all>>>.
+
 * Shutdown of forked JVM after certain timeout
 
   Using parameter <<<forkedProcessTimeoutInSeconds>>> forked JVMs
   are killed separately after every individual process elapsed certain
   amount of time and the whole plugin fails with the error message:
 
-  <<<There was a timeout or other error in the fork>>>
+  <<<There was a timeout in the fork>>>
 
 
 * Crashed forked JVM caused listing the crashed test(s)

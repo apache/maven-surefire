@@ -51,7 +51,7 @@ public class TestsToRun implements Iterable<Class<?>>
      */
     public TestsToRun( Set<Class<?>> locatedClasses )
     {
-        this.locatedClasses = new ArrayList<Class<?>>( locatedClasses );
+        this.locatedClasses = new ArrayList<>( locatedClasses );
     }
 
     public static TestsToRun fromClass( Class<?> clazz )
@@ -183,7 +183,7 @@ public class TestsToRun implements Iterable<Class<?>>
         {
             throw new IllegalStateException( "Cannot eagerly read" );
         }
-        Collection<Class<?>> result = new ArrayList<Class<?>>();
+        Collection<Class<?>> result = new ArrayList<>();
         for ( Class<?> clazz : this )
         {
             result.add( clazz );

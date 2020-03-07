@@ -8,10 +8,6 @@
   <artifactId>surefire-testng</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <properties>
-    <surefire.version>2.12.4</surefire.version>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.testng</groupId>

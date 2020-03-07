@@ -34,6 +34,7 @@ public class RunResultTest
         assertTrue( summary.isErrorFree() );
     }
 
+    @SuppressWarnings( "checkstyle:magicnumber" )
     public void testFailuresInFirstRun()
     {
         RunResult resultOne = new RunResult( 10, 1, 3, 2 );

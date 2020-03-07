@@ -23,8 +23,7 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.codehaus.plexus.logging.Logger;
 
 /**
- * Wrapper logger of miscellaneous (Maven 2.2.1 or 3.1) implementations of {@link Logger}.
- * Calling {@link Logger#isInfoEnabled()} before {@link Logger#info(String)} due to Maven 2.2.1.
+ * Wrapper logger of miscellaneous implementations of {@link Logger}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20
@@ -49,18 +48,12 @@ public final class PluginConsoleLogger
     @Override
     public void debug( String message )
     {
-        if ( isDebugEnabled() )
-        {
-            plexusLogger.debug( message );
-        }
+        plexusLogger.debug( message );
     }
 
     public void debug( CharSequence content, Throwable error )
     {
-        if ( isDebugEnabled() )
-        {
-            plexusLogger.debug( content == null ? "" : content.toString(), error );
-        }
+        plexusLogger.debug( content == null ? "" : content.toString(), error );
     }
 
     @Override
@@ -72,10 +65,7 @@ public final class PluginConsoleLogger
     @Override
     public void info( String message )
     {
-        if ( isInfoEnabled() )
-        {
-            plexusLogger.info( message );
-        }
+        plexusLogger.info( message );
     }
 
     @Override
@@ -87,18 +77,12 @@ public final class PluginConsoleLogger
     @Override
     public void warning( String message )
     {
-        if ( isWarnEnabled() )
-        {
-            plexusLogger.warn( message );
-        }
+        plexusLogger.warn( message );
     }
 
     public void warning( CharSequence content, Throwable error )
     {
-        if ( isWarnEnabled() )
-        {
-            plexusLogger.warn( content == null ? "" : content.toString(), error );
-        }
+        plexusLogger.warn( content == null ? "" : content.toString(), error );
     }
 
     @Override
@@ -110,27 +94,18 @@ public final class PluginConsoleLogger
     @Override
     public void error( String message )
     {
-        if ( isErrorEnabled() )
-        {
-            plexusLogger.error( message );
-        }
+        plexusLogger.error( message );
     }
 
     @Override
     public void error( String message, Throwable t )
     {
-        if ( isErrorEnabled() )
-        {
-            plexusLogger.error( message, t );
-        }
+        plexusLogger.error( message, t );
     }
 
     @Override
     public void error( Throwable t )
     {
-        if ( isErrorEnabled() )
-        {
-            plexusLogger.error( "", t );
-        }
+        plexusLogger.error( "", t );
     }
 }

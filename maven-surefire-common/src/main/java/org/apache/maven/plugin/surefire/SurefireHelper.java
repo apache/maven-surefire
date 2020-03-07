@@ -29,14 +29,16 @@ import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.internal.DumpFileUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import javax.annotation.Nonnull;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 
 import static java.util.Collections.unmodifiableList;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.surefire.booter.DumpErrorSingleton.DUMPSTREAM_FILE_EXT;
 import static org.apache.maven.surefire.booter.DumpErrorSingleton.DUMP_FILE_EXT;
 import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
@@ -54,7 +56,13 @@ public final class SurefireHelper
 
     public static final String DUMP_FILE_PREFIX = DUMP_FILE_DATE + "-jvmRun";
 
+    public static final String DUMP_FILENAME_FORMATTER = DUMP_FILE_PREFIX + "%d" + DUMP_FILE_EXT;
+
     public static final String DUMPSTREAM_FILENAME_FORMATTER = DUMP_FILE_PREFIX + "%d" + DUMPSTREAM_FILE_EXT;
+
+    public static final String DUMPSTREAM_FILENAME = DUMP_FILE_DATE + DUMPSTREAM_FILE_EXT;
+
+    public static final String DUMP_FILENAME = DUMP_FILE_DATE + DUMP_FILE_EXT;
 
     /**
      * The maximum path that does not require long path prefix on Windows.<br>
@@ -71,10 +79,24 @@ public final class SurefireHelper
 
     private static final String[] DUMP_FILES_PRINT =
             {
+                    "[date]" + DUMP_FILE_EXT,
                     "[date]-jvmRun[N]" + DUMP_FILE_EXT,
                     "[date]" + DUMPSTREAM_FILE_EXT,
                     "[date]-jvmRun[N]" + DUMPSTREAM_FILE_EXT
             };
+
+    /**
+     * The placeholder that is replaced by the executing thread's running number. The thread number
+     * range starts with 1
+     * Deprecated.
+     */
+    private static final String THREAD_NUMBER_PLACEHOLDER = "${surefire.threadNumber}";
+
+    /**
+     * The placeholder that is replaced by the executing fork's running number. The fork number
+     * range starts with 1
+     */
+    private static final String FORK_NUMBER_PLACEHOLDER = "${surefire.forkNumber}";
 
     /**
      * Do not instantiate.
@@ -82,6 +104,31 @@ public final class SurefireHelper
     private SurefireHelper()
     {
         throw new IllegalAccessError( "Utility class" );
+    }
+
+    @Nonnull
+    public static String replaceThreadNumberPlaceholders( @Nonnull String argLine, int threadNumber )
+    {
+        String threadNumberAsString = String.valueOf( threadNumber );
+        return argLine.replace( THREAD_NUMBER_PLACEHOLDER, threadNumberAsString )
+                .replace( FORK_NUMBER_PLACEHOLDER, threadNumberAsString );
+    }
+
+    public static File replaceForkThreadsInPath( File path, int replacement )
+    {
+        Deque<String> dirs = new LinkedList<>();
+        File root = path;
+        while ( !root.exists() )
+        {
+            dirs.addFirst( replaceThreadNumberPlaceholders( root.getName(), replacement ) );
+            root = root.getParentFile();
+        }
+        File replacedPath = root;
+        for ( String dir : dirs )
+        {
+            replacedPath = new File( replacedPath, dir );
+        }
+        return replacedPath;
     }
 
     public static String[] getDumpFilesToPrint()
@@ -115,7 +162,7 @@ public final class SurefireHelper
 
     public static List<CommandLineOption> commandLineOptions( MavenSession session, PluginConsoleLogger log )
     {
-        List<CommandLineOption> cli = new ArrayList<CommandLineOption>();
+        List<CommandLineOption> cli = new ArrayList<>();
         if ( log.isErrorEnabled() )
         {
             cli.add( LOGGING_LEVEL_ERROR );
@@ -136,27 +183,26 @@ public final class SurefireHelper
             cli.add( LOGGING_LEVEL_DEBUG );
         }
 
-        try
+        MavenExecutionRequest request = session.getRequest();
+
+        if ( request.isShowErrors() )
         {
-            Method getRequestMethod = session.getClass().getMethod( "getRequest" );
-            MavenExecutionRequest request = (MavenExecutionRequest) getRequestMethod.invoke( session );
+            cli.add( SHOW_ERRORS );
+        }
 
-            if ( request.isShowErrors() )
+        String failureBehavior = request.getReactorFailureBehavior();
+        if ( failureBehavior != null )
+        {
+            try
             {
-                cli.add( SHOW_ERRORS );
+                cli.add( CommandLineOption.valueOf( failureBehavior ) );
             }
-
-            String f = getFailureBehavior( request );
-            if ( f != null )
+            catch ( IllegalArgumentException e )
             {
-                // compatible with enums Maven 3.0
-                cli.add( CommandLineOption.valueOf( f.startsWith( "REACTOR_" ) ? f : "REACTOR_" + f ) );
+                // CommandLineOption does not have specified enum as string. See getRequest() method in Maven Session.
             }
         }
-        catch ( Exception e )
-        {
-            // don't need to log the exception that Maven 2 does not have getRequest() method in Maven Session
-        }
+
         return unmodifiableList( cli );
     }
 
@@ -201,21 +247,6 @@ public final class SurefireHelper
         return path;
     }
 
-    private static String getFailureBehavior( MavenExecutionRequest request )
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
-    {
-        try
-        {
-            return request.getFailureBehavior();
-        }
-        catch ( NoSuchMethodError e )
-        {
-            return (String) request.getClass()
-                .getMethod( "getReactorFailureBehavior" )
-                .invoke( request );
-        }
-    }
-
     private static boolean failIfNoTests( SurefireReportParameters reportParameters )
     {
         return reportParameters.getFailIfNoTests() != null && reportParameters.getFailIfNoTests();
@@ -249,7 +280,7 @@ public final class SurefireHelper
 
         if ( result.isTimeout() )
         {
-            msg.append( "There was a timeout or other error in the fork" );
+            msg.append( "There was a timeout in the fork" );
         }
         else
         {

@@ -20,21 +20,29 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
+import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
+import org.apache.maven.surefire.extensions.StatelessReportEventListener;
+import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
+import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
 import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.RunMode;
 import org.apache.maven.surefire.report.TestSetReportEntry;
 
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SKIPPED;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
+import static org.apache.maven.surefire.report.RunMode.NORMAL_RUN;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Reports data for a single test set.
@@ -45,35 +53,35 @@ import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
 public class TestSetRunListener
     implements RunListener, ConsoleOutputReceiver, ConsoleLogger
 {
+    private final Queue<TestMethodStats> testMethodStats = new ConcurrentLinkedQueue<>();
+
     private final TestSetStats detailsForThis;
 
-    private List<TestMethodStats> testMethodStats;
+    private final ConsoleOutputReportEventListener consoleOutputReceiver;
+
+    private final boolean briefOrPlainFormat;
+
+    private final StatelessReportEventListener<WrappedReportEntry, TestSetStats> simpleXMLReporter;
+
+    private final StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats> consoleReporter;
+
+    private final StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats> fileReporter;
+
+    private final StatisticsReporter statisticsReporter;
 
     private Utf8RecodingDeferredFileOutputStream testStdOut = initDeferred( "stdout" );
 
     private Utf8RecodingDeferredFileOutputStream testStdErr = initDeferred( "stderr" );
 
-    private Utf8RecodingDeferredFileOutputStream initDeferred( String channel )
-    {
-        return new Utf8RecodingDeferredFileOutputStream( channel );
-    }
-
-    private final TestcycleConsoleOutputReceiver consoleOutputReceiver;
-
-    private final boolean briefOrPlainFormat;
-
-    private final StatelessXmlReporter simpleXMLReporter;
-
-    private final ConsoleReporter consoleReporter;
-
-    private final FileReporter fileReporter;
-
-    private final StatisticsReporter statisticsReporter;
+    private volatile RunMode runMode = NORMAL_RUN;
 
     @SuppressWarnings( "checkstyle:parameternumber" )
-    public TestSetRunListener( ConsoleReporter consoleReporter, FileReporter fileReporter,
-                               StatelessXmlReporter simpleXMLReporter,
-                               TestcycleConsoleOutputReceiver consoleOutputReceiver,
+    public TestSetRunListener( StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats>
+                                           consoleReporter,
+                               StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats>
+                                       fileReporter,
+                               StatelessReportEventListener<WrappedReportEntry, TestSetStats> simpleXMLReporter,
+                               ConsoleOutputReportEventListener consoleOutputReceiver,
                                StatisticsReporter statisticsReporter, boolean trimStackTrace,
                                boolean isPlainFormat, boolean briefOrPlainFormat )
     {
@@ -84,7 +92,6 @@ public class TestSetRunListener
         this.consoleOutputReceiver = consoleOutputReceiver;
         this.briefOrPlainFormat = briefOrPlainFormat;
         detailsForThis = new TestSetStats( trimStackTrace, isPlainFormat );
-        testMethodStats = new ArrayList<TestMethodStats>();
     }
 
     @Override
@@ -138,7 +145,7 @@ public class TestSetRunListener
     @Override
     public void error( String message, Throwable t )
     {
-        consoleReporter.getConsoleLogger().error( message, t );
+        consoleReporter.getConsoleLogger().error( trimTrailingNewLine( message ), t );
     }
 
     @Override
@@ -148,19 +155,13 @@ public class TestSetRunListener
     }
 
     @Override
-    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    public void writeTestOutput( String output, boolean newLine, boolean stdout )
     {
         try
         {
-            if ( stdout )
-            {
-                testStdOut.write( buf, off, len );
-            }
-            else
-            {
-                testStdErr.write( buf, off, len );
-            }
-            consoleOutputReceiver.writeTestOutput( buf, off, len, stdout );
+            Utf8RecodingDeferredFileOutputStream stream = stdout ? testStdOut : testStdErr;
+            stream.write( output, newLine );
+            consoleOutputReceiver.writeTestOutput( output, newLine, stdout );
         }
         catch ( IOException e )
         {
@@ -204,7 +205,7 @@ public class TestSetRunListener
     }
 
     // ----------------------------------------------------------------------
-    // Test
+    // Test callback methods:
     // ----------------------------------------------------------------------
 
     @Override
@@ -258,6 +259,13 @@ public class TestSetRunListener
     {
     }
 
+    public RunMode markAs( RunMode currentRunMode )
+    {
+        RunMode runMode = this.runMode;
+        this.runMode = requireNonNull( currentRunMode );
+        return runMode;
+    }
+
     @Override
     public void testAssumptionFailure( ReportEntry report )
     {
@@ -299,7 +307,7 @@ public class TestSetRunListener
         }
     }
 
-    public List<TestMethodStats> getTestMethodStats()
+    public Queue<TestMethodStats> getTestMethodStats()
     {
         return testMethodStats;
     }
@@ -312,6 +320,11 @@ public class TestSetRunListener
 
     private static int lineBoundSymbolWidth( String message )
     {
-        return message.endsWith( "\n" ) || message.endsWith( "\r" ) ? 1 : ( message.endsWith( "\r\n" ) ? 2 : 0 );
+        return message.endsWith( "\r\n" ) ? 2 : ( message.endsWith( "\n" ) || message.endsWith( "\r" ) ? 1 : 0 );
+    }
+
+    private static Utf8RecodingDeferredFileOutputStream initDeferred( String channel )
+    {
+        return new Utf8RecodingDeferredFileOutputStream( channel );
     }
 }

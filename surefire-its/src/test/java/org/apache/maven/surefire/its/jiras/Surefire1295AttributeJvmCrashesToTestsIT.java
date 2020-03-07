@@ -19,12 +19,12 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
+import com.googlecode.junittoolbox.ParallelParameterized;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -51,10 +51,13 @@ import static org.junit.Assume.assumeTrue;
  * @author michaeltandy
  * @since 2.20
  */
-@RunWith( Parameterized.class )
+@RunWith( ParallelParameterized.class )
 public class Surefire1295AttributeJvmCrashesToTestsIT
         extends SurefireJUnit4IntegrationTestCase
 {
+    /**
+     *
+     */
     public enum ForkMode
     {
         DEFAULT,
@@ -65,26 +68,28 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
     @Parameters
     public static Iterable<Object[]> parameters()
     {
-        return asList(new Object[][] {
-//                unused, exit() does not stop all Threads immediately,
+        return asList( new Object[][] {
+//                exit() does not stop all Threads immediately,
 //                see https://github.com/michaeltandy/crashjvm/issues/1
-//                { "exit", DEFAULT },
-//                { "exit", ONE_FORK_NO_REUSE },
-//                { "exit", ONE_FORK_REUSE },
+                { "exit", DEFAULT },
+                { "exit", ONE_FORK_NO_REUSE },
+                { "exit", ONE_FORK_REUSE },
                 { "abort", DEFAULT },
                 { "abort", ONE_FORK_NO_REUSE },
                 { "abort", ONE_FORK_REUSE },
                 { "segfault", DEFAULT },
                 { "segfault", ONE_FORK_NO_REUSE },
                 { "segfault", ONE_FORK_REUSE }
-        });
+        } );
     }
 
     @Parameter( 0 )
-    public static String crashStyle;
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
+    public String crashStyle;
 
     @Parameter( 1 )
-    public static ForkMode forkStyle;
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
+    public ForkMode forkStyle;
 
     @Test
     public void test()

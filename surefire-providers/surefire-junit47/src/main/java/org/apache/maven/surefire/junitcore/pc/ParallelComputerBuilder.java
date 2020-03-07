@@ -87,11 +87,11 @@ public final class ParallelComputerBuilder
 
     private static final Class<? extends Annotation> JCIP_NOT_THREAD_SAFE = loadNotThreadSafeAnnotations();
 
-    private static final Set<?> NULL_SINGLETON = Collections.singleton( null );
+    private static final Set<Runner> NULL_SINGLETON = Collections.singleton( null );
 
     static final int TOTAL_POOL_SIZE_UNDEFINED = 0;
 
-    private final Map<Type, Integer> parallelGroups = new EnumMap<Type, Integer>( Type.class );
+    private final Map<Type, Integer> parallelGroups = new EnumMap<>( Type.class );
 
     private final ConsoleStream logger;
 
@@ -255,15 +255,15 @@ public final class ParallelComputerBuilder
         private final SingleThreadScheduler notThreadSafeTests =
             new SingleThreadScheduler( ParallelComputerBuilder.this.logger );
 
-        private final Collection<ParentRunner> suites = new LinkedHashSet<ParentRunner>();
+        private final Collection<ParentRunner> suites = new LinkedHashSet<>();
 
-        private final Collection<ParentRunner> nestedSuites = new LinkedHashSet<ParentRunner>();
+        private final Collection<ParentRunner> nestedSuites = new LinkedHashSet<>();
 
-        private final Collection<ParentRunner> classes = new LinkedHashSet<ParentRunner>();
+        private final Collection<ParentRunner> classes = new LinkedHashSet<>();
 
-        private final Collection<ParentRunner> nestedClasses = new LinkedHashSet<ParentRunner>();
+        private final Collection<ParentRunner> nestedClasses = new LinkedHashSet<>();
 
-        private final Collection<Runner> notParallelRunners = new LinkedHashSet<Runner>();
+        private final Collection<Runner> notParallelRunners = new LinkedHashSet<>();
 
         private int poolCapacity;
 
@@ -278,7 +278,7 @@ public final class ParallelComputerBuilder
         private PC()
         {
             super( parallelTestsTimeoutInSeconds(), parallelTestsTimeoutForcedInSeconds() );
-            allGroups = new EnumMap<Type, Integer>( ParallelComputerBuilder.this.parallelGroups );
+            allGroups = new EnumMap<>( ParallelComputerBuilder.this.parallelGroups );
             poolCapacity = ParallelComputerBuilder.this.totalPoolSize;
             splitPool = ParallelComputerBuilder.this.useSeparatePools;
         }
@@ -419,7 +419,7 @@ public final class ParallelComputerBuilder
         {
             // Do NOT use allGroups here.
             long childrenCounter = 0;
-            ArrayList<Runner> runs = new ArrayList<Runner>();
+            ArrayList<Runner> runs = new ArrayList<>();
             for ( T runner : runners )
             {
                 if ( runner != null )
@@ -549,7 +549,7 @@ public final class ParallelComputerBuilder
             }
 
             // schedulers for parallel classes
-            ArrayList<ParentRunner> allSuites = new ArrayList<ParentRunner>( suites );
+            ArrayList<ParentRunner> allSuites = new ArrayList<>( suites );
             allSuites.addAll( nestedSuites );
             if ( suiteClasses != null )
             {
@@ -561,7 +561,7 @@ public final class ParallelComputerBuilder
             }
 
             // schedulers for parallel methods
-            ArrayList<ParentRunner> allClasses = new ArrayList<ParentRunner>( classes );
+            ArrayList<ParentRunner> allClasses = new ArrayList<>( classes );
             allClasses.addAll( nestedClasses );
             if ( !allClasses.isEmpty() )
             {
@@ -722,7 +722,7 @@ public final class ParallelComputerBuilder
 
     private static List<Runner> removeNullRunners( Collection<Runner> runners )
     {
-        final List<Runner> onlyRunners = new ArrayList<Runner>( runners );
+        final List<Runner> onlyRunners = new ArrayList<>( runners );
         onlyRunners.removeAll( NULL_SINGLETON );
         return onlyRunners;
     }

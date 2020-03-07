@@ -199,13 +199,13 @@ public class ConfigurableParallelComputerTest
         return System.currentTimeMillis() - start;
     }
 
-    private long timedRun( int NUMTESTS, Result result, Class<?>[] realClasses, JUnitCore jUnitCore, Computer computer )
+    private long timedRun( int numTests, Result result, Class<?>[] realClasses, JUnitCore jUnitCore, Computer computer )
         throws ExecutionException
     {
         long time = runIt( realClasses, jUnitCore, computer );
         assertEquals( "No tests should fail, right ?", 0, result.getFailures().size() );
         assertEquals( "All tests should succeed, right ?", 0, result.getIgnoreCount() );
-        assertEquals( "All tests should succeed, right ?", NUMTESTS * 3, result.getRunCount() );
+        assertEquals( "All tests should succeed, right ?", numTests * 3, result.getRunCount() );
         return time;
     }
 
@@ -221,7 +221,7 @@ public class ConfigurableParallelComputerTest
 
     private Class<?>[] getClassList( Class<?> testClass, int numItems )
     {
-        List<Class> realClasses = new ArrayList<Class>();
+        List<Class<?>> realClasses = new ArrayList<>();
         for ( int i = 0; i < numItems; i++ )
         {
             realClasses.add( testClass );
@@ -241,6 +241,9 @@ public class ConfigurableParallelComputerTest
         }
     }
 
+    /**
+     *
+     */
     public static class Dummy
     {
         @Test
@@ -261,6 +264,9 @@ public class ConfigurableParallelComputerTest
         }
     }
 
+    /**
+     *
+     */
     public static class Dummy2
     {
         @Test
@@ -276,6 +282,9 @@ public class ConfigurableParallelComputerTest
         }
     }
 
+    /**
+     *
+     */
     public static class SlowTest
     {
         final int scaling = 100;
@@ -302,6 +311,9 @@ public class ConfigurableParallelComputerTest
         }
     }
 
+    /**
+     *
+     */
     public static class FailingAssertions
     {
         @Test
@@ -321,6 +333,9 @@ public class ConfigurableParallelComputerTest
         }
     }
 
+    /**
+     *
+     */
     public static class Failure
     {
         @Test

@@ -32,6 +32,7 @@ import java.io.IOException;
  *
  * @author Kristian Rosenvold
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class ResultCountingIT
     extends SurefireJUnit4IntegrationTestCase
 {

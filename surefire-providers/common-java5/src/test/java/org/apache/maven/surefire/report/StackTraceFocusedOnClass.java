@@ -32,7 +32,7 @@ final class StackTraceFocusedOnClass
         }
     }
 
-    static abstract class A
+    abstract static class A
     {
         abstract void abs()
             throws IOException;

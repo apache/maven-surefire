@@ -26,22 +26,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.maven.surefire.testng.conf.TestNGMapConfiguratorTest.*;
+import static org.apache.maven.surefire.testng.conf.TestNGMapConfiguratorTest.FIRST_LISTENER;
+import static org.apache.maven.surefire.testng.conf.TestNGMapConfiguratorTest.LISTENER_PROP;
+import static org.apache.maven.surefire.testng.conf.TestNGMapConfiguratorTest.SECOND_LISTENER;
 
-public class TestNG5141ConfiguratorTest
-    extends TestCase
+/**
+ *
+ */
+public class TestNG5141ConfiguratorTest extends TestCase
 {
 
     public void testListenersOnSeparateLines()
-            throws Exception
     {
         try
         {
-            String listenersOnSeveralLines = String.format("%s , %n %s",
-                                                           FIRST_LISTENER, SECOND_LISTENER);
-            Map convertedOptions = getConvertedOptions(LISTENER_PROP, listenersOnSeveralLines);
-            List listeners = (List) convertedOptions.get(String.format("-%s", LISTENER_PROP));
-            assertEquals(2, listeners.size());
+            String listenersOnSeveralLines = String.format( "%s , %n %s", FIRST_LISTENER, SECOND_LISTENER );
+            Map convertedOptions = getConvertedOptions( LISTENER_PROP, listenersOnSeveralLines );
+            List listeners = (List) convertedOptions.get( String.format( "-%s", LISTENER_PROP ) );
+            assertEquals( 2, listeners.size() );
             fail();
         }
         catch ( TestSetFailedException e )
@@ -51,14 +53,13 @@ public class TestNG5141ConfiguratorTest
     }
 
     public void testListenersOnTheSameLine()
-            throws Exception
     {
-        try {
-            String listenersOnSeveralLines = String.format("%s,%s",
-                                                           FIRST_LISTENER, SECOND_LISTENER);
-            Map convertedOptions = getConvertedOptions(LISTENER_PROP, listenersOnSeveralLines);
-            List listeners = (List) convertedOptions.get(String.format("-%s", LISTENER_PROP));
-            assertEquals(2, listeners.size());
+        try
+        {
+            String listenersOnSeveralLines = String.format( "%s,%s", FIRST_LISTENER, SECOND_LISTENER );
+            Map convertedOptions = getConvertedOptions( LISTENER_PROP, listenersOnSeveralLines );
+            List listeners = (List) convertedOptions.get( String.format( "-%s", LISTENER_PROP ) );
+            assertEquals( 2, listeners.size() );
             fail();
         }
         catch ( TestSetFailedException e )
@@ -67,11 +68,10 @@ public class TestNG5141ConfiguratorTest
         }
     }
 
-    private Map getConvertedOptions( String key, String value )
-            throws TestSetFailedException
+    private Map getConvertedOptions( String key, String value ) throws TestSetFailedException
     {
         TestNGMapConfigurator testNGMapConfigurator = new TestNG5141Configurator();
-        Map<String, String> raw = new HashMap<String, String>();
+        Map<String, String> raw = new HashMap<>();
         raw.put( key, value );
         return testNGMapConfigurator.getConvertedOptions( raw );
     }

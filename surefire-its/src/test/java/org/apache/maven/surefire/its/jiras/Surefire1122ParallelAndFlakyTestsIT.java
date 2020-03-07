@@ -45,4 +45,13 @@ public class Surefire1122ParallelAndFlakyTestsIT
             .executeTest()
             .assertTestSuiteResults( 2, 0, 0, 0, 1 );
     }
+
+    @Test
+    public void parallelCreatesCorrectReportFork()
+    {
+        unpack( "surefire-1122-parallel-and-flakyTests" )
+                .activateProfile( "parallel-one-fork" )
+                .executeTest()
+                .assertTestSuiteResults( 2, 0, 0, 0, 1 );
+    }
 }

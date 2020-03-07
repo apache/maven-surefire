@@ -1,8 +1,5 @@
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,6 +17,13 @@ import org.junit.Test;
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ */
+
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
+
+/**
+ *
  */
 public class Surefire972BizarreNoClassDefIT
     extends SurefireJUnit4IntegrationTestCase

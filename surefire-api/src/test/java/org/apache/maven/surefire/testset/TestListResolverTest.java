@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.testset;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -35,8 +36,11 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 
+/**
+ *
+ */
 public class TestListResolverTest
     extends TestCase
 {
@@ -133,8 +137,8 @@ public class TestListResolverTest
 
     public void testNonRegexClassAndMethod()
     {
-        Collection<ResolvedTest> includedFilters = new ArrayList<ResolvedTest>();
-        Collection<ResolvedTest> excludedFilters = new ArrayList<ResolvedTest>();
+        Collection<ResolvedTest> includedFilters = new ArrayList<>();
+        Collection<ResolvedTest> excludedFilters = new ArrayList<>();
         IncludedExcludedPatterns includedExcludedPatterns = new IncludedExcludedPatterns();
         TestListResolver.nonRegexClassAndMethods( "MyTest", "myTest", false, includedExcludedPatterns, includedFilters,
                                                   excludedFilters );
@@ -157,8 +161,8 @@ public class TestListResolverTest
 
     public void testNonRegexClassAndMethods()
     {
-        Collection<ResolvedTest> includedFilters = new ArrayList<ResolvedTest>();
-        Collection<ResolvedTest> excludedFilters = new ArrayList<ResolvedTest>();
+        Collection<ResolvedTest> includedFilters = new ArrayList<>();
+        Collection<ResolvedTest> excludedFilters = new ArrayList<>();
         IncludedExcludedPatterns includedExcludedPatterns = new IncludedExcludedPatterns();
         TestListResolver.nonRegexClassAndMethods( "MyTest.class", "first*+second*", false, includedExcludedPatterns,
                                                   includedFilters, excludedFilters );
@@ -191,8 +195,8 @@ public class TestListResolverTest
 
     public void testNegativeNonRegexClassAndMethod()
     {
-        Collection<ResolvedTest> includedFilters = new ArrayList<ResolvedTest>();
-        Collection<ResolvedTest> excludedFilters = new ArrayList<ResolvedTest>();
+        Collection<ResolvedTest> includedFilters = new ArrayList<>();
+        Collection<ResolvedTest> excludedFilters = new ArrayList<>();
         IncludedExcludedPatterns includedExcludedPatterns = new IncludedExcludedPatterns();
         TestListResolver.nonRegexClassAndMethods( "MyTest", "myTest", true, includedExcludedPatterns, includedFilters,
                                                   excludedFilters );
@@ -216,8 +220,8 @@ public class TestListResolverTest
 
     public void testResolveTestRequest()
     {
-        Collection<ResolvedTest> includedFilters = new ArrayList<ResolvedTest>();
-        Collection<ResolvedTest> excludedFilters = new ArrayList<ResolvedTest>();
+        Collection<ResolvedTest> includedFilters = new ArrayList<>();
+        Collection<ResolvedTest> excludedFilters = new ArrayList<>();
         IncludedExcludedPatterns includedExcludedPatterns = new IncludedExcludedPatterns();
         TestListResolver.resolveTestRequest( "!%regex[.*.MyTest.class#myTest]", includedExcludedPatterns,
                                              includedFilters, excludedFilters );
@@ -235,7 +239,8 @@ public class TestListResolverTest
 
     public void testShouldRunTestWithoutMethod()
     {
-        new TestListResolver("**/*Test.class, !%regex[.*.MyTest.class#myTest]").shouldRun( "pkg/MyTest.class", null );
+        new TestListResolver( "**/*Test.class, !%regex[.*.MyTest.class#myTest]" )
+                .shouldRun( "pkg/MyTest.class", null );
     }
 
     public void testShouldNotRunExcludedMethods()
@@ -328,7 +333,7 @@ public class TestListResolverTest
         ResolvedTest inc2 = new ResolvedTest( "**/?Test", null, false );
         ResolvedTest exc1 = new ResolvedTest( "AATest", null, false );
         ResolvedTest exc2 = new ResolvedTest( "**/BTest.java", null, false );
-        TestListResolver resolver = newTestListResolver( $( inc1, inc2 ), $( exc1, exc2 ) );
+        TestListResolver resolver = newTestListResolver( toSet( inc1, inc2 ), toSet( exc1, exc2 ) );
         assertThat( resolver.getPluginParameterTest(), is( "A?Test.java, **/?Test, !AATest, !**/BTest.java" ) );
         assertFalse( resolver.isEmpty() );
         assertFalse( resolver.hasIncludedMethodPatterns() );
@@ -348,7 +353,7 @@ public class TestListResolverTest
         ResolvedTest inc2 = new ResolvedTest( "*?Test", null, false );
         ResolvedTest exc1 = new ResolvedTest( "AATest", null, false );
         ResolvedTest exc2 = new ResolvedTest( "*BTest.java", "failedTest", false );
-        TestListResolver resolver = newTestListResolver( $( inc1, inc2 ), $( exc1, exc2 ) );
+        TestListResolver resolver = newTestListResolver( toSet( inc1, inc2 ), toSet( exc1, exc2 ) );
         assertThat( resolver.getPluginParameterTest(), is( "A?Test.java, *?Test, !AATest, !*BTest.java#failedTest" ) );
         assertFalse( resolver.isEmpty() );
         assertFalse( resolver.hasIncludedMethodPatterns() );
@@ -363,9 +368,9 @@ public class TestListResolverTest
         assertFalse( TestListResolver.optionallyWildcardFilter( resolver ).isEmpty() );
     }
 
-    private static Set<ResolvedTest> $( ResolvedTest... patterns )
+    private static Set<ResolvedTest> toSet( ResolvedTest... patterns )
     {
-        Set<ResolvedTest> set = new LinkedHashSet<ResolvedTest>();
+        Set<ResolvedTest> set = new LinkedHashSet<>();
         addAll( set, patterns );
         return set;
     }
@@ -490,7 +495,7 @@ public class TestListResolverTest
 
     private static Set<ResolvedTest> resolveClass( String patterns )
     {
-        Set<ResolvedTest> resolved = new HashSet<ResolvedTest>();
+        Set<ResolvedTest> resolved = new HashSet<>();
         for ( String pattern : patterns.split( "," ) )
         {
             resolved.add( new ResolvedTest( CLASS, pattern, false ) );

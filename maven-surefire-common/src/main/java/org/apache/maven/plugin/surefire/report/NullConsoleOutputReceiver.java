@@ -19,15 +19,15 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 
 /**
- * ConsoleReporter doing nothing rather than using null.
+ * TestcycleConsoleOutputReceiver doing nothing rather than using null.
  *
- * @author <a href="mailto:britter@apache.org">Benedikt Ritter</a>
- * @since 2.20
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 3.0.0-M4
  */
-class NullConsoleOutputReceiver
+public class NullConsoleOutputReceiver
     implements TestcycleConsoleOutputReceiver
 {
 
@@ -38,22 +38,26 @@ class NullConsoleOutputReceiver
     }
 
     @Override
-    public void testSetStarting( ReportEntry reportEntry )
+    public void testSetStarting( TestSetReportEntry reportEntry )
     {
+
     }
 
     @Override
-    public void testSetCompleted( ReportEntry report )
+    public void testSetCompleted( TestSetReportEntry report )
     {
+
     }
 
     @Override
     public void close()
     {
+
     }
 
     @Override
-    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    public void writeTestOutput( String output, boolean newLine, boolean stdout )
     {
+
     }
 }

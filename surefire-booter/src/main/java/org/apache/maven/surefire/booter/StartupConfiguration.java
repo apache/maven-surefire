@@ -35,17 +35,19 @@ public class StartupConfiguration
     private final ClassLoaderConfiguration classLoaderConfiguration;
     private final boolean isForkRequested;
     private final boolean isInForkedVm;
+    private final ProcessCheckerType processChecker;
 
     public StartupConfiguration( @Nonnull String providerClassName,
                                  @Nonnull AbstractPathConfiguration classpathConfiguration,
                                  @Nonnull ClassLoaderConfiguration classLoaderConfiguration, boolean isForkRequested,
-                                 boolean inForkedVm )
+                                 boolean inForkedVm, ProcessCheckerType processChecker )
     {
         this.classpathConfiguration = classpathConfiguration;
         this.classLoaderConfiguration = classLoaderConfiguration;
         this.isForkRequested = isForkRequested;
         this.providerClassName = providerClassName;
         isInForkedVm = inForkedVm;
+        this.processChecker = processChecker;
     }
 
     public boolean isProviderMainClass()
@@ -55,10 +57,11 @@ public class StartupConfiguration
 
     public static StartupConfiguration inForkedVm( String providerClassName,
                                                    ClasspathConfiguration classpathConfiguration,
-                                                   ClassLoaderConfiguration classLoaderConfiguration )
+                                                   ClassLoaderConfiguration classLoaderConfiguration,
+                                                   ProcessCheckerType processChecker )
     {
         return new StartupConfiguration( providerClassName, classpathConfiguration, classLoaderConfiguration, true,
-                                         true );
+                                         true, processChecker );
     }
 
     public AbstractPathConfiguration getClasspathConfiguration()
@@ -130,11 +133,16 @@ public class StartupConfiguration
 
     public boolean isShadefire()
     {
-        return providerClassName.startsWith( "org.apache.maven.surefire.shadefire" );
+        return providerClassName.startsWith( "org.apache.maven.shadefire.surefire" );
     }
 
     public void writeSurefireTestClasspathProperty()
     {
         getClasspathConfiguration().getTestClasspath().writeToSystemProperty( SUREFIRE_TEST_CLASSPATH );
+    }
+
+    public ProcessCheckerType getProcessChecker()
+    {
+        return processChecker;
     }
 }

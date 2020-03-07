@@ -24,17 +24,17 @@ import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.util.internal.ClassMethod;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.isFailureInsideJUnitItself;
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClassMethod;
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.getAnnotatedIgnoreValue;
 import static org.apache.maven.surefire.report.SimpleReportEntry.assumption;
 import static org.apache.maven.surefire.report.SimpleReportEntry.ignored;
 import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
-import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractClassName;
-import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractMethodName;
 
 /**
  * RunListener for JUnit4, delegates to our own RunListener
@@ -47,10 +47,11 @@ public class JUnit4RunListener
 
     /**
      * This flag is set after a failure has occurred so that a {@link RunListener#testSucceeded} event is not fired.
-     * This is necessary because JUnit4 always fires a {@link org.junit.runner.notification.RunListener#testRunFinished}
+     * This is necessary because JUnit4 always fires a
+     * {@link org.junit.runner.notification.RunListener#testRunFinished(Result)}
      * event-- even if there was a failure.
      */
-    private final ThreadLocal<Boolean> failureFlag = new InheritableThreadLocal<Boolean>();
+    private final ThreadLocal<Boolean> failureFlag = new InheritableThreadLocal<>();
 
     /**
      * Constructor.
@@ -74,7 +75,8 @@ public class JUnit4RunListener
         throws Exception
     {
         String reason = getAnnotatedIgnoreValue( description );
-        reporter.testSkipped( ignored( getClassName( description ), description.getDisplayName(), reason ) );
+        ClassMethod classMethod = toClassMethod( description );
+        reporter.testSkipped( ignored( classMethod.getClazz(), null, classMethod.getMethod(), null, reason ) );
     }
 
     /**
@@ -108,16 +110,10 @@ public class JUnit4RunListener
     {
         try
         {
-            String testHeader = failure.getTestHeader();
-            if ( isInsaneJunitNullString( testHeader ) )
-            {
-                testHeader = "Failure when constructing test";
-            }
-
-            String testClassName = getClassName( failure.getDescription() );
             StackTraceWriter stackTrace = createStackTraceWriter( failure );
-
-            ReportEntry report = withException( testClassName, testHeader, stackTrace );
+            ClassMethod classMethod = toClassMethod( failure.getDescription() );
+            ReportEntry report =
+                    withException( classMethod.getClazz(), null, classMethod.getMethod(), null, stackTrace );
 
             if ( failure.getException() instanceof AssertionError )
             {
@@ -134,14 +130,15 @@ public class JUnit4RunListener
         }
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
     public void testAssumptionFailure( Failure failure )
     {
         try
         {
             Description desc = failure.getDescription();
-            String test = getClassName( desc );
-            reporter.testAssumptionFailure( assumption( test, desc.getDisplayName(), failure.getMessage() ) );
+            ClassMethod classMethod = toClassMethod( desc );
+            ReportEntry report = assumption( classMethod.getClazz(), null, classMethod.getMethod(), null,
+                    failure.getMessage() );
+            reporter.testAssumptionFailure( report );
         }
         finally
         {
@@ -173,25 +170,6 @@ public class JUnit4RunListener
         reporter.testExecutionSkippedByUser();
     }
 
-    private String getClassName( Description description )
-    {
-        String name = extractDescriptionClassName( description );
-        if ( name == null || isInsaneJunitNullString( name ) )
-        {
-            // This can happen upon early failures (class instantiation error etc)
-            Description subDescription = description.getChildren().get( 0 );
-            if ( subDescription != null )
-            {
-                name = extractDescriptionClassName( subDescription );
-            }
-            if ( name == null )
-            {
-                name = "Test Instantiation Error";
-            }
-        }
-        return name;
-    }
-
     protected StackTraceWriter createStackTraceWriter( Failure failure )
     {
         return new JUnit4StackTraceWriter( failure );
@@ -199,17 +177,8 @@ public class JUnit4RunListener
 
     protected SimpleReportEntry createReportEntry( Description description )
     {
-        return new SimpleReportEntry( getClassName( description ), description.getDisplayName() );
-    }
-
-    protected String extractDescriptionClassName( Description description )
-    {
-        return extractClassName( description.getDisplayName() );
-    }
-
-    protected String extractDescriptionMethodName( Description description )
-    {
-        return extractMethodName( description.getDisplayName() );
+        ClassMethod classMethod = toClassMethod( description );
+        return new SimpleReportEntry( classMethod.getClazz(), null, classMethod.getMethod(), null );
     }
 
     public static void rethrowAnyTestMechanismFailures( Result run )
@@ -223,10 +192,5 @@ public class JUnit4RunListener
                                                         failure.getException() );
             }
         }
-    }
-
-    private static boolean isInsaneJunitNullString( String value )
-    {
-        return "null".equals( value );
     }
 }

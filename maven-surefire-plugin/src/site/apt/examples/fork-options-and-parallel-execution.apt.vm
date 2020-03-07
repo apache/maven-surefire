@@ -270,6 +270,49 @@ Fork Options and Parallel Test Execution
 
   Port numbers and file names are other examples of resources for which it may
   be hard or undesired to be shared among concurrent test executions.
+  
+* Isolating report directories across forks
+  
+  You may run multiple TestNG suites in parallel fork JVM processes. In that case
+  one can see that each process has created XML report file with same name
+  overriding one each other. In order to prevent from this, you may want to change
+  report directory for each Suite XML. Since of Version 2.22.1 you can parameterize
+  <<<reportsDirectory>>> with placeholder <<<$\{surefire.forkNumber\}>>>.
+  
++---+
+[...]
+<dependencies>
+    [...]
+    <dependency>
+        <groupId>org.testng</groupId>
+        <artifactId>testng</artifactId>
+        <version>5.7</version>
+        <classifier>jdk15</classifier>
+    </dependency>
+    [...]
+</dependencies>
+[...]
+<build>
+    <plugins>
+	    [...]
+	    <plugin>
+		    <groupId>${project.groupId}</groupId>
+		    <artifactId>${project.artifactId}</artifactId>
+		    <version>${project.version}</version>
+		    <configuration>
+			    <forkCount>2</forkCount>
+			    <reuseForks>false</reuseForks>
+			    <reportsDirectory>target/surefire-reports-${surefire.forkNumber}</reportsDirectory>
+			    <suiteXmlFiles>
+				    <suiteXmlFile>src/test/resources/Suite1.xml</suiteXmlFile>
+				    <suiteXmlFile>src/test/resources/Suite2.xml</suiteXmlFile>
+			    </suiteXmlFiles>
+		    </configuration>
+	    </plugin>
+        [...]
+    </plugins>
+</build>
++---+
 
 * Combining forkCount and parallel
 
@@ -303,6 +346,7 @@ Fork Options and Parallel Test Execution
   to configure forking. Although that parameter is still supported for backward
   compatibility, users are strongly encouraged to migrate their configuration
   and use <<<forkCount>>> and <<<reuseForks>>> instead.
+  
 
   The migration is quite simple, given the following mapping:
 

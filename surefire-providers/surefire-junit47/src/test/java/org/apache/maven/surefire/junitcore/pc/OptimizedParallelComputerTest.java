@@ -33,20 +33,28 @@ import org.junit.runner.RunWith;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.*;
-import static org.apache.maven.surefire.junitcore.pc.ParallelComputerUtil.*;
+import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.PARALLEL_KEY;
+import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.THREADCOUNT_KEY;
+import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.THREADCOUNTSUITES_KEY;
+import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.THREADCOUNTCLASSES_KEY;
+import static org.apache.maven.surefire.junitcore.pc.ParallelComputerUtil.resolveConcurrency;
+import static org.apache.maven.surefire.junitcore.pc.ParallelComputerUtil.overrideAvailableProcessors;
+import static org.apache.maven.surefire.junitcore.pc.ParallelComputerUtil.setDefaultAvailableProcessors;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
- * Testing an algorithm in {@link ParallelComputerUtil} which configures
- * optimized thread resources in ParallelComputer by given {@link org.apache.maven.surefire.junitcore.JUnitCoreParameters}.
+ * Testing an algorithm in {@link ParallelComputerUtil} which configures optimized thread resources in ParallelComputer
+ * by given {@link org.apache.maven.surefire.junitcore.JUnitCoreParameters}.
  *
  * @author Tibor Digana (tibor17)
  * @see ParallelComputerUtil
  * @since 2.17
  */
 @RunWith( Theories.class )
+@SuppressWarnings( "checkstyle:magicnumber" )
 public final class OptimizedParallelComputerTest
 {
     @DataPoint
@@ -71,13 +79,12 @@ public final class OptimizedParallelComputerTest
     }
 
     @Theory
-    public void threadCountSuites( int cpu )
-        throws TestSetFailedException
+    public void threadCountSuites( int cpu ) throws TestSetFailedException
     {
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
-        properties.put(PARALLEL_KEY, "suites");
-        properties.put(THREADCOUNT_KEY, "3");
+        Map<String, String> properties = new HashMap<>();
+        properties.put( PARALLEL_KEY, "suites" );
+        properties.put( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 5, 10, 20 );
         Concurrency concurrency = resolveConcurrency( params, counter );
@@ -91,13 +98,12 @@ public final class OptimizedParallelComputerTest
     }
 
     @Theory
-    public void threadCountClasses( int cpu )
-        throws TestSetFailedException
+    public void threadCountClasses( int cpu ) throws TestSetFailedException
     {
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
-        properties.put(PARALLEL_KEY, "classes");
-        properties.put(THREADCOUNT_KEY, "3");
+        Map<String, String> properties = new HashMap<>();
+        properties.put( PARALLEL_KEY, "classes" );
+        properties.put( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 1, 5, 10 );
         Concurrency concurrency = resolveConcurrency( params, counter );
@@ -111,13 +117,12 @@ public final class OptimizedParallelComputerTest
     }
 
     @Theory
-    public void threadCountMethods( int cpu )
-        throws TestSetFailedException
+    public void threadCountMethods( int cpu ) throws TestSetFailedException
     {
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
-        properties.put(PARALLEL_KEY, "methods");
-        properties.put(THREADCOUNT_KEY, "3");
+        Map<String, String> properties = new HashMap<>();
+        properties.put( PARALLEL_KEY, "methods" );
+        properties.put( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 1, 2, 5 );
         Concurrency concurrency = resolveConcurrency( params, counter );
@@ -131,13 +136,12 @@ public final class OptimizedParallelComputerTest
     }
 
     @Theory
-    public void threadCountBoth( int cpu )
-        throws TestSetFailedException
+    public void threadCountBoth( int cpu ) throws TestSetFailedException
     {
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
-        properties.put(PARALLEL_KEY, "both");
-        properties.put(THREADCOUNT_KEY, "3");
+        Map<String, String> properties = new HashMap<>();
+        properties.put( PARALLEL_KEY, "both" );
+        properties.put( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 1, 2, 5 );
         Concurrency concurrency = resolveConcurrency( params, counter );
@@ -151,13 +155,12 @@ public final class OptimizedParallelComputerTest
     }
 
     @Theory
-    public void threadCountClassesAndMethods( int cpu )
-        throws TestSetFailedException
+    public void threadCountClassesAndMethods( int cpu ) throws TestSetFailedException
     {
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
-        properties.put(PARALLEL_KEY, "classesAndMethods");
-        properties.put(THREADCOUNT_KEY, "3");
+        Map<String, String> properties = new HashMap<>();
+        properties.put( PARALLEL_KEY, "classesAndMethods" );
+        properties.put( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 1, 2, 5 );
         Concurrency concurrency = resolveConcurrency( params, counter );
@@ -171,13 +174,12 @@ public final class OptimizedParallelComputerTest
     }
 
     @Theory
-    public void threadCountSuitesAndMethods( int cpu )
-        throws TestSetFailedException
+    public void threadCountSuitesAndMethods( int cpu ) throws TestSetFailedException
     {
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
-        properties.put(PARALLEL_KEY, "suitesAndMethods");
-        properties.put(THREADCOUNT_KEY, "3");
+        Map<String, String> properties = new HashMap<>();
+        properties.put( PARALLEL_KEY, "suitesAndMethods" );
+        properties.put( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 2, 3, 5 );
         Concurrency concurrency = resolveConcurrency( params, counter );
@@ -191,13 +193,12 @@ public final class OptimizedParallelComputerTest
     }
 
     @Theory
-    public void threadCountSuitesAndClasses( int cpu )
-        throws TestSetFailedException
+    public void threadCountSuitesAndClasses( int cpu ) throws TestSetFailedException
     {
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
-        properties.put(PARALLEL_KEY, "suitesAndClasses");
-        properties.put(THREADCOUNT_KEY, "3");
+        Map<String, String> properties = new HashMap<>();
+        properties.put( PARALLEL_KEY, "suitesAndClasses" );
+        properties.put( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 2, 5, 20 );
         Concurrency concurrency = resolveConcurrency( params, counter );
@@ -211,13 +212,12 @@ public final class OptimizedParallelComputerTest
     }
 
     @Theory
-    public void threadCountAll( int cpu )
-        throws TestSetFailedException
+    public void threadCountAll( int cpu ) throws TestSetFailedException
     {
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
-        properties.put(PARALLEL_KEY, "all");
-        properties.put(THREADCOUNT_KEY, "3");
+        Map<String, String> properties = new HashMap<>();
+        properties.put( PARALLEL_KEY, "all" );
+        properties.put( THREADCOUNT_KEY, "3" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 2, 5, 20 );
         Concurrency concurrency = resolveConcurrency( params, counter );
@@ -231,15 +231,14 @@ public final class OptimizedParallelComputerTest
     }
 
     @Theory
-    public void reusableThreadCountSuitesAndClasses( int cpu )
-        throws TestSetFailedException
+    public void reusableThreadCountSuitesAndClasses( int cpu ) throws TestSetFailedException
     {
         // 4 * cpu to 5 * cpu threads to run test classes
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
-        properties.put(PARALLEL_KEY, "suitesAndClasses");
-        properties.put(THREADCOUNT_KEY, "6");
-        properties.put(THREADCOUNTSUITES_KEY, "2");
+        Map<String, String> properties = new HashMap<>();
+        properties.put( PARALLEL_KEY, "suitesAndClasses" );
+        properties.put( THREADCOUNT_KEY, "6" );
+        properties.put( THREADCOUNTSUITES_KEY, "2" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 3, 5, 20 );
         Concurrency concurrency = resolveConcurrency( params, counter );
@@ -253,15 +252,14 @@ public final class OptimizedParallelComputerTest
     }
 
     @Theory
-    public void reusableThreadCountSuitesAndMethods( int cpu )
-        throws TestSetFailedException
+    public void reusableThreadCountSuitesAndMethods( int cpu ) throws TestSetFailedException
     {
         // 4 * cpu to 5 * cpu threads to run test methods
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
-        properties.put(PARALLEL_KEY, "suitesAndMethods");
-        properties.put(THREADCOUNT_KEY, "6");
-        properties.put(THREADCOUNTSUITES_KEY, "2");
+        Map<String, String> properties = new HashMap<>();
+        properties.put( PARALLEL_KEY, "suitesAndMethods" );
+        properties.put( THREADCOUNT_KEY, "6" );
+        properties.put( THREADCOUNTSUITES_KEY, "2" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 3, 5, 20 );
         Concurrency concurrency = resolveConcurrency( params, counter );
@@ -275,15 +273,14 @@ public final class OptimizedParallelComputerTest
     }
 
     @Theory
-    public void reusableThreadCountClassesAndMethods( int cpu )
-        throws TestSetFailedException
+    public void reusableThreadCountClassesAndMethods( int cpu ) throws TestSetFailedException
     {
         // 4 * cpu to 5 * cpu threads to run test methods
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
-        properties.put(PARALLEL_KEY, "classesAndMethods");
-        properties.put(THREADCOUNT_KEY, "6");
-        properties.put(THREADCOUNTCLASSES_KEY, "2");
+        Map<String, String> properties = new HashMap<>();
+        properties.put( PARALLEL_KEY, "classesAndMethods" );
+        properties.put( THREADCOUNT_KEY, "6" );
+        properties.put( THREADCOUNTCLASSES_KEY, "2" );
         JUnitCoreParameters params = new JUnitCoreParameters( properties );
         RunnerCounter counter = new RunnerCounter( 3, 5, 20 );
         Concurrency concurrency = resolveConcurrency( params, counter );
@@ -297,12 +294,11 @@ public final class OptimizedParallelComputerTest
     }
 
     @Theory
-    public void reusableThreadCountAll( int cpu )
-        throws TestSetFailedException
+    public void reusableThreadCountAll( int cpu ) throws TestSetFailedException
     {
         // 8 * cpu to 13 * cpu threads to run test methods
         overrideAvailableProcessors( cpu );
-        Map<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new HashMap<>();
         properties.put( PARALLEL_KEY, "all" );
         properties.put( THREADCOUNT_KEY, "14" );
         properties.put( THREADCOUNTSUITES_KEY, "2" );

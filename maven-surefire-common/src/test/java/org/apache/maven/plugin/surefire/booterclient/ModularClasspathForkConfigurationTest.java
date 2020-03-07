@@ -27,27 +27,25 @@ import org.apache.maven.surefire.booter.ForkedBooter;
 import org.apache.maven.surefire.booter.ModularClasspath;
 import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
-import org.junit.Before;
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
-import static org.apache.commons.lang3.JavaVersion.JAVA_RECENT;
+import static java.io.File.createTempFile;
+import static java.io.File.pathSeparatorChar;
 import static java.io.File.separator;
-import static java.io.File.pathSeparator;
+import static java.io.File.separatorChar;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.readAllLines;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
+import static org.apache.maven.surefire.shared.utils.StringUtils.replace;
+import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 import static org.fest.assertions.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -55,12 +53,6 @@ import static org.junit.Assume.assumeTrue;
  */
 public class ModularClasspathForkConfigurationTest
 {
-    @Before
-    public void withJava7orHigher()
-    {
-        assumeTrue( JAVA_RECENT.atLeast( JAVA_1_7 ) );
-    }
-
     @Test
     @SuppressWarnings( "ResultOfMethodCallIgnored" )
     public void shouldCreateModularArgsFile() throws Exception
@@ -72,57 +64,88 @@ public class ModularClasspathForkConfigurationTest
         File pwd = new File( "." ).getCanonicalFile();
 
         ModularClasspathForkConfiguration config = new ModularClasspathForkConfiguration( booter, tmp, "", pwd,
-                new Properties(), "", new HashMap<String, String>(), true, 1, true, new Platform(),
-                new NullConsoleLogger() )
-        {
-            @Nonnull
-            @Override
-            String toModuleName( @Nonnull File moduleDescriptor ) throws IOException
-            {
-                return "abc";
-            }
-        };
+                new Properties(), "",
+                Collections.<String, String>emptyMap(), new String[0], true, 1, true,
+                new Platform(), new NullConsoleLogger() );
 
-        File patchFile = new File( "target" + separator + "test-classes" );
+        File patchFile = new File( "target" + separatorChar + "test-classes" );
         File descriptor = new File( tmp, "module-info.class" );
         descriptor.createNewFile();
-        List<String> modulePath = asList( "modular.jar", "target/classes" );
+        List<String> modulePath =
+                asList( "modular.jar", "target" + separatorChar + "classes" );
         List<String> classPath = asList( "booter.jar", "non-modular.jar", patchFile.getPath() );
         Collection<String> packages = singleton( "org.apache.abc" );
         String startClassName = ForkedBooter.class.getName();
 
         File jigsawArgsFile =
-                config.createArgsFile( descriptor, modulePath, classPath, packages, patchFile, startClassName );
+                config.createArgsFile( "abc", modulePath, classPath, packages, patchFile, startClassName );
 
-        assertThat( jigsawArgsFile ).isNotNull();
+        assertThat( jigsawArgsFile )
+                .isNotNull();
+
         List<String> argsFileLines = readAllLines( jigsawArgsFile.toPath(), UTF_8 );
-        assertThat( argsFileLines ).hasSize( 13 );
-        assertThat( argsFileLines.get( 0 ) ).isEqualTo( "--module-path" );
-        assertThat( argsFileLines.get( 1 ) ).isEqualTo( "modular.jar" + pathSeparator + "target/classes" );
-        assertThat( argsFileLines.get( 2 ) ).isEqualTo( "--class-path" );
-        assertThat( argsFileLines.get( 3 ) )
-                .isEqualTo( "booter.jar" + pathSeparator + "non-modular.jar" + pathSeparator + patchFile.getPath() );
-        assertThat( argsFileLines.get( 4 ) ).isEqualTo( "--patch-module" );
-        assertThat( argsFileLines.get( 5 ) ).isEqualTo( "abc=" + patchFile.getPath() );
-        assertThat( argsFileLines.get( 6 ) ).isEqualTo( "--add-exports" );
-        assertThat( argsFileLines.get( 7 ) ).isEqualTo( "abc/org.apache.abc=ALL-UNNAMED" );
-        assertThat( argsFileLines.get( 8 ) ).isEqualTo( "--add-modules" );
-        assertThat( argsFileLines.get( 9 ) ).isEqualTo( "abc" );
-        assertThat( argsFileLines.get( 10 ) ).isEqualTo( "--add-reads" );
-        assertThat( argsFileLines.get( 11 ) ).isEqualTo( "abc=ALL-UNNAMED" );
-        assertThat( argsFileLines.get( 12 ) ).isEqualTo( ForkedBooter.class.getName() );
 
-        ModularClasspath modularClasspath = new ModularClasspath( descriptor, modulePath, packages, patchFile );
+        assertThat( argsFileLines )
+                .hasSize( 13 );
+
+        assertThat( argsFileLines.get( 0 ) )
+                .isEqualTo( "--module-path" );
+
+        assertThat( argsFileLines.get( 1 ) )
+                .isEqualTo( "\"modular.jar"
+                        + pathSeparatorChar
+                        + "target" + ( separatorChar == '\\' ? "\\\\" : "/" ) + "classes\"" );
+
+        assertThat( argsFileLines.get( 2 ) )
+                .isEqualTo( "--class-path" );
+
+        assertThat( argsFileLines.get( 3 ) )
+                .isEqualTo( "\"booter.jar"
+                        + pathSeparatorChar
+                        + "non-modular.jar"
+                        + pathSeparatorChar
+                        + replace( patchFile.getPath(), "\\", "\\\\" )
+                        + "\"" );
+
+        assertThat( argsFileLines.get( 4 ) )
+                .isEqualTo( "--patch-module" );
+
+        assertThat( argsFileLines.get( 5 ) )
+                .isEqualTo( "abc=\"" + replace( patchFile.getPath(), "\\", "\\\\" ) + "\"" );
+
+        assertThat( argsFileLines.get( 6 ) )
+                .isEqualTo( "--add-exports" );
+
+        assertThat( argsFileLines.get( 7 ) )
+                .isEqualTo( "abc/org.apache.abc=ALL-UNNAMED" );
+
+        assertThat( argsFileLines.get( 8 ) )
+                .isEqualTo( "--add-modules" );
+
+        assertThat( argsFileLines.get( 9 ) )
+                .isEqualTo( "abc" );
+
+        assertThat( argsFileLines.get( 10 ) )
+                .isEqualTo( "--add-reads" );
+
+        assertThat( argsFileLines.get( 11 ) )
+                .isEqualTo( "abc=ALL-UNNAMED" );
+
+        assertThat( argsFileLines.get( 12 ) )
+                .isEqualTo( ForkedBooter.class.getName() );
+
+        ModularClasspath modularClasspath = new ModularClasspath( "abc", modulePath, packages, patchFile );
         Classpath testClasspathUrls = new Classpath( singleton( "target" + separator + "test-classes" ) );
         Classpath surefireClasspathUrls = Classpath.emptyClasspath();
         ModularClasspathConfiguration modularClasspathConfiguration =
                 new ModularClasspathConfiguration( modularClasspath, testClasspathUrls, surefireClasspathUrls,
-                        true, true );
+                        emptyClasspath(), true, true );
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
         StartupConfiguration startupConfiguration =
-                new StartupConfiguration( "JUnitCoreProvider", modularClasspathConfiguration, clc, true, true );
+                new StartupConfiguration( "JUnitCoreProvider", modularClasspathConfiguration, clc, true, true, null );
         OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
-        config.resolveClasspath( cli, ForkedBooter.class.getName(), startupConfiguration );
+        config.resolveClasspath( cli, ForkedBooter.class.getName(), startupConfiguration,
+                createTempFile( "surefire", "surefire-reports" ) );
 
         assertThat( cli.getArguments() ).isNotNull();
         assertThat( cli.getArguments() ).hasSize( 1 );

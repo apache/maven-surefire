@@ -38,7 +38,6 @@ public final class JUnitTestSet
     private final JUnit3Reflector reflector;
 
     public JUnitTestSet( Class testClass, JUnit3Reflector reflector )
-        throws TestSetFailedException
     {
         if ( testClass == null )
         {
@@ -99,18 +98,6 @@ public final class JUnitTestSet
 
             runMethod.invoke( testObject, runParams );
         }
-        catch ( IllegalArgumentException e )
-        {
-            throw new TestSetFailedException( testClass.getName(), e );
-        }
-        catch ( InstantiationException e )
-        {
-            throw new TestSetFailedException( testClass.getName(), e );
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new TestSetFailedException( testClass.getName(), e );
-        }
         catch ( InvocationTargetException e )
         {
             throw new TestSetFailedException( testClass.getName(), e.getTargetException() );
@@ -118,6 +105,10 @@ public final class JUnitTestSet
         catch ( NoSuchMethodException e )
         {
             throw new TestSetFailedException( "Class is not a JUnit TestCase", e );
+        }
+        catch ( ReflectiveOperationException e )
+        {
+            throw new TestSetFailedException( testClass.getName(), e );
         }
     }
 
@@ -127,7 +118,7 @@ public final class JUnitTestSet
         return testClass.getName();
     }
 
-    Class getTestClass()
+    private Class getTestClass()
     {
         return testClass;
     }

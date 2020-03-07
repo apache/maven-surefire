@@ -24,10 +24,13 @@ import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter;
+import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
+import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.util.DefaultScanResult;
+import org.apache.maven.toolchain.Toolchain;
 import org.junit.Test;
 
 import java.io.File;
@@ -39,9 +42,126 @@ import java.util.zip.ZipOutputStream;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.fest.assertions.Assertions.assertThat;
+import static org.junit.Assert.fail;
+import static org.powermock.reflect.Whitebox.invokeMethod;
+import static org.powermock.reflect.Whitebox.setInternalState;
 
+/**
+ *
+ */
 public class MojoMocklessTest
 {
+    @Test
+    public void testGetStartupReportConfiguration() throws Exception
+    {
+        AbstractSurefireMojo surefirePlugin = new Mojo( null, null );
+        StartupReportConfiguration config = invokeMethod( surefirePlugin, "getStartupReportConfiguration", "", false );
+
+        assertThat( config.getXmlReporter() )
+                .isNotNull()
+                .isInstanceOf( SurefireStatelessReporter.class );
+
+        assertThat( config.getConsoleOutputReporter() )
+                .isNotNull()
+                .isInstanceOf( SurefireConsoleOutputReporter.class );
+
+        assertThat( config.getTestsetReporter() )
+                .isNotNull()
+                .isInstanceOf( SurefireStatelessTestsetInfoReporter.class );
+    }
+
+    @Test
+    public void testGetStartupReportConfiguration2() throws Exception
+    {
+        AbstractSurefireMojo surefirePlugin = new Mojo( null, null );
+        SurefireStatelessReporter xmlReporter = new SurefireStatelessReporter( false, "3.0" );
+        SurefireConsoleOutputReporter consoleReporter = new SurefireConsoleOutputReporter();
+        SurefireStatelessTestsetInfoReporter testsetInfoReporter = new SurefireStatelessTestsetInfoReporter();
+        setInternalState( surefirePlugin, "statelessTestsetReporter", xmlReporter );
+        setInternalState( surefirePlugin, "consoleOutputReporter", consoleReporter );
+        setInternalState( surefirePlugin, "statelessTestsetInfoReporter", testsetInfoReporter );
+
+        StartupReportConfiguration config = invokeMethod( surefirePlugin, "getStartupReportConfiguration", "", false );
+
+        assertThat( config.getXmlReporter() )
+                .isNotNull()
+                .isSameAs( xmlReporter );
+
+        assertThat( config.getConsoleOutputReporter() )
+                .isNotNull()
+                .isSameAs( consoleReporter );
+
+        assertThat( config.getTestsetReporter() )
+                .isNotNull()
+                .isSameAs( testsetInfoReporter );
+    }
+
+    @Test
+    public void testForkMode()
+    {
+        AbstractSurefireMojo surefirePlugin = new Mojo( null, null );
+        setInternalState( surefirePlugin, "toolchain", new MyToolChain() );
+        setInternalState( surefirePlugin, "forkMode", "never" );
+        assertThat( surefirePlugin.getEffectiveForkMode() )
+                .isEqualTo( "once" );
+    }
+
+    @Test
+    @SuppressWarnings( "checkstyle:magicnumber" )
+    public void testForkCountComputation()
+    {
+        AbstractSurefireMojo surefirePlugin = new Mojo( null, null );
+        assertConversionFails( surefirePlugin, "nothing" );
+
+        assertConversionFails( surefirePlugin, "5,0" );
+        assertConversionFails( surefirePlugin, "5.0" );
+        assertConversionFails( surefirePlugin, "5,0C" );
+        assertConversionFails( surefirePlugin, "5.0CC" );
+
+        assertForkCount( surefirePlugin, 5, "5" );
+
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+        assertForkCount( surefirePlugin, 3 * availableProcessors, "3C" );
+        assertForkCount( surefirePlugin, (int) ( 2.5 * availableProcessors ), "2.5C" );
+        assertForkCount( surefirePlugin, availableProcessors, "1.0001 C" );
+        assertForkCount( surefirePlugin, 1, 1d / ( (double) availableProcessors + 1 ) + "C" );
+        assertForkCount( surefirePlugin, 0, "0 C" );
+    }
+
+    private static void assertForkCount( AbstractSurefireMojo surefirePlugin, int expected, String value )
+    {
+        assertThat( surefirePlugin.convertWithCoreCount( value ) )
+                .isEqualTo( expected );
+    }
+
+    private static void assertConversionFails( AbstractSurefireMojo surefirePlugin, String value )
+    {
+        try
+        {
+            surefirePlugin.convertWithCoreCount( value );
+        }
+        catch ( NumberFormatException e )
+        {
+            return;
+        }
+        fail( "Expected NumberFormatException when converting " + value );
+    }
+
+    private static class MyToolChain implements Toolchain
+    {
+        @Override
+        public String getType()
+        {
+            return null;
+        }
+
+        @Override
+        public String findTool( String s )
+        {
+            return null;
+        }
+    }
+
     @Test
     public void scanDependenciesShouldReturnNull()
             throws MojoFailureException
@@ -110,13 +230,14 @@ public class MojoMocklessTest
 
         File artifactFile = File.createTempFile( "surefire", ".jar" );
         testDeps.setFile( artifactFile );
-        ZipOutputStream os = new ZipOutputStream( new FileOutputStream( artifactFile ) );
-        os.putNextEntry( new ZipEntry( "pkg/" ) );
-        os.closeEntry();
-        os.putNextEntry( new ZipEntry( "pkg/MyTest.class" ) );
-        os.closeEntry();
-        os.finish();
-        os.close();
+        try ( ZipOutputStream os = new ZipOutputStream( new FileOutputStream( artifactFile ) ) )
+        {
+            os.putNextEntry( new ZipEntry( "pkg/" ) );
+            os.closeEntry();
+            os.putNextEntry( new ZipEntry( "pkg/MyTest.class" ) );
+            os.closeEntry();
+            os.finish();
+        }
 
         List<Artifact> projectTestArtifacts = singletonList( testDeps );
         String[] dependenciesToScan = { "g:a" };
@@ -143,11 +264,12 @@ public class MojoMocklessTest
 
         File artifactFile = File.createTempFile( "surefire", ".jar" );
         testDeps.setFile( artifactFile );
-        ZipOutputStream os = new ZipOutputStream( new FileOutputStream( artifactFile ) );
-        os.putNextEntry( new ZipEntry( "pkg/" ) );
-        os.closeEntry();
-        os.finish();
-        os.close();
+        try ( ZipOutputStream os = new ZipOutputStream( new FileOutputStream( artifactFile ) ) )
+        {
+            os.putNextEntry( new ZipEntry( "pkg/" ) );
+            os.closeEntry();
+            os.finish();
+        }
 
         List<Artifact> projectTestArtifacts = singletonList( testDeps );
         String[] dependenciesToScan = { "g:a" };
@@ -217,13 +339,14 @@ public class MojoMocklessTest
         Artifact testDep2 = new DefaultArtifact( "g", "a", version, "test", "jar", null, handler );
         File artifactFile2 = File.createTempFile( "surefire", ".jar" );
         testDep2.setFile( artifactFile2 );
-        ZipOutputStream os = new ZipOutputStream( new FileOutputStream( artifactFile2 ) );
-        os.putNextEntry( new ZipEntry( "pkg/" ) );
-        os.closeEntry();
-        os.putNextEntry( new ZipEntry( "pkg/MyTest.class" ) );
-        os.closeEntry();
-        os.finish();
-        os.close();
+        try ( ZipOutputStream os = new ZipOutputStream( new FileOutputStream( artifactFile2 ) ) )
+        {
+            os.putNextEntry( new ZipEntry( "pkg/" ) );
+            os.closeEntry();
+            os.putNextEntry( new ZipEntry( "pkg/MyTest.class" ) );
+            os.closeEntry();
+            os.finish();
+        }
 
         List<Artifact> projectTestArtifacts = asList( testDep1, testDep2 );
         String[] dependenciesToScan = { "g:a" };
@@ -243,7 +366,7 @@ public class MojoMocklessTest
                 .contains( "pkg.MyTest" );
     }
 
-    private final static class Mojo
+    private static final class Mojo
             extends AbstractSurefireMojo
     {
         private final List<Artifact> projectTestArtifacts;
@@ -556,6 +679,12 @@ public class MojoMocklessTest
         }
 
         @Override
+        protected String[] getExcludedEnvironmentVariables()
+        {
+            return new String[0];
+        }
+
+        @Override
         public File[] getSuiteXmlFiles()
         {
             return new File[0];
@@ -587,7 +716,6 @@ public class MojoMocklessTest
 
         @Override
         protected void handleSummary( RunResult summary, Exception firstForkException )
-                throws MojoExecutionException, MojoFailureException
         {
 
         }
@@ -611,6 +739,24 @@ public class MojoMocklessTest
         }
 
         @Override
+        protected boolean useModulePath()
+        {
+            return false;
+        }
+
+        @Override
+        protected void setUseModulePath( boolean useModulePath )
+        {
+
+        }
+
+        @Override
+        protected String getEnableProcessChecker()
+        {
+            return null;
+        }
+
+        @Override
         protected Artifact getMojoArtifact()
         {
             return null;
@@ -620,6 +766,18 @@ public class MojoMocklessTest
         List<Artifact> getProjectTestArtifacts()
         {
             return projectTestArtifacts;
+        }
+
+        @Override
+        public File getSystemPropertiesFile()
+        {
+            return null;
+        }
+
+        @Override
+        public void setSystemPropertiesFile( File systemPropertiesFile )
+        {
+
         }
     }
 }

@@ -25,6 +25,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojoJava7PlusTest;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojoTest;
+import org.apache.maven.plugin.surefire.CommonReflectorTest;
 import org.apache.maven.plugin.surefire.MojoMocklessTest;
 import org.apache.maven.plugin.surefire.SurefireHelperTest;
 import org.apache.maven.plugin.surefire.SurefireReflectorTest;
@@ -33,26 +34,30 @@ import org.apache.maven.plugin.surefire.booterclient.BooterDeserializerProviderC
 import org.apache.maven.plugin.surefire.booterclient.BooterDeserializerStartupConfigurationTest;
 import org.apache.maven.plugin.surefire.booterclient.DefaultForkConfigurationTest;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfigurationTest;
+import org.apache.maven.plugin.surefire.booterclient.ForkStarterTest;
 import org.apache.maven.plugin.surefire.booterclient.ForkingRunListenerTest;
+import org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfigurationTest;
 import org.apache.maven.plugin.surefire.booterclient.ModularClasspathForkConfigurationTest;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStreamBuilderTest;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStreamTest;
+import org.apache.maven.plugin.surefire.booterclient.output.ForkClientTest;
+import org.apache.maven.plugin.surefire.booterclient.output.ForkedChannelDecoderTest;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactoryTest;
 import org.apache.maven.plugin.surefire.report.StatelessXmlReporterTest;
+import org.apache.maven.plugin.surefire.report.TestSetStatsTest;
 import org.apache.maven.plugin.surefire.report.WrappedReportEntryTest;
 import org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMapTest;
 import org.apache.maven.plugin.surefire.util.DependenciesScannerTest;
 import org.apache.maven.plugin.surefire.util.DirectoryScannerTest;
 import org.apache.maven.plugin.surefire.util.ScannerUtilTest;
 import org.apache.maven.plugin.surefire.util.SpecificFileFilterTest;
-import org.apache.maven.surefire.report.ConsoleOutputFileReporterTest;
+import org.apache.maven.surefire.extensions.ConsoleOutputReporterTest;
+import org.apache.maven.surefire.extensions.StatelessReporterTest;
+import org.apache.maven.surefire.extensions.StatelessTestsetInfoReporterTest;
 import org.apache.maven.surefire.report.FileReporterTest;
 import org.apache.maven.surefire.report.RunStatisticsTest;
 import org.apache.maven.surefire.spi.SPITest;
 import org.apache.maven.surefire.util.RelocatorTest;
-
-import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
-import static org.apache.commons.lang3.JavaVersion.JAVA_RECENT;
 
 /**
  * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
@@ -68,11 +73,11 @@ public class JUnit4SuiteTest extends TestCase
         suite.addTestSuite( RelocatorTest.class );
         suite.addTestSuite( RunStatisticsTest.class );
         suite.addTestSuite( FileReporterTest.class );
-        suite.addTestSuite( ConsoleOutputFileReporterTest.class );
+        suite.addTestSuite( org.apache.maven.surefire.report.ConsoleOutputFileReporterTest.class );
         suite.addTestSuite( SurefirePropertiesTest.class );
         suite.addTestSuite( SpecificFileFilterTest.class );
         suite.addTest( new JUnit4TestAdapter( DirectoryScannerTest.class ) );
-        suite.addTestSuite( DependenciesScannerTest.class );
+        suite.addTest( new JUnit4TestAdapter( DependenciesScannerTest.class ) );
         suite.addTestSuite( RunEntryStatisticsMapTest.class );
         suite.addTestSuite( WrappedReportEntryTest.class );
         suite.addTestSuite( StatelessXmlReporterTest.class );
@@ -88,13 +93,19 @@ public class JUnit4SuiteTest extends TestCase
         suite.addTest( new JUnit4TestAdapter( SurefireHelperTest.class ) );
         suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoTest.class ) );
         suite.addTest( new JUnit4TestAdapter( DefaultForkConfigurationTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( JarManifestForkConfigurationTest.class ) );
         suite.addTest( new JUnit4TestAdapter( ModularClasspathForkConfigurationTest.class ) );
-        if ( JAVA_RECENT.atLeast( JAVA_1_7 ) )
-        {
-            suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoJava7PlusTest.class ) );
-        }
+        suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoJava7PlusTest.class ) );
         suite.addTest( new JUnit4TestAdapter( ScannerUtilTest.class ) );
         suite.addTest( new JUnit4TestAdapter( MojoMocklessTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( ForkClientTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( ForkedChannelDecoderTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( ConsoleOutputReporterTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( StatelessReporterTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( TestSetStatsTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( StatelessTestsetInfoReporterTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( CommonReflectorTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( ForkStarterTest.class ) );
         return suite;
     }
 }

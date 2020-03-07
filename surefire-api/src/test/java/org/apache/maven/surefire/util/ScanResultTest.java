@@ -37,7 +37,7 @@ public class ScanResultTest
     {
         List<String> files = Arrays.asList( "abc", "cde" );
         DefaultScanResult scanResult = new DefaultScanResult( files );
-        Map<String, String> serialized = new HashMap<String, String>();
+        Map<String, String> serialized = new HashMap<>();
         scanResult.writeTo( serialized );
 
         DefaultScanResult read = DefaultScanResult.from( serialized );

@@ -35,7 +35,7 @@ final class InvokerStrategy
     extends SchedulingStrategy
 {
 
-    private final Queue<Thread> activeThreads = new ConcurrentLinkedQueue<Thread>();
+    private final Queue<Thread> activeThreads = new ConcurrentLinkedQueue<>();
 
     protected InvokerStrategy( ConsoleStream logger )
     {

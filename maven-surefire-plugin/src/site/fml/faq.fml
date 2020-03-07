@@ -44,9 +44,8 @@ under the License.
       <answer>
         <p>
           Visit this link for your reference,
-          <a href="http://maven.apache.org/guides/mini/guide-attached-tests.html">
-         |   Attaching tests
-          </a>
+          <a href="http://maven.apache.org/guides/mini/guide-attached-tests.html"> Attaching tests</a>.
+          Also see the examples for <a href="examples/inclusion-exclusion.html">Inclusions and Exclusions of Tests</a>.
         </p>
       </answer>
     </faq>
@@ -80,8 +79,8 @@ under the License.
     <faq id="GWT">
       <question>How can I run GWT tests?</question>
       <answer>
-        There is a specific gwt-maven-plugin at codehaus, but if you want to run
-        with Surefire, you need the following settings:
+        Mojohaus publishes a [gwt-maven-plugin](https://gwt-maven-plugin.github.io/gwt-maven-plugin/),
+        but if you want to run with Surefire, you need the following settings:
         <p>
         Use the following configuration:<br/>
         <code>
@@ -130,6 +129,7 @@ under the License.
         <![CDATA[ [date]-jvmRun[N].dump]]><br/>
         <![CDATA[ [date]-jvmRun[N].dumpstream]]><br/>
         <![CDATA[ [date].dumpstream]]><br/>
+        <![CDATA[ [date].dump]]><br/>
         </code>
 
         Forked JVM process and plugin process communicate via std/out. If this channel is corrupted, for a whatever
@@ -153,6 +153,20 @@ under the License.
         in Reports directory.
         <br/>
         If debug level is enabled then messages of corrupted stream appear in the console.
+        </p>
+      </answer>
+    </faq>
+    <faq id="kill-jvm">
+      <question>The files cannot be deleted when Jenkins CI killed Maven process and the tests still continue running.</question>
+      <answer>
+        <p>
+          Surefire and Failsafe plugin may kill forked Surefire JVM when the standard-input stream is closed.
+          This works when you stop Maven process by CTRL+C but it is not guaranteed on all platforms and this mechanism
+          will be removed after the version 3.0.0-M5 (setup of TCP sockets for interprocess communication).
+          The Surefire and Failsafe 3.0.0-M4 disabled mechanism PINGing parent process and natively killing mechanism.
+          In order to enable these mechanisms, see the documentation of the configuration parameter
+          "enableProcessChecker" and enable these mechanisms. These mechanisms have some drawbacks regarding your
+          OS systems and GC, therefore see the documentation for the parameter "enableProcessChecker".
         </p>
       </answer>
     </faq>

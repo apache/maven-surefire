@@ -64,7 +64,7 @@ public class SelfDestructMojo
      * 
      * @parameter
      */
-    private long timeoutInMillis = 0;
+    private long timeoutInMillis;
 
     /**
      * Method of self-destruction: 'exit' will use System.exit (default), 'halt' will use Runtime.halt, 'interrupt' will
@@ -77,7 +77,6 @@ public class SelfDestructMojo
     public void execute()
         throws MojoExecutionException
     {
-
         DestructMethod destructMethod = DestructMethod.valueOf( method );
 
         if ( timeoutInMillis > 0 )
@@ -94,7 +93,7 @@ public class SelfDestructMojo
 
     private void selfDestruct( DestructMethod destructMethod )
     {
-        getLog().warn( "Self-Destructing NOW." );
+        getLog().warn( "[" + destructMethod + "] Self-Destructing NOW." );
         switch ( destructMethod )
         {
             case exit:
@@ -109,7 +108,7 @@ public class SelfDestructMojo
                     String pid = name.substring( 0, indexOfAt );
                     getLog().warn( "Going to kill process with PID " + pid );
 
-                    List<String> args = new ArrayList<String>();
+                    List<String> args = new ArrayList<>();
                     if ( System.getProperty( "os.name" ).startsWith( "Windows" ) )
                     {
                         args.add( "taskkill" );
@@ -143,10 +142,9 @@ public class SelfDestructMojo
     private class SelfDestructionTask
         extends TimerTask
     {
+        private final DestructMethod destructMethod;
 
-        private DestructMethod destructMethod;
-
-        public SelfDestructionTask( DestructMethod destructMethod )
+        SelfDestructionTask( DestructMethod destructMethod )
         {
             this.destructMethod = destructMethod;
         }
@@ -156,6 +154,5 @@ public class SelfDestructMojo
         {
             selfDestruct( destructMethod );
         }
-
     }
 }

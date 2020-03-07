@@ -37,8 +37,11 @@ public class Surefire740TruncatedCommaIT
     @Test
     public void testRussianLocaleReport()
     {
-        OutputValidator validator = unpack( "/surefire-740-comma-truncated" ).setMavenOpts(
-                                                                                         "-Duser.language=ru -Duser.country=RU" ).failNever().addSurefireReportGoal().executeCurrentGoals();
+        OutputValidator validator = unpack( "/surefire-740-comma-truncated" )
+                .setMavenOpts( "-Duser.language=ru -Duser.country=RU" )
+                .failNever()
+                .addSurefireReportGoal()
+                .executeCurrentGoals();
 
         TestFile siteFile = validator.getSiteFile( "surefire-report.html" );
         assertTrue( "Expecting file", siteFile.exists() );

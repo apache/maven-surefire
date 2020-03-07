@@ -19,8 +19,8 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import static org.apache.maven.surefire.util.internal.ObjectUtils.requireNonNull;
-import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
+import static java.util.Objects.requireNonNull;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.RUN_CLASS;
 import static org.apache.maven.surefire.booter.MasterProcessCommand.SHUTDOWN;
 import static org.apache.maven.surefire.booter.Shutdown.DEFAULT;

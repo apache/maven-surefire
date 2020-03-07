@@ -2,7 +2,7 @@ package pkg;
 
 import org.testng.annotations.Test;
 
-import java.util.concurrent.TimeUnit;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class DTest
 {
@@ -10,8 +10,7 @@ public class DTest
     public void test()
         throws InterruptedException
     {
-        // checking processros # due to very slow Windows Jenkins machines
-        TimeUnit.MILLISECONDS.sleep( Runtime.getRuntime().availableProcessors() == 1 ? 9000 : 3750 );
+        MILLISECONDS.sleep( 9000L );
     }
 
 }

@@ -50,13 +50,17 @@ public class CheckTestNgVersionsIT
         runTestNgTest( "4.7", "jdk15" );
     }
 
-    @Test @Ignore( "5.0 and 5.0.1 jars on central are malformed SUREFIRE-375 + MAVENUPLOAD-1024" ) public void XXXtest50()
+    @Test
+    @Ignore( "5.0 and 5.0.1 jars on central are malformed SUREFIRE-375 + MAVENUPLOAD-1024" )
+    public void xXXtest50()
         throws Exception
     {
         runTestNgTest( "5.0", "jdk15" );
     }
 
-    @Test @Ignore( "5.0 and 5.0.1 jars on central are malformed SUREFIRE-375 + MAVENUPLOAD-1024" ) public void XXXtest501()
+    @Test
+    @Ignore( "5.0 and 5.0.1 jars on central are malformed SUREFIRE-375 + MAVENUPLOAD-1024" )
+    public void xXXtest501()
         throws Exception
     {
         runTestNgTest( "5.0.1", "jdk15" );
@@ -210,9 +214,14 @@ public class CheckTestNgVersionsIT
 
             assertEquals( 3, report.size() );
 
-            assertTrue( "TestNGSuiteTestC was executed first", getTestClass( report, 0 ).endsWith( "TestNGSuiteTestC" ) );
-            assertTrue( "TestNGSuiteTestB was executed second", getTestClass( report, 1 ).endsWith( "TestNGSuiteTestB" ) );
-            assertTrue( "TestNGSuiteTestA was executed last", getTestClass( report, 2 ).endsWith( "TestNGSuiteTestA" ) );
+            assertTrue( "TestNGSuiteTestC was executed first",
+                    getTestClass( report, 0 ).endsWith( "TestNGSuiteTestC" ) );
+
+            assertTrue( "TestNGSuiteTestB was executed second",
+                    getTestClass( report, 1 ).endsWith( "TestNGSuiteTestB" ) );
+
+            assertTrue( "TestNGSuiteTestA was executed last",
+                    getTestClass( report, 2 ).endsWith( "TestNGSuiteTestA" ) );
         }
     }
 

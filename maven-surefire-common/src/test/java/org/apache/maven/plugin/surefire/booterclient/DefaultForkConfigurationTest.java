@@ -31,6 +31,7 @@ import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -47,7 +48,12 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.*;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.powermock.api.mockito.PowerMockito.spy;
+import static org.powermock.api.mockito.PowerMockito.verifyPrivate;
+import static org.powermock.api.mockito.PowerMockito.verifyStatic;
+import static org.powermock.api.mockito.PowerMockito.when;
 import static org.powermock.reflect.Whitebox.invokeMethod;
 
 /**
@@ -58,6 +64,7 @@ import static org.powermock.reflect.Whitebox.invokeMethod;
  */
 @RunWith( PowerMockRunner.class )
 @PrepareForTest( { DefaultForkConfiguration.class, Relocator.class } )
+@PowerMockIgnore( { "org.jacoco.agent.rt.*", "com.vladium.emma.rt.*" } )
 public class DefaultForkConfigurationTest
 {
     private Classpath booterClasspath;
@@ -67,6 +74,7 @@ public class DefaultForkConfigurationTest
     private Properties modelProperties;
     private String argLine;
     private Map<String, String> environmentVariables;
+    private String[] excludedEnvironmentVariables;
     private boolean debug;
     private int forkCount;
     private boolean reuseForks;
@@ -82,7 +90,8 @@ public class DefaultForkConfigurationTest
         workingDirectory = new File( "." );
         modelProperties = new Properties();
         argLine = null;
-        environmentVariables = new HashMap<String, String>();
+        environmentVariables = new HashMap<>();
+        excludedEnvironmentVariables = new String[0];
         debug = true;
         forkCount = 2;
         reuseForks = true;
@@ -94,14 +103,15 @@ public class DefaultForkConfigurationTest
     public void shouldBeNullArgLine() throws Exception
     {
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
-                workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log )
+                workingDirectory, modelProperties, argLine, environmentVariables, excludedEnvironmentVariables,
+                debug, forkCount, reuseForks, pluginPlatform, log )
         {
 
             @Override
             protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                              @Nonnull String booterThatHasMainMethod,
-                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
+                                             @Nonnull StartupConfiguration config,
+                                             @Nonnull File dumpLogDirectory ) throws SurefireBooterForkException
             {
 
             }
@@ -119,14 +129,15 @@ public class DefaultForkConfigurationTest
     {
         argLine = "";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
-                workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log )
+                workingDirectory, modelProperties, argLine, environmentVariables, excludedEnvironmentVariables,
+                debug, forkCount, reuseForks, pluginPlatform, log )
         {
 
             @Override
             protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                              @Nonnull String booterThatHasMainMethod,
-                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
+                                             @Nonnull StartupConfiguration config,
+                                             @Nonnull File dumpLogDirectory ) throws SurefireBooterForkException
             {
 
             }
@@ -144,14 +155,15 @@ public class DefaultForkConfigurationTest
     {
         argLine = "\n\r";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
-                workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log )
+                workingDirectory, modelProperties, argLine, environmentVariables, excludedEnvironmentVariables,
+                debug, forkCount, reuseForks, pluginPlatform, log )
         {
 
             @Override
             protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                              @Nonnull String booterThatHasMainMethod,
-                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
+                                             @Nonnull StartupConfiguration config,
+                                             @Nonnull File dumpLogDirectory ) throws SurefireBooterForkException
             {
 
             }
@@ -169,14 +181,15 @@ public class DefaultForkConfigurationTest
     {
         argLine = "-Dfile.encoding=UTF-8";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
-                workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log )
+                workingDirectory, modelProperties, argLine, environmentVariables, excludedEnvironmentVariables,
+                debug, forkCount, reuseForks, pluginPlatform, log )
         {
 
             @Override
             protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                              @Nonnull String booterThatHasMainMethod,
-                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
+                                             @Nonnull StartupConfiguration config,
+                                             @Nonnull File dumpLogDirectory ) throws SurefireBooterForkException
             {
 
             }
@@ -195,14 +208,15 @@ public class DefaultForkConfigurationTest
         modelProperties.put( "encoding", "UTF-8" );
         argLine = "-Dfile.encoding=@{encoding}";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
-                workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log )
+                workingDirectory, modelProperties, argLine, environmentVariables, excludedEnvironmentVariables,
+                debug, forkCount, reuseForks, pluginPlatform, log )
         {
 
             @Override
             protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                              @Nonnull String booterThatHasMainMethod,
-                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
+                                             @Nonnull StartupConfiguration config,
+                                             @Nonnull File dumpLogDirectory ) throws SurefireBooterForkException
             {
 
             }
@@ -220,14 +234,15 @@ public class DefaultForkConfigurationTest
     {
         argLine = "a\n\rb";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
-                workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log )
+                workingDirectory, modelProperties, argLine, environmentVariables, excludedEnvironmentVariables,
+                debug, forkCount, reuseForks, pluginPlatform, log )
         {
 
             @Override
             protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                              @Nonnull String booterThatHasMainMethod,
-                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
+                                             @Nonnull StartupConfiguration config,
+                                             @Nonnull File dumpLogDirectory ) throws SurefireBooterForkException
             {
 
             }
@@ -245,14 +260,15 @@ public class DefaultForkConfigurationTest
     {
         argLine = "-Dthread=${surefire.threadNumber}";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
-                workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log )
+                workingDirectory, modelProperties, argLine, environmentVariables, excludedEnvironmentVariables,
+                debug, forkCount, reuseForks, pluginPlatform, log )
         {
 
             @Override
             protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                              @Nonnull String booterThatHasMainMethod,
-                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
+                                             @Nonnull StartupConfiguration config,
+                                             @Nonnull File dumpLogDirectory ) throws SurefireBooterForkException
             {
 
             }
@@ -270,14 +286,15 @@ public class DefaultForkConfigurationTest
     {
         argLine = "-Dthread=${surefire.forkNumber}";
         DefaultForkConfiguration config = new DefaultForkConfiguration( booterClasspath, tempDirectory, debugLine,
-                workingDirectory, modelProperties, argLine, environmentVariables, debug, forkCount, reuseForks,
-                pluginPlatform, log )
+                workingDirectory, modelProperties, argLine, environmentVariables, excludedEnvironmentVariables,
+                debug, forkCount, reuseForks, pluginPlatform, log )
         {
 
             @Override
             protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
                                              @Nonnull String booterThatHasMainMethod,
-                                             @Nonnull StartupConfiguration config ) throws SurefireBooterForkException
+                                             @Nonnull StartupConfiguration config,
+                                             @Nonnull File dumpLogDirectory ) throws SurefireBooterForkException
             {
 
             }
@@ -295,8 +312,8 @@ public class DefaultForkConfigurationTest
     {
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
         ClasspathConfiguration cc = new ClasspathConfiguration( true, true );
-        StartupConfiguration conf =
-                new StartupConfiguration( "org.apache.maven.surefire.shadefire.MyProvider", cc, clc, false, false );
+        StartupConfiguration conf = new StartupConfiguration( "org.apache.maven.shadefire.surefire.MyProvider",
+                cc, clc, false, false, null );
         StartupConfiguration confMock = spy( conf );
         mockStatic( Relocator.class );
         when( Relocator.relocate( anyString() ) ).thenCallRealMethod();
@@ -307,7 +324,7 @@ public class DefaultForkConfigurationTest
         verifyStatic( Relocator.class, times( 1 ) );
         Relocator.relocate( eq( ForkedBooter.class.getName() ) );
 
-        assertThat( cls ).isEqualTo( "org.apache.maven.surefire.shadefire.booter.ForkedBooter" );
+        assertThat( cls ).isEqualTo( "org.apache.maven.shadefire.surefire.booter.ForkedBooter" );
         assertThat( confMock.isShadefire() ).isTrue();
     }
 
@@ -317,7 +334,7 @@ public class DefaultForkConfigurationTest
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
         ClasspathConfiguration cc = new ClasspathConfiguration( true, true );
         StartupConfiguration conf =
-                new StartupConfiguration( "org.apache.maven.surefire.MyProvider", cc, clc, false, false );
+                new StartupConfiguration( "org.apache.maven.surefire.MyProvider", cc, clc, false, false, null );
         StartupConfiguration confMock = spy( conf );
         mockStatic( Relocator.class );
         when( Relocator.relocate( anyString() ) ).thenCallRealMethod();

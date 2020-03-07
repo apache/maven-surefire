@@ -19,6 +19,8 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import javax.annotation.Nonnull;
+
 /**
  * Immutable object which encapsulates PID and elapsed time (Unix) or start time (Windows).
  * <br>
@@ -40,20 +42,20 @@ final class ProcessInfo
      * <br>
      * <pre>/bin/ps -o etime= -p 123</pre>
      */
-    static ProcessInfo unixProcessInfo( long pid, long etime )
+    static @Nonnull ProcessInfo unixProcessInfo( String pid, long etime )
     {
         return new ProcessInfo( pid, etime );
     }
 
-    static ProcessInfo windowsProcessInfo( long pid, long startTimestamp )
+    static @Nonnull ProcessInfo windowsProcessInfo( String pid, long startTimestamp )
     {
         return new ProcessInfo( pid, startTimestamp );
     }
 
-    private final Long pid;
+    private final String pid;
     private final Comparable time;
 
-    private ProcessInfo( Long pid, Comparable time )
+    private ProcessInfo( String pid, Comparable time )
     {
         this.pid = pid;
         this.time = time;
@@ -61,7 +63,7 @@ final class ProcessInfo
 
     boolean canUse()
     {
-        return !isInvalid() && !isError();
+        return !isError();
     }
 
     boolean isInvalid()
@@ -74,7 +76,7 @@ final class ProcessInfo
         return this == ERR_PROCESS_INFO;
     }
 
-    long getPID()
+    String getPID()
     {
         checkValid();
         return pid;
@@ -91,7 +93,7 @@ final class ProcessInfo
     {
         checkValid();
         that.checkValid();
-        return this.time.compareTo( that.time ) == 0;
+        return time.compareTo( that.time ) == 0;
     }
 
     @SuppressWarnings( "unchecked" )
@@ -99,7 +101,7 @@ final class ProcessInfo
     {
         checkValid();
         that.checkValid();
-        return this.time.compareTo( that.time ) < 0;
+        return time.compareTo( that.time ) < 0;
     }
 
     private void checkValid()

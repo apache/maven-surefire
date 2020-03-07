@@ -93,7 +93,7 @@ public class SchedulingStrategiesTest
         assertTrue( task2.result );
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test( expected = NullPointerException.class )
     public void sharedPoolStrategyNullPool()
     {
         SchedulingStrategies.createParallelSharedStrategy( logger, null );

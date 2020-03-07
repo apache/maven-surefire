@@ -19,8 +19,6 @@ package org.apache.maven.surefire.util.internal;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReporterConfiguration;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -30,7 +28,7 @@ import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Dumps a text or exception in dump file.
@@ -49,12 +47,12 @@ public final class DumpFileUtils
     /**
      * New dump file. Synchronized object appears in main memory and perfectly visible in other threads.
      *
+     * @param reportsDir    only report directory
      * @param dumpFileName    dump file name
-     * @param configuration    only report directory
      */
-    public static synchronized File newDumpFile( String dumpFileName, ReporterConfiguration configuration )
+    public static synchronized File newDumpFile( File reportsDir, String dumpFileName )
     {
-        return new File( configuration.getReportsDirectory(), dumpFileName );
+        return new File( reportsDir, dumpFileName );
     }
 
     public static void dumpException( Throwable t, File dumpFile )
@@ -69,18 +67,17 @@ public final class DumpFileUtils
             if ( t != null && dumpFile != null
                          && ( dumpFile.exists() || mkdirs( dumpFile ) && dumpFile.createNewFile() ) )
             {
-                Writer fw = createWriter( dumpFile );
-                if ( msg != null )
+                try ( PrintWriter pw = new PrintWriter( createWriter( dumpFile ) ) )
                 {
-                    fw.append( msg )
-                            .append( StringUtils.NL );
+                    if ( msg != null )
+                    {
+                        pw.append( msg )
+                                .append( StringUtils.NL );
+                    }
+                    t.printStackTrace( pw );
+                    pw.append( StringUtils.NL )
+                      .append( StringUtils.NL );
                 }
-                PrintWriter pw = new PrintWriter( fw );
-                t.printStackTrace( pw );
-                pw.flush();
-                fw.append( StringUtils.NL )
-                  .append( StringUtils.NL )
-                  .close();
             }
         }
         catch ( Exception e )
@@ -96,11 +93,12 @@ public final class DumpFileUtils
             if ( msg != null && dumpFile != null
                          && ( dumpFile.exists() || mkdirs( dumpFile ) && dumpFile.createNewFile() ) )
             {
-                createWriter( dumpFile )
-                        .append( msg )
-                        .append( StringUtils.NL )
-                        .append( StringUtils.NL )
-                        .close();
+                try ( Writer writer = createWriter( dumpFile ) )
+                {
+                    writer.append( msg )
+                            .append( StringUtils.NL )
+                            .append( StringUtils.NL );
+                }
             }
         }
         catch ( Exception e )

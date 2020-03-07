@@ -115,7 +115,6 @@ public final class SurefireLauncher
     }
 
     public SurefireLauncher getSubProjectLauncher( String subProject )
-        throws VerificationException
     {
         return new SurefireLauncher( mavenLauncher.getSubProjectLauncher( subProject ) );
     }
@@ -126,25 +125,27 @@ public final class SurefireLauncher
         return mavenLauncher.getSubProjectValidator( subProject );
     }
 
-    public SurefireLauncher addEnvVar( String key, String value )
+    private SurefireLauncher addEnvVar( String key, String value )
     {
         mavenLauncher.addEnvVar( key, value );
         return this;
     }
 
-    public SurefireLauncher setMavenOpts(String opts){
-        addEnvVar( "MAVEN_OPTS", opts );
-        return this;
+    public SurefireLauncher setMavenOpts( String opts )
+    {
+        return addEnvVar( "MAVEN_OPTS", opts );
     }
 
     private List<String> getInitialGoals()
     {
-        List<String> goals = new ArrayList<String>();
+        List<String> goals = new ArrayList<>();
 
         goals.add( "-Dsurefire.version=" + surefireVersion );
 
         String jacocoAgent = System.getProperty( "jacoco.agent", "" );
         goals.add( "-Djacoco.agent=" + jacocoAgent );
+
+        goals.add( "-Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2" );
 
         return goals;
     }
@@ -192,11 +193,9 @@ public final class SurefireLauncher
     }
 
     public OutputValidator executeInstall()
-        throws VerificationException
     {
         return mavenLauncher.execute( "install" );
     }
-
 
     public FailsafeOutputValidator executeVerify()
     {
@@ -317,12 +316,6 @@ public final class SurefireLauncher
     {
         mavenLauncher.activateProfile( profile );
         return this;
-    }
-
-
-    protected String getSurefireVersion()
-    {
-        return surefireVersion;
     }
 
     public SurefireLauncher disablePerCoreThreadCount()
@@ -475,7 +468,7 @@ public final class SurefireLauncher
 
     private String getReportPluginGoal( String goal )
     {
-        return "org.apache.maven.plugins:maven-surefire-report-plugin:" + getSurefireVersion() + ":" + goal;
+        return "org.apache.maven.plugins:maven-surefire-report-plugin:" + surefireVersion + ":" + goal;
     }
 
     public SurefireLauncher setTestToRun( String basicTest )

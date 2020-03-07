@@ -25,6 +25,7 @@ import org.apache.maven.surefire.report.ConsoleStream;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.report.RunMode;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.report.TestSetReportEntry;
 import org.apache.maven.surefire.testset.TestSetFailedException;
@@ -78,12 +79,18 @@ public abstract class ConcurrentRunListener
     @Override
     public void testSetCompleted( TestSetReportEntry result )
     {
-        final RunListener reporterManager = getRunListener();
-        for ( TestSet testSet : classMethodCounts.values() )
+        try
         {
-            testSet.replay( reporterManager );
+            final RunListener reporterManager = getRunListener();
+            for ( TestSet testSet : classMethodCounts.values() )
+            {
+                testSet.replay( reporterManager );
+            }
         }
-        reporterManagerThreadLocal.remove();
+        finally
+        {
+            reporterManagerThreadLocal.remove();
+        }
     }
 
     @Override
@@ -123,6 +130,11 @@ public abstract class ConcurrentRunListener
     {
         // cannot guarantee proper call to all listeners
         getRunListener().testExecutionSkippedByUser();
+    }
+
+    public RunMode markAs( RunMode currentRunMode )
+    {
+        return reporterManagerThreadLocal.get().markAs( currentRunMode );
     }
 
     @Override
@@ -207,18 +219,18 @@ public abstract class ConcurrentRunListener
 
 
     @Override
-    public void writeTestOutput( byte[] buf, int off, int len, boolean stdout )
+    public void writeTestOutput( String output, boolean newLine, boolean stdout )
     {
         TestMethod threadTestMethod = getThreadTestMethod();
         if ( threadTestMethod != null )
         {
             LogicalStream logicalStream = threadTestMethod.getLogicalStream();
-            logicalStream.write( stdout, buf, off, len );
+            logicalStream.write( stdout, output, newLine );
         }
         else
         {
             // Not able to associate output with any thread. Just dump to console
-            consoleStream.println( buf, off, len );
+            consoleStream.println( output );
         }
     }
 }

@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire-providers</artifactId>
-    <version>2.22.1-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>surefire-testng-utils</artifactId>
@@ -39,12 +39,9 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.maven.shared</groupId>
-      <artifactId>maven-shared-utils</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-grouper</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.testng</groupId>
@@ -58,38 +55,30 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
         <executions>
           <execution>
-            <phase>package</phase>
+            <id>jacoco-agent</id>
             <goals>
-              <goal>shade</goal>
+              <goal>prepare-agent</goal>
             </goals>
-            <configuration>
-              <minimizeJar>true</minimizeJar>
-              <artifactSet>
-                <includes>
-                  <include>org.apache.maven.shared:maven-shared-utils</include>
-                </includes>
-              </artifactSet>
-              <relocations>
-                <relocation>
-                  <pattern>org.apache.maven.shared</pattern>
-                  <shadedPattern>org.apache.maven.surefire.shade.org.apache.maven.shared</shadedPattern>
-                </relocation>
-              </relocations>
-            </configuration>
           </execution>
         </executions>
+        <configuration>
+          <propertyName>jacoco.agent</propertyName>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>${jvm.args.tests} ${jacoco.agent}</argLine>
+        </configuration>
         <dependencies>
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-shadefire</artifactId>
-            <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+            <version>3.0.0-M4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
           </dependency>
         </dependencies>
       </plugin>

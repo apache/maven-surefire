@@ -32,19 +32,26 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assume.assumeTrue;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Kristian Rosenvold
  */
+@SuppressWarnings( { "checkstyle:magicnumber", "checkstyle:linelength" } )
 public class TestSuiteXmlParserTest
 {
-    private static final String[] linePatterns = { "at org.apache.Test.", "at org.apache.Test$" };
+    private static final String[] LINE_PATTERNS = {"at org.apache.Test.", "at org.apache.Test$"};
 
-    private final Collection<String> loggedErrors = new ArrayList<String>();
+    private final Collection<String> loggedErrors = new ArrayList<>();
 
     private ConsoleLogger consoleLogger;
 
@@ -120,48 +127,41 @@ public class TestSuiteXmlParserTest
     }
 
     @Test
-    public void testParse()
-        throws Exception
+    public void testParse() throws Exception
     {
         TestSuiteXmlParser testSuiteXmlParser = new TestSuiteXmlParser( consoleLogger );
-        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
-            "<testsuite failures=\"4\" time=\"0.005\" errors=\"0\" skipped=\"0\" tests=\"4\" name=\"wellFormedXmlFailures.TestSurefire3\">\n"
-            +
-            "  <properties>\n" +
-            "    <property name=\"java.runtime.name\" value=\"Java(TM) SE Runtime Environment\"/>\n" +
-            "    <property name=\"sun.cpu.isalist\" value=\"amd64\"/>\n" +
-            "  </properties>\n" +
-            "  <testcase time=\"0.005\" classname=\"wellFormedXmlFailures.TestSurefire3\" name=\"testLower\">\n" +
-            "    <failure message=\"&lt;\" type=\"junit.framework.AssertionFailedError\"><![CDATA[junit.framework.AssertionFailedError: <\n"
-            +
-            "\tat junit.framework.Assert.fail(Assert.java:47)\n" +
-            "\tat wellFormedXmlFailures.TestSurefire3.testLower(TestSurefire3.java:30)\n" +
-            "]]></failure>\n" +
-            "  </testcase>\n" +
-            "  <testcase time=\"0\" classname=\"wellFormedXmlFailures.TestSurefire3\" name=\"testU0000\">\n" +
-            "    <failure message=\"&amp;0#;\" type=\"junit.framework.AssertionFailedError\">junit.framework.AssertionFailedError:  \n"
-            +
-            "\tat junit.framework.Assert.fail(Assert.java:47)\n" +
-            "\tat wellFormedXmlFailures.TestSurefire3.testU0000(TestSurefire3.java:40)\n" +
-            "</failure>\n" +
-            "  </testcase>\n" +
-            "  <testcase time=\"0\" classname=\"wellFormedXmlFailures.TestSurefire3\" name=\"testGreater\">\n" +
-            "    <failure message=\"&gt;\" type=\"junit.framework.AssertionFailedError\">junit.framework.AssertionFailedError: >\n"
-            +
-            "\tat junit.framework.Assert.fail(Assert.java:47)\n" +
-            "\tat wellFormedXmlFailures.TestSurefire3.testGreater(TestSurefire3.java:35)\n" +
-            "</failure>\n" +
-            "  </testcase>\n" +
-            "  <testcase time=\"0\" classname=\"wellFormedXmlFailures.TestSurefire3\" name=\"testQuote\">\n" +
-            "    <failure message=\"&quot;\" type=\"junit.framework.AssertionFailedError\">junit.framework.AssertionFailedError: \"\n"
-            +
-            "\tat junit.framework.Assert.fail(Assert.java:47)\n" +
-            "\tat wellFormedXmlFailures.TestSurefire3.testQuote(TestSurefire3.java:25)\n" +
-            "</failure>\n" +
-            "  </testcase>\n" +
-            "</testsuite>";
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
+                + "<testsuite failures=\"4\" time=\"0.005\" errors=\"0\" skipped=\"0\" tests=\"4\" name=\"wellFormedXmlFailures.TestSurefire3\">\n"
+                + "  <properties>\n" + "    <property name=\"java.runtime.name\" value=\"Java(TM) SE Runtime Environment\"/>\n"
+                + "    <property name=\"sun.cpu.isalist\" value=\"amd64\"/>\n"
+                + "  </properties>\n"
+                + "  <testcase time=\"0.005\" classname=\"wellFormedXmlFailures.TestSurefire3\" name=\"testLower\">\n"
+                + "    <failure message=\"&lt;\" type=\"junit.framework.AssertionFailedError\"><![CDATA[junit.framework.AssertionFailedError: <\n"
+                + "\tat junit.framework.Assert.fail(Assert.java:47)\n"
+                + "\tat wellFormedXmlFailures.TestSurefire3.testLower(TestSurefire3.java:30)\n"
+                + "]]></failure>\n"
+                + "  </testcase>\n"
+                + "  <testcase time=\"0\" classname=\"wellFormedXmlFailures.TestSurefire3\" name=\"testU0000\">\n"
+                + "    <failure message=\"&amp;0#;\" type=\"junit.framework.AssertionFailedError\">junit.framework.AssertionFailedError:  \n"
+                + "\tat junit.framework.Assert.fail(Assert.java:47)\n"
+                + "\tat wellFormedXmlFailures.TestSurefire3.testU0000(TestSurefire3.java:40)\n"
+                + "</failure>\n"
+                + "  </testcase>\n"
+                + "  <testcase time=\"0\" classname=\"wellFormedXmlFailures.TestSurefire3\" name=\"testGreater\">\n"
+                + "    <failure message=\"&gt;\" type=\"junit.framework.AssertionFailedError\">junit.framework.AssertionFailedError: >\n"
+                + "\tat junit.framework.Assert.fail(Assert.java:47)\n"
+                + "\tat wellFormedXmlFailures.TestSurefire3.testGreater(TestSurefire3.java:35)\n"
+                + "</failure>\n"
+                + "  </testcase>\n"
+                + "  <testcase time=\"0\" classname=\"wellFormedXmlFailures.TestSurefire3\" name=\"testQuote\">\n"
+                + "    <failure message=\"&quot;\" type=\"junit.framework.AssertionFailedError\">junit.framework.AssertionFailedError: \"\n"
+                + "\tat junit.framework.Assert.fail(Assert.java:47)\n"
+                + "\tat wellFormedXmlFailures.TestSurefire3.testQuote(TestSurefire3.java:25)\n"
+                + "</failure>\n"
+                + "  </testcase>\n"
+                + "</testsuite>";
         InputStream byteArrayIs = new ByteArrayInputStream( xml.getBytes() );
-        List<ReportTestSuite> parse = testSuiteXmlParser.parse( new InputStreamReader(byteArrayIs, "UTF-8") );
+        List<ReportTestSuite> parse = testSuiteXmlParser.parse( new InputStreamReader( byteArrayIs, UTF_8 ) );
         assertThat( parse.size(), is( 1 ) );
         ReportTestSuite report = parse.get( 0 );
         assertThat( report.getFullClassName(), is( "wellFormedXmlFailures.TestSurefire3" ) );
@@ -179,9 +179,9 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 0 ).getFullClassName(), is( "wellFormedXmlFailures.TestSurefire3" ) );
         assertThat( tests.get( 0 ).getName(), is( "testLower" ) );
         assertThat( tests.get( 0 ).getFailureDetail(),
-                    is( "junit.framework.AssertionFailedError: <\n"
-                            + "\tat junit.framework.Assert.fail(Assert.java:47)\n"
-                            + "\tat wellFormedXmlFailures.TestSurefire3.testLower(TestSurefire3.java:30)\n" ) );
+                is( "junit.framework.AssertionFailedError: <\n"
+                        + "\tat junit.framework.Assert.fail(Assert.java:47)\n"
+                        + "\tat wellFormedXmlFailures.TestSurefire3.testLower(TestSurefire3.java:30)\n" ) );
         assertThat( tests.get( 0 ).getClassName(), is( "TestSurefire3" ) );
         assertThat( tests.get( 0 ).getTime(), is( 0.005f ) );
         assertThat( tests.get( 0 ).getFailureErrorLine(), is( "30" ) );
@@ -193,9 +193,8 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 1 ).getFullClassName(), is( "wellFormedXmlFailures.TestSurefire3" ) );
         assertThat( tests.get( 1 ).getName(), is( "testU0000" ) );
         assertThat( tests.get( 1 ).getFailureDetail(),
-                    is( "junit.framework.AssertionFailedError:  \n"
-                            + "\tat junit.framework.Assert.fail(Assert.java:47)\n"
-                            + "\tat wellFormedXmlFailures.TestSurefire3.testU0000(TestSurefire3.java:40)\n" ) );
+                is( "junit.framework.AssertionFailedError:  \n" + "\tat junit.framework.Assert.fail(Assert.java:47)\n"
+                        + "\tat wellFormedXmlFailures.TestSurefire3.testU0000(TestSurefire3.java:40)\n" ) );
         assertThat( tests.get( 1 ).getClassName(), is( "TestSurefire3" ) );
         assertThat( tests.get( 1 ).getTime(), is( 0f ) );
         assertThat( tests.get( 1 ).getFailureErrorLine(), is( "40" ) );
@@ -207,9 +206,8 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 2 ).getFullClassName(), is( "wellFormedXmlFailures.TestSurefire3" ) );
         assertThat( tests.get( 2 ).getName(), is( "testGreater" ) );
         assertThat( tests.get( 2 ).getFailureDetail(),
-                    is( "junit.framework.AssertionFailedError: >\n"
-                            + "\tat junit.framework.Assert.fail(Assert.java:47)\n"
-                            + "\tat wellFormedXmlFailures.TestSurefire3.testGreater(TestSurefire3.java:35)\n" ) );
+                is( "junit.framework.AssertionFailedError: >\n" + "\tat junit.framework.Assert.fail(Assert.java:47)\n"
+                        + "\tat wellFormedXmlFailures.TestSurefire3.testGreater(TestSurefire3.java:35)\n" ) );
         assertThat( tests.get( 2 ).getClassName(), is( "TestSurefire3" ) );
         assertThat( tests.get( 2 ).getTime(), is( 0f ) );
         assertThat( tests.get( 2 ).getFailureErrorLine(), is( "35" ) );
@@ -221,9 +219,8 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 3 ).getFullClassName(), is( "wellFormedXmlFailures.TestSurefire3" ) );
         assertThat( tests.get( 3 ).getName(), is( "testQuote" ) );
         assertThat( tests.get( 3 ).getFailureDetail(),
-                    is( "junit.framework.AssertionFailedError: \"\n"
-                            + "\tat junit.framework.Assert.fail(Assert.java:47)\n"
-                            + "\tat wellFormedXmlFailures.TestSurefire3.testQuote(TestSurefire3.java:25)\n" ) );
+                is( "junit.framework.AssertionFailedError: \"\n" + "\tat junit.framework.Assert.fail(Assert.java:47)\n"
+                        + "\tat wellFormedXmlFailures.TestSurefire3.testQuote(TestSurefire3.java:25)\n" ) );
         assertThat( tests.get( 3 ).getClassName(), is( "TestSurefire3" ) );
         assertThat( tests.get( 3 ).getTime(), is( 0f ) );
         assertThat( tests.get( 3 ).getFailureErrorLine(), is( "25" ) );
@@ -234,13 +231,12 @@ public class TestSuiteXmlParserTest
     }
 
     @Test
-    public void testParser()
-        throws Exception
+    public void testParser() throws Exception
     {
         TestSuiteXmlParser parser = new TestSuiteXmlParser( consoleLogger );
 
         Collection<ReportTestSuite> oldResult = parser.parse(
-            "src/test/resources/fixture/testsuitexmlparser/TEST-org.apache.maven.surefire.test.FailingTest.xml" );
+                "src/test/resources/fixture/testsuitexmlparser/TEST-org.apache.maven.surefire.test.FailingTest.xml" );
 
         assertNotNull( oldResult );
 
@@ -250,8 +246,7 @@ public class TestSuiteXmlParserTest
     }
 
     @Test
-    public void successfulSurefireTestReport()
-        throws Exception
+    public void successfulSurefireTestReport() throws Exception
     {
         TestSuiteXmlParser parser = new TestSuiteXmlParser( consoleLogger );
         File surefireReport = new File( "src/test/resources/junit-pathWithÜmlaut/TEST-umlautTest.BasicTest.xml" );
@@ -283,8 +278,7 @@ public class TestSuiteXmlParserTest
     }
 
     @Test
-    public void testParserHitsFailsafeSummary()
-        throws Exception
+    public void testParserHitsFailsafeSummary() throws Exception
     {
         TestSuiteXmlParser parser = new TestSuiteXmlParser( consoleLogger );
 
@@ -293,7 +287,7 @@ public class TestSuiteXmlParserTest
         assertFalse( parser.isValid() );
 
         parser.parse(
-            "src/test/resources/fixture/testsuitexmlparser/TEST-org.apache.maven.surefire.test.FailingTest.xml" );
+                "src/test/resources/fixture/testsuitexmlparser/TEST-org.apache.maven.surefire.test.FailingTest.xml" );
 
         assertTrue( parser.isValid() );
     }
@@ -302,11 +296,10 @@ public class TestSuiteXmlParserTest
     public void lastIndexOfPatternOfOrdinalTest()
     {
         final StringBuilder stackTrace = new StringBuilder(
-            "\tat org.apache.Test.util(Test.java:60)\n"
-                + "\tat org.apache.Test.test(Test.java:30)\n"
-                + "\tat com.sun.Impl.xyz(Impl.java:258)\n" );
+                "\tat org.apache.Test.util(Test.java:60)\n" + "\tat org.apache.Test.test(Test.java:30)\n"
+                        + "\tat com.sun.Impl.xyz(Impl.java:258)\n" );
 
-        int[] result = TestSuiteXmlParser.lastIndexOf( stackTrace, linePatterns );
+        int[] result = TestSuiteXmlParser.lastIndexOf( stackTrace, LINE_PATTERNS );
         assertThat( result[0], is( 40 ) );
         assertThat( result[1], is( 0 ) );
         String errorLine = TestSuiteXmlParser.parseErrorLine( stackTrace, "org.apache.Test" );
@@ -317,13 +310,12 @@ public class TestSuiteXmlParserTest
     public void lastIndexOfPatternOfOrdinalTestWithCause()
     {
         final StringBuilder stackTrace = new StringBuilder(
-            "\tat org.apache.Test.util(Test.java:60)\n"
-                + "\tat org.apache.Test.test(Test.java:30)\n"
-                + "\tat com.sun.Impl.xyz(Impl.java:258)\n"
-                + "\tat Caused by: java.lang.IndexOutOfBoundsException\n"
-                + "\tat org.apache.Test.util(Test.java:70)\n" );
+                "\tat org.apache.Test.util(Test.java:60)\n" + "\tat org.apache.Test.test(Test.java:30)\n"
+                        + "\tat com.sun.Impl.xyz(Impl.java:258)\n"
+                        + "\tat Caused by: java.lang.IndexOutOfBoundsException\n"
+                        + "\tat org.apache.Test.util(Test.java:70)\n" );
 
-        int[] result = TestSuiteXmlParser.lastIndexOf( stackTrace, linePatterns );
+        int[] result = TestSuiteXmlParser.lastIndexOf( stackTrace, LINE_PATTERNS );
         assertThat( result[0], is( 40 ) );
         assertThat( result[1], is( 0 ) );
         String errorLine = TestSuiteXmlParser.parseErrorLine( stackTrace, "org.apache.Test" );
@@ -334,11 +326,11 @@ public class TestSuiteXmlParserTest
     public void lastIndexOfPatternOfEnclosedTest()
     {
         final StringBuilder source = new StringBuilder(
-            "\tat org.apache.Test.util(Test.java:60)\n"
-                + "\tat org.apache.Test$Nested.test(Test.java:30)\n"
-                + "\tat com.sun.Impl.xyz(Impl.java:258)\n" );
+                "\tat org.apache.Test.util(Test.java:60)\n"
+                        + "\tat org.apache.Test$Nested.test(Test.java:30)\n"
+                        + "\tat com.sun.Impl.xyz(Impl.java:258)\n" );
 
-        int[] result = TestSuiteXmlParser.lastIndexOf( source, linePatterns );
+        int[] result = TestSuiteXmlParser.lastIndexOf( source, LINE_PATTERNS );
         assertThat( result[0], is( 40 ) );
         assertThat( result[1], is( 1 ) );
         String errorLine = TestSuiteXmlParser.parseErrorLine( source, "org.apache.Test$Nested" );
@@ -349,13 +341,12 @@ public class TestSuiteXmlParserTest
     public void lastIndexOfPatternOfEnclosedTestWithCause()
     {
         final StringBuilder source = new StringBuilder(
-            "\tat org.apache.Test.util(Test.java:60)\n"
-                + "\tat org.apache.Test$Nested.test(Test.java:30)\n"
-                + "\tat com.sun.Impl.xyz(Impl.java:258)\n"
-                + "\tat Caused by: java.lang.IndexOutOfBoundsException\n"
-                + "\tat org.apache.Test$Nested.util(Test.java:70)\n" );
+                "\tat org.apache.Test.util(Test.java:60)\n" + "\tat org.apache.Test$Nested.test(Test.java:30)\n"
+                        + "\tat com.sun.Impl.xyz(Impl.java:258)\n"
+                        + "\tat Caused by: java.lang.IndexOutOfBoundsException\n"
+                        + "\tat org.apache.Test$Nested.util(Test.java:70)\n" );
 
-        int[] result = TestSuiteXmlParser.lastIndexOf( source, linePatterns );
+        int[] result = TestSuiteXmlParser.lastIndexOf( source, LINE_PATTERNS );
         assertThat( result[0], is( 40 ) );
         assertThat( result[1], is( 1 ) );
         String errorLine = TestSuiteXmlParser.parseErrorLine( source, "org.apache.Test$Nested" );
@@ -363,12 +354,11 @@ public class TestSuiteXmlParserTest
     }
 
     @Test
-    public void shouldParserEverythingInOrdinalTest()
-        throws Exception
+    public void shouldParserEverythingInOrdinalTest() throws Exception
     {
         TestSuiteXmlParser parser = new TestSuiteXmlParser( consoleLogger );
-        List<ReportTestSuite> tests =
-            parser.parse( "src/test/resources/fixture/testsuitexmlparser/TEST-surefire.MyTest.xml" );
+        List<ReportTestSuite> tests = parser.parse(
+                "src/test/resources/fixture/testsuitexmlparser/TEST-surefire.MyTest.xml" );
         assertTrue( parser.isValid() );
         assertThat( tests.size(), is( 1 ) );
         assertThat( tests.get( 0 ).getFullClassName(), is( "surefire.MyTest" ) );
@@ -390,50 +380,48 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureMessage(), is( "this is different message" ) );
 
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureDetail(),
-                    is( "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
-        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
-        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
-        + "\tat surefire.MyTest.test(MyTest.java:13)\n"
-        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n"
-        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\n"
-        + "\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n"
-        + "\tat java.lang.reflect.Method.invoke(Method.java:606)\n"
-        + "\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n"
-        + "\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n"
-        + "\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)\n"
-        + "\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n"
-        + "\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)\n"
-        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)\n"
-        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)\n"
-        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
-        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
-        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
-        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
-        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
-        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:272)\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:167)\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:147)\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:130)\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:211)\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:163)\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:105)\n"
-        + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
-        + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
-        + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
-        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
-        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
-        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)" ) );
+                is( "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
+                        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
+                        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
+                        + "\tat surefire.MyTest.test(MyTest.java:13)\n" + "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n"
+                        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\n"
+                        + "\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n"
+                        + "\tat java.lang.reflect.Method.invoke(Method.java:606)\n"
+                        + "\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n"
+                        + "\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n"
+                        + "\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)\n"
+                        + "\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n"
+                        + "\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)\n"
+                        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)\n"
+                        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)\n"
+                        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
+                        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
+                        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
+                        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
+                        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
+                        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
+                        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:272)\n"
+                        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:167)\n"
+                        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:147)\n"
+                        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:130)\n"
+                        + "\tat org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:211)\n"
+                        + "\tat org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:163)\n"
+                        + "\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:105)\n"
+                        + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
+                        + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
+                        + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
+                        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
+                        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
+                        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).hasError(), is( true ) );
     }
 
     @Test
-    public void shouldParserEverythingInEnclosedTest()
-        throws Exception
+    public void shouldParserEverythingInEnclosedTest() throws Exception
     {
         TestSuiteXmlParser parser = new TestSuiteXmlParser( consoleLogger );
-        List<ReportTestSuite> tests =
-            parser.parse( "src/test/resources/fixture/testsuitexmlparser/TEST-surefire.MyTest-enclosed.xml" );
+        List<ReportTestSuite> tests = parser.parse(
+                "src/test/resources/fixture/testsuitexmlparser/TEST-surefire.MyTest-enclosed.xml" );
         assertTrue( parser.isValid() );
         assertThat( tests.size(), is( 1 ) );
         assertThat( tests.get( 0 ).getFullClassName(), is( "surefire.MyTest$A" ) );
@@ -446,8 +434,7 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 0 ).getTestCases().size(), is( 1 ) );
         assertFalse( tests.get( 0 ).getTestCases().get( 0 ).isSuccessful() );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureErrorLine(), is( "45" ) );
-        assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureType(),
-                    is( "java.lang.RuntimeException" ) );
+        assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureType(), is( "java.lang.RuntimeException" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFullClassName(), is( "surefire.MyTest$A" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getClassName(), is( "MyTest$A" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getName(), is( "t" ) );
@@ -455,62 +442,61 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getTime(), is( 0f ) );
 
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureMessage(),
-                    is( "java.lang.IndexOutOfBoundsException" ) );
+                is( "java.lang.IndexOutOfBoundsException" ) );
 
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureDetail(),
-                    is( "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
-        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
-        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
-        + "\tat surefire.MyTest.access$200(MyTest.java:9)\n"
-        + "\tat surefire.MyTest$A.t(MyTest.java:45)\n"
-        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n"
-        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\n"
-        + "\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n"
-        + "\tat java.lang.reflect.Method.invoke(Method.java:606)\n"
-        + "\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n"
-        + "\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n"
-        + "\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)\n"
-        + "\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n"
-        + "\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)\n"
-        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)\n"
-        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)\n"
-        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
-        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
-        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
-        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
-        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
-        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
-        + "\tat org.junit.runners.Suite.runChild(Suite.java:128)\n"
-        + "\tat org.junit.runners.Suite.runChild(Suite.java:27)\n"
-        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
-        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
-        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
-        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
-        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
-        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:272)\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:167)\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:147)\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:130)\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:211)\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:163)\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:105)\n"
-        + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
-        + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
-        + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
-        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
-        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
-        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)\n" ) );
+                is( "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
+                        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
+                        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
+                        + "\tat surefire.MyTest.access$200(MyTest.java:9)\n"
+                        + "\tat surefire.MyTest$A.t(MyTest.java:45)\n"
+                        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n"
+                        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\n"
+                        + "\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n"
+                        + "\tat java.lang.reflect.Method.invoke(Method.java:606)\n"
+                        + "\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n"
+                        + "\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n"
+                        + "\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)\n"
+                        + "\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n"
+                        + "\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)\n"
+                        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)\n"
+                        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)\n"
+                        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
+                        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
+                        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
+                        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
+                        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
+                        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
+                        + "\tat org.junit.runners.Suite.runChild(Suite.java:128)\n"
+                        + "\tat org.junit.runners.Suite.runChild(Suite.java:27)\n"
+                        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
+                        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
+                        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
+                        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
+                        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
+                        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
+                        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:272)\n"
+                        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:167)\n"
+                        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:147)\n"
+                        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:130)\n"
+                        + "\tat org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:211)\n"
+                        + "\tat org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:163)\n"
+                        + "\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:105)\n"
+                        + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
+                        + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
+                        + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
+                        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
+                        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
+                        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)\n" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).hasError(), is( true ) );
     }
 
     @Test
-    public void shouldParserEverythingInEnclosedTrimStackTraceTest()
-        throws Exception
+    public void shouldParserEverythingInEnclosedTrimStackTraceTest() throws Exception
     {
         TestSuiteXmlParser parser = new TestSuiteXmlParser( consoleLogger );
-        List<ReportTestSuite> tests = parser.parse( "src/test/resources/fixture/testsuitexmlparser/"
-                                                        + "TEST-surefire.MyTest-enclosed-trimStackTrace.xml" );
+        List<ReportTestSuite> tests = parser.parse(
+                "src/test/resources/fixture/testsuitexmlparser/TEST-surefire.MyTest-enclosed-trimStackTrace.xml" );
         assertTrue( parser.isValid() );
         assertThat( tests.size(), is( 1 ) );
         assertThat( tests.get( 0 ).getFullClassName(), is( "surefire.MyTest$A" ) );
@@ -523,8 +509,7 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 0 ).getTestCases().size(), is( 1 ) );
         assertFalse( tests.get( 0 ).getTestCases().get( 0 ).isSuccessful() );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureErrorLine(), is( "45" ) );
-        assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureType(),
-                    is( "java.lang.RuntimeException" ) );
+        assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureType(), is( "java.lang.RuntimeException" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFullClassName(), is( "surefire.MyTest$A" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getClassName(), is( "MyTest$A" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getName(), is( "t" ) );
@@ -532,28 +517,27 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getTime(), is( 0f ) );
 
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureMessage(),
-                    is( "java.lang.IndexOutOfBoundsException" ) );
+                is( "java.lang.IndexOutOfBoundsException" ) );
 
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureDetail(),
-                    is( "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
-                            + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
-                            + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
-                            + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
-                            + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
-                            + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)\n"
-                            + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
-                            + "\tat surefire.MyTest.access$200(MyTest.java:9)\n"
-                            + "\tat surefire.MyTest$A.t(MyTest.java:45)\n" ) );
+                is( "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
+                        + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
+                        + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
+                        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
+                        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
+                        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)\n"
+                        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
+                        + "\tat surefire.MyTest.access$200(MyTest.java:9)\n"
+                        + "\tat surefire.MyTest$A.t(MyTest.java:45)\n" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).hasError(), is( true ) );
     }
 
     @Test
-    public void shouldParserEverythingInNestedClassTest()
-        throws Exception
+    public void shouldParserEverythingInNestedClassTest() throws Exception
     {
         TestSuiteXmlParser parser = new TestSuiteXmlParser( consoleLogger );
-        List<ReportTestSuite> tests = parser.parse( "src/test/resources/fixture/testsuitexmlparser/"
-                                                        + "TEST-surefire.MyTest-nestedClass.xml" );
+        List<ReportTestSuite> tests = parser.parse(
+                "src/test/resources/fixture/testsuitexmlparser/TEST-surefire.MyTest-nestedClass.xml" );
         assertTrue( parser.isValid() );
         assertThat( tests.size(), is( 1 ) );
         assertThat( tests.get( 0 ).getFullClassName(), is( "surefire.MyTest" ) );
@@ -566,8 +550,7 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 0 ).getTestCases().size(), is( 1 ) );
         assertFalse( tests.get( 0 ).getTestCases().get( 0 ).isSuccessful() );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureErrorLine(), is( "13" ) );
-        assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureType(),
-                    is( "java.lang.RuntimeException" ) );
+        assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureType(), is( "java.lang.RuntimeException" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFullClassName(), is( "surefire.MyTest" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getClassName(), is( "MyTest" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getName(), is( "test" ) );
@@ -575,53 +558,52 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getTime(), is( 0f ) );
 
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureMessage(),
-                    is( "java.lang.IndexOutOfBoundsException" ) );
+                is( "java.lang.IndexOutOfBoundsException" ) );
 
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureDetail(),
-                    is( "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
-        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
-        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
-        + "\tat surefire.MyTest.test(MyTest.java:13)\n"
-        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n"
-        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\n"
-        + "\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n"
-        + "\tat java.lang.reflect.Method.invoke(Method.java:606)\n"
-        + "\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n"
-        + "\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n"
-        + "\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)\n"
-        + "\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n"
-        + "\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)\n"
-        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)\n"
-        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)\n"
-        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
-        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
-        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
-        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
-        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
-        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:272)\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:167)\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:147)\n"
-        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:130)\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:211)\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:163)\n"
-        + "\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:105)\n"
-        + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
-        + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
-        + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
-        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
-        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
-        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)" ) );
+                is( "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
+                        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
+                        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
+                        + "\tat surefire.MyTest.test(MyTest.java:13)\n"
+                        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n"
+                        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\n"
+                        + "\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n"
+                        + "\tat java.lang.reflect.Method.invoke(Method.java:606)\n"
+                        + "\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n"
+                        + "\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n"
+                        + "\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)\n"
+                        + "\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n"
+                        + "\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)\n"
+                        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)\n"
+                        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)\n"
+                        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
+                        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
+                        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
+                        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
+                        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
+                        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
+                        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:272)\n"
+                        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:167)\n"
+                        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:147)\n"
+                        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:130)\n"
+                        + "\tat org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:211)\n"
+                        + "\tat org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:163)\n"
+                        + "\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:105)\n"
+                        + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
+                        + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
+                        + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
+                        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
+                        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
+                        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).hasError(), is( true ) );
     }
 
     @Test
-    public void shouldParserEverythingInNestedClassTrimStackTraceTest()
-        throws Exception
+    public void shouldParserEverythingInNestedClassTrimStackTraceTest() throws Exception
     {
         TestSuiteXmlParser parser = new TestSuiteXmlParser( consoleLogger );
-        List<ReportTestSuite> tests = parser.parse( "src/test/resources/fixture/testsuitexmlparser/"
-                                                        + "TEST-surefire.MyTest-nestedClass-trimStackTrace.xml" );
+        List<ReportTestSuite> tests = parser.parse(
+                "src/test/resources/fixture/testsuitexmlparser/TEST-surefire.MyTest-nestedClass-trimStackTrace.xml" );
         assertTrue( parser.isValid() );
         assertThat( tests.size(), is( 1 ) );
         assertThat( tests.get( 0 ).getFullClassName(), is( "surefire.MyTest" ) );
@@ -634,8 +616,7 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 0 ).getTestCases().size(), is( 1 ) );
         assertFalse( tests.get( 0 ).getTestCases().get( 0 ).isSuccessful() );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureErrorLine(), is( "13" ) );
-        assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureType(),
-                    is( "java.lang.RuntimeException" ) );
+        assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureType(), is( "java.lang.RuntimeException" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFullClassName(), is( "surefire.MyTest" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getClassName(), is( "MyTest" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getName(), is( "test" ) );
@@ -643,19 +624,19 @@ public class TestSuiteXmlParserTest
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getTime(), is( 0f ) );
 
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureMessage(),
-                    is( "java.lang.IndexOutOfBoundsException" ) );
+                is( "java.lang.IndexOutOfBoundsException" ) );
 
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).getFailureDetail(),
-                    is( "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
-                            + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
-                            + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
-                            + "\tat surefire.MyTest.test(MyTest.java:13)\n"
-                            + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
-                            + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
-                            + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
-                            + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
-                            + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
-                            + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)" ) );
+                is( "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
+                        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
+                        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
+                        + "\tat surefire.MyTest.test(MyTest.java:13)\n"
+                        + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
+                        + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
+                        + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
+                        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
+                        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
+                        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)" ) );
         assertThat( tests.get( 0 ).getTestCases().get( 0 ).hasError(), is( true ) );
     }
 

@@ -1,3 +1,5 @@
+package org.apache.maven.plugin.surefire;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,9 +19,9 @@
  * under the License.
  */
 
-package org.apache.maven.plugin.surefire;
-
-
+/**
+ *
+ */
 public class DataZT2A
 {
 }

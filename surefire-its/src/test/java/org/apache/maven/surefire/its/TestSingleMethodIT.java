@@ -99,7 +99,7 @@ public class TestSingleMethodIT
     public void testTestNg()
         throws Exception
     {
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
         props.put( "testNgVersion", "5.7" );
         props.put( "testNgClassifier", "jdk15" );
         singleMethod( "testng-single-method", props, null );
@@ -124,15 +124,15 @@ public class TestSingleMethodIT
     public void fullyQualifiedJunit48Provider47()
             throws Exception
     {
-        singleMethod("junit48-single-method", Collections.<String, String>emptyMap(),
-                            "junit4.BasicTest#testSuccessOne", "-P surefire-junit47");
+        singleMethod( "junit48-single-method", Collections.<String, String>emptyMap(),
+                            "junit4.BasicTest#testSuccessOne", "-P surefire-junit47" );
     }
 
     @Test
     public void fullyQualifiedTestNg()
             throws Exception
     {
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
         props.put( "testNgVersion", "5.7" );
         props.put( "testNgClassifier", "jdk15" );
         singleMethod( "testng-single-method", props, "testng.BasicTest#testSuccessOne" );

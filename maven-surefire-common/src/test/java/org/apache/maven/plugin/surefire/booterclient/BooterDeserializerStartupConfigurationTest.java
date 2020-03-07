@@ -20,11 +20,27 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import junit.framework.TestCase;
-import org.apache.maven.surefire.booter.*;
+import org.apache.maven.surefire.shared.io.FileUtils;
+import org.apache.maven.surefire.booter.AbstractPathConfiguration;
+import org.apache.maven.surefire.booter.BooterDeserializer;
+import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.booter.ClasspathConfiguration;
+import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
+import org.apache.maven.surefire.booter.ProcessCheckerType;
+import org.apache.maven.surefire.booter.PropertiesWrapper;
+import org.apache.maven.surefire.booter.ProviderConfiguration;
+import org.apache.maven.surefire.booter.StartupConfiguration;
+import org.apache.maven.surefire.booter.Shutdown;
 import org.apache.maven.surefire.cli.CommandLineOption;
 import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.testset.*;
+import org.apache.maven.surefire.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.testset.RunOrderParameters;
+import org.apache.maven.surefire.testset.TestArtifactInfo;
+import org.apache.maven.surefire.testset.TestRequest;
+import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.util.RunOrder;
+import org.junit.After;
+import org.junit.Before;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -46,10 +62,30 @@ import static org.apache.maven.surefire.cli.CommandLineOption.SHOW_ERRORS;
 public class BooterDeserializerStartupConfigurationTest
     extends TestCase
 {
+
+    private static int idx = 0;
+
+    private File basedir;
+
     private final ClasspathConfiguration classpathConfiguration = createClasspathConfiguration();
 
     private final List<CommandLineOption> cli =
         Arrays.asList( LOGGING_LEVEL_DEBUG, SHOW_ERRORS, REACTOR_FAIL_FAST );
+
+    @Before
+    public void setupDirectories() throws IOException
+    {
+        File target = new File( System.getProperty( "user.dir" ), "target" );
+        basedir = new File( target, "BooterDeserializerProviderConfigurationTest-" + ++idx );
+        FileUtils.deleteDirectory( basedir );
+        assertTrue( basedir.mkdirs() );
+    }
+
+    @After
+    public void deleteDirectories() throws IOException
+    {
+        FileUtils.deleteDirectory( basedir );
+    }
 
     public void testProvider()
         throws IOException
@@ -65,6 +101,11 @@ public class BooterDeserializerStartupConfigurationTest
 
         assertTrue( reloadedClasspathConfiguration instanceof ClasspathConfiguration );
         assertCpConfigEquals( classpathConfiguration, (ClasspathConfiguration) reloadedClasspathConfiguration );
+    }
+
+    public void testProcessChecker() throws IOException
+    {
+        assertEquals( ProcessCheckerType.ALL, getReloadedStartupConfiguration().getProcessChecker() );
     }
 
     private void assertCpConfigEquals( ClasspathConfiguration expectedConfiguration,
@@ -93,6 +134,18 @@ public class BooterDeserializerStartupConfigurationTest
         assertEquals( current, saveAndReload( testStartupConfiguration ).isManifestOnlyJarRequestedAndUsable() );
     }
 
+    public void testProcessCheckerAll() throws IOException
+    {
+        assertEquals( ProcessCheckerType.ALL, getReloadedStartupConfiguration().getProcessChecker() );
+    }
+
+    public void testProcessCheckerNull() throws IOException
+    {
+        StartupConfiguration startupConfiguration = new StartupConfiguration( "com.provider", classpathConfiguration,
+                getManifestOnlyJarForkConfiguration(), false, false, null );
+        assertNull( saveAndReload( startupConfiguration ).getProcessChecker() );
+    }
+
     private ClasspathConfiguration createClasspathConfiguration()
     {
         Classpath testClassPath = new Classpath( Arrays.asList( "CP1", "CP2" ) );
@@ -100,16 +153,15 @@ public class BooterDeserializerStartupConfigurationTest
         return new ClasspathConfiguration( testClassPath, providerClasspath, Classpath.emptyClasspath(), true, true );
     }
 
-    public static ClassLoaderConfiguration getSystemClassLoaderConfiguration()
+    private static ClassLoaderConfiguration getSystemClassLoaderConfiguration()
     {
         return new ClassLoaderConfiguration( true, false );
     }
 
-    public static ClassLoaderConfiguration getManifestOnlyJarForkConfiguration()
+    private static ClassLoaderConfiguration getManifestOnlyJarForkConfiguration()
     {
         return new ClassLoaderConfiguration( true, true );
     }
-
 
     private StartupConfiguration getReloadedStartupConfiguration()
         throws IOException
@@ -121,15 +173,15 @@ public class BooterDeserializerStartupConfigurationTest
     private StartupConfiguration saveAndReload( StartupConfiguration startupConfiguration )
         throws IOException
     {
-        final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration( (String) null );
+        final ForkConfiguration forkConfiguration = ForkConfigurationTest.getForkConfiguration( basedir, null );
         PropertiesWrapper props = new PropertiesWrapper( new HashMap<String, String>() );
         BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
         String aTest = "aTest";
-        final File propsTest =
-            booterSerializer.serialize( props, getProviderConfiguration(), startupConfiguration, aTest, false, null );
+        File propsTest = booterSerializer.serialize( props, getProviderConfiguration(), startupConfiguration, aTest,
+                false, null, 1 );
         BooterDeserializer booterDeserializer = new BooterDeserializer( new FileInputStream( propsTest ) );
         assertNull( booterDeserializer.getPluginPid() );
-        return booterDeserializer.getProviderConfiguration();
+        return booterDeserializer.getStartupConfiguration();
     }
 
     private ProviderConfiguration getProviderConfiguration()
@@ -142,18 +194,18 @@ public class BooterDeserializerStartupConfigurationTest
         ReporterConfiguration reporterConfiguration = new ReporterConfiguration( cwd, true );
         TestRequest testSuiteDefinition =
             new TestRequest( Arrays.asList( getSuiteXmlFileStrings() ), getTestSourceDirectory(),
-                             new TestListResolver( "aUserRequestedTest#aUserRequestedTestMethod" ));
+                             new TestListResolver( "aUserRequestedTest#aUserRequestedTestMethod" ) );
 
         RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null );
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, true, reporterConfiguration,
                 new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new HashMap<String, String>(),
-                BooterDeserializerProviderConfigurationTest.aTestTyped, true, cli, 0, Shutdown.DEFAULT, 0 );
+                BooterDeserializerProviderConfigurationTest.TEST_TYPED, true, cli, 0, Shutdown.DEFAULT, 0 );
     }
 
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )
     {
         return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, false,
-                                         false );
+                                         false, ProcessCheckerType.ALL );
     }
 
     private File getTestSourceDirectory()

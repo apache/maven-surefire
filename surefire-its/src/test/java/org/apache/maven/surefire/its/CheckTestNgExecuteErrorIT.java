@@ -26,11 +26,13 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FilenameFilter;
 
+import static java.util.Objects.requireNonNull;
 import static org.fest.assertions.Assertions.assertThat;
 
 
 /**
- * Test for checking that the output from a forked suite is properly captured even if the suite encounters a severe error.
+ * Test for checking that the output from a forked suite is properly captured even if the suite encounters
+ * a severe error.
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
@@ -40,15 +42,16 @@ public class CheckTestNgExecuteErrorIT
 {
     @Test
     public void executionError()
-        throws Exception
     {
         OutputValidator outputValidator = unpack( "/testng-execute-error" )
-                                                  .maven()
-                                                  .sysProp( "testNgVersion", "5.7" )
-                                                  .sysProp( "testNgClassifier", "jdk15" )
-                                                  .showErrorStackTraces()
-                                                  .withFailure()
-                                                  .executeTest();
+                .maven()
+                .sysProp( "testNgVersion", "5.7" )
+                .sysProp( "testNgClassifier", "jdk15" )
+                .showErrorStackTraces()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog( "Cyclic graph of methods" )
+                .verifyTextInLog( "at org.apache.maven.surefire.testng.TestNGExecutor.run" );
 
         File reportDir = outputValidator.getSurefireReportsDirectory();
         String[] dumpFiles = reportDir.list( new FilenameFilter()
@@ -56,14 +59,18 @@ public class CheckTestNgExecuteErrorIT
                                                  @Override
                                                  public boolean accept( File dir, String name )
                                                  {
-                                                     return name.endsWith( ".dump" );
+                                                     return name.endsWith( "-jvmRun1.dump" );
                                                  }
-                                             });
-        assertThat( dumpFiles ).isNotEmpty();
-        for ( String dump : dumpFiles )
+                                             } );
+
+        assertThat( dumpFiles )
+                .isNotNull()
+                .isNotEmpty();
+
+        for ( String dump : requireNonNull( dumpFiles ) )
         {
             outputValidator.getSurefireReportsFile( dump )
-                    .assertContainsText( "at org.apache.maven.surefire.testng.TestNGExecutor.run" );
+                    .assertContainsText( "Cyclic graph of methods" );
         }
     }
 }

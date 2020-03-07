@@ -54,7 +54,7 @@ public class RunOrder
      */
     public static RunOrder[] valueOfMulti( String values )
     {
-        List<RunOrder> result = new ArrayList<RunOrder>();
+        List<RunOrder> result = new ArrayList<>();
         if ( values != null )
         {
             StringTokenizer stringTokenizer = new StringTokenizer( values, "," );

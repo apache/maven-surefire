@@ -86,7 +86,7 @@ public final class JUnitCoreParameters
 
     private static Collection<String> lowerCase( String... elements )
     {
-        ArrayList<String> lowerCase = new ArrayList<String>();
+        ArrayList<String> lowerCase = new ArrayList<>();
         for ( String element : elements )
         {
             lowerCase.add( element.toLowerCase() );

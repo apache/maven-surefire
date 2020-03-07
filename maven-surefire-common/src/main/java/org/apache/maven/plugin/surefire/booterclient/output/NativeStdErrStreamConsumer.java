@@ -20,7 +20,7 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  */
 
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
-import org.apache.maven.shared.utils.cli.StreamConsumer;
+import org.apache.maven.surefire.shared.utils.cli.StreamConsumer;
 
 /**
  * Used by forked JMV, see {@link org.apache.maven.plugin.surefire.booterclient.ForkStarter}.
@@ -42,6 +42,7 @@ public final class NativeStdErrStreamConsumer
     @Override
     public void consumeLine( String line )
     {
-        InPluginProcessDumpSingleton.getSingleton().dumpText( line, defaultReporterFactory );
+        InPluginProcessDumpSingleton.getSingleton()
+                .dumpStreamText( line, defaultReporterFactory.getReportsDirectory() );
     }
 }

@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
-import org.apache.maven.shared.utils.cli.StreamConsumer;
+import org.apache.maven.surefire.shared.utils.cli.StreamConsumer;
 import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
 
 import java.io.Closeable;
@@ -40,9 +40,9 @@ public final class ThreadedStreamConsumer
 {
     private static final String END_ITEM = "";
 
-    private static final int ITEM_LIMIT_BEFORE_SLEEP = 10 * 1000;
+    private static final int ITEM_LIMIT_BEFORE_SLEEP = 10_000;
 
-    private final BlockingQueue<String> items = new ArrayBlockingQueue<String>( ITEM_LIMIT_BEFORE_SLEEP );
+    private final BlockingQueue<String> items = new ArrayBlockingQueue<>( ITEM_LIMIT_BEFORE_SLEEP );
 
     private final AtomicBoolean stop = new AtomicBoolean();
 
@@ -76,7 +76,7 @@ public final class ThreadedStreamConsumer
         @Override
         public void run()
         {
-            while ( !ThreadedStreamConsumer.this.stop.get() )
+            while ( !ThreadedStreamConsumer.this.stop.get() || !ThreadedStreamConsumer.this.items.isEmpty() )
             {
                 try
                 {
@@ -115,7 +115,11 @@ public final class ThreadedStreamConsumer
     @Override
     public void consumeLine( String s )
     {
-        if ( stop.get() && !thread.isAlive() )
+        if ( stop.get() )
+        {
+            return;
+        }
+        else if ( !thread.isAlive() )
         {
             items.clear();
             return;
@@ -138,7 +142,6 @@ public final class ThreadedStreamConsumer
     {
         if ( stop.compareAndSet( false, true ) )
         {
-            items.clear();
             try
             {
                 items.put( END_ITEM );

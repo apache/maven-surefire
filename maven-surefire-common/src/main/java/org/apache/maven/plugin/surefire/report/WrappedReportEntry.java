@@ -29,6 +29,7 @@ import java.util.Map;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.maven.plugin.surefire.report.ReporterUtils.formatElapsedTime;
 import static org.apache.maven.surefire.util.internal.StringUtils.NL;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 
 /**
  * @author Kristian Rosenvold
@@ -74,6 +75,12 @@ public class WrappedReportEntry
         return elapsed;
     }
 
+    @Override
+    public int getElapsed( int fallback )
+    {
+        return elapsed == null ? fallback : elapsed;
+    }
+
     public ReportEntryType getReportEntryType()
     {
         return reportEntryType;
@@ -96,14 +103,26 @@ public class WrappedReportEntry
     }
 
     @Override
+    public String getSourceText()
+    {
+        return original.getSourceText();
+    }
+
+    @Override
     public String getName()
     {
         return original.getName();
     }
 
+    @Override
+    public String getNameText()
+    {
+        return original.getNameText();
+    }
+
     public String getClassMethodName()
     {
-        return getSourceName() + "." + getName();
+        return original.getSourceName() + "." + original.getName();
     }
 
     @Override
@@ -135,15 +154,28 @@ public class WrappedReportEntry
         return formatElapsedTime( getElapsed() );
     }
 
-    public String getReportName()
+    String getReportSourceName()
     {
-        final int i = getName().lastIndexOf( "(" );
-        return i > 0 ? getName().substring( 0, i ) : getName();
+        String sourceName = getSourceName();
+        String sourceText = getSourceText();
+        return isBlank( sourceText ) ? sourceName : sourceText;
     }
 
-    public String getReportName( String suffix )
+    String getReportSourceName( String suffix )
     {
-        return suffix != null && !suffix.isEmpty() ? getReportName() + "(" + suffix + ")" : getReportName();
+        return isBlank( suffix ) ? getReportSourceName() : getReportSourceName() + "(" + suffix + ")";
+    }
+
+    String getSourceName( String suffix )
+    {
+        return isBlank( suffix ) ? getSourceName() : getSourceName() + "(" + suffix + ")";
+    }
+
+    String getReportName()
+    {
+        String name = getName();
+        String nameText = getNameText();
+        return isBlank( nameText ) ? name : nameText;
     }
 
     public String getOutput( boolean trimStackTrace )
@@ -160,7 +192,8 @@ public class WrappedReportEntry
 
     public String getElapsedTimeSummary()
     {
-        return getName() + "  " + getElapsedTimeVerbose();
+        String description = getName() == null ? getSourceName() : getClassMethodName();
+        return description + "  " + getElapsedTimeVerbose();
     }
 
     public boolean isErrorOrFailure()
@@ -183,6 +216,12 @@ public class WrappedReportEntry
     public String getNameWithGroup()
     {
         return original.getNameWithGroup();
+    }
+
+    @Override
+    public String getReportNameWithGroup()
+    {
+        return original.getReportNameWithGroup();
     }
 
     @Override

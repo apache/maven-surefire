@@ -40,7 +40,7 @@ Using JUnit 5 Platform
     <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-engine</artifactId>
-        <version>5.2.0</version>
+        <version>5.4.0</version>
         <scope>test</scope>
     </dependency>
     [...]
@@ -55,7 +55,7 @@ Using JUnit 5 Platform
   (e.g., <<<src/test/java>>>).
 
   If you want to write and execute JUnit 3 or 4 tests via the JUnit Platform add the Vintage Engine to the
-  dependencies:
+  dependencies, which transitively pulls in (and requires) <<<junit:junit:4.12>>>:
 
 +---+
 <dependencies>
@@ -63,11 +63,121 @@ Using JUnit 5 Platform
     <dependency>
         <groupId>org.junit.vintage</groupId>
         <artifactId>junit-vintage-engine</artifactId>
-        <version>5.2.0</version>
+        <version>5.4.0</version>
         <scope>test</scope>
     </dependency>
     [...]
 </dependencies>
++---+
+
+  For more information on using JUnit 5, that is the JUnit Platform, JUnit Jupiter, and JUnit Vintage,
+  see the {{{https://junit.org/junit5/}JUnit 5 web site}}
+  and the {{{https://junit.org/junit5/docs/current/user-guide/}JUnit 5 User Guide}}.
+
+* Smart Resolution of Jupiter Engine and Vintage Engine for JUnit4 (since plugin version 3.0.0-M4)
+
+  JUnit5 API artifact and your test sources become isolated from engine.
+
+  Normally the developer does not want to access internal classes of JUnit5 engine (e.g. <<<5.4.0>>>). In this example
+  the POM has only Jupiter API dependency in test classpath.
+
++---+
+<dependencies>
+    [...]
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.4.0</version>
+        <scope>test</scope>
+    </dependency>
+    [...]
+</dependencies>
+...
+<build>
+    <plugins>
+        [...]
+        <plugin>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>${project.artifactId}</artifactId>
+            <version>${project.version}</version>
+            [... configuration or goals and executions ...]
+        </plugin>
+        [...]
+    </plugins>
+</build>
+...
++---+
+
+  In the following example the engine artifact appears in plugin dependencies and the engine is resolved by the plugin
+  and downloaded from a remote repository for plugins. You may want to update the version of engine with fixed bugs in
+  <<<5.3.2>>> but the API version <<<5.3.0>>> stays intact!
+
++---+
+<dependencies>
+    [...]
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.3.0</version>
+        <scope>test</scope>
+    </dependency>
+    [...]
+</dependencies>
+...
+<build>
+    <plugins>
+        [...]
+        <plugin>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>${project.artifactId}</artifactId>
+            <version>${project.version}</version>
+            <dependencies>
+                <dependency>
+                    <groupId>org.junit.jupiter</groupId>
+                    <artifactId>junit-jupiter-engine</artifactId>
+                    <version>5.3.2</version>
+                </dependency>
+            </dependencies>
+        </plugin>
+        [...]
+    </plugins>
+</build>
+...
++---+
+
+
+  Similar with JUnit4 in test dependencies of your project POM. The Vintage engine artifact is in plugin dependencies.
+
++---+
+<dependencies>
+    [...]
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13</version>
+        <scope>test</scope>
+    </dependency>
+    [...]
+</dependencies>
+...
+<build>
+    <plugins>
+        ...
+        <plugin>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>${project.artifactId}</artifactId>
+            <version>${project.version}</version>
+            <dependencies>
+                <dependency>
+                    <groupId>org.junit.vintage</groupId>
+                    <artifactId>junit-vintage-engine</artifactId>
+                    <version>5.4.0</version>
+                </dependency>
+            </dependencies>
+        </plugin>
+    </plugins>
+</build>
+...
 +---+
 
 * Provider Selection
@@ -99,11 +209,12 @@ else
    you can execute <<<mvn -Dtest=org.example.MyTest test>>> from the command line.
 
 
-* Filtering by Test Class Names
+* Filtering by Test Class Names for Maven ${thisPlugin}
 
-   The Maven Surefire Plugin will scan for test classes whose fully qualified names match
+   The Maven ${thisPlugin} Plugin will scan for test classes whose fully qualified names match
    the following patterns.
 
+#{if}(${project.artifactId}=="maven-surefire-plugin")
    * <<<**/Test*.java>>>
 
    * <<<**/*Test.java>>>
@@ -111,14 +222,21 @@ else
    * <<<**/*Tests.java>>>
 
    * <<<**/*TestCase.java>>>
+#{else}
+   * <<<**/IT*.java>>>
+
+   * <<<**/*IT.java>>>
+
+   * <<<**/*ITCase.java>>>
+#{end}
 
    Moreover, it will exclude all nested classes (including static member classes) by default.
 
    Note, however, that you can override this default behavior by configuring explicit
-   `include` and `exclude` rules in your `pom.xml` file. For example, to keep Maven Surefire
+   `include` and `exclude` rules in your `pom.xml` file. For example, to keep Maven ${thisPlugin}
    from excluding static member classes, you can override its exclude rules.
 
-* Overriding exclude rules of Maven Surefire
+* Overriding exclude rules of Maven ${thisPlugin}
 
 +---+
 ...
@@ -147,7 +265,7 @@ else
 
     * To include <<<tags>>> or <<<tag expressions>>>, use <<<groups>>>.
 
-    * To exclude <<<tags>>> or <<<tag expressions>>>, use either <<<excludedGroups>>>.
+    * To exclude <<<tags>>> or <<<tag expressions>>>, use <<<excludedGroups>>>.
 
 +---+
 ...
@@ -190,6 +308,7 @@ else
                         junit.jupiter.conditions.deactivate = *
                         junit.jupiter.extensions.autodetection.enabled = true
                         junit.jupiter.testinstance.lifecycle.default = per_class
+                        junit.jupiter.execution.parallel.enabled = true
                     </configurationParameters>
                 </properties>
             </configuration>
@@ -198,3 +317,56 @@ else
 </build>
 ...
 +---+
+
+
+* Surefire Extensions and Reports Configuration for @DisplayName
+
+   Since plugin version 3.0.0-M4 you can use fine grained configuration of reports and enable phrased names together
+   with <<<@DisplayName>>> in you tests.
+   This is the complete list of attributes of particular objects. You do not have to specify e.g. <<<disable>>>,
+   <<<version>>> and <<<encoding>>>. The boolean values reach default values <<<false>>> if not specified otherwise.
+
++---+
+...
+<build>
+    <plugins>
+        ...
+        <plugin>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>${project.artifactId}</artifactId>
+            <version>${project.version}</version>
+            <configuration>
+                <statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
+                    <disable>false</disable>
+                    <version>3.0</version>
+                    <usePhrasedFileName>false</usePhrasedFileName>
+                    <usePhrasedTestSuiteClassName>true</usePhrasedTestSuiteClassName>
+                    <usePhrasedTestCaseClassName>true</usePhrasedTestCaseClassName>
+                    <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
+                </statelessTestsetReporter>
+                <consoleOutputReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5ConsoleOutputReporter">
+                    <disable>false</disable>
+                    <encoding>UTF-8</encoding>
+                    <usePhrasedFileName>false</usePhrasedFileName>
+                </consoleOutputReporter>
+                <statelessTestsetInfoReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfoReporter">
+                    <disable>false</disable>
+                    <usePhrasedFileName>false</usePhrasedFileName>
+                    <usePhrasedClassNameInRunning>true</usePhrasedClassNameInRunning>
+                    <usePhrasedClassNameInTestCaseSummary>true</usePhrasedClassNameInTestCaseSummary>
+                </statelessTestsetInfoReporter>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+...
++---+
+
+   Default implementations of these extensions are
+   <<<org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter>>>,
+   <<<org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter>>>, and
+   <<<org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter>>>.
+
+   The aim of extensions is to let the users customizing the default behavior. We are keen on listing useful
+   extensions on Apache Maven Surefire site if you propagate your extensions on GitHub.
+

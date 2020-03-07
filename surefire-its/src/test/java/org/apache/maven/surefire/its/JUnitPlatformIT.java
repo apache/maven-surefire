@@ -19,70 +19,99 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import com.googlecode.junittoolbox.ParallelParameterized;
+import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
-import static java.lang.System.getProperty;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assume.assumeThat;
+import java.util.ArrayList;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
+
+/**
+ *
+ */
+@RunWith( ParallelParameterized.class )
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class JUnitPlatformIT
-    extends SurefireJUnit4IntegrationTestCase
+        extends SurefireJUnit4IntegrationTestCase
 {
+    @Parameter
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
+    public String junit5Version;
+
+    @Parameter( 1 )
+    @SuppressWarnings( "checkstyle:visibilitymodifier" )
+    public String jqwikVersion;
+
+    @Parameters( name = "{0}" )
+    public static Iterable<Object[]> artifactVersions()
+    {
+        ArrayList<Object[]> args = new ArrayList<>();
+        args.add( new Object[] { "5.2.0", "0.8.0" } );
+        args.add( new Object[] { "5.3.0", "0.8.15" } );
+        args.add( new Object[] { "5.3.2", "0.9.0" } );
+        args.add( new Object[] { "5.4.0", "0.9.3" } );
+        args.add( new Object[] { "5.4.2", "1.0.0" } );
+        args.add( new Object[] { "5.5.0", "1.1.0" } );
+        args.add( new Object[] { "5.5.2", "1.1.0" } );
+        args.add( new Object[] { "5.6.0", "1.2.2" } );
+        //args.add( new Object[] { "5.7.0-SNAPSHOT", "1.2.2" } );
+        return args;
+    }
+
     @Before
     public void setUp()
     {
-        assumeThat( "java.specification.version: ",
-                    getProperty( "java.specification.version" ), is( greaterThanOrEqualTo( "1.8" ) ) );
-    }
-
-    @Test
-    public void testJupiterEngine()
-    {
-        unpack( "/junit-platform-engine-jupiter" ).executeTest().verifyErrorFree( 5 );
+        assumeJavaVersion( 1.8d );
     }
 
     @Test
     public void testVintageEngine()
     {
-        unpack( "/junit-platform-engine-vintage" ).executeTest().verifyErrorFree( 1 );
+        unpack( "junit-platform-engine-vintage", "-" + junit5Version + "-" + jqwikVersion )
+                .sysProp( "junit5.version", junit5Version )
+                .sysProp( "jqwik.version", jqwikVersion )
+                .executeTest()
+                .verifyErrorFree( 1 );
     }
 
     @Test
     public void testJQwikEngine()
     {
-        unpack( "/junit-platform-engine-jqwik" ).executeTest().verifyErrorFree( 1 );
+        unpack( "junit-platform-engine-jqwik", "-" + junit5Version + "-" + jqwikVersion )
+                .sysProp( "junit5.version", junit5Version )
+                .sysProp( "jqwik.version", jqwikVersion )
+                .executeTest()
+                .verifyErrorFree( 1 );
     }
 
     @Test
     public void testMultipleEngines()
     {
-        unpack( "/junit-platform-multiple-engines" ).executeTest().verifyErrorFree( 7 );
-    }
+        OutputValidator validator =
+                unpack( "junit-platform-multiple-engines", "-" + junit5Version + "-" + jqwikVersion )
+                .sysProp( "junit5.version", junit5Version )
+                .sysProp( "jqwik.version", jqwikVersion )
+                .executeTest()
+                .verifyErrorFree( 7 );
 
-    @Test
-    public void testJUnitPlatform_1_0_0()
-    {
-        unpack( "/junit-platform-1.0.0" ).executeTest().verifyErrorFree( 1 );
-    }
 
-    @Test
-    public void testJUnitPlatform_1_1_1()
-    {
-        unpack( "/junit-platform-1.1.1" ).executeTest().verifyErrorFree( 1 );
-    }
-
-    @Test
-    public void testJUnitPlatform_1_2_0()
-    {
-        unpack( "/junit-platform-1.2.0" ).executeTest().verifyErrorFree( 1 );
-    }
-
-    @Test
-    public void testTags()
-    {
-        unpack( "/junit-platform-tags" ).executeTest().verifyErrorFree( 2 );
+        validator.getSurefireReportsFile( "TEST-junitplatformenginejupiter.BasicJupiterTest.xml", UTF_8 )
+                .assertContainsText( "<testcase name=\"test(TestInfo)\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
+                .assertContainsText( "<testcase name=\"add(int, int, int)[1]\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
+                .assertContainsText( "<testcase name=\"add(int, int, int)[2]\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
+                .assertContainsText( "<testcase name=\"add(int, int, int)[3]\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
+                .assertContainsText( "<testcase name=\"add(int, int, int)[4]\" "
+                        + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" );
     }
 }

@@ -29,7 +29,7 @@ public class CheckTestNgListenersIT
     extends SurefireJUnit4IntegrationTestCase
 {
     @Test
-    public void TestNgListenerReporter()
+    public void testNgListenerReporter()
     {
         unpack( "testng-listeners" ).mavenTestFailureIgnore( true ).executeTest().assertTestSuiteResults( 1, 0, 1, 0 );
     }

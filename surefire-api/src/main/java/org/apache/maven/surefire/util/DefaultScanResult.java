@@ -64,7 +64,7 @@ public class DefaultScanResult
 
     public static DefaultScanResult from( Map<String, String> properties )
     {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         int i = 0;
         while ( true )
         {
@@ -90,7 +90,7 @@ public class DefaultScanResult
     @Override
     public TestsToRun applyFilter( ScannerFilter scannerFilter, ClassLoader testClassLoader )
     {
-        Set<Class<?>> result = new LinkedHashSet<Class<?>>();
+        Set<Class<?>> result = new LinkedHashSet<>();
 
         int size = size();
         for ( int i = 0; i < size; i++ )
@@ -111,7 +111,7 @@ public class DefaultScanResult
     @Override
     public List<Class<?>> getClassesSkippedByValidation( ScannerFilter scannerFilter, ClassLoader testClassLoader )
     {
-        List<Class<?>> result = new ArrayList<Class<?>>();
+        List<Class<?>> result = new ArrayList<>();
 
         int size = size();
         for ( int i = 0; i < size; i++ )
@@ -145,7 +145,7 @@ public class DefaultScanResult
     {
         if ( other != null )
         {
-            List<String> src = new ArrayList<String>( classes );
+            List<String> src = new ArrayList<>( classes );
             src.addAll( other.classes );
             return new DefaultScanResult( src );
         }

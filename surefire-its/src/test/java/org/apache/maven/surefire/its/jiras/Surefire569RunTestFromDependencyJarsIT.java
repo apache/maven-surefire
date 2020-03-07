@@ -29,16 +29,17 @@ import org.junit.Test;
  *
  * @author Aslak Knutsen
  */
-public class Surefire569RunTestFromDependencyJarsIT
-	extends	SurefireJUnit4IntegrationTestCase {
+public class Surefire569RunTestFromDependencyJarsIT extends SurefireJUnit4IntegrationTestCase
+{
 
-	@Test
-	public void shouldScanAndRunTestsInDependencyJars() throws Exception {
-		SurefireLauncher launcher = unpack( "surefire-569-RunTestFromDependencyJars" );
-		launcher.addGoal("test").addGoal("install");
-		launcher.executeCurrentGoals();
+    @Test
+    public void shouldScanAndRunTestsInDependencyJars() throws Exception
+    {
+        SurefireLauncher launcher = unpack( "surefire-569-RunTestFromDependencyJars" );
+        launcher.addGoal( "test" ).addGoal( "install" );
+        launcher.executeCurrentGoals();
 
-		OutputValidator module1 = launcher.getSubProjectValidator("module1");
-		module1.assertTestSuiteResults(1, 0, 0, 0);
-	}
+        OutputValidator module1 = launcher.getSubProjectValidator( "module1" );
+        module1.assertTestSuiteResults( 1, 0, 0, 0 );
+    }
 }

@@ -19,6 +19,9 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
+/**
+ *
+ */
 public final class Utils
 {
     private Utils()

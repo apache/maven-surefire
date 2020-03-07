@@ -143,8 +143,8 @@ public class ForkModeIT
     @Test
     public void testForkCountTwoNoReuse()
     {
-        String[] pids =
-            doTest( unpack( getProject() ).setForkJvm().forkCount( 2 ).reuseForks( false ).addGoal( "-DsleepLength=7200" ) );
+        String[] pids = doTest( unpack( getProject() ).setForkJvm().forkCount( 2 ).reuseForks( false )
+                .addGoal( "-DsleepLength=7200" ) );
         assertDifferentPids( pids );
         assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
     }
@@ -174,7 +174,7 @@ public class ForkModeIT
 
     private void assertDifferentPids( String[] pids, int numOfDifferentPids )
     {
-        Set<String> pidSet = new HashSet<String>( Arrays.asList( pids ) );
+        Set<String> pidSet = new HashSet<>( Arrays.asList( pids ) );
         assertEquals( "number of different pids is not as expected", numOfDifferentPids, pidSet.size() );
     }
 

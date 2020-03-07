@@ -25,17 +25,15 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
-/*
+/**
  * @author Kristian Rosenvold
  */
-
 public class TestsToRunTest
     extends TestCase
 {
     public void testGetTestSets()
-        throws Exception
     {
-        Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
+        Set<Class<?>> classes = new LinkedHashSet<>();
         classes.add( T1.class );
         classes.add( T2.class );
         TestsToRun testsToRun = new TestsToRun( classes );
@@ -49,7 +47,7 @@ public class TestsToRunTest
 
     public void testContainsAtLeast()
     {
-        Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
+        Set<Class<?>> classes = new LinkedHashSet<>();
         classes.add( T1.class );
         classes.add( T2.class );
         TestsToRun testsToRun = new TestsToRun( classes );
@@ -59,7 +57,7 @@ public class TestsToRunTest
 
     public void testContainsExactly()
     {
-        Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
+        Set<Class<?>> classes = new LinkedHashSet<>();
         classes.add( T1.class );
         classes.add( T2.class );
         TestsToRun testsToRun = new TestsToRun( classes );
@@ -70,7 +68,7 @@ public class TestsToRunTest
 
     public void testToRunArray()
     {
-        Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
+        Set<Class<?>> classes = new LinkedHashSet<>();
         classes.add( T1.class );
         classes.add( T2.class );
         TestsToRun testsToRun = new TestsToRun( classes );
@@ -80,18 +78,18 @@ public class TestsToRunTest
 
     public void testGetClassByName()
     {
-        Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
+        Set<Class<?>> classes = new LinkedHashSet<>();
         classes.add( T1.class );
         classes.add( T2.class );
         TestsToRun testsToRun = new TestsToRun( classes );
         assertEquals( T1.class, testsToRun.getClassByName( "org.apache.maven.surefire.util.TestsToRunTest$T1" ) );
         assertEquals( T2.class, testsToRun.getClassByName( "org.apache.maven.surefire.util.TestsToRunTest$T2" ) );
-        assertEquals( null, testsToRun.getClassByName( "org.apache.maven.surefire.util.TestsToRunTest$T3" ) );
+        assertNull( testsToRun.getClassByName( "org.apache.maven.surefire.util.TestsToRunTest$T3" ) );
     }
 
     public void testTwoIterators()
     {
-        Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
+        Set<Class<?>> classes = new LinkedHashSet<>();
         classes.add( T1.class );
         classes.add( T2.class );
         TestsToRun testsToRun = new TestsToRun( classes );
@@ -110,12 +108,12 @@ public class TestsToRunTest
         assertFalse( it1.hasNext() );
     }
 
-    class T1
+    static class T1
     {
 
     }
 
-    class T2
+    static class T2
     {
 
     }

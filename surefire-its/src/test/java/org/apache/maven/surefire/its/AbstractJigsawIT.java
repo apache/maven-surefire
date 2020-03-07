@@ -47,7 +47,7 @@ public abstract class AbstractJigsawIT
 
     protected abstract String getProjectDirectoryName();
 
-    protected SurefireLauncher assumeJigsaw() throws IOException
+    protected SurefireLauncher assumeJava9() throws IOException
     {
         assumeTrue( "There's no JDK 9 provided.",
                           isJavaVersion9AtLeast() || EXT_JDK_HOME != null && isExtJavaVerion9AtLeast() );
@@ -64,9 +64,14 @@ public abstract class AbstractJigsawIT
         return unpack();
     }
 
+    protected String getSuffix()
+    {
+        return null;
+    }
+
     private SurefireLauncher unpack()
     {
-        return unpack( getProjectDirectoryName() );
+        return unpack( getProjectDirectoryName(), getSuffix() );
     }
 
     private static boolean isJavaVersion9AtLeast()
@@ -81,9 +86,10 @@ public abstract class AbstractJigsawIT
                 + EXT_JDK_HOME + File.separator + "release", release.exists() );
 
         Properties properties = new Properties();
-        InputStream is = new FileInputStream( release );
-        properties.load( is );
-        is.close();
+        try ( InputStream is = new FileInputStream( release ) )
+        {
+            properties.load( is );
+        }
         String javaVersion = properties.getProperty( "JAVA_VERSION" ).replace( "\"", "" );
         StringTokenizer versions = new StringTokenizer( javaVersion, "._" );
 

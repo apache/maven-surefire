@@ -32,7 +32,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.cutTestClassAndMethod;
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClassMethod;
 import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDownToZero;
 
 /**
@@ -46,9 +46,9 @@ import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDown
 public class Notifier
     extends RunNotifier
 {
-    private final Collection<RunListener> listeners = new ArrayList<RunListener>();
+    private final Collection<RunListener> listeners = new ArrayList<>();
 
-    private final Queue<String> testClassNames = new ConcurrentLinkedQueue<String>();
+    private final Queue<String> testClassNames = new ConcurrentLinkedQueue<>();
 
     private final AtomicInteger skipAfterFailureCount;
 
@@ -100,7 +100,7 @@ public class Notifier
         super.fireTestStarted( description );
         if ( !testClassNames.isEmpty() )
         {
-            testClassNames.remove( cutTestClassAndMethod( description ).getClazz() );
+            testClassNames.remove( toClassMethod( description ).getClazz() );
         }
     }
 

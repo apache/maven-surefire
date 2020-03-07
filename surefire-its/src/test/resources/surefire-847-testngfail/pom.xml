@@ -54,7 +54,7 @@
   </build>
   <properties>
     <defaultSuiteFile>${basedir}/src/test/resources/suite.xml</defaultSuiteFile>
-    <maven.compiler.source>1.6</maven.compiler.source>
-    <maven.compiler.target>1.6</maven.compiler.target>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
   </properties>
 </project>

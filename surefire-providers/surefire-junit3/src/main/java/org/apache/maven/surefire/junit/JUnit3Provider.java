@@ -28,6 +28,7 @@ import org.apache.maven.surefire.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.ReporterFactory;
 import org.apache.maven.surefire.report.RunListener;
 import org.apache.maven.surefire.report.SimpleReportEntry;
+import org.apache.maven.surefire.report.TestSetReportEntry;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.ReflectionUtils;
@@ -98,8 +99,8 @@ public class JUnit3Provider
         {
             final RunListener reporter = reporterFactory.createReporter();
             ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
-            final Map<String, String> systemProperties = systemProps();
-            final String smClassName = systemProperties.get( "surefire.security.manager" );
+            Map<String, String> systemProperties = systemProps();
+            String smClassName = System.getProperty( "surefire.security.manager" );
             if ( smClassName != null )
             {
                 SecurityManager securityManager =
@@ -112,7 +113,6 @@ public class JUnit3Provider
                 SurefireTestSet surefireTestSet = createTestSet( clazz );
                 executeTestSet( surefireTestSet, reporter, testClassLoader, systemProperties );
             }
-
         }
         finally
         {
@@ -122,7 +122,6 @@ public class JUnit3Provider
     }
 
     private SurefireTestSet createTestSet( Class<?> clazz )
-        throws TestSetFailedException
     {
         return reflector.isJUnit3Available() && jUnit3TestChecker.accept( clazz )
             ? new JUnitTestSet( clazz, reflector )
@@ -133,13 +132,19 @@ public class JUnit3Provider
                                  Map<String, String> systemProperties )
         throws TestSetFailedException
     {
-        SimpleReportEntry report = new SimpleReportEntry( getClass().getName(), testSet.getName(), systemProperties );
+        String clazz = testSet.getName();
 
-        reporter.testSetStarting( report );
-
-        testSet.execute( reporter, classLoader );
-
-        reporter.testSetCompleted( report );
+        try
+        {
+            TestSetReportEntry started = new SimpleReportEntry( clazz, null, null, null );
+            reporter.testSetStarting( started );
+            testSet.execute( reporter, classLoader );
+        }
+        finally
+        {
+            TestSetReportEntry completed = new SimpleReportEntry( clazz, null, null, null, systemProperties );
+            reporter.testSetCompleted( completed );
+        }
     }
 
     private TestsToRun scanClassPath()

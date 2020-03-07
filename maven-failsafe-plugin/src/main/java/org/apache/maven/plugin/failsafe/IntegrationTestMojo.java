@@ -19,7 +19,6 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
@@ -32,12 +31,9 @@ import org.apache.maven.surefire.suite.RunResult;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 import static org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils.writeSummary;
 
@@ -63,7 +59,7 @@ public class IntegrationTestMojo
     @Parameter
     private File classesDirectory;
 
-    @Parameter( readonly = true, defaultValue = "${project.build.outputDirectory}" )
+    @Parameter( defaultValue = "${project.build.outputDirectory}", readonly = true, required = true )
     private File defaultClassesDirectory;
 
     /**
@@ -266,7 +262,7 @@ public class IntegrationTestMojo
     private String encoding;
 
     /**
-     * (JUnit 4+ providers)
+     * (JUnit 4+ providers and JUnit 5+ providers since 3.0.0-M4)
      * The number of times each failing test will be rerun. If set larger than 0, rerun failing tests immediately after
      * they fail. If a failing test passes in any of those reruns, it will be marked as pass and reported as a "flake".
      * However, all the failing attempts will be recorded.
@@ -322,6 +318,8 @@ public class IntegrationTestMojo
      * **{@literal /}NotIncludedByDefault.java
      * %regex[.*IT.*|.*Not.*]
      * </code></pre>
+     *
+     * @since 2.13
      */
     @Parameter( property = "failsafe.includesFile" )
     private File includesFile;
@@ -335,6 +333,8 @@ public class IntegrationTestMojo
      * **{@literal /}DontRunIT.*
      * %regex[.*IT.*|.*Not.*]
      * </code></pre>
+     *
+     * @since 2.13
      */
     @Parameter( property = "failsafe.excludesFile" )
     private File excludesFile;
@@ -357,10 +357,11 @@ public class IntegrationTestMojo
      * After the plugin process is shutdown by sending <i>SIGTERM signal (CTRL+C)</i>, <i>SHUTDOWN command</i> is
      * received by every forked JVM.
      * <br>
-     * By default ({@code shutdown=testset}) forked JVM would not continue with new test which means that
-     * the current test may still continue to run.
+     * The value is set to ({@code shutdown=exit}) by default (changed in version 3.0.0-M4).
      * <br>
-     * The parameter can be configured with other two values {@code exit} and {@code kill}.
+     * The parameter can be configured with other two values {@code testset} and {@code kill}.
+     * <br>
+     * With({@code shutdown=testset}) the test set may still continue to run in forked JVM.
      * <br>
      * Using {@code exit} forked JVM executes {@code System.exit(1)} after the plugin process has received
      * <i>SIGTERM signal</i>.
@@ -369,8 +370,79 @@ public class IntegrationTestMojo
      *
      * @since 2.19
      */
-    @Parameter( property = "failsafe.shutdown", defaultValue = "testset" )
+    @Parameter( property = "failsafe.shutdown", defaultValue = "exit" )
     private String shutdown;
+
+    /**
+     * Disables modular path (aka Jigsaw project since of Java 9) even if <i>module-info.java</i> is used in project.
+     * <br>
+     * Enabled by default.
+     * If enabled, <i>module-info.java</i> exists and executes with JDK 9+, modular path is used.
+     *
+     * @since 3.0.0-M2
+     */
+    @Parameter( property = "failsafe.useModulePath", defaultValue = "true" )
+    private boolean useModulePath;
+
+    /**
+     * You can selectively exclude individual environment variables by enumerating their keys.
+     * <br>
+     * The environment is a system-dependent mapping from keys to values which is inherited from the Maven process
+     * to the forked Surefire processes. The keys must literally (case sensitive) match in order to exclude
+     * their environment variable.
+     * <br>
+     * Example to exclude three environment variables:
+     * <br>
+     * <i>mvn test -Dfailsafe.excludedEnvironmentVariables=ACME1,ACME2,ACME3</i>
+     *
+     * @since 3.0.0-M4
+     */
+    @Parameter( property = "failsafe.excludedEnvironmentVariables" )
+    private String[] excludedEnvironmentVariables;
+
+    /**
+     * Since 3.0.0-M4 the process checkers are disabled.
+     * You can enable them namely by setting {@code ping} and {@code native} or {@code all} in this parameter.
+     * <br>
+     * The checker is useful in situations when you kill the build on a CI system and you want the Surefire forked JVM
+     * to kill the tests asap and free all handlers on the file system been previously used by the JVM and by the tests.
+     *
+     * <br>
+     *
+     * The {@code ping} should be safely used together with ZGC or Shenandoah Garbage Collector.
+     * Due to the {@code ping} relies on timing of the PING (triggered every 30 seconds), slow GCs may pause
+     * the timers and pretend that the parent process of the forked JVM does not exist.
+     *
+     * <br>
+     *
+     * The {@code native} is very fast checker.
+     * It is useful mechanism on Unix based systems, Linux distributions and Alpine/BusyBox Linux.
+     * See the JIRA <a href="https://issues.apache.org/jira/browse/SUREFIRE-1631">SUREFIRE-1631</a> for Windows issues.
+     *
+     * <br>
+     *
+     * Another useful configuration parameter is {@code forkedProcessTimeoutInSeconds}.
+     * <br>
+     * See the Frequently Asked Questions page with more details:<br>
+     * <a href="http://maven.apache.org/surefire/maven-surefire-plugin/faq.html#kill-jvm">
+     *     http://maven.apache.org/surefire/maven-surefire-plugin/faq.html#kill-jvm</a>
+     * <br>
+     * <a href="http://maven.apache.org/surefire/maven-failsafe-plugin/faq.html#kill-jvm">
+     *     http://maven.apache.org/surefire/maven-failsafe-plugin/faq.html#kill-jvm</a>
+     *
+     * <br>
+     *
+     * Example of use:
+     * <br>
+     * <i>mvn test -Dfailsafe.enableProcessChecker=all</i>
+     *
+     * @since 3.0.0-M4
+     */
+    @Parameter( property = "failsafe.enableProcessChecker" )
+    private String enableProcessChecker;
+
+    @Parameter( property = "failsafe.systemPropertiesFile" )
+    private File systemPropertiesFile;
 
     @Override
     protected int getRerunFailingTestsCount()
@@ -442,14 +514,7 @@ public class IntegrationTestMojo
     @Override
     protected String getReportSchemaLocation()
     {
-        return "https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report.xsd";
-    }
-
-    @Override
-    protected Artifact getMojoArtifact()
-    {
-        final Map<String, Artifact> pluginArtifactMap = getPluginArtifactMap();
-        return pluginArtifactMap.get( "org.apache.maven.plugins:maven-failsafe-plugin" );
+        return "https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report-3.0.xsd";
     }
 
     @Override
@@ -459,6 +524,7 @@ public class IntegrationTestMojo
     }
 
     @Override
+    @Deprecated
     public void setSkipTests( boolean skipTests )
     {
         this.skipTests = skipTests;
@@ -736,6 +802,18 @@ public class IntegrationTestMojo
     }
 
     @Override
+    public File getSystemPropertiesFile()
+    {
+        return systemPropertiesFile;
+    }
+
+    @Override
+    public void setSystemPropertiesFile( File systemPropertiesFile )
+    {
+        this.systemPropertiesFile = systemPropertiesFile;
+    }
+
+    @Override
     public Boolean getFailIfNoSpecifiedTests()
     {
         return failIfNoSpecifiedTests;
@@ -810,6 +888,18 @@ public class IntegrationTestMojo
     }
 
     @Override
+    protected boolean useModulePath()
+    {
+        return useModulePath;
+    }
+
+    @Override
+    protected void setUseModulePath( boolean useModulePath )
+    {
+        this.useModulePath = useModulePath;
+    }
+
+    @Override
     protected final List<File> suiteXmlFiles()
     {
         return hasSuiteXmlFiles() ? Arrays.asList( suiteXmlFiles ) : Collections.<File>emptyList();
@@ -821,8 +911,20 @@ public class IntegrationTestMojo
         return suiteXmlFiles != null && suiteXmlFiles.length != 0;
     }
 
-    static Charset toCharset( String encoding )
+    @Override
+    protected final String[] getExcludedEnvironmentVariables()
     {
-        return Charset.forName( Charset.isSupported( encoding ) ? encoding : encoding.toUpperCase( Locale.ROOT ) );
+        return excludedEnvironmentVariables == null ? new String[0] : excludedEnvironmentVariables;
+    }
+
+    void setExcludedEnvironmentVariables( String[] excludedEnvironmentVariables )
+    {
+        this.excludedEnvironmentVariables = excludedEnvironmentVariables;
+    }
+
+    @Override
+    protected final String getEnableProcessChecker()
+    {
+        return enableProcessChecker;
     }
 }

@@ -75,65 +75,45 @@ public class TestNGMapConfigurator
     Map<String, Object> getConvertedOptions( Map<String, String> options )
         throws TestSetFailedException
     {
-        Map<String, Object> convertedOptions = new HashMap<String, Object>();
+        Map<String, Object> convertedOptions = new HashMap<>();
         convertedOptions.put( "-mixed", false );
         for ( Map.Entry<String, String> entry : options.entrySet() )
         {
             String key = entry.getKey();
             Object val = entry.getValue();
-            // todo: use switch-case of jdk7
-            if ( "listener".equals( key ) )
+            switch ( key )
             {
-                val = convertListeners( entry.getValue() );
-            }
-            else if ( "objectfactory".equals( key ) )
-            {
-                val = AbstractDirectConfigurator.loadClass( entry.getValue() );
-            }
-            else if ( "testrunfactory".equals( key ) )
-            {
-                val = AbstractDirectConfigurator.loadClass( entry.getValue() );
-            }
-            else if ( "reporter".equals( key ) )
-            {
-                // for TestNG 5.6 or higher
-                // TODO support multiple reporters?
-                val = convertReporterConfig( val );
-                key = "reporterslist";
-            }
-            else if ( "junit".equals( key ) )
-            {
-                val = convert( val, Boolean.class );
-            }
-            else if ( "skipfailedinvocationcounts".equals( key ) )
-            {
-                val = convert( val, Boolean.class );
-            }
-            else if ( "mixed".equals( key ) )
-            {
-                val = convert( val, Boolean.class );
-            }
-            else if ( "configfailurepolicy".equals( key ) )
-            {
-                val = convert( val, String.class );
-            }
-            else if ( "group-by-instances".equals( key ) )
-            {
-                val = convert( val, Boolean.class );
-            }
-            else if ( THREADCOUNT_PROP.equals( key ) )
-            {
-                val = convert ( val, String.class );
-            }
-            else if ( "suitethreadpoolsize".equals( key ) )
-            {
+                case "listener":
+                    val = convertListeners( entry.getValue() );
+                    break;
+                case "objectfactory":
+                case "testrunfactory":
+                    val = AbstractDirectConfigurator.loadClass( entry.getValue() );
+                    break;
+                case "reporter":
+                    // for TestNG 5.6 or higher
+                    // TODO support multiple reporters?
+                    val = convertReporterConfig( val );
+                    key = "reporterslist";
+                    break;
+                case "junit":
+                case "skipfailedinvocationcounts":
+                case "mixed":
+                case "group-by-instances":
+                    val = convert( val, Boolean.class );
+                    break;
+                case "configfailurepolicy":
+                case THREADCOUNT_PROP:
+                    val = convert( val, String.class );
+                    break;
                 // for TestNG 6.9.7 or higher
-                val = convert( val, Integer.class );
-            }
-            else if ( "dataproviderthreadcount".equals( key ) )
-            {
-                // for TestNG 5.10 or higher
-                val = convert( val, Integer.class );
+                case "suitethreadpoolsize":
+                    // for TestNG 5.10 or higher
+                case "dataproviderthreadcount":
+                    val = convert( val, Integer.class );
+                    break;
+                default:
+                    break;
             }
 
             if ( key.startsWith( "-" ) )
@@ -156,7 +136,7 @@ public class TestNGMapConfigurator
             Class<?> reporterConfig = Class.forName( "org.testng.ReporterConfig" );
             Method deserialize = reporterConfig.getMethod( "deserialize", String.class );
             Object rc = deserialize.invoke( null, val );
-            ArrayList<Object> reportersList = new ArrayList<Object>();
+            ArrayList<Object> reportersList = new ArrayList<>();
             reportersList.add( rc );
             return reportersList;
         }

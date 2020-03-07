@@ -19,10 +19,11 @@ package org.apache.maven.plugins.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.doxia.module.xhtml.XhtmlSink;
+import junit.framework.TestCase;
+import org.apache.maven.doxia.module.xhtml5.Xhtml5Sink;
+import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
-import org.junit.Test;
 
 import java.io.File;
 import java.io.StringWriter;
@@ -37,9 +38,10 @@ import static org.apache.maven.plugins.surefire.report.Utils.toSystemNewLine;
  * Prevent fom NPE if failure type and message is null however detail presents.
  */
 public class Surefire597Test
+        extends TestCase
 {
-    @Test
-    public void corruptedTestCaseFailureWithMissingErrorTypeAndMessage()
+    @SuppressWarnings( "checkstyle:linelength" )
+    public void testCorruptedTestCaseFailureWithMissingErrorTypeAndMessage()
         throws Exception
     {
         File basedir = new File( "." ).getCanonicalFile();
@@ -47,7 +49,9 @@ public class Surefire597Test
         ConsoleLogger log = new NullConsoleLogger();
         SurefireReportGenerator gen = new SurefireReportGenerator( singletonList( report ), ENGLISH, true, null, log );
         StringWriter writer = new StringWriter();
-        gen.doGenerateReport( new SurefireReportMojo().getBundle( ENGLISH ), new XhtmlSink( writer ) {} );
+        Sink sink = new Xhtml5Sink( writer )
+                        {  };
+        gen.doGenerateReport( new SurefireReportMojo().getBundle( ENGLISH ), sink );
         String xml = writer.toString();
         assertThat( xml, containsString( toSystemNewLine(
             "<table border=\"1\" class=\"bodyTable\">\n"
@@ -97,7 +101,7 @@ public class Surefire597Test
                 + "<th>Success Rate</th>\n"
                 + "<th>Time</th></tr>\n"
                 + "<tr class=\"b\">\n"
-                + "<td><a href=\"#surefire.MyTest\"><img src=\"images/icon_error_sml.gif\" alt=\"\" /></a></td>\n"
+                + "<td><a href=\"#surefire.MyTest\"><figure><img src=\"images/icon_error_sml.gif\" alt=\"\" /></figure></a></td>\n"
                 + "<td><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
                 + "<td>1</td>\n"
                 + "<td>1</td>\n"
@@ -108,7 +112,7 @@ public class Surefire597Test
         assertThat( xml, containsString( toSystemNewLine(
             "<table border=\"1\" class=\"bodyTable\">\n"
                 + "<tr class=\"a\">\n"
-                + "<td><img src=\"images/icon_error_sml.gif\" alt=\"\" /></td>\n"
+                + "<td><figure><img src=\"images/icon_error_sml.gif\" alt=\"\" /></figure></td>\n"
                 + "<td><a name=\"surefire.MyTest.test\"></a>test</td></tr>\n"
                 + "<tr class=\"b\">\n"
                 + "<td></td>\n"

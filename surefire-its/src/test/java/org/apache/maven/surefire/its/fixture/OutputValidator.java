@@ -22,7 +22,7 @@ package org.apache.maven.surefire.its.fixture;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -30,6 +30,7 @@ import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.hamcrest.Matcher;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -39,9 +40,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class OutputValidator
 {
-    protected final Verifier verifier;
+    final Verifier verifier;
 
-    protected final File baseDir;
+    private final File baseDir;
 
     public OutputValidator( Verifier verifier )
     {
@@ -93,22 +94,29 @@ public class OutputValidator
     public OutputValidator assertThatLogLine( Matcher<String> line, Matcher<Integer> nTimes )
         throws VerificationException
     {
-        int counter = 0;
-        for ( String log : loadLogLines() )
-        {
-            if ( line.matches( log ) )
-            {
-                counter++;
-            }
-        }
+        int counter = loadLogLines( line ).size();
         assertThat( "log pattern does not match nTimes", counter, nTimes );
         return this;
     }
 
-    public Collection<String> loadLogLines()
+    public List<String> loadLogLines()
         throws VerificationException
     {
         return verifier.loadFile( verifier.getBasedir(), verifier.getLogFileName(), false );
+    }
+
+    public List<String> loadLogLines( Matcher<String> line )
+            throws VerificationException
+    {
+        List<String> matchedLines = new ArrayList<>();
+        for ( String log : loadLogLines() )
+        {
+            if ( line.matches( log ) )
+            {
+                matchedLines.add( log );
+            }
+        }
+        return matchedLines;
     }
 
     public List<String> loadFile( File file, Charset charset )
@@ -196,7 +204,7 @@ public class OutputValidator
     public TestFile getSurefireReportsXmlFile( String fileName )
     {
         File targetDir = getSurefireReportsDirectory();
-        return new TestFile( new File( targetDir, fileName ), Charset.forName( "UTF-8" ), this );
+        return new TestFile( new File( targetDir, fileName ), UTF_8, this );
     }
 
     public File getSurefireReportsDirectory()

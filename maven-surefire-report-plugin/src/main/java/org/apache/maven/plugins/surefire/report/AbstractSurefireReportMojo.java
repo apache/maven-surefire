@@ -180,7 +180,7 @@ public abstract class AbstractSurefireReportMojo
             return resolvedReportsDirectories;
         }
 
-        resolvedReportsDirectories = new ArrayList<File>();
+        resolvedReportsDirectories = new ArrayList<>();
 
         if ( this.reportsDirectories != null )
         {
@@ -251,7 +251,7 @@ public abstract class AbstractSurefireReportMojo
 
     private List<MavenProject> getProjectsWithoutRoot()
     {
-        List<MavenProject> result = new ArrayList<MavenProject>();
+        List<MavenProject> result = new ArrayList<>();
         for ( MavenProject subProject : reactorProjects )
         {
             if ( !project.equals( subProject ) )

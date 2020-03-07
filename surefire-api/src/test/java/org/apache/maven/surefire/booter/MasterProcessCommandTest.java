@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.booter;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -26,9 +27,14 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-import static org.apache.maven.surefire.booter.MasterProcessCommand.*;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.decode;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.resolve;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.setCommandAndDataLength;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.BYE_ACK;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.NOOP;
+import static org.apache.maven.surefire.booter.MasterProcessCommand.RUN_CLASS;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -90,13 +96,9 @@ public class MasterProcessCommandTest
                     assertThat( decoded, is( dummyData ) );
                     break;
                 case TEST_SET_FINISHED:
-                    assertEquals( Void.class, command.getDataType() );
-                    encoded = command.fromDataType( dummyData );
-                    assertThat( encoded.length, is( 0 ) );
-                    decoded = command.toDataTypeAsString( encoded );
-                    assertNull( decoded );
-                    break;
                 case SKIP_SINCE_NEXT_TEST:
+                case NOOP:
+                case  BYE_ACK:
                     assertEquals( Void.class, command.getDataType() );
                     encoded = command.fromDataType( dummyData );
                     assertThat( encoded.length, is( 0 ) );
@@ -109,20 +111,6 @@ public class MasterProcessCommandTest
                     assertThat( encoded.length, is( 4 ) );
                     decoded = command.toDataTypeAsString( encoded );
                     assertThat( decoded, is( Shutdown.EXIT.name() ) );
-                    break;
-                case NOOP:
-                    assertEquals( Void.class, command.getDataType() );
-                    encoded = command.fromDataType( dummyData );
-                    assertThat( encoded.length, is( 0 ) );
-                    decoded = command.toDataTypeAsString( encoded );
-                    assertNull( decoded );
-                    break;
-                case  BYE_ACK:
-                    assertEquals( Void.class, command.getDataType() );
-                    encoded = command.fromDataType( dummyData );
-                    assertThat( encoded.length, is( 0 ) );
-                    decoded = command.toDataTypeAsString( encoded );
-                    assertNull( decoded );
                     break;
                 default:
                     fail();

@@ -1,4 +1,5 @@
 package org.apache.maven.surefire.testset;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -24,6 +25,9 @@ import static org.apache.maven.surefire.testset.ResolvedTest.Type.CLASS;
 import static org.apache.maven.surefire.testset.ResolvedTest.Type.METHOD;
 import static org.apache.maven.surefire.testset.ResolvedTest.fromFullyQualifiedClass;
 
+/**
+ *
+ */
 public class ResolvedTestTest
     extends TestCase
 {
@@ -53,19 +57,19 @@ public class ResolvedTestTest
 
     public void testFromFullyQualifiedClass()
     {
-        String classFileName = fromFullyQualifiedClass("my.package.MyTest");
+        String classFileName = fromFullyQualifiedClass( "my.package.MyTest" );
         assertEquals( "my/package/MyTest", classFileName );
 
-        classFileName = fromFullyQualifiedClass("my.package.MyTest.class");
+        classFileName = fromFullyQualifiedClass( "my.package.MyTest.class" );
         assertEquals( "my/package/MyTest.class", classFileName );
 
-        classFileName = fromFullyQualifiedClass("my/package/MyTest.class");
+        classFileName = fromFullyQualifiedClass( "my/package/MyTest.class" );
         assertEquals( "my/package/MyTest.class", classFileName );
 
-        classFileName = fromFullyQualifiedClass("my/package/MyTest.*");
+        classFileName = fromFullyQualifiedClass( "my/package/MyTest.*" );
         assertEquals( "my/package/MyTest.*", classFileName );
 
-        classFileName = fromFullyQualifiedClass("my.package.MyTest.*");
+        classFileName = fromFullyQualifiedClass( "my.package.MyTest.*" );
         assertEquals( "my/package/MyTest.*", classFileName );
     }
 }
