@@ -309,7 +309,8 @@ final class TestNGExecutor
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
             testNG.addListener( instantiate( cl, "org.apache.maven.surefire.testng.utils.FailFastNotifier",
                                              Object.class ) );
-            testNG.addListener( new FailFastListener( createStoppable( reportManager, skipAfterFailureCount ) ) );
+            testNG.addListener( (Object)
+                                new FailFastListener( createStoppable( reportManager, skipAfterFailureCount ) ) );
         }
 
         // FIXME: use classifier to decide if we need to pass along the source dir (only for JDK14)
