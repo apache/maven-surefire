@@ -29,6 +29,7 @@ import org.apache.maven.surefire.testng.utils.Stoppable;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.shared.utils.StringUtils;
+import org.testng.ITestNGListener;
 import org.testng.TestNG;
 import org.testng.annotations.Test;
 import org.testng.xml.XmlClass;
@@ -302,14 +303,16 @@ final class TestNGExecutor
         testNG.setVerbose( verboseLevel );
 
         TestNGReporter reporter = createTestNGReporter( reportManager );
-        testNG.addListener( (Object) reporter );
+        testNG.addListener( (ITestNGListener) reporter );
 
         if ( skipAfterFailureCount > 0 )
         {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            testNG.addListener( instantiate( cl, "org.apache.maven.surefire.testng.utils.FailFastNotifier",
+            testNG.addListener( (ITestNGListener)
+                                instantiate( cl, "org.apache.maven.surefire.testng.utils.FailFastNotifier",
                                              Object.class ) );
-            testNG.addListener( new FailFastListener( createStoppable( reportManager, skipAfterFailureCount ) ) );
+            testNG.addListener( (ITestNGListener)
+                                new FailFastListener( createStoppable( reportManager, skipAfterFailureCount ) ) );
         }
 
         // FIXME: use classifier to decide if we need to pass along the source dir (only for JDK14)
