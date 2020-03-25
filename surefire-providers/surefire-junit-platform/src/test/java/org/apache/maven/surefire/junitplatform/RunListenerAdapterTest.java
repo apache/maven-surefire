@@ -46,9 +46,9 @@ import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.engine.config.JupiterConfiguration;
 import org.junit.jupiter.engine.descriptor.ClassTestDescriptor;
 import org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor;
-import org.junit.platform.engine.ConfigurationParameters;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestDescriptor.Type;
 import org.junit.platform.engine.TestExecutionResult;
@@ -69,7 +69,7 @@ import org.mockito.InOrder;
  */
 public class RunListenerAdapterTest
 {
-    private static final ConfigurationParameters CONFIG_PARAMS = mock(ConfigurationParameters.class);
+    private static final JupiterConfiguration JUPITER_CONFIGURATION = mock(JupiterConfiguration.class);
 
     private RunListener listener;
 
@@ -412,7 +412,7 @@ public class RunListenerAdapterTest
                     throws NoSuchMethodException
     {
         TestMethodTestDescriptor descriptor = new TestMethodTestDescriptor( newId(), MyTestClass.class,
-                MyTestClass.class.getDeclaredMethod( "myNamedTestMethod" ) );
+                MyTestClass.class.getDeclaredMethod( "myNamedTestMethod" ), JUPITER_CONFIGURATION );
 
         TestIdentifier factoryIdentifier = TestIdentifier.from( descriptor );
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
@@ -437,7 +437,8 @@ public class RunListenerAdapterTest
         return new TestMethodTestDescriptor(
                         UniqueId.forEngine( "method" ),
                         MyTestClass.class,
-                        MyTestClass.class.getDeclaredMethod( MY_TEST_METHOD_NAME, parameterTypes ) );
+                        MyTestClass.class.getDeclaredMethod( MY_TEST_METHOD_NAME, parameterTypes ),
+                        JUPITER_CONFIGURATION );
     }
 
     private static TestIdentifier newClassIdentifier()
@@ -447,7 +448,7 @@ public class RunListenerAdapterTest
 
     private static TestDescriptor newClassDescriptor()
     {
-        return new ClassTestDescriptor( UniqueId.root( "class", MyTestClass.class.getName() ), MyTestClass.class, CONFIG_PARAMS );
+        return new ClassTestDescriptor( UniqueId.root( "class", MyTestClass.class.getName() ), MyTestClass.class, JUPITER_CONFIGURATION );
     }
 
     private static TestIdentifier newSourcelessChildIdentifierWithParent(

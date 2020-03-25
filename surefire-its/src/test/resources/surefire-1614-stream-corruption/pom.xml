@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.maven.plugins.surefire</groupId>
-    <artifactId>junit-platform-1.0.0</artifactId>
+    <artifactId>surefire-1614-stream-corruption</artifactId>
     <version>1.0</version>
     <name>[SUREFIRE-1614] JUnit 5: Vintage Output Stream Corruption</name>
 
@@ -17,7 +17,7 @@
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
-            <version>5.3.2</version>
+            <version>5.6.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

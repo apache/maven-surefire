@@ -38,12 +38,21 @@
         Jupiter Engine is needed at test runtime. Artifacts
         needed for test compilation, like "junit-jupiter-api",
         are pulled-in via transitive dependency resolution.
+
+        Also require "junit-platform-launcher" to force the
+        resolution of the matching JUnit Platform version.
     -->
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <version>${platform.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

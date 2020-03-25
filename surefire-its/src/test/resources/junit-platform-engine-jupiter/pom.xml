@@ -31,11 +31,11 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <junit.jupiter.version>5.2.0</junit.jupiter.version>
+        <junit.jupiter.version>5.6.1</junit.jupiter.version>
     </properties>
 
     <!--
-        Declare "junit-jupiter-engine" dependency because the
+        Declare aggregator "junit-jupiter" dependency because the
         Jupiter Engine is needed at test runtime. Artifacts
         needed for test compilation, like "junit-jupiter-api",
         are pulled-in via transitive dependency resolution.
@@ -43,13 +43,7 @@
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit.jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
+            <artifactId>junit-jupiter</artifactId>
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>

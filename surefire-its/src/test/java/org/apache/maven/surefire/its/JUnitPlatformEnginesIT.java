@@ -33,11 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
-import static org.apache.maven.surefire.its.fixture.IsRegex.regex;
 import static org.fest.assertions.Assertions.assertThat;
-import static org.fest.util.Collections.set;
 import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertThat;
 
 @RunWith( Parameterized.class )
 public class JUnitPlatformEnginesIT
@@ -56,13 +53,16 @@ public class JUnitPlatformEnginesIT
     public String apiguardian;
 
     @Parameters(name = "{0}")
-    public static Iterable<Object[]> regexVersions()
+    public static Iterable<Object[]> versions()
     {
         ArrayList<Object[]> args = new ArrayList<Object[]>();
-        args.add( new Object[] { "1.0.0", "5.0.0", "1.0.0", "1.0.0" } );
+        args.add( new Object[] { "1.0.3", "5.0.3", "1.0.0", "1.0.0" } );
         args.add( new Object[] { "1.1.1", "5.1.1", "1.0.0", "1.0.0" } );
         args.add( new Object[] { "1.2.0", "5.2.0", "1.1.0", "1.0.0" } );
-        args.add( new Object[] { "1.3.1", "5.3.1", "1.1.1", "1.0.0" } );
+        args.add( new Object[] { "1.3.2", "5.3.2", "1.1.1", "1.0.0" } );
+        args.add( new Object[] { "1.4.1", "5.4.1", "1.1.1", "1.0.0" } );
+        args.add( new Object[] { "1.5.2", "5.5.2", "1.2.0", "1.1.0" } );
+        args.add( new Object[] { "1.6.1", "5.6.1", "1.2.0", "1.1.0" } );
         return args;
     }
 
@@ -73,87 +73,62 @@ public class JUnitPlatformEnginesIT
     }
 
     @Test
-    public void testToRegex()
-    {
-        String regex = toRegex( ".[]()*" );
-        assertThat( regex )
-                .isEqualTo( "\\.\\[\\]\\(\\).*" );
-    }
-
-    @Test
     public void platform() throws VerificationException
     {
         OutputValidator validator = unpack( "junit-platform", '-' + platform )
                 .sysProp( "jupiter.version", jupiter )
+                .sysProp( "platform.version", platform )
                 .addGoal( "-X" )
                 .executeTest()
                 .verifyErrorFree( 1 );
-
-        String testClasspath = "[DEBUG] test(compact) classpath:"
-                + "  test-classes"
-                + "  classes"
-                + "  junit-jupiter-engine-" + jupiter + ".jar"
-                + "  apiguardian-api-" + apiguardian + ".jar"
-                + "  junit-platform-engine-" + platform + ".jar"
-                + "  junit-platform-commons-" + platform + ".jar"
-                + "  opentest4j-" + opentest + ".jar"
-                + "  junit-jupiter-api-" + jupiter + ".jar";
 
         List<String> lines = validator.loadLogLines( startsWith( "[DEBUG] test(compact) classpath" ) );
 
         assertThat( lines )
                 .hasSize( 1 );
 
-        String line = lines.get( 0 );
-
-        assertThat( set( line ), regex( toRegex( testClasspath ) ) );
-
-        String providerClasspath = "[DEBUG] provider(compact) classpath:"
-                + "  surefire-junit-platform-*.jar"
-                + "  junit-platform-launcher-1.3.1.jar"
-                + "  surefire-api-*.jar"
-                + "  surefire-logger-api-*.jar";
+        assertThat( lines.get( 0 ) )
+                .startsWith( "[DEBUG] test(compact) classpath" )
+                .contains( "classes" )
+                .contains( "test-classes" )
+                .contains( "apiguardian-api-" + apiguardian + ".jar" )
+                .contains( "junit-jupiter-api-" + jupiter + ".jar" )
+                .contains( "junit-jupiter-engine-" + jupiter + ".jar" )
+                .contains( "junit-platform-engine-" + platform + ".jar" )
+                .contains( "junit-platform-commons-" + platform + ".jar" )
+                .contains( "junit-platform-launcher-" + platform + ".jar" )
+                .contains( "opentest4j-" + opentest + ".jar" );
 
         lines = validator.loadLogLines( startsWith( "[DEBUG] provider(compact) classpath" ) );
 
         assertThat( lines )
                 .hasSize( 1 );
 
-        line = lines.get( 0 );
-
-        assertThat( set( line ), regex( toRegex( providerClasspath ) ) );
-
-        String bootClasspath = "[DEBUG] boot(compact) classpath:"
-                + "  surefire-booter-*.jar"
-                + "  surefire-api-*.jar"
-                + "  surefire-logger-api-*.jar"
-                + "  test-classes"
-                + "  classes"
-                + "  junit-jupiter-engine-" + jupiter + ".jar"
-                + "  apiguardian-api-" + apiguardian + ".jar"
-                + "  junit-platform-engine-" + platform + ".jar"
-                + "  junit-platform-commons-" + platform + ".jar"
-                + "  opentest4j-" + opentest + ".jar"
-                + "  junit-jupiter-api-" + jupiter + ".jar"
-                + "  surefire-junit-platform-*.jar"
-                + "  junit-platform-launcher-1.3.1.jar";
+        assertThat( lines.get( 0 ) )
+                .startsWith( "[DEBUG] provider(compact) classpath" )
+                .contains( "surefire-api-" /* {VERSION}.jar */ )
+                .contains( "surefire-junit-platform-" /* {VERSION}.jar */ )
+                .contains( "surefire-logger-api-" /* {VERSION}.jar */ );
 
         lines = validator.loadLogLines( startsWith( "[DEBUG] boot(compact) classpath" ) );
 
         assertThat( lines )
                 .hasSize( 1 );
 
-        line = lines.get( 0 );
-
-        assertThat( set( line ), regex( toRegex( bootClasspath ) ) );
-    }
-
-    private static String toRegex(String text) {
-        return text.replaceAll( "\\.", "\\\\." )
-                .replaceAll( "\\[", "\\\\[" )
-                .replaceAll( "]", "\\\\]" )
-                .replaceAll( "\\(", "\\\\(" )
-                .replaceAll( "\\)", "\\\\)" )
-                .replaceAll( "\\*", ".*" );
+        assertThat( lines.get( 0 ) )
+                .startsWith( "[DEBUG] boot(compact) classpath" )
+                .contains( "surefire-api-" /* {VERSION}.jar */ )
+                .contains( "surefire-booter-" /* {VERSION}.jar */ )
+                .contains( "surefire-junit-platform-" /* {VERSION}.jar */ )
+                .contains( "surefire-logger-api-" /* {VERSION}.jar */ )
+                .contains( "classes" )
+                .contains( "test-classes" )
+                .contains( "apiguardian-api-" + apiguardian + ".jar" )
+                .contains( "junit-jupiter-api-" + jupiter + ".jar" )
+                .contains( "junit-jupiter-engine-" + jupiter + ".jar" )
+                .contains( "junit-platform-engine-" + platform + ".jar" )
+                .contains( "junit-platform-commons-" + platform + ".jar" )
+                .contains( "junit-platform-launcher-" + platform + ".jar" )
+                .contains( "opentest4j-" + opentest + ".jar" );
     }
 }
