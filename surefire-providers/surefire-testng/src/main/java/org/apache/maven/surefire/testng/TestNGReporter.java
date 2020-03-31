@@ -32,6 +32,8 @@ import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
 
+import java.util.Arrays;
+
 import static org.apache.maven.surefire.report.SimpleReportEntry.ignored;
 import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
 
@@ -67,13 +69,13 @@ public class TestNGReporter
     {
         String clazz = result.getTestClass().getName();
         String group = groupString( result.getMethod().getGroups(), clazz );
-        reporter.testStarting( new CategorizedReportEntry( clazz, result.getName(), group ) );
+        reporter.testStarting( new CategorizedReportEntry( clazz, testName( result ), group ) );
     }
 
     @Override
     public void onTestSuccess( ITestResult result )
     {
-        ReportEntry report = new SimpleReportEntry( result.getTestClass().getName(), null, result.getName(), null );
+        ReportEntry report = new SimpleReportEntry( result.getTestClass().getName(), null, testName( result ), null );
         reporter.testSucceeded( report );
     }
 
@@ -81,10 +83,9 @@ public class TestNGReporter
     public void onTestFailure( ITestResult result )
     {
         IClass clazz = result.getTestClass();
-        ReportEntry report = withException( clazz.getName(), null, result.getName(), null,
-                new PojoStackTraceWriter( clazz.getRealClass().getName(),
-                        result.getMethod().getMethodName(),
-                        result.getThrowable() ) );
+        ReportEntry report = withException( clazz.getName(), null, testName( result ), null,
+            new PojoStackTraceWriter( clazz.getRealClass().getName(), result.getMethod().getMethodName(),
+                result.getThrowable() ) );
 
         reporter.testFailed( report );
     }
@@ -95,7 +96,7 @@ public class TestNGReporter
         //noinspection ThrowableResultOfMethodCallIgnored
         Throwable t = result.getThrowable();
         String reason = t == null ? null : t.getMessage();
-        ReportEntry report = ignored( result.getTestClass().getName(), null, result.getName(), null, reason );
+        ReportEntry report = ignored( result.getTestClass().getName(), null, testName( result ), null, reason );
         reporter.testSkipped( report );
     }
 
@@ -103,10 +104,9 @@ public class TestNGReporter
     public void onTestFailedButWithinSuccessPercentage( ITestResult result )
     {
         IClass clazz = result.getTestClass();
-        ReportEntry report = withException( clazz.getName(), null, result.getName(), null,
-                new PojoStackTraceWriter( clazz.getRealClass().getName(),
-                        result.getMethod().getMethodName(),
-                        result.getThrowable() ) );
+        ReportEntry report = withException( clazz.getName(), null, testName( result ), null,
+            new PojoStackTraceWriter( clazz.getRealClass().getName(), result.getMethod().getMethodName(),
+                result.getThrowable() ) );
 
         reporter.testSucceeded( report );
     }
@@ -183,4 +183,18 @@ public class TestNGReporter
         //onTestSuccess( result );
     }
 
+    /**
+     * Acquire a better representation of the test name that includes parameters and the invocation count, if there are
+     * any parameters
+     *
+     * @param result the test result to extract from
+     * @return a descriptive name for the test
+     */
+    private static String testName( ITestResult result )
+    {
+        Object[] parameters = result.getParameters();
+        String name = result.getName();
+        return parameters == null || parameters.length == 0
+            ? name : name + Arrays.toString( parameters ) + "(" + result.getMethod().getCurrentInvocationCount() + ")";
+    }
 }
