@@ -1178,6 +1178,7 @@ public abstract class AbstractSurefireMojo
         throws MojoExecutionException, MojoFailureException, SurefireExecutionException, SurefireBooterForkException,
         TestSetFailedException
     {
+        getConsoleLogger().debug( "Using the provider " + provider.getProviderName() );
         SurefireProperties effectiveProperties = setupProperties();
         ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration();
         provider.addProviderProperties();
