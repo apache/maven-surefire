@@ -20,6 +20,7 @@
 Contributing to [Apache Maven Surefire](https://maven.apache.org/surefire/)
 ======================
 
+[![ASF Jira](https://img.shields.io/endpoint?url=https%3A%2F%2Fmaven.apache.org%2Fbadges%2Fasf_jira-SUREFIRE.json)][jira]
 [![Maven Central](https://img.shields.io/maven-central/v/org.apache.maven.surefire/surefire.svg?label=Maven%20Central&style=for-the-badge)](https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.apache.maven.plugins%22%20AND%20a%3A%22maven-surefire-plugin%22)
 [![Apache License, Version 2.0, January 2004](https://img.shields.io/github/license/apache/maven.svg?label=License&style=for-the-badge)][license]
 
@@ -63,6 +64,7 @@ See http://maven.apache.org/developers/website/deploy-component-reference-docume
 [![Built with Maven](http://maven.apache.org/images/logos/maven-feather.png)](https://maven.apache.org/surefire/)
 
 
+[jira]: https://issues.apache.org/jira/browse/SUREFIRE/
 [license]: https://www.apache.org/licenses/LICENSE-2.0
 [build]: https://builds.apache.org/job/maven-box/job/maven-surefire/job/master/
 [test-results]: https://builds.apache.org/job/maven-box/job/maven-surefire/job/master/lastCompletedBuild/testReport/
