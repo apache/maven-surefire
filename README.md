@@ -46,14 +46,14 @@ Usage of [maven-surefire-plugin], [maven-failsafe-plugin], [maven-surefire-repor
 
 # Development Information
 
-Build the Surefire project using **Maven 3.1.0+** and **JDK 1.8**.  
+Build the Surefire project using **Maven 3.1.0+** and **JDK 1.8+**.  
 
 * In order to run tests for a release check during the Vote, the following memory requirements are needed:   
   **(on Linux/Unix)** *export MAVEN_OPTS="-server -Xmx512m -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=384m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Dhttps.protocols=TLSv1"*  
   **(on Windows)** *set MAVEN_OPTS="-server -Xmx256m -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=384m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Dhttps.protocols=TLSv1"*    
-* In order to run the build with **JDK 9** **on Windows** (**on Linux/Unix modify system property jdk.home**):  
-  *mvn install site site:stage -P reporting,run-its "-Djdk.home=e:\Program Files\Java\jdk9\"*
-* In order to run the build with **JDK 11**:    
+* In order to run the tests with **JDK 1.7** (on Linux/Unix modify the system property **jdk.home**):  
+  *mvn install site site:stage -P reporting,run-its "-Djdk.home=e:\Program Files\Java\jdk1.7.0_80\"*
+* In order to run the build and the tests with **JDK 1.8+**, e.g. JDK 11:    
   *mvn install site site:stage -P reporting,run-its "-Djdk.home=e:\Program Files\Java\jdk11\"*
   
 
