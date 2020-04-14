@@ -23,7 +23,7 @@ cache:
   - "$HOME/.m2"
 
 install: true
-jdk: openjdk8
+jdk: openjdk14
 
 jobs:
   include:
@@ -33,6 +33,3 @@ jobs:
     - stage: mvn build
       script: mvn clean install -e -B -V -nsu -P run-its -DskipITs -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -DskipTests
 
-branches:
-  only:
-  - master
