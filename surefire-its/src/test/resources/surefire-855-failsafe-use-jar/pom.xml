@@ -95,6 +95,9 @@
                   <version>3.8.1</version>
               </dependency>
           </dependencies>
+          <configuration>
+              <detectJavaApiLink>false</detectJavaApiLink>
+          </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
