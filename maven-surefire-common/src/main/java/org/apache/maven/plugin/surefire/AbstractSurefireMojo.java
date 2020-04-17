@@ -951,15 +951,16 @@ public abstract class AbstractSurefireMojo
     //TODO remove the part with ToolchainManager lookup once we depend on
     //3.0.9 (have it as prerequisite). Define as regular component field then.
     //This code duplicates AbstractCompilerMojo in maven-compiler-plugin
-    protected final Toolchain getToolchain()
+    protected final Toolchain getToolchain() throws MojoFailureException
     {
         Toolchain tc = null;
 
         if ( jdkToolchain != null )
         {
-            try
+            Method getToolchainsMethod = ReflectionUtils.tryGetMethod(
+                getToolchainManager().getClass(), "getToolchains" );
+            if ( getToolchainsMethod != null )
             {
-                Method getToolchainsMethod = ReflectionUtils.getMethod( getToolchainManager(), "getToolchains" );
                 List<Toolchain> tcs =
                     (List<Toolchain>) ReflectionUtils.invokeMethodWithArray( getToolchainManager(),
                         getToolchainsMethod, getSession(), "jdk" );
@@ -967,10 +968,11 @@ public abstract class AbstractSurefireMojo
                 {
                     tc = tcs.get( 0 );
                 }
-            }
-            catch ( Exception x )
-            {
-                //ignore
+                else
+                {
+                    throw new MojoFailureException(
+                        "Requested toolchain specification did not match any configured toolchain: " + jdkToolchain );
+                }
             }
         }
 
@@ -982,7 +984,7 @@ public abstract class AbstractSurefireMojo
         return tc;
     }
 
-    private void setupStuff()
+    private void setupStuff() throws MojoFailureException
     {
         surefireDependencyResolver = new SurefireDependencyResolver( getRepositorySystem(),
                 getConsoleLogger(), getLocalRepository(),

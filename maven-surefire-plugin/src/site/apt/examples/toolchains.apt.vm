@@ -30,15 +30,15 @@
     {{{https://maven.apache.org/guides/mini/guide-using-toolchains.html}Guide to Using Toolchains}}
 
 
-Using Maven Toolchains with Surefire/Failsafe.
+Using Maven Toolchains with ${thisPlugin}.
 
     By default, if the pom configures the toolchains plugin as specified in the aforementioned
-    guide, surefire and failsafe will launch the test jvm using the main toolchain
-    configured in maven.
+    guide, ${thisPlugin} will launch the test jvm using the main toolchain
+    configured in Maven.
 
     In some cases, it may be desirable to compile and test using different jvms.
     While the <<<jvm>>> option can achieve this, it requires hardcoding system-specific paths.
-    Configuration option <<<jdkToolchain>>> can be used to specify an alternate toolchain specification.
+    Configuration option <<<jdkToolchain>>> can be used to supply an alternate toolchain specification.
 
 * Configuring a different jvm for running tests using toolchains
 
@@ -53,4 +53,4 @@ Using Maven Toolchains with Surefire/Failsafe.
 </configuration>
 +---+
 
-         The above example assumes that your toolchains.xml contains a valid entry with these values
+         The above example assumes that your toolchains.xml contains a valid entry with these values.
