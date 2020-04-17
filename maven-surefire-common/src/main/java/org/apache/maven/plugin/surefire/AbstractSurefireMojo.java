@@ -85,6 +85,7 @@ import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultScanResult;
+import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.toolchain.DefaultToolchain;
 import org.apache.maven.toolchain.Toolchain;
@@ -97,7 +98,6 @@ import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -796,6 +796,8 @@ public abstract class AbstractSurefireMojo
      *    </configuration>
      *    }
      * </pre>
+     *
+     * @since 3.0.0-M5 and Maven 3.3.x
      */
     @Parameter
     private Map<String, String> jdkToolchain;
@@ -955,27 +957,20 @@ public abstract class AbstractSurefireMojo
 
         if ( jdkToolchain != null )
         {
-            // Maven 3.3.1 has plugin execution scoped Toolchain Support
             try
             {
-                Method getToolchainsMethod =
-                    toolchainManager.getClass().getMethod( "getToolchains", MavenSession.class, String.class,
-                        Map.class );
-
-                @SuppressWarnings( "unchecked" )
+                Method getToolchainsMethod = ReflectionUtils.getMethod( getToolchainManager(), "getToolchains" );
                 List<Toolchain> tcs =
-                    (List<Toolchain>) getToolchainsMethod.invoke( toolchainManager, getSession(), "jdk",
-                        jdkToolchain );
-
+                    (List<Toolchain>) ReflectionUtils.invokeMethodWithArray( getToolchainManager(),
+                        getToolchainsMethod, getSession(), "jdk" );
                 if ( tcs != null && !tcs.isEmpty() )
                 {
                     tc = tcs.get( 0 );
                 }
             }
-            catch ( NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException e )
+            catch ( Exception x )
             {
-                // ignore
+                //ignore
             }
         }
 

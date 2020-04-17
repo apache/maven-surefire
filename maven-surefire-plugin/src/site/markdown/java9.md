@@ -125,3 +125,5 @@ Your POM should specify the plugin which activates only particular JDK in *toolc
     </plugin>
 
 Now you can run the build with tests on the top of Java 9.
+
+Also see the [full documentation for surefire toolchains](examples/toolchains.html) configuration options.
