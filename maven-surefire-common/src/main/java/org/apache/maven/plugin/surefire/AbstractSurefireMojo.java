@@ -97,6 +97,8 @@ import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -765,6 +767,40 @@ public abstract class AbstractSurefireMojo
     private String[] dependenciesToScan;
 
     /**
+     * <p>
+     *     Allow for configuration of the test jvm via maven toolchains.
+     *     This permits a configuration where the project is built with one jvm and tested with another.
+     *     This is similar to {@link #jvm}, but avoids hardcoding paths.
+     *     The two parameters are mutually exclusive (jvm wins)
+     * </p>
+     *
+     * <p>Examples:</p>
+     * (see <a href="https://maven.apache.org/guides/mini/guide-using-toolchains.html">
+     *     Guide to Toolchains</a> for more info)
+     *
+     * <pre>
+     * {@code
+     *    <configuration>
+     *        ...
+     *        <jdkToolchain>
+     *            <version>1.11</version>
+     *        </jdkToolchain>
+     *    </configuration>
+     *
+     *    <configuration>
+     *        ...
+     *        <jdkToolchain>
+     *            <version>1.8</version>
+     *            <vendor>zulu</vendor>
+     *        </jdkToolchain>
+     *    </configuration>
+     *    }
+     * </pre>
+     */
+    @Parameter
+    private Map<String, String> jdkToolchain;
+
+    /**
      *
      */
     @Component
@@ -909,6 +945,48 @@ public abstract class AbstractSurefireMojo
         return consoleLogger;
     }
 
+
+    //TODO remove the part with ToolchainManager lookup once we depend on
+    //3.0.9 (have it as prerequisite). Define as regular component field then.
+    //This code duplicates AbstractCompilerMojo in maven-compiler-plugin
+    protected final Toolchain getToolchain()
+    {
+        Toolchain tc = null;
+
+        if ( jdkToolchain != null )
+        {
+            // Maven 3.3.1 has plugin execution scoped Toolchain Support
+            try
+            {
+                Method getToolchainsMethod =
+                    toolchainManager.getClass().getMethod( "getToolchains", MavenSession.class, String.class,
+                        Map.class );
+
+                @SuppressWarnings( "unchecked" )
+                List<Toolchain> tcs =
+                    (List<Toolchain>) getToolchainsMethod.invoke( toolchainManager, getSession(), "jdk",
+                        jdkToolchain );
+
+                if ( tcs != null && !tcs.isEmpty() )
+                {
+                    tc = tcs.get( 0 );
+                }
+            }
+            catch ( NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e )
+            {
+                // ignore
+            }
+        }
+
+        if ( tc == null )
+        {
+            tc = toolchainManager.getToolchainFromBuildContext( "jdk", getSession() );
+        }
+
+        return tc;
+    }
+
     private void setupStuff()
     {
         surefireDependencyResolver = new SurefireDependencyResolver( getRepositorySystem(),
@@ -925,7 +1003,7 @@ public abstract class AbstractSurefireMojo
 
         if ( getToolchainManager() != null )
         {
-            toolchain = getToolchainManager().getToolchainFromBuildContext( "jdk", getSession() );
+            toolchain = getToolchain();
         }
     }
 
