@@ -85,7 +85,6 @@ import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 import org.apache.maven.surefire.util.DefaultScanResult;
-import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.toolchain.DefaultToolchain;
 import org.apache.maven.toolchain.Toolchain;
@@ -143,6 +142,8 @@ import static org.apache.maven.surefire.booter.SystemUtils.toJdkHomeFromJvmExec;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkVersionFromReleaseFile;
 import static org.apache.maven.surefire.suite.RunResult.failure;
 import static org.apache.maven.surefire.suite.RunResult.noTestsRun;
+import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray;
+import static org.apache.maven.surefire.util.ReflectionUtils.tryGetMethod;
 
 /**
  * Abstract base class for running tests using Surefire.
@@ -947,38 +948,34 @@ public abstract class AbstractSurefireMojo
         return consoleLogger;
     }
 
-
     //TODO remove the part with ToolchainManager lookup once we depend on
     //3.0.9 (have it as prerequisite). Define as regular component field then.
-    //This code duplicates AbstractCompilerMojo in maven-compiler-plugin
-    protected final Toolchain getToolchain() throws MojoFailureException
+    private Toolchain getToolchain() throws MojoFailureException
     {
         Toolchain tc = null;
 
-        if ( jdkToolchain != null )
+        if ( getJdkToolchain() != null )
         {
-            Method getToolchainsMethod = ReflectionUtils.tryGetMethod(
-                getToolchainManager().getClass(), "getToolchains" );
+            Method getToolchainsMethod = tryGetMethod( ToolchainManager.class, "getToolchains",
+                MavenSession.class, String.class, Map.class );
             if ( getToolchainsMethod != null )
             {
-                List<Toolchain> tcs =
-                    (List<Toolchain>) ReflectionUtils.invokeMethodWithArray( getToolchainManager(),
-                        getToolchainsMethod, getSession(), "jdk" );
-                if ( tcs != null && !tcs.isEmpty() )
-                {
-                    tc = tcs.get( 0 );
-                }
-                else
+                //noinspection unchecked
+                List<Toolchain> tcs = (List<Toolchain>) invokeMethodWithArray( getToolchainManager(),
+                    getToolchainsMethod, getSession(), "jdk", getJdkToolchain() );
+                if ( tcs.isEmpty() )
                 {
                     throw new MojoFailureException(
-                        "Requested toolchain specification did not match any configured toolchain: " + jdkToolchain );
+                        "Requested toolchain specification did not match any configured toolchain: "
+                            + getJdkToolchain() );
                 }
+                tc = tcs.get( 0 );
             }
         }
 
         if ( tc == null )
         {
-            tc = toolchainManager.getToolchainFromBuildContext( "jdk", getSession() );
+            tc = getToolchainManager().getToolchainFromBuildContext( "jdk", getSession() );
         }
 
         return tc;
@@ -3938,6 +3935,16 @@ public abstract class AbstractSurefireMojo
     protected void logDebugOrCliShowErrors( String s )
     {
         SurefireHelper.logDebugOrCliShowErrors( s, getConsoleLogger(), cli );
+    }
+
+    public Map<String, String> getJdkToolchain()
+    {
+        return jdkToolchain;
+    }
+
+    public void setJdkToolchain( Map<String, String> jdkToolchain )
+    {
+        this.jdkToolchain = jdkToolchain;
     }
 
     public String getTempDir()
