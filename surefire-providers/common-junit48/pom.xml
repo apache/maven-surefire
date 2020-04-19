@@ -139,7 +139,9 @@
                         </goals>
                         <configuration>
                             <test>GroupMatcherCategoryFilterPreJUnit412Test$JUnit4SuiteTest</test>
-                            <classpathDependencyExcludes>junit:junit</classpathDependencyExcludes>
+                            <classpathDependencyExcludes>
+                                <classpathDependencyExclude>junit:junit</classpathDependencyExclude>
+                            </classpathDependencyExcludes>
                             <additionalClasspathElements>
                                 <additionalClasspathElement>${project.build.directory}/endorsed-test/junit-4.11.jar</additionalClasspathElement>
                             </additionalClasspathElements>
@@ -153,7 +155,9 @@
                         </goals>
                         <configuration>
                             <test>GroupMatcherCategoryFilterTest$JUnit4SuiteTest</test>
-                            <classpathDependencyExcludes>junit:junit</classpathDependencyExcludes>
+                            <classpathDependencyExcludes>
+                                <classpathDependencyExclude>junit:junit</classpathDependencyExclude>
+                            </classpathDependencyExcludes>
                             <additionalClasspathElements>
                                 <additionalClasspathElement>${project.build.directory}/endorsed-test/junit-4.12.jar</additionalClasspathElement>
                             </additionalClasspathElements>
