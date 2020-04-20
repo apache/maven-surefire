@@ -24,18 +24,22 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 
 import junit.framework.TestCase;
+import org.apache.maven.surefire.util.internal.ClassMethod;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.shared.io.IOUtils.readLines;
 import static org.apache.maven.surefire.util.internal.StringUtils.NL;
 import static org.fest.assertions.Assertions.assertThat;
+import static org.powermock.reflect.Whitebox.getInternalState;
 
 /**
  * @author Kristian Rosenvold
@@ -72,6 +76,49 @@ public class RunEntryStatisticsMapTest
                 + "2,42,org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMapTest$B,testB\n"
                 + "1,100,org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMapTest$C,testC\n";
         return new ByteArrayInputStream( content.getBytes( UTF_8 ) );
+    }
+
+    @SuppressWarnings( "checkstyle:magicnumber" )
+    public void testSerializeClass()
+        throws Exception
+    {
+        File data = File.createTempFile( "surefire-unit", "test" );
+        RunEntryStatisticsMap newResults = new RunEntryStatisticsMap();
+        ReportEntry reportEntry = new SimpleReportEntry( "abc", null, null, null, 42 );
+        newResults.add( newResults.createNextGeneration( reportEntry ) );
+        newResults.serialize( data );
+        try ( InputStream io = new FileInputStream( data ) )
+        {
+            List<String> lines = readLines( io, UTF_8 );
+
+            assertThat( lines )
+                .hasSize( 1 );
+
+            assertThat( lines )
+                .containsSequence( "1,42,abc," );
+        }
+    }
+
+    @SuppressWarnings( "checkstyle:magicnumber" )
+    public void testDeserializeClass()
+        throws Exception
+    {
+        File data = File.createTempFile( "surefire-unit", "test" );
+        Files.write( data.toPath(), "1,42,abc".getBytes( UTF_8 ) );
+        RunEntryStatisticsMap existingEntries = RunEntryStatisticsMap.fromFile( data );
+        Map<?, ?> runEntryStatistics = getInternalState( existingEntries, "runEntryStatistics" );
+        assertThat( runEntryStatistics )
+            .hasSize( 1 );
+        ClassMethod cm = (ClassMethod) runEntryStatistics.keySet().iterator().next();
+        assertThat( cm.getClazz() )
+            .isEqualTo( "abc" );
+        assertThat( cm.getMethod() )
+            .isNull();
+        RunEntryStatistics statistics = (RunEntryStatistics) runEntryStatistics.values().iterator().next();
+        assertThat( statistics.getRunTime() )
+            .isEqualTo( 42 );
+        assertThat( statistics.getSuccessfulBuilds() )
+            .isEqualTo( 1 );
     }
 
     @SuppressWarnings( "checkstyle:magicnumber" )

@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
-import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Integer.parseInt;
@@ -105,25 +104,26 @@ public final class RunEntryStatisticsMap
                     {
                         result.put( previous.getClassMethod(), previous );
                     }
-                    StringTokenizer tokenizer = new StringTokenizer( line, "," );
 
-                    int methodIndex = 3;
+                    int to = line.indexOf( ',' );
 
-                    String successfulBuildsString = tokenizer.nextToken();
+                    String successfulBuildsString = line.substring( 0, to );
                     int successfulBuilds = parseInt( successfulBuildsString );
 
-                    methodIndex += successfulBuildsString.length();
+                    int from = 1 + to;
+                    to = line.indexOf( ',', from + 1 );
 
-                    String runTimeString = tokenizer.nextToken();
+                    String runTimeString = line.substring( from, to );
                     int runTime = parseInt( runTimeString );
 
-                    methodIndex += runTimeString.length();
+                    from = 1 + to;
+                    to = line.indexOf( ',', from + 1 );
 
-                    String className = tokenizer.nextToken();
+                    String className = to == -1 ? line.substring( from ) : line.substring( from, to );
 
-                    methodIndex += className.length();
+                    from = 1 + to;
 
-                    String methodName = line.substring( methodIndex );
+                    String methodName = to == -1 ? null : line.substring( from );
 
                     ClassMethod classMethod = new ClassMethod( className, methodName );
                     previous = new RunEntryStatistics( runTime, successfulBuilds, classMethod );
@@ -157,7 +157,13 @@ public final class RunEntryStatisticsMap
                 String line = item.getSuccessfulBuilds() + "," + item.getRunTime() + "," + test.getClazz() + ",";
                 writer.write( line );
                 boolean wasFirstLine = false;
-                for ( Scanner scanner = new Scanner( test.getMethod() ); scanner.hasNextLine(); wasFirstLine = true )
+                String method = test.getMethod();
+                if ( method == null )
+                {
+                    continue;
+                }
+
+                for ( Scanner scanner = new Scanner( method ); scanner.hasNextLine(); wasFirstLine = true )
                 {
                     String methodLine = scanner.nextLine();
                     if ( wasFirstLine )
@@ -170,6 +176,7 @@ public final class RunEntryStatisticsMap
                         writer.newLine();
                     }
                 }
+
                 if ( it.hasNext() )
                 {
                     writer.newLine();
