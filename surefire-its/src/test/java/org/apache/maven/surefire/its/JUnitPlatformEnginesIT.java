@@ -82,7 +82,7 @@ public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase
         args.add( new Object[] {"1.3.2", "5.3.2", "1.1.1", "1.0.0"} );
         args.add( new Object[] {"1.4.2", "5.4.2", "1.1.1", "1.0.0"} );
         args.add( new Object[] {"1.5.2", "5.5.2", "1.2.0", "1.1.0"} );
-        args.add( new Object[] {"1.6.0-M1", "5.6.0-M1", "1.2.0", "1.1.0"} );
+        args.add( new Object[] {"1.6.2", "5.6.2", "1.2.0", "1.1.0"} );
         //args.add( new Object[] { "1.6.0-SNAPSHOT", "5.6.0-SNAPSHOT", "1.2.0", "1.1.0" } );
         return args;
     }
