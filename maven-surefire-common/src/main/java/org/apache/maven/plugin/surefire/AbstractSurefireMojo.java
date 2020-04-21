@@ -948,6 +948,29 @@ public abstract class AbstractSurefireMojo
         return consoleLogger;
     }
 
+    private static <T extends ToolchainManager> Toolchain getToolchainMaven33x( Class<T> toolchainManagerType,
+                                                                                T toolchainManager,
+                                                                                MavenSession session,
+                                                                                Map<String, String> toolchainArgs )
+        throws MojoFailureException
+    {
+        Method getToolchainsMethod =
+            tryGetMethod( toolchainManagerType, "getToolchains", MavenSession.class, String.class, Map.class );
+        if ( getToolchainsMethod != null )
+        {
+            //noinspection unchecked
+            List<Toolchain> tcs = (List<Toolchain>) invokeMethodWithArray( toolchainManager,
+                getToolchainsMethod, session, "jdk", toolchainArgs );
+            if ( tcs.isEmpty() )
+            {
+                throw new MojoFailureException(
+                    "Requested toolchain specification did not match any configured toolchain: " + toolchainArgs );
+            }
+            return tcs.get( 0 );
+        }
+        return null;
+    }
+
     //TODO remove the part with ToolchainManager lookup once we depend on
     //3.0.9 (have it as prerequisite). Define as regular component field then.
     private Toolchain getToolchain() throws MojoFailureException
@@ -956,21 +979,7 @@ public abstract class AbstractSurefireMojo
 
         if ( getJdkToolchain() != null )
         {
-            Method getToolchainsMethod = tryGetMethod( ToolchainManager.class, "getToolchains",
-                MavenSession.class, String.class, Map.class );
-            if ( getToolchainsMethod != null )
-            {
-                //noinspection unchecked
-                List<Toolchain> tcs = (List<Toolchain>) invokeMethodWithArray( getToolchainManager(),
-                    getToolchainsMethod, getSession(), "jdk", getJdkToolchain() );
-                if ( tcs.isEmpty() )
-                {
-                    throw new MojoFailureException(
-                        "Requested toolchain specification did not match any configured toolchain: "
-                            + getJdkToolchain() );
-                }
-                tc = tcs.get( 0 );
-            }
+            tc = getToolchainMaven33x( ToolchainManager.class, getToolchainManager(), getSession(), getJdkToolchain() );
         }
 
         if ( tc == null )
