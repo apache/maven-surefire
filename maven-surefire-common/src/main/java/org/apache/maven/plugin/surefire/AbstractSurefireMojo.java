@@ -97,6 +97,7 @@ import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -141,6 +142,8 @@ import static org.apache.maven.surefire.booter.SystemUtils.toJdkHomeFromJvmExec;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkVersionFromReleaseFile;
 import static org.apache.maven.surefire.suite.RunResult.failure;
 import static org.apache.maven.surefire.suite.RunResult.noTestsRun;
+import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray;
+import static org.apache.maven.surefire.util.ReflectionUtils.tryGetMethod;
 
 /**
  * Abstract base class for running tests using Surefire.
@@ -765,6 +768,42 @@ public abstract class AbstractSurefireMojo
     private String[] dependenciesToScan;
 
     /**
+     * <p>
+     *     Allow for configuration of the test jvm via maven toolchains.
+     *     This permits a configuration where the project is built with one jvm and tested with another.
+     *     This is similar to {@link #jvm}, but avoids hardcoding paths.
+     *     The two parameters are mutually exclusive (jvm wins)
+     * </p>
+     *
+     * <p>Examples:</p>
+     * (see <a href="https://maven.apache.org/guides/mini/guide-using-toolchains.html">
+     *     Guide to Toolchains</a> for more info)
+     *
+     * <pre>
+     * {@code
+     *    <configuration>
+     *        ...
+     *        <jdkToolchain>
+     *            <version>1.11</version>
+     *        </jdkToolchain>
+     *    </configuration>
+     *
+     *    <configuration>
+     *        ...
+     *        <jdkToolchain>
+     *            <version>1.8</version>
+     *            <vendor>zulu</vendor>
+     *        </jdkToolchain>
+     *    </configuration>
+     *    }
+     * </pre>
+     *
+     * @since 3.0.0-M5 and Maven 3.3.x
+     */
+    @Parameter
+    private Map<String, String> jdkToolchain;
+
+    /**
      *
      */
     @Component
@@ -909,7 +948,49 @@ public abstract class AbstractSurefireMojo
         return consoleLogger;
     }
 
-    private void setupStuff()
+    private static <T extends ToolchainManager> Toolchain getToolchainMaven33x( Class<T> toolchainManagerType,
+                                                                                T toolchainManager,
+                                                                                MavenSession session,
+                                                                                Map<String, String> toolchainArgs )
+        throws MojoFailureException
+    {
+        Method getToolchainsMethod =
+            tryGetMethod( toolchainManagerType, "getToolchains", MavenSession.class, String.class, Map.class );
+        if ( getToolchainsMethod != null )
+        {
+            //noinspection unchecked
+            List<Toolchain> tcs = (List<Toolchain>) invokeMethodWithArray( toolchainManager,
+                getToolchainsMethod, session, "jdk", toolchainArgs );
+            if ( tcs.isEmpty() )
+            {
+                throw new MojoFailureException(
+                    "Requested toolchain specification did not match any configured toolchain: " + toolchainArgs );
+            }
+            return tcs.get( 0 );
+        }
+        return null;
+    }
+
+    //TODO remove the part with ToolchainManager lookup once we depend on
+    //3.0.9 (have it as prerequisite). Define as regular component field then.
+    private Toolchain getToolchain() throws MojoFailureException
+    {
+        Toolchain tc = null;
+
+        if ( getJdkToolchain() != null )
+        {
+            tc = getToolchainMaven33x( ToolchainManager.class, getToolchainManager(), getSession(), getJdkToolchain() );
+        }
+
+        if ( tc == null )
+        {
+            tc = getToolchainManager().getToolchainFromBuildContext( "jdk", getSession() );
+        }
+
+        return tc;
+    }
+
+    private void setupStuff() throws MojoFailureException
     {
         surefireDependencyResolver = new SurefireDependencyResolver( getRepositorySystem(),
                 getConsoleLogger(), getLocalRepository(),
@@ -925,7 +1006,7 @@ public abstract class AbstractSurefireMojo
 
         if ( getToolchainManager() != null )
         {
-            toolchain = getToolchainManager().getToolchainFromBuildContext( "jdk", getSession() );
+            toolchain = getToolchain();
         }
     }
 
@@ -3863,6 +3944,16 @@ public abstract class AbstractSurefireMojo
     protected void logDebugOrCliShowErrors( String s )
     {
         SurefireHelper.logDebugOrCliShowErrors( s, getConsoleLogger(), cli );
+    }
+
+    public Map<String, String> getJdkToolchain()
+    {
+        return jdkToolchain;
+    }
+
+    public void setJdkToolchain( Map<String, String> jdkToolchain )
+    {
+        this.jdkToolchain = jdkToolchain;
     }
 
     public String getTempDir()

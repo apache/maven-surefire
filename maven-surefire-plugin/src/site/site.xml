@@ -62,6 +62,7 @@
       <item name="Shutdown of Forked JVM" href="examples/shutdown.html"/>
       <item name="Run tests with Java 9" href="java9.html"/>
       <item name="Run tests in Docker" href="docker.html"/>
+      <item name="Run tests in a different JVM using toolchains" href="examples/toolchains.html"/>
     </menu>
   </body>
 </project>

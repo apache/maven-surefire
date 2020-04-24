@@ -25,6 +25,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojoJava7PlusTest;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojoTest;
+import org.apache.maven.plugin.surefire.AbstractSurefireMojoToolchainsTest;
 import org.apache.maven.plugin.surefire.CommonReflectorTest;
 import org.apache.maven.plugin.surefire.MojoMocklessTest;
 import org.apache.maven.plugin.surefire.SurefireHelperTest;
@@ -97,6 +98,7 @@ public class JUnit4SuiteTest extends TestCase
         suite.addTest( new JUnit4TestAdapter( JarManifestForkConfigurationTest.class ) );
         suite.addTest( new JUnit4TestAdapter( ModularClasspathForkConfigurationTest.class ) );
         suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoJava7PlusTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoToolchainsTest.class ) );
         suite.addTest( new JUnit4TestAdapter( ScannerUtilTest.class ) );
         suite.addTest( new JUnit4TestAdapter( MojoMocklessTest.class ) );
         suite.addTest( new JUnit4TestAdapter( ForkClientTest.class ) );
