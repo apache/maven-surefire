@@ -21,10 +21,8 @@ package org.apache.maven.plugin.surefire;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.surefire.util.ReflectionUtils;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
-import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -49,11 +47,15 @@ import static org.powermock.reflect.Whitebox.invokeMethod;
  * Test for {@link AbstractSurefireMojo}. jdkToolchain parameter
  */
 @RunWith( PowerMockRunner.class )
-@PrepareForTest( {AbstractSurefireMojo.class, ResolvePathsRequest.class, ReflectionUtils.class} )
+@PrepareForTest( {AbstractSurefireMojo.class} )
 @PowerMockIgnore( {"org.jacoco.agent.rt.*", "com.vladium.emma.rt.*"} )
 public class AbstractSurefireMojoToolchainsTest
 {
 
+    /**
+     * Ensure that we use the toolchain found by getToolchainMaven33x()
+     * when the jdkToolchain parameter is set.
+     */
     @Test
     public void shouldCallMaven33xMethodWhenSpecSet() throws Exception
     {
@@ -75,6 +77,11 @@ public class AbstractSurefireMojoToolchainsTest
             .isSameAs( expectedFromMaven33Method );
     }
 
+    /**
+     * Ensure that we use the toolchain from build context when
+     * no jdkToolchain map is configured in mojo parameters.
+     * getToolchain() returns the main maven toolchain from the build context
+     */
     @Test
     public void shouldFallthroughToBuildContextWhenNoSpecSet() throws Exception
     {
