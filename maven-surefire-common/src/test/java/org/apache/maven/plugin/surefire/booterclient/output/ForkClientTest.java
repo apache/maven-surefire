@@ -55,6 +55,7 @@ import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
 import org.apache.maven.surefire.report.TestSetReportEntry;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import javax.annotation.Nonnull;
 import java.io.ByteArrayInputStream;
@@ -87,6 +88,7 @@ import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE
 import static org.apache.maven.surefire.report.RunMode.NORMAL_RUN;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.MapAssert.entry;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -147,6 +149,205 @@ public class ForkClientTest
         verify( logger ).isDebugEnabled();
 
         verify( logger ).isInfoEnabled();
+
+        verifyNoMoreInteractions( logger );
+    }
+
+    @Test
+    public void shouldLogJvmError1() throws Exception
+    {
+        String nativeStream = "\nCould not create the Java Virtual Machine\n";
+        EH eventHandler = new EH();
+        CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
+        ConsoleLogger logger = mock( ConsoleLogger.class );
+        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
+        when( arguments.getConsoleLogger() ).thenReturn( logger );
+        ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
+        try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
+        {
+            t.start();
+
+            countdown.awaitClosed();
+
+            verify( logger )
+                .error( "Could not create the Java Virtual Machine" );
+        }
+
+        assertThat( eventHandler.sizeOfEventCache() )
+            .isEqualTo( 0 );
+
+        verifyNoMoreInteractions( logger );
+    }
+
+    @Test
+    public void shouldLogJvmError2() throws Exception
+    {
+        String nativeStream = "\nError occurred during initialization of VM\n";
+        EH eventHandler = new EH();
+        CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
+        ConsoleLogger logger = mock( ConsoleLogger.class );
+        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
+        when( arguments.getConsoleLogger() ).thenReturn( logger );
+        ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
+        try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
+        {
+            t.start();
+
+            countdown.awaitClosed();
+
+            verify( logger )
+                .error( "Error occurred during initialization of VM" );
+        }
+
+        assertThat( eventHandler.sizeOfEventCache() )
+            .isEqualTo( 0 );
+
+        verifyNoMoreInteractions( logger );
+    }
+
+    @Test
+    public void shouldLogJvmError3() throws Exception
+    {
+        String nativeStream = "\nError: A fatal exception has occurred. Program will exit.\n";
+        EH eventHandler = new EH();
+        CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
+        ConsoleLogger logger = mock( ConsoleLogger.class );
+        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
+        when( arguments.getConsoleLogger() ).thenReturn( logger );
+        ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
+        try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
+        {
+            t.start();
+
+            countdown.awaitClosed();
+
+            verify( logger )
+                .error( "Error: A fatal exception has occurred. Program will exit." );
+        }
+
+        assertThat( eventHandler.sizeOfEventCache() )
+            .isEqualTo( 0 );
+
+        verifyNoMoreInteractions( logger );
+    }
+
+    @Test
+    public void shouldLogJvmError4() throws Exception
+    {
+        String nativeStream = "\nCould not reserve enough space for object heap\n";
+        EH eventHandler = new EH();
+        CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
+        ConsoleLogger logger = mock( ConsoleLogger.class );
+        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
+        when( arguments.getConsoleLogger() ).thenReturn( logger );
+        ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
+        try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
+        {
+            t.start();
+
+            countdown.awaitClosed();
+
+            verify( logger )
+                .error( "Could not reserve enough space for object heap" );
+        }
+
+        assertThat( eventHandler.sizeOfEventCache() )
+            .isEqualTo( 0 );
+
+        verifyNoMoreInteractions( logger );
+    }
+
+    @Test
+    public void shouldLogJvmError5() throws Exception
+    {
+        String nativeStream = "\njava.lang.module.FindException: Module java.ws.rs not found, required by com.foo.api";
+        EH eventHandler = new EH();
+        CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
+        ConsoleLogger logger = mock( ConsoleLogger.class );
+        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
+        when( arguments.getConsoleLogger() ).thenReturn( logger );
+        ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
+        try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
+        {
+            t.start();
+
+            countdown.awaitClosed();
+
+            verify( logger )
+                .error( "java.lang.module.FindException: Module java.ws.rs not found, required by com.foo.api" );
+        }
+
+        assertThat( eventHandler.sizeOfEventCache() )
+            .isEqualTo( 0 );
+
+        verifyNoMoreInteractions( logger );
+    }
+
+    @Test
+    public void shouldLogJvmError6() throws Exception
+    {
+        String nativeStream = "\njava.lang.module.FindException: Module java.ws.rs not found, required by com.foo.api";
+        EH eventHandler = new EH();
+        CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
+        ConsoleLogger logger = mock( ConsoleLogger.class );
+        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
+        when( arguments.getConsoleLogger() ).thenReturn( logger );
+        ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
+        try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
+        {
+            t.start();
+
+            countdown.awaitClosed();
+
+            verify( logger )
+                .error( "java.lang.module.FindException: Module java.ws.rs not found, required by com.foo.api" );
+        }
+
+        assertThat( eventHandler.sizeOfEventCache() )
+            .isEqualTo( 0 );
+
+        verifyNoMoreInteractions( logger );
+    }
+
+    @Test
+    public void shouldLogUnorderedErrors() throws Exception
+    {
+        String nativeStream = "unordered error";
+        EH eventHandler = new EH();
+        CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
+        ConsoleLogger logger = mock( ConsoleLogger.class );
+        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
+        when( arguments.getConsoleLogger() ).thenReturn( logger );
+        when( logger.isDebugEnabled() )
+            .thenReturn( true );
+        when( arguments.dumpStreamText( anyString() ) ).thenReturn( new File( "" ) );
+        ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
+        try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
+        {
+            t.start();
+
+            countdown.awaitClosed();
+
+            verify( logger )
+                .debug( "unordered error" );
+        }
+
+        assertThat( eventHandler.sizeOfEventCache() )
+            .isEqualTo( 0 );
+
+        verify( logger ).isDebugEnabled();
+
+        ArgumentCaptor<String> dumpText = ArgumentCaptor.forClass( String.class );
+        verify( arguments ).dumpStreamText( dumpText.capture() );
+        String msg = "Corrupted STDOUT by directly writing to native stream in forked JVM 0. Stream 'unordered error'.";
+        assertThat( dumpText.getValue() )
+            .isEqualTo( msg );
+
+        ArgumentCaptor<String> warningText = ArgumentCaptor.forClass( String.class );
+        verify( arguments ).logWarningAtEnd( warningText.capture() );
+        assertThat( warningText.getValue() )
+            .startsWith( "Corrupted STDOUT by directly writing to native stream in forked JVM 0. "
+                + "See FAQ web page and the dump file" );
 
         verifyNoMoreInteractions( logger );
     }

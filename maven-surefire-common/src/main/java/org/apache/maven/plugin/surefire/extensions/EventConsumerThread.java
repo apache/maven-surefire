@@ -74,6 +74,14 @@ import static org.apache.maven.surefire.report.RunMode.MODES;
  */
 public class EventConsumerThread extends CloseableDaemonThread
 {
+    private static final String[] JVM_ERROR_PATTERNS =
+        {
+            "could not create the java virtual machine",
+            "error occurred during initialization", // of VM, of boot layer
+            "error:", // general errors
+            "could not reserve enough space", "could not allocate", "unable to allocate", // memory errors
+            "java.lang.module.findexception" // JPMS errors
+        };
     private static final String PRINTABLE_JVM_NATIVE_STREAM = "Listening for transport dt_socket at address:";
     private static final Base64 BASE64 = new Base64();
 
@@ -224,7 +232,11 @@ public class EventConsumerThread extends CloseableDaemonThread
         {
             ConsoleLogger logger = arguments.getConsoleLogger();
             String s = line.toString().trim();
-            if ( s.contains( PRINTABLE_JVM_NATIVE_STREAM ) )
+            if ( isJvmError( s ) )
+            {
+                logger.error( s );
+            }
+            else if ( s.contains( PRINTABLE_JVM_NATIVE_STREAM ) )
             {
                 if ( logger.isDebugEnabled() )
                 {
@@ -464,6 +476,19 @@ public class EventConsumerThread extends CloseableDaemonThread
     static Integer decodeToInteger( String line )
     {
         return line == null || "-".equals( line ) ? null : Integer.decode( line );
+    }
+
+    private static boolean isJvmError( String line )
+    {
+        String lineLower = line.toLowerCase();
+        for ( String errorPattern : JVM_ERROR_PATTERNS )
+        {
+            if ( lineLower.contains( errorPattern ) )
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
