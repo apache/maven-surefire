@@ -232,11 +232,7 @@ public class EventConsumerThread extends CloseableDaemonThread
         {
             ConsoleLogger logger = arguments.getConsoleLogger();
             String s = line.toString().trim();
-            if ( isJvmError( s ) )
-            {
-                logger.error( s );
-            }
-            else if ( s.contains( PRINTABLE_JVM_NATIVE_STREAM ) )
+            if ( s.contains( PRINTABLE_JVM_NATIVE_STREAM ) )
             {
                 if ( logger.isDebugEnabled() )
                 {
@@ -254,6 +250,10 @@ public class EventConsumerThread extends CloseableDaemonThread
             }
             else
             {
+                if ( isJvmError( s ) )
+                {
+                    logger.error( s );
+                }
                 String msg = "Corrupted STDOUT by directly writing to native stream in forked JVM "
                     + arguments.getForkChannelId() + ".";
                 File dumpFile = arguments.dumpStreamText( msg + " Stream '" + s + "'." );

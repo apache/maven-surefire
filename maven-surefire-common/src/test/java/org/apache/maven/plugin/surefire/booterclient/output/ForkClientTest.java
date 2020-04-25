@@ -161,6 +161,7 @@ public class ForkClientTest
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
         ConsoleLogger logger = mock( ConsoleLogger.class );
         ForkNodeArguments arguments = mock( ForkNodeArguments.class );
+        when( arguments.dumpStreamText( anyString() ) ).thenReturn( new File( "" ) );
         when( arguments.getConsoleLogger() ).thenReturn( logger );
         ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
         try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
@@ -176,6 +177,8 @@ public class ForkClientTest
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
 
+        verify( logger ).isDebugEnabled();
+
         verifyNoMoreInteractions( logger );
     }
 
@@ -187,6 +190,7 @@ public class ForkClientTest
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
         ConsoleLogger logger = mock( ConsoleLogger.class );
         ForkNodeArguments arguments = mock( ForkNodeArguments.class );
+        when( arguments.dumpStreamText( anyString() ) ).thenReturn( new File( "" ) );
         when( arguments.getConsoleLogger() ).thenReturn( logger );
         ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
         try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
@@ -202,6 +206,8 @@ public class ForkClientTest
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
 
+        verify( logger ).isDebugEnabled();
+
         verifyNoMoreInteractions( logger );
     }
 
@@ -213,6 +219,7 @@ public class ForkClientTest
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
         ConsoleLogger logger = mock( ConsoleLogger.class );
         ForkNodeArguments arguments = mock( ForkNodeArguments.class );
+        when( arguments.dumpStreamText( anyString() ) ).thenReturn( new File( "" ) );
         when( arguments.getConsoleLogger() ).thenReturn( logger );
         ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
         try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
@@ -228,6 +235,8 @@ public class ForkClientTest
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
 
+        verify( logger ).isDebugEnabled();
+
         verifyNoMoreInteractions( logger );
     }
 
@@ -239,6 +248,7 @@ public class ForkClientTest
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
         ConsoleLogger logger = mock( ConsoleLogger.class );
         ForkNodeArguments arguments = mock( ForkNodeArguments.class );
+        when( arguments.dumpStreamText( anyString() ) ).thenReturn( new File( "" ) );
         when( arguments.getConsoleLogger() ).thenReturn( logger );
         ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
         try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
@@ -254,6 +264,8 @@ public class ForkClientTest
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
 
+        verify( logger ).isDebugEnabled();
+
         verifyNoMoreInteractions( logger );
     }
 
@@ -265,6 +277,7 @@ public class ForkClientTest
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
         ConsoleLogger logger = mock( ConsoleLogger.class );
         ForkNodeArguments arguments = mock( ForkNodeArguments.class );
+        when( arguments.dumpStreamText( anyString() ) ).thenReturn( new File( "" ) );
         when( arguments.getConsoleLogger() ).thenReturn( logger );
         ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
         try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
@@ -279,6 +292,8 @@ public class ForkClientTest
 
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
+
+        verify( logger ).isDebugEnabled();
 
         verifyNoMoreInteractions( logger );
     }
@@ -291,6 +306,7 @@ public class ForkClientTest
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
         ConsoleLogger logger = mock( ConsoleLogger.class );
         ForkNodeArguments arguments = mock( ForkNodeArguments.class );
+        when( arguments.dumpStreamText( anyString() ) ).thenReturn( new File( "" ) );
         when( arguments.getConsoleLogger() ).thenReturn( logger );
         ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
         try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
@@ -305,6 +321,8 @@ public class ForkClientTest
 
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
+
+        verify( logger ).isDebugEnabled();
 
         verifyNoMoreInteractions( logger );
     }
