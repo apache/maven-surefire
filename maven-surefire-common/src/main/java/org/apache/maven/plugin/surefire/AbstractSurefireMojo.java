@@ -1121,8 +1121,18 @@ public abstract class AbstractSurefireMojo
             warnIfWrongShutdownValue();
             warnIfNotApplicableSkipAfterFailureCount();
             warnIfIllegalTempDir();
+            warnIfForkCountIsZero();
         }
         return true;
+    }
+
+    private void warnIfForkCountIsZero()
+    {
+        if ( "0".equals( getForkCount() ) )
+        {
+            getConsoleLogger().warning( "The parameter forkCount should likely not be 0, not forking a JVM for tests "
+                + "reduce test accuracy, ensure to have a <forkCount> >= 1." );
+        }
     }
 
     private void executeAfterPreconditionsChecked( @Nonnull DefaultScanResult scanResult )
