@@ -56,7 +56,7 @@ public class OutputStreamFlushableCommandline
     public OutputStreamFlushableCommandline( String[] excludedEnvironmentVariables )
     {
         this.excludedEnvironmentVariables = new ConcurrentLinkedDeque<>();
-        this.addedEnvironmentVariables = new HashSet<>(  );
+        addedEnvironmentVariables = new HashSet<>();
         Collections.addAll( this.excludedEnvironmentVariables, excludedEnvironmentVariables );
     }
 
@@ -76,7 +76,7 @@ public class OutputStreamFlushableCommandline
         {
             if ( !addedEnvironmentVariables.contains( key ) && !excludedEnvironmentVariables.contains( key ) )
             {
-                super.addEnvironment( key, systemEnvVars.getProperty( key ) );
+                addEnvironment( key, systemEnvVars.getProperty( key ) );
             }
         }
     }
