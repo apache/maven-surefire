@@ -19,12 +19,12 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import com.googlecode.junittoolbox.ParallelParameterized;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -34,9 +34,9 @@ import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_MAC_OSX;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS_10;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS_7;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS_8;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS_10;
 import static org.apache.maven.surefire.its.jiras.Surefire1295AttributeJvmCrashesToTestsIT.ForkMode.DEFAULT;
 import static org.apache.maven.surefire.its.jiras.Surefire1295AttributeJvmCrashesToTestsIT.ForkMode.ONE_FORK_NO_REUSE;
 import static org.apache.maven.surefire.its.jiras.Surefire1295AttributeJvmCrashesToTestsIT.ForkMode.ONE_FORK_REUSE;
@@ -51,7 +51,7 @@ import static org.junit.Assume.assumeTrue;
  * @author michaeltandy
  * @since 2.20
  */
-@RunWith( ParallelParameterized.class )
+@RunWith( Parameterized.class )
 public class Surefire1295AttributeJvmCrashesToTestsIT
         extends SurefireJUnit4IntegrationTestCase
 {
