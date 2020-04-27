@@ -21,7 +21,9 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.apache.maven.surefire.shared.utils.cli.CommandLineException;
@@ -40,6 +42,7 @@ public class OutputStreamFlushableCommandline
     implements FlushReceiverProvider
 {
     private final Collection<String> excludedEnvironmentVariables;
+    private final Set<String> addedEnvironmentVariables;
     private volatile FlushReceiver flushReceiver;
 
     /**
@@ -53,7 +56,15 @@ public class OutputStreamFlushableCommandline
     public OutputStreamFlushableCommandline( String[] excludedEnvironmentVariables )
     {
         this.excludedEnvironmentVariables = new ConcurrentLinkedDeque<>();
+        addedEnvironmentVariables = new HashSet<>();
         Collections.addAll( this.excludedEnvironmentVariables, excludedEnvironmentVariables );
+    }
+
+    @Override
+    public void addEnvironment( String name, String value )
+    {
+        super.addEnvironment( name, value );
+        addedEnvironmentVariables.add( name );
     }
 
     @Override
@@ -63,7 +74,7 @@ public class OutputStreamFlushableCommandline
 
         for ( String key : systemEnvVars.stringPropertyNames() )
         {
-            if ( !excludedEnvironmentVariables.contains( key ) )
+            if ( !addedEnvironmentVariables.contains( key ) && !excludedEnvironmentVariables.contains( key ) )
             {
                 addEnvironment( key, systemEnvVars.getProperty( key ) );
             }
