@@ -23,6 +23,8 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
+import org.apache.maven.toolchain.java.DefaultJavaToolChain;
+import org.fest.assertions.MapAssert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -133,6 +135,25 @@ public class AbstractSurefireMojoToolchainsTest
         assertThat( actual )
             .isSameAs( expected );
     }
+
+    /**
+     * Ensures that the environmentVariables map for launching a test jvm
+     * contains a Toolchain-driven entry when toolchain is set.
+     */
+    @Test
+    public void shouldChangeJavaHomeFromToolchain() throws Exception
+    {
+        AbstractSurefireMojoTest.Mojo mojo = new AbstractSurefireMojoTest.Mojo();
+        DefaultJavaToolChain toolchain = mock( DefaultJavaToolChain.class );
+        when( toolchain.findTool( "java" ) ).thenReturn( "/some/path/bin/java" );
+        when( toolchain.getJavaHome() ).thenReturn( "/some/path" );
+        mojo.setToolchain( toolchain );
+
+        assertThat( mojo.getEnvironmentVariables() ).isEmpty();
+        invokeMethod( mojo, "getEffectiveJvm" );
+        assertThat( mojo.getEnvironmentVariables() ).includes( MapAssert.entry( "JAVA_HOME", "/some/path" ) );
+    }
+
 
     /**
      * Mocks a ToolchainManager

@@ -89,6 +89,7 @@ import org.apache.maven.surefire.util.RunOrder;
 import org.apache.maven.toolchain.DefaultToolchain;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
+import org.apache.maven.toolchain.java.DefaultJavaToolChain;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.languages.java.jpms.LocationManager;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
@@ -2553,6 +2554,15 @@ public abstract class AbstractSurefireMojo
                     DefaultToolchain defaultToolchain = (DefaultToolchain) toolchain;
                     javaVersion9 = defaultToolchain.matchesRequirements( JAVA_9_MATCHER )
                                              || defaultToolchain.matchesRequirements( JAVA_9_MATCHER_OLD_NOTATION );
+                }
+
+                if ( toolchain instanceof DefaultJavaToolChain )
+                {
+                    DefaultJavaToolChain defaultJavaToolChain = (DefaultJavaToolChain) toolchain;
+                    if ( !environmentVariables.containsKey( "JAVA_HOME" ) )
+                    {
+                        environmentVariables.put( "JAVA_HOME", defaultJavaToolChain.getJavaHome() );
+                    }
                 }
 
                 if ( !javaVersion9 )

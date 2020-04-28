@@ -44,6 +44,7 @@ import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.toolchain.Toolchain;
 import org.codehaus.plexus.logging.Logger;
 import org.junit.Before;
 import org.junit.Rule;
@@ -61,6 +62,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -2173,6 +2175,13 @@ public class AbstractSurefireMojoTest
         public void setSystemPropertiesFile( File systemPropertiesFile )
         {
 
+        }
+
+        public void setToolchain( Toolchain toolchain ) throws Exception
+        {
+            Field toolchainField = AbstractSurefireMojo.class.getDeclaredField( "toolchain" );
+            toolchainField.setAccessible( true );
+            toolchainField.set( this, toolchain );
         }
     }
 
