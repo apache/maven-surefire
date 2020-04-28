@@ -2183,6 +2183,13 @@ public class AbstractSurefireMojoTest
             toolchainField.setAccessible( true );
             toolchainField.set( this, toolchain );
         }
+
+        public void setJvm( String jvm ) throws Exception
+        {
+            Field toolchainField = AbstractSurefireMojo.class.getDeclaredField( "jvm" );
+            toolchainField.setAccessible( true );
+            toolchainField.set( this, jvm );
+        }
     }
 
     private static File mockFile( String absolutePath )

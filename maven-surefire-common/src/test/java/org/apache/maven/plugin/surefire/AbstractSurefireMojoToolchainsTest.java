@@ -31,6 +31,7 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -40,9 +41,11 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static junit.framework.TestCase.assertNull;
 import static org.fest.assertions.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
+import static org.powermock.api.mockito.PowerMockito.whenNew;
 import static org.powermock.reflect.Whitebox.invokeMethod;
 
 /**
@@ -153,6 +156,36 @@ public class AbstractSurefireMojoToolchainsTest
         invokeMethod( mojo, "getEffectiveJvm" );
         assertThat( mojo.getEnvironmentVariables() ).includes( MapAssert.entry( "JAVA_HOME", "/some/path" ) );
     }
+
+    /**
+     * Ensures that the environmentVariables map for launching a test jvm
+     * contains a jvm parameter-driven entry when jvm is set.
+     */
+    @Test
+    public void shouldChangeJavaHomeFromJvm() throws Exception
+    {
+        AbstractSurefireMojoTest.Mojo mojo = new AbstractSurefireMojoTest.Mojo();
+        String fakeJava = "/some/path/to/jdk/bin/java";
+        mojo.setJvm( fakeJava );
+
+        //Set up a mocked File-object
+        File mockedFile = mock( File.class );
+        when( mockedFile.getAbsoluteFile() ).thenReturn( mockedFile );
+        when( mockedFile.getPath() ).thenReturn( fakeJava );
+        when( mockedFile.getName() ).thenReturn( "java" );
+        when( mockedFile.isFile() ).thenReturn( true );
+
+        //Trap constructor calls to return the mocked File-object
+        whenNew( File.class ).
+            withParameterTypes( String.class ).
+            withArguments( anyString() ).
+            thenReturn( mockedFile );
+
+        assertThat( mojo.getEnvironmentVariables() ).isEmpty();
+        invokeMethod( mojo, "getEffectiveJvm" );
+        assertThat( mojo.getEnvironmentVariables() ).includes( MapAssert.entry( "JAVA_HOME", "/some/path/to/jdk" ) );
+    }
+
 
 
     /**
