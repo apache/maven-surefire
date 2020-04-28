@@ -62,7 +62,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -97,6 +96,7 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.spy;
 import static org.powermock.api.mockito.PowerMockito.verifyPrivate;
 import static org.powermock.reflect.Whitebox.invokeMethod;
+import static org.powermock.reflect.Whitebox.setInternalState;
 
 /**
  * Test for {@link AbstractSurefireMojo}.
@@ -2179,16 +2179,12 @@ public class AbstractSurefireMojoTest
 
         public void setToolchain( Toolchain toolchain ) throws Exception
         {
-            Field toolchainField = AbstractSurefireMojo.class.getDeclaredField( "toolchain" );
-            toolchainField.setAccessible( true );
-            toolchainField.set( this, toolchain );
+            setInternalState( this, "toolchain", toolchain );
         }
 
         public void setJvm( String jvm ) throws Exception
         {
-            Field toolchainField = AbstractSurefireMojo.class.getDeclaredField( "jvm" );
-            toolchainField.setAccessible( true );
-            toolchainField.set( this, jvm );
+            setInternalState( this, "jvm", jvm );
         }
     }
 

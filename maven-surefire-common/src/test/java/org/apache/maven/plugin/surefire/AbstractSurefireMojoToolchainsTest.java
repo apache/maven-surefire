@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.surefire.shared.io.FilenameUtils;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.apache.maven.toolchain.java.DefaultJavaToolChain;
@@ -40,12 +41,11 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static junit.framework.TestCase.assertNull;
+import static org.apache.maven.surefire.booter.SystemUtils.toJdkHomeFromJre;
 import static org.fest.assertions.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.api.mockito.PowerMockito.whenNew;
 import static org.powermock.reflect.Whitebox.invokeMethod;
 
 /**
@@ -148,13 +148,30 @@ public class AbstractSurefireMojoToolchainsTest
     {
         AbstractSurefireMojoTest.Mojo mojo = new AbstractSurefireMojoTest.Mojo();
         DefaultJavaToolChain toolchain = mock( DefaultJavaToolChain.class );
-        when( toolchain.findTool( "java" ) ).thenReturn( "/some/path/bin/java" );
+        when( toolchain.findTool( "java" ) ).thenReturn( "/path/from/toolchain" );
         when( toolchain.getJavaHome() ).thenReturn( "/some/path" );
         mojo.setToolchain( toolchain );
 
         assertThat( mojo.getEnvironmentVariables() ).isEmpty();
-        invokeMethod( mojo, "getEffectiveJvm" );
+        JdkAttributes effectiveJvm = invokeMethod( mojo, "getEffectiveJvm" );
         assertThat( mojo.getEnvironmentVariables() ).includes( MapAssert.entry( "JAVA_HOME", "/some/path" ) );
+        assertThat( effectiveJvm.getJvmExecutable() ).contains( "/path/from/toolchain" );
+    }
+
+    @Test
+    public void shouldNotChangeJavaHomeFromToolchainIfAlreadySet() throws Exception
+    {
+        AbstractSurefireMojoTest.Mojo mojo = new AbstractSurefireMojoTest.Mojo();
+        mojo.setEnvironmentVariables( singletonMap( "JAVA_HOME", "/already/set/path" ) );
+
+        DefaultJavaToolChain toolchain = mock( DefaultJavaToolChain.class );
+        when( toolchain.findTool( "java" ) ).thenReturn( "/path/from/toolchain" );
+        when( toolchain.getJavaHome() ).thenReturn( "/some/path" );
+        mojo.setToolchain( toolchain );
+
+        JdkAttributes effectiveJvm = invokeMethod( mojo, "getEffectiveJvm" );
+        assertThat( mojo.getEnvironmentVariables() ).includes( MapAssert.entry( "JAVA_HOME", "/already/set/path" ) );
+        assertThat( effectiveJvm.getJvmExecutable() ).contains( "/path/from/toolchain" );
     }
 
     /**
@@ -165,25 +182,40 @@ public class AbstractSurefireMojoToolchainsTest
     public void shouldChangeJavaHomeFromJvm() throws Exception
     {
         AbstractSurefireMojoTest.Mojo mojo = new AbstractSurefireMojoTest.Mojo();
-        String fakeJava = "/some/path/to/jdk/bin/java";
-        mojo.setJvm( fakeJava );
 
-        //Set up a mocked File-object
-        File mockedFile = mock( File.class );
-        when( mockedFile.getAbsoluteFile() ).thenReturn( mockedFile );
-        when( mockedFile.getPath() ).thenReturn( fakeJava );
-        when( mockedFile.getName() ).thenReturn( "java" );
-        when( mockedFile.isFile() ).thenReturn( true );
+        File currentJdkHome = toJdkHomeFromJre();
+        String javaExecutablePath = FilenameUtils.concat(
+            currentJdkHome.getAbsolutePath(), "bin/java" );
 
-        //Trap constructor calls to return the mocked File-object
-        whenNew( File.class ).
-            withParameterTypes( String.class ).
-            withArguments( anyString() ).
-            thenReturn( mockedFile );
+        mojo.setJvm( javaExecutablePath );
 
         assertThat( mojo.getEnvironmentVariables() ).isEmpty();
-        invokeMethod( mojo, "getEffectiveJvm" );
-        assertThat( mojo.getEnvironmentVariables() ).includes( MapAssert.entry( "JAVA_HOME", "/some/path/to/jdk" ) );
+        JdkAttributes effectiveJvm = invokeMethod( mojo, "getEffectiveJvm" );
+        assertThat( mojo.getEnvironmentVariables() ).
+            includes( MapAssert.entry( "JAVA_HOME", currentJdkHome.getAbsolutePath() ) );
+        assertThat( effectiveJvm.getJvmExecutable() ).contains( javaExecutablePath );
+    }
+
+    /**
+     * Ensures that users can manually configure a value for JAVA_HOME
+     * and we will not override it
+     */
+    @Test
+    public void shouldNotChangeJavaHomeFromJvmIfAlreadySet() throws Exception
+    {
+        AbstractSurefireMojoTest.Mojo mojo = new AbstractSurefireMojoTest.Mojo();
+        mojo.setEnvironmentVariables( singletonMap( "JAVA_HOME", "/already/set/path" ) );
+
+        File currentJdkHome = toJdkHomeFromJre();
+        String javaExecutablePath = FilenameUtils.concat(
+            currentJdkHome.getAbsolutePath(), "bin/java" );
+
+        mojo.setJvm( javaExecutablePath );
+
+        JdkAttributes effectiveJvm = invokeMethod( mojo, "getEffectiveJvm" );
+        assertThat( mojo.getEnvironmentVariables() ).
+            includes( MapAssert.entry( "JAVA_HOME", "/already/set/path" ) );
+        assertThat( effectiveJvm.getJvmExecutable() ).contains( javaExecutablePath );
     }
 
 
