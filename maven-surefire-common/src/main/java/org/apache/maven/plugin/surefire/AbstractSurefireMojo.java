@@ -2537,6 +2537,10 @@ public abstract class AbstractSurefireMojo
             }
 
             File jdkHome = toJdkHomeFromJvmExec( pathToJava.getPath() );
+            if ( !environmentVariables.containsKey( "JAVA_HOME" ) )
+            {
+                environmentVariables.put( "JAVA_HOME", jdkHome.getAbsolutePath() );
+            }
             BigDecimal version = jdkHome == null ? null : toJdkVersionFromReleaseFile( jdkHome );
             boolean javaVersion9 = version == null ? isJava9AtLeast( pathToJava.getPath() ) : isJava9AtLeast( version );
             return new JdkAttributes( pathToJava.getPath(), javaVersion9 );
