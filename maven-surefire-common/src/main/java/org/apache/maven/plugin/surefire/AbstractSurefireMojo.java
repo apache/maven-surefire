@@ -1173,8 +1173,8 @@ public abstract class AbstractSurefireMojo
     {
         Artifact junitDepArtifact = getJunitDepArtifact();
         return new ProviderList( new DynamicProviderInfo( null ),
-                              new JUnitPlatformProviderInfo( getJUnit5Artifact(), testClasspath ),
                               new TestNgProviderInfo( getTestNgArtifact() ),
+                              new JUnitPlatformProviderInfo( getJunitPlatformArtifact(), testClasspath ),
                               new JUnitCoreProviderInfo( getJunitArtifact(), junitDepArtifact ),
                               new JUnit4ProviderInfo( getJunitArtifact(), junitDepArtifact ),
                               new JUnit3ProviderInfo() )
@@ -2308,17 +2308,21 @@ public abstract class AbstractSurefireMojo
         return getProjectArtifactMap().get( "junit:junit-dep" );
     }
 
-    private Artifact getJUnit5Artifact()
+    private Artifact getJunitPlatformArtifact()
     {
-        if ( getProjectArtifactMap().get( "org.junit.platform:junit-platform-runner" ) != null )
-        {
-            return null;
-        }
-
-        Artifact artifact = getPluginArtifactMap().get( "org.junit.platform:junit-platform-engine" );
+        Artifact artifact = getProjectArtifactMap().get( "org.junit.platform:junit-platform-commons" );
         if ( artifact == null )
         {
-            artifact = getProjectArtifactMap().get( "org.junit.platform:junit-platform-commons" );
+            artifact = getPluginArtifactMap().get( "org.junit.platform:junit-platform-engine" );
+        }
+
+        Artifact projectArtifact = project.getArtifact();
+        String projectGroupId = projectArtifact.getGroupId();
+        if ( artifact == null && ( "org.junit.platform".equals( projectGroupId )
+                || "org.junit.jupiter".equals( projectGroupId )
+                || "org.junit.vintage".equals( projectGroupId ) ) )
+        {
+            artifact = projectArtifact;
         }
 
         return artifact;
@@ -2886,7 +2890,7 @@ public abstract class AbstractSurefireMojo
             {
                 Artifact junitArtifact = getJunitArtifact();
                 boolean junit47Compatible = isJunit47Compatible( junitArtifact );
-                boolean junit5PlatformCompatible = getJUnit5Artifact() != null;
+                boolean junit5PlatformCompatible = getJunitPlatformArtifact() != null;
                 if ( !junit47Compatible && !junit5PlatformCompatible )
                 {
                     if ( junitArtifact != null )
@@ -3138,19 +3142,24 @@ public abstract class AbstractSurefireMojo
                     surefireDependencyResolver.getProviderClasspathAsMap( "surefire-junit-platform", surefireVersion );
             Map<String, Artifact> testDependencies = testClasspath.getTestDependencies();
 
-            ProjectBuildingRequest request = getSession().getProjectBuildingRequest();
-            Plugin plugin = getPluginDescriptor().getPlugin();
-            Set<Artifact> engines = surefireDependencyResolver.resolvePluginDependencies( request, plugin );
-
-            // tymto sa len zarovna verzia junit-platform-launcher z classpathu providera
-            if ( hasDependencyPlatformEngine( engines ) )
+            if ( hasDependencyPlatformEngine( testDependencies ) )
             {
-                Map<String, Artifact> engineArtifacts = artifactMapByVersionlessId( engines );
-                providerArtifacts.putAll( engineArtifacts );
+                String filterTestDependency = "org.junit.platform:junit-platform-engine";
+                getConsoleLogger().debug( "Test dependencies contain " + filterTestDependency );
+                narrowProviderDependencies( filterTestDependency, providerArtifacts, testDependencies );
             }
             else
             {
-                if ( hasDependencyJupiterAPI( testDependencies ) )
+                ProjectBuildingRequest request = getSession().getProjectBuildingRequest();
+                Plugin plugin = getPluginDescriptor().getPlugin();
+                Set<Artifact> engines = surefireDependencyResolver.resolvePluginDependencies( request, plugin );
+                if ( hasDependencyPlatformEngine( engines ) )
+                {
+                    Map<String, Artifact> engineArtifacts = artifactMapByVersionlessId( engines );
+                    providerArtifacts.putAll( engineArtifacts );
+                    alignVersions( providerArtifacts, engineArtifacts );
+                }
+                else if ( hasDependencyJupiterAPI( testDependencies ) )
                 {
                     String engineGroupId = "org.junit.jupiter";
                     String engineArtifactId = "junit-jupiter-engine";
@@ -3158,47 +3167,52 @@ public abstract class AbstractSurefireMojo
                     String api = "org.junit.jupiter:junit-jupiter-api";
                     getConsoleLogger().debug( "Test dependencies contain " + api + ". Resolving " + engineCoordinates );
                     String engineVersion = testDependencies.get( api ).getBaseVersion();
-                    addEngineByApi( engineGroupId, engineArtifactId, engineVersion, providerArtifacts );
-                }
-
-                if ( testDependencies.containsKey( "junit:junit" )
-                    || testDependencies.containsKey( "junit:junit-dep" ) )
-                {
-                    String engineGroupId = "org.junit.vintage";
-                    String engineArtifactId = "junit-vintage-engine";
-                    String engineCoordinates = engineGroupId + ":" + engineArtifactId;
-                    String api = "org.junit.jupiter:junit-jupiter-api";
-                    getConsoleLogger().debug( "Test dependencies contain JUnit4. Resolving " + engineCoordinates );
-                    String engineVersion = testDependencies.get( api ).getBaseVersion();
-                    addEngineByApi( engineGroupId, engineArtifactId, engineVersion, providerArtifacts );
+                    addEngineByApi( engineGroupId, engineArtifactId, engineVersion,
+                            providerArtifacts, testDependencies );
                 }
             }
-
-            narrowDependencies( providerArtifacts, testDependencies );
-            alignProviderVersions( providerArtifacts );
-
+            providerArtifacts.keySet().removeAll( testDependencies.keySet() );
             return new LinkedHashSet<>( providerArtifacts.values() );
         }
 
         private void addEngineByApi( String engineGroupId, String engineArtifactId, String engineVersion,
-                                     Map<String, Artifact> providerArtifacts )
+                                     Map<String, Artifact> providerArtifacts, Map<String, Artifact> testDependencies )
         {
+            providerArtifacts.keySet().removeAll( testDependencies.keySet() );
             for ( Artifact dep : resolve( engineGroupId, engineArtifactId, engineVersion, null, "jar" ) )
             {
                 String key = dep.getGroupId() + ":" + dep.getArtifactId();
-                providerArtifacts.put( key, dep );
+                if ( !testDependencies.containsKey( key ) )
+                {
+                    providerArtifacts.put( key, dep );
+                }
             }
+            alignVersions( providerArtifacts, testDependencies );
         }
 
-        private void narrowDependencies( Map<String, Artifact> providerArtifacts,
-                                         Map<String, Artifact> testDependencies )
+        private void narrowProviderDependencies( String filterTestDependency,
+                                                 Map<String, Artifact> providerArtifacts,
+                                                 Map<String, Artifact> testDependencies )
         {
-            providerArtifacts.keySet().removeAll( testDependencies.keySet() );
+            Artifact engine = testDependencies.get( filterTestDependency );
+            String groupId = engine.getGroupId();
+            String artifactId = engine.getArtifactId();
+            String version = engine.getBaseVersion();
+            String classifier = engine.getClassifier();
+            String type = engine.getType();
+            for ( Artifact engineDep : resolve( groupId, artifactId, version, classifier, type ) )
+            {
+                providerArtifacts.remove( engineDep.getGroupId() + ":" + engineDep.getArtifactId() );
+                getConsoleLogger().debug( "Removed artifact " + engineDep
+                        + " from provider. Already appears in test classpath." );
+            }
+            alignVersions( providerArtifacts, testDependencies );
         }
 
-        private void alignProviderVersions( Map<String, Artifact> providerArtifacts )
+        private void alignVersions( Map<String, Artifact> providerArtifacts,
+                                    Map<String, Artifact> referencedDependencies )
         {
-            String version = junitPlatformArtifact.getBaseVersion();
+            String version = referencedDependencies.get( "org.junit.platform:junit-platform-commons" ).getBaseVersion();
             for ( Artifact launcherArtifact : resolve( PROVIDER_DEP_GID, PROVIDER_DEP_AID, version, null, "jar" ) )
             {
                 String key = launcherArtifact.getGroupId() + ":" + launcherArtifact.getArtifactId();
@@ -3217,12 +3231,6 @@ public abstract class AbstractSurefireMojo
             Set<Artifact> r = surefireDependencyResolver.resolveProjectArtifact( artifact ).getArtifacts();
             getConsoleLogger().debug( "Resolved artifact " + g + ":" + a + ":" + v + " to " + r );
             return r;
-        }
-
-        private boolean hasDependencyVintageEngine( Map<String, Artifact> dependencies )
-        {
-            return dependencies.containsKey( "org.junit.vintage:junit-vintage-engine" )
-                || hasGroupArtifactId( "org.junit.vintage", "junit-vintage-engine", getProject().getArtifact() );
         }
 
         private boolean hasDependencyJupiterAPI( Map<String, Artifact> dependencies )
@@ -3381,10 +3389,10 @@ public abstract class AbstractSurefireMojo
                 logDebugOrCliShowErrors( "Using configured provider " + providerToAdd.getProviderName() );
                 providersToRun.add( providerToAdd );
             }
-            return manuallyConfiguredProviders.isEmpty() ? autoDetectOneWellKnownProvider() : providersToRun;
+            return manuallyConfiguredProviders.isEmpty() ? autoDetectOneProvider() : providersToRun;
         }
 
-        @Nonnull private List<ProviderInfo> autoDetectOneWellKnownProvider()
+        @Nonnull private List<ProviderInfo> autoDetectOneProvider()
         {
             List<ProviderInfo> providersToRun = new ArrayList<>();
             for ( ProviderInfo wellKnownProvider : wellKnownProviders )
