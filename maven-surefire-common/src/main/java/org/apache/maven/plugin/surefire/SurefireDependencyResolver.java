@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +95,7 @@ final class SurefireDependencyResolver
 
     private final String pluginName;
 
-    private final DependencyResolver depencencyResolver;
+    private final DependencyResolver dependencyResolver;
 
     private final boolean offline;
 
@@ -102,7 +103,7 @@ final class SurefireDependencyResolver
                                 ArtifactRepository localRepository,
                                 List<ArtifactRepository> pluginRemoteRepositories,
                                 List<ArtifactRepository> projectRemoteRepositories, String pluginName,
-                                DependencyResolver depencencyResolver, boolean offline )
+                                DependencyResolver dependencyResolver, boolean offline )
     {
         this.repositorySystem = repositorySystem;
         this.log = log;
@@ -110,7 +111,7 @@ final class SurefireDependencyResolver
         this.pluginRemoteRepositories = pluginRemoteRepositories;
         this.projectRemoteRepositories = projectRemoteRepositories;
         this.pluginName = pluginName;
-        this.depencencyResolver = depencencyResolver;
+        this.dependencyResolver = dependencyResolver;
         this.offline = offline;
     }
 
@@ -138,19 +139,26 @@ final class SurefireDependencyResolver
         }
     }
 
-    Set<Artifact> resolvePluginDependencies( ProjectBuildingRequest request, Plugin plugin )
+    Map<String, Artifact> resolvePluginDependencies( ProjectBuildingRequest request,
+                                                     Plugin plugin, Map<String, Artifact> pluginResolvedDependencies )
             throws MojoExecutionException
     {
         Collection<Dependency> pluginDependencies = plugin.getDependencies();
         try
         {
-            Iterable<ArtifactResult> resolvedPluginDependencies = depencencyResolver.resolveDependencies( request,
-                pluginDependencies, null, including( SCOPE_COMPILE, SCOPE_COMPILE_PLUS_RUNTIME, SCOPE_RUNTIME ) );
+            Iterable<ArtifactResult> resolvedArtifacts = dependencyResolver.resolveDependencies( request,
+                pluginDependencies, null, including( RuntimeArtifactFilter.SCOPES ) );
 
-            Set<Artifact> resolved = new LinkedHashSet<>();
-            for ( ArtifactResult resolvedPluginDependency : resolvedPluginDependencies )
+            Map<String, Artifact> resolved = new LinkedHashMap<>();
+            for ( ArtifactResult resolvedArtifact : resolvedArtifacts )
             {
-                resolved.add( resolvedPluginDependency.getArtifact() );
+                Artifact artifact = resolvedArtifact.getArtifact();
+                String key = artifact.getGroupId() + ":" + artifact.getArtifactId();
+                Artifact resolvedPluginDependency = pluginResolvedDependencies.get( key );
+                if ( resolvedPluginDependency != null )
+                {
+                    resolved.put( key, artifact );
+                }
             }
             return resolved;
         }
