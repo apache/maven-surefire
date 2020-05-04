@@ -35,6 +35,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URI;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
@@ -43,6 +45,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.fest.assertions.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  *
@@ -90,8 +95,8 @@ public class ForkChannelTest
             assertThat( channel.getArguments().getForkChannelId() )
                 .isEqualTo( 1 );
 
-            assertThat( channel.useStdOut() )
-                .isFalse();
+            assertThat( channel.getCountdownCloseablePermits() )
+                .isEqualTo( 3 );
 
             assertThat( channel.getForkNodeConnectionString() )
                 .startsWith( "tcp://127.0.0.1:" )
@@ -113,7 +118,7 @@ public class ForkChannelTest
                     isCloseableCalled.countDown();
                 }
             };
-            CountdownCloseable cc = new CountdownCloseable( closeable, 1 );
+            CountdownCloseable cc = new CountdownCloseable( closeable, 2 );
             Consumer consumer = new Consumer();
 
             Client client = new Client( uri.getPort() );
@@ -121,7 +126,9 @@ public class ForkChannelTest
 
             channel.connectToClient();
             channel.bindCommandReader( commandReader, null ).start();
-            channel.bindEventHandler( consumer, cc, null ).start();
+            ReadableByteChannel stdOut = mock( ReadableByteChannel.class );
+            when( stdOut.read( any( ByteBuffer.class ) ) ).thenReturn( -1 );
+            channel.bindEventHandler( consumer, cc, stdOut ).start();
 
             commandReader.noop();
 

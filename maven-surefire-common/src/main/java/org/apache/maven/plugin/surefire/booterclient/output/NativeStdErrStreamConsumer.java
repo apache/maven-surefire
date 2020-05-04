@@ -19,13 +19,14 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.extensions.EventHandler;
 
 import javax.annotation.Nonnull;
 
 /**
- * Used by forked JMV, see {@link org.apache.maven.plugin.surefire.booterclient.ForkStarter}.
+ * The error logger for the error stream of the forked JMV,
+ * see {@link org.apache.maven.plugin.surefire.booterclient.ForkStarter}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20
@@ -34,17 +35,16 @@ import javax.annotation.Nonnull;
 public final class NativeStdErrStreamConsumer
     implements EventHandler<String>
 {
-    private final DefaultReporterFactory defaultReporterFactory;
+    private final ConsoleLogger logger;
 
-    public NativeStdErrStreamConsumer( DefaultReporterFactory defaultReporterFactory )
+    public NativeStdErrStreamConsumer( ConsoleLogger logger )
     {
-        this.defaultReporterFactory = defaultReporterFactory;
+        this.logger = logger;
     }
 
     @Override
     public void handleEvent( @Nonnull String line )
     {
-        InPluginProcessDumpSingleton.getSingleton()
-                .dumpStreamText( line, defaultReporterFactory.getReportsDirectory() );
+        logger.error( line );
     }
 }

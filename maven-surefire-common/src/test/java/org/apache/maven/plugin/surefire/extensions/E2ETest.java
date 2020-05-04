@@ -31,12 +31,15 @@ import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import java.io.Closeable;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -162,7 +165,9 @@ public class E2ETest
             }
         };
 
-        server.bindEventHandler( h, new CountdownCloseable( c, 1 ), null )
+        ReadableByteChannel stdOut = mock( ReadableByteChannel.class );
+        when( stdOut.read( any( ByteBuffer.class ) ) ).thenReturn( -1 );
+        server.bindEventHandler( h, new CountdownCloseable( c, 1 ), stdOut )
             .start();
 
         assertThat( awaitHandlerFinished.await( 30L, TimeUnit.SECONDS ) )
