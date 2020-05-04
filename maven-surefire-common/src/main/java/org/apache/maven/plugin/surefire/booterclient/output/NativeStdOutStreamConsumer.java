@@ -20,13 +20,19 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  */
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.extensions.StdOutStreamLine;
+import org.apache.maven.surefire.extensions.EventHandler;
+
+import javax.annotation.Nonnull;
 
 /**
+ * The output/INFO logger for the output stream of the forked JMV,
+ * see org.apache.maven.plugin.surefire.extensions.SurefireForkChannel.
  *
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 3.0.0-M5
  */
-public class NativeStdOutStreamConsumer
-        implements StdOutStreamLine
+public final class NativeStdOutStreamConsumer
+    implements EventHandler<String>
 {
     private final ConsoleLogger logger;
 
@@ -36,8 +42,8 @@ public class NativeStdOutStreamConsumer
     }
 
     @Override
-    public void handleLine( String line )
+    public void handleEvent( @Nonnull String event )
     {
-        logger.info( line );
+        logger.info( event );
     }
 }

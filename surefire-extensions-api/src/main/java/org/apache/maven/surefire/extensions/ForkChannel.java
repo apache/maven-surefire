@@ -62,15 +62,9 @@ public abstract class ForkChannel implements Closeable
     public abstract String getForkNodeConnectionString();
 
     /**
-     * Determines which one of the two <em>bindEventHandler-s</em> to call in <em>ForkStarter</em>.
-     * Can be called anytime.
-     *
-     * @return If {@code true}, both {@link ReadableByteChannel} and {@link CountdownCloseable} must not be null
-     * in {@link #bindEventHandler(EventHandler, CountdownCloseable, ReadableByteChannel)}. If {@code false} then
-     * both {@link ReadableByteChannel} and {@link CountdownCloseable} have to be null
-     * in {@link #bindEventHandler(EventHandler, CountdownCloseable, ReadableByteChannel)}.
+     * the permits in {@link CountdownCloseable}.
      */
-    public abstract boolean useStdOut();
+    public abstract int getCountdownCloseablePermits();
 
     /**
      * Binds command handler to the channel.

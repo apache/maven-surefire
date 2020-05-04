@@ -631,7 +631,7 @@ public class ForkStarter
         DefaultReporterFactory reporter = forkClient.getDefaultReporterFactory();
         currentForkClients.add( forkClient );
         CountdownCloseable countdownCloseable =
-            new CountdownCloseable( eventConsumer, 1 + ( forkChannel.useStdOut() ? 1 : 0 ) );
+            new CountdownCloseable( eventConsumer, forkChannel.getCountdownCloseablePermits() );
         try ( CommandlineExecutor exec = new CommandlineExecutor( cli, countdownCloseable ) )
         {
             CommandlineStreams streams = exec.execute();
@@ -646,8 +646,8 @@ public class ForkStarter
             out = forkChannel.bindEventHandler( eventConsumer, countdownCloseable, streams.getStdOutChannel() );
             out.start();
 
-            EventHandler<String> errConsumer = new NativeStdErrStreamConsumer( reporter );
-            err = new LineConsumerThread( "fork-" + forkNumber + "-err-thread-", streams.getStdErrChannel(),
+            EventHandler<String> errConsumer = new NativeStdErrStreamConsumer( log );
+            err = new LineConsumerThread( "fork-" + forkNumber + "-err-thread", streams.getStdErrChannel(),
                 errConsumer, countdownCloseable );
             err.start();
 

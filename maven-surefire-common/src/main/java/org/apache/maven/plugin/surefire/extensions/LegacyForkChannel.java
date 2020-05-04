@@ -58,9 +58,9 @@ final class LegacyForkChannel extends ForkChannel
     }
 
     @Override
-    public boolean useStdOut()
+    public int getCountdownCloseablePermits()
     {
-        return true;
+        return 2;
     }
 
     @Override

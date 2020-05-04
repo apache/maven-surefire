@@ -19,6 +19,7 @@ package org.apache.maven.plugin.surefire.extensions;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.booterclient.output.NativeStdOutStreamConsumer;
 import org.apache.maven.surefire.eventapi.Event;
 import org.apache.maven.surefire.extensions.CloseableDaemonThread;
 import org.apache.maven.surefire.extensions.CommandReader;
@@ -26,6 +27,7 @@ import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.ForkChannel;
 import org.apache.maven.surefire.extensions.ForkNodeArguments;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
+import org.apache.maven.surefire.extensions.util.LineConsumerThread;
 
 import javax.annotation.Nonnull;
 import java.io.Closeable;
@@ -75,6 +77,7 @@ final class SurefireForkChannel extends ForkChannel
     private final String localHost;
     private final int localPort;
     private volatile AsynchronousSocketChannel worker;
+    private volatile LineConsumerThread out;
 
     SurefireForkChannel( @Nonnull ForkNodeArguments arguments ) throws IOException
     {
@@ -130,9 +133,9 @@ final class SurefireForkChannel extends ForkChannel
     }
 
     @Override
-    public boolean useStdOut()
+    public int getCountdownCloseablePermits()
     {
-        return false;
+        return 3;
     }
 
     @Override
@@ -152,6 +155,10 @@ final class SurefireForkChannel extends ForkChannel
                                                    @Nonnull CountdownCloseable countdownCloseable,
                                                    ReadableByteChannel stdOut )
     {
+        out = new LineConsumerThread( "fork-" + getArguments().getForkChannelId() + "-out-thread", stdOut,
+            new NativeStdOutStreamConsumer( getArguments().getConsoleLogger() ), countdownCloseable );
+        out.start();
+
         ReadableByteChannel channel = newBufferedChannel( newInputStream( worker ) );
         return new EventConsumerThread( "fork-" + getArguments().getForkChannelId() + "-event-thread", channel,
             eventHandler, countdownCloseable, getArguments() );
@@ -161,7 +168,7 @@ final class SurefireForkChannel extends ForkChannel
     public void close() throws IOException
     {
         //noinspection unused,EmptyTryBlock,EmptyTryBlock
-        try ( Closeable c1 = worker; Closeable c2 = server )
+        try ( Closeable c1 = worker; Closeable c2 = server; Closeable c3 = out )
         {
             // only close all channels
         }
