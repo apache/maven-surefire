@@ -46,6 +46,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -142,7 +143,7 @@ public class BooterDeserializerStartupConfigurationTest
     public void testProcessCheckerNull() throws IOException
     {
         StartupConfiguration startupConfiguration = new StartupConfiguration( "com.provider", classpathConfiguration,
-                getManifestOnlyJarForkConfiguration(), null );
+                getManifestOnlyJarForkConfiguration(), null, Collections.<String[]>emptyList() );
         assertNull( saveAndReload( startupConfiguration ).getProcessChecker() );
     }
 
@@ -204,7 +205,8 @@ public class BooterDeserializerStartupConfigurationTest
 
     private StartupConfiguration getTestStartupConfiguration( ClassLoaderConfiguration classLoaderConfiguration )
     {
-        return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, ALL );
+        return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, ALL,
+            Collections.<String[]>emptyList() );
     }
 
     private File getTestSourceDirectory()

@@ -17,9 +17,9 @@
  * under the License.
  */
 
-module wtf.g4s8.oot.test
+open module wtf.g4s8.oot.test
 {
     requires wtf.g4s8.oot;
-    requires org.junit.jupiter.api;
+    requires transitive org.junit.jupiter.engine;
     requires transitive org.hamcrest;
 }

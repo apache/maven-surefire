@@ -23,6 +23,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -39,4 +40,7 @@ public interface ProviderInfo
     Set<Artifact> getProviderClasspath() throws MojoExecutionException;
 
     void addProviderProperties() throws MojoExecutionException;
+
+    @Nonnull
+    List<String[]> getJpmsArguments( @Nonnull ProviderRequirements forkRequirements );
 }

@@ -20,6 +20,8 @@ package org.apache.maven.surefire.booter;
  */
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Configuration that is used by the SurefireStarter but does not make it into the provider itself.
@@ -34,16 +36,19 @@ public class StartupConfiguration
     private final AbstractPathConfiguration classpathConfiguration;
     private final ClassLoaderConfiguration classLoaderConfiguration;
     private final ProcessCheckerType processChecker;
+    private final List<String[]> jpmsArguments;
 
     public StartupConfiguration( @Nonnull String providerClassName,
                                  @Nonnull AbstractPathConfiguration classpathConfiguration,
                                  @Nonnull ClassLoaderConfiguration classLoaderConfiguration,
-                                 ProcessCheckerType processChecker )
+                                 ProcessCheckerType processChecker,
+                                 @Nonnull List<String[]> jpmsArguments )
     {
         this.classpathConfiguration = classpathConfiguration;
         this.classLoaderConfiguration = classLoaderConfiguration;
         this.providerClassName = providerClassName;
         this.processChecker = processChecker;
+        this.jpmsArguments = jpmsArguments;
     }
 
     public boolean isProviderMainClass()
@@ -56,7 +61,8 @@ public class StartupConfiguration
                                                    ClassLoaderConfiguration classLoaderConfig,
                                                    ProcessCheckerType processChecker )
     {
-        return new StartupConfiguration( providerClassName, classpathConfig, classLoaderConfig, processChecker );
+        return new StartupConfiguration( providerClassName, classpathConfig, classLoaderConfig,
+            processChecker, Collections.<String[]>emptyList() );
     }
 
     public AbstractPathConfiguration getClasspathConfiguration()
@@ -132,5 +138,10 @@ public class StartupConfiguration
     public ProcessCheckerType getProcessChecker()
     {
         return processChecker;
+    }
+
+    public List<String[]> getJpmsArguments()
+    {
+        return jpmsArguments;
     }
 }

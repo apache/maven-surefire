@@ -170,7 +170,7 @@ public abstract class DefaultForkConfiguration
     }
 
     @Nonnull
-    protected List<String> toCompleteClasspath( StartupConfiguration conf ) throws SurefireBooterForkException
+    protected List<String> toCompleteClasspath( @Nonnull StartupConfiguration conf ) throws SurefireBooterForkException
     {
         AbstractPathConfiguration pathConfig = conf.getClasspathConfiguration();
         if ( pathConfig.isClassPathConfig() == pathConfig.isModularPathConfig() )
