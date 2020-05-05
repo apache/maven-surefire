@@ -37,6 +37,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -307,7 +308,7 @@ public class DefaultForkConfigurationTest
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
         ClasspathConfiguration cc = new ClasspathConfiguration( true, true );
         StartupConfiguration conf = new StartupConfiguration( "org.apache.maven.shadefire.surefire.MyProvider",
-                cc, clc, null );
+                cc, clc, null, Collections.<String[]>emptyList() );
         StartupConfiguration confMock = spy( conf );
         mockStatic( Relocator.class );
         when( Relocator.relocate( anyString() ) ).thenCallRealMethod();
@@ -327,8 +328,8 @@ public class DefaultForkConfigurationTest
     {
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
         ClasspathConfiguration cc = new ClasspathConfiguration( true, true );
-        StartupConfiguration conf =
-                new StartupConfiguration( "org.apache.maven.surefire.MyProvider", cc, clc, null );
+        StartupConfiguration conf = new StartupConfiguration( "org.apache.maven.surefire.MyProvider",
+            cc, clc, null, Collections.<String[]>emptyList() );
         StartupConfiguration confMock = spy( conf );
         mockStatic( Relocator.class );
         when( Relocator.relocate( anyString() ) ).thenCallRealMethod();

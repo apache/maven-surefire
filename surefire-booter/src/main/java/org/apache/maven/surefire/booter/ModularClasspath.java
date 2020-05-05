@@ -26,6 +26,7 @@ import java.util.List;
 
 import static java.util.Collections.unmodifiableCollection;
 import static java.util.Collections.unmodifiableList;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Jigsaw class-path and module-path.
@@ -39,15 +40,20 @@ public final class ModularClasspath
     private final List<String> modulePath;
     private final Collection<String> packages;
     private final File patchFile;
+    private final boolean isMainDescriptor;
 
-    public ModularClasspath( @Nonnull String moduleNameFromDescriptor, @Nonnull List<String> modulePath,
+    public ModularClasspath( @Nonnull String moduleNameFromDescriptor,
+                             @Nonnull List<String> modulePath,
                              @Nonnull Collection<String> packages,
-                             @Nonnull File patchFile )
+                             File patchFile,
+                             boolean isMainDescriptor )
     {
         this.moduleNameFromDescriptor = moduleNameFromDescriptor;
         this.modulePath = modulePath;
         this.packages = packages;
-        this.patchFile = patchFile;
+        this.patchFile =
+            isMainDescriptor ? requireNonNull( patchFile, "patchFile should not be null" ) : patchFile;
+        this.isMainDescriptor = isMainDescriptor;
     }
 
     @Nonnull
@@ -68,9 +74,13 @@ public final class ModularClasspath
         return unmodifiableCollection( packages );
     }
 
-    @Nonnull
     public File getPatchFile()
     {
         return patchFile;
+    }
+
+    public boolean isMainDescriptor()
+    {
+        return isMainDescriptor;
     }
 }

@@ -45,8 +45,8 @@ import java.util.Properties;
 import static java.io.File.createTempFile;
 import static java.io.File.pathSeparatorChar;
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
-import static org.apache.maven.surefire.shared.utils.StringUtils.replace;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
+import static org.apache.maven.surefire.shared.utils.StringUtils.replace;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -90,13 +90,15 @@ public class ModularClasspathForkConfiguration
 
             ModularClasspath modularClasspath = modularClasspathConfiguration.getModularClasspath();
 
+            boolean isMainDescriptor = modularClasspath.isMainDescriptor();
             String moduleName = modularClasspath.getModuleNameFromDescriptor();
             List<String> modulePath = modularClasspath.getModulePath();
             Collection<String> packages = modularClasspath.getPackages();
             File patchFile = modularClasspath.getPatchFile();
             List<String> classpath = toCompleteClasspath( config );
 
-            File argsFile = createArgsFile( moduleName, modulePath, classpath, packages, patchFile, startClass );
+            File argsFile = createArgsFile( moduleName, modulePath, classpath, packages, patchFile, startClass,
+                isMainDescriptor, config.getJpmsArguments() );
 
             cli.createArg().setValue( "@" + escapeToPlatformPath( argsFile.getAbsolutePath() ) );
         }
@@ -112,7 +114,8 @@ public class ModularClasspathForkConfiguration
     @Nonnull
     File createArgsFile( @Nonnull String moduleName, @Nonnull List<String> modulePath,
                          @Nonnull List<String> classPath, @Nonnull Collection<String> packages,
-                         @Nonnull File patchFile, @Nonnull String startClassName )
+                         File patchFile, @Nonnull String startClassName, boolean isMainDescriptor,
+                         @Nonnull List<String[]> providerJpmsArguments )
             throws IOException
     {
         File surefireArgs = createTempFile( "surefireargs", "", getTempDirectory() );
@@ -167,38 +170,57 @@ public class ModularClasspathForkConfiguration
                         .append( NL );
             }
 
-            args.append( "--patch-module" )
-                    .append( NL )
-                    .append( moduleName )
-                    .append( '=' )
-                    .append( '"' )
-                    .append( replace( patchFile.getPath(), "\\", "\\\\" ) )
-                    .append( '"' )
-                    .append( NL );
-
-            for ( String pkg : packages )
+            if ( isMainDescriptor )
             {
-                args.append( "--add-exports" )
+                args.append( "--patch-module" )
                         .append( NL )
                         .append( moduleName )
-                        .append( '/' )
-                        .append( pkg )
+                        .append( '=' )
+                        .append( '"' )
+                        .append( replace( patchFile.getPath(), "\\", "\\\\" ) )
+                        .append( '"' )
+                        .append( NL );
+
+                for ( String pkg : packages )
+                {
+                    args.append( "--add-exports" )
+                            .append( NL )
+                            .append( moduleName )
+                            .append( '/' )
+                            .append( pkg )
+                            .append( '=' )
+                            .append( "ALL-UNNAMED" )
+                            .append( NL );
+                }
+
+                args.append( "--add-modules" )
+                        .append( NL )
+                        .append( moduleName )
+                        .append( NL );
+
+                args.append( "--add-reads" )
+                        .append( NL )
+                        .append( moduleName )
                         .append( '=' )
                         .append( "ALL-UNNAMED" )
                         .append( NL );
             }
+            else
+            {
+                for ( String[] entries : providerJpmsArguments )
+                {
+                    for ( String entry : entries )
+                    {
+                        args.append( entry )
+                            .append( NL );
+                    }
+                }
 
-            args.append( "--add-modules" )
+                args.append( "--add-modules" )
                     .append( NL )
                     .append( moduleName )
                     .append( NL );
-
-            args.append( "--add-reads" )
-                    .append( NL )
-                    .append( moduleName )
-                    .append( '=' )
-                    .append( "ALL-UNNAMED" )
-                    .append( NL );
+            }
 
             args.append( startClassName );
 

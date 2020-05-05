@@ -90,6 +90,7 @@ import org.apache.maven.toolchain.DefaultToolchain;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.apache.maven.toolchain.java.DefaultJavaToolChain;
+import org.codehaus.plexus.languages.java.jpms.JavaModuleDescriptor;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathRequest;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathResult;
 import org.codehaus.plexus.logging.Logger;
@@ -124,8 +125,10 @@ import static java.lang.Integer.parseInt;
 import static java.lang.Thread.currentThread;
 import static java.util.Arrays.asList;
 import static java.util.Collections.addAll;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.substringBeforeLast;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.plugin.surefire.SurefireDependencyResolver.isWithinVersionSpec;
@@ -1388,27 +1391,32 @@ public abstract class AbstractSurefireMojo
 
     private ResolvePathResultWrapper findModuleDescriptor( File jdkHome )
     {
-        File mainBuildPath = getMainBuildPath();
+        ResolvePathResultWrapper test = findModuleDescriptor( jdkHome, getTestClassesDirectory(), false );
+        return test.getResolvePathResult() == null ? findModuleDescriptor( jdkHome, getMainBuildPath(), true ) : test;
+    }
 
-        if ( mainBuildPath.isDirectory() && !new File( mainBuildPath, "module-info.class" ).exists() )
+    private ResolvePathResultWrapper findModuleDescriptor( File jdkHome, File buildPath, boolean isMainDescriptor )
+    {
+        if ( buildPath.isDirectory() && !new File( buildPath, "module-info.class" ).exists() )
         {
-            return new ResolvePathResultWrapper( null, true );
+            return new ResolvePathResultWrapper( null, isMainDescriptor );
         }
 
         try
         {
-            ResolvePathRequest<?> request = ResolvePathRequest.ofFile( mainBuildPath ).setJdkHome( jdkHome );
+            ResolvePathRequest<?> request = ResolvePathRequest.ofFile( buildPath ).setJdkHome( jdkHome );
             ResolvePathResult result = getLocationManager().resolvePath( request );
-            return new ResolvePathResultWrapper( result.getModuleNameSource() == null ? null : result, true );
+            boolean isEmpty = result.getModuleNameSource() == null;
+            return new ResolvePathResultWrapper( isEmpty ? null : result, isMainDescriptor );
         }
         catch ( Exception e )
         {
-            return new ResolvePathResultWrapper( null, true );
+            return new ResolvePathResultWrapper( null, isMainDescriptor );
         }
     }
 
-    private boolean canExecuteProviderWithModularPath( Platform platform,
-                                                       ResolvePathResultWrapper resolvedJavaModularityResult )
+    private boolean canExecuteProviderWithModularPath( @Nonnull Platform platform,
+                                                       @Nonnull ResolvePathResultWrapper resolvedJavaModularityResult )
     {
         return useModulePath()
                 && platform.getJdkExecAttributesForTests().isJava9AtLeast()
@@ -1875,18 +1883,15 @@ public abstract class AbstractSurefireMojo
     {
         try
         {
-            Set<Artifact> providerArtifacts = provider.getProviderClasspath();
-            String providerName = provider.getProviderName();
             if ( isForking && canExecuteProviderWithModularPath( platform, resolvedJavaModularity ) )
             {
                 File jdkHome = platform.getJdkExecAttributesForTests().getJdkHome();
-                return newStartupConfigWithModularPath( classLoaderConfiguration, providerArtifacts, providerName,
-                    resolvedJavaModularity, scanResult, jdkHome.getAbsolutePath(), testClasspathWrapper );
+                return newStartupConfigWithModularPath( classLoaderConfiguration, provider, resolvedJavaModularity,
+                    scanResult, jdkHome.getAbsolutePath(), testClasspathWrapper );
             }
             else
             {
-                return newStartupConfigWithClasspath( classLoaderConfiguration, providerArtifacts, providerName,
-                        testClasspathWrapper );
+                return newStartupConfigWithClasspath( classLoaderConfiguration, provider, testClasspathWrapper );
             }
         }
         catch ( IOException e )
@@ -1896,11 +1901,12 @@ public abstract class AbstractSurefireMojo
     }
 
     private StartupConfiguration newStartupConfigWithClasspath(
-            @Nonnull ClassLoaderConfiguration classLoaderConfiguration, @Nonnull Set<Artifact> providerArtifacts,
-            @Nonnull String providerName, @Nonnull TestClassPath testClasspathWrapper )
+        @Nonnull ClassLoaderConfiguration classLoaderConfiguration, @Nonnull ProviderInfo providerInfo,
+        @Nonnull TestClassPath testClasspathWrapper ) throws MojoExecutionException
     {
         Classpath testClasspath = testClasspathWrapper.toClasspath();
-
+        Set<Artifact> providerArtifacts = providerInfo.getProviderClasspath();
+        String providerName = providerInfo.getProviderName();
         Classpath providerClasspath = classpathCache.getCachedClassPath( providerName );
         if ( providerClasspath == null )
         {
@@ -1921,9 +1927,9 @@ public abstract class AbstractSurefireMojo
 
         ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( testClasspath, providerClasspath,
                 inProcClasspath, effectiveIsEnableAssertions(), isChildDelegation() );
-
+        ProviderRequirements forkRequirements = new ProviderRequirements( false, false, false );
         return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration,
-            ProcessCheckerType.toEnum( getEnableProcessChecker() ) );
+            ProcessCheckerType.toEnum( getEnableProcessChecker() ), providerInfo.getJpmsArguments( forkRequirements ) );
     }
 
     private static Set<Artifact> retainInProcArtifactsUnique( Set<Artifact> providerArtifacts,
@@ -1975,45 +1981,61 @@ public abstract class AbstractSurefireMojo
     }
 
     private StartupConfiguration newStartupConfigWithModularPath(
-        @Nonnull ClassLoaderConfiguration classLoaderConfiguration, @Nonnull Set<Artifact> providerArtifacts,
-        @Nonnull String providerName, @Nonnull ResolvePathResultWrapper moduleDescriptor,
-        @Nonnull DefaultScanResult scanResult, @Nonnull String javaHome, @Nonnull TestClassPath testClasspathWrapper )
-            throws IOException
+        @Nonnull ClassLoaderConfiguration classLoaderConfiguration, @Nonnull ProviderInfo providerInfo,
+        @Nonnull ResolvePathResultWrapper moduleDescriptor, @Nonnull DefaultScanResult scanResult,
+        @Nonnull String javaHome, @Nonnull TestClassPath testClasspathWrapper )
+            throws MojoExecutionException, IOException
     {
-        Classpath testClasspath = testClasspathWrapper.toClasspath();
+        boolean isMainDescriptor = moduleDescriptor.isMainModuleDescriptor();
+        JavaModuleDescriptor javaModuleDescriptor = moduleDescriptor.getResolvePathResult().getModuleDescriptor();
+        SortedSet<String> packages = new TreeSet<>();
 
+        Classpath testClasspath = testClasspathWrapper.toClasspath();
+        Set<Artifact> providerArtifacts = providerInfo.getProviderClasspath();
+        String providerName = providerInfo.getProviderName();
         Classpath providerClasspath = classpathCache.getCachedClassPath( providerName );
         if ( providerClasspath == null )
         {
             providerClasspath = classpathCache.setCachedClasspath( providerName, providerArtifacts );
         }
 
-        ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings( testClasspath.getClassPath() )
-                .setJdkHome( javaHome )
-                .setModuleDescriptor( moduleDescriptor.getResolvePathResult().getModuleDescriptor() );
-
-        ResolvePathsResult<String> result = getLocationManager().resolvePaths( req );
-        for ( Entry<String, Exception> entry : result.getPathExceptions().entrySet() )
+        final ProviderRequirements providerRequirements;
+        final Classpath testModulepath;
+        if ( isMainDescriptor )
         {
-            // Probably JDK version < 9. Other known causes: passing a non-jar or a corrupted jar.
-            getConsoleLogger()
-                    .warning( "Exception for '" + entry.getKey() + "'.", entry.getValue() );
+            providerRequirements = new ProviderRequirements( true, true, false );
+            ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings( testClasspath.getClassPath() )
+                    .setJdkHome( javaHome )
+                    .setModuleDescriptor( javaModuleDescriptor );
+
+            ResolvePathsResult<String> result = getLocationManager().resolvePaths( req );
+            for ( Entry<String, Exception> entry : result.getPathExceptions().entrySet() )
+            {
+                // Probably JDK version < 9. Other known causes: passing a non-jar or a corrupted jar.
+                getConsoleLogger()
+                        .warning( "Exception for '" + entry.getKey() + "'.", entry.getValue() );
+            }
+
+            testClasspath = new Classpath( result.getClasspathElements() );
+            testModulepath = new Classpath( result.getModulepathElements().keySet() );
+
+            for ( String className : scanResult.getClasses() )
+            {
+                packages.add( substringBeforeLast( className, "." ) );
+            }
+        }
+        else
+        {
+            providerRequirements = new ProviderRequirements( true, false, true );
+            testModulepath = testClasspath;
+            testClasspath = emptyClasspath();
         }
 
-        testClasspath = new Classpath( result.getClasspathElements() );
-        Classpath testModulepath = new Classpath( result.getModulepathElements().keySet() );
+        getConsoleLogger().debug( "main module descriptor name: " + javaModuleDescriptor.name() );
 
-        SortedSet<String> packages = new TreeSet<>();
-
-        for ( String className : scanResult.getClasses() )
-        {
-            packages.add( substringBeforeLast( className, "." ) );
-        }
-
-        getConsoleLogger().debug( "main module descriptor name: " + result.getMainModuleDescriptor().name() );
-
-        ModularClasspath modularClasspath = new ModularClasspath( result.getMainModuleDescriptor().name(),
-                testModulepath.getClassPath(), packages, getTestClassesDirectory() );
+        ModularClasspath modularClasspath = new ModularClasspath( javaModuleDescriptor.name(),
+            testModulepath.getClassPath(), packages, isMainDescriptor ? getTestClassesDirectory() : null,
+            isMainDescriptor );
 
         Artifact[] additionalInProcArtifacts = { getCommonArtifact(), getBooterArtifact(), getExtensionsArtifact(),
             getApiArtifact(), getSpiArtifact(), getLoggerApiArtifact(), getSurefireSharedUtilsArtifact() };
@@ -2032,8 +2054,10 @@ public abstract class AbstractSurefireMojo
         getConsoleLogger().debug( inProcClasspath.getLogMessage( "in-process classpath:" ) );
         getConsoleLogger().debug( inProcClasspath.getCompactLogMessage( "in-process(compact) classpath:" ) );
 
+        ProcessCheckerType processCheckerType = ProcessCheckerType.toEnum( getEnableProcessChecker() );
+        List<String[]> jpmsArgs = providerInfo.getJpmsArguments( providerRequirements );
         return new StartupConfiguration( providerName, classpathConfiguration, classLoaderConfiguration,
-            ProcessCheckerType.toEnum( getEnableProcessChecker() ) );
+            processCheckerType, jpmsArgs );
     }
 
     private Artifact getCommonArtifact()
@@ -2344,7 +2368,7 @@ public abstract class AbstractSurefireMojo
                                            @Nonnull RunOrderParameters runOrderParameters, @Nonnull ConsoleLogger log,
                                            @Nonnull DefaultScanResult scanResult,
                                            @Nonnull TestClassPath testClasspathWrapper, @Nonnull Platform platform,
-                                           ResolvePathResultWrapper resolvedJavaModularityResult )
+                                           @Nonnull ResolvePathResultWrapper resolvedJavaModularityResult )
         throws MojoExecutionException, MojoFailureException
     {
         StartupConfiguration startupConfiguration = createStartupConfiguration( provider, true,
@@ -3039,6 +3063,13 @@ public abstract class AbstractSurefireMojo
             convertTestNGParameters();
         }
 
+        @Nonnull
+        @Override
+        public List<String[]> getJpmsArguments( @Nonnull ProviderRequirements forkRequirements )
+        {
+            return emptyList();
+        }
+
         @Override
         @Nonnull
         public Set<Artifact> getProviderClasspath()
@@ -3067,6 +3098,13 @@ public abstract class AbstractSurefireMojo
         @Override
         public void addProviderProperties()
         {
+        }
+
+        @Nonnull
+        @Override
+        public List<String[]> getJpmsArguments( @Nonnull ProviderRequirements forkRequirements )
+        {
+            return emptyList();
         }
 
         @Override
@@ -3110,6 +3148,13 @@ public abstract class AbstractSurefireMojo
         {
         }
 
+        @Nonnull
+        @Override
+        public List<String[]> getJpmsArguments( @Nonnull ProviderRequirements forkRequirements )
+        {
+            return emptyList();
+        }
+
         @Override
         @Nonnull
         public Set<Artifact> getProviderClasspath()
@@ -3151,6 +3196,14 @@ public abstract class AbstractSurefireMojo
         public void addProviderProperties()
         {
             convertGroupParameters();
+        }
+
+        @Nonnull
+        @Override
+        public List<String[]> getJpmsArguments( @Nonnull ProviderRequirements forkRequirements )
+        {
+            boolean hasTestDescriptor = forkRequirements.isModularPath() && forkRequirements.hasTestModuleDescriptor();
+            return hasTestDescriptor ? getJpmsArgs() : Collections.<String[]>emptyList();
         }
 
         @Override
@@ -3207,6 +3260,23 @@ public abstract class AbstractSurefireMojo
             alignProviderVersions( providerArtifacts );
 
             return new LinkedHashSet<>( providerArtifacts.values() );
+        }
+
+        private List<String[]> getJpmsArgs()
+        {
+            List<String[]> args = new ArrayList<>();
+
+            args.add( new String[] {
+                "--add-opens",
+                "org.junit.platform.commons/org.junit.platform.commons.util=ALL-UNNAMED"
+            } );
+
+            args.add( new String[] {
+                "--add-opens",
+                "org.junit.platform.commons/org.junit.platform.commons.logging=ALL-UNNAMED"
+            } );
+
+            return args;
         }
 
         private void addEngineByApi( String engineGroupId, String engineArtifactId, String engineVersion,
@@ -3306,6 +3376,13 @@ public abstract class AbstractSurefireMojo
             convertGroupParameters();
         }
 
+        @Nonnull
+        @Override
+        public List<String[]> getJpmsArguments( @Nonnull ProviderRequirements forkRequirements )
+        {
+            return emptyList();
+        }
+
         @Override
         @Nonnull
         public Set<Artifact> getProviderClasspath()
@@ -3353,6 +3430,13 @@ public abstract class AbstractSurefireMojo
             // Ok this is a bit lazy.
             convertJunitCoreParameters();
             convertTestNGParameters();
+        }
+
+        @Nonnull
+        @Override
+        public List<String[]> getJpmsArguments( @Nonnull ProviderRequirements forkRequirements )
+        {
+            return emptyList();
         }
 
         @Override

@@ -165,6 +165,8 @@ public class AbstractSurefireMojoTest
     {
         AbstractSurefireMojo mojo = spy( new Mojo() );
         mojo.setMainBuildPath( tempFolder.newFolder() );
+        File testClassesDir = tempFolder.newFolder();
+        mojo.setTestClassesDirectory( testClassesDir );
         File jdkHome = new File( System.getProperty( "java.home" ) );
         ResolvePathResultWrapper wrapper = invokeMethod( mojo, "findModuleDescriptor", jdkHome );
 
@@ -200,6 +202,8 @@ public class AbstractSurefireMojoTest
             .when( mojo, "getLocationManager" );
         File classesDir = tempFolder.newFolder();
         mojo.setMainBuildPath( classesDir );
+        File testClassesDir = tempFolder.newFolder();
+        mojo.setTestClassesDirectory( testClassesDir );
         File descriptorFile = new File( classesDir, "module-info.class" );
         assertThat( descriptorFile.createNewFile() ).isTrue();
         File jdkHome = new File( System.getProperty( "java.home" ) );
@@ -255,6 +259,8 @@ public class AbstractSurefireMojoTest
             .when( mojo, "getLocationManager" );
         File classesDir = tempFolder.newFolder();
         mojo.setMainBuildPath( classesDir );
+        File testClassesDir = tempFolder.newFolder();
+        mojo.setTestClassesDirectory( testClassesDir );
 
         File descriptorFile = new File( classesDir, "module-info.class" );
         assertThat( descriptorFile.createNewFile() ).isTrue();
@@ -523,8 +529,12 @@ public class AbstractSurefireMojoTest
         doNothing().when( logger ).debug( anyString() );
         when( mojo.getConsoleLogger() ).thenReturn( new PluginConsoleLogger( logger ) );
 
+        ProviderInfo providerInfo = mock( ProviderInfo.class );
+        when( providerInfo.getProviderName() ).thenReturn( "org.asf.Provider" );
+        when( providerInfo.getProviderClasspath() ).thenReturn( providerArtifacts );
+
         StartupConfiguration conf = invokeMethod( mojo, "newStartupConfigWithClasspath",
-                classLoaderConfiguration, providerArtifacts, "org.asf.Provider", testClasspath );
+                classLoaderConfiguration, providerInfo, testClasspath );
 
         verify( mojo, times( 1 ) ).effectiveIsEnableAssertions();
         verify( mojo, times( 1 ) ).isChildDelegation();
@@ -661,9 +671,6 @@ public class AbstractSurefireMojoTest
         when( resolvePathsResult.getPathExceptions() ).thenReturn( emptyMap() );
         when( resolvePathsResult.getClasspathElements() ).thenReturn( emptyList() );
         when( resolvePathsResult.getModulepathElements() ).thenReturn( emptyMap() );
-        JavaModuleDescriptor desc = mock( JavaModuleDescriptor.class );
-        when( desc.name() ).thenReturn( "" );
-        when( resolvePathsResult.getMainModuleDescriptor() ).thenReturn( desc );
 
         mojo.setLogger( mock( Logger.class ) );
         mojo.setUseModulePath( true );
@@ -676,6 +683,7 @@ public class AbstractSurefireMojoTest
 
         File classesDirectory = new File( baseDir, "mock-dir" );
         File testClassesDirectory = new File( baseDir, "mock-dir" );
+        mojo.setTestClassesDirectory( testClassesDirectory );
         TestClassPath testClassPath = new TestClassPath( Collections.<Artifact>emptySet(),
             classesDirectory, testClassesDirectory, new String[0] );
 
@@ -703,6 +711,9 @@ public class AbstractSurefireMojoTest
         mojo.setPluginArtifactMap( artifacts );
 
         ResolvePathResult resolvePathResult = mock( ResolvePathResult.class );
+        JavaModuleDescriptor desc = mock( JavaModuleDescriptor.class );
+        when( desc.name() ).thenReturn( "" );
+        when( resolvePathResult.getModuleDescriptor() ).thenReturn( desc );
         ResolvePathResultWrapper wrapper = new ResolvePathResultWrapper( resolvePathResult, true );
         // ### END
 
@@ -2013,6 +2024,7 @@ public class AbstractSurefireMojoTest
             extends AbstractSurefireMojo implements SurefireReportParameters
     {
         private File mainBuildPath;
+        private File testClassesDirectory;
         private boolean useModulePath;
 
         private JUnitPlatformProviderInfo createJUnitPlatformProviderInfo( Artifact junitPlatformArtifact,
@@ -2102,13 +2114,13 @@ public class AbstractSurefireMojoTest
         @Override
         public File getTestClassesDirectory()
         {
-            return null;
+            return testClassesDirectory;
         }
 
         @Override
         public void setTestClassesDirectory( File testClassesDirectory )
         {
-
+            this.testClassesDirectory = testClassesDirectory;
         }
 
         @Override

@@ -19,11 +19,10 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.AbstractJigsawIT;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersionExcluded;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -34,23 +33,28 @@ import static org.hamcrest.Matchers.is;
  */
 @SuppressWarnings( "checkstyle:magicnumber" )
 public class Surefire1570ModularFailsafeIT
-    extends SurefireJUnit4IntegrationTestCase
+    extends AbstractJigsawIT
 {
     @Before
     public void setUp()
     {
-        assumeJavaVersion( 9d );
         assumeJavaVersionExcluded( 11d );
     }
 
     @Test
     public void shouldRunWithJupiterApi() throws Exception
     {
-        unpack( "surefire-1570" )
+        assumeJava9()
             .debugLogging()
             .executeVerify()
             .verifyErrorFreeLog()
             .assertThatLogLine( containsString( "Lets see JDKModulePath" ), is( 2 ) )
             .assertThatLogLine( containsString( "Lets see JDKModulePath: null" ), is( 0 ) );
+    }
+
+    @Override
+    protected String getProjectDirectoryName()
+    {
+        return "surefire-1570";
     }
 }

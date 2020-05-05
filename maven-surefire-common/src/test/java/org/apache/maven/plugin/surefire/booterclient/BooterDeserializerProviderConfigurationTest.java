@@ -286,7 +286,8 @@ public class BooterDeserializerProviderConfigurationTest
     {
         ClasspathConfiguration classpathConfiguration = new ClasspathConfiguration( true, true );
 
-        return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, ALL );
+        return new StartupConfiguration( "com.provider", classpathConfiguration, classLoaderConfiguration, ALL,
+            Collections.<String[]>emptyList() );
     }
 
     private File getTestSourceDirectory()

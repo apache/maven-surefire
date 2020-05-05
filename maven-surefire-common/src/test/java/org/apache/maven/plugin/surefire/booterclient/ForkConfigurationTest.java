@@ -19,31 +19,44 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import org.apache.maven.surefire.shared.io.FileUtils;
-import org.apache.maven.surefire.shared.lang3.SystemUtils;
 import org.apache.maven.plugin.surefire.JdkAttributes;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
-import org.apache.maven.surefire.shared.utils.StringUtils;
-import org.apache.maven.surefire.shared.utils.cli.Commandline;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
+import org.apache.maven.surefire.booter.ModularClasspath;
+import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
+import org.apache.maven.surefire.shared.io.FileUtils;
+import org.apache.maven.surefire.shared.lang3.SystemUtils;
+import org.apache.maven.surefire.shared.utils.StringUtils;
+import org.apache.maven.surefire.shared.utils.cli.Commandline;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
+import static java.nio.file.Files.readAllBytes;
 import static java.util.Collections.singletonList;
+import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 import static org.apache.maven.surefire.booter.ProcessCheckerType.ALL;
+import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.util.Files.temporaryFolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -57,7 +70,7 @@ public class ForkConfigurationTest
 {
     private static final StartupConfiguration STARTUP_CONFIG = new StartupConfiguration( "",
             new ClasspathConfiguration( true, true ),
-            new ClassLoaderConfiguration( true, true ), ALL );
+            new ClassLoaderConfiguration( true, true ), ALL, Collections.<String[]>emptyList() );
 
     private static int idx = 0;
 
@@ -79,6 +92,161 @@ public class ForkConfigurationTest
     }
 
     @Test
+    public void testEnv() throws Exception
+    {
+        Map<String, String> env = new HashMap<>();
+        env.put( "key1", "val1" );
+        env.put( "key2", "val2" );
+        env.put( "key3", "val3" );
+        String[] exclEnv = {"PATH"};
+
+        String jvm = new File( new File( System.getProperty( "java.home" ), "bin" ), "java" ).getCanonicalPath();
+        Platform platform = new Platform().withJdkExecAttributesForTests( new JdkAttributes( jvm, false ) );
+
+        ForkConfiguration config = new DefaultForkConfiguration( emptyClasspath(), basedir, "", basedir,
+            new Properties(), "", env, exclEnv, false, 1, true,
+            platform, new NullConsoleLogger(), mock( ForkNodeFactory.class ) )
+        {
+
+            @Override
+            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+                                             @Nonnull String booterThatHasMainMethod,
+                                             @Nonnull StartupConfiguration config,
+                                             @Nonnull File dumpLogDirectory )
+            {
+
+            }
+        };
+
+        List<String[]> providerJpmsArgs = new ArrayList<>();
+        providerJpmsArgs.add( new String[]{ "arg2", "arg3" } );
+
+        File cpElement = getTempClasspathFile();
+        List<String> cp = singletonList( cpElement.getAbsolutePath() );
+
+        ClasspathConfiguration cpConfig = new ClasspathConfiguration( new Classpath( cp ), emptyClasspath(),
+            emptyClasspath(), true, true );
+        ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
+        StartupConfiguration startup = new StartupConfiguration( "cls", cpConfig, clc, ALL, providerJpmsArgs );
+
+        Commandline cli = config.createCommandLine( startup, 1, temporaryFolder() );
+
+        assertThat( cli.getEnvironmentVariables() )
+            .contains( "key1=val1", "key2=val2", "key3=val3" )
+            .excludes( "PATH=" )
+            .doesNotHaveDuplicates();
+    }
+
+    @Test
+    public void testCliArgs() throws Exception
+    {
+        String jvm = new File( new File( System.getProperty( "java.home" ), "bin" ), "java" ).getCanonicalPath();
+        Platform platform = new Platform().withJdkExecAttributesForTests( new JdkAttributes( jvm, false ) );
+
+        ModularClasspathForkConfiguration config = new ModularClasspathForkConfiguration( emptyClasspath(), basedir,
+            "", basedir, new Properties(), "arg1", Collections.<String, String>emptyMap(), new String[0], false, 1,
+            true, platform, new NullConsoleLogger(), mock( ForkNodeFactory.class ) );
+
+        assertThat( config.isDebug() ).isFalse();
+
+        List<String[]> providerJpmsArgs = new ArrayList<>();
+        providerJpmsArgs.add( new String[]{ "arg2", "arg3" } );
+
+        ModularClasspath modulepath = new ModularClasspath( "test.module", Collections.<String>emptyList(),
+            Collections.<String>emptyList(), null, false );
+        ModularClasspathConfiguration cpConfig = new ModularClasspathConfiguration( modulepath, emptyClasspath(),
+            emptyClasspath(), emptyClasspath(), false, true );
+        ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
+        StartupConfiguration startup = new StartupConfiguration( "cls", cpConfig, clc, ALL, providerJpmsArgs );
+
+        Commandline cli = config.createCommandLine( startup, 1, temporaryFolder() );
+        String cliAsString = cli.toString();
+
+        assertThat( cliAsString )
+            .contains( "arg1" );
+
+        // "/path/to/java arg1 @/path/to/argfile"
+        int beginOfFileArg = cliAsString.indexOf( '@', cliAsString.lastIndexOf( "arg1" ) );
+        assertThat( beginOfFileArg ).isPositive();
+        int endOfFileArg = cliAsString.indexOf( '"', beginOfFileArg );
+        if ( endOfFileArg == -1 )
+        {
+            endOfFileArg = cliAsString.length();
+        }
+        assertThat( endOfFileArg ).isPositive();
+        Path argFile = Paths.get( cliAsString.substring( beginOfFileArg + 1, endOfFileArg ) );
+        String argFileText = new String( readAllBytes( argFile ) );
+        assertThat( argFileText )
+            .contains( "arg2" )
+            .contains( "arg3" )
+            .contains( "--add-modules" + NL + "test.module" );
+    }
+
+    @Test
+    public void testDebugLine() throws Exception
+    {
+        String jvm = new File( new File( System.getProperty( "java.home" ), "bin" ), "java" ).getCanonicalPath();
+        Platform platform = new Platform().withJdkExecAttributesForTests( new JdkAttributes( jvm, false ) );
+
+        ConsoleLogger logger = mock( ConsoleLogger.class );
+        ForkNodeFactory forkNodeFactory = mock( ForkNodeFactory.class );
+
+        ForkConfiguration config = new DefaultForkConfiguration( emptyClasspath(), basedir,
+            "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005", basedir, new Properties(), "",
+            Collections.<String, String>emptyMap(), new String[0], true, 1, true,
+            platform, logger, forkNodeFactory )
+        {
+
+            @Override
+            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+                                             @Nonnull String booterThatHasMainMethod,
+                                             @Nonnull StartupConfiguration config,
+                                             @Nonnull File dumpLogDirectory )
+            {
+
+            }
+        };
+
+        assertThat( config.isDebug() )
+            .isTrue();
+
+        assertThat( config.getDebugLine() )
+            .isEqualTo( "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005" );
+
+        assertThat( config.getForkCount() )
+            .isEqualTo( 1 );
+
+        assertThat( config.isReuseForks() )
+            .isTrue();
+
+        assertThat( config.getForkNodeFactory() )
+            .isSameAs( forkNodeFactory );
+
+        File cpElement = getTempClasspathFile();
+        List<String> cp = singletonList( cpElement.getAbsolutePath() );
+
+        ClasspathConfiguration cpConfig = new ClasspathConfiguration( new Classpath( cp ), emptyClasspath(),
+            emptyClasspath(), true, true );
+        ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
+        StartupConfiguration startup = new StartupConfiguration( "org.apache.maven.surefire.JUnitProvider#main",
+            cpConfig, clc, ALL, Collections.<String[]>emptyList() );
+
+        assertThat( startup.isProviderMainClass() )
+            .isTrue();
+
+        assertThat( startup.getProviderClassName() )
+            .isEqualTo( "org.apache.maven.surefire.JUnitProvider#main" );
+
+        assertThat( startup.isShadefire() )
+            .isFalse();
+
+        Commandline cli = config.createCommandLine( startup, 1, temporaryFolder() );
+
+        assertThat( cli.toString() )
+            .contains( "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005" );
+    }
+
+    @Test
     @SuppressWarnings( { "checkstyle:methodname", "checkstyle:magicnumber" } )
     public void testCreateCommandLine_UseSystemClassLoaderForkOnce_ShouldConstructManifestOnlyJar()
         throws IOException, SurefireBooterForkException
@@ -90,7 +258,8 @@ public class ForkConfigurationTest
         ClasspathConfiguration cpConfig = new ClasspathConfiguration( new Classpath( cp ), emptyClasspath(),
                 emptyClasspath(), true, true );
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
-        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, ALL );
+        StartupConfiguration startup =
+            new StartupConfiguration( "", cpConfig, clc, ALL, Collections.<String[]>emptyList() );
 
         Commandline cli = config.createCommandLine( startup, 1, temporaryFolder() );
 
@@ -110,7 +279,8 @@ public class ForkConfigurationTest
         ClasspathConfiguration cpConfig = new ClasspathConfiguration( new Classpath( cp ), emptyClasspath(),
                 emptyClasspath(), true, true );
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
-        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, ALL );
+        StartupConfiguration startup =
+            new StartupConfiguration( "", cpConfig, clc, ALL, Collections.<String[]>emptyList() );
 
         Commandline commandLine = config.createCommandLine( startup, 1, temporaryFolder() );
         assertTrue( commandLine.toString().contains( "abc def" ) );
@@ -125,7 +295,8 @@ public class ForkConfigurationTest
         ClasspathConfiguration cpConfig = new ClasspathConfiguration( emptyClasspath(), emptyClasspath(),
                 emptyClasspath(), true, true );
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
-        StartupConfiguration startup = new StartupConfiguration( "", cpConfig, clc, ALL );
+        StartupConfiguration startup =
+            new StartupConfiguration( "", cpConfig, clc, ALL, Collections.<String[]>emptyList() );
         ForkConfiguration config = getForkConfiguration( cwd.getCanonicalFile() );
         Commandline commandLine = config.createCommandLine( startup, 1, temporaryFolder() );
 
