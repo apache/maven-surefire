@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static java.util.Collections.singleton;
@@ -325,12 +326,12 @@ public class SurefireDependencyResolverTest
         when( resolutionResult.getArtifacts() )
             .thenReturn( singleton( providerAsArtifact ) );
 
-        Set<Artifact> providers = surefireDependencyResolver.resolvePluginDependencies( request, plugin );
+        Map<String, Artifact> providers = surefireDependencyResolver.resolvePluginDependencies( request, plugin );
 
         verify( depencencyResolver, times( 1 ) )
             .resolveDependencies( request, dep.getValue(), null, filter.getValue() );
 
-        assertThat( providers )
+        assertThat( providers.values() )
             .hasSize( 1 )
             .containsOnly( providerAsArtifact );
 
