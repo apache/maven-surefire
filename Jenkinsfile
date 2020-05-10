@@ -120,6 +120,7 @@ timeout(time: 12, unit: 'HOURS') {
 }
 
 def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvnName, goals, options, mavenOpts, boolean makeReports) {
+    cleanWs()
     try {
         def mvnLocalRepoDir
         if (isUnix()) {
@@ -169,38 +170,41 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
             }
         }
     } finally {
-        if (makeReports) {
-            openTasks(ignoreCase: true, canComputeNew: true, defaultEncoding: 'UTF-8', pattern: sourcesPatternCsv(),
-                    high: tasksViolationHigh(), normal: tasksViolationNormal(), low: tasksViolationLow())
+        try {
+            if (makeReports) {
+                openTasks(ignoreCase: true, canComputeNew: true, defaultEncoding: 'UTF-8', pattern: sourcesPatternCsv(),
+                        high: tasksViolationHigh(), normal: tasksViolationNormal(), low: tasksViolationLow())
 
-            jacoco(changeBuildStatus: false,
-                    execPattern: '**/*.exec',
-                    sourcePattern: sourcesPatternCsv(),
-                    classPattern: classPatternCsv())
+                jacoco(changeBuildStatus: false,
+                        execPattern: '**/*.exec',
+                        sourcePattern: sourcesPatternCsv(),
+                        classPattern: classPatternCsv())
 
-            junit(healthScaleFactor: 0.0,
-                    allowEmptyResults: true,
-                    keepLongStdio: true,
-                    testResults: testReportsPatternCsv())
+                junit(healthScaleFactor: 0.0,
+                        allowEmptyResults: true,
+                        keepLongStdio: true,
+                        testResults: testReportsPatternCsv())
 
-            if (currentBuild.result == 'UNSTABLE') {
-                currentBuild.result = 'FAILURE'
+                if (currentBuild.result == 'UNSTABLE') {
+                    currentBuild.result = 'FAILURE'
+                }
             }
+
+            if (currentBuild.result != null && currentBuild.result != 'SUCCESS') {
+                if (fileExists('maven-failsafe-plugin/target/it')) {
+                    zip(zipFile: "maven-failsafe-plugin--${stageKey}.zip", dir: 'maven-failsafe-plugin/target/it', archive: true)
+                }
+
+                if (fileExists('surefire-its/target')) {
+                    zip(zipFile: "surefire-its--${stageKey}.zip", dir: 'surefire-its/target', archive: true)
+                }
+
+                archiveArtifacts(artifacts: "*--${stageKey}.zip", allowEmptyArchive: true, onlyIfSuccessful: false)
+            }
+        } finally {
+            // clean up after ourselves to reduce disk space
+            cleanWs()
         }
-
-        if (currentBuild.result != null && currentBuild.result != 'SUCCESS') {
-            if (fileExists('maven-failsafe-plugin/target/it')) {
-                zip(zipFile: "maven-failsafe-plugin--${stageKey}.zip", dir: 'maven-failsafe-plugin/target/it', archive: true)
-            }
-
-            if (fileExists('surefire-its/target')) {
-                zip(zipFile: "surefire-its--${stageKey}.zip", dir: 'surefire-its/target', archive: true)
-            }
-
-            archiveArtifacts(artifacts: "*--${stageKey}.zip", allowEmptyArchive: true, onlyIfSuccessful: false)
-        }
-        // clean up after ourselves to reduce disk space
-        cleanWs()
     }
 }
 
