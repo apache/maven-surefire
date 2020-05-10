@@ -3136,34 +3136,35 @@ public abstract class AbstractSurefireMojo
             String surefireVersion = getBooterArtifact().getBaseVersion();
             Map<String, Artifact> providerArtifacts =
                     surefireDependencyResolver.getProviderClasspathAsMap( "surefire-junit-platform", surefireVersion );
-            Map<String, Artifact> testDependencies = testClasspath.getTestDependencies();
+            Map<String, Artifact> testDeps = testClasspath.getTestDependencies();
 
             ProjectBuildingRequest request = getSession().getProjectBuildingRequest();
             Plugin plugin = getPluginDescriptor().getPlugin();
-            Map<String, Artifact> engines =
+            Map<String, Artifact> pluginDeps =
                 surefireDependencyResolver.resolvePluginDependencies( request, plugin, getPluginArtifactMap() );
 
-            if ( hasDependencyPlatformEngine( engines ) )
+            if ( hasDependencyPlatformEngine( pluginDeps ) )
             {
-                providerArtifacts.putAll( engines );
+                providerArtifacts.putAll( pluginDeps );
             }
-            else if ( !hasDependencyPlatformEngine( testDependencies ) )
+            else
             {
                 String engineVersion = null;
-                if ( hasDependencyJupiterAPI( testDependencies ) )
+                if ( hasDependencyJupiterAPI( testDeps )
+                    && !testDeps.containsKey( "org.junit.jupiter:junit-jupiter-engine" ) )
                 {
                     String engineGroupId = "org.junit.jupiter";
                     String engineArtifactId = "junit-jupiter-engine";
                     String engineCoordinates = engineGroupId + ":" + engineArtifactId;
                     String api = "org.junit.jupiter:junit-jupiter-api";
-                    engineVersion = testDependencies.get( api ).getBaseVersion();
+                    engineVersion = testDeps.get( api ).getBaseVersion();
                     getConsoleLogger().debug( "Test dependencies contain "
                         + api + ". Resolving " + engineCoordinates + ":" + engineVersion );
                     addEngineByApi( engineGroupId, engineArtifactId, engineVersion, providerArtifacts );
                 }
 
-                if ( testDependencies.containsKey( "junit:junit" )
-                    || testDependencies.containsKey( "junit:junit-dep" ) )
+                if ( ( testDeps.containsKey( "junit:junit" ) || testDeps.containsKey( "junit:junit-dep" ) )
+                    && !testDeps.containsKey( "org.junit.vintage:junit-vintage-engine" ) )
                 {
                     String engineGroupId = "org.junit.vintage";
                     String engineArtifactId = "junit-vintage-engine";
@@ -3178,7 +3179,7 @@ public abstract class AbstractSurefireMojo
                 }
             }
 
-            narrowDependencies( providerArtifacts, testDependencies );
+            narrowDependencies( providerArtifacts, testDeps );
             alignProviderVersions( providerArtifacts );
 
             return new LinkedHashSet<>( providerArtifacts.values() );
