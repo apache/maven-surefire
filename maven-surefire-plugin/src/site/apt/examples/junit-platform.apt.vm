@@ -74,12 +74,25 @@ Using JUnit 5 Platform
   see the {{{https://junit.org/junit5/}JUnit 5 web site}}
   and the {{{https://junit.org/junit5/docs/current/user-guide/}JUnit 5 User Guide}}.
 
-* Smart Resolution of Jupiter Engine and Vintage Engine for JUnit4 (since plugin version 3.0.0-M4)
+* Smart Resolution of Jupiter Engine and Vintage Engine for JUnit4
 
-  JUnit5 API artifact and your test sources become isolated from engine.
+  JUnit5 API artifact and your test sources become isolated from engine. In these chapters you will see how you can
+  segregate, combine, select the APIs and Engines miscellaneous way. You can find integration tests
+  {{{https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit-4-5}with JUnit4/5}},
+  {{{https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit5-testng}with JUnit5/TestNG}}
+  and {{{https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit5-runner}with the JUnit4 Runner for Jupiter tests}}.
+  (See the Maven profiles.)
 
-  Normally the developer does not want to access internal classes of JUnit5 engine (e.g. <<<5.4.0>>>). In this example
-  the POM has only Jupiter API dependency in test classpath.
+** How to run only one API
+
+  Normally, the developer does not want to access internal classes of JUnit5 engine (e.g. <<<5.4.0>>>).
+  In the next chapters you can find your way to use the Jupiter or JUnit5 API where the plugin would resolve the engine.
+
+*** Jupiter API in test dependencies
+
+  In this example the POM has only Jupiter API dependency in test classpath. The plugin will resolve and download
+  the <<<junit-jupiter-engine>>> with the version related to the version of <<<junit-jupiter-api>>>. Similar principles
+  can be found in the following chapters as well.
 
 +---+
 <dependencies>
@@ -107,6 +120,8 @@ Using JUnit 5 Platform
 </build>
 ...
 +---+
+
+*** API-Engine versions segregation
 
   In the following example the engine artifact appears in plugin dependencies and the engine is resolved by the plugin
   and downloaded from a remote repository for plugins. You may want to update the version of engine with fixed bugs in
@@ -145,8 +160,11 @@ Using JUnit 5 Platform
 ...
 +---+
 
+*** JUnit4 API in test dependencies
 
-  Similar with JUnit4 in test dependencies of your project POM. The Vintage engine artifact is in plugin dependencies.
+  This is similar example with JUnit4 in test dependencies of your project POM.
+  The Vintage engine artifact has to be in the plugin dependencies; otherwise the plugin would use
+  <<<surefire-junit4>>> provider instead of the <<<surefire-junit-platform>>> provider.
 
 +---+
 <dependencies>
@@ -178,6 +196,219 @@ Using JUnit 5 Platform
     </plugins>
 </build>
 ...
++---+
+
+** How to run multiple APIs or Engines
+
+  In the following example you can use both JUnit4 and JUnit5 tests.
+
+*** Jupiter API and JUnit4
+
+  Once you define any JUnit5 API in the dependencies, the provider <<<surefire-junit-platform>>> is selected and
+  you can always add the JUnit4 dependency.
+
++---+
+<dependencies>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.6.2</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13</version>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
++---+
+
+*** Jupiter API and Vintage Engine
+
++---+
+<dependencies>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.6.2</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.junit.vintage</groupId>
+        <artifactId>junit-vintage-engine</artifactId>
+        <version>5.6.2</version>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
++---+
+
+*** Jupiter and Vintage Engine
+
++---+
+<dependencies>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>5.6.2</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.junit.vintage</groupId>
+        <artifactId>junit-vintage-engine</artifactId>
+        <version>5.6.2</version>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
++---+
+
+** Select engine and use multiple APIs
+
+  In these examples you use both API, i.e. Jupiter and JUnit4, in the test dependencies but you want to select
+  the engine via plugin dependencies.
+
+*** Select Jupiter
+
+    Here your tests import the packages from JUnit4 and Jupiter but you want to select only one Maven profile
+    with JUnit4 tests.
+
++---+
+<dependencies>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.6.2</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13</version>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
+<profile>
+    <id>select-junit5</id>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.junit.jupiter</groupId>
+                        <artifactId>junit-jupiter-engine</artifactId>
+                        <version>5.6.2</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+</profile>
++---+
+
+*** Select JUnit4
+
+  Here your tests import the packages from JUnit4 and Jupiter but you want to select only one Maven profile
+  with Jupiter tests.
+
++---+
+<dependencies>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.6.2</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13</version>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
+<profile>
+    <id>select-junit4</id>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.junit.vintage</groupId>
+                        <artifactId>junit-vintage-engine</artifactId>
+                        <version>5.6.2</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+</profile>
++---+
+
+** How to run TestNG tests within Jupiter engine
+
+  You can run TestNG tests combined with JUnit5 tests.
+
+  For more information see this
+  {{{https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit5-testng}example}}.
+
++---+
+<dependencies>
+    <dependency>
+        <groupId>org.testng</groupId>
+        <artifactId>testng</artifactId>
+        <version>7.1.0</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>com.github.testng-team</groupId>
+        <artifactId>testng-junit5</artifactId>
+        <version>0.0.1</version>
+        <scope>test</scope>
+        <exclusions>
+            <exclusion>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-engine</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.6.2</version>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
++---+
+
+  The Maven does not take any responsibility for broken compatibilities in this case and the responsibility for
+  the dependency <<<com.github.testng-team:testng-junit5>>>.
+
+** JUnit Runner
+
+  The JUnit4 library has the {{{https://junit.org/junit4/javadoc/latest/src-html/org/junit/runner/Runner.html}Runner}}
+  implemented in the JUnit5's artifact <<<junit-platform-runner>>>.
+
+  For more information see this
+  {{{https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit5-runner}example}}.
+
++---+
+<dependencies>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>5.6.2</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-runner</artifactId>
+        <version>1.6.2</version>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
 +---+
 
 * Provider Selection

@@ -79,4 +79,34 @@ public class Surefire1787JUnit5IT extends SurefireJUnit4IntegrationTestCase
             .verifyErrorFree( 1 )
             .verifyTextInLog( "Running pkg.JUnit5Test" );
     }
+
+    @Test
+    public void testNgWithJupiterApi()
+    {
+        unpack( "junit5-testng" )
+            .activateProfile( "junit5-api" )
+            .executeTest()
+            .verifyErrorFree( 2 )
+            .verifyTextInLog( "Running pkg.JUnit5Test" )
+            .verifyTextInLog( "Running pkg.TestNGTest" );
+    }
+
+    @Test
+    public void testNgWithJupiterEngine()
+    {
+        unpack( "junit5-testng" )
+            .activateProfile( "junit5-engine" )
+            .executeTest()
+            .verifyErrorFree( 2 )
+            .verifyTextInLog( "Running pkg.JUnit5Test" )
+            .verifyTextInLog( "Running pkg.TestNGTest" );
+    }
+
+    @Test
+    public void junit4Runner()
+    {
+        unpack( "junit5-runner" )
+            .executeTest()
+            .verifyErrorFreeLog();
+    }
 }
