@@ -79,7 +79,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersion;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
@@ -116,16 +115,26 @@ public class AbstractSurefireMojoTest
     private final Mojo mojo = new Mojo();
 
     @Before
-    public void setSession()
+    public void setupMojo()
     {
+        Artifact mojoArtifact = mojo.getMojoArtifact();
+
+        mojo.setPluginArtifactMap( new LinkedHashMap<String, Artifact>() );
+        mojo.getPluginArtifactMap().put( mojoArtifact.getGroupId() + ":" + mojoArtifact.getArtifactId(), mojoArtifact );
+        Artifact forkedBooter = new DefaultArtifact( "org.apache.maven.surefire", "surefire-booter",
+            mojoArtifact.getVersion(), null, "jar", null, mock( ArtifactHandler.class ) );
+        mojo.getPluginArtifactMap().put( "org.apache.maven.surefire:surefire-booter", forkedBooter );
+
+        mojo.setProjectArtifactMap( new LinkedHashMap<String, Artifact>() );
+
         MavenSession session = mock( MavenSession.class );
         mojo.setSession( session );
 
         PluginDescriptor pluginDescriptor = mock( PluginDescriptor.class );
         Plugin plugin = new Plugin();
-        plugin.setGroupId( "org.apache.maven.surefire" );
-        plugin.setArtifactId( "maven-surefire-plugin" );
-        plugin.setVersion( "1" );
+        plugin.setGroupId( mojoArtifact.getGroupId() );
+        plugin.setArtifactId( mojoArtifact.getArtifactId() );
+        plugin.setVersion( mojoArtifact.getVersion() );
         when( pluginDescriptor.getPlugin() ).thenReturn( plugin );
         mojo.setPluginDescriptor( pluginDescriptor );
     }
@@ -567,6 +576,8 @@ public class AbstractSurefireMojoTest
         Artifact testClasspathHamcrest = new DefaultArtifact( "org.hamcrest", "hamcrest-core",
             createFromVersion( "1.3" ), null, "jar", null, mock( ArtifactHandler.class ) );
 
+        setProjectDepedenciesToMojo( testClasspathJUnit, testClasspathHamcrest );
+
         Collection<Artifact> testArtifacts = new ArrayList<>();
         testArtifacts.add( testClasspathJUnit );
         testArtifacts.add( testClasspathHamcrest );
@@ -578,10 +589,6 @@ public class AbstractSurefireMojoTest
         TestClassPath testClasspathWrapper =
                 new TestClassPath( testArtifacts, classesDirectory, testClassesDirectory, null );
 
-        Artifact forkedBooter = new DefaultArtifact( "org.apache.maven.surefire",
-                "surefire-booter", surefireVersion, null, "jar", null, mock( ArtifactHandler.class ) );
-
-        mojo.setPluginArtifactMap( singletonMap( "org.apache.maven.surefire:surefire-booter", forkedBooter ) );
         mojo.setRemoteRepositories( Collections.<ArtifactRepository>emptyList() );
         mojo.setProjectRemoteRepositories( Collections.<ArtifactRepository>emptyList() );
         RepositorySystem repositorySystem = mock( RepositorySystem.class );
@@ -649,6 +656,29 @@ public class AbstractSurefireMojoTest
         when( surefireProviderResolutionResult.getArtifacts() )
                 .thenReturn( providerArtifacts );
 
+        final Artifact pluginDep1 = new DefaultArtifact( "org.junit.vintage", "junit-vintage-engine",
+            createFromVersion( "5.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
+
+        final Artifact pluginDep2 = new DefaultArtifact( "org.apiguardian", "apiguardian-api",
+            createFromVersion( "1.0.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
+
+        final Artifact pluginDep3 = new DefaultArtifact( "org.junit.platform", "junit-platform-engine",
+            createFromVersion( "1.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
+
+        final Artifact pluginDep4 = new DefaultArtifact( "junit", "junit",
+            createFromVersion( "4.12" ), null, "jar", null, mock( ArtifactHandler.class ) );
+
+        final Artifact pluginDep5 = new DefaultArtifact( "org.hamcrest", "hamcrest-core",
+            createFromVersion( "1.3" ), null, "jar", null, mock( ArtifactHandler.class ) );
+
+        final Artifact pluginDep6 = new DefaultArtifact( "org.opentest4j", "opentest4j",
+            createFromVersion( "1.1.1" ), null, "jar", null, mock( ArtifactHandler.class ) );
+
+        final Artifact pluginDep7 = new DefaultArtifact( "org.junit.platform", "junit-platform-commons",
+            createFromVersion( "1.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
+
+        addPluginDependencies( pluginDep1, pluginDep2, pluginDep3, pluginDep4, pluginDep5, pluginDep6, pluginDep7 );
+
         mojo.setRepositorySystem( repositorySystem );
         mojo.setLogger( mock( Logger.class ) );
         mojo.setDependencyResolver( new DependencyResolverMock()
@@ -665,35 +695,14 @@ public class AbstractSurefireMojoTest
                 assertThat( pluginDependency.getArtifactId() ).isEqualTo( "junit-vintage-engine" );
                 assertThat( pluginDependency.getVersion() ).isEqualTo( "5.4.0" );
 
-                Artifact a1 = new DefaultArtifact( "org.junit.vintage", "junit-vintage-engine",
-                    createFromVersion( "5.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
-
-                Artifact a2 = new DefaultArtifact( "org.apiguardian", "apiguardian-api",
-                    createFromVersion( "1.0.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
-
-                Artifact a3 = new DefaultArtifact( "org.junit.platform", "junit-platform-engine",
-                    createFromVersion( "1.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
-
-                Artifact a4 = new DefaultArtifact( "junit", "junit",
-                    createFromVersion( "4.12" ), null, "jar", null, mock( ArtifactHandler.class ) );
-
-                Artifact a5 = new DefaultArtifact( "org.hamcrest", "hamcrest-core",
-                    createFromVersion( "1.3" ), null, "jar", null, mock( ArtifactHandler.class ) );
-
-                Artifact a6 = new DefaultArtifact( "org.opentest4j", "opentest4j",
-                    createFromVersion( "1.1.1" ), null, "jar", null, mock( ArtifactHandler.class ) );
-
-                final Artifact a7 = new DefaultArtifact( "org.junit.platform", "junit-platform-commons",
-                    createFromVersion( "1.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
-
                 Collection<ArtifactResult> it = new ArrayList<>();
-                it.add( toArtifactResult( a1 ) );
-                it.add( toArtifactResult( a2 ) );
-                it.add( toArtifactResult( a3 ) );
-                it.add( toArtifactResult( a4 ) );
-                it.add( toArtifactResult( a5 ) );
-                it.add( toArtifactResult( a6 ) );
-                it.add( toArtifactResult( a7 ) );
+                it.add( toArtifactResult( pluginDep1 ) );
+                it.add( toArtifactResult( pluginDep2 ) );
+                it.add( toArtifactResult( pluginDep3 ) );
+                it.add( toArtifactResult( pluginDep4 ) );
+                it.add( toArtifactResult( pluginDep5 ) );
+                it.add( toArtifactResult( pluginDep6 ) );
+                it.add( toArtifactResult( pluginDep7 ) );
                 return it;
             }
         } );
@@ -713,11 +722,16 @@ public class AbstractSurefireMojoTest
         when( p.getDependencies() )
                 .thenReturn( singletonList( toDependency( pluginDependency ) ) );
 
-        Artifact pluginTransitiveDependency = new DefaultArtifact( "org.junit.platform", "junit-platform-launcher",
-            createFromVersion( "1.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
+        Artifact junitPlatformArtifact = invokeMethod( mojo, "getJUnit5Artifact" );
+        assertThat( junitPlatformArtifact.getGroupId() ).isEqualTo( "org.junit.platform" );
+        assertThat( junitPlatformArtifact.getArtifactId() ).isEqualTo( "junit-platform-engine" );
+        assertThat( junitPlatformArtifact.getVersion() ).isEqualTo( "1.4.0" );
 
         JUnitPlatformProviderInfo prov =
-                mojo.createJUnitPlatformProviderInfo( pluginTransitiveDependency, testClasspathWrapper );
+                mojo.createJUnitPlatformProviderInfo( junitPlatformArtifact, testClasspathWrapper );
+
+        assertThat( prov.isApplicable() )
+            .isTrue();
 
         Artifact expectedProvider = new DefaultArtifact( "org.apache.maven.surefire", "surefire-junit-platform",
                 surefireVersion, null, "jar", null, mock( ArtifactHandler.class ) );
@@ -780,9 +794,11 @@ public class AbstractSurefireMojoTest
         Artifact testClasspathCommons = new DefaultArtifact( "org.junit.platform", "junit-platform-commons",
                 createFromVersion( "1.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
 
-        Iterable<Artifact> testArtifacts = asList( testClasspathSomeTestArtifact, testClasspathVintage,
+        Collection<Artifact> testArtifacts = asList( testClasspathSomeTestArtifact, testClasspathVintage,
                 testClasspathApiguardian, testClasspathPlatformEng, testClasspathJUnit4, testClasspathHamcrest,
                 testClasspathOpentest4j, testClasspathCommons );
+
+        setProjectDepedenciesToMojo( testArtifacts.toArray( new Artifact[testArtifacts.size()] ) );
 
         File classesDirectory = new File( "target/classes" );
 
@@ -791,10 +807,6 @@ public class AbstractSurefireMojoTest
         TestClassPath testClasspathWrapper =
                 new TestClassPath( testArtifacts, classesDirectory, testClassesDirectory, null );
 
-        Artifact forkedBooter = new DefaultArtifact( "org.apache.maven.surefire",
-                "surefire-booter", surefireVersion, null, "jar", null, mock( ArtifactHandler.class ) );
-
-        mojo.setPluginArtifactMap( singletonMap( "org.apache.maven.surefire:surefire-booter", forkedBooter ) );
         mojo.setRemoteRepositories( Collections.<ArtifactRepository>emptyList() );
         mojo.setProjectRemoteRepositories( Collections.<ArtifactRepository>emptyList() );
         RepositorySystem repositorySystem = mock( RepositorySystem.class );
@@ -886,8 +898,16 @@ public class AbstractSurefireMojoTest
         when( p.getDependencies() )
             .thenReturn( Collections.<Dependency>emptyList() );
 
+        Artifact junitPlatformArtifact = invokeMethod( mojo, "getJUnit5Artifact" );
+        assertThat( junitPlatformArtifact.getGroupId() ).isEqualTo( "org.junit.platform" );
+        assertThat( junitPlatformArtifact.getArtifactId() ).isEqualTo( "junit-platform-commons" );
+        assertThat( junitPlatformArtifact.getVersion() ).isEqualTo( "1.4.0" );
+
         JUnitPlatformProviderInfo prov =
-                mojo.createJUnitPlatformProviderInfo( testClasspathCommons, testClasspathWrapper );
+                mojo.createJUnitPlatformProviderInfo( junitPlatformArtifact, testClasspathWrapper );
+
+        assertThat( prov.isApplicable() )
+            .isTrue();
 
         Artifact expectedProvider = new DefaultArtifact( "org.apache.maven.surefire", "surefire-junit-platform",
                 surefireVersion, null, "jar", null, mock( ArtifactHandler.class ) );
@@ -930,8 +950,10 @@ public class AbstractSurefireMojoTest
         Artifact testClasspathApiguardian = new DefaultArtifact( "org.apiguardian", "apiguardian-api",
                 createFromVersion( "1.0.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
 
-        Iterable<Artifact> testArtifacts =
+        Collection<Artifact> testArtifacts =
                 asList( testClasspathSomeTestArtifact, testClasspathApiguardian, testClasspathCommons );
+
+        setProjectDepedenciesToMojo( testArtifacts.toArray( new Artifact[testArtifacts.size()] ) );
 
         File classesDirectory = new File( "target/classes" );
 
@@ -940,10 +962,6 @@ public class AbstractSurefireMojoTest
         TestClassPath testClasspathWrapper =
                 new TestClassPath( testArtifacts, classesDirectory, testClassesDirectory, null );
 
-        Artifact forkedBooter = new DefaultArtifact( "org.apache.maven.surefire",
-                "surefire-booter", surefireVersion, null, "jar", null, mock( ArtifactHandler.class ) );
-
-        mojo.setPluginArtifactMap( singletonMap( "org.apache.maven.surefire:surefire-booter", forkedBooter ) );
         mojo.setRemoteRepositories( Collections.<ArtifactRepository>emptyList() );
         mojo.setProjectRemoteRepositories( Collections.<ArtifactRepository>emptyList() );
         RepositorySystem repositorySystem = mock( RepositorySystem.class );
@@ -1015,8 +1033,17 @@ public class AbstractSurefireMojoTest
         when( p.getDependencies() )
                 .thenReturn( Collections.<Dependency>emptyList() );
 
+        Artifact junitPlatformArtifact = invokeMethod( mojo, "getJUnit5Artifact" );
+        assertThat( junitPlatformArtifact.getGroupId() ).isEqualTo( "org.junit.platform" );
+        assertThat( junitPlatformArtifact.getArtifactId() ).isEqualTo( "junit-platform-commons" );
+        assertThat( junitPlatformArtifact.getVersion() ).isEqualTo( "1.4.0" );
+
         JUnitPlatformProviderInfo prov =
-                mojo.createJUnitPlatformProviderInfo( testClasspathCommons, testClasspathWrapper );
+                mojo.createJUnitPlatformProviderInfo( junitPlatformArtifact, testClasspathWrapper );
+
+        assertThat( prov.isApplicable() )
+            .isTrue();
+
         Set<Artifact> resolvedProviderArtifacts = prov.getProviderClasspath();
 
         Artifact provider = new DefaultArtifact( "org.apache.maven.surefire", "surefire-junit-platform",
@@ -1065,8 +1092,10 @@ public class AbstractSurefireMojoTest
         final Artifact testClasspathOpentest4j = new DefaultArtifact( "org.opentest4j", "opentest4j",
                 createFromVersion( "1.1.1" ), null, "jar", null, mock( ArtifactHandler.class ) );
 
-        Iterable<Artifact> testArtifacts = asList( testClasspathSomeTestArtifact, testClasspathJUnit5,
+        Collection<Artifact> testArtifacts = asList( testClasspathSomeTestArtifact, testClasspathJUnit5,
                 testClasspathApiguardian, testClasspathCommons, testClasspathOpentest4j );
+
+        setProjectDepedenciesToMojo( testArtifacts.toArray( new Artifact[testArtifacts.size()] ) );
 
         File classesDirectory = new File( "target/classes" );
 
@@ -1075,10 +1104,6 @@ public class AbstractSurefireMojoTest
         TestClassPath testClasspathWrapper =
                 new TestClassPath( testArtifacts, classesDirectory, testClassesDirectory, null );
 
-        Artifact forkedBooter = new DefaultArtifact( "org.apache.maven.surefire",
-                "surefire-booter", surefireVersion, null, "jar", null, mock( ArtifactHandler.class ) );
-
-        mojo.setPluginArtifactMap( singletonMap( "org.apache.maven.surefire:surefire-booter", forkedBooter ) );
         mojo.setRemoteRepositories( Collections.<ArtifactRepository>emptyList() );
         mojo.setProjectRemoteRepositories( Collections.<ArtifactRepository>emptyList() );
         RepositorySystem repositorySystem = mock( RepositorySystem.class );
@@ -1138,8 +1163,18 @@ public class AbstractSurefireMojoTest
         } );
 
         invokeMethod( mojo, "setupStuff" );
+
+        Artifact junitPlatformArtifact = invokeMethod( mojo, "getJUnit5Artifact" );
+        assertThat( junitPlatformArtifact.getGroupId() ).isEqualTo( "org.junit.platform" );
+        assertThat( junitPlatformArtifact.getArtifactId() ).isEqualTo( "junit-platform-commons" );
+        assertThat( junitPlatformArtifact.getVersion() ).isEqualTo( "1.4.0" );
+
         JUnitPlatformProviderInfo prov =
-                mojo.createJUnitPlatformProviderInfo( testClasspathCommons, testClasspathWrapper );
+                mojo.createJUnitPlatformProviderInfo( junitPlatformArtifact, testClasspathWrapper );
+
+        assertThat( prov.isApplicable() )
+            .isTrue();
+
         Set<Artifact> resolvedProviderArtifacts = prov.getProviderClasspath();
 
         Artifact java5 = new DefaultArtifact( "org.apache.maven.surefire", "common-java5",
@@ -1184,8 +1219,10 @@ public class AbstractSurefireMojoTest
         final Artifact testClasspathOpentest4j = new DefaultArtifact( "org.opentest4j", "opentest4j",
                 createFromVersion( "1.1.1" ), null, "jar", null, mock( ArtifactHandler.class ) );
 
-        Iterable<Artifact> testArtifacts = asList( testClasspathSomeTestArtifact, testClasspathJupiterApi,
+        Collection<Artifact> testArtifacts = asList( testClasspathSomeTestArtifact, testClasspathJupiterApi,
                 testClasspathApiguardian, testClasspathCommons, testClasspathOpentest4j );
+
+        setProjectDepedenciesToMojo( testArtifacts.toArray( new Artifact[testArtifacts.size()] ) );
 
         File classesDirectory = new File( "target/classes" );
 
@@ -1194,10 +1231,6 @@ public class AbstractSurefireMojoTest
         TestClassPath testClasspathWrapper =
                 new TestClassPath( testArtifacts, classesDirectory, testClassesDirectory, null );
 
-        Artifact forkedBooter = new DefaultArtifact( "org.apache.maven.surefire",
-                "surefire-booter", surefireVersion, null, "jar", null, mock( ArtifactHandler.class ) );
-
-        mojo.setPluginArtifactMap( singletonMap( "org.apache.maven.surefire:surefire-booter", forkedBooter ) );
         mojo.setRemoteRepositories( Collections.<ArtifactRepository>emptyList() );
         mojo.setProjectRemoteRepositories( Collections.<ArtifactRepository>emptyList() );
         RepositorySystem repositorySystem = mock( RepositorySystem.class );
@@ -1275,8 +1308,17 @@ public class AbstractSurefireMojoTest
         when( p.getDependencies() )
                 .thenReturn( Collections.<Dependency>emptyList() );
 
+        Artifact junitPlatformArtifact = invokeMethod( mojo, "getJUnit5Artifact" );
+        assertThat( junitPlatformArtifact.getGroupId() ).isEqualTo( "org.junit.platform" );
+        assertThat( junitPlatformArtifact.getArtifactId() ).isEqualTo( "junit-platform-commons" );
+        assertThat( junitPlatformArtifact.getVersion() ).isEqualTo( "1.4.0" );
+
         JUnitPlatformProviderInfo prov =
-                mojo.createJUnitPlatformProviderInfo( testClasspathCommons, testClasspathWrapper );
+                mojo.createJUnitPlatformProviderInfo( junitPlatformArtifact, testClasspathWrapper );
+
+        assertThat( prov.isApplicable() )
+            .isTrue();
+
         Set<Artifact> resolvedProviderArtifacts = prov.getProviderClasspath();
 
         Artifact java5 = new DefaultArtifact( "org.apache.maven.surefire", "common-java5",
@@ -1331,9 +1373,11 @@ public class AbstractSurefireMojoTest
         final Artifact testClasspathOpentest4j = new DefaultArtifact( "org.opentest4j", "opentest4j",
                 createFromVersion( "1.1.1" ), null, "jar", null, mock( ArtifactHandler.class ) );
 
-        Iterable<Artifact> testArtifacts = asList( testClasspathSomeTestArtifact, testClasspathJupiterEngine,
+        Collection<Artifact> testArtifacts = asList( testClasspathSomeTestArtifact, testClasspathJupiterEngine,
                 testClasspathPlatformEngine, testClasspathJupiterApi, testClasspathApiguardian, testClasspathCommons,
                 testClasspathOpentest4j );
+
+        setProjectDepedenciesToMojo( testArtifacts.toArray( new Artifact[testArtifacts.size()] ) );
 
         File classesDirectory = new File( "target/classes" );
 
@@ -1342,10 +1386,6 @@ public class AbstractSurefireMojoTest
         TestClassPath testClasspathWrapper =
                 new TestClassPath( testArtifacts, classesDirectory, testClassesDirectory, null );
 
-        Artifact forkedBooter = new DefaultArtifact( "org.apache.maven.surefire",
-                "surefire-booter", surefireVersion, null, "jar", null, mock( ArtifactHandler.class ) );
-
-        mojo.setPluginArtifactMap( singletonMap( "org.apache.maven.surefire:surefire-booter", forkedBooter ) );
         mojo.setRemoteRepositories( Collections.<ArtifactRepository>emptyList() );
         mojo.setProjectRemoteRepositories( Collections.<ArtifactRepository>emptyList() );
         RepositorySystem repositorySystem = mock( RepositorySystem.class );
@@ -1405,8 +1445,18 @@ public class AbstractSurefireMojoTest
         } );
 
         invokeMethod( mojo, "setupStuff" );
+
+        Artifact junitPlatformArtifact = invokeMethod( mojo, "getJUnit5Artifact" );
+        assertThat( junitPlatformArtifact.getGroupId() ).isEqualTo( "org.junit.platform" );
+        assertThat( junitPlatformArtifact.getArtifactId() ).isEqualTo( "junit-platform-commons" );
+        assertThat( junitPlatformArtifact.getVersion() ).isEqualTo( "1.4.0" );
+
         JUnitPlatformProviderInfo prov =
-                mojo.createJUnitPlatformProviderInfo( testClasspathCommons, testClasspathWrapper );
+                mojo.createJUnitPlatformProviderInfo( junitPlatformArtifact, testClasspathWrapper );
+
+        assertThat( prov.isApplicable() )
+            .isTrue();
+
         Set<Artifact> resolvedProviderArtifacts = prov.getProviderClasspath();
 
         Artifact java5 = new DefaultArtifact( "org.apache.maven.surefire", "common-java5",
@@ -1457,16 +1507,14 @@ public class AbstractSurefireMojoTest
         final Artifact pluginDepOpentest4j = new DefaultArtifact( "org.opentest4j", "opentest4j",
                 createFromVersion( "1.1.1" ), null, "jar", null, mock( ArtifactHandler.class ) );
 
-        Map<String, Artifact> pluginDependencies = new HashMap<>();
-        pluginDependencies.put( "org.apache.maven.surefire:maven-surefire-plugin", plugin );
-        pluginDependencies.put( "org.apache.maven.surefire:surefire-booter", forkedBooter );
-        pluginDependencies.put( "org.junit.jupiter:junit-jupiter-engine", pluginDepJupiterEngine );
-        pluginDependencies.put( "org.junit.platform:junit-platform-engine", pluginDepPlatformEngine );
-        pluginDependencies.put( "org.junit.jupiter:junit-jupiter-api", pluginDepJupiterApi );
-        pluginDependencies.put( "org.apiguardian:apiguardian-api", pluginDepApiguardian );
-        pluginDependencies.put( "org.junit.platform:junit-platform-commons", pluginDepCommons );
-        pluginDependencies.put( "org.opentest4j:opentest4j", pluginDepOpentest4j );
-        mojo.setPluginArtifactMap( pluginDependencies );
+        mojo.getPluginArtifactMap().put( "org.apache.maven.surefire:maven-surefire-plugin", plugin );
+        mojo.getPluginArtifactMap().put( "org.apache.maven.surefire:surefire-booter", forkedBooter );
+        mojo.getPluginArtifactMap().put( "org.junit.jupiter:junit-jupiter-engine", pluginDepJupiterEngine );
+        mojo.getPluginArtifactMap().put( "org.junit.platform:junit-platform-engine", pluginDepPlatformEngine );
+        mojo.getPluginArtifactMap().put( "org.junit.jupiter:junit-jupiter-api", pluginDepJupiterApi );
+        mojo.getPluginArtifactMap().put( "org.apiguardian:apiguardian-api", pluginDepApiguardian );
+        mojo.getPluginArtifactMap().put( "org.junit.platform:junit-platform-commons", pluginDepCommons );
+        mojo.getPluginArtifactMap().put( "org.opentest4j:opentest4j", pluginDepOpentest4j );
 
         MavenProject mavenProject = new MavenProject();
         mavenProject.setArtifact( new DefaultArtifact( "dummy", "pom", createFromVersion( "1.0.0" ),
@@ -1488,8 +1536,10 @@ public class AbstractSurefireMojoTest
         final Artifact testClasspathOpentest4j = new DefaultArtifact( "org.opentest4j", "opentest4j",
                 createFromVersion( "1.1.1" ), null, "jar", null, mock( ArtifactHandler.class ) );
 
-        Iterable<Artifact> testArtifacts = asList( testClasspathSomeTestArtifact, testClasspathJupiterApi,
+        Collection<Artifact> testArtifacts = asList( testClasspathSomeTestArtifact, testClasspathJupiterApi,
                 testClasspathApiguardian, testClasspathCommons, testClasspathOpentest4j );
+
+        setProjectDepedenciesToMojo( testArtifacts.toArray( new Artifact[testArtifacts.size()] ) );
 
         File classesDirectory = new File( "target/classes" );
 
@@ -1552,7 +1602,7 @@ public class AbstractSurefireMojoTest
                                                                  TransformableFilter filter )
             {
                 assertThat( dependencies ).hasSize( 1 );
-                Dependency resolvable = (Dependency) dependencies.iterator().next();
+                Dependency resolvable = dependencies.iterator().next();
                 if ( "org.junit.jupiter".equals( resolvable.getGroupId() )
                     && "junit-jupiter-engine".equals( resolvable.getArtifactId() )
                     && "5.4.0".equals( resolvable.getVersion() ) )
@@ -1576,8 +1626,16 @@ public class AbstractSurefireMojoTest
 
         invokeMethod( mojo, "setupStuff" );
 
+        Artifact junitPlatformArtifact = invokeMethod( mojo, "getJUnit5Artifact" );
+        assertThat( junitPlatformArtifact.getGroupId() ).isEqualTo( "org.junit.platform" );
+        assertThat( junitPlatformArtifact.getArtifactId() ).isEqualTo( "junit-platform-engine" );
+        assertThat( junitPlatformArtifact.getVersion() ).isEqualTo( "1.4.0" );
+
         JUnitPlatformProviderInfo prov =
-                mojo.createJUnitPlatformProviderInfo( pluginDepPlatformEngine, testClasspathWrapper );
+                mojo.createJUnitPlatformProviderInfo( junitPlatformArtifact, testClasspathWrapper );
+
+        assertThat( prov.isApplicable() )
+            .isTrue();
 
         when( mojo.getSession().getProjectBuildingRequest() )
                 .thenReturn( mock( ProjectBuildingRequest.class ) );
@@ -1632,29 +1690,6 @@ public class AbstractSurefireMojoTest
         return launcherResolutionResult;
     }
 
-    private static ArtifactResolutionResult createVintageEngineResolutionResult()
-    {
-        ArtifactResolutionResult launcherResolutionResult = mock( ArtifactResolutionResult.class );
-        Set<Artifact> resolvedLauncherArtifacts = new HashSet<>();
-        resolvedLauncherArtifacts.add( new DefaultArtifact( "org.junit.vintage", "junit-vintage-engine",
-                createFromVersion( "5.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) ) );
-        resolvedLauncherArtifacts.add( new DefaultArtifact( "junit", "junit",
-                createFromVersion( "4.12" ), null, "jar", null, mock( ArtifactHandler.class ) ) );
-        resolvedLauncherArtifacts.add( new DefaultArtifact( "org.hamcrest", "hamcrest-core",
-                createFromVersion( "1.3" ), null, "jar", null, mock( ArtifactHandler.class ) ) );
-        resolvedLauncherArtifacts.add( new DefaultArtifact( "org.junit.platform", "junit-platform-engine",
-                createFromVersion( "1.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) ) );
-        resolvedLauncherArtifacts.add( new DefaultArtifact( "org.apiguardian", "apiguardian-api",
-                createFromVersion( "1.0.0" ), null, "jar", null, mock( ArtifactHandler.class ) ) );
-        resolvedLauncherArtifacts.add( new DefaultArtifact( "org.opentest4j", "opentest4j",
-                createFromVersion( "1.1.1" ), null, "jar", null, mock( ArtifactHandler.class ) ) );
-        resolvedLauncherArtifacts.add( new DefaultArtifact( "org.junit.platform", "junit-platform-commons",
-                createFromVersion( "1.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) ) );
-        when( launcherResolutionResult.getArtifacts() )
-                .thenReturn( resolvedLauncherArtifacts );
-        return launcherResolutionResult;
-    }
-
     private static ArtifactResolutionResult createJupiterEngineResolutionResult()
     {
         ArtifactResolutionResult launcherResolutionResult = mock( ArtifactResolutionResult.class );
@@ -1687,16 +1722,6 @@ public class AbstractSurefireMojoTest
         Artifact opentest4j = new DefaultArtifact( "org.opentest4j", "opentest4j",
                 createFromVersion( "1.1.1" ), null, "jar", null, mock( ArtifactHandler.class ) );
         return createJUnitPlatformLauncherResolutionResult( engine, apiguardian, commons, opentest4j );
-    }
-
-    private static ArtifactResolutionResult createResolutionResult( Artifact... artifacts )
-    {
-        ArtifactResolutionResult testClasspathCommonsResolutionResult = mock( ArtifactResolutionResult.class );
-        Set<Artifact> resolvedCommonsArtifacts = new HashSet<>();
-        Collections.addAll( resolvedCommonsArtifacts, artifacts );
-        when( testClasspathCommonsResolutionResult.getArtifacts() )
-                .thenReturn( resolvedCommonsArtifacts );
-        return testClasspathCommonsResolutionResult;
     }
 
     private static ArtifactResolutionResult createSurefireProviderResolutionResult( VersionRange surefireVersion )
@@ -1755,16 +1780,34 @@ public class AbstractSurefireMojoTest
         mojo.verifyParameters();
     }
 
+    private void setProjectDepedenciesToMojo( Artifact... deps )
+    {
+        for ( Artifact dep : deps )
+        {
+            mojo.getProjectArtifactMap()
+                .put( dep.getGroupId() + ":" + dep.getArtifactId(), dep );
+        }
+    }
+
+    private void addPluginDependencies( Artifact... deps )
+    {
+        for ( Artifact dep : deps )
+        {
+            mojo.getPluginArtifactMap()
+                .put( dep.getGroupId() + ":" + dep.getArtifactId(), dep );
+        }
+    }
+
     /**
      *
      */
     public static class Mojo
             extends AbstractSurefireMojo implements SurefireReportParameters
     {
-        private JUnitPlatformProviderInfo createJUnitPlatformProviderInfo( Artifact providerArtifact,
+        private JUnitPlatformProviderInfo createJUnitPlatformProviderInfo( Artifact junitPlatformArtifact,
                                                                            TestClassPath testClasspathWrapper )
         {
-            return new JUnitPlatformProviderInfo( providerArtifact, testClasspathWrapper );
+            return new JUnitPlatformProviderInfo( junitPlatformArtifact, testClasspathWrapper );
         }
 
         @Override
@@ -2182,12 +2225,12 @@ public class AbstractSurefireMojoTest
 
         }
 
-        public void setToolchain( Toolchain toolchain ) throws Exception
+        public void setToolchain( Toolchain toolchain )
         {
             setInternalState( this, "toolchain", toolchain );
         }
 
-        public void setJvm( String jvm ) throws Exception
+        public void setJvm( String jvm )
         {
             setInternalState( this, "jvm", jvm );
         }

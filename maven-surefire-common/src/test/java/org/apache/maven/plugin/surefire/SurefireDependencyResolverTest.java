@@ -52,6 +52,7 @@ import java.util.Set;
 
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static org.apache.maven.artifact.Artifact.SCOPE_COMPILE;
 import static org.apache.maven.artifact.Artifact.SCOPE_COMPILE_PLUS_RUNTIME;
 import static org.apache.maven.artifact.Artifact.SCOPE_RUNTIME;
@@ -326,7 +327,10 @@ public class SurefireDependencyResolverTest
         when( resolutionResult.getArtifacts() )
             .thenReturn( singleton( providerAsArtifact ) );
 
-        Map<String, Artifact> providers = surefireDependencyResolver.resolvePluginDependencies( request, plugin );
+        Map<String, Artifact> pluginResolvedDependencies =
+            singletonMap( PROVIDER_GROUP_ID + ":surefire-shadefire", providerAsArtifact );
+        Map<String, Artifact> providers =
+            surefireDependencyResolver.resolvePluginDependencies( request, plugin, pluginResolvedDependencies );
 
         verify( depencencyResolver, times( 1 ) )
             .resolveDependencies( request, dep.getValue(), null, filter.getValue() );

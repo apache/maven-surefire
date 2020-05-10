@@ -139,20 +139,26 @@ final class SurefireDependencyResolver
         }
     }
 
-    Map<String, Artifact> resolvePluginDependencies( ProjectBuildingRequest request, Plugin plugin )
+    Map<String, Artifact> resolvePluginDependencies( ProjectBuildingRequest request,
+                                                     Plugin plugin, Map<String, Artifact> pluginResolvedDependencies )
             throws MojoExecutionException
     {
         Collection<Dependency> pluginDependencies = plugin.getDependencies();
         try
         {
-            Iterable<ArtifactResult> resolvedPluginDependencies = dependencyResolver.resolveDependencies( request,
-                pluginDependencies, null, including( SCOPE_COMPILE, SCOPE_COMPILE_PLUS_RUNTIME, SCOPE_RUNTIME ) );
+            Iterable<ArtifactResult> resolvedArtifacts = dependencyResolver.resolveDependencies( request,
+                pluginDependencies, null, including( RuntimeArtifactFilter.SCOPES ) );
 
             Map<String, Artifact> resolved = new LinkedHashMap<>();
-            for ( ArtifactResult resolvedPluginDependency : resolvedPluginDependencies )
+            for ( ArtifactResult resolvedArtifact : resolvedArtifacts )
             {
-                Artifact artifact = resolvedPluginDependency.getArtifact();
-                resolved.put( artifact.getGroupId() + ":" + artifact.getArtifactId(), artifact );
+                Artifact artifact = resolvedArtifact.getArtifact();
+                String key = artifact.getGroupId() + ":" + artifact.getArtifactId();
+                Artifact resolvedPluginDependency = pluginResolvedDependencies.get( key );
+                if ( resolvedPluginDependency != null )
+                {
+                    resolved.put( key, artifact );
+                }
             }
             return resolved;
         }

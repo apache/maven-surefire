@@ -3140,7 +3140,8 @@ public abstract class AbstractSurefireMojo
 
             ProjectBuildingRequest request = getSession().getProjectBuildingRequest();
             Plugin plugin = getPluginDescriptor().getPlugin();
-            Map<String, Artifact> engines = surefireDependencyResolver.resolvePluginDependencies( request, plugin );
+            Map<String, Artifact> engines =
+                surefireDependencyResolver.resolvePluginDependencies( request, plugin, getPluginArtifactMap() );
 
             if ( hasDependencyPlatformEngine( engines ) )
             {
@@ -3336,7 +3337,7 @@ public abstract class AbstractSurefireMojo
             ProjectBuildingRequest request = getSession().getProjectBuildingRequest();
             Plugin plugin = getPluginDescriptor().getPlugin();
             Map<String, Artifact> providerArtifacts =
-                surefireDependencyResolver.resolvePluginDependencies( request, plugin );
+                surefireDependencyResolver.resolvePluginDependencies( request, plugin, getPluginArtifactMap() );
             return new LinkedHashSet<>( providerArtifacts.values() );
         }
     }
