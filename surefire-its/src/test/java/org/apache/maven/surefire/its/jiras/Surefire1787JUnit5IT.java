@@ -20,13 +20,23 @@ package org.apache.maven.surefire.its.jiras;
  */
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Before;
 import org.junit.Test;
+
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 
 /**
  *
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class Surefire1787JUnit5IT extends SurefireJUnit4IntegrationTestCase
 {
+    @Before
+    public void javaVersion()
+    {
+        assumeJavaVersion( 1.8d );
+    }
+
     @Test
     public void bothEngines()
     {
