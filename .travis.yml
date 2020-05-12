@@ -16,7 +16,6 @@
 # under the License.
 
 language: java
-sudo: false
 
 cache:
   directories:
