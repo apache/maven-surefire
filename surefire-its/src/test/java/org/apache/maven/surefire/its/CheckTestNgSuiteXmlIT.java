@@ -34,8 +34,9 @@ public class CheckTestNgSuiteXmlIT
     @Test
     public void suiteXml()
     {
-        unpack().executeTest()
-                .verifyErrorFree( 2 );
+        unpack()
+            .executeTest()
+            .assertTestSuiteResults( 2, 0, 0, 0 );
     }
 
     @Test
@@ -52,7 +53,7 @@ public class CheckTestNgSuiteXmlIT
         unpack().forkCount( 2 )
                 .reuseForks( true )
                 .executeTest()
-                .verifyErrorFree( 2 );
+                .assertTestSuiteResults( 2, 0, 0, 0 );
     }
 
     private SurefireLauncher unpack()

@@ -33,6 +33,8 @@ public class Surefire673MockitoIT
     @Test
     public void testBuildFailingWhenErrors()
     {
-        unpack( "/surefire-673-mockito" ).executeTest().verifyErrorFreeLog();
+        unpack( "/surefire-673-mockito" )
+            .executeTest()
+            .assertTestSuiteResults( 1, 0, 0, 0 );
     }
 }

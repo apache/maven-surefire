@@ -205,7 +205,7 @@ public class CheckTestNgVersionsIT
 
         final OutputValidator outputValidator = launcher.executeTest();
 
-        outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 3, 0, 0, 0 );
+        outputValidator.assertTestSuiteResults( 3, 0, 0, 0 );
 
         if ( validateRunOrder )
         {

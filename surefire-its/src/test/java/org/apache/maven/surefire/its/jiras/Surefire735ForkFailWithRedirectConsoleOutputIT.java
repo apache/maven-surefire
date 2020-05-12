@@ -19,6 +19,7 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
+import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
@@ -26,8 +27,10 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.Collection;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
 
 /**
  * @author Kristian Rosenvold
@@ -37,14 +40,14 @@ public class Surefire735ForkFailWithRedirectConsoleOutputIT
 {
 
     @Test
-    public void vmStartFail()
+    public void vmStartFail() throws VerificationException
     {
         OutputValidator outputValidator = unpack().failNever().executeTest();
         assertJvmCrashed( outputValidator );
     }
 
     @Test
-    public void vmStartFailShouldFailBuildk()
+    public void vmStartFailShouldFailBuildk() throws VerificationException
     {
         OutputValidator outputValidator = unpack().maven().withFailure().executeTest();
         assertJvmCrashed( outputValidator );
@@ -55,8 +58,18 @@ public class Surefire735ForkFailWithRedirectConsoleOutputIT
         return unpack( "fork-fail" );
     }
 
-    private static void assertJvmCrashed( OutputValidator outputValidator )
+    private static void assertJvmCrashed( OutputValidator outputValidator ) throws VerificationException
     {
+        Collection<String> matchedLines =
+            outputValidator.loadLogLines( containsString( "Invalid maximum heap size: -Xmxxxx712743m" ) );
+        if ( !matchedLines.isEmpty() )
+        {
+            // the error line was printed in std/err by the JVM
+            return;
+        }
+
+        // the error line should be printed in std/out by the JVM if we use the process pipes
+        // then the ForkClient caught it and printed in the dump stream
         File reportDir = outputValidator.getSurefireReportsDirectory();
         String[] dumpFiles = reportDir.list( new FilenameFilter()
                                              {

@@ -103,7 +103,7 @@ public class CheckTestNgListenerReporterIT
         }
 
         launcher.executeTest()
-                .verifyErrorFree( 1 )
+                .assertTestSuiteResults( 1, 0, 0, 0 )
                 .getTargetFile( "resultlistener-output.txt" ).assertFileExists()
                 .getTargetFile( "suitelistener-output.txt" ).assertFileExists()
                 .getTargetFile( "reporter-output.txt" ).assertFileExists();
