@@ -120,7 +120,7 @@ public class TwoTestCasesIT
                                                         .sysProp( "testNgVersion", "5.7" )
                                                         .sysProp( "testNgClassifier", "jdk15" )
                                                         .executeTest();
-        outputValidator.verifyErrorFreeLog().assertTestSuiteResults( 2, 0, 0, 0 );
+        outputValidator.assertTestSuiteResults( 2, 0, 0, 0 );
         List<ReportTestSuite> reports = HelperAssertions.extractReports( outputValidator.getBaseDir() );
         Set<String> classNames = extractClassNames( reports );
         assertContains( classNames, "testng.two.TestNGTestTwo" );

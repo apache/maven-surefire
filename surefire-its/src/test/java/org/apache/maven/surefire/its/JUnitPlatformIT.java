@@ -78,7 +78,7 @@ public class JUnitPlatformIT
                 .sysProp( "junit5.version", junit5Version )
                 .sysProp( "jqwik.version", jqwikVersion )
                 .executeTest()
-                .verifyErrorFree( 1 );
+                .assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
     @Test
@@ -88,7 +88,7 @@ public class JUnitPlatformIT
                 .sysProp( "junit5.version", junit5Version )
                 .sysProp( "jqwik.version", jqwikVersion )
                 .executeTest()
-                .verifyErrorFree( 1 );
+                .assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
     @Test
@@ -99,7 +99,7 @@ public class JUnitPlatformIT
                 .sysProp( "junit5.version", junit5Version )
                 .sysProp( "jqwik.version", jqwikVersion )
                 .executeTest()
-                .verifyErrorFree( 7 );
+                .assertTestSuiteResults( 7, 0, 0, 0 );
 
 
         validator.getSurefireReportsFile( "TEST-junitplatformenginejupiter.BasicJupiterTest.xml", UTF_8 )
