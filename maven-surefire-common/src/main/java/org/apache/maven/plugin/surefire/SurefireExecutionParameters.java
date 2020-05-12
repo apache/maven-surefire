@@ -50,9 +50,9 @@ public interface SurefireExecutionParameters
 
     void setTestClassesDirectory( File testClassesDirectory );
 
-    File getClassesDirectory();
+    File getMainBuildPath();
 
-    void setClassesDirectory( File classesDirectory );
+    void setMainBuildPath( File mainBuildPath );
 
     File getReportsDirectory();
 

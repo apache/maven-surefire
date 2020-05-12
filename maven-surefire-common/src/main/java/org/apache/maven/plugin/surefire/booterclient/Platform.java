@@ -38,7 +38,7 @@ public final class Platform
 {
     private final RunnableFuture<Long> pluginPidJob;
 
-    private volatile JdkAttributes jdk;
+    private final JdkAttributes jdk;
 
     public Platform()
     {

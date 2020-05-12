@@ -565,15 +565,15 @@ public class SurefirePlugin
     }
 
     @Override
-    public File getClassesDirectory()
+    public File getMainBuildPath()
     {
         return classesDirectory;
     }
 
     @Override
-    public void setClassesDirectory( File classesDirectory )
+    public void setMainBuildPath( File mainBuildPath )
     {
-        this.classesDirectory = classesDirectory;
+        classesDirectory = mainBuildPath;
     }
 
     @Override

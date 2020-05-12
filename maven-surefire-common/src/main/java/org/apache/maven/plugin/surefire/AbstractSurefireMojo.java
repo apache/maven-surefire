@@ -90,6 +90,8 @@ import org.apache.maven.toolchain.DefaultToolchain;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.apache.maven.toolchain.java.DefaultJavaToolChain;
+import org.codehaus.plexus.languages.java.jpms.ResolvePathRequest;
+import org.codehaus.plexus.languages.java.jpms.ResolvePathResult;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.languages.java.jpms.LocationManager;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
@@ -101,7 +103,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -909,6 +910,7 @@ public abstract class AbstractSurefireMojo
         cli = commandLineOptions();
         // Stuff that should have been final
         setupStuff();
+        Platform platform = PLATFORM.withJdkExecAttributesForTests( getEffectiveJvm() );
 
         if ( verifyParameters() && !hasExecutedBefore() )
         {
@@ -924,7 +926,7 @@ public abstract class AbstractSurefireMojo
                 return;
             }
             logReportsDirectory();
-            executeAfterPreconditionsChecked( scan );
+            executeAfterPreconditionsChecked( scan, platform );
         }
     }
 
@@ -1136,11 +1138,12 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    private void executeAfterPreconditionsChecked( @Nonnull DefaultScanResult scanResult )
+    private void executeAfterPreconditionsChecked( @Nonnull DefaultScanResult scanResult, @Nonnull Platform platform )
         throws MojoExecutionException, MojoFailureException
     {
         TestClassPath testClasspath = generateTestClasspath();
         List<ProviderInfo> providers = createProviders( testClasspath );
+        ResolvePathResultWrapper wrapper = findModuleDescriptor( platform.getJdkExecAttributesForTests().getJdkHome() );
 
         RunResult current = noTestsRun();
 
@@ -1149,7 +1152,8 @@ public abstract class AbstractSurefireMojo
         {
             try
             {
-                current = current.aggregate( executeProvider( provider, scanResult, testClasspath ) );
+                current =
+                    current.aggregate( executeProvider( provider, scanResult, testClasspath, platform, wrapper ) );
             }
             catch ( SurefireBooterForkException | SurefireExecutionException | TestSetFailedException e )
             {
@@ -1267,7 +1271,8 @@ public abstract class AbstractSurefireMojo
 
     @Nonnull
     private RunResult executeProvider( @Nonnull ProviderInfo provider, @Nonnull DefaultScanResult scanResult,
-                                       @Nonnull TestClassPath testClasspathWrapper )
+                                       @Nonnull TestClassPath testClasspathWrapper, @Nonnull Platform platform,
+                                       @Nonnull ResolvePathResultWrapper resolvedJavaModularityResult )
         throws MojoExecutionException, MojoFailureException, SurefireExecutionException, SurefireBooterForkException,
         TestSetFailedException
     {
@@ -1278,7 +1283,6 @@ public abstract class AbstractSurefireMojo
         RunOrderParameters runOrderParameters =
             new RunOrderParameters( getRunOrder(), getStatisticsFile( getConfigChecksum() ) );
 
-        Platform platform = PLATFORM.withJdkExecAttributesForTests( getEffectiveJvm() );
         if ( isNotForking() )
         {
             createCopyAndReplaceForkNumPlaceholder( effectiveProperties, 1 ).copyToSystemProperties();
@@ -1289,7 +1293,7 @@ public abstract class AbstractSurefireMojo
         }
         else
         {
-            ForkConfiguration forkConfiguration = createForkConfiguration( platform );
+            ForkConfiguration forkConfiguration = createForkConfiguration( platform, resolvedJavaModularityResult );
             if ( getConsoleLogger().isDebugEnabled() )
             {
                 showMap( getEnvironmentVariables(), "environment variable" );
@@ -1301,8 +1305,8 @@ public abstract class AbstractSurefireMojo
             try
             {
                 forkStarter = createForkStarter( provider, forkConfiguration, classLoaderConfiguration,
-                                                       runOrderParameters, getConsoleLogger(), scanResult, platform,
-                                                       testClasspathWrapper );
+                                                       runOrderParameters, getConsoleLogger(), scanResult,
+                                                       testClasspathWrapper, platform, resolvedJavaModularityResult );
 
                 return forkStarter.run( effectiveProperties, scanResult );
             }
@@ -1377,21 +1381,38 @@ public abstract class AbstractSurefireMojo
         this.dependencyResolver = dependencyResolver;
     }
 
-    private boolean existsModuleDescriptor()
+    private boolean existsModuleDescriptor( ResolvePathResultWrapper resolvedJavaModularityResult )
     {
-        return getModuleDescriptor().isFile();
+        return resolvedJavaModularityResult.getResolvePathResult() != null;
     }
 
-    private File getModuleDescriptor()
+    private ResolvePathResultWrapper findModuleDescriptor( File jdkHome )
     {
-        return new File( getClassesDirectory(), "module-info.class" );
+        File mainBuildPath = getMainBuildPath();
+
+        if ( mainBuildPath.isDirectory() && !new File( mainBuildPath, "module-info.class" ).exists() )
+        {
+            return new ResolvePathResultWrapper( null, true );
+        }
+
+        try
+        {
+            ResolvePathRequest<?> request = ResolvePathRequest.ofFile( mainBuildPath ).setJdkHome( jdkHome );
+            ResolvePathResult result = getLocationManager().resolvePath( request );
+            return new ResolvePathResultWrapper( result.getModuleNameSource() == null ? null : result, true );
+        }
+        catch ( Exception e )
+        {
+            return new ResolvePathResultWrapper( null, true );
+        }
     }
 
-    private boolean canExecuteProviderWithModularPath( Platform platform )
+    private boolean canExecuteProviderWithModularPath( Platform platform,
+                                                       ResolvePathResultWrapper resolvedJavaModularityResult )
     {
         return useModulePath()
                 && platform.getJdkExecAttributesForTests().isJava9AtLeast()
-                && existsModuleDescriptor();
+                && existsModuleDescriptor( resolvedJavaModularityResult );
     }
 
     /**
@@ -1847,26 +1868,20 @@ public abstract class AbstractSurefireMojo
     private StartupConfiguration createStartupConfiguration( @Nonnull ProviderInfo provider, boolean isForking,
                                                              @Nonnull ClassLoaderConfiguration classLoaderConfiguration,
                                                              @Nonnull DefaultScanResult scanResult,
+                                                             @Nonnull TestClassPath testClasspathWrapper,
                                                              @Nonnull Platform platform,
-                                                             @Nonnull TestClassPath testClasspathWrapper )
+                                                             @Nonnull ResolvePathResultWrapper resolvedJavaModularity )
         throws MojoExecutionException
     {
         try
         {
             Set<Artifact> providerArtifacts = provider.getProviderClasspath();
             String providerName = provider.getProviderName();
-            if ( isForking && canExecuteProviderWithModularPath( platform ) )
+            if ( isForking && canExecuteProviderWithModularPath( platform, resolvedJavaModularity ) )
             {
-                String jvmExecutable = platform.getJdkExecAttributesForTests().getJvmExecutable();
-                String javaHome = Paths.get( jvmExecutable )
-                        .toAbsolutePath()
-                        .normalize()
-                        .getParent()
-                        .getParent()
-                        .toString();
-
+                File jdkHome = platform.getJdkExecAttributesForTests().getJdkHome();
                 return newStartupConfigWithModularPath( classLoaderConfiguration, providerArtifacts, providerName,
-                        getModuleDescriptor(), scanResult, javaHome, testClasspathWrapper );
+                    resolvedJavaModularity, scanResult, jdkHome.getAbsolutePath(), testClasspathWrapper );
             }
             else
             {
@@ -1960,9 +1975,9 @@ public abstract class AbstractSurefireMojo
     }
 
     private StartupConfiguration newStartupConfigWithModularPath(
-            @Nonnull ClassLoaderConfiguration classLoaderConfiguration, @Nonnull Set<Artifact> providerArtifacts,
-            @Nonnull String providerName, @Nonnull File moduleDescriptor, @Nonnull DefaultScanResult scanResult,
-            @Nonnull String javaHome, @Nonnull TestClassPath testClasspathWrapper )
+        @Nonnull ClassLoaderConfiguration classLoaderConfiguration, @Nonnull Set<Artifact> providerArtifacts,
+        @Nonnull String providerName, @Nonnull ResolvePathResultWrapper moduleDescriptor,
+        @Nonnull DefaultScanResult scanResult, @Nonnull String javaHome, @Nonnull TestClassPath testClasspathWrapper )
             throws IOException
     {
         Classpath testClasspath = testClasspathWrapper.toClasspath();
@@ -1975,7 +1990,7 @@ public abstract class AbstractSurefireMojo
 
         ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings( testClasspath.getClassPath() )
                 .setJdkHome( javaHome )
-                .setMainModuleDescriptor( moduleDescriptor.getAbsolutePath() );
+                .setModuleDescriptor( moduleDescriptor.getResolvePathResult().getModuleDescriptor() );
 
         ResolvePathsResult<String> result = getLocationManager().resolvePaths( req );
         for ( Entry<String, Exception> entry : result.getPathExceptions().entrySet() )
@@ -2327,12 +2342,13 @@ public abstract class AbstractSurefireMojo
     private ForkStarter createForkStarter( @Nonnull ProviderInfo provider, @Nonnull ForkConfiguration forkConfiguration,
                                            @Nonnull ClassLoaderConfiguration classLoaderConfiguration,
                                            @Nonnull RunOrderParameters runOrderParameters, @Nonnull ConsoleLogger log,
-                                           @Nonnull DefaultScanResult scanResult, @Nonnull Platform platform,
-                                           @Nonnull TestClassPath testClasspathWrapper )
+                                           @Nonnull DefaultScanResult scanResult,
+                                           @Nonnull TestClassPath testClasspathWrapper, @Nonnull Platform platform,
+                                           ResolvePathResultWrapper resolvedJavaModularityResult )
         throws MojoExecutionException, MojoFailureException
     {
         StartupConfiguration startupConfiguration = createStartupConfiguration( provider, true,
-                classLoaderConfiguration, scanResult, platform, testClasspathWrapper );
+                classLoaderConfiguration, scanResult, testClasspathWrapper, platform, resolvedJavaModularityResult );
         String configChecksum = getConfigChecksum();
         StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum, true );
         ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );
@@ -2349,7 +2365,7 @@ public abstract class AbstractSurefireMojo
         throws MojoExecutionException, MojoFailureException
     {
         StartupConfiguration startupConfiguration = createStartupConfiguration( provider, false, classLoaderConfig,
-                scanResult, platform, testClasspathWrapper );
+                scanResult, testClasspathWrapper, platform, new ResolvePathResultWrapper( null, true ) );
         String configChecksum = getConfigChecksum();
         StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum, false );
         ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );
@@ -2366,7 +2382,8 @@ public abstract class AbstractSurefireMojo
     }
 
     @Nonnull
-    private ForkConfiguration createForkConfiguration( Platform platform )
+    private ForkConfiguration createForkConfiguration( @Nonnull Platform platform,
+                                                       @Nonnull ResolvePathResultWrapper resolvedJavaModularityResult )
     {
         File tmpDir = getSurefireTempDir();
 
@@ -2378,7 +2395,7 @@ public abstract class AbstractSurefireMojo
 
         getConsoleLogger().debug( "Found implementation of fork node factory: " + forkNode.getClass().getName() );
 
-        if ( canExecuteProviderWithModularPath( platform ) )
+        if ( canExecuteProviderWithModularPath( platform, resolvedJavaModularityResult ) )
         {
             return new ModularClasspathForkConfiguration( bootClasspath,
                     tmpDir,
@@ -2516,9 +2533,9 @@ public abstract class AbstractSurefireMojo
 
     private JdkAttributes getEffectiveJvm() throws MojoFailureException
     {
-        if ( isNotEmpty( jvm ) )
+        if ( isNotEmpty( getJvm() ) )
         {
-            File pathToJava = new File( jvm ).getAbsoluteFile();
+            File pathToJava = new File( getJvm() ).getAbsoluteFile();
             if ( !endsWithJavaPath( pathToJava.getPath() ) )
             {
                 throw new MojoFailureException( "Given path does not end with java executor \""
@@ -2533,13 +2550,17 @@ public abstract class AbstractSurefireMojo
             }
 
             File jdkHome = toJdkHomeFromJvmExec( pathToJava.getPath() );
-            if ( !environmentVariables.containsKey( "JAVA_HOME" ) )
+            if ( jdkHome == null )
             {
-                environmentVariables.put( "JAVA_HOME", jdkHome.getAbsolutePath() );
+                getConsoleLogger().warning( "Cannot determine JAVA_HOME of jvm exec path " + pathToJava );
+            }
+            else if ( !getEnvironmentVariables().containsKey( "JAVA_HOME" ) )
+            {
+                getEnvironmentVariables().put( "JAVA_HOME", jdkHome.getAbsolutePath() );
             }
             BigDecimal version = jdkHome == null ? null : toJdkVersionFromReleaseFile( jdkHome );
             boolean javaVersion9 = version == null ? isJava9AtLeast( pathToJava.getPath() ) : isJava9AtLeast( version );
-            return new JdkAttributes( pathToJava.getPath(), javaVersion9 );
+            return new JdkAttributes( pathToJava, jdkHome, javaVersion9 );
         }
 
         if ( toolchain != null )
@@ -2548,6 +2569,7 @@ public abstract class AbstractSurefireMojo
             if ( isNotEmpty( jvmToUse ) )
             {
                 boolean javaVersion9 = false;
+                String jdkHome = null;
 
                 if ( toolchain instanceof DefaultToolchain )
                 {
@@ -2559,9 +2581,10 @@ public abstract class AbstractSurefireMojo
                 if ( toolchain instanceof DefaultJavaToolChain )
                 {
                     DefaultJavaToolChain defaultJavaToolChain = (DefaultJavaToolChain) toolchain;
-                    if ( !environmentVariables.containsKey( "JAVA_HOME" ) )
+                    if ( !getEnvironmentVariables().containsKey( "JAVA_HOME" ) )
                     {
-                        environmentVariables.put( "JAVA_HOME", defaultJavaToolChain.getJavaHome() );
+                        jdkHome = defaultJavaToolChain.getJavaHome();
+                        getEnvironmentVariables().put( "JAVA_HOME", jdkHome );
                     }
                 }
 
@@ -2570,7 +2593,8 @@ public abstract class AbstractSurefireMojo
                     javaVersion9 = isJava9AtLeast( jvmToUse );
                 }
 
-                return new JdkAttributes( jvmToUse, javaVersion9 );
+                return new JdkAttributes( new File( jvmToUse ),
+                    jdkHome == null ? toJdkHomeFromJvmExec( jvmToUse ) : new File( jdkHome ), javaVersion9 );
             }
         }
 
@@ -2621,7 +2645,7 @@ public abstract class AbstractSurefireMojo
         checksum.add( isSkipExec() );
         checksum.add( isSkip() );
         checksum.add( getTestClassesDirectory() );
-        checksum.add( getClassesDirectory() );
+        checksum.add( getMainBuildPath() );
         checksum.add( getClasspathDependencyExcludes() );
         checksum.add( getClasspathDependencyScopeExclude() );
         checksum.add( getAdditionalClasspathElements() );
@@ -2741,7 +2765,7 @@ public abstract class AbstractSurefireMojo
             classpathArtifacts = filterArtifacts( classpathArtifacts, dependencyFilter );
         }
 
-        return new TestClassPath( classpathArtifacts, getClassesDirectory(),
+        return new TestClassPath( classpathArtifacts, getMainBuildPath(),
                 getTestClassesDirectory(), getAdditionalClasspathElements() );
     }
 
