@@ -614,7 +614,7 @@ public class IntegrationTestMojo
      * used instead. See the resolution of {@link #getClassLoaderConfiguration() ClassLoaderConfiguration}.
      */
     @Override
-    public File getClassesDirectory()
+    public File getMainBuildPath()
     {
         File artifact = getProject().getArtifact().getFile();
         boolean isDefaultClsDir = classesDirectory == null;
@@ -622,9 +622,9 @@ public class IntegrationTestMojo
     }
 
     @Override
-    public void setClassesDirectory( File classesDirectory )
+    public void setMainBuildPath( File mainBuildPath )
     {
-        this.classesDirectory = toAbsoluteCanonical( classesDirectory );
+        classesDirectory = toAbsoluteCanonical( mainBuildPath );
     }
 
     public void setDefaultClassesDirectory( File defaultClassesDirectory )

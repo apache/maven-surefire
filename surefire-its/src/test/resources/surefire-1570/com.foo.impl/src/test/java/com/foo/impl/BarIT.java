@@ -1,3 +1,5 @@
+package com.foo.impl;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,20 +19,23 @@
  * under the License.
  */
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class J9Test
+/**
+ *
+ */
+public class BarIT
 {
-    @Test
-    public void testMiscellaneousAPI() throws java.sql.SQLException
-    {
-        System.out.println( "loaded class " + java.sql.SQLException.class.getName() );
-        System.out.println( "loaded class " + javax.xml.ws.Holder.class.getName() );
-        System.out.println( "loaded class " + javax.xml.bind.JAXBException.class.getName() );
-        System.out.println( "loaded class " + javax.transaction.InvalidTransactionException.class.getName() );
-        System.out.println( "loaded class " + javax.transaction.TransactionManager.class.getName() );
-        System.out.println( "loaded class " + javax.xml.xpath.XPath.class.getName() );
-        System.out.println( "java.specification.version=" + System.getProperty( "java.specification.version" ) );
-    }
+    private static final Logger LOG = LoggerFactory.getLogger( BarIT.class );
 
+    @Test
+    void shouldPrintModulePath()
+    {
+        Bar bar = new Bar();
+        LOG.info( "======INTEGRATION TEST=======" );
+        LOG.info( "Lets see JDKModulePath: {}", System.getProperty( "jdk.module.path" ) );
+        bar.doItNow( getClass() );
+    }
 }

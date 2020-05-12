@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static java.io.File.separatorChar;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -155,7 +156,8 @@ public class AbstractSurefireMojoToolchainsTest
         assertThat( mojo.getEnvironmentVariables() ).isEmpty();
         JdkAttributes effectiveJvm = invokeMethod( mojo, "getEffectiveJvm" );
         assertThat( mojo.getEnvironmentVariables() ).includes( MapAssert.entry( "JAVA_HOME", "/some/path" ) );
-        assertThat( effectiveJvm.getJvmExecutable() ).contains( "/path/from/toolchain" );
+        assertThat( effectiveJvm.getJvmExecutable().getPath() )
+            .contains( "/path/from/toolchain".replace( '/', separatorChar ) );
     }
 
     @Test
@@ -171,7 +173,8 @@ public class AbstractSurefireMojoToolchainsTest
 
         JdkAttributes effectiveJvm = invokeMethod( mojo, "getEffectiveJvm" );
         assertThat( mojo.getEnvironmentVariables() ).includes( MapAssert.entry( "JAVA_HOME", "/already/set/path" ) );
-        assertThat( effectiveJvm.getJvmExecutable() ).contains( "/path/from/toolchain" );
+        assertThat( effectiveJvm.getJvmExecutable().getPath() )
+            .contains( "/path/from/toolchain".replace( '/', separatorChar ) );
     }
 
     /**
@@ -191,9 +194,9 @@ public class AbstractSurefireMojoToolchainsTest
 
         assertThat( mojo.getEnvironmentVariables() ).isEmpty();
         JdkAttributes effectiveJvm = invokeMethod( mojo, "getEffectiveJvm" );
-        assertThat( mojo.getEnvironmentVariables() ).
-            includes( MapAssert.entry( "JAVA_HOME", currentJdkHome.getAbsolutePath() ) );
-        assertThat( effectiveJvm.getJvmExecutable() ).contains( javaExecutablePath );
+        assertThat( mojo.getEnvironmentVariables() )
+            .includes( MapAssert.entry( "JAVA_HOME", currentJdkHome.getAbsolutePath() ) );
+        assertThat( effectiveJvm.getJvmExecutable().getPath() ).contains( javaExecutablePath );
     }
 
     /**
@@ -207,15 +210,14 @@ public class AbstractSurefireMojoToolchainsTest
         mojo.setEnvironmentVariables( singletonMap( "JAVA_HOME", "/already/set/path" ) );
 
         File currentJdkHome = toJdkHomeFromJre();
-        String javaExecutablePath = FilenameUtils.concat(
-            currentJdkHome.getAbsolutePath(), "bin/java" );
+        String javaExecutablePath = FilenameUtils.concat( currentJdkHome.getAbsolutePath(), "bin/java" );
 
         mojo.setJvm( javaExecutablePath );
 
         JdkAttributes effectiveJvm = invokeMethod( mojo, "getEffectiveJvm" );
-        assertThat( mojo.getEnvironmentVariables() ).
-            includes( MapAssert.entry( "JAVA_HOME", "/already/set/path" ) );
-        assertThat( effectiveJvm.getJvmExecutable() ).contains( javaExecutablePath );
+        assertThat( mojo.getEnvironmentVariables() )
+            .includes( MapAssert.entry( "JAVA_HOME", "/already/set/path" ) );
+        assertThat( effectiveJvm.getJvmExecutable().getPath() ).contains( javaExecutablePath );
     }
 
 

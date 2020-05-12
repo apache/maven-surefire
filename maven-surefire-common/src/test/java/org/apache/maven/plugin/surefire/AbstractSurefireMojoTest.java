@@ -33,6 +33,7 @@ import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo.JUnitPlatformProviderInfo;
+import org.apache.maven.plugin.surefire.booterclient.Platform;
 import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
@@ -43,15 +44,24 @@ import org.apache.maven.shared.transfer.dependencies.DependableCoordinate;
 import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.util.DefaultScanResult;
 import org.apache.maven.toolchain.Toolchain;
+import org.codehaus.plexus.languages.java.jpms.JavaModuleDescriptor;
+import org.codehaus.plexus.languages.java.jpms.LocationManager;
+import org.codehaus.plexus.languages.java.jpms.ResolvePathRequest;
+import org.codehaus.plexus.languages.java.jpms.ResolvePathResult;
+import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
+import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
 import org.codehaus.plexus.logging.Logger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -63,6 +73,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -75,21 +87,27 @@ import java.util.Map;
 import java.util.Set;
 
 import static java.io.File.separatorChar;
+import static java.nio.file.Files.write;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
-import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersion;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
+import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_9;
+import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_RECENT;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
+import static org.codehaus.plexus.languages.java.jpms.ModuleNameSource.MODULEDESCRIPTOR;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.MapAssert.entry;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.doNothing;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.mock;
@@ -108,6 +126,9 @@ public class AbstractSurefireMojoTest
 {
     @Rule
     public final ExpectedException e = ExpectedException.none();
+
+    @Rule
+    public final TemporaryFolder tempFolder = new TemporaryFolder();
 
     @Mock
     private ArtifactHandler handler;
@@ -137,6 +158,119 @@ public class AbstractSurefireMojoTest
         plugin.setVersion( mojoArtifact.getVersion() );
         when( pluginDescriptor.getPlugin() ).thenReturn( plugin );
         mojo.setPluginDescriptor( pluginDescriptor );
+    }
+
+    @Test
+    public void noModuleDescriptorFile() throws Exception
+    {
+        AbstractSurefireMojo mojo = spy( new Mojo() );
+        mojo.setMainBuildPath( tempFolder.newFolder() );
+        File jdkHome = new File( System.getProperty( "java.home" ) );
+        ResolvePathResultWrapper wrapper = invokeMethod( mojo, "findModuleDescriptor", jdkHome );
+
+        assertThat( wrapper )
+            .isNotNull();
+
+        assertThat( wrapper.getResolvePathResult() )
+            .isNull();
+
+        assertThat( invokeMethod( mojo, "existsModuleDescriptor", wrapper ) )
+            .isEqualTo( false );
+
+        when( mojo.useModulePath() ).thenReturn( true );
+
+        File jvmExecutable = new File( jdkHome, IS_OS_WINDOWS ? "bin\\java.exe" : "bin/java" );
+        JdkAttributes jdkAttributes = new JdkAttributes( jvmExecutable, jdkHome, true );
+        Platform platform = new Platform().withJdkExecAttributesForTests( jdkAttributes );
+        assertThat( invokeMethod( mojo, "canExecuteProviderWithModularPath", platform, wrapper ) )
+            .isEqualTo( false );
+    }
+
+    @Test
+    public void correctModuleDescriptor() throws Exception
+    {
+        AbstractSurefireMojo mojo = spy( new Mojo() );
+        LocationManager locationManager = mock( LocationManager.class );
+        ResolvePathResult result = mock( ResolvePathResult.class );
+        when( result.getModuleNameSource() ).thenReturn( MODULEDESCRIPTOR );
+        JavaModuleDescriptor descriptor = mock( JavaModuleDescriptor.class );
+        when( result.getModuleDescriptor() ).thenReturn( descriptor );
+        when( locationManager.resolvePath( any( ResolvePathRequest.class ) ) ).thenReturn( result );
+        doReturn( locationManager )
+            .when( mojo, "getLocationManager" );
+        File classesDir = tempFolder.newFolder();
+        mojo.setMainBuildPath( classesDir );
+        File descriptorFile = new File( classesDir, "module-info.class" );
+        assertThat( descriptorFile.createNewFile() ).isTrue();
+        File jdkHome = new File( System.getProperty( "java.home" ) );
+        ResolvePathResultWrapper wrapper = invokeMethod( mojo, "findModuleDescriptor", jdkHome );
+
+        assertThat( wrapper )
+            .isNotNull();
+
+        assertThat( wrapper.getResolvePathResult() )
+            .isSameAs( result );
+
+        assertThat( wrapper.getResolvePathResult().getModuleNameSource() )
+            .isSameAs( MODULEDESCRIPTOR );
+
+        assertThat( wrapper.getResolvePathResult().getModuleDescriptor() )
+            .isSameAs( descriptor );
+
+        assertThat( invokeMethod( mojo, "existsModuleDescriptor", wrapper ) )
+            .isEqualTo( true );
+
+        when( mojo.useModulePath() ).thenReturn( true );
+
+        File jvmExecutable = new File( jdkHome, IS_OS_WINDOWS ? "bin\\java.exe" : "bin/java" );
+        JdkAttributes jdkAttributes = new JdkAttributes( jvmExecutable, jdkHome, true );
+        Platform platform = new Platform().withJdkExecAttributesForTests( jdkAttributes );
+        assertThat( invokeMethod( mojo, "canExecuteProviderWithModularPath", platform, wrapper ) )
+            .isEqualTo( true );
+
+        jdkAttributes = new JdkAttributes( jvmExecutable, jdkHome, false );
+        platform = new Platform().withJdkExecAttributesForTests( jdkAttributes );
+        assertThat( invokeMethod( mojo, "canExecuteProviderWithModularPath", platform, wrapper ) )
+            .isEqualTo( false );
+
+        when( mojo.useModulePath() ).thenReturn( false );
+
+        jdkAttributes = new JdkAttributes( jvmExecutable, jdkHome, true );
+        platform = new Platform().withJdkExecAttributesForTests( jdkAttributes );
+        assertThat( invokeMethod( mojo, "canExecuteProviderWithModularPath", platform, wrapper ) )
+            .isEqualTo( false );
+    }
+
+    @Test
+    @SuppressWarnings( "checkstyle:magicnumber" )
+    public void corruptedModuleDescriptor() throws Exception
+    {
+        if ( !JAVA_RECENT.atLeast( JAVA_9 ) )
+        {
+            return;
+        }
+
+        AbstractSurefireMojo mojo = spy( new Mojo() );
+        doReturn( new LocationManager() )
+            .when( mojo, "getLocationManager" );
+        File classesDir = tempFolder.newFolder();
+        mojo.setMainBuildPath( classesDir );
+
+        File descriptorFile = new File( classesDir, "module-info.class" );
+        assertThat( descriptorFile.createNewFile() ).isTrue();
+        write( descriptorFile.toPath(), new byte[]{(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE} );
+
+        File jdkHome = new File( System.getProperty( "java.home" ) );
+        ResolvePathResultWrapper wrapper = invokeMethod( mojo, "findModuleDescriptor", jdkHome );
+
+        assertThat( wrapper )
+            .isNotNull();
+
+        assertThat( wrapper.getResolvePathResult() )
+            .isNull();
+
+        assertThat( invokeMethod( mojo, "existsModuleDescriptor", wrapper ) )
+            .isEqualTo( false );
     }
 
     @Test
@@ -249,7 +383,7 @@ public class AbstractSurefireMojoTest
     {
         AbstractSurefireMojo mojo = spy( this.mojo );
 
-        when( mojo.getClassesDirectory() ).thenReturn( new File( "target" + separatorChar + "classes" ) );
+        when( mojo.getMainBuildPath() ).thenReturn( new File( "target" + separatorChar + "classes" ) );
         when( mojo.getTestClassesDirectory() ).thenReturn( new File( "target" + separatorChar + "test-classes" ) );
         when( mojo.getClasspathDependencyScopeExclude() ).thenReturn( "runtime" );
         when( mojo.getClasspathDependencyExcludes() ).thenReturn( new String[]{ "g3:a3" } );
@@ -298,7 +432,7 @@ public class AbstractSurefireMojoTest
         TestClassPath cp = invokeMethod( mojo, "generateTestClasspath" );
 
         verifyPrivate( mojo, times( 1 ) ).invoke( "generateTestClasspath" );
-        verify( mojo, times( 1 ) ).getClassesDirectory();
+        verify( mojo, times( 1 ) ).getMainBuildPath();
         verify( mojo, times( 1 ) ).getTestClassesDirectory();
         verify( mojo, times( 3 ) ).getClasspathDependencyScopeExclude();
         verify( mojo, times( 2 ) ).getClasspathDependencyExcludes();
@@ -508,7 +642,81 @@ public class AbstractSurefireMojoTest
 
         doReturn( 1 ).when( mojo, "getEffectiveForkCount" );
 
-        return invokeMethod( mojo, "createStartupConfiguration", providerInfo, false, null, null, null, testClassPath );
+        return invokeMethod( mojo, "createStartupConfiguration",
+            providerInfo, false, null, null, testClassPath, null, null );
+    }
+
+    @Test
+    public void shouldCreateStartupConfigWithModularPath() throws Exception
+    {
+        String baseDir = System.getProperty( "user.dir" );
+
+        Mojo mojo = new Mojo();
+
+        // ### BEGIN
+        // we cannot mock private method newStartupConfigWithModularPath() - mocking the data to prevent from errors
+        LocationManager locationManager = mock( LocationManager.class );
+        ResolvePathsResult resolvePathsResult = mock( ResolvePathsResult.class );
+        when( locationManager.resolvePaths( any( ResolvePathsRequest.class ) ) ).thenReturn( resolvePathsResult );
+        when( resolvePathsResult.getPathExceptions() ).thenReturn( emptyMap() );
+        when( resolvePathsResult.getClasspathElements() ).thenReturn( emptyList() );
+        when( resolvePathsResult.getModulepathElements() ).thenReturn( emptyMap() );
+        JavaModuleDescriptor desc = mock( JavaModuleDescriptor.class );
+        when( desc.name() ).thenReturn( "" );
+        when( resolvePathsResult.getMainModuleDescriptor() ).thenReturn( desc );
+
+        mojo.setLogger( mock( Logger.class ) );
+        mojo.setUseModulePath( true );
+        setInternalState( mojo, "locationManager", locationManager );
+
+        File jdkHome = new File( System.getProperty( "java.home" ) );
+        File jvmExecutable = new File( jdkHome, IS_OS_WINDOWS ? "bin\\java.exe" : "bin/java" );
+        JdkAttributes jdkAttributes = new JdkAttributes( jvmExecutable, jdkHome, true );
+        Platform platform = new Platform().withJdkExecAttributesForTests( jdkAttributes );
+
+        File classesDirectory = new File( baseDir, "mock-dir" );
+        File testClassesDirectory = new File( baseDir, "mock-dir" );
+        TestClassPath testClassPath = new TestClassPath( Collections.<Artifact>emptySet(),
+            classesDirectory, testClassesDirectory, new String[0] );
+
+        ProviderInfo providerInfo = mock( ProviderInfo.class );
+        when( providerInfo.getProviderName() ).thenReturn( "provider mock" );
+        when( providerInfo.getProviderClasspath() ).thenReturn( Collections.<Artifact>emptySet() );
+
+        DefaultScanResult defaultScanResult = mock( DefaultScanResult.class );
+        when( defaultScanResult.getClasses() ).thenReturn( Collections.<String>emptyList() );
+
+        Path pathToModularDescriptor =
+            Paths.get( baseDir, "src", "test", "resources", "org", "apache", "maven", "plugin", "surefire" );
+        mojo.setMainBuildPath( pathToModularDescriptor.toFile() );
+
+        Map<String, Artifact> artifacts = new HashMap<>();
+        Artifact dummyArtifact = mock( Artifact.class );
+        when( dummyArtifact.getFile() ).thenReturn( new File( baseDir, "mock-file" ) );
+        artifacts.put( "org.apache.maven.surefire:maven-surefire-common", dummyArtifact );
+        artifacts.put( "org.apache.maven.surefire:surefire-extensions-api", dummyArtifact );
+        artifacts.put( "org.apache.maven.surefire:surefire-api", dummyArtifact );
+        artifacts.put( "org.apache.maven.surefire:surefire-logger-api", dummyArtifact );
+        artifacts.put( "org.apache.maven.surefire:surefire-extensions-spi", dummyArtifact );
+        artifacts.put( "org.apache.maven.surefire:surefire-booter", dummyArtifact );
+        artifacts.put( "org.apache.maven.surefire:surefire-shared-utils", dummyArtifact );
+        mojo.setPluginArtifactMap( artifacts );
+
+        ResolvePathResult resolvePathResult = mock( ResolvePathResult.class );
+        ResolvePathResultWrapper wrapper = new ResolvePathResultWrapper( resolvePathResult, true );
+        // ### END
+
+        StartupConfiguration actualConfig = invokeMethod( mojo, "createStartupConfiguration",
+            new Class[] {ProviderInfo.class, boolean.class, ClassLoaderConfiguration.class, DefaultScanResult.class,
+                TestClassPath.class, Platform.class, ResolvePathResultWrapper.class},
+            providerInfo, true, mock( ClassLoaderConfiguration.class ), defaultScanResult,
+            testClassPath, platform, wrapper );
+
+        assertThat( actualConfig )
+            .isNotNull();
+
+        assertThat( actualConfig.getClasspathConfiguration() )
+            .isInstanceOf( ModularClasspathConfiguration.class );
     }
 
     @Test
@@ -1804,6 +2012,9 @@ public class AbstractSurefireMojoTest
     public static class Mojo
             extends AbstractSurefireMojo implements SurefireReportParameters
     {
+        private File mainBuildPath;
+        private boolean useModulePath;
+
         private JUnitPlatformProviderInfo createJUnitPlatformProviderInfo( Artifact junitPlatformArtifact,
                                                                            TestClassPath testClasspathWrapper )
         {
@@ -1901,15 +2112,15 @@ public class AbstractSurefireMojoTest
         }
 
         @Override
-        public File getClassesDirectory()
+        public File getMainBuildPath()
         {
-            return null;
+            return mainBuildPath;
         }
 
         @Override
-        public void setClassesDirectory( File classesDirectory )
+        public void setMainBuildPath( File mainBuildPath )
         {
-
+            this.mainBuildPath = mainBuildPath;
         }
 
         @Override
@@ -2185,13 +2396,13 @@ public class AbstractSurefireMojoTest
         @Override
         protected boolean useModulePath()
         {
-            return false;
+            return useModulePath;
         }
 
         @Override
         protected void setUseModulePath( boolean useModulePath )
         {
-
+            this.useModulePath = useModulePath;
         }
 
         @Override

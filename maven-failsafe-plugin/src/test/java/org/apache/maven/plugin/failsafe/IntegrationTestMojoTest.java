@@ -58,25 +58,25 @@ public class IntegrationTestMojoTest
     public void shouldBeJar()
     {
         mojo.setDefaultClassesDirectory( new File( "./target/classes" ) );
-        File binaries = mojo.getClassesDirectory();
+        File binaries = mojo.getMainBuildPath();
         assertThat( binaries.getName() ).isEqualTo( "a-1.0.jar" );
     }
 
     @Test
     public void shouldBeAnotherJar()
     {
-        mojo.setClassesDirectory( new File( "./target/another-1.0.jar" ) );
+        mojo.setMainBuildPath( new File( "./target/another-1.0.jar" ) );
         mojo.setDefaultClassesDirectory( new File( "./target/classes" ) );
-        File binaries = mojo.getClassesDirectory();
+        File binaries = mojo.getMainBuildPath();
         assertThat( binaries.getName() ).isEqualTo( "another-1.0.jar" );
     }
 
     @Test
     public void shouldBeClasses()
     {
-        mojo.setClassesDirectory( new File( "./target/classes" ) );
+        mojo.setMainBuildPath( new File( "./target/classes" ) );
         mojo.setDefaultClassesDirectory( new File( "./target/classes" ) );
-        File binaries = mojo.getClassesDirectory();
+        File binaries = mojo.getMainBuildPath();
         assertThat( binaries.getName() ).isEqualTo( "classes" );
     }
 

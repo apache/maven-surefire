@@ -144,7 +144,7 @@ public abstract class DefaultForkConfiguration
             cli.addEnvironment( entry.getKey(), value == null ? "" : value );
         }
 
-        cli.setExecutable( getJdkForTests().getJvmExecutable() );
+        cli.setExecutable( getJdkForTests().getJvmExecutable().getAbsolutePath() );
 
         String jvmArgLine = newJvmArgLine( forkNumber );
         if ( !jvmArgLine.isEmpty() )

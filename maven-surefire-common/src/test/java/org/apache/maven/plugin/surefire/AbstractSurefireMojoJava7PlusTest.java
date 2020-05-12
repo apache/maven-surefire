@@ -33,6 +33,7 @@ import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.util.DefaultScanResult;
 import org.codehaus.plexus.languages.java.jpms.JavaModuleDescriptor;
 import org.codehaus.plexus.languages.java.jpms.LocationManager;
+import org.codehaus.plexus.languages.java.jpms.ResolvePathResult;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
 import org.codehaus.plexus.languages.java.jpms.ModuleNameSource;
@@ -138,14 +139,15 @@ public class AbstractSurefireMojoJava7PlusTest
         provider.setFile( mockFile( "surefire-provider.jar" ) );
         Set<Artifact> providerClasspath = singleton( provider );
 
-        File moduleInfo = mockFile( "classes/module-info.class" );
+        ResolvePathResult moduleInfo = mock( ResolvePathResult.class );
+        when( moduleInfo.getModuleDescriptor() ).thenReturn( descriptor );
 
         @SuppressWarnings( "unchecked" )
         ResolvePathsRequest<String> req = mock( ResolvePathsRequest.class );
         mockStatic( ResolvePathsRequest.class );
         when( ResolvePathsRequest.ofStrings( eq( testClasspath.toClasspath().getClassPath() ) ) ).thenReturn( req );
         when( req.setJdkHome( anyString() ) ).thenReturn( req );
-        when( req.setMainModuleDescriptor( eq( moduleInfo.getAbsolutePath() ) ) ).thenReturn( req );
+        when( req.setModuleDescriptor( eq( descriptor ) ) ).thenReturn( req );
 
         when( descriptor.name() ).thenReturn( "abc" );
 
@@ -204,8 +206,8 @@ public class AbstractSurefireMojoJava7PlusTest
         when( mojo.getPluginArtifactMap() ).thenReturn( artifacts );
 
         StartupConfiguration conf = invokeMethod( mojo, "newStartupConfigWithModularPath",
-                classLoaderConfiguration, providerClasspath, "org.asf.Provider", moduleInfo, scanResult,
-                "", testClasspath );
+            classLoaderConfiguration, providerClasspath, "org.asf.Provider",
+            new ResolvePathResultWrapper( moduleInfo, true ), scanResult, "", testClasspath );
 
         verify( mojo, times( 1 ) ).effectiveIsEnableAssertions();
         verify( mojo, times( 1 ) ).isChildDelegation();
@@ -213,7 +215,7 @@ public class AbstractSurefireMojoJava7PlusTest
         verify( scanResult, times( 1 ) ).getClasses();
         verifyStatic( ResolvePathsRequest.class, times( 1 ) );
         ResolvePathsRequest.ofStrings( eq( testClasspath.toClasspath().getClassPath() ) );
-        verify( req, times( 1 ) ).setMainModuleDescriptor( eq( moduleInfo.getAbsolutePath() ) );
+        verify( req, times( 1 ) ).setModuleDescriptor( eq( descriptor ) );
         verify( res, times( 1 ) ).getClasspathElements();
         verify( res, times( 1 ) ).getModulepathElements();
         verify( locationManager, times( 1 ) ).resolvePaths( eq( req ) );
@@ -347,13 +349,13 @@ public class AbstractSurefireMojoJava7PlusTest
         }
 
         @Override
-        public File getClassesDirectory()
+        public File getMainBuildPath()
         {
             return null;
         }
 
         @Override
-        public void setClassesDirectory( File classesDirectory )
+        public void setMainBuildPath( File mainBuildPath )
         {
 
         }

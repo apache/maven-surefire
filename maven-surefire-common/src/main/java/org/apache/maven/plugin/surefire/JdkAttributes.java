@@ -19,7 +19,10 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import java.io.File;
+
 import static java.util.Objects.requireNonNull;
+import static org.apache.maven.surefire.booter.SystemUtils.toJdkHomeFromJvmExec;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -27,18 +30,30 @@ import static java.util.Objects.requireNonNull;
  */
 public final class JdkAttributes
 {
-    private final String jvmExecutable;
+    private final File jvmExecutable;
+    private final File jdkHome;
     private final boolean java9AtLeast;
 
-    public JdkAttributes( String jvmExecutable, boolean java9AtLeast )
+    public JdkAttributes( File jvmExecutable, File jdkHome, boolean java9AtLeast )
     {
         this.jvmExecutable = requireNonNull( jvmExecutable, "null path to java executable" );
+        this.jdkHome = jdkHome;
         this.java9AtLeast = java9AtLeast;
     }
 
-    public String getJvmExecutable()
+    public JdkAttributes( String jvmExecutable, boolean java9AtLeast )
+    {
+        this( new File( jvmExecutable ), toJdkHomeFromJvmExec( jvmExecutable ), java9AtLeast );
+    }
+
+    public File getJvmExecutable()
     {
         return jvmExecutable;
+    }
+
+    public File getJdkHome()
+    {
+        return jdkHome;
     }
 
     public boolean isJava9AtLeast()
