@@ -196,10 +196,9 @@ public class SurefirePlugin
      * &nbsp;&lt;include&gt; entries.<br>
      * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):
      * <pre><code>
-     *
-     * </code></pre>
      * {@literal <include>}%regex[.*[Cat|Dog].*], Basic????, !Unstable*{@literal </include>}
      * {@literal <include>}%regex[.*[Cat|Dog].*], !%regex[pkg.*Slow.*.class], pkg{@literal /}**{@literal /}*Fast*.java{@literal </include>}
+     * </code></pre>
      * <br>
      * This parameter is ignored if the TestNG {@code suiteXmlFiles} parameter is specified.<br>
      * <br>
