@@ -34,9 +34,7 @@ import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_MAC_OSX;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS_10;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS_7;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS_8;
+import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.surefire.its.jiras.Surefire1295AttributeJvmCrashesToTestsIT.ForkMode.DEFAULT;
 import static org.apache.maven.surefire.its.jiras.Surefire1295AttributeJvmCrashesToTestsIT.ForkMode.ONE_FORK_NO_REUSE;
 import static org.apache.maven.surefire.its.jiras.Surefire1295AttributeJvmCrashesToTestsIT.ForkMode.ONE_FORK_REUSE;
@@ -95,7 +93,7 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
     public void test()
             throws Exception
     {
-        assumeTrue( IS_OS_LINUX || IS_OS_MAC_OSX || IS_OS_WINDOWS_7 || IS_OS_WINDOWS_8 || IS_OS_WINDOWS_10 );
+        assumeTrue( IS_OS_LINUX || IS_OS_MAC_OSX || IS_OS_WINDOWS );
 
         SurefireLauncher launcher =
                 unpack( "crash-during-test", "_" + crashStyle + "_" + forkStyle.ordinal() )
