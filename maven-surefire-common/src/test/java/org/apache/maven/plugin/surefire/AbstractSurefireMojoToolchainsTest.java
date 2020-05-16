@@ -25,14 +25,20 @@ import org.apache.maven.surefire.shared.io.FilenameUtils;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.apache.maven.toolchain.java.DefaultJavaToolChain;
+import org.codehaus.plexus.logging.Logger;
 import org.fest.assertions.MapAssert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +50,9 @@ import static java.util.Collections.singletonMap;
 import static junit.framework.TestCase.assertNull;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkHomeFromJre;
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
@@ -57,6 +66,8 @@ import static org.powermock.reflect.Whitebox.invokeMethod;
 @PowerMockIgnore( {"org.jacoco.agent.rt.*", "com.vladium.emma.rt.*"} )
 public class AbstractSurefireMojoToolchainsTest
 {
+    @Rule
+    public final ExpectedException e = ExpectedException.none();
 
     /**
      * Ensure that we use the toolchain found by getToolchainMaven33x()
@@ -220,7 +231,51 @@ public class AbstractSurefireMojoToolchainsTest
         assertThat( effectiveJvm.getJvmExecutable().getPath() ).contains( javaExecutablePath );
     }
 
+    @Test
+    public void withoutJvmAndToolchain() throws Exception
+    {
+        AbstractSurefireMojoTest.Mojo mojo = new AbstractSurefireMojoTest.Mojo();
+        Logger logger = mock( Logger.class );
+        mojo.setLogger( logger );
+        ArgumentCaptor<String> argument = ArgumentCaptor.forClass( String.class );
+        JdkAttributes effectiveJvm = invokeMethod( mojo, "getEffectiveJvm" );
 
+        assertThat( mojo.getJvm() )
+            .isNull();
+
+        assertThat( mojo.getEnvironmentVariables() )
+            .isEmpty();
+
+        assertThat( effectiveJvm )
+            .isNotNull();
+
+        assertThat( effectiveJvm.getJvmExecutable() )
+            .isNotNull();
+
+        Path javaHome = Paths.get( System.getProperty( "java.home" ) ).normalize();
+        boolean isLocalJvm = effectiveJvm.getJvmExecutable().toPath().normalize().startsWith( javaHome );
+        assertThat( isLocalJvm )
+            .isTrue();
+
+        verify( logger, times( 1 ) )
+            .debug( argument.capture() );
+
+        assertThat( argument.getValue() )
+            .startsWith( "Using JVM: " + System.getProperty( "java.home" ) );
+    }
+
+    @Test
+    public void shouldFailWithWrongJvmExecPath() throws Exception
+    {
+        AbstractSurefireMojoTest.Mojo mojo = new AbstractSurefireMojoTest.Mojo();
+        mojo.setLogger( mock( Logger.class ) );
+        mojo.setJvm( System.getProperty( "user.dir" ) );
+
+        e.expect( MojoFailureException.class );
+        e.expectMessage( startsWith( "Given path does not end with java executor" ) );
+
+        invokeMethod( mojo, "getEffectiveJvm" );
+    }
 
     /**
      * Mocks a ToolchainManager
