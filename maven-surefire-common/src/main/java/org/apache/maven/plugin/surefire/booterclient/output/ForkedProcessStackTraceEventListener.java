@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
 
 import javax.annotation.Nonnull;
 

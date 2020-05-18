@@ -31,8 +31,8 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.surefire.cli.CommandLineOption;
-import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.api.cli.CommandLineOption;
+import org.apache.maven.surefire.api.suite.RunResult;
 import org.codehaus.plexus.logging.Logger;
 
 import java.io.File;
@@ -40,7 +40,7 @@ import java.util.Collection;
 
 import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
 import static org.apache.maven.surefire.shared.utils.StringUtils.capitalizeFirstLetter;
-import static org.apache.maven.surefire.suite.RunResult.noTestsRun;
+import static org.apache.maven.surefire.api.suite.RunResult.noTestsRun;
 
 /**
  * Verify integration tests ran using Surefire.

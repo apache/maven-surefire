@@ -21,7 +21,7 @@ package org.apache.maven.surefire.junitcore;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 import org.junit.After;
 import org.junit.Test;

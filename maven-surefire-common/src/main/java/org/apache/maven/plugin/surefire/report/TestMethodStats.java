@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
 
 /**
  *

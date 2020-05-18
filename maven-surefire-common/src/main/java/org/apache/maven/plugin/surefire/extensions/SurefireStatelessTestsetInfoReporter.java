@@ -27,7 +27,7 @@ import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoReporter;
-import org.apache.maven.surefire.util.ReflectionUtils;
+import org.apache.maven.surefire.api.util.ReflectionUtils;
 
 import java.io.File;
 import java.nio.charset.Charset;

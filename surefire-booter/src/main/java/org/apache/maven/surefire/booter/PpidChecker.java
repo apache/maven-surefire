@@ -19,6 +19,8 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.api.booter.DumpErrorSingleton;
+
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +49,7 @@ import static org.apache.maven.surefire.booter.ProcessInfo.unixProcessInfo;
 import static org.apache.maven.surefire.booter.ProcessInfo.windowsProcessInfo;
 import static org.apache.maven.surefire.booter.ProcessInfo.ERR_PROCESS_INFO;
 import static org.apache.maven.surefire.booter.ProcessInfo.INVALID_PROCESS_INFO;
-import static org.apache.maven.surefire.util.internal.StringUtils.NL;
+import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 
 /**
  * Recognizes PID of Plugin process and determines lifetime.

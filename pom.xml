@@ -614,7 +614,7 @@
                 <exclude>src/test/resources/**/*</exclude>
                 <exclude>src/test/resources/**/*.css</exclude>
                 <exclude>**/*.jj</exclude>
-                <exclude>src/main/resources/META-INF/services/org.apache.maven.surefire.providerapi.SurefireProvider
+                <exclude>src/main/resources/META-INF/services/org.apache.maven.surefire.api.provider.SurefireProvider
                 </exclude>
                 <exclude>DEPENDENCIES</exclude>
                 <exclude>.m2/**</exclude>

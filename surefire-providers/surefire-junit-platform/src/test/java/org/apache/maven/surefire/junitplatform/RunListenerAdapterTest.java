@@ -46,10 +46,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.SimpleReportEntry;
-import org.apache.maven.surefire.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.SimpleReportEntry;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;

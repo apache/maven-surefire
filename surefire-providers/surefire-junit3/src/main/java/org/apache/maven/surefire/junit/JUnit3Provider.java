@@ -21,24 +21,24 @@ package org.apache.maven.surefire.junit;
 
 import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 import org.apache.maven.surefire.common.junit3.JUnit3TestChecker;
-import org.apache.maven.surefire.providerapi.AbstractProvider;
-import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.report.ConsoleOutputCapture;
-import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.SimpleReportEntry;
-import org.apache.maven.surefire.report.TestSetReportEntry;
-import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.ReflectionUtils;
-import org.apache.maven.surefire.util.RunOrderCalculator;
-import org.apache.maven.surefire.util.ScanResult;
-import org.apache.maven.surefire.util.TestsToRun;
+import org.apache.maven.surefire.api.provider.AbstractProvider;
+import org.apache.maven.surefire.api.provider.ProviderParameters;
+import org.apache.maven.surefire.api.report.ConsoleOutputCapture;
+import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.api.report.ReporterFactory;
+import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.SimpleReportEntry;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
+import org.apache.maven.surefire.api.suite.RunResult;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.util.ReflectionUtils;
+import org.apache.maven.surefire.api.util.RunOrderCalculator;
+import org.apache.maven.surefire.api.util.ScanResult;
+import org.apache.maven.surefire.api.util.TestsToRun;
 
 import java.util.Map;
 
-import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
+import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
 
 /**
  * @author Kristian Rosenvold

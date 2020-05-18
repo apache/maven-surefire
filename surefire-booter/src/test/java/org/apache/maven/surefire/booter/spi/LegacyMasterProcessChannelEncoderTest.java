@@ -19,11 +19,11 @@ package org.apache.maven.surefire.booter.spi;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.SafeThrowable;
-import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.surefire.util.internal.ObjectUtils;
-import org.apache.maven.surefire.util.internal.WritableBufferedByteChannel;
+import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.SafeThrowable;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.util.internal.ObjectUtils;
+import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -37,16 +37,16 @@ import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.copyOfRange;
-import static org.apache.maven.surefire.util.internal.Channels.newBufferedChannel;
+import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 import static org.apache.maven.surefire.shared.codec.binary.Base64.encodeBase64String;
 import static org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder.encode;
 import static org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder.encodeHeader;
 import static org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder.encodeMessage;
 import static org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder.encodeOpcode;
 import static org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder.toBase64;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_SYSPROPS;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.MAGIC_NUMBER;
-import static org.apache.maven.surefire.report.RunMode.NORMAL_RUN;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_SYSPROPS;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.MAGIC_NUMBER;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

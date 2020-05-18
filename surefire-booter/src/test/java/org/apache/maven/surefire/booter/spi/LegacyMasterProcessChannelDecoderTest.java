@@ -19,8 +19,8 @@ package org.apache.maven.surefire.booter.spi;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.Command;
-import org.apache.maven.surefire.booter.Shutdown;
+import org.apache.maven.surefire.api.booter.Command;
+import org.apache.maven.surefire.api.booter.Shutdown;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -29,15 +29,15 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static java.nio.channels.Channels.newChannel;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.BYE_ACK;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.NOOP;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.RUN_CLASS;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.SHUTDOWN;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.TEST_SET_FINISHED;
-import static org.apache.maven.surefire.booter.Shutdown.DEFAULT;
-import static org.apache.maven.surefire.booter.Shutdown.EXIT;
-import static org.apache.maven.surefire.booter.Shutdown.KILL;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.BYE_ACK;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.NOOP;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.RUN_CLASS;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.SHUTDOWN;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.TEST_SET_FINISHED;
+import static org.apache.maven.surefire.api.booter.Shutdown.DEFAULT;
+import static org.apache.maven.surefire.api.booter.Shutdown.EXIT;
+import static org.apache.maven.surefire.api.booter.Shutdown.KILL;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

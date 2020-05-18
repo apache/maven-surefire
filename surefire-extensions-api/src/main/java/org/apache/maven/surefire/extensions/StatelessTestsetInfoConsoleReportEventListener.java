@@ -20,7 +20,7 @@ package org.apache.maven.surefire.extensions;
  */
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.report.TestSetReportEntry;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 import java.util.List;
 

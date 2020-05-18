@@ -20,7 +20,7 @@ package org.apache.maven.plugin.failsafe;
  */
 
 import org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils;
-import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.api.suite.RunResult;
 import org.junit.Test;
 
 import java.io.File;

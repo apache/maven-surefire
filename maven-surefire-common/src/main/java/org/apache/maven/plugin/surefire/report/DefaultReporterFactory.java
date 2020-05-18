@@ -28,11 +28,11 @@ import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
-import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.api.report.ReporterFactory;
+import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.report.RunStatistics;
-import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.suite.RunResult;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -55,7 +55,7 @@ import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
 import static org.apache.maven.surefire.shared.utils.logging.MessageUtils.buffer;
-import static org.apache.maven.surefire.util.internal.ObjectUtils.useNonNull;
+import static org.apache.maven.surefire.api.util.internal.ObjectUtils.useNonNull;
 
 /**
  * Provides reporting modules on the plugin side.

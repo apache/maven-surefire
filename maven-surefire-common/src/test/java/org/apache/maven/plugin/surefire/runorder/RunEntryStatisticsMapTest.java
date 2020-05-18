@@ -29,15 +29,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.SimpleReportEntry;
+import org.apache.maven.surefire.api.runorder.RunEntryStatistics;
+import org.apache.maven.surefire.api.runorder.RunEntryStatisticsMap;
+import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.SimpleReportEntry;
 
 import junit.framework.TestCase;
-import org.apache.maven.surefire.util.internal.ClassMethod;
+import org.apache.maven.surefire.api.util.internal.ClassMethod;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.shared.io.IOUtils.readLines;
-import static org.apache.maven.surefire.util.internal.StringUtils.NL;
+import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.powermock.reflect.Whitebox.getInternalState;
 

@@ -19,10 +19,10 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.SafeThrowable;
+import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.report.SmartStackTraceParser;
-import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.surefire.util.internal.ClassMethod;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.util.internal.ClassMethod;
 import org.junit.runner.notification.Failure;
 
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClassMethod;
@@ -90,7 +90,7 @@ public class JUnit4StackTraceWriter
     /**
      * At the moment, returns the same as {@link #writeTraceToString()}.
      *
-     * @see org.apache.maven.surefire.report.StackTraceWriter#writeTrimmedTraceToString()
+     * @see StackTraceWriter#writeTrimmedTraceToString()
      */
     @Override
     public String writeTrimmedTraceToString()
@@ -110,7 +110,7 @@ public class JUnit4StackTraceWriter
     /**
      * Returns the exception associated with this failure.
      *
-     * @see org.apache.maven.surefire.report.StackTraceWriter#getThrowable()
+     * @see StackTraceWriter#getThrowable()
      */
     @Override
     public SafeThrowable getThrowable()

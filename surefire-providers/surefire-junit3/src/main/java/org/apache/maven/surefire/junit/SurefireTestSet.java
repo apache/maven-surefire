@@ -19,8 +19,8 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 /**
  * Describes a single test set

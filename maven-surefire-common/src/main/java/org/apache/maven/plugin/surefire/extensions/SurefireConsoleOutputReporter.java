@@ -23,7 +23,7 @@ import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
 import org.apache.maven.plugin.surefire.report.DirectConsoleOutput;
 import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
 import org.apache.maven.surefire.extensions.ConsoleOutputReporter;
-import org.apache.maven.surefire.util.ReflectionUtils;
+import org.apache.maven.surefire.api.util.ReflectionUtils;
 
 import java.io.File;
 import java.io.PrintStream;

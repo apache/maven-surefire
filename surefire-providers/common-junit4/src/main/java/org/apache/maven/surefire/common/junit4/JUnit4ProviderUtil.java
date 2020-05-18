@@ -24,13 +24,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.maven.surefire.util.internal.ClassMethod;
+import org.apache.maven.surefire.api.util.internal.ClassMethod;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.Failure;
 
-import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractClassName;
-import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractMethodName;
+import static org.apache.maven.surefire.api.util.internal.TestClassMethodNameUtils.extractClassName;
+import static org.apache.maven.surefire.api.util.internal.TestClassMethodNameUtils.extractMethodName;
 import static org.junit.runner.Description.TEST_MECHANISM;
 
 /**

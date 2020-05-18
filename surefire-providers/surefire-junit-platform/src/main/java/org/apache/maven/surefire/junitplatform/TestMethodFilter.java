@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junitplatform;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.TestListResolver;
+import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.junit.platform.engine.FilterResult;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.support.descriptor.MethodSource;

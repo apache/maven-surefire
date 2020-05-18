@@ -24,7 +24,7 @@ import org.apache.maven.plugin.surefire.report.TestSetStats;
 import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
 import org.apache.maven.surefire.extensions.StatelessReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessReporter;
-import org.apache.maven.surefire.util.ReflectionUtils;
+import org.apache.maven.surefire.api.util.ReflectionUtils;
 
 /**
  * Default implementation for extension of {@link StatelessXmlReporter} in plugin.

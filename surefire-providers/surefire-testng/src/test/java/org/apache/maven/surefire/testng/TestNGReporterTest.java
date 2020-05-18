@@ -20,9 +20,9 @@ package org.apache.maven.surefire.testng;
  */
 
 import junit.framework.TestCase;
-import org.apache.maven.surefire.report.CategorizedReportEntry;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.SimpleReportEntry;
+import org.apache.maven.surefire.api.report.CategorizedReportEntry;
+import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.mockito.ArgumentCaptor;
 import org.testng.ITestClass;
 import org.testng.ITestNGMethod;

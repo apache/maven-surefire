@@ -19,8 +19,8 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.BaseProviderFactory;
-import org.apache.maven.surefire.testset.TestRequest;
+import org.apache.maven.surefire.api.booter.BaseProviderFactory;
+import org.apache.maven.surefire.api.testset.TestRequest;
 import org.junit.Test;
 import org.junit.runner.Description;
 

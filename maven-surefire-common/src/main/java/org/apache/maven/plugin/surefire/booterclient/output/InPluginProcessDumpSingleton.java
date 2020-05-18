@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.internal.DumpFileUtils;
+import org.apache.maven.surefire.api.util.internal.DumpFileUtils;
 
 import java.io.File;
 

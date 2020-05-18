@@ -22,10 +22,9 @@ package org.apache.maven.surefire.common.junit4;
 import java.util.concurrent.CountDownLatch;
 
 import junit.framework.TestCase;
-import org.apache.maven.surefire.junit4.MockReporter;
 
 import junit.framework.Assert;
-import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
+import org.apache.maven.surefire.api.util.internal.DaemonThreadFactory;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.Request;
@@ -41,7 +40,6 @@ public class JUnit4RunListenerTest
     extends TestCase
 {
     public void testTestStarted()
-        throws Exception
     {
         RunListener jUnit4TestSetReporter = new JUnit4RunListener( new MockReporter() );
         Runner junitTestRunner = Request.classes( "abc", STest1.class, STest2.class ).getRunner();

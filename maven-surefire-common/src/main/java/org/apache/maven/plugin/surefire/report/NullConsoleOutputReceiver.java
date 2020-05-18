@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.TestSetReportEntry;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 /**
  * TestcycleConsoleOutputReceiver doing nothing rather than using null.

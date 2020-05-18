@@ -23,8 +23,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.maven.surefire.testset.TestListResolver;
-import org.apache.maven.surefire.util.DefaultScanResult;
+import org.apache.maven.surefire.api.testset.TestListResolver;
+import org.apache.maven.surefire.api.util.DefaultScanResult;
 
 /**
  * Scans directories looking for tests.

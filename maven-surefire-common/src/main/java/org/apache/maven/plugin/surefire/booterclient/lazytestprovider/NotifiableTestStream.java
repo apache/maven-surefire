@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.Shutdown;
+import org.apache.maven.surefire.api.booter.Shutdown;
 
 /**
  * Remote interface of forked JVM with command methods.

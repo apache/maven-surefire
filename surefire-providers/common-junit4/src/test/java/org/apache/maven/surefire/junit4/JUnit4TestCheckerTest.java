@@ -22,7 +22,7 @@ package org.apache.maven.surefire.junit4;
 import java.util.Collections;
 import java.util.Set;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 import junit.framework.TestCase;
 import junit.framework.TestResult;

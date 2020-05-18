@@ -28,6 +28,8 @@ import org.apache.maven.plugin.surefire.report.TestSetStats;
 import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
 
 import junit.framework.TestCase;
+import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.SimpleReportEntry;
 
 /**
  *

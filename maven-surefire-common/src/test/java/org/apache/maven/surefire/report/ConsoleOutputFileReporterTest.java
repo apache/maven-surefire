@@ -29,6 +29,8 @@ import java.util.concurrent.Executors;
 import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
 
 import junit.framework.TestCase;
+import org.apache.maven.surefire.api.report.SimpleReportEntry;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.shared.utils.io.FileUtils;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;

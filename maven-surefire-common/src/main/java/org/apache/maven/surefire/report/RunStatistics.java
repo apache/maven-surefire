@@ -19,7 +19,7 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.api.suite.RunResult;
 
 /**
  * @author Kristian Rosenvold

@@ -20,7 +20,7 @@ package org.apache.maven.plugin.failsafe.util;
  */
 
 import org.apache.maven.surefire.shared.io.IOUtils;
-import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.api.suite.RunResult;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 

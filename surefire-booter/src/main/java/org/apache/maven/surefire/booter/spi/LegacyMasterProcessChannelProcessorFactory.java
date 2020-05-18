@@ -19,14 +19,14 @@ package org.apache.maven.surefire.booter.spi;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.MasterProcessChannelDecoder;
-import org.apache.maven.surefire.booter.MasterProcessChannelEncoder;
+import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
+import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
 import org.apache.maven.surefire.spi.MasterProcessChannelProcessorFactory;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 
-import static org.apache.maven.surefire.util.internal.Channels.newBufferedChannel;
+import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 
 /**
  * Producer of encoder and decoder for process pipes.

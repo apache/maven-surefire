@@ -24,9 +24,9 @@ import org.apache.maven.plugin.surefire.booterclient.output.DeserializedStacktra
 import org.apache.maven.surefire.shared.utils.StringUtils;
 import org.apache.maven.surefire.shared.utils.xml.Xpp3Dom;
 import org.apache.maven.surefire.shared.utils.xml.Xpp3DomBuilder;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.SimpleReportEntry;
-import org.apache.maven.surefire.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.SimpleReportEntry;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
+import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
 
 /**
  *

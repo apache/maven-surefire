@@ -23,7 +23,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import org.apache.maven.surefire.util.ReflectionUtils;
+import org.apache.maven.surefire.api.util.ReflectionUtils;
 
 /**
  * Reflection facade for JUnit3 classes

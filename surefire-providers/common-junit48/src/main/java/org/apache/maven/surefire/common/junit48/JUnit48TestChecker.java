@@ -20,9 +20,9 @@ package org.apache.maven.surefire.common.junit48;
  */
 
 
-import org.apache.maven.surefire.NonAbstractClassFilter;
+import org.apache.maven.surefire.api.filter.NonAbstractClassFilter;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
-import org.apache.maven.surefire.util.ScannerFilter;
+import org.apache.maven.surefire.api.util.ScannerFilter;
 import org.junit.experimental.runners.Enclosed;
 
 

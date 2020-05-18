@@ -21,7 +21,7 @@ package org.apache.maven.surefire.testng.conf;
 
 import java.util.Map;
 
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.testng.TestNG;
 import org.testng.xml.XmlSuite;
 

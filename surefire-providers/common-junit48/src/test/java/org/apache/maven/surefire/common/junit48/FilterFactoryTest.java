@@ -21,8 +21,8 @@ package org.apache.maven.surefire.common.junit48;
 
 import org.apache.maven.shared.utils.io.MatchPatterns;
 import org.apache.maven.surefire.common.junit48.tests.pt.PT;
-import org.apache.maven.surefire.testset.ResolvedTest;
-import org.apache.maven.surefire.testset.TestListResolver;
+import org.apache.maven.surefire.api.testset.ResolvedTest;
+import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.JUnitCore;

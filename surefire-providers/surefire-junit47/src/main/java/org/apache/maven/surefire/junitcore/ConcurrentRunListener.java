@@ -20,15 +20,15 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import java.util.Map;
-import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.ConsoleStream;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.RunMode;
-import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.surefire.report.TestSetReportEntry;
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.api.report.ConsoleStream;
+import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.ReporterFactory;
+import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.RunMode;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 import static org.apache.maven.surefire.junitcore.TestMethod.getThreadTestMethod;
 

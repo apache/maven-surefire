@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 import static org.apache.maven.surefire.testng.TestNGExecutor.run;
 

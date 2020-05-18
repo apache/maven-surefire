@@ -28,11 +28,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.maven.surefire.cli.CommandLineOption;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.testset.TestListResolver;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.TestsToRun;
+import org.apache.maven.surefire.api.cli.CommandLineOption;
+import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.testset.TestListResolver;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.util.TestsToRun;
 
 import static org.apache.maven.surefire.testng.TestNGExecutor.run;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;

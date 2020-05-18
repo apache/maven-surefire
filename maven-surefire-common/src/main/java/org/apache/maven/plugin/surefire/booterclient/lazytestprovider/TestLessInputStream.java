@@ -19,8 +19,8 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.Command;
-import org.apache.maven.surefire.booter.Shutdown;
+import org.apache.maven.surefire.api.booter.Command;
+import org.apache.maven.surefire.api.booter.Shutdown;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -33,10 +33,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static org.apache.maven.surefire.booter.Command.BYE_ACK;
-import static org.apache.maven.surefire.booter.Command.NOOP;
-import static org.apache.maven.surefire.booter.Command.SKIP_SINCE_NEXT_TEST;
-import static org.apache.maven.surefire.booter.Command.toShutdown;
+import static org.apache.maven.surefire.api.booter.Command.BYE_ACK;
+import static org.apache.maven.surefire.api.booter.Command.NOOP;
+import static org.apache.maven.surefire.api.booter.Command.SKIP_SINCE_NEXT_TEST;
+import static org.apache.maven.surefire.api.booter.Command.toShutdown;
 
 /**
  * Dispatches commands without tests.

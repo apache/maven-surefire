@@ -19,11 +19,11 @@ package org.apache.maven.surefire.testprovider;
  * under the License.
  */
 
-import org.apache.maven.surefire.providerapi.AbstractProvider;
-import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.provider.AbstractProvider;
+import org.apache.maven.surefire.api.provider.ProviderParameters;
+import org.apache.maven.surefire.api.report.ReporterException;
+import org.apache.maven.surefire.api.suite.RunResult;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 /**
  * @author Kristian Rosenvold

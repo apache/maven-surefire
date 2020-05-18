@@ -20,11 +20,11 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.TestSetReportEntry;
-import org.apache.maven.surefire.report.RunMode;
+import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
+import org.apache.maven.surefire.api.report.RunMode;
 
 import java.util.ArrayList;
 import java.util.List;

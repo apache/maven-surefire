@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClassMethod;
-import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDownToZero;
+import static org.apache.maven.surefire.api.util.internal.ConcurrencyUtils.countDownToZero;
 
 /**
  * Extends {@link RunNotifier JUnit notifier},

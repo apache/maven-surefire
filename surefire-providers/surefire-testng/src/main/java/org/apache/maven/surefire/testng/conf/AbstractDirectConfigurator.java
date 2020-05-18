@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.maven.surefire.booter.ProviderParameterNames;
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.booter.ProviderParameterNames;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.testng.TestNG;
 import org.testng.xml.XmlSuite;
 

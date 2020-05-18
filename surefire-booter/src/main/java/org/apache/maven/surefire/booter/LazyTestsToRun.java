@@ -22,10 +22,12 @@ package org.apache.maven.surefire.booter;
 import java.util.Collections;
 import java.util.Iterator;
 
-import org.apache.maven.surefire.util.CloseableIterator;
-import org.apache.maven.surefire.util.TestsToRun;
+import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
+import org.apache.maven.surefire.api.provider.SurefireProvider;
+import org.apache.maven.surefire.api.util.CloseableIterator;
+import org.apache.maven.surefire.api.util.TestsToRun;
 
-import static org.apache.maven.surefire.util.ReflectionUtils.loadClass;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.loadClass;
 
 /**
  * A variant of TestsToRun that is provided with test class names
@@ -34,7 +36,7 @@ import static org.apache.maven.surefire.util.ReflectionUtils.loadClass;
  * {@link Iterator#hasNext()} or {@link Iterator#next()} until new classes are available, or no more
  * classes will be available or the internal stream is closed.
  * The iterator can be used only in one Thread and it is the thread which executes
- * {@link org.apache.maven.surefire.providerapi.SurefireProvider provider implementation}.
+ * {@link SurefireProvider provider implementation}.
  *
  * @author Andreas Gudian
  * @author Tibor Digana
@@ -93,7 +95,7 @@ final class LazyTestsToRun
     /**
      * The iterator can be used only in one Thread.
      * {@inheritDoc}
-     * @see org.apache.maven.surefire.util.TestsToRun#iterator()
+     * @see TestsToRun#iterator()
      * */
     @Override
     public Iterator<Class<?>> iterator()

@@ -19,7 +19,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.ReflectionUtils;
+import org.apache.maven.surefire.api.util.ReflectionUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -41,8 +41,8 @@ import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_FREE_BSD;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_LINUX;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_NET_BSD;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_OPEN_BSD;
-import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodChain;
-import static org.apache.maven.surefire.util.ReflectionUtils.tryLoadClass;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodChain;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.tryLoadClass;
 
 /**
  * JDK 9 support.

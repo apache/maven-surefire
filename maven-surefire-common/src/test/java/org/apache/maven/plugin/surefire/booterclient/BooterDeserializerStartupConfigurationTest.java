@@ -27,17 +27,17 @@ import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
-import org.apache.maven.surefire.booter.Shutdown;
+import org.apache.maven.surefire.api.booter.Shutdown;
 import org.apache.maven.surefire.booter.StartupConfiguration;
-import org.apache.maven.surefire.cli.CommandLineOption;
-import org.apache.maven.surefire.report.ReporterConfiguration;
+import org.apache.maven.surefire.api.cli.CommandLineOption;
+import org.apache.maven.surefire.api.report.ReporterConfiguration;
 import org.apache.maven.surefire.shared.io.FileUtils;
-import org.apache.maven.surefire.testset.DirectoryScannerParameters;
-import org.apache.maven.surefire.testset.RunOrderParameters;
-import org.apache.maven.surefire.testset.TestArtifactInfo;
-import org.apache.maven.surefire.testset.TestListResolver;
-import org.apache.maven.surefire.testset.TestRequest;
-import org.apache.maven.surefire.util.RunOrder;
+import org.apache.maven.surefire.api.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.api.testset.RunOrderParameters;
+import org.apache.maven.surefire.api.testset.TestArtifactInfo;
+import org.apache.maven.surefire.api.testset.TestListResolver;
+import org.apache.maven.surefire.api.testset.TestRequest;
+import org.apache.maven.surefire.api.util.RunOrder;
 import org.junit.After;
 import org.junit.Before;
 
@@ -50,9 +50,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.apache.maven.surefire.booter.ProcessCheckerType.ALL;
-import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
-import static org.apache.maven.surefire.cli.CommandLineOption.REACTOR_FAIL_FAST;
-import static org.apache.maven.surefire.cli.CommandLineOption.SHOW_ERRORS;
+import static org.apache.maven.surefire.api.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
+import static org.apache.maven.surefire.api.cli.CommandLineOption.REACTOR_FAIL_FAST;
+import static org.apache.maven.surefire.api.cli.CommandLineOption.SHOW_ERRORS;
 
 /**
  * Performs roundtrip testing of serialization/deserialization of The StartupConfiguration

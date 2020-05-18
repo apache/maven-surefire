@@ -19,8 +19,8 @@ package org.apache.maven.plugin.surefire.util;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.TestListResolver;
-import org.apache.maven.surefire.util.ScanResult;
+import org.apache.maven.surefire.api.testset.TestListResolver;
+import org.apache.maven.surefire.api.util.ScanResult;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;

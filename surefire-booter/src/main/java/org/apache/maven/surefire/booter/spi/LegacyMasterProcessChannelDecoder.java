@@ -19,11 +19,11 @@ package org.apache.maven.surefire.booter.spi;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.Command;
-import org.apache.maven.surefire.booter.DumpErrorSingleton;
-import org.apache.maven.surefire.booter.MasterProcessCommand;
-import org.apache.maven.surefire.booter.MasterProcessChannelDecoder;
-import org.apache.maven.surefire.util.internal.ImmutableMap;
+import org.apache.maven.surefire.api.booter.Command;
+import org.apache.maven.surefire.api.booter.DumpErrorSingleton;
+import org.apache.maven.surefire.api.booter.MasterProcessCommand;
+import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
+import org.apache.maven.surefire.api.util.internal.ImmutableMap;
 
 import javax.annotation.Nonnull;
 import java.io.EOFException;
@@ -35,13 +35,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.maven.surefire.booter.MasterProcessCommand.BYE_ACK;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.MAGIC_NUMBER;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.NOOP;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.RUN_CLASS;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.SHUTDOWN;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.TEST_SET_FINISHED;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.BYE_ACK;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.MAGIC_NUMBER;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.NOOP;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.RUN_CLASS;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.SHUTDOWN;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.TEST_SET_FINISHED;
 
 /**
  * magic number : opcode [: opcode specific data]*

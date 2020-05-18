@@ -37,7 +37,7 @@ import org.apache.maven.surefire.booter.AbstractPathConfiguration;
 import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.ProviderFactory;
-import org.apache.maven.surefire.booter.Shutdown;
+import org.apache.maven.surefire.api.booter.Shutdown;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
@@ -50,11 +50,11 @@ import org.apache.maven.surefire.extensions.util.CommandlineExecutor;
 import org.apache.maven.surefire.extensions.util.CommandlineStreams;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 import org.apache.maven.surefire.extensions.util.LineConsumerThread;
-import org.apache.maven.surefire.providerapi.SurefireProvider;
-import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.testset.TestRequest;
-import org.apache.maven.surefire.util.DefaultScanResult;
+import org.apache.maven.surefire.api.provider.SurefireProvider;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.suite.RunResult;
+import org.apache.maven.surefire.api.testset.TestRequest;
+import org.apache.maven.surefire.api.util.DefaultScanResult;
 
 import javax.annotation.Nonnull;
 import java.io.Closeable;
@@ -93,16 +93,16 @@ import static org.apache.maven.plugin.surefire.booterclient.ForkNumberBucket.dra
 import static org.apache.maven.plugin.surefire.booterclient.ForkNumberBucket.returnNumber;
 import static org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream.TestLessInputStreamBuilder;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.writePropertiesFile;
-import static org.apache.maven.surefire.cli.CommandLineOption.SHOW_ERRORS;
+import static org.apache.maven.surefire.api.cli.CommandLineOption.SHOW_ERRORS;
 import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
 import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
-import static org.apache.maven.surefire.suite.RunResult.SUCCESS;
-import static org.apache.maven.surefire.suite.RunResult.failure;
-import static org.apache.maven.surefire.suite.RunResult.timeout;
-import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDownToZero;
-import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThread;
-import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
-import static org.apache.maven.surefire.util.internal.StringUtils.NL;
+import static org.apache.maven.surefire.api.suite.RunResult.SUCCESS;
+import static org.apache.maven.surefire.api.suite.RunResult.failure;
+import static org.apache.maven.surefire.api.suite.RunResult.timeout;
+import static org.apache.maven.surefire.api.util.internal.ConcurrencyUtils.countDownToZero;
+import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThread;
+import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
+import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 
 /**
  * Starts the fork or runs in-process.

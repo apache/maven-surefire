@@ -23,8 +23,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 /**
  * JUnit3 test set

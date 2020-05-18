@@ -21,7 +21,7 @@ package org.apache.maven.plugin.surefire;
 
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojoTest.Mojo;
-import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.api.suite.RunResult;
 import org.junit.Test;
 
 import java.io.File;

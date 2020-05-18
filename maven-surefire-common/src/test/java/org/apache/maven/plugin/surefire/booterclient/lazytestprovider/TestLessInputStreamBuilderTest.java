@@ -19,10 +19,10 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.Command;
-import org.apache.maven.surefire.booter.MasterProcessCommand;
+import org.apache.maven.surefire.api.booter.Command;
+import org.apache.maven.surefire.api.booter.MasterProcessCommand;
 import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelDecoder;
-import org.apache.maven.surefire.booter.MasterProcessChannelDecoder;
+import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -34,10 +34,10 @@ import java.util.NoSuchElementException;
 
 import static java.nio.channels.Channels.newChannel;
 import static org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream.TestLessInputStreamBuilder;
-import static org.apache.maven.surefire.booter.Command.SKIP_SINCE_NEXT_TEST;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.SHUTDOWN;
-import static org.apache.maven.surefire.booter.Shutdown.EXIT;
-import static org.apache.maven.surefire.booter.Shutdown.KILL;
+import static org.apache.maven.surefire.api.booter.Command.SKIP_SINCE_NEXT_TEST;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.SHUTDOWN;
+import static org.apache.maven.surefire.api.booter.Shutdown.EXIT;
+import static org.apache.maven.surefire.api.booter.Shutdown.KILL;
 import static org.apache.maven.plugin.surefire.extensions.StreamFeeder.encode;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;

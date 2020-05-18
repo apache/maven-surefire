@@ -20,7 +20,7 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import org.apache.maven.surefire.shared.utils.logging.MessageBuilder;
-import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.api.report.ReportEntry;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,7 +29,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static org.apache.maven.surefire.shared.utils.logging.MessageUtils.buffer;
-import static org.apache.maven.surefire.report.CategorizedReportEntry.GROUP_PREFIX;
+import static org.apache.maven.surefire.api.report.CategorizedReportEntry.GROUP_PREFIX;
 
 /**
  * Maintains per-thread test result state. Not thread safe.

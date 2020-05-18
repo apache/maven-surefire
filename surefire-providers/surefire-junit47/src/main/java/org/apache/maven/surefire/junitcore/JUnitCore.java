@@ -20,7 +20,7 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import org.apache.maven.surefire.common.junit4.Notifier;
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.junit.runner.Result;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunListener;

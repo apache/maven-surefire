@@ -19,7 +19,7 @@ package org.apache.maven.surefire.testng.conf;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 /**
  * TestNG 5.13 configurator. Changed: "reporterslist" need String instead of List&lt;ReporterConfig&gt;.

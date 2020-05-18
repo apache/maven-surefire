@@ -20,16 +20,23 @@ package org.apache.maven.surefire.booter;
  */
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.api.booter.BaseProviderFactory;
+import org.apache.maven.surefire.api.booter.Command;
+import org.apache.maven.surefire.api.booter.DumpErrorSingleton;
+import org.apache.maven.surefire.api.booter.ForkingReporterFactory;
+import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
+import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
+import org.apache.maven.surefire.api.booter.Shutdown;
 import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
-import org.apache.maven.surefire.providerapi.CommandListener;
-import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.providerapi.SurefireProvider;
-import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
-import org.apache.maven.surefire.report.StackTraceWriter;
+import org.apache.maven.surefire.api.provider.CommandListener;
+import org.apache.maven.surefire.api.provider.ProviderParameters;
+import org.apache.maven.surefire.api.provider.SurefireProvider;
+import org.apache.maven.surefire.api.report.LegacyPojoStackTraceWriter;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils;
 import org.apache.maven.surefire.spi.MasterProcessChannelProcessorFactory;
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -58,9 +65,9 @@ import static org.apache.maven.surefire.booter.ProcessCheckerType.ALL;
 import static org.apache.maven.surefire.booter.ProcessCheckerType.NATIVE;
 import static org.apache.maven.surefire.booter.ProcessCheckerType.PING;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.setSystemProperties;
-import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
-import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
-import static org.apache.maven.surefire.util.internal.StringUtils.NL;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.instantiateOneArg;
+import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
+import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 
 /**
  * The part of the booter that is unique to a forked vm.

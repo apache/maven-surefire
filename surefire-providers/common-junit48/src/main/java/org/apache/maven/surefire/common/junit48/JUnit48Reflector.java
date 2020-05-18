@@ -19,7 +19,7 @@ package org.apache.maven.surefire.common.junit48;
  * under the License.
  */
 
-import static org.apache.maven.surefire.util.ReflectionUtils.tryLoadClass;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.tryLoadClass;
 
 /**
  * @author Kristian Rosenvold

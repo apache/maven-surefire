@@ -20,7 +20,7 @@ package org.apache.maven.surefire.common.junit4;
  */
 
 import junit.framework.TestCase;
-import org.apache.maven.surefire.util.internal.ClassMethod;
+import org.apache.maven.surefire.api.util.internal.ClassMethod;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 

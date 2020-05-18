@@ -24,10 +24,10 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
-import org.apache.maven.surefire.cli.CommandLineOption;
-import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.internal.DumpFileUtils;
+import org.apache.maven.surefire.api.cli.CommandLineOption;
+import org.apache.maven.surefire.api.suite.RunResult;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.util.internal.DumpFileUtils;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -39,13 +39,13 @@ import java.util.List;
 
 import static java.util.Collections.unmodifiableList;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
-import static org.apache.maven.surefire.booter.DumpErrorSingleton.DUMPSTREAM_FILE_EXT;
-import static org.apache.maven.surefire.booter.DumpErrorSingleton.DUMP_FILE_EXT;
-import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
-import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_ERROR;
-import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_INFO;
-import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_WARN;
-import static org.apache.maven.surefire.cli.CommandLineOption.SHOW_ERRORS;
+import static org.apache.maven.surefire.api.booter.DumpErrorSingleton.DUMPSTREAM_FILE_EXT;
+import static org.apache.maven.surefire.api.booter.DumpErrorSingleton.DUMP_FILE_EXT;
+import static org.apache.maven.surefire.api.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
+import static org.apache.maven.surefire.api.cli.CommandLineOption.LOGGING_LEVEL_ERROR;
+import static org.apache.maven.surefire.api.cli.CommandLineOption.LOGGING_LEVEL_INFO;
+import static org.apache.maven.surefire.api.cli.CommandLineOption.LOGGING_LEVEL_WARN;
+import static org.apache.maven.surefire.api.cli.CommandLineOption.SHOW_ERRORS;
 
 /**
  * Helper class for surefire plugins

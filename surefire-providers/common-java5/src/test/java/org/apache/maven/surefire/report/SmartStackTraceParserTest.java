@@ -27,7 +27,7 @@ import java.util.concurrent.FutureTask;
 import junit.framework.AssertionFailedError;
 import junit.framework.ComparisonFailure;
 import junit.framework.TestCase;
-import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
+import org.apache.maven.surefire.api.util.internal.DaemonThreadFactory;
 
 import static org.apache.maven.surefire.report.SmartStackTraceParser.findTopmostWithClass;
 import static org.apache.maven.surefire.report.SmartStackTraceParser.focusInsideClass;

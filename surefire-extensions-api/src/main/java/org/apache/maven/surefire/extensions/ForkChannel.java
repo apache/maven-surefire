@@ -19,7 +19,7 @@ package org.apache.maven.surefire.extensions;
  * under the License.
  */
 
-import org.apache.maven.surefire.eventapi.Event;
+import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 
 import javax.annotation.Nonnull;

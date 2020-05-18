@@ -21,7 +21,7 @@ package org.apache.maven.surefire.testng.utils;
 
 import java.util.List;
 
-import org.apache.maven.surefire.testset.TestListResolver;
+import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.testng.IMethodSelector;
 import org.testng.IMethodSelectorContext;
 import org.testng.ITestNGMethod;

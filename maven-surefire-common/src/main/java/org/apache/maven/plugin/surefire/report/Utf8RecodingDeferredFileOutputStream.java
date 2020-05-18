@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.maven.surefire.util.internal.StringUtils.NL;
+import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 
 /**
  * A deferred file output stream decorator that recodes the bytes written into the stream from the VM default encoding

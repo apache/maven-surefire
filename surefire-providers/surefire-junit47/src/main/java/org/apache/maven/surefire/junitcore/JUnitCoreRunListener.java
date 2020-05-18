@@ -21,15 +21,15 @@ package org.apache.maven.surefire.junitcore;
 
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4StackTraceWriter;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
 import java.util.Map;
 
-import static org.apache.maven.surefire.util.internal.TestClassMethodNameUtils.extractClassName;
+import static org.apache.maven.surefire.api.util.internal.TestClassMethodNameUtils.extractClassName;
 
 /**
  * Noteworthy things about JUnit4 listening:

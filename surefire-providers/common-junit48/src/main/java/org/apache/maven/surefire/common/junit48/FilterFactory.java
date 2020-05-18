@@ -19,18 +19,19 @@ package org.apache.maven.surefire.common.junit48;
  * under the License.
  */
 
+import org.apache.maven.surefire.api.booter.ProviderParameterNames;
 import org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil;
 import org.apache.maven.surefire.group.match.GroupMatcher;
 import org.apache.maven.surefire.group.parse.GroupMatcherParser;
 import org.apache.maven.surefire.group.parse.ParseException;
-import org.apache.maven.surefire.testset.TestListResolver;
+import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
 
 import java.util.Map;
 
-import static org.apache.maven.surefire.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
-import static org.apache.maven.surefire.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
 
 /**
@@ -47,8 +48,8 @@ public class FilterFactory
 
     /**
      * @return {@code true} if non-blank
-     * {@link org.apache.maven.surefire.booter.ProviderParameterNames#TESTNG_GROUPS_PROP} and/or
-     * {@link org.apache.maven.surefire.booter.ProviderParameterNames#TESTNG_EXCLUDEDGROUPS_PROP} exists.
+     * {@link ProviderParameterNames#TESTNG_GROUPS_PROP} and/or
+     * {@link ProviderParameterNames#TESTNG_EXCLUDEDGROUPS_PROP} exists.
      */
     public boolean canCreateGroupFilter( Map<String, String> providerProperties )
     {
@@ -59,8 +60,8 @@ public class FilterFactory
 
     /**
      * Creates filter using he key
-     * {@link org.apache.maven.surefire.booter.ProviderParameterNames#TESTNG_GROUPS_PROP} and/or
-     * {@link org.apache.maven.surefire.booter.ProviderParameterNames#TESTNG_EXCLUDEDGROUPS_PROP}.
+     * {@link ProviderParameterNames#TESTNG_GROUPS_PROP} and/or
+     * {@link ProviderParameterNames#TESTNG_EXCLUDEDGROUPS_PROP}.
      */
     public Filter createGroupFilter( Map<String, String> providerProperties )
     {

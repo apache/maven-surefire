@@ -19,8 +19,8 @@ package org.apache.maven.surefire.booter.spi;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.MasterProcessChannelDecoder;
-import org.apache.maven.surefire.booter.MasterProcessChannelEncoder;
+import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
+import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
 import org.apache.maven.surefire.spi.MasterProcessChannelProcessorFactory;
 
 import java.io.IOException;
@@ -37,10 +37,10 @@ import static java.net.StandardSocketOptions.SO_REUSEADDR;
 import static java.net.StandardSocketOptions.TCP_NODELAY;
 import static java.nio.channels.AsynchronousChannelGroup.withFixedThreadPool;
 import static java.nio.channels.AsynchronousSocketChannel.open;
-import static org.apache.maven.surefire.util.internal.Channels.newBufferedChannel;
-import static org.apache.maven.surefire.util.internal.Channels.newInputStream;
-import static org.apache.maven.surefire.util.internal.Channels.newOutputStream;
-import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
+import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
+import static org.apache.maven.surefire.api.util.internal.Channels.newInputStream;
+import static org.apache.maven.surefire.api.util.internal.Channels.newOutputStream;
+import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
 
 /**
  * Producer of TCP/IP encoder and decoder.

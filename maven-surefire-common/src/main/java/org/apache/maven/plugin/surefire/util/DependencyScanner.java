@@ -22,9 +22,9 @@ package org.apache.maven.plugin.surefire.util;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
-import org.apache.maven.surefire.testset.TestFilter;
-import org.apache.maven.surefire.testset.TestListResolver;
-import org.apache.maven.surefire.util.DefaultScanResult;
+import org.apache.maven.surefire.api.testset.TestFilter;
+import org.apache.maven.surefire.api.testset.TestListResolver;
+import org.apache.maven.surefire.api.util.DefaultScanResult;
 
 import java.io.File;
 import java.io.IOException;

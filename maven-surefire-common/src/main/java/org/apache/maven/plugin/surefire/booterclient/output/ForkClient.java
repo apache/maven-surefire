@@ -22,15 +22,15 @@ package org.apache.maven.plugin.surefire.booterclient.output;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
-import org.apache.maven.surefire.eventapi.Event;
+import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.extensions.EventHandler;
-import org.apache.maven.surefire.booter.MasterProcessChannelEncoder;
-import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.RunMode;
-import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.surefire.report.TestSetReportEntry;
+import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
+import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.RunMode;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -44,8 +44,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.unmodifiableMap;
-import static org.apache.maven.surefire.booter.Shutdown.KILL;
-import static org.apache.maven.surefire.report.CategorizedReportEntry.reportEntry;
+import static org.apache.maven.surefire.api.booter.Shutdown.KILL;
+import static org.apache.maven.surefire.api.report.CategorizedReportEntry.reportEntry;
 
 // todo move to the same package with ForkStarter
 
