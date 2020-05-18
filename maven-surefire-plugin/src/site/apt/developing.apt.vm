@@ -36,7 +36,7 @@ Developer Center
   the complete module and build from there:
 
 +---+
-  git clone https://git-wip-us.apache.org/repos/asf/maven-surefire.git
+  git clone https://gitbox.apache.org/repos/asf/maven-surefire.git
 +---+
 
 * Making Test Cases for Demonstrating Problems
