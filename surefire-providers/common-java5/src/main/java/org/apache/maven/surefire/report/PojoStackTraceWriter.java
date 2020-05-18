@@ -20,7 +20,9 @@ package org.apache.maven.surefire.report;
  */
 
 
-import org.apache.maven.surefire.util.internal.StringUtils;
+import org.apache.maven.surefire.api.report.SafeThrowable;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.util.internal.StringUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -32,7 +34,7 @@ import java.util.Objects;
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  */
 public class PojoStackTraceWriter
-    implements StackTraceWriter
+        implements StackTraceWriter
 {
     private final Throwable t;
 

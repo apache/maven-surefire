@@ -22,9 +22,10 @@ package org.apache.maven.plugin.surefire.runorder;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.api.runorder.RunEntryStatisticsMap;
+import org.apache.maven.surefire.api.report.ReportEntry;
 
-import static org.apache.maven.plugin.surefire.runorder.RunEntryStatisticsMap.fromFile;
+import static org.apache.maven.surefire.api.runorder.RunEntryStatisticsMap.fromFile;
 
 /**
  * @author Kristian Rosenvold

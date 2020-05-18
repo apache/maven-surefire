@@ -19,7 +19,7 @@ package org.apache.maven.surefire.extensions;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.TestSetReportEntry;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 

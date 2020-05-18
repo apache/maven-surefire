@@ -23,8 +23,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.maven.surefire.junit4.MockReporter;
-
 import junit.framework.TestCase;
 import org.junit.Assume;
 import org.junit.Test;

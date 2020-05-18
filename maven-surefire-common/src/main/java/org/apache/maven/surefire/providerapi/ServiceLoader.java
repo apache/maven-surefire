@@ -32,7 +32,7 @@ import java.util.Set;
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isJavaIdentifierStart;
 import static java.util.Collections.emptySet;
-import static org.apache.maven.surefire.util.ReflectionUtils.getConstructor;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.getConstructor;
 
 /**
  * SPI loader for Surefire/Failsafe should use {@link Thread#getContextClassLoader() current ClassLoader}.

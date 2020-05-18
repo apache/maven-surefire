@@ -24,18 +24,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
-import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.testset.DirectoryScannerParameters;
-import org.apache.maven.surefire.testset.RunOrderParameters;
-import org.apache.maven.surefire.testset.TestArtifactInfo;
-import org.apache.maven.surefire.testset.TestListResolver;
-import org.apache.maven.surefire.testset.TestRequest;
+
+import org.apache.maven.surefire.api.booter.Shutdown;
+import org.apache.maven.surefire.api.report.ReporterConfiguration;
+import org.apache.maven.surefire.api.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.api.testset.RunOrderParameters;
+import org.apache.maven.surefire.api.testset.TestArtifactInfo;
+import org.apache.maven.surefire.api.testset.TestListResolver;
+import org.apache.maven.surefire.api.testset.TestRequest;
 
 // CHECKSTYLE_OFF: imports
 import javax.annotation.Nonnull;
 
 import static org.apache.maven.surefire.booter.BooterConstants.*;
-import static org.apache.maven.surefire.cli.CommandLineOption.*;
+import static org.apache.maven.surefire.api.cli.CommandLineOption.*;
 
 /**
  * Knows how to serialize and deserialize the booter configuration.

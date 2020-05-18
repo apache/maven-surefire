@@ -24,8 +24,8 @@ import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessIn
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream.TestLessInputStreamBuilder;
 import org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.eventapi.ControlByeEvent;
-import org.apache.maven.surefire.eventapi.Event;
+import org.apache.maven.surefire.api.event.ControlByeEvent;
+import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 import org.junit.Test;
 

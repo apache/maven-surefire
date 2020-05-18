@@ -20,7 +20,7 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
-import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.api.report.ReportEntry;
 
 /**
  * StatisticsReporter doing nothing rather than using null.

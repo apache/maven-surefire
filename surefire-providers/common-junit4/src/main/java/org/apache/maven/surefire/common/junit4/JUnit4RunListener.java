@@ -19,12 +19,12 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.SimpleReportEntry;
-import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.internal.ClassMethod;
+import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.SimpleReportEntry;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.util.internal.ClassMethod;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
@@ -32,9 +32,9 @@ import org.junit.runner.notification.Failure;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.isFailureInsideJUnitItself;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClassMethod;
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.getAnnotatedIgnoreValue;
-import static org.apache.maven.surefire.report.SimpleReportEntry.assumption;
-import static org.apache.maven.surefire.report.SimpleReportEntry.ignored;
-import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
+import static org.apache.maven.surefire.api.report.SimpleReportEntry.assumption;
+import static org.apache.maven.surefire.api.report.SimpleReportEntry.ignored;
+import static org.apache.maven.surefire.api.report.SimpleReportEntry.withException;
 
 /**
  * RunListener for JUnit4, delegates to our own RunListener

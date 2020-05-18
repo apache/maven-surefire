@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junitplatform;
  * under the License.
  */
 
-import static org.apache.maven.surefire.testset.TestListResolver.toClassFileName;
+import static org.apache.maven.surefire.api.testset.TestListResolver.toClassFileName;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
 
-import org.apache.maven.surefire.testset.TestListResolver;
+import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.junit.Test;
 import org.junit.jupiter.engine.descriptor.ClassTestDescriptor;
 import org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor;

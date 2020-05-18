@@ -20,7 +20,7 @@ package org.apache.maven.plugin.surefire.extensions;
  */
 
 import org.apache.maven.plugin.surefire.booterclient.output.NativeStdOutStreamConsumer;
-import org.apache.maven.surefire.eventapi.Event;
+import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.extensions.CloseableDaemonThread;
 import org.apache.maven.surefire.extensions.CommandReader;
 import org.apache.maven.surefire.extensions.EventHandler;
@@ -49,11 +49,11 @@ import static java.net.StandardSocketOptions.SO_REUSEADDR;
 import static java.net.StandardSocketOptions.TCP_NODELAY;
 import static java.nio.channels.AsynchronousChannelGroup.withThreadPool;
 import static java.nio.channels.AsynchronousServerSocketChannel.open;
-import static org.apache.maven.surefire.util.internal.Channels.newBufferedChannel;
-import static org.apache.maven.surefire.util.internal.Channels.newChannel;
-import static org.apache.maven.surefire.util.internal.Channels.newInputStream;
-import static org.apache.maven.surefire.util.internal.Channels.newOutputStream;
-import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
+import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
+import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
+import static org.apache.maven.surefire.api.util.internal.Channels.newInputStream;
+import static org.apache.maven.surefire.api.util.internal.Channels.newOutputStream;
+import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
 
 /**
  * The TCP/IP server accepting only one client connection. The forked JVM connects to the server using the

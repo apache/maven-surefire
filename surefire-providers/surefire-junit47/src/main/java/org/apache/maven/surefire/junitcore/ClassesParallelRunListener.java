@@ -21,9 +21,9 @@ package org.apache.maven.surefire.junitcore;
 
 import java.util.Map;
 
-import org.apache.maven.surefire.report.ConsoleStream;
-import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.report.ConsoleStream;
+import org.apache.maven.surefire.api.report.ReporterFactory;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.junit.runner.notification.RunListener.ThreadSafe;
 
 /**

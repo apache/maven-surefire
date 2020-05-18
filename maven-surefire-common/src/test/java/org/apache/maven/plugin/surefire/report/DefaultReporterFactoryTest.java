@@ -35,9 +35,9 @@ import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoR
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.shared.utils.logging.MessageUtils;
 import org.apache.maven.surefire.report.RunStatistics;
-import org.apache.maven.surefire.report.SafeThrowable;
-import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.api.report.SafeThrowable;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.suite.RunResult;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;

@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;

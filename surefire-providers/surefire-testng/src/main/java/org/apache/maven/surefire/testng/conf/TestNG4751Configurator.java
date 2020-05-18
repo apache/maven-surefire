@@ -19,7 +19,7 @@ package org.apache.maven.surefire.testng.conf;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.ProviderParameterNames;
+import org.apache.maven.surefire.api.booter.ProviderParameterNames;
 
 /**
  * TestNG 4.7 and 5.1 configurator.

@@ -25,15 +25,15 @@ import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoR
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLoggerDecorator;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
-import org.apache.maven.surefire.util.SurefireReflectionException;
+import org.apache.maven.surefire.api.util.SurefireReflectionException;
 
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.lang.reflect.Constructor;
 
-import static org.apache.maven.surefire.util.ReflectionUtils.getConstructor;
-import static org.apache.maven.surefire.util.ReflectionUtils.instantiateObject;
-import static org.apache.maven.surefire.util.ReflectionUtils.newInstance;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.getConstructor;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.instantiateObject;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.newInstance;
 
 /**
  * @author Kristian Rosenvold

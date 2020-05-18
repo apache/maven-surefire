@@ -20,7 +20,7 @@ package org.apache.maven.surefire.testng;
  */
 
 
-import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.api.report.RunListener;
 
 import org.testng.internal.IResultListener;
 

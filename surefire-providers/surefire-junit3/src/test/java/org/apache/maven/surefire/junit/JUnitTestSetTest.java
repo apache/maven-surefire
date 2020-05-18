@@ -23,10 +23,10 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.RunMode;
-import org.apache.maven.surefire.report.TestSetReportEntry;
+import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.RunMode;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 import java.util.ArrayList;
 import java.util.List;

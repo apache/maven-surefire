@@ -19,39 +19,39 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.ForkedProcessEventType;
-import org.apache.maven.surefire.eventapi.AbstractConsoleEvent;
-import org.apache.maven.surefire.eventapi.AbstractStandardStreamEvent;
-import org.apache.maven.surefire.eventapi.AbstractTestControlEvent;
-import org.apache.maven.surefire.eventapi.ConsoleErrorEvent;
-import org.apache.maven.surefire.eventapi.Event;
-import org.apache.maven.surefire.eventapi.JvmExitErrorEvent;
-import org.apache.maven.surefire.eventapi.SystemPropertyEvent;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.RunMode;
+import org.apache.maven.surefire.api.booter.ForkedProcessEventType;
+import org.apache.maven.surefire.api.event.AbstractConsoleEvent;
+import org.apache.maven.surefire.api.event.AbstractStandardStreamEvent;
+import org.apache.maven.surefire.api.event.AbstractTestControlEvent;
+import org.apache.maven.surefire.api.event.ConsoleErrorEvent;
+import org.apache.maven.surefire.api.event.Event;
+import org.apache.maven.surefire.api.event.JvmExitErrorEvent;
+import org.apache.maven.surefire.api.event.SystemPropertyEvent;
+import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.RunMode;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static java.util.Objects.requireNonNull;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_BYE;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_CONSOLE_DEBUG;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_CONSOLE_INFO;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_CONSOLE_WARNING;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_NEXT_TEST;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_STDERR;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_STDERR_NEW_LINE;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_STDOUT;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_STDOUT_NEW_LINE;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_STOP_ON_NEXT_TEST;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_TESTSET_COMPLETED;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_TESTSET_STARTING;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_TEST_ASSUMPTIONFAILURE;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_TEST_ERROR;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_TEST_FAILED;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_TEST_SKIPPED;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_TEST_STARTING;
-import static org.apache.maven.surefire.booter.ForkedProcessEventType.BOOTERCODE_TEST_SUCCEEDED;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_BYE;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_CONSOLE_DEBUG;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_CONSOLE_INFO;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_CONSOLE_WARNING;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_NEXT_TEST;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_STDERR;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_STDERR_NEW_LINE;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_STDOUT;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_STDOUT_NEW_LINE;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_STOP_ON_NEXT_TEST;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TESTSET_COMPLETED;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TESTSET_STARTING;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TEST_ASSUMPTIONFAILURE;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TEST_ERROR;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TEST_FAILED;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TEST_SKIPPED;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TEST_STARTING;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TEST_SUCCEEDED;
 
 /**
  * magic number : run mode : opcode [: opcode specific data]*

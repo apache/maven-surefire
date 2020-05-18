@@ -19,7 +19,7 @@ package org.apache.maven.surefire.testng.conf;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 /**
  * TestNG 5.14.1 configurator. Changed: "listener" use List instead of String.

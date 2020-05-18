@@ -27,7 +27,7 @@ import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
-import org.apache.maven.surefire.util.internal.ImmutableMap;
+import org.apache.maven.surefire.api.util.internal.ImmutableMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

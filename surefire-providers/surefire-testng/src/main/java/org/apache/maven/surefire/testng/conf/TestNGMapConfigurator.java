@@ -24,13 +24,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.testng.TestNG;
 import org.testng.xml.XmlSuite;
 
 import static java.lang.Integer.parseInt;
-import static org.apache.maven.surefire.booter.ProviderParameterNames.PARALLEL_PROP;
-import static org.apache.maven.surefire.booter.ProviderParameterNames.THREADCOUNT_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.PARALLEL_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.THREADCOUNT_PROP;
 import static org.apache.maven.surefire.testng.conf.AbstractDirectConfigurator.loadListenerClasses;
 
 /**

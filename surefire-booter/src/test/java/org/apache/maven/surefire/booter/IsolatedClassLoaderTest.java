@@ -20,7 +20,7 @@ package org.apache.maven.surefire.booter;
  */
 
 import org.apache.maven.shared.utils.io.FileUtils;
-import org.apache.maven.surefire.providerapi.AbstractProvider;
+import org.apache.maven.surefire.api.provider.AbstractProvider;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -20,11 +20,11 @@ package org.apache.maven.plugin.surefire.extensions;
  */
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.booter.Command;
-import org.apache.maven.surefire.booter.MasterProcessCommand;
+import org.apache.maven.surefire.api.booter.Command;
+import org.apache.maven.surefire.api.booter.MasterProcessCommand;
 import org.apache.maven.surefire.extensions.CloseableDaemonThread;
 import org.apache.maven.surefire.extensions.CommandReader;
-import org.apache.maven.surefire.util.internal.ImmutableMap;
+import org.apache.maven.surefire.api.util.internal.ImmutableMap;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -36,13 +36,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.BYE_ACK;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.MAGIC_NUMBER;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.NOOP;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.RUN_CLASS;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.SHUTDOWN;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.TEST_SET_FINISHED;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.BYE_ACK;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.MAGIC_NUMBER;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.NOOP;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.RUN_CLASS;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.SHUTDOWN;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.TEST_SET_FINISHED;
 
 /**
  * Commands which are sent from plugin to the forked jvm.

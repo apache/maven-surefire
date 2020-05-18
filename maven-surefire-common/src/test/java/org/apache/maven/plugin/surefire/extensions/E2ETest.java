@@ -20,13 +20,13 @@ package org.apache.maven.plugin.surefire.extensions;
  */
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.booter.MasterProcessChannelEncoder;
+import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
 import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
-import org.apache.maven.surefire.eventapi.Event;
+import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.ForkNodeArguments;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
-import org.apache.maven.surefire.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;

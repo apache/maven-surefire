@@ -26,7 +26,7 @@ import java.util.Objects;
 import java.util.Properties;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
-import static org.apache.maven.surefire.util.ReflectionUtils.loadClass;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.loadClass;
 
 /**
  * @author Kristian Rosenvold

@@ -21,7 +21,7 @@ package org.apache.maven.surefire.junitplatform;
 
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
-import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
+import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
 import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
 
 import java.util.Map;
@@ -32,9 +32,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.SimpleReportEntry;
-import org.apache.maven.surefire.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.SimpleReportEntry;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.ClassSource;

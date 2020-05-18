@@ -19,27 +19,27 @@ package org.apache.maven.surefire.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.Command;
-import org.apache.maven.surefire.providerapi.CommandChainReader;
-import org.apache.maven.surefire.providerapi.CommandListener;
+import org.apache.maven.surefire.api.booter.Command;
+import org.apache.maven.surefire.api.provider.CommandChainReader;
+import org.apache.maven.surefire.api.provider.CommandListener;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.common.junit4.JUnitTestFailureListener;
 import org.apache.maven.surefire.common.junit4.Notifier;
-import org.apache.maven.surefire.providerapi.AbstractProvider;
-import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.api.provider.AbstractProvider;
+import org.apache.maven.surefire.api.provider.ProviderParameters;
+import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
-import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.SimpleReportEntry;
-import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.testset.TestListResolver;
-import org.apache.maven.surefire.testset.TestRequest;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.RunOrderCalculator;
-import org.apache.maven.surefire.util.ScanResult;
-import org.apache.maven.surefire.util.TestsToRun;
+import org.apache.maven.surefire.api.report.ReporterFactory;
+import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.SimpleReportEntry;
+import org.apache.maven.surefire.api.suite.RunResult;
+import org.apache.maven.surefire.api.testset.TestListResolver;
+import org.apache.maven.surefire.api.testset.TestRequest;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.util.RunOrderCalculator;
+import org.apache.maven.surefire.api.util.ScanResult;
+import org.apache.maven.surefire.api.util.TestsToRun;
 import org.junit.runner.Description;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
@@ -60,11 +60,11 @@ import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.createIgno
 import static org.apache.maven.surefire.common.junit4.JUnit4RunListener.rethrowAnyTestMechanismFailures;
 import static org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory.createCustomListeners;
 import static org.apache.maven.surefire.common.junit4.Notifier.pureNotifier;
-import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture;
-import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
-import static org.apache.maven.surefire.testset.TestListResolver.optionallyWildcardFilter;
-import static org.apache.maven.surefire.util.TestsToRun.fromClass;
-import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
+import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
+import static org.apache.maven.surefire.api.report.SimpleReportEntry.withException;
+import static org.apache.maven.surefire.api.testset.TestListResolver.optionallyWildcardFilter;
+import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
+import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
 import static org.junit.runner.Request.aClass;
 
 /**

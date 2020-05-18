@@ -21,10 +21,12 @@ package org.apache.maven.surefire.booter;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
+import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
+import org.apache.maven.surefire.api.booter.Shutdown;
 import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelDecoder;
 import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.internal.WritableBufferedByteChannel;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,8 +45,8 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.maven.surefire.util.internal.Channels.newBufferedChannel;
-import static org.apache.maven.surefire.util.internal.Channels.newChannel;
+import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
+import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;

@@ -25,7 +25,7 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.shared.utils.logging.MessageBuilder;
 import org.apache.maven.plugin.surefire.log.api.Level;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
-import org.apache.maven.surefire.report.TestSetReportEntry;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 import static org.apache.maven.plugin.surefire.log.api.Level.resolveLevel;
 import static org.apache.maven.plugin.surefire.report.TestSetStats.concatenateWithTestGroup;

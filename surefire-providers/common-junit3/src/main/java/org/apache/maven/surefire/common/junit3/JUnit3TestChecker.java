@@ -20,13 +20,13 @@ package org.apache.maven.surefire.common.junit3;
  */
 
 import java.lang.reflect.Method;
-import org.apache.maven.surefire.NonAbstractClassFilter;
-import org.apache.maven.surefire.util.ScannerFilter;
+import org.apache.maven.surefire.api.filter.NonAbstractClassFilter;
+import org.apache.maven.surefire.api.util.ScannerFilter;
 
 import static java.lang.reflect.Modifier.isPublic;
 import static java.lang.reflect.Modifier.isStatic;
-import static org.apache.maven.surefire.util.ReflectionUtils.tryGetMethod;
-import static org.apache.maven.surefire.util.ReflectionUtils.tryLoadClass;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.tryGetMethod;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.tryLoadClass;
 
 /**
  * Missing tests ? This class is basically a subset of the JUnit4TestChecker, which is tested

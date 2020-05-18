@@ -19,6 +19,8 @@ package org.apache.maven.surefire.testng.utils;
  * under the License.
  */
 
+import org.apache.maven.surefire.api.report.RunListener;
+
 /**
  * Covers configuration parameter {@code skipAfterFailureCount}.
  *
@@ -28,7 +30,7 @@ package org.apache.maven.surefire.testng.utils;
 public interface Stoppable
 {
     /**
-     * Delegates this call to {@link org.apache.maven.surefire.report.RunListener#testExecutionSkippedByUser()}.
+     * Delegates this call to {@link RunListener#testExecutionSkippedByUser()}.
      */
     void fireStopEvent();
 }

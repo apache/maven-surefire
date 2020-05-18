@@ -20,7 +20,7 @@ package org.apache.maven.surefire.testng.conf;
  */
 
 import java.util.Map;
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 /**
  * TestNG 5.14.3 configurator. Changed: "reporterslist" replaced by "reporter",

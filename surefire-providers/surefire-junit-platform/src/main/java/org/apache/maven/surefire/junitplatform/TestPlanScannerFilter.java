@@ -22,7 +22,7 @@ package org.apache.maven.surefire.junitplatform;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
 
-import org.apache.maven.surefire.util.ScannerFilter;
+import org.apache.maven.surefire.api.util.ScannerFilter;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;

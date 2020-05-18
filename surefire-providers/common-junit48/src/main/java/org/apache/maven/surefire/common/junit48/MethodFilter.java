@@ -19,8 +19,8 @@ package org.apache.maven.surefire.common.junit48;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.ResolvedTest;
-import org.apache.maven.surefire.testset.TestListResolver;
+import org.apache.maven.surefire.api.testset.ResolvedTest;
+import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
 

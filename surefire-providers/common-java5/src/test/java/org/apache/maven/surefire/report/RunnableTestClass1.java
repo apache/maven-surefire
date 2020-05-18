@@ -19,7 +19,7 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.util.internal.DaemonThreadFactory;
+import org.apache.maven.surefire.api.util.internal.DaemonThreadFactory;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;

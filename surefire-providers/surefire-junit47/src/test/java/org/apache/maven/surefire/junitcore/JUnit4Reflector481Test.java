@@ -23,7 +23,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 import org.apache.maven.surefire.common.junit4.JUnit4Reflector;
-import org.apache.maven.surefire.util.ReflectionUtils;
+import org.apache.maven.surefire.api.util.ReflectionUtils;
 
 import org.junit.Ignore;
 import org.junit.Test;

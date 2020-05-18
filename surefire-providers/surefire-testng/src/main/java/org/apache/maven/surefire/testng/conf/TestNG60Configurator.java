@@ -21,7 +21,7 @@ package org.apache.maven.surefire.testng.conf;
 
 import java.util.Map;
 import java.util.Map.Entry;
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 /**
  * TestNG 6.0 configurator. Changed objectFactory type to String.

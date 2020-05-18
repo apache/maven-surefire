@@ -19,8 +19,8 @@ package org.apache.maven.surefire.spi;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.MasterProcessChannelDecoder;
-import org.apache.maven.surefire.booter.MasterProcessChannelEncoder;
+import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
+import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
 
 import java.io.Closeable;
 import java.io.IOException;

@@ -20,8 +20,8 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
-import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.TestSetReportEntry;
+import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 /**
  * @author Kristian Rosenvold

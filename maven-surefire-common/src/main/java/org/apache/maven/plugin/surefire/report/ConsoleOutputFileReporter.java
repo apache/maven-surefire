@@ -20,8 +20,8 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.TestSetReportEntry;
+import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicStampedReference;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.maven.plugin.surefire.report.FileReporter.getReportFile;
-import static org.apache.maven.surefire.util.internal.StringUtils.NL;
+import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 
 /**
  * Surefire output consumer proxy that writes test output to a {@link java.io.File} for each test suite.

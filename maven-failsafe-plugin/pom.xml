@@ -292,7 +292,6 @@
                         </executions>
                         <configuration>
                             <javaHome>${jdk.home}</javaHome>
-                            <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
                         </configuration>
                     </plugin>
                 </plugins>

@@ -25,9 +25,9 @@ import org.junit.runner.Description;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
-import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray;
-import static org.apache.maven.surefire.util.ReflectionUtils.getMethod;
-import static org.apache.maven.surefire.util.ReflectionUtils.tryGetMethod;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.getMethod;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.tryGetMethod;
 
 /**
  * JUnit4 reflection helper

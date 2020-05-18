@@ -23,8 +23,8 @@ import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpS
 import org.apache.maven.surefire.shared.utils.xml.PrettyPrintXMLWriter;
 import org.apache.maven.surefire.shared.utils.xml.XMLWriter;
 import org.apache.maven.surefire.extensions.StatelessReportEventListener;
-import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.report.SafeThrowable;
+import org.apache.maven.surefire.api.report.ReporterException;
+import org.apache.maven.surefire.api.report.SafeThrowable;
 
 import java.io.BufferedOutputStream;
 import java.io.File;

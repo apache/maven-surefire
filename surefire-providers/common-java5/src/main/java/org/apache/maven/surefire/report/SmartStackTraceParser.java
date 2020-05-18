@@ -19,6 +19,8 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.surefire.api.report.SafeThrowable;
+
 import java.util.ArrayList;
 import java.util.List;
 

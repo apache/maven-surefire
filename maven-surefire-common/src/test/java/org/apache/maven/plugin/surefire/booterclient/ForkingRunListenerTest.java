@@ -24,22 +24,22 @@ import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Notifiable
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.extensions.EventConsumerThread;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.booter.ForkingRunListener;
+import org.apache.maven.surefire.api.booter.ForkingRunListener;
 import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder;
-import org.apache.maven.surefire.eventapi.Event;
+import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.ForkNodeArguments;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
-import org.apache.maven.surefire.report.CategorizedReportEntry;
-import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.LegacyPojoStackTraceWriter;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.ReporterException;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.SimpleReportEntry;
-import org.apache.maven.surefire.report.StackTraceWriter;
-import org.apache.maven.surefire.report.TestSetReportEntry;
-import org.apache.maven.surefire.util.internal.WritableBufferedByteChannel;
+import org.apache.maven.surefire.api.report.CategorizedReportEntry;
+import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.api.report.LegacyPojoStackTraceWriter;
+import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.ReporterException;
+import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.SimpleReportEntry;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
+import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 
 import javax.annotation.Nonnull;
 import java.io.ByteArrayInputStream;
@@ -55,8 +55,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.maven.surefire.util.internal.Channels.newBufferedChannel;
-import static org.apache.maven.surefire.util.internal.Channels.newChannel;
+import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
+import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

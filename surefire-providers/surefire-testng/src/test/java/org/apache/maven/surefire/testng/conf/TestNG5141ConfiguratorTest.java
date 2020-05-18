@@ -20,7 +20,7 @@ package org.apache.maven.surefire.testng.conf;
  */
 
 import junit.framework.TestCase;
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 import java.util.HashMap;
 import java.util.List;

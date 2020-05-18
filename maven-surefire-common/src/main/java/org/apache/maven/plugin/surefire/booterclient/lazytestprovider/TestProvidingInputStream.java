@@ -19,8 +19,8 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.Command;
-import org.apache.maven.surefire.booter.Shutdown;
+import org.apache.maven.surefire.api.booter.Command;
+import org.apache.maven.surefire.api.booter.Shutdown;
 
 import java.io.IOException;
 import java.util.Queue;
@@ -28,12 +28,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.maven.surefire.booter.Command.BYE_ACK;
-import static org.apache.maven.surefire.booter.Command.NOOP;
-import static org.apache.maven.surefire.booter.Command.SKIP_SINCE_NEXT_TEST;
-import static org.apache.maven.surefire.booter.Command.TEST_SET_FINISHED;
-import static org.apache.maven.surefire.booter.Command.toRunClass;
-import static org.apache.maven.surefire.booter.Command.toShutdown;
+import static org.apache.maven.surefire.api.booter.Command.BYE_ACK;
+import static org.apache.maven.surefire.api.booter.Command.NOOP;
+import static org.apache.maven.surefire.api.booter.Command.SKIP_SINCE_NEXT_TEST;
+import static org.apache.maven.surefire.api.booter.Command.TEST_SET_FINISHED;
+import static org.apache.maven.surefire.api.booter.Command.toRunClass;
+import static org.apache.maven.surefire.api.booter.Command.toShutdown;
 
 /**
  * An {@link java.io.InputStream} that, when read, provides test class names out of a queue.

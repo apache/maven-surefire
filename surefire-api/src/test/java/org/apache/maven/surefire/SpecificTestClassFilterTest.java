@@ -20,6 +20,7 @@ package org.apache.maven.surefire;
  */
 
 import junit.framework.TestCase;
+import org.apache.maven.surefire.api.filter.SpecificTestClassFilter;
 
 /**
  *
@@ -29,7 +30,7 @@ public class SpecificTestClassFilterTest extends TestCase
     public void testMatchSingleCharacterWildcard()
     {
         SpecificTestClassFilter filter = new SpecificTestClassFilter(
-                new String[] {"org/apache/maven/surefire/?pecificTestClassFilter.class"} );
+                new String[] {"org/apache/maven/surefire/api/filter/?pecificTestClassFilter.class"} );
 
         assertTrue( filter.accept( SpecificTestClassFilter.class ) );
     }
@@ -37,7 +38,7 @@ public class SpecificTestClassFilterTest extends TestCase
     public void testMatchSingleSegmentWordWildcard()
     {
         SpecificTestClassFilter filter = new SpecificTestClassFilter(
-                new String[] {"org/apache/maven/surefire/*TestClassFilter.class"} );
+                new String[] {"org/apache/maven/surefire/api/filter/*TestClassFilter.class"} );
 
         assertTrue( filter.accept( SpecificTestClassFilter.class ) );
     }
@@ -53,7 +54,7 @@ public class SpecificTestClassFilterTest extends TestCase
     public void testMatchSingleSegmentWildcard()
     {
         SpecificTestClassFilter filter = new SpecificTestClassFilter(
-                new String[] {"org/*/maven/surefire/SpecificTestClassFilter.class"} );
+                new String[] {"org/*/maven/surefire/api/filter/SpecificTestClassFilter.class"} );
 
         assertTrue( filter.accept( SpecificTestClassFilter.class ) );
     }

@@ -21,7 +21,7 @@ package testng.utils;
 
 import junit.framework.TestCase;
 import org.apache.maven.surefire.testng.utils.MethodSelector;
-import org.apache.maven.surefire.testset.TestListResolver;
+import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.testng.IClass;
 import org.testng.IRetryAnalyzer;
 import org.testng.ITestClass;

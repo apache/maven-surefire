@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
-import org.apache.maven.surefire.booter.ProviderParameterNames;
+import org.apache.maven.surefire.api.booter.ProviderParameterNames;
 
 /**
  * @author Kristian Rosenvold

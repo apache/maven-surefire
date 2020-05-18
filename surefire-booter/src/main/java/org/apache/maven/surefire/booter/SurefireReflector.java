@@ -19,18 +19,19 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
-import org.apache.maven.surefire.cli.CommandLineOption;
-import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.suite.RunResult;
-import org.apache.maven.surefire.testset.DirectoryScannerParameters;
-import org.apache.maven.surefire.testset.RunOrderParameters;
-import org.apache.maven.surefire.testset.TestArtifactInfo;
-import org.apache.maven.surefire.testset.TestListResolver;
-import org.apache.maven.surefire.testset.TestRequest;
-import org.apache.maven.surefire.util.RunOrder;
-import org.apache.maven.surefire.util.SurefireReflectionException;
+import org.apache.maven.surefire.api.booter.BaseProviderFactory;
+import org.apache.maven.surefire.api.cli.CommandLineOption;
+import org.apache.maven.surefire.api.provider.ProviderParameters;
+import org.apache.maven.surefire.api.report.ReporterConfiguration;
+import org.apache.maven.surefire.api.report.ReporterFactory;
+import org.apache.maven.surefire.api.suite.RunResult;
+import org.apache.maven.surefire.api.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.api.testset.RunOrderParameters;
+import org.apache.maven.surefire.api.testset.TestArtifactInfo;
+import org.apache.maven.surefire.api.testset.TestListResolver;
+import org.apache.maven.surefire.api.testset.TestRequest;
+import org.apache.maven.surefire.api.util.RunOrder;
+import org.apache.maven.surefire.api.util.SurefireReflectionException;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -41,13 +42,13 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.checkedList;
-import static org.apache.maven.surefire.util.ReflectionUtils.getConstructor;
-import static org.apache.maven.surefire.util.ReflectionUtils.getMethod;
-import static org.apache.maven.surefire.util.ReflectionUtils.instantiateOneArg;
-import static org.apache.maven.surefire.util.ReflectionUtils.invokeGetter;
-import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray;
-import static org.apache.maven.surefire.util.ReflectionUtils.invokeSetter;
-import static org.apache.maven.surefire.util.ReflectionUtils.newInstance;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.getConstructor;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.getMethod;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.instantiateOneArg;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeGetter;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeSetter;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.newInstance;
 
 /**
  * Does reflection based invocation of the surefire methods.

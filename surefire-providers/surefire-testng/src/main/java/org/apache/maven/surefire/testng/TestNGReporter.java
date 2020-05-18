@@ -19,11 +19,11 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.CategorizedReportEntry;
+import org.apache.maven.surefire.api.report.CategorizedReportEntry;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
-import org.apache.maven.surefire.report.ReportEntry;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.report.SimpleReportEntry;
+import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.SimpleReportEntry;
 
 import org.testng.IClass;
 import org.testng.ISuite;
@@ -34,13 +34,13 @@ import org.testng.ITestResult;
 
 import java.util.Arrays;
 
-import static org.apache.maven.surefire.report.SimpleReportEntry.ignored;
-import static org.apache.maven.surefire.report.SimpleReportEntry.withException;
+import static org.apache.maven.surefire.api.report.SimpleReportEntry.ignored;
+import static org.apache.maven.surefire.api.report.SimpleReportEntry.withException;
 
 /**
  * Listens for and provides and adaptor layer so that
  * TestNG tests can report their status to the current
- * {@link org.apache.maven.surefire.report.RunListener}.
+ * {@link RunListener}.
  *
  * @author jkuhnert
  */

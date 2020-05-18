@@ -20,7 +20,7 @@ package org.apache.maven.plugin.surefire.extensions;
  */
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.booter.Command;
+import org.apache.maven.surefire.api.booter.Command;
 import org.apache.maven.surefire.extensions.CommandReader;
 import org.junit.After;
 import org.junit.Before;
@@ -35,9 +35,9 @@ import java.nio.channels.WritableByteChannel;
 import java.util.Iterator;
 
 import static java.util.Arrays.asList;
-import static org.apache.maven.surefire.booter.Command.TEST_SET_FINISHED;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.NOOP;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.RUN_CLASS;
+import static org.apache.maven.surefire.api.booter.Command.TEST_SET_FINISHED;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.NOOP;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.RUN_CLASS;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;

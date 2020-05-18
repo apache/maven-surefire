@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.util;
  * under the License.
  */
 
-import org.apache.maven.surefire.testset.TestFilter;
+import org.apache.maven.surefire.api.testset.TestFilter;
 
 import java.io.File;
 import java.util.Collection;

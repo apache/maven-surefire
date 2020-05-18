@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ConsoleStream;
+import org.apache.maven.surefire.api.report.ConsoleStream;
 import org.junit.runner.Description;
 import org.junit.runners.model.RunnerScheduler;
 

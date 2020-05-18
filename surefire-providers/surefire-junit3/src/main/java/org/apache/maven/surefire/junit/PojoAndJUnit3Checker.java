@@ -19,9 +19,9 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import org.apache.maven.surefire.NonAbstractClassFilter;
+import org.apache.maven.surefire.api.filter.NonAbstractClassFilter;
 import org.apache.maven.surefire.common.junit3.JUnit3TestChecker;
-import org.apache.maven.surefire.util.ScannerFilter;
+import org.apache.maven.surefire.api.util.ScannerFilter;
 
 /**
  * @author Kristian Rosenvold

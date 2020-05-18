@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.report.ReportEntry;
+import org.apache.maven.surefire.api.report.ReportEntry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;

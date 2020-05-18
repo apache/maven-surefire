@@ -19,15 +19,15 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.ProviderParameterNames;
-import org.apache.maven.surefire.cli.CommandLineOption;
-import org.apache.maven.surefire.report.RunListener;
+import org.apache.maven.surefire.api.booter.ProviderParameterNames;
+import org.apache.maven.surefire.api.cli.CommandLineOption;
+import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.testng.conf.Configurator;
 import org.apache.maven.surefire.testng.utils.FailFastEventsSingleton;
 import org.apache.maven.surefire.testng.utils.FailFastListener;
 import org.apache.maven.surefire.testng.utils.Stoppable;
-import org.apache.maven.surefire.testset.TestListResolver;
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.testset.TestListResolver;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.shared.utils.StringUtils;
 import org.testng.ITestNGListener;
 import org.testng.TestNG;
@@ -48,11 +48,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.maven.surefire.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
-import static org.apache.maven.surefire.cli.CommandLineOption.SHOW_ERRORS;
-import static org.apache.maven.surefire.util.ReflectionUtils.instantiate;
-import static org.apache.maven.surefire.util.ReflectionUtils.tryLoadClass;
-import static org.apache.maven.surefire.util.internal.ConcurrencyUtils.countDownToZero;
+import static org.apache.maven.surefire.api.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
+import static org.apache.maven.surefire.api.cli.CommandLineOption.SHOW_ERRORS;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.instantiate;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.tryLoadClass;
+import static org.apache.maven.surefire.api.util.internal.ConcurrencyUtils.countDownToZero;
 
 /**
  * Contains utility methods for executing TestNG.

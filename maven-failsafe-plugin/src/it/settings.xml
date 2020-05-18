@@ -18,36 +18,5 @@
   ~ under the License.
   -->
 <settings>
-  <profiles>
-    <profile>
-      <id>it-repo</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <repositories>
-        <repository>
-          <id>local.central</id>
-          <url>@localRepositoryUrl@</url>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-        </repository>
-      </repositories>
-      <pluginRepositories>
-        <pluginRepository>
-          <id>local.central</id>
-          <url>@localRepositoryUrl@</url>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-        </pluginRepository>
-      </pluginRepositories>
-    </profile>
-  </profiles>
+    <localRepository>@localRepositoryUrl@</localRepository>
 </settings>

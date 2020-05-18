@@ -19,7 +19,7 @@ package org.apache.maven.surefire.extensions;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.Command;
+import org.apache.maven.surefire.api.booter.Command;
 
 import java.io.Closeable;
 import java.io.IOException;

@@ -20,9 +20,16 @@ package org.apache.maven.surefire.booter;
  */
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.providerapi.CommandChainReader;
-import org.apache.maven.surefire.providerapi.CommandListener;
-import org.apache.maven.surefire.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.booter.BiProperty;
+import org.apache.maven.surefire.api.booter.Command;
+import org.apache.maven.surefire.api.booter.DumpErrorSingleton;
+import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
+import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
+import org.apache.maven.surefire.api.booter.MasterProcessCommand;
+import org.apache.maven.surefire.api.booter.Shutdown;
+import org.apache.maven.surefire.api.provider.CommandChainReader;
+import org.apache.maven.surefire.api.provider.CommandListener;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -40,14 +47,14 @@ import static java.lang.Thread.State.NEW;
 import static java.lang.Thread.State.RUNNABLE;
 import static java.lang.Thread.State.TERMINATED;
 import static java.util.Objects.requireNonNull;
-import static org.apache.maven.surefire.booter.Command.toShutdown;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.BYE_ACK;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.NOOP;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.SHUTDOWN;
-import static org.apache.maven.surefire.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
+import static org.apache.maven.surefire.api.booter.Command.toShutdown;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.BYE_ACK;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.NOOP;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.SHUTDOWN;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
-import static org.apache.maven.surefire.util.internal.DaemonThreadFactory.newDaemonThread;
+import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThread;
 
 /**
  * Reader of commands coming from plugin(master) process.

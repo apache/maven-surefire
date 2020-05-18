@@ -19,34 +19,34 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.Command;
-import org.apache.maven.surefire.providerapi.CommandChainReader;
-import org.apache.maven.surefire.providerapi.CommandListener;
-import org.apache.maven.surefire.cli.CommandLineOption;
-import org.apache.maven.surefire.providerapi.AbstractProvider;
-import org.apache.maven.surefire.providerapi.ProviderParameters;
-import org.apache.maven.surefire.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.report.ReporterConfiguration;
-import org.apache.maven.surefire.report.ReporterFactory;
-import org.apache.maven.surefire.report.RunListener;
-import org.apache.maven.surefire.suite.RunResult;
+import org.apache.maven.surefire.api.booter.Command;
+import org.apache.maven.surefire.api.provider.CommandChainReader;
+import org.apache.maven.surefire.api.provider.CommandListener;
+import org.apache.maven.surefire.api.cli.CommandLineOption;
+import org.apache.maven.surefire.api.provider.AbstractProvider;
+import org.apache.maven.surefire.api.provider.ProviderParameters;
+import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.api.report.ReporterConfiguration;
+import org.apache.maven.surefire.api.report.ReporterFactory;
+import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.testng.utils.FailFastEventsSingleton;
-import org.apache.maven.surefire.testset.TestListResolver;
-import org.apache.maven.surefire.testset.TestRequest;
-import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.RunOrderCalculator;
-import org.apache.maven.surefire.util.ScanResult;
-import org.apache.maven.surefire.util.TestsToRun;
+import org.apache.maven.surefire.api.testset.TestListResolver;
+import org.apache.maven.surefire.api.testset.TestRequest;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.util.RunOrderCalculator;
+import org.apache.maven.surefire.api.util.ScanResult;
+import org.apache.maven.surefire.api.util.TestsToRun;
 
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.maven.surefire.report.ConsoleOutputCapture.startCapture;
-import static org.apache.maven.surefire.testset.TestListResolver.getEmptyTestListResolver;
-import static org.apache.maven.surefire.testset.TestListResolver.optionallyWildcardFilter;
-import static org.apache.maven.surefire.util.TestsToRun.fromClass;
+import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
+import static org.apache.maven.surefire.api.testset.TestListResolver.getEmptyTestListResolver;
+import static org.apache.maven.surefire.api.testset.TestListResolver.optionallyWildcardFilter;
+import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
 
 /**
  * @author Kristian Rosenvold
@@ -99,8 +99,8 @@ public class TestNGProvider
 
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
         final RunListener reporter = reporterFactory.createReporter();
-        /**
-         * {@link org.apache.maven.surefire.report.ConsoleOutputCapture#startCapture(ConsoleOutputReceiver)}
+        /*
+         * {@link org.apache.maven.surefire.api.report.ConsoleOutputCapture#startCapture(ConsoleOutputReceiver)}
          * called in prior to initializing variable {@link #testsToRun}
          */
         startCapture( (ConsoleOutputReceiver) reporter );

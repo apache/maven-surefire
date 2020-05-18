@@ -20,8 +20,8 @@ package org.apache.maven.surefire.junitcore.pc;
  */
 
 import net.jcip.annotations.NotThreadSafe;
-import org.apache.maven.surefire.report.ConsoleStream;
-import org.apache.maven.surefire.report.DefaultDirectConsoleReporter;
+import org.apache.maven.surefire.api.report.ConsoleStream;
+import org.apache.maven.surefire.api.report.DefaultDirectConsoleReporter;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

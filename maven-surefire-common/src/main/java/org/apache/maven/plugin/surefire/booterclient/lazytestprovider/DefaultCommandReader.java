@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * under the License.
  */
 
-import org.apache.maven.surefire.booter.Command;
+import org.apache.maven.surefire.api.booter.Command;
 
 import java.io.IOException;
 
@@ -28,7 +28,7 @@ import java.io.IOException;
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
- * @see org.apache.maven.surefire.booter.Command
+ * @see Command
  */
 public abstract class DefaultCommandReader
         extends AbstractCommandReader
