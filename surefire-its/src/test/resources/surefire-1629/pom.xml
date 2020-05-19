@@ -10,7 +10,7 @@
   ~
   ~     http://www.apache.org/licenses/LICENSE-2.0
   ~
-  ~ Unless required by applicable law or agreed to in writing,
+  ~ Unless required by applicable law or agreed to in writing,Surefire1629IT
   ~ software distributed under the License is distributed on an
   ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
   ~ KIND, either express or implied.  See the License for the
@@ -21,7 +21,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>com.foo</groupId>
     <artifactId>com.foo</artifactId>
     <version>1.0.0</version>
@@ -32,10 +31,10 @@
         <maven.compiler.release>${java.specification.version}</maven.compiler.release>
     </properties>
 
-	<modules>
-		<module>module1</module>
-		<module>module2</module>
-	</modules>
+    <modules>
+        <module>module1</module>
+        <module>module2</module>
+    </modules>
 
     <build>
         <pluginManagement>

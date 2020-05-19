@@ -41,7 +41,7 @@ public class Surefire1629IT
     @Test
     public void bothEngines()
     {
-        unpack( "surefire-1649" )
+        unpack( "surefire-1629" )
             .executeTest()
             .verifyErrorFree( 1 )
             .verifyTextInLog( "Running com.testcase.Surefire1629Test" );
