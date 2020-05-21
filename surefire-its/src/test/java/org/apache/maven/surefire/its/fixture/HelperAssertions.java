@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static java.lang.Double.parseDouble;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
@@ -180,15 +181,19 @@ public final class HelperAssertions
     public static void assumeJavaVersion( double expectedVersion )
     {
         String thisVersion = System.getProperty( "java.specification.version" );
-        assumeTrue( "java.specification.version: " + thisVersion,
-                Double.parseDouble( thisVersion ) >= expectedVersion );
+        assumeTrue( "java.specification.version: " + thisVersion, parseDouble( thisVersion ) >= expectedVersion );
     }
 
     public static void assumeJavaMaxVersion( double expectedMaxVersion )
     {
         String thisVersion = System.getProperty( "java.specification.version" );
-        assumeTrue( "java.specification.version: " + thisVersion,
-            Double.parseDouble( thisVersion ) <= expectedMaxVersion );
+        assumeTrue( "java.specification.version: " + thisVersion, parseDouble( thisVersion ) <= expectedMaxVersion );
+    }
+
+    public static void assumeJavaVersionExcluded( double excludedVersion )
+    {
+        String thisVersion = System.getProperty( "java.specification.version" );
+        assumeTrue( "java.specification.version: " + thisVersion, parseDouble( thisVersion ) != excludedVersion );
     }
 
     public static String convertUnicodeToUTF8( String unicode )

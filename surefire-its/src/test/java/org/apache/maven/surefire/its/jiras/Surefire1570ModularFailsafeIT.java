@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersionExcluded;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
@@ -39,6 +40,7 @@ public class Surefire1570ModularFailsafeIT
     public void setUp()
     {
         assumeJavaVersion( 9d );
+        assumeJavaVersionExcluded( 11d );
     }
 
     @Test
