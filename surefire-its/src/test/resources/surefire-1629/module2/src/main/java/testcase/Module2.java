@@ -1,4 +1,4 @@
-package java.testcase;
+package testcase;
 
 public class Module2
 {

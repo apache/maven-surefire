@@ -19,7 +19,9 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
+import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,11 +41,13 @@ public class Surefire1629IT
     }
     
     @Test
-    public void bothEngines()
+    public void splitPackage() throws VerificationException
     {
-        unpack( "surefire-1629" )
-            .executeTest()
-            .verifyErrorFree( 1 )
-            .verifyTextInLog( "Running com.testcase.Surefire1629Test" );
+        SurefireLauncher launcher = unpack( "surefire-1629" );
+        
+        launcher.executeTest().
+            verifyTextInLog( "Running testcase.Surefire1629Test" );
+        launcher.getSubProjectValidator( "module2" )
+            .verifyErrorFree( 1 );
     }
 }
