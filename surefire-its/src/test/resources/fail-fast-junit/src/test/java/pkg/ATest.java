@@ -10,7 +10,7 @@ public class ATest
     public void someMethod()
         throws InterruptedException
     {
-        MILLISECONDS.sleep( 3600L );
+        MILLISECONDS.sleep( 4_800L );
         throw new RuntimeException( "assert \"foo\" == \"bar\"\n" +
                                         "             |\n"
                                         + "             false" );
