@@ -38,7 +38,7 @@ Feature Matrix
 *---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
 | run >1 individual test method in a class    |     N      |    Y     |      Y     |    Y      |  N       |  ?(*1)               |
 *---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| parallel support                            |     N      |    N     |      Y     |    Y      |  N       |  N                   |
+| parallel support                            |     N      |    N     |      Y     |    Y      |  N       |  N(*2)               |
 *---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
 | custom run-listener                         |     N      |    Y     |      Y     |    Y      |  -       |  N                   |
 *---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
@@ -46,7 +46,7 @@ Feature Matrix
 *---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
 | skip after failure count                    |     N      |    Y     |      Y     |    Y      |  N       |  N                   |
 *---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| Surefire Extensions                         |     Y      |    Y     |      Y     |    Y      |  Y       |  Y(*2)               |
+| Surefire Extensions                         |     Y      |    Y     |      Y     |    Y      |  Y       |  Y(*4)               |
 *---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
 
 
@@ -60,6 +60,9 @@ Feature Matrix
    corner cases that are not supported, yet: {{{https://github.com/junit-team/junit5/issues/1343}junit-team/junit5#1343}}
    and {{{https://github.com/junit-team/junit5/issues/1406}junit-team/junit5#1406)}}.
 
-   (*2) 3 extensions related to JUnit5 annotation <<<DisplayName>>>.
+   (*2) The test are executed in parallel but the report supports only a sequence of test events, see the issue
+   {{{https://issues.apache.org/jira/browse/SUREFIRE-1795}SUREFIRE-1795}}.
 
    (*3) Since 3.0.0-M4
+
+   (*4) 3 extensions related to JUnit5 annotation <<<DisplayName>>>.
