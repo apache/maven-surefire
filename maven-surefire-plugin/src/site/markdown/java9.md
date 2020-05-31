@@ -61,11 +61,52 @@ com.sun.xml.ws:jaxws-rt:2.3.0 (implementation)
 The source code for each of these is maintained at [https://github.com/javaee](https://github.com/javaee)
 
 
+<a name="head3"></a> Selecting JDK by the Toolchains API in plugin configuration
+========================
+
+    <configuration>
+        [...]
+        <jdkToolchain>
+            <version>11</version>
+            <vendor>sun</vendor>
+        </jdkToolchain>
+        [...]
+    </configuration>
+
+The above example assumes that your **toolchains.xml** contains valid entries with these values.
+
+    <toolchains xmlns="http://maven.apache.org/POM/4.0.0"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://maven.apache.org/TOOLCHAINS/1.1.0 https://maven.apache.org/xsd/toolchains-1.1.0.xsd">
+      <toolchain>
+        <type>jdk</type>
+        <provides>
+          <version>1.8</version>
+          <vendor>sun</vendor>
+          <id>jdk8</id>
+        </provides>
+        <configuration>
+          <jdkHome>/path/to/openjdk8</jdkHome>
+        </configuration>
+      </toolchain>
+      <toolchain>
+        <type>jdk</type>
+        <provides>
+          <version>11</version>
+          <vendor>sun</vendor>
+          <id>jdk11</id>
+        </provides>
+        <configuration>
+          <jdkHome>/path/to/openjdk/11</jdkHome>
+        </configuration>
+      </toolchain>
+    </toolchains>
+
 
 Java 9 in configuration of plugin
 ========================
 
-The plugin provides you with configuration parameter `jvm` which can point to path of executable Java in JDK, e.g.:
+The plugin provides you with configuration parameter **jvm** which can point to the path of executable Java in JDK, e.g.:
 
     <configuration>
         <jvm>/path/to/jdk9/bin/java</jvm>
@@ -73,11 +114,19 @@ The plugin provides you with configuration parameter `jvm` which can point to pa
 
 Now you can run the build with tests on the top of Java 9.
 
+This is highly unrecommended configuration due to the fact that this solution is directly specifying the path
+with the JDK and thus it is not smoothly transferable to another build systems.
+
 
 Maven Toolchains with JDK 9
 ========================
 
-This is an example on Windows to run unit tests with custom path to Toolchain **(-t ...)**.
+Since the version **3.0.0-M5** you can use the standard way to switch the JDK within the execution of the plugin.
+For more information see the [chapter 'Selecting JDK by the Toolchains API in plugin configuration'](#head3).
+
+
+The plugin **maven-toolchains-plugin** should be used along with old versions of Surefire or Failsafe plugin.
+In this example you can see how to switch the JDK by Toolchain **(-t ...)** in the entire build (on Windows).
 
     $ mvn -t D:\.m2\toolchains.xml test
     
