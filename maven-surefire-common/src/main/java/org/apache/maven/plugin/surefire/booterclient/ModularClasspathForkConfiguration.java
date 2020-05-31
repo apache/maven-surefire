@@ -207,19 +207,19 @@ public class ModularClasspathForkConfiguration
             }
             else
             {
-                for ( String[] entries : providerJpmsArguments )
-                {
-                    for ( String entry : entries )
-                    {
-                        args.append( entry )
-                            .append( NL );
-                    }
-                }
-
                 args.append( "--add-modules" )
                     .append( NL )
                     .append( moduleName )
                     .append( NL );
+            }
+
+            for ( String[] entries : providerJpmsArguments )
+            {
+                for ( String entry : entries )
+                {
+                    args.append( entry )
+                        .append( NL );
+                }
             }
 
             args.append( startClassName );
