@@ -80,7 +80,8 @@ public class AsyncSocketTest
         AsynchronousChannelGroup group = AsynchronousChannelGroup.withThreadPool( executorService );
         AsynchronousServerSocketChannel server = AsynchronousServerSocketChannel.open( group );
         setTrueOptions( server, SO_REUSEADDR, TCP_NODELAY, SO_KEEPALIVE );
-        server.bind( null, 1 );
+        InetAddress ip = InetAddress.getLocalHost();
+        server.bind( new InetSocketAddress( ip, 0 ), 1 );
         address = (InetSocketAddress) server.getLocalAddress();
 
         System.gc();

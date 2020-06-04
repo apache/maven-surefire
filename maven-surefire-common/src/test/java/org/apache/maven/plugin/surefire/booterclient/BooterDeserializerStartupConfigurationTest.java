@@ -179,10 +179,10 @@ public class BooterDeserializerStartupConfigurationTest
         BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
         String aTest = "aTest";
         File propsTest = booterSerializer.serialize( props, getProviderConfiguration(), startupConfiguration, aTest,
-                false, null, 1, "tcp://127.0.0.1:63003" );
+                false, null, 1, "tcp://localhost:63003" );
         BooterDeserializer booterDeserializer = new BooterDeserializer( new FileInputStream( propsTest ) );
         assertNull( booterDeserializer.getPluginPid() );
-        assertEquals( "tcp://127.0.0.1:63003", booterDeserializer.getConnectionString() );
+        assertEquals( "tcp://localhost:63003", booterDeserializer.getConnectionString() );
         return booterDeserializer.getStartupConfiguration();
     }
 

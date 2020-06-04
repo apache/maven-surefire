@@ -21,24 +21,31 @@ package org.apache.maven.plugin.surefire.extensions;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
-import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.api.event.Event;
+import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.ForkNodeArguments;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
-import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import javax.annotation.Nonnull;
 import java.io.Closeable;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
+import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -52,13 +59,17 @@ public class E2ETest
     private static final String LONG_STRING =
         "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
 
+    @Rule
+    public final ExpectedException e = ExpectedException.none();
+
     @Test
-    public void test() throws Exception
+    public void endToEndTest() throws Exception
     {
         ConsoleLogger logger = mock( ConsoleLogger.class );
         ForkNodeArguments arguments = mock( ForkNodeArguments.class );
         when( arguments.getForkChannelId() ).thenReturn( 1 );
         when( arguments.getConsoleLogger() ).thenReturn( logger );
+        when( arguments.getSessionId() ).thenReturn( UUID.randomUUID().toString() );
         final SurefireForkChannel server = new SurefireForkChannel( arguments );
 
         final String connection = server.getForkNodeConnectionString();
@@ -183,5 +194,71 @@ public class E2ETest
                 + "The limit 6s guarantees that the read time does not exceed this limit on overloaded CPU." )
             .isPositive()
             .isLessThanOrEqualTo( 6_000L );
+    }
+
+    @Test( timeout = 10_000L )
+    public void shouldVerifyClient() throws Exception
+    {
+        ForkNodeArguments forkNodeArguments = mock( ForkNodeArguments.class );
+        when( forkNodeArguments.getSessionId() ).thenReturn( UUID.randomUUID().toString() );
+
+        try ( SurefireForkChannel server = new SurefireForkChannel( forkNodeArguments );
+              SurefireMasterProcessChannelProcessorFactory client = new SurefireMasterProcessChannelProcessorFactory() )
+        {
+            FutureTask<String> task = new FutureTask<>( new Callable<String>()
+            {
+                @Override
+                public String call() throws Exception
+                {
+                    client.connect( server.getForkNodeConnectionString() );
+                    return "client connected";
+                }
+            } );
+
+            Thread t = new Thread( task );
+            t.setDaemon( true );
+            t.start();
+
+            server.connectToClient();
+
+            assertThat( task.get() )
+                .isEqualTo( "client connected" );
+        }
+    }
+
+    @Test( timeout = 10_000L )
+    public void shouldNotVerifyClient() throws Exception
+    {
+        ForkNodeArguments forkNodeArguments = mock( ForkNodeArguments.class );
+        String serverSessionId = UUID.randomUUID().toString();
+        when( forkNodeArguments.getSessionId() ).thenReturn( serverSessionId );
+
+        try ( SurefireForkChannel server = new SurefireForkChannel( forkNodeArguments );
+              SurefireMasterProcessChannelProcessorFactory client = new SurefireMasterProcessChannelProcessorFactory() )
+        {
+            FutureTask<String> task = new FutureTask<>( new Callable<String>()
+            {
+                @Override
+                public String call() throws Exception
+                {
+                    URI connectionUri = new URI( server.getForkNodeConnectionString() );
+                    client.connect( "tcp://" + connectionUri.getHost() + ":" + connectionUri.getPort()
+                        + "?sessionId=6ba7b812-9dad-11d1-80b4-00c04fd430c8" );
+                    return "client connected";
+                }
+            } );
+
+            Thread t = new Thread( task );
+            t.setDaemon( true );
+            t.start();
+
+            e.expect( InvalidSessionIdException.class );
+            e.expectMessage( "The actual sessionId '6ba7b812-9dad-11d1-80b4-00c04fd430c8' does not match '"
+                + serverSessionId + "'." );
+
+            server.connectToClient();
+
+            fail( task.get() );
+        }
     }
 }

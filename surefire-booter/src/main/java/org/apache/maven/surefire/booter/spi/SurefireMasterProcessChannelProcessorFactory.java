@@ -29,7 +29,9 @@ import java.net.MalformedURLException;
 import java.net.SocketOption;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.StringTokenizer;
 import java.util.concurrent.ExecutionException;
 
 import static java.net.StandardSocketOptions.SO_KEEPALIVE;
@@ -37,6 +39,7 @@ import static java.net.StandardSocketOptions.SO_REUSEADDR;
 import static java.net.StandardSocketOptions.TCP_NODELAY;
 import static java.nio.channels.AsynchronousChannelGroup.withFixedThreadPool;
 import static java.nio.channels.AsynchronousSocketChannel.open;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 import static org.apache.maven.surefire.api.util.internal.Channels.newInputStream;
 import static org.apache.maven.surefire.api.util.internal.Channels.newOutputStream;
@@ -75,6 +78,12 @@ public class SurefireMasterProcessChannelProcessorFactory
             clientSocketChannel = open( withFixedThreadPool( 2, newDaemonThreadFactory() ) );
             setTrueOptions( SO_REUSEADDR, TCP_NODELAY, SO_KEEPALIVE );
             clientSocketChannel.connect( hostAddress ).get();
+            String sessionId = extractSessionId( uri );
+            if ( sessionId != null )
+            {
+                ByteBuffer buff = ByteBuffer.wrap( sessionId.getBytes( US_ASCII ) );
+                clientSocketChannel.write( buff );
+            }
         }
         catch ( URISyntaxException | InterruptedException e )
         {
@@ -118,5 +127,24 @@ public class SurefireMasterProcessChannelProcessorFactory
                 clientSocketChannel.setOption( option, true );
             }
         }
+    }
+
+    private static String extractSessionId( URI uri )
+    {
+        String query = uri.getQuery();
+        if ( query == null )
+        {
+            return null;
+        }
+        for ( StringTokenizer tokenizer = new StringTokenizer( query, "&" ); tokenizer.hasMoreTokens(); )
+        {
+            String token = tokenizer.nextToken();
+            int delimiter = token.indexOf( '=' );
+            if ( delimiter != -1 && "sessionId".equals( token.substring( 0, delimiter ) ) )
+            {
+                return token.substring( delimiter + 1 );
+            }
+        }
+        return null;
     }
 }

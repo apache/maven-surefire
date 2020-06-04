@@ -41,7 +41,7 @@ public interface MasterProcessChannelProcessorFactory extends Closeable
     /**
      * Open a new connection.
      *
-     * @param channelConfig e.g. "pipe://3" or "tcp://127.0.0.1:65035"
+     * @param channelConfig e.g. "pipe://3" or "tcp://localhost:65035"
      * @throws IOException if cannot connect
      */
     void connect( String channelConfig ) throws IOException;

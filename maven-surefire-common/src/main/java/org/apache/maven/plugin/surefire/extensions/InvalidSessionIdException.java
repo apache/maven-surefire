@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.extensions;
+package org.apache.maven.plugin.surefire.extensions;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,36 +19,21 @@ package org.apache.maven.surefire.extensions;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.extensions.ForkChannel;
+import org.apache.maven.surefire.extensions.util.CommandlineExecutor;
 
-import javax.annotation.Nonnegative;
-import javax.annotation.Nonnull;
-import java.io.File;
+import java.io.IOException;
 
 /**
- * The properties related to the current JVM.
+ * After the authentication has failed, {@link ForkChannel#connectToClient()} throws {@link InvalidSessionIdException}
+ * and {@link org.apache.maven.plugin.surefire.booterclient.ForkStarter} should close {@link CommandlineExecutor}.
  *
- * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M5
  */
-public interface ForkNodeArguments
+public class InvalidSessionIdException extends IOException
 {
-    @Nonnull
-    String getSessionId();
-
-    /**
-     * The index of the forked JVM, from 1 to N.
-     *
-     * @return index of the forked JVM
-     */
-    @Nonnegative
-    int getForkChannelId();
-
-    @Nonnull
-    File dumpStreamText( @Nonnull String text );
-
-    void logWarningAtEnd( @Nonnull String text );
-
-    @Nonnull
-    ConsoleLogger getConsoleLogger();
+    public InvalidSessionIdException( String actualSessionId, String expectedSessionId )
+    {
+        super( "The actual sessionId '" + actualSessionId + "' does not match '" + expectedSessionId + "'." );
+    }
 }

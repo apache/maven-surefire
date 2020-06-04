@@ -83,6 +83,7 @@ import static java.lang.StrictMath.min;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.currentThread;
 import static java.util.Collections.addAll;
+import static java.util.UUID.randomUUID;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -573,7 +574,8 @@ public class ForkStarter
         File dumpLogDir = replaceForkThreadsInPath( startupReportConfiguration.getReportsDirectory(), forkNumber );
         try
         {
-            forkChannel = forkNodeFactory.createForkChannel( new ForkedNodeArg( forkNumber, dumpLogDir ) );
+            ForkNodeArguments forkNodeArguments = new ForkedNodeArg( forkNumber, dumpLogDir, randomUUID().toString() );
+            forkChannel = forkNodeFactory.createForkChannel( forkNodeArguments );
             closer.addCloseable( forkChannel );
             tempDir = forkConfiguration.getTempDirectory().getCanonicalPath();
             BooterSerializer booterSerializer = new BooterSerializer( forkConfiguration );
@@ -881,11 +883,20 @@ public class ForkStarter
     {
         private final int forkChannelId;
         private final File dumpLogDir;
+        private final String sessionId;
 
-        ForkedNodeArg( int forkChannelId, File dumpLogDir )
+        ForkedNodeArg( int forkChannelId, File dumpLogDir, String sessionId )
         {
             this.forkChannelId = forkChannelId;
             this.dumpLogDir = dumpLogDir;
+            this.sessionId = sessionId;
+        }
+
+        @Nonnull
+        @Override
+        public String getSessionId()
+        {
+            return sessionId;
         }
 
         @Override

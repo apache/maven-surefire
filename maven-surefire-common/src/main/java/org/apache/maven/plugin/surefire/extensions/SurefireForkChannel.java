@@ -32,10 +32,10 @@ import org.apache.maven.surefire.extensions.util.LineConsumerThread;
 import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketOption;
+import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.ReadableByteChannel;
@@ -49,6 +49,7 @@ import static java.net.StandardSocketOptions.SO_REUSEADDR;
 import static java.net.StandardSocketOptions.TCP_NODELAY;
 import static java.nio.channels.AsynchronousChannelGroup.withThreadPool;
 import static java.nio.channels.AsynchronousServerSocketChannel.open;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
 import static org.apache.maven.surefire.api.util.internal.Channels.newInputStream;
@@ -76,6 +77,7 @@ final class SurefireForkChannel extends ForkChannel
     private final AsynchronousServerSocketChannel server;
     private final String localHost;
     private final int localPort;
+    private final String sessionId;
     private volatile AsynchronousSocketChannel worker;
     private volatile LineConsumerThread out;
 
@@ -84,11 +86,12 @@ final class SurefireForkChannel extends ForkChannel
         super( arguments );
         server = open( withThreadPool( THREAD_POOL ) );
         setTrueOptions( SO_REUSEADDR, TCP_NODELAY, SO_KEEPALIVE );
-        InetAddress ip = Inet4Address.getLocalHost();
+        InetAddress ip = InetAddress.getLocalHost();
         server.bind( new InetSocketAddress( ip, 0 ), 1 );
         InetSocketAddress localAddress = (InetSocketAddress) server.getLocalAddress();
         localHost = localAddress.getHostString();
         localPort = localAddress.getPort();
+        sessionId = arguments.getSessionId();
     }
 
     @Override
@@ -102,6 +105,7 @@ final class SurefireForkChannel extends ForkChannel
         try
         {
             worker = server.accept().get();
+            verifySessionId();
         }
         catch ( InterruptedException e )
         {
@@ -110,6 +114,26 @@ final class SurefireForkChannel extends ForkChannel
         catch ( ExecutionException e )
         {
             throw new IOException( e.getLocalizedMessage(), e.getCause() );
+        }
+    }
+
+    private void verifySessionId() throws InterruptedException, ExecutionException, IOException
+    {
+        ByteBuffer buffer = ByteBuffer.allocate( sessionId.length() );
+        int read;
+        do
+        {
+            read = worker.read( buffer ).get();
+        } while ( read != -1 && buffer.hasRemaining() );
+        if ( read == -1 )
+        {
+            throw new IOException( "Channel closed while verifying the client." );
+        }
+        buffer.flip();
+        String clientSessionId = new String( buffer.array(), US_ASCII );
+        if ( !clientSessionId.equals( sessionId ) )
+        {
+            throw new InvalidSessionIdException( clientSessionId, sessionId );
         }
     }
 
@@ -129,7 +153,7 @@ final class SurefireForkChannel extends ForkChannel
     @Override
     public String getForkNodeConnectionString()
     {
-        return "tcp://" + localHost + ":" + localPort;
+        return "tcp://" + localHost + ":" + localPort + "?sessionId=" + sessionId;
     }
 
     @Override

@@ -21,11 +21,11 @@ package org.apache.maven.surefire.booter;
 
 import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelDecoder;
 import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder;
 import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
-import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils;
 import org.apache.maven.surefire.spi.MasterProcessChannelProcessorFactory;
 import org.junit.Rule;
@@ -45,11 +45,16 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 
-import static java.net.StandardSocketOptions.SO_KEEPALIVE;
-import static java.net.StandardSocketOptions.SO_REUSEADDR;
-import static java.net.StandardSocketOptions.TCP_NODELAY;
+import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.Fail.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -300,31 +305,16 @@ public class ForkedBooterMockTest
 
         try ( ServerSocketChannel server = ServerSocketChannel.open() )
         {
-            if ( server.supportedOptions().contains( SO_REUSEADDR ) )
-            {
-                server.setOption( SO_REUSEADDR, true );
-            }
-
-            if ( server.supportedOptions().contains( TCP_NODELAY ) )
-            {
-                server.setOption( TCP_NODELAY, true );
-            }
-
-            if ( server.supportedOptions().contains( SO_KEEPALIVE ) )
-            {
-                server.setOption( SO_KEEPALIVE, true );
-            }
-
             server.bind( new InetSocketAddress( 0 ) );
             int serverPort = ( (InetSocketAddress) server.getLocalAddress() ).getPort();
 
             try ( MasterProcessChannelProcessorFactory factory =
-                     invokeMethod( ForkedBooter.class, "lookupDecoderFactory", "tcp://127.0.0.1:" + serverPort ) )
+                     invokeMethod( ForkedBooter.class, "lookupDecoderFactory", "tcp://localhost:" + serverPort ) )
             {
                 assertThat( factory )
                     .isInstanceOf( SurefireMasterProcessChannelProcessorFactory.class );
 
-                assertThat( factory.canUse( "tcp://127.0.0.1:" + serverPort ) )
+                assertThat( factory.canUse( "tcp://localhost:" + serverPort ) )
                     .isTrue();
 
                 assertThat( factory.canUse( "-- whatever --" ) )
@@ -350,7 +340,7 @@ public class ForkedBooterMockTest
                     }
                 } );
 
-                factory.connect( "tcp://127.0.0.1:" + serverPort );
+                factory.connect( "tcp://localhost:" + serverPort );
 
                 MasterProcessChannelDecoder decoder = factory.createDecoder();
                 assertThat( decoder )
@@ -358,6 +348,68 @@ public class ForkedBooterMockTest
                 MasterProcessChannelEncoder encoder = factory.createEncoder();
                 assertThat( encoder )
                     .isInstanceOf( LegacyMasterProcessChannelEncoder.class );
+            }
+        }
+    }
+
+    @Test
+    public void shouldAuthenticate() throws Exception
+    {
+        mockStatic( ForkedBooter.class );
+
+        doCallRealMethod()
+            .when( ForkedBooter.class, "lookupDecoderFactory", anyString() );
+
+        try ( final ServerSocketChannel server = ServerSocketChannel.open() )
+        {
+            server.bind( new InetSocketAddress( 0 ) );
+            int serverPort = ( (InetSocketAddress) server.getLocalAddress() ).getPort();
+            final String uuid = UUID.randomUUID().toString();
+            String url = "tcp://localhost:" + serverPort + "?sessionId=" + uuid;
+            try ( final MasterProcessChannelProcessorFactory factory =
+                      invokeMethod( ForkedBooter.class, "lookupDecoderFactory", url ) )
+            {
+                assertThat( factory )
+                    .isInstanceOf( SurefireMasterProcessChannelProcessorFactory.class );
+
+                FutureTask<Boolean> task = new FutureTask<>( new Callable<Boolean>()
+                {
+                    @Override
+                    public Boolean call()
+                    {
+                        try
+                        {
+                            SocketChannel channel = server.accept();
+                            ByteBuffer bb = ByteBuffer.allocate( uuid.length() );
+                            int read = channel.read( bb );
+                            assertThat( read )
+                                .isEqualTo( uuid.length() );
+                            bb.flip();
+                            assertThat( new String( bb.array(), US_ASCII ) )
+                                .isEqualTo( uuid );
+                            return true;
+                        }
+                        catch ( IOException e )
+                        {
+                            return false;
+                        }
+                    }
+                } );
+
+                Thread t = new Thread( task );
+                t.setDaemon( true );
+                t.start();
+
+                factory.connect( url );
+
+                try
+                {
+                    task.get( 10, SECONDS );
+                }
+                finally
+                {
+                    factory.close();
+                }
             }
         }
     }
@@ -384,5 +436,25 @@ public class ForkedBooterMockTest
             }
         } ).when( ShutdownHookUtils.class, "addShutDownHook", any( Thread.class ) );
         invokeMethod( booter, "flushEventChannelOnExit" );
+    }
+
+    @Test
+    public void shouldParseUUID() throws Exception
+    {
+        UUID uuid = UUID.randomUUID();
+        URI uri = new URI( "tcp://localhost:12345?sessionId=" + uuid );
+        String parsed = invokeMethod( SurefireMasterProcessChannelProcessorFactory.class, "extractSessionId", uri );
+        assertThat( parsed )
+            .isEqualTo( uuid.toString() );
+    }
+
+    @Test
+    public void shouldNotParseUUID() throws Exception
+    {
+        UUID uuid = UUID.randomUUID();
+        URI uri = new URI( "tcp://localhost:12345?xxx=" + uuid );
+        String parsed = invokeMethod( SurefireMasterProcessChannelProcessorFactory.class, "extractSessionId", uri );
+        assertThat( parsed )
+            .isNull();
     }
 }

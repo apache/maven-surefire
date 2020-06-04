@@ -39,6 +39,7 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Queue;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -62,8 +63,16 @@ public class ForkChannelTest
     @Test( timeout = TESTCASE_TIMEOUT )
     public void shouldRequestReplyMessagesViaTCP() throws Exception
     {
+        final String sessionId = UUID.randomUUID().toString();
         ForkNodeArguments forkNodeArguments = new ForkNodeArguments()
         {
+            @Nonnull
+            @Override
+            public String getSessionId()
+            {
+                return sessionId;
+            }
+
             @Override
             public int getForkChannelId()
             {
@@ -102,7 +111,8 @@ public class ForkChannelTest
             String localHost = InetAddress.getLocalHost().getHostAddress();
             assertThat( channel.getForkNodeConnectionString() )
                 .startsWith( "tcp://" + localHost + ":" )
-                .isNotEqualTo( "tcp://" + localHost + ":" );
+                .isNotEqualTo( "tcp://" + localHost + ":" )
+                .endsWith( "?sessionId=" + sessionId );
 
             URI uri = new URI( channel.getForkNodeConnectionString() );
 
@@ -123,7 +133,7 @@ public class ForkChannelTest
             CountdownCloseable cc = new CountdownCloseable( closeable, 2 );
             Consumer consumer = new Consumer();
 
-            Client client = new Client( uri.getPort() );
+            Client client = new Client( uri.getPort(), sessionId.toString() );
             client.start();
 
             channel.connectToClient();
@@ -164,10 +174,12 @@ public class ForkChannelTest
     private final class Client extends Thread
     {
         private final int port;
+        private final String sessionId;
 
-        private Client( int port )
+        private Client( int port, String sessionId )
         {
             this.port = port;
+            this.sessionId = sessionId;
         }
 
         @Override
@@ -175,6 +187,7 @@ public class ForkChannelTest
         {
             try ( Socket socket = new Socket( InetAddress.getLocalHost().getHostAddress(), port ) )
             {
+                socket.getOutputStream().write( sessionId.getBytes( US_ASCII ) );
                 byte[] data = new byte[128];
                 int readLength = socket.getInputStream().read( data );
                 String token = new String( data, 0, readLength, US_ASCII );
