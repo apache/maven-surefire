@@ -203,6 +203,26 @@ public class JUnitPlatformRerunFailingTestsIT extends SurefireJUnit4IntegrationT
         verifyFailuresOneRetryOneMethod( outputValidator );
     }
 
+    @Test
+    public void testParameterizedTest()
+    {
+        unpack()
+            .setJUnitVersion( VERSION )
+            .maven()
+            .activateProfile( "parameters" )
+            .withFailure()
+            .debugLogging()
+            .executeTest()
+            .assertTestSuiteResults( 6, 0, 1, 1, 0 )
+            .getSurefireReportsXmlFile( "TEST-junitplatform.ParametersTest.xml" )
+            .assertContainsText( "testOneFailingPassingTest(ConnectionPoolFactory)[1]" )
+            .assertContainsText( "testOneFailingPassingTest(ConnectionPoolFactory)[2]" )
+            .assertContainsText( "testOneFailingPassingTest(ConnectionPoolFactory)[3]" )
+            .assertContainsText( "testAllPassingTest(ConnectionPoolFactory)[1]" )
+            .assertContainsText( "testAllPassingTest(ConnectionPoolFactory)[2]" )
+            .assertContainsText( "testAllPassingTest(ConnectionPoolFactory)[3]" );
+    }
+
     private void verifyFailuresOneRetryAllClasses( OutputValidator outputValidator )
     {
         verifyFailuresOneRetry( outputValidator, 5, 1, 1, 0 );

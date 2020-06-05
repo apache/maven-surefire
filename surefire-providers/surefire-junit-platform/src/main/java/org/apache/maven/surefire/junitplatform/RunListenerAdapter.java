@@ -22,6 +22,7 @@ package org.apache.maven.surefire.junitplatform;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
 import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
 
 import java.util.Map;
@@ -255,13 +256,22 @@ final class RunListenerAdapter
                     .map( s -> s.substring( 1 + s.lastIndexOf( '.' ) ) )
                     .collect( joining( "," ) );
 
-            boolean hasParams = !simpleClassNames.isEmpty();
+            boolean hasParams = isNotBlank( methodSource.getMethodParameterTypes() );
             String methodName = methodSource.getMethodName();
-            String methodSign = methodName + '(' + simpleClassNames + ')';
             String description = testIdentifier.getLegacyReportingName();
-            boolean useDesc = description.startsWith( methodSign );
-            String methodDesc = hasParams ? ( useDesc ? description : methodSign ) : methodName;
-            String methodDisp = methodSign.equals( display ) ? methodDesc : display;
+            String methodSign = hasParams ? methodName + '(' + simpleClassNames + ')' : methodName;
+            boolean equalDescriptions = display.equals( description );
+            boolean hasLegacyDescription = description.startsWith( methodName + '(' );
+            boolean hasDisplayName = !equalDescriptions || !hasLegacyDescription;
+            String methodDesc = equalDescriptions || !hasParams ? methodSign : description;
+            String methodDisp = hasDisplayName ? display : methodDesc;
+
+            // The behavior of methods getLegacyReportingName() and getDisplayName().
+            //     test      ||  legacy  |  display
+            // ==============||==========|==========
+            //    normal     ||    m()   |    m()
+            //  normal+displ ||   displ  |  displ
+            // parameterized ||  m()[1]  |  displ
 
             return new String[] {source[0], source[1], methodDesc, methodDisp};
         }
