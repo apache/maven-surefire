@@ -191,7 +191,7 @@ public class AsyncSocketTest
     @SuppressWarnings( "checkstyle:magicnumber" )
     private void client() throws Exception
     {
-        InetSocketAddress hostAddress = new InetSocketAddress( InetAddress.getLoopbackAddress(), address.getPort() );
+        InetSocketAddress hostAddress = new InetSocketAddress( InetAddress.getLocalHost(), address.getPort() );
         AsynchronousSocketChannel clientSocketChannel = AsynchronousSocketChannel.open();
         clientSocketChannel.connect( hostAddress ).get(); // Wait until connection is done.
         InputStream is = new BufferedInputStream( newInputStream( clientSocketChannel ), 64 * 1024 );

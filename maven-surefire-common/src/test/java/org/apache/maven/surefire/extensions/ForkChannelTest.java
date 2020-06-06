@@ -33,6 +33,7 @@ import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -98,9 +99,10 @@ public class ForkChannelTest
             assertThat( channel.getCountdownCloseablePermits() )
                 .isEqualTo( 3 );
 
+            String localHost = InetAddress.getLocalHost().getHostAddress();
             assertThat( channel.getForkNodeConnectionString() )
-                .startsWith( "tcp://127.0.0.1:" )
-                .isNotEqualTo( "tcp://127.0.0.1:" );
+                .startsWith( "tcp://" + localHost + ":" )
+                .isNotEqualTo( "tcp://" + localHost + ":" );
 
             URI uri = new URI( channel.getForkNodeConnectionString() );
 
@@ -171,7 +173,7 @@ public class ForkChannelTest
         @Override
         public void run()
         {
-            try ( Socket socket = new Socket( "127.0.0.1", port ) )
+            try ( Socket socket = new Socket( InetAddress.getLocalHost().getHostAddress(), port ) )
             {
                 byte[] data = new byte[128];
                 int readLength = socket.getInputStream().read( data );
