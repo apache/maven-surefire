@@ -10,7 +10,7 @@ public class BTest
     public void test()
         throws InterruptedException
     {
-        MILLISECONDS.sleep( 9000L );
+        MILLISECONDS.sleep( 12_000L );
         throw new RuntimeException();
     }
 
