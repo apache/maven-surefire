@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire-providers</artifactId>
-    <version>3.0.0-M5</version>
+    <version>3.0.0-M6-SNAPSHOT</version>
   </parent>
 
   <artifactId>common-java5</artifactId>
