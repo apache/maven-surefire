@@ -36,7 +36,7 @@ Using Java Modularity (JPMS) in Tests
 
   The JDK version must be 9 or higher. The POM contains the dependency <<<org.testng:testng:7.1.0>>> which is
   an automatic module. It activates the internal provider <<<surefire-testng>>> in the plugin. The frameworks with
-  assertions API are used, i.e. <<<org.hamcrest:hamcrest:7.1.0>>> (automatic module)
+  assertions API are used, i.e. <<<org.hamcrest:hamcrest:2.2>>> (automatic module)
   and <<<org.assertj:assertj-core:3.16.1>>> (named module).
 
 +---+
