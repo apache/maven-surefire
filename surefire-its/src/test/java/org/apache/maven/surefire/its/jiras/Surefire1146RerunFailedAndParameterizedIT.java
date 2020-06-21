@@ -41,28 +41,41 @@ public class Surefire1146RerunFailedAndParameterizedIT
     private void verify( OutputValidator outputValidator, int run, int failures, int errors, int skipped, int flakes )
     {
         outputValidator.verifyTextInLog( "Flakes:" );
-        outputValidator.verifyTextInLog( "jiras.surefire1146.CustomDescriptionParameterizedTest.flakyTest[0: (Test11); Test12; Test13;](jiras.surefire1146.CustomDescriptionParameterizedTest)" );
+        outputValidator.verifyTextInLog( "jiras.surefire1146.CustomDescriptionParameterizedTest.flakyTest[0: (Test11); Test12; Test13;]" );
         outputValidator.verifyTextInLog( "Run 1: CustomDescriptionParameterizedTest.flakyTest:" );
         outputValidator.verifyTextInLog( "Run 2: CustomDescriptionParameterizedTest.flakyTest:" );
         outputValidator.verifyTextInLog( "Run 3: PASS" );
 
-        outputValidator.verifyTextInLog( "jiras.surefire1146.CustomDescriptionWithCommaParameterizedTest.flakyTest[0: (Test11), Test12, Test13;](jiras.surefire1146.CustomDescriptionWithCommaParameterizedTest)" );
+        outputValidator.getSurefireReportsXmlFile( "TEST-jiras.surefire1146.CustomDescriptionParameterizedTest.xml" )
+            .assertContainsText( "<testcase name=\"flakyTest[0: (Test11); Test12; Test13;]\" classname=\"jiras.surefire1146.CustomDescriptionParameterizedTest\"" )
+            .assertContainsText( "<testcase name=\"flakyTest[1: (Test21); Test22; Test23;]\" classname=\"jiras.surefire1146.CustomDescriptionParameterizedTest\"" );
+
+        outputValidator.verifyTextInLog( "jiras.surefire1146.CustomDescriptionWithCommaParameterizedTest.flakyTest[0: (Test11), Test12, Test13;]" );
         outputValidator.verifyTextInLog( "Run 1: CustomDescriptionWithCommaParameterizedTest.flakyTest:" );
         outputValidator.verifyTextInLog( "Run 2: CustomDescriptionWithCommaParameterizedTest.flakyTest:" );
         outputValidator.verifyTextInLog( "Run 3: PASS" );
+
+        outputValidator.getSurefireReportsXmlFile( "TEST-jiras.surefire1146.CustomDescriptionWithCommaParameterizedTest.xml" )
+            .assertContainsText( "<testcase name=\"flakyTest[0: (Test11), Test12, Test13;]\" classname=\"jiras.surefire1146.CustomDescriptionWithCommaParameterizedTest\"" )
+            .assertContainsText( "<testcase name=\"flakyTest[1: (Test21), Test22, Test23;]\" classname=\"jiras.surefire1146.CustomDescriptionWithCommaParameterizedTest\"" )
+            .assertContainsText( "<testcase name=\"flakyTest[2: (Test31), Test32, Test33;]\" classname=\"jiras.surefire1146.CustomDescriptionWithCommaParameterizedTest\"" );
         
-        outputValidator.verifyTextInLog( "jiras.surefire1146.CustomDescriptionWithCommaParameterizedTest.flakyTest[2: (Test31), Test32, Test33;](jiras.surefire1146.CustomDescriptionWithCommaParameterizedTest)" );
+        outputValidator.verifyTextInLog( "jiras.surefire1146.CustomDescriptionWithCommaParameterizedTest.flakyTest[2: (Test31), Test32, Test33;]" );
         outputValidator.verifyTextInLog( "Run 1: CustomDescriptionWithCommaParameterizedTest.flakyTest:" );
         outputValidator.verifyTextInLog( "Run 2: PASS" );
         
-        outputValidator.verifyTextInLog( "jiras.surefire1146.SimpleParameterizedTest.flakyTest[0](jiras.surefire1146.SimpleParameterizedTest)" );
+        outputValidator.verifyTextInLog( "jiras.surefire1146.SimpleParameterizedTest.flakyTest[0]" );
         outputValidator.verifyTextInLog( "Run 1: SimpleParameterizedTest.flakyTest:" );
         outputValidator.verifyTextInLog( "Run 2: SimpleParameterizedTest.flakyTest:" );
         outputValidator.verifyTextInLog( "Run 3: PASS" );
+        outputValidator.getSurefireReportsXmlFile( "TEST-jiras.surefire1146.SimpleParameterizedTest.xml" )
+            .assertContainsText( "<testcase name=\"flakyTest[0]\" classname=\"jiras.surefire1146.SimpleParameterizedTest\"" );
         
-        outputValidator.verifyTextInLog( "jiras.surefire1146.StandardTest.flakyTest(jiras.surefire1146.StandardTest)" );
+        outputValidator.verifyTextInLog( "jiras.surefire1146.StandardTest.flakyTest" );
         outputValidator.verifyTextInLog( "Run 1: StandardTest.flakyTest:" );
         outputValidator.verifyTextInLog( "Run 2: PASS" );
+        outputValidator.getSurefireReportsXmlFile( "TEST-jiras.surefire1146.StandardTest.xml" )
+            .assertContainsText( "<testcase name=\"flakyTest\" classname=\"jiras.surefire1146.StandardTest\"" );
 
         verifyStatistics( outputValidator, run, failures, errors, skipped, flakes );
     }
