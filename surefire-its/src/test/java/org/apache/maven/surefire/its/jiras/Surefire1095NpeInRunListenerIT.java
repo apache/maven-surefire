@@ -45,7 +45,7 @@ import org.junit.Test;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1095}"/>
  * @since 2.18
  */
-public final class Surefire1095NpeInRunListener
+public final class Surefire1095NpeInRunListenerIT
     extends SurefireJUnit4IntegrationTestCase
 {
 

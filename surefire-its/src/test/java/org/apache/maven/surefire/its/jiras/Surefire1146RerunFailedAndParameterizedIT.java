@@ -26,7 +26,7 @@ import org.junit.Test;
 /**
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1146">SUREFIRE-1146</a>
  */
-public class Surefire1146RerunFailedAndParameterized
+public class Surefire1146RerunFailedAndParameterizedIT
     extends SurefireJUnit4IntegrationTestCase
 {
     
