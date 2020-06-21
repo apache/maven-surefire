@@ -108,7 +108,7 @@ public class ForkChannelTest
             assertThat( channel.getCountdownCloseablePermits() )
                 .isEqualTo( 3 );
 
-            String localHost = InetAddress.getLocalHost().getHostAddress();
+            String localHost = InetAddress.getLoopbackAddress().getHostAddress();
             assertThat( channel.getForkNodeConnectionString() )
                 .startsWith( "tcp://" + localHost + ":" )
                 .isNotEqualTo( "tcp://" + localHost + ":" )
@@ -185,7 +185,7 @@ public class ForkChannelTest
         @Override
         public void run()
         {
-            try ( Socket socket = new Socket( InetAddress.getLocalHost().getHostAddress(), port ) )
+            try ( Socket socket = new Socket( InetAddress.getLoopbackAddress().getHostAddress(), port ) )
             {
                 socket.getOutputStream().write( sessionId.getBytes( US_ASCII ) );
                 byte[] data = new byte[128];
