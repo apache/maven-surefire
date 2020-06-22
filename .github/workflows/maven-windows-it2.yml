@@ -15,19 +15,13 @@
 # specific language governing permissions and limitations
 # under the License.
 
-name: GitHub CI for *Nix
+name: GitHub CI for Windows 2
 
 on: [push, pull_request]
 
 jobs:
   build:
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macOS-latest]
-      fail-fast: false
-
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
 
     steps:
       - name: Checkout
@@ -38,5 +32,8 @@ jobs:
         with:
           java-version: 14
 
-      - name: Build with Maven
-        run: mvn install -e -B -V -nsu --no-transfer-progress -P run-its
+      - name: Build with Maven with Install
+        run: mvn install -e -B -V -nsu --no-transfer-progress -DskipTests
+
+      - name: Build with Maven without Unit Tests
+        run: mvn install -e -B -V -nsu --no-transfer-progress -rf :surefire-its -P run-its "-Dit.test=!**/jiras/*IT*.java,!TestMethodPatternIT,!TestMultipleMethodPatternsIT,!TestMultipleMethodPatternsTestNGIT"
