@@ -46,7 +46,6 @@
       <artifactId>crashjvm</artifactId>
       <version>1.0</version>
       <scope>test</scope>
-      <type>jar</type>
     </dependency>
   </dependencies>
 
