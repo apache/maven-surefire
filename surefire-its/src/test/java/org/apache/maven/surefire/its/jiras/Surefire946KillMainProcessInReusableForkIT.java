@@ -19,12 +19,12 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
+import com.googlecode.junittoolbox.ParallelParameterized;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.w3c.dom.Document;
@@ -40,7 +40,7 @@ import static org.fest.assertions.Assertions.assertThat;
 /**
  *
  */
-@RunWith( Parameterized.class )
+@RunWith( ParallelParameterized.class )
 @SuppressWarnings( "checkstyle:magicnumber" )
 public class Surefire946KillMainProcessInReusableForkIT
     extends SurefireJUnit4IntegrationTestCase

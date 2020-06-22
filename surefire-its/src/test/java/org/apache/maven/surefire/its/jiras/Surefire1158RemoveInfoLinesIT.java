@@ -19,11 +19,11 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
+import com.googlecode.junittoolbox.ParallelParameterized;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireVerifierException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
 
@@ -37,7 +37,7 @@ import static org.junit.runners.Parameterized.Parameters;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1158">SUREFIRE-1158</a>
  * @since 2.19
  */
-@RunWith( Parameterized.class )
+@RunWith( ParallelParameterized.class )
 public class Surefire1158RemoveInfoLinesIT
 {
 

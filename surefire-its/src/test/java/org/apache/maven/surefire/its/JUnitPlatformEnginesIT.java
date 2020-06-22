@@ -19,13 +19,13 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import com.googlecode.junittoolbox.ParallelParameterized;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -47,7 +47,7 @@ import static org.junit.Assume.assumeThat;
 /**
  *
  */
-@RunWith( Parameterized.class )
+@RunWith( ParallelParameterized.class )
 @SuppressWarnings( "checkstyle:magicnumber" )
 public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase
 {
