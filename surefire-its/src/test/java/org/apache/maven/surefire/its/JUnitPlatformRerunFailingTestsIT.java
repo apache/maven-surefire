@@ -36,7 +36,7 @@ import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaV
 @SuppressWarnings( "checkstyle:magicnumber" )
 public class JUnitPlatformRerunFailingTestsIT extends SurefireJUnit4IntegrationTestCase
 {
-    private static final String VERSION = "5.5.1";
+    private static final String VERSION = "5.5.2";
 
     private SurefireLauncher unpack()
     {

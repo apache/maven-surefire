@@ -54,12 +54,9 @@ public class JUnitPlatformIT
     {
         ArrayList<Object[]> args = new ArrayList<>();
         args.add( new Object[] { "5.2.0", "0.8.0" } );
-        args.add( new Object[] { "5.3.0", "0.8.15" } );
         args.add( new Object[] { "5.3.2", "0.9.0" } );
-        args.add( new Object[] { "5.4.0", "0.9.3" } );
         args.add( new Object[] { "5.4.2", "1.0.0" } );
-        args.add( new Object[] { "5.5.0", "1.1.0" } );
-        args.add( new Object[] { "5.5.2", "1.1.0" } );
+        args.add( new Object[] { "5.5.2", "0.8.15" } );
         args.add( new Object[] { "5.6.2", "1.2.7" } );
         //args.add( new Object[] { "5.7.0-SNAPSHOT", "1.2.7" } );
         return args;
