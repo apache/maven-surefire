@@ -18,9 +18,9 @@
  */
 
 /**
- *
+ * "open" for testing Class.getResourceAsStream(), a resource in main module called by test module.
  */
-module main
+open module main
 {
     exports main;
 }

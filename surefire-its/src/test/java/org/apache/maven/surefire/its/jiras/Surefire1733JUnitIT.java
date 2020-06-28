@@ -42,7 +42,9 @@ public class Surefire1733JUnitIT extends AbstractJigsawIT
             .assertThatLogLine( containsString( "Running test.MyIT" ), is( 1 ) )
             .assertThatLogLine( containsString( "class main.Service in the module \"main\"" ), is( 2 ) )
             .assertThatLogLine( containsString( "class test.MyTest in the module \"test\"" ), is( 1 ) )
-            .assertThatLogLine( containsString( "class test.MyIT in the module \"test\"" ), is( 1 ) );
+            .assertThatLogLine( containsString( "class test.MyIT in the module \"test\"" ), is( 1 ) )
+            .assertThatLogLine( containsString( "Hi there!" ), is( 4 ) )
+            .assertThatLogLine( containsString( "Hello!" ), is( 4 ) );
     }
 
     @Override
