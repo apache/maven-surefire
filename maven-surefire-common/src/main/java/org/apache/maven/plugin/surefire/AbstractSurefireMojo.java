@@ -119,6 +119,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.zip.ZipFile;
 
 import static java.lang.Boolean.TRUE;
 import static java.lang.Integer.parseInt;
@@ -1397,7 +1398,10 @@ public abstract class AbstractSurefireMojo
 
     private ResolvePathResultWrapper findModuleDescriptor( File jdkHome, File buildPath, boolean isMainDescriptor )
     {
-        if ( buildPath.isDirectory() && !new File( buildPath, "module-info.class" ).exists() )
+        boolean isJpmsModule =
+            buildPath.isDirectory() ? new File( buildPath, "module-info.class" ).exists() : isModule( buildPath );
+
+        if ( !isJpmsModule )
         {
             return new ResolvePathResultWrapper( null, isMainDescriptor );
         }
@@ -1412,6 +1416,18 @@ public abstract class AbstractSurefireMojo
         catch ( Exception e )
         {
             return new ResolvePathResultWrapper( null, isMainDescriptor );
+        }
+    }
+
+    private static boolean isModule( File jar )
+    {
+        try ( ZipFile zip = new ZipFile( jar ) )
+        {
+            return zip.getEntry( "module-info.class" ) != null;
+        }
+        catch ( IOException e )
+        {
+            return false;
         }
     }
 
