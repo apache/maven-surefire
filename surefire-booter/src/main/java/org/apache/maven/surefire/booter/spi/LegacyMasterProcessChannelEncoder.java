@@ -298,11 +298,9 @@ public class LegacyMasterProcessChannelEncoder implements MasterProcessChannelEn
 
     private void encodeAndPrintEvent( StringBuilder event, boolean sendImmediately )
     {
+        final boolean wasInterrupted = Thread.interrupted();
         try
         {
-            //noinspection ResultOfMethodCallIgnored
-            Thread.interrupted();
-
             byte[] array = event.append( '\n' )
                 .toString()
                 .getBytes( STREAM_ENCODING );
@@ -332,6 +330,13 @@ public class LegacyMasterProcessChannelEncoder implements MasterProcessChannelEn
             {
                 DumpErrorSingleton.getSingleton()
                     .dumpException( e );
+            }
+        }
+        finally
+        {
+            if ( wasInterrupted )
+            {
+                Thread.currentThread().interrupt();
             }
         }
     }

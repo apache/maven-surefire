@@ -1090,6 +1090,35 @@ public class LegacyMasterProcessChannelEncoderTest
                 .startsWith( ":maven-surefire-event:jvm-exit-error:UTF-8:MQ==:Mg==:NA==:" );
     }
 
+    @Test
+    public void testInterruptHandling() throws IOException
+    {
+        Stream out = Stream.newStream();
+        WritableBufferedByteChannel channel = newBufferedChannel( out );
+        LegacyMasterProcessChannelEncoder encoder = new LegacyMasterProcessChannelEncoder( channel );
+
+        Thread.currentThread().interrupt();
+        try
+        {
+            encoder.stdOut( "msg", false );
+            channel.close();
+        }
+        finally
+        {
+            // Clear the interrupt and make sure it survived the invocation
+            assertThat( Thread.interrupted() )
+                    .isTrue();
+        }
+
+        String expected = ":maven-surefire-event:std-out-stream:normal-run:UTF-8:bXNn:";
+
+        LineNumberReader printedLines = out.newReader( UTF_8 );
+        assertThat( printedLines.readLine() )
+                .isEqualTo( expected );
+        assertThat( printedLines.readLine() )
+                .isNull();
+    }
+
     private static class Stream extends PrintStream
     {
         private final ByteArrayOutputStream out;
