@@ -817,7 +817,7 @@ public abstract class AbstractSurefireMojo
      *
      * @since 3.0.0-M6
      */
-    @Parameter( defaultValue = "0" )
+    @Parameter( property = "outputFlushInterval", defaultValue = "0" )
     private long outputFlushInterval;
 
     /**
