@@ -139,13 +139,14 @@ public final class ForkedBooter
             && LegacyMasterProcessChannelEncoder.class.isInstance( eventChannel ) )
         {
             final LegacyMasterProcessChannelEncoder enc = LegacyMasterProcessChannelEncoder.class.cast( eventChannel );
-            flusher = Executors.newSingleThreadScheduledExecutor( DaemonThreadFactory.newDaemonThreadFactory() );
+            flusher = Executors.newSingleThreadScheduledExecutor( DaemonThreadFactory.newDaemonThreadFactory(
+                "surefire-forkedbooter-flusher" ) );
+            final WritableBufferedByteChannel c = WritableBufferedByteChannel.class.cast( enc.getOut() );
             flusher.scheduleAtFixedRate( new Runnable()
             {
                 @Override
                 public void run()
                 {
-                    final WritableBufferedByteChannel c = WritableBufferedByteChannel.class.cast( enc.getOut() );
                     try
                     {
                         if ( c.isOpen() )
