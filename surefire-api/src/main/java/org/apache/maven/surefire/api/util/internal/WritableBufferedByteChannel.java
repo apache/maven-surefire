@@ -33,4 +33,6 @@ import java.nio.channels.WritableByteChannel;
 public interface WritableBufferedByteChannel extends WritableByteChannel
 {
     void writeBuffered( ByteBuffer src ) throws IOException;
+
+    void flush() throws IOException;
 }

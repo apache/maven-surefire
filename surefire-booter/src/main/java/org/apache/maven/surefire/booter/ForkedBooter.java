@@ -27,6 +27,9 @@ import org.apache.maven.surefire.api.booter.ForkingReporterFactory;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
 import org.apache.maven.surefire.api.booter.Shutdown;
+import org.apache.maven.surefire.api.util.internal.DaemonThreadFactory;
+import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
+import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder;
 import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.api.provider.CommandListener;
@@ -50,6 +53,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.security.AccessControlException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
@@ -100,6 +104,7 @@ public final class ForkedBooter
     private ForkingReporterFactory forkingReporterFactory;
     private StartupConfiguration startupConfiguration;
     private Object testSet;
+    private ScheduledExecutorService flusher;
 
     private void setupBooter( String tmpDir, String dumpFileName, String surefirePropsFileName,
                               String effectiveSystemPropertiesFileName )
@@ -128,6 +133,34 @@ public final class ForkedBooter
         MasterProcessChannelDecoder decoder = channelProcessorFactory.createDecoder();
 
         flushEventChannelOnExit();
+
+        final Long outputFlushInterval = providerConfiguration.getOutputFlushInterval();
+        if ( outputFlushInterval != null && outputFlushInterval > 0
+            && LegacyMasterProcessChannelEncoder.class.isInstance( eventChannel ) )
+        {
+            final LegacyMasterProcessChannelEncoder enc = LegacyMasterProcessChannelEncoder.class.cast( eventChannel );
+            flusher = Executors.newSingleThreadScheduledExecutor( DaemonThreadFactory.newDaemonThreadFactory() );
+            flusher.scheduleAtFixedRate( new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    final WritableBufferedByteChannel c = WritableBufferedByteChannel.class.cast( enc.getOut() );
+                    try
+                    {
+                        if ( c.isOpen() )
+                        {
+                            c.flush();
+                        }
+
+                    }
+                    catch ( Exception e )
+                    {
+                        // no-op, not important, we tried anyway
+                    }
+                }
+            }, outputFlushInterval, outputFlushInterval, MILLISECONDS );
+        }
 
         forkingReporterFactory = createForkingReporterFactory();
         ConsoleLogger logger = (ConsoleLogger) forkingReporterFactory.createReporter();
@@ -235,6 +268,18 @@ public final class ForkedBooter
             catch ( IOException e )
             {
                 e.printStackTrace();
+            }
+        }
+        if ( flusher != null )
+        {
+            flusher.shutdownNow();
+            try
+            { // give a chance to finish sync, not that important if it fails
+                flusher.awaitTermination( 2, SECONDS );
+            }
+            catch ( InterruptedException e )
+            {
+                Thread.currentThread().interrupt();
             }
         }
     }

@@ -53,6 +53,7 @@ import static org.apache.maven.surefire.booter.BooterConstants.FORKTESTSET_PREFE
 import static org.apache.maven.surefire.booter.BooterConstants.INCLUDES_PROPERTY_PREFIX;
 import static org.apache.maven.surefire.booter.BooterConstants.ISTRIMSTACKTRACE;
 import static org.apache.maven.surefire.booter.BooterConstants.MAIN_CLI_OPTIONS;
+import static org.apache.maven.surefire.booter.BooterConstants.OUTPUT_FLUSH_INTERVAL_MS;
 import static org.apache.maven.surefire.booter.BooterConstants.PLUGIN_PID;
 import static org.apache.maven.surefire.booter.BooterConstants.PROCESS_CHECKER;
 import static org.apache.maven.surefire.booter.BooterConstants.PROVIDER_CONFIGURATION;
@@ -181,6 +182,10 @@ class BooterSerializer
             properties.addList( mainCliOptions, MAIN_CLI_OPTIONS );
         }
         properties.setNullableProperty( SYSTEM_EXIT_TIMEOUT, toString( providerConfiguration.getSystemExitTimeout() ) );
+        properties.setNullableProperty(
+            OUTPUT_FLUSH_INTERVAL_MS,
+            providerConfiguration.getOutputFlushInterval() == null
+                ? "0" : toString( providerConfiguration.getOutputFlushInterval() ) );
 
         File surefireTmpDir = forkConfiguration.getTempDirectory();
         boolean debug = forkConfiguration.isDebug();

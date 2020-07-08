@@ -131,11 +131,13 @@ public class BooterDeserializer
         Integer systemExitTimeout =
                 systemExitTimeoutAsString == null ? null : Integer.valueOf( systemExitTimeoutAsString );
 
+        long outputFlushIntervalMs = properties.getLongProperty( OUTPUT_FLUSH_INTERVAL_MS );
+
         return new ProviderConfiguration( dirScannerParams, runOrderParameters,
                                           properties.getBooleanProperty( FAILIFNOTESTS ), reporterConfiguration, testNg,
                                           testSuiteDefinition, properties.getProperties(), typeEncodedTestForFork,
                                           preferTestsFromInStream, fromStrings( cli ), failFastCount, shutdown,
-                                          systemExitTimeout );
+                                          systemExitTimeout, outputFlushIntervalMs );
     }
 
     public StartupConfiguration getStartupConfiguration()

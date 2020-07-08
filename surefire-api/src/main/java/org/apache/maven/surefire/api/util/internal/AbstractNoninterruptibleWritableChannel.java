@@ -39,6 +39,12 @@ abstract class AbstractNoninterruptibleWritableChannel implements WritableBuffer
     protected abstract void flushImpl() throws IOException;
 
     @Override
+    public final void flush() throws IOException
+    {
+        flushImpl();
+    }
+
+    @Override
     public final int write( ByteBuffer src ) throws IOException
     {
         return write( src, true );

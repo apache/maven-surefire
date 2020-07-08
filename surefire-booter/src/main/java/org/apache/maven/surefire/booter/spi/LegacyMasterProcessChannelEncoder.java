@@ -275,6 +275,11 @@ public class LegacyMasterProcessChannelEncoder implements MasterProcessChannelEn
         error( stackTraceWriter, trimStackTraces, BOOTERCODE_JVM_EXIT_ERROR, true );
     }
 
+    public WritableBufferedByteChannel getOut()
+    {
+        return out;
+    }
+
     private void error( StackTraceWriter stackTraceWriter, boolean trimStackTraces, ForkedProcessEventType event,
                         @SuppressWarnings( "SameParameterValue" ) boolean sendImmediately )
     {
