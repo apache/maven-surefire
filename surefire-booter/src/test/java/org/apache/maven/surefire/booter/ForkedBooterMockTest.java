@@ -22,6 +22,8 @@ package org.apache.maven.surefire.booter;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
+import org.apache.maven.surefire.booter.spi.AbstractMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelDecoder;
 import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder;
 import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelProcessorFactory;
@@ -42,6 +44,7 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
@@ -55,6 +58,7 @@ import java.util.concurrent.FutureTask;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.Fail.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -293,6 +297,72 @@ public class ForkedBooterMockTest
             MasterProcessChannelEncoder encoder = factory.createEncoder();
             assertThat( encoder ).isInstanceOf( LegacyMasterProcessChannelEncoder.class );
         }
+    }
+
+    @Test
+    @SuppressWarnings( "checkstyle:magicnumber" )
+    public void shouldScheduleFlushes() throws Exception
+    {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        class Factory extends AbstractMasterProcessChannelProcessorFactory
+        {
+            @Override
+            public boolean canUse( String channelConfig )
+            {
+                return false;
+            }
+
+            @Override
+            public void connect( String channelConfig )
+            {
+            }
+
+            @Override
+            public MasterProcessChannelDecoder createDecoder()
+            {
+                return null;
+            }
+
+            @Override
+            public MasterProcessChannelEncoder createEncoder()
+            {
+                return null;
+            }
+
+            public void runScheduler() throws InterruptedException
+            {
+                final WritableBufferedByteChannel channel = newBufferedChannel( out );
+                schedulePeriodicFlusher( 100, channel );
+                Thread t = new Thread()
+                {
+                    @Override
+                    public void run()
+                    {
+                        for ( int i = 0; i < 10; i++ )
+                        {
+                            try
+                            {
+                                channel.write( ByteBuffer.wrap( new byte[] {1} ) );
+                                Thread.sleep( 75 );
+                            }
+                            catch ( Exception e )
+                            {
+                                //
+                            }
+                        }
+                    }
+                };
+                t.setDaemon( true );
+                t.start();
+                t.join( 5000L );
+            }
+        }
+
+        Factory factory = new Factory();
+        factory.runScheduler();
+        factory.close();
+        assertThat( out.size() ).isPositive();
+        assertThat( out.size() ).isLessThanOrEqualTo( 10 );
     }
 
     @Test

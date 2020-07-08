@@ -28,11 +28,13 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousByteChannel;
 import java.nio.channels.ClosedChannelException;
@@ -54,6 +56,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.powermock.reflect.Whitebox.invokeMethod;
 
 /**
  * The tests for {@link Channels#newChannel(InputStream)} and {@link Channels#newBufferedChannel(InputStream)}.
@@ -67,6 +70,36 @@ public class ChannelsReaderTest
     public final TemporaryFolder tmp = TemporaryFolder.builder()
         .assureDeletion()
         .build();
+
+    @Test
+    public void shouldOverflowBuffer() throws Exception
+    {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        WritableBufferedByteChannel channel = invokeMethod( Channels.class, "newChannel",
+            new Class[] {OutputStream.class, int.class}, new Object[] {out, 8} );
+
+        assertThat( channel.countBufferOverflows() )
+            .isEqualTo( 0 );
+
+        channel.write( ByteBuffer.wrap( new byte[] {1, 2, 3} ) );
+
+        assertThat( channel.countBufferOverflows() )
+            .isEqualTo( 0 );
+
+        channel.write( ByteBuffer.wrap( new byte[] {4, 5, 6, 7, 8} ) );
+
+        assertThat( channel.countBufferOverflows() )
+            .isEqualTo( 0 );
+
+        channel.write( ByteBuffer.wrap( new byte[] {9} ) );
+
+        assertThat( channel.countBufferOverflows() )
+            .isEqualTo( 1 );
+
+        assertThat( out.toByteArray() )
+            .isEqualTo( new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9} );
+    }
 
     @Test
     public void exactBufferSize() throws Exception

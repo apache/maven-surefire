@@ -21,7 +21,7 @@ package org.apache.maven.surefire.booter.spi;
 
 import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
-import org.apache.maven.surefire.spi.MasterProcessChannelProcessorFactory;
+import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -53,8 +53,9 @@ import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.ne
  * @since 3.0.0-M5
  */
 public class SurefireMasterProcessChannelProcessorFactory
-    implements MasterProcessChannelProcessorFactory
+    extends AbstractMasterProcessChannelProcessorFactory
 {
+    private static final int FLUSH_PERIOD_MILLIS = 100;
     private volatile AsynchronousSocketChannel clientSocketChannel;
 
     @Override
@@ -104,12 +105,15 @@ public class SurefireMasterProcessChannelProcessorFactory
     @Override
     public MasterProcessChannelEncoder createEncoder()
     {
-        return new LegacyMasterProcessChannelEncoder( newBufferedChannel( newOutputStream( clientSocketChannel ) ) );
+        WritableBufferedByteChannel channel = newBufferedChannel( newOutputStream( clientSocketChannel ) );
+        schedulePeriodicFlusher( FLUSH_PERIOD_MILLIS, channel );
+        return new LegacyMasterProcessChannelEncoder( channel );
     }
 
     @Override
     public void close() throws IOException
     {
+        super.close();
         if ( clientSocketChannel != null && clientSocketChannel.isOpen() )
         {
             clientSocketChannel.close();
