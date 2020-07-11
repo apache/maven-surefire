@@ -156,7 +156,6 @@ public final class ThreadedStreamConsumer
         }
 
         int count = queueSize.get();
-        // System.out.println( "count = " + count );
         if ( count == 0 || count >= QUEUE_MAX_ITEMS )
         {
             try
