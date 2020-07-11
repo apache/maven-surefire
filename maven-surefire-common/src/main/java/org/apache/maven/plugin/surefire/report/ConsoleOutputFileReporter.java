@@ -30,7 +30,6 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicStampedReference;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.maven.plugin.surefire.report.FileReporter.getReportFile;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
@@ -58,8 +57,6 @@ public class ConsoleOutputFileReporter
     private final AtomicStampedReference<FilterOutputStream> fileOutputStream =
             new AtomicStampedReference<>( null, OPEN );
 
-    private final ReentrantLock lock = new ReentrantLock();
-
     private volatile String reportEntryName;
 
     public ConsoleOutputFileReporter( File reportsDirectory, String reportNameSuffix, boolean usePhrasedFileName,
@@ -73,17 +70,9 @@ public class ConsoleOutputFileReporter
     }
 
     @Override
-    public void testSetStarting( TestSetReportEntry reportEntry )
+    public synchronized void testSetStarting( TestSetReportEntry reportEntry )
     {
-        lock.lock();
-        try
-        {
-            closeNullReportFile( reportEntry );
-        }
-        finally
-        {
-            lock.unlock();
-        }
+        closeNullReportFile( reportEntry );
     }
 
     @Override
@@ -92,24 +81,15 @@ public class ConsoleOutputFileReporter
     }
 
     @Override
-    public void close()
+    public synchronized void close()
     {
         // The close() method is called in main Thread T2.
-        lock.lock();
-        try
-        {
-            closeReportFile();
-        }
-        finally
-        {
-            lock.unlock();
-        }
+        closeReportFile();
     }
 
     @Override
-    public void writeTestOutput( String output, boolean newLine, boolean stdout )
+    public synchronized void writeTestOutput( String output, boolean newLine, boolean stdout )
     {
-        lock.lock();
         try
         {
             // This method is called in single thread T1 per fork JVM (see ThreadedStreamConsumer).
@@ -147,10 +127,6 @@ public class ConsoleOutputFileReporter
             dumpException( e );
             // todo use UncheckedIOException in Java 8
             throw new RuntimeException( e );
-        }
-        finally
-        {
-            lock.unlock();
         }
     }
 

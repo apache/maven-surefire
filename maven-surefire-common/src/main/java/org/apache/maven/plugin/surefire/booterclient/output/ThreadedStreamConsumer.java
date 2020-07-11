@@ -20,41 +20,42 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  */
 
 import org.apache.maven.surefire.api.event.Event;
-import org.apache.maven.surefire.shared.utils.cli.StreamConsumer;
 import org.apache.maven.surefire.extensions.EventHandler;
-import org.apache.maven.surefire.api.util.internal.DaemonThreadFactory;
+import org.apache.maven.surefire.shared.utils.cli.StreamConsumer;
 
 import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
-import static java.lang.Thread.currentThread;
+import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThread;
 
 /**
- * Knows how to reconstruct *all* the state transmitted over stdout by the forked process.
+ * Knows how to reconstruct *all* the state transmitted over Channel by the forked process.
+ * <br>
+ * After applying the performance improvements with {@link QueueSynchronizer} the throughput becomes
+ * 6.33 mega messages per second
+ * (158 nano seconds per message, 5 million messages within 0.79 seconds - see the test ThreadedStreamConsumerTest)
+ * on CPU i5 Dual Core 2.6 GHz and Oracle JDK 11.
  *
  * @author Kristian Rosenvold
  */
 public final class ThreadedStreamConsumer
-        implements EventHandler<Event>, Closeable
+    implements EventHandler<Event>, Closeable
 {
+    private static final int QUEUE_MAX_ITEMS = 10_000;
     private static final Event END_ITEM = new FinalEvent();
 
-    private static final int ITEM_LIMIT_BEFORE_SLEEP = 10_000;
-
-    private final BlockingQueue<Event> items = new ArrayBlockingQueue<>( ITEM_LIMIT_BEFORE_SLEEP );
-
+    private final QueueSynchronizer<Event> synchronizer = new QueueSynchronizer<>( QUEUE_MAX_ITEMS, END_ITEM );
     private final AtomicBoolean stop = new AtomicBoolean();
-
-    private final Thread thread;
-
+    private final AtomicBoolean isAlive = new AtomicBoolean( true );
     private final Pumper pumper;
 
     final class Pumper
-            implements Runnable
+        implements Runnable
     {
         private final EventHandler<Event> target;
 
@@ -79,15 +80,17 @@ public final class ThreadedStreamConsumer
         @Override
         public void run()
         {
-            while ( !ThreadedStreamConsumer.this.stop.get() || !ThreadedStreamConsumer.this.items.isEmpty() )
+            while ( !stop.get() || !synchronizer.isEmptyQueue() )
             {
                 try
                 {
-                    Event item = ThreadedStreamConsumer.this.items.take();
+                    Event item = synchronizer.awaitNext();
+
                     if ( shouldStopQueueing( item ) )
                     {
-                        return;
+                        break;
                     }
+
                     target.handleEvent( item );
                 }
                 catch ( Throwable t )
@@ -95,6 +98,8 @@ public final class ThreadedStreamConsumer
                     errors.addException( t );
                 }
             }
+
+            isAlive.set( false );
         }
 
         boolean hasErrors()
@@ -111,7 +116,7 @@ public final class ThreadedStreamConsumer
     public ThreadedStreamConsumer( EventHandler<Event> target )
     {
         pumper = new Pumper( target );
-        thread = DaemonThreadFactory.newDaemonThread( pumper, "ThreadedStreamConsumer" );
+        Thread thread = newDaemonThread( pumper, "ThreadedStreamConsumer" );
         thread.start();
     }
 
@@ -122,37 +127,24 @@ public final class ThreadedStreamConsumer
         {
             return;
         }
-        else if ( !thread.isAlive() )
+        // Do NOT call Thread.isAlive() - slow.
+        // It makes worse performance from 790 millis to 1250 millis for 5 million messages.
+        else if ( !isAlive.get() )
         {
-            items.clear();
+            synchronizer.clearQueue();
             return;
         }
 
-        try
-        {
-            items.put( event );
-        }
-        catch ( InterruptedException e )
-        {
-            currentThread().interrupt();
-            throw new IllegalStateException( e );
-        }
+        synchronizer.pushNext( event );
     }
 
     @Override
     public void close()
-            throws IOException
+        throws IOException
     {
         if ( stop.compareAndSet( false, true ) )
         {
-            try
-            {
-                items.put( END_ITEM );
-            }
-            catch ( InterruptedException e )
-            {
-                currentThread().interrupt();
-            }
+            synchronizer.markStopped();
         }
 
         if ( pumper.hasErrors() )
@@ -167,7 +159,7 @@ public final class ThreadedStreamConsumer
      * @param item    element from <code>items</code>
      * @return {@code true} if tail of the queue
      */
-    private boolean shouldStopQueueing( Event item )
+    private static boolean shouldStopQueueing( Event item )
     {
         return item == END_ITEM;
     }
@@ -222,6 +214,124 @@ public final class ThreadedStreamConsumer
         public boolean isJvmExitError()
         {
             return false;
+        }
+    }
+
+    /**
+     * This synchronization helper mostly avoids the locks.
+     * If the queue size has reached zero or {@code maxQueueSize} then the threads are locked (parked/unparked).
+     * The thread instance T1 is reader (see the class "Pumper") and T2 is the writer (see the method "handleEvent").
+     *
+     * @param <T> element type in the queue
+     */
+    static class QueueSynchronizer<T>
+    {
+        private final SyncT1 t1 = new SyncT1();
+        private final SyncT2 t2 = new SyncT2();
+        private final ConcurrentLinkedDeque<T> queue = new ConcurrentLinkedDeque<>();
+        private final AtomicInteger queueSize = new AtomicInteger();
+        private final int maxQueueSize;
+        private final T stopItemMarker;
+
+        QueueSynchronizer( int maxQueueSize, T stopItemMarker )
+        {
+            this.maxQueueSize = maxQueueSize;
+            this.stopItemMarker = stopItemMarker;
+        }
+
+        private class SyncT1 extends AbstractQueuedSynchronizer
+        {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected int tryAcquireShared( int arg )
+            {
+                return queueSize.get() == 0 ? -1 : 1;
+            }
+
+            @Override
+            protected boolean tryReleaseShared( int arg )
+            {
+                return true;
+            }
+
+            void waitIfZero() throws InterruptedException
+            {
+                acquireSharedInterruptibly( 1 );
+            }
+
+            void release()
+            {
+                releaseShared( 0 );
+            }
+        }
+
+        private class SyncT2 extends AbstractQueuedSynchronizer
+        {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected int tryAcquireShared( int arg )
+            {
+                return queueSize.get() < maxQueueSize ? 1 : -1;
+            }
+
+            @Override
+            protected boolean tryReleaseShared( int arg )
+            {
+                return true;
+            }
+
+            void awaitMax()
+            {
+                acquireShared( 1 );
+            }
+
+            void tryRelease()
+            {
+                if ( queueSize.get() == 0 )
+                {
+                    releaseShared( 0 );
+                }
+            }
+        }
+
+        void markStopped()
+        {
+            addNext( stopItemMarker );
+        }
+
+        void pushNext( T t )
+        {
+            t2.awaitMax();
+            addNext( t );
+        }
+
+        T awaitNext() throws InterruptedException
+        {
+            t2.tryRelease();
+            t1.waitIfZero();
+            queueSize.decrementAndGet();
+            return queue.pollFirst();
+        }
+
+        boolean isEmptyQueue()
+        {
+            return queue.isEmpty();
+        }
+
+        void clearQueue()
+        {
+            queue.clear();
+        }
+
+        private void addNext( T t )
+        {
+            queue.addLast( t );
+            if ( queueSize.getAndIncrement() == 0 )
+            {
+                t1.release();
+            }
         }
     }
 }
