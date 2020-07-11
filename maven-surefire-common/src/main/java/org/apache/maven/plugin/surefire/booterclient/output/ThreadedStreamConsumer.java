@@ -20,18 +20,20 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  */
 
 import org.apache.maven.surefire.api.event.Event;
-import org.apache.maven.surefire.shared.utils.cli.StreamConsumer;
-import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.api.util.internal.DaemonThreadFactory;
+import org.apache.maven.surefire.extensions.EventHandler;
+import org.apache.maven.surefire.shared.utils.cli.StreamConsumer;
 
 import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
-import static java.lang.Thread.currentThread;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * Knows how to reconstruct *all* the state transmitted over stdout by the forked process.
@@ -41,11 +43,16 @@ import static java.lang.Thread.currentThread;
 public final class ThreadedStreamConsumer
         implements EventHandler<Event>, Closeable
 {
+    private static final int QUEUE_MAX_ITEMS = 10_000;
     private static final Event END_ITEM = new FinalEvent();
 
-    private static final int ITEM_LIMIT_BEFORE_SLEEP = 10_000;
+    private final ConcurrentLinkedDeque<Event> queue = new ConcurrentLinkedDeque<>();
 
-    private final BlockingQueue<Event> items = new ArrayBlockingQueue<>( ITEM_LIMIT_BEFORE_SLEEP );
+    private final ReentrantLock queueLock = new ReentrantLock();
+
+    private final Condition queueCondition = queueLock.newCondition();
+
+    private final AtomicInteger queueSize = new AtomicInteger();
 
     private final AtomicBoolean stop = new AtomicBoolean();
 
@@ -79,21 +86,41 @@ public final class ThreadedStreamConsumer
         @Override
         public void run()
         {
-            while ( !ThreadedStreamConsumer.this.stop.get() || !ThreadedStreamConsumer.this.items.isEmpty() )
+            try
             {
-                try
+                queueLock.lock();
+                while ( !stop.get() || !queue.isEmpty() )
                 {
-                    Event item = ThreadedStreamConsumer.this.items.take();
-                    if ( shouldStopQueueing( item ) )
+                    try
                     {
-                        return;
+                        Event item = queue.pollFirst();
+
+                        if ( item == null )
+                        {
+                            queueCondition.await( 1L, SECONDS );
+                            continue;
+                        }
+                        else
+                        {
+                            queueSize.decrementAndGet();
+                        }
+
+                        if ( shouldStopQueueing( item ) )
+                        {
+                            break;
+                        }
+
+                        target.handleEvent( item );
                     }
-                    target.handleEvent( item );
+                    catch ( Throwable t )
+                    {
+                        errors.addException( t );
+                    }
                 }
-                catch ( Throwable t )
-                {
-                    errors.addException( t );
-                }
+            }
+            finally
+            {
+                queueLock.unlock();
             }
         }
 
@@ -124,19 +151,36 @@ public final class ThreadedStreamConsumer
         }
         else if ( !thread.isAlive() )
         {
-            items.clear();
+            queue.clear();
             return;
         }
 
-        try
+        int count = queueSize.get();
+        // System.out.println( "count = " + count );
+        if ( count == 0 || count >= QUEUE_MAX_ITEMS )
         {
-            items.put( event );
+            try
+            {
+                queueLock.lock();
+                updateAndNotifyReader( event );
+            }
+            finally
+            {
+                queueLock.unlock();
+            }
         }
-        catch ( InterruptedException e )
+        else
         {
-            currentThread().interrupt();
-            throw new IllegalStateException( e );
+            queueSize.incrementAndGet();
+            queue.addLast( event );
         }
+    }
+
+    private void updateAndNotifyReader( @Nonnull Event event )
+    {
+        queueSize.incrementAndGet();
+        queue.addLast( event );
+        queueCondition.signal();
     }
 
     @Override
@@ -145,13 +189,15 @@ public final class ThreadedStreamConsumer
     {
         if ( stop.compareAndSet( false, true ) )
         {
+            queue.addLast( END_ITEM );
             try
             {
-                items.put( END_ITEM );
+                queueLock.lock();
+                queueCondition.signal();
             }
-            catch ( InterruptedException e )
+            finally
             {
-                currentThread().interrupt();
+                queueLock.unlock();
             }
         }
 
