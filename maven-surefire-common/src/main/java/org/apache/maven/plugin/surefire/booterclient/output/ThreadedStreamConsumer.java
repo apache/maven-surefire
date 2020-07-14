@@ -28,12 +28,11 @@ import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * Knows how to reconstruct *all* the state transmitted over stdout by the forked process.
@@ -41,27 +40,22 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  * @author Kristian Rosenvold
  */
 public final class ThreadedStreamConsumer
-        implements EventHandler<Event>, Closeable
+    implements EventHandler<Event>, Closeable
 {
     private static final int QUEUE_MAX_ITEMS = 10_000;
     private static final Event END_ITEM = new FinalEvent();
 
     private final ConcurrentLinkedDeque<Event> queue = new ConcurrentLinkedDeque<>();
-
     private final ReentrantLock queueLock = new ReentrantLock();
-
     private final Condition queueCondition = queueLock.newCondition();
-
+    private final Semaphore producerBarrier = new Semaphore( 0 );
     private final AtomicInteger queueSize = new AtomicInteger();
-
     private final AtomicBoolean stop = new AtomicBoolean();
-
     private final Thread thread;
-
     private final Pumper pumper;
 
     final class Pumper
-            implements Runnable
+        implements Runnable
     {
         private final EventHandler<Event> target;
 
@@ -86,9 +80,10 @@ public final class ThreadedStreamConsumer
         @Override
         public void run()
         {
+            queueLock.lock();
+            //todo CyclicBarrier here
             try
             {
-                queueLock.lock();
                 while ( !stop.get() || !queue.isEmpty() )
                 {
                     try
@@ -97,7 +92,8 @@ public final class ThreadedStreamConsumer
 
                         if ( item == null )
                         {
-                            queueCondition.await( 1L, SECONDS );
+                            queueCondition.await();
+                            producerBarrier.release();
                             continue;
                         }
                         else
@@ -145,6 +141,7 @@ public final class ThreadedStreamConsumer
     @Override
     public void handleEvent( @Nonnull Event event )
     {
+        //todo CyclicBarrier here
         if ( stop.get() )
         {
             return;
@@ -156,16 +153,26 @@ public final class ThreadedStreamConsumer
         }
 
         int count = queueSize.get();
-        if ( count == 0 || count >= QUEUE_MAX_ITEMS )
+        boolean min = count == 0;
+        boolean max = count >= QUEUE_MAX_ITEMS;
+        if ( min || max )
         {
+            queueLock.lock();
             try
             {
-                queueLock.lock();
-                updateAndNotifyReader( event );
+                queueSize.incrementAndGet();
+                queue.addLast( event );
+                producerBarrier.drainPermits();
+                queueCondition.signal();
             }
             finally
             {
                 queueLock.unlock();
+            }
+
+            if ( max )
+            {
+                producerBarrier.acquireUninterruptibly();
             }
         }
         else
@@ -175,29 +182,24 @@ public final class ThreadedStreamConsumer
         }
     }
 
-    private void updateAndNotifyReader( @Nonnull Event event )
-    {
-        queueSize.incrementAndGet();
-        queue.addLast( event );
-        queueCondition.signal();
-    }
-
     @Override
     public void close()
-            throws IOException
+        throws IOException
     {
         if ( stop.compareAndSet( false, true ) )
         {
             queue.addLast( END_ITEM );
+            queueLock.lock();
             try
             {
-                queueLock.lock();
                 queueCondition.signal();
             }
             finally
             {
                 queueLock.unlock();
             }
+
+            producerBarrier.release( 2 );
         }
 
         if ( pumper.hasErrors() )
