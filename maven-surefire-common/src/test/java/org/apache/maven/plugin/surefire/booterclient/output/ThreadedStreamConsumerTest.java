@@ -42,10 +42,69 @@ import static org.fest.assertions.Assertions.assertThat;
 public class ThreadedStreamConsumerTest
 {
     @Test
-    @Ignore
+    public void test5() throws Exception
+    {
+        final CountDownLatch countDown = new CountDownLatch( 5_000_000 );
+        final QueueSynchronizer<String> sync = new QueueSynchronizer<>(  5_000_000 );
+        final AtomicInteger idx = new AtomicInteger();
+
+        Thread t = new Thread()
+        {
+            @Override
+            public void run()
+            {
+                while ( true )
+                {
+                    if (sync.queueSize.get() == 0){
+                        //System.out.println("zero at " + idx.get());
+                    }
+                    try
+                    {
+                        String s = sync.awaitNext();
+                        if (s == null){
+                            System.out.println(s);
+                        }
+                        //System.out.println( i.get() + " " + s );
+                        countDown.countDown();
+                        if ( idx.incrementAndGet() % 11_000 == 0 )
+                        {
+                            //TimeUnit.MILLISECONDS.sleep( 10L );
+                        }
+                    }
+                    catch ( InterruptedException e )
+                    {
+                        throw new IllegalStateException( e );
+                    }
+                }
+            }
+        };
+        t.start();
+
+        System.gc();
+        TimeUnit.SECONDS.sleep( 2 );
+
+        long t1 = System.currentTimeMillis();
+
+        for ( int i = 0; i < 5_000_000; i++ )
+        {
+            sync.pushNext( i + "" );
+        }
+        assertThat( countDown.await( 10L, TimeUnit.MINUTES ) ).isTrue();
+        long t2 = System.currentTimeMillis();
+        System.out.println( ( t2 - t1 ) + " millis" );
+
+        TimeUnit.SECONDS.sleep( 2 );
+
+        System.out.println( idx.get() );
+        System.out.println("countDown " + countDown.getCount());
+        System.out.println("queue size " + sync.queue.size());
+        System.out.println("queue size " + sync.queueSize.get());
+    }
+
+    @Test
     public void test() throws Exception
     {
-        final CountDownLatch countDown = new CountDownLatch( 100_000 );
+        final CountDownLatch countDown = new CountDownLatch( 1000_000 );
         EventHandler<Event> handler = new EventHandler<Event>()
         {
             private final AtomicInteger i = new AtomicInteger();
@@ -71,7 +130,7 @@ public class ThreadedStreamConsumerTest
 
         ThreadedStreamConsumer streamConsumer = new ThreadedStreamConsumer( handler );
 
-        for ( int i = 0; i < 100_000; i++ )
+        for ( int i = 0; i < 1000_000; i++ )
         {
             streamConsumer.handleEvent( new StandardStreamOutWithNewLineEvent( NORMAL_RUN, "" ) );
         }
@@ -166,10 +225,14 @@ public class ThreadedStreamConsumerTest
 
         void pushNext( T t )
         {
-            queue.addLast( t );
-            int previousCount = queueSize.get();
             t2.awaitMax();
-            queueSize.incrementAndGet();
+            int previousCount = queueSize.get();
+            if ( previousCount == 0 )
+            {
+                t1.release();
+            }
+            queue.addLast( t );
+            previousCount = queueSize.getAndIncrement();
             if ( previousCount == 0 )
             {
                 t1.release();
