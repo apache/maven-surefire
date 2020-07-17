@@ -19,19 +19,18 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer.QueueSynchronizer;
 import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.api.event.StandardStreamOutWithNewLineEvent;
 import org.apache.maven.surefire.extensions.EventHandler;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.AbstractQueuedSynchronizer;
+import java.util.concurrent.FutureTask;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -42,11 +41,10 @@ import static org.fest.assertions.Assertions.assertThat;
 public class ThreadedStreamConsumerTest
 {
     @Test
-    public void test5() throws Exception
+    public void testQueueSynchronizer() throws Exception
     {
         final CountDownLatch countDown = new CountDownLatch( 5_000_000 );
-        final QueueSynchronizer<String> sync = new QueueSynchronizer<>(  5_000_000 );
-        final AtomicInteger idx = new AtomicInteger();
+        final QueueSynchronizer<Integer> sync = new QueueSynchronizer<>(  8 * 1024, null );
 
         Thread t = new Thread()
         {
@@ -55,21 +53,10 @@ public class ThreadedStreamConsumerTest
             {
                 while ( true )
                 {
-                    if (sync.queueSize.get() == 0){
-                        //System.out.println("zero at " + idx.get());
-                    }
                     try
                     {
-                        String s = sync.awaitNext();
-                        if (s == null){
-                            System.out.println(s);
-                        }
-                        //System.out.println( i.get() + " " + s );
+                        sync.awaitNext();
                         countDown.countDown();
-                        if ( idx.incrementAndGet() % 11_000 == 0 )
-                        {
-                            //TimeUnit.MILLISECONDS.sleep( 10L );
-                        }
                     }
                     catch ( InterruptedException e )
                     {
@@ -78,64 +65,59 @@ public class ThreadedStreamConsumerTest
                 }
             }
         };
+        t.setDaemon( true );
         t.start();
 
+        SECONDS.sleep( 1 );
         System.gc();
-        TimeUnit.SECONDS.sleep( 2 );
+        SECONDS.sleep( 2 );
 
         long t1 = System.currentTimeMillis();
 
         for ( int i = 0; i < 5_000_000; i++ )
         {
-            sync.pushNext( i + "" );
+            sync.pushNext( i );
         }
-        assertThat( countDown.await( 10L, TimeUnit.MINUTES ) ).isTrue();
+
+        assertThat( countDown.await( 3L, SECONDS ) )
+            .isTrue();
+
         long t2 = System.currentTimeMillis();
-        System.out.println( ( t2 - t1 ) + " millis" );
-
-        TimeUnit.SECONDS.sleep( 2 );
-
-        System.out.println( idx.get() );
-        System.out.println("countDown " + countDown.getCount());
-        System.out.println("queue size " + sync.queue.size());
-        System.out.println("queue size " + sync.queueSize.get());
+        System.out.println( ( t2 - t1 ) + " millis in testQueueSynchronizer()" );
     }
 
     @Test
-    public void test() throws Exception
+    public void testThreadedStreamConsumer() throws Exception
     {
-        final CountDownLatch countDown = new CountDownLatch( 1000_000 );
+        final CountDownLatch countDown = new CountDownLatch( 5_000_000 );
         EventHandler<Event> handler = new EventHandler<Event>()
         {
-            private final AtomicInteger i = new AtomicInteger();
-
             @Override
             public void handleEvent( @Nonnull Event event )
             {
-                //System.out.println(i.get());
                 countDown.countDown();
-                try
-                {
-                    if ( i.incrementAndGet() % 11_000 == 0 )
-                    {
-                        TimeUnit.MILLISECONDS.sleep( 10L );
-                    }
-                }
-                catch ( InterruptedException e )
-                {
-                    throw new IllegalStateException( e );
-                }
             }
         };
 
         ThreadedStreamConsumer streamConsumer = new ThreadedStreamConsumer( handler );
 
-        for ( int i = 0; i < 1000_000; i++ )
+        SECONDS.sleep( 1 );
+        System.gc();
+        SECONDS.sleep( 2 );
+
+        long t1 = System.currentTimeMillis();
+
+        Event event = new StandardStreamOutWithNewLineEvent( NORMAL_RUN, "" );
+        for ( int i = 0; i < 5_000_000; i++ )
         {
-            streamConsumer.handleEvent( new StandardStreamOutWithNewLineEvent( NORMAL_RUN, "" ) );
+            streamConsumer.handleEvent( event );
         }
 
-        assertThat( countDown.await( 10L, TimeUnit.MINUTES ) ).isTrue();
+        assertThat( countDown.await( 3L, SECONDS ) )
+            .isTrue();
+
+        long t2 = System.currentTimeMillis();
+        System.out.println( ( t2 - t1 ) + " millis in testThreadedStreamConsumer()" );
 
         streamConsumer.close();
     }
@@ -143,108 +125,27 @@ public class ThreadedStreamConsumerTest
     @Test
     public void test3() throws Exception
     {
-        QueueSynchronizer<String> sync = new QueueSynchronizer<>( 2 );
+        final QueueSynchronizer<String> sync = new QueueSynchronizer<>( 2, null );
         sync.pushNext( "1" );
         sync.pushNext( "2" );
-        //sync.pushNext( "3" );
         String s1 = sync.awaitNext();
         String s2 = sync.awaitNext();
-        //String s3 = sync.awaitNext();
-    }
-
-    static class QueueSynchronizer<T>
-    {
-        private final AtomicInteger queueSize = new AtomicInteger();
-
-        QueueSynchronizer( int max )
+        assertThat( s1 ).isEqualTo( "1" );
+        assertThat( s2 ).isEqualTo( "2" );
+        FutureTask<Void> future = new FutureTask<>( new Callable<Void>()
         {
-            this.max = max;
-        }
-
-        private class SyncT1 extends AbstractQueuedSynchronizer
-        {
-            private static final long serialVersionUID = 1L;
-
             @Override
-            protected int tryAcquireShared( int arg )
+            public Void call() throws Exception
             {
-                return queueSize.get() == 0 ? -1 : 1;
+                sync.awaitNext();
+                return null;
             }
-
-            @Override
-            protected boolean tryReleaseShared( int arg )
-            {
-                return true;
-            }
-
-            void waitIfZero() throws InterruptedException
-            {
-                acquireSharedInterruptibly( 1 );
-            }
-
-            void release()
-            {
-                releaseShared( 0 );
-            }
-        }
-
-        private class SyncT2 extends AbstractQueuedSynchronizer
-        {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected int tryAcquireShared( int arg )
-            {
-                return queueSize.get() < max ? 1 : -1;
-            }
-
-            @Override
-            protected boolean tryReleaseShared( int arg )
-            {
-                return true;
-            }
-
-            void awaitMax()
-            {
-                acquireShared( 1 );
-            }
-
-            void tryRelease()
-            {
-                if ( queueSize.get() == 0 )
-                {
-                    releaseShared( 0 );
-                }
-            }
-        }
-
-        private final SyncT1 t1 = new SyncT1();
-        private final SyncT2 t2 = new SyncT2();
-        private final ConcurrentLinkedDeque<T> queue = new ConcurrentLinkedDeque<>();
-        private final int max;
-
-        void pushNext( T t )
-        {
-            t2.awaitMax();
-            int previousCount = queueSize.get();
-            if ( previousCount == 0 )
-            {
-                t1.release();
-            }
-            queue.addLast( t );
-            previousCount = queueSize.getAndIncrement();
-            if ( previousCount == 0 )
-            {
-                t1.release();
-            }
-        }
-
-        T awaitNext() throws InterruptedException
-        {
-            t2.tryRelease();
-            t1.waitIfZero();
-            queueSize.decrementAndGet();
-            return queue.pollFirst();
-        }
+        } );
+        Thread t = new Thread( future );
+        t.setDaemon( true );
+        t.start();
+        SECONDS.sleep( 3L );
+        assertThat( t.getState() )
+            .isEqualTo( Thread.State.WAITING );
     }
 }
