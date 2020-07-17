@@ -760,5 +760,33 @@
         <jdk.home>${java.home}</jdk.home>
       </properties>
     </profile>
+      <profile>
+          <id>apache-release</id>
+          <build>
+
+              <!-- after Maven Compiler 3.8.1 is fixed, use maven.compiler.release, see SUREFIRE-1820 -->
+              <plugins>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-enforcer-plugin</artifactId>
+                      <executions>
+                          <execution>
+                              <id>enforce-java</id>
+                              <goals>
+                                  <goal>enforce</goal>
+                              </goals>
+                              <configuration>
+                                  <rules combine.self="override">
+                                      <requireJavaVersion>
+                                          <version>[1.8, 1.9)</version>
+                                      </requireJavaVersion>
+                                  </rules>
+                              </configuration>
+                          </execution>
+                      </executions>
+                  </plugin>
+              </plugins>
+          </build>
+      </profile>
   </profiles>
 </project>
