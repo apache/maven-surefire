@@ -25,18 +25,20 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
 import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.Locale;
 
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static javax.xml.xpath.XPathConstants.NODE;
 import static org.apache.maven.surefire.shared.lang3.StringEscapeUtils.escapeXml10;
 import static org.apache.maven.surefire.shared.lang3.StringEscapeUtils.unescapeXml;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
@@ -78,9 +80,9 @@ public final class FailsafeSummaryXmlUtils
         XPathFactory xpathFactory = XPathFactory.newInstance();
         XPath xpath = xpathFactory.newXPath();
 
-        try ( FileInputStream is = new FileInputStream( failsafeSummaryXml ) )
+        try ( Reader reader = new InputStreamReader( new FileInputStream( failsafeSummaryXml ), UTF_8 ) )
         {
-            Node root = ( Node ) xpath.evaluate( "/", new InputSource( is ), XPathConstants.NODE );
+            Node root = ( Node ) xpath.evaluate( "/", new InputSource( reader ), NODE );
 
             String completed = xpath.evaluate( "/failsafe-summary/completed", root );
             String errors = xpath.evaluate( "/failsafe-summary/errors", root );
