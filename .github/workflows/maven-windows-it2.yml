@@ -17,11 +17,20 @@
 
 name: GitHub CI for Windows 2
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
 
 jobs:
   build:
     runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
 
     steps:
       - name: Checkout
@@ -37,3 +46,15 @@ jobs:
 
       - name: Build with Maven without Unit Tests
         run: mvn install -e -B -V -nsu --no-transfer-progress -rf :surefire-its -P run-its "-Dit.test=!**/jiras/*IT*.java,!TestMethodPatternIT,!TestMultipleMethodPatternsIT,!TestMultipleMethodPatternsTestNGIT"
+
+      - name: Upload artifact surefire-its
+        uses: actions/upload-artifact@v2-preview
+        if: failure()
+        with:
+          name: ${{ matrix.os }}-surefire-its
+          path: |
+            surefire-its/target/*/log.txt
+            surefire-its/target/**/surefire-reports/*
+            surefire-its/target/**/failsafe-reports/*
+            !surefire-its/target/*-1617
+            !surefire-its/target/failsafe-reports
