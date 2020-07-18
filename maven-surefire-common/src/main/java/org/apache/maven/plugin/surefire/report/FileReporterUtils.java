@@ -47,6 +47,10 @@ public final class FileReporterUtils
 
     private static String getOSSpecificIllegalChars()
     {
-        return IS_OS_WINDOWS ? "\\/:*?\"<>|\0" : "/\0";
+        // forbidden and quoted characters
+        // https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
+        // https://cygwin.com/cygwin-ug-net/using-specialnames.html
+        // https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/
+        return IS_OS_WINDOWS ? "[],\\/:*?\"<>|\0" : "()&\\/:*?\"<>|\0";
     }
 }
