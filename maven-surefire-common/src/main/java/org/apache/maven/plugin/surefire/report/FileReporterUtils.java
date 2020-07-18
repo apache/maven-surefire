@@ -35,14 +35,18 @@ public final class FileReporterUtils
 
     public static String stripIllegalFilenameChars( String original )
     {
-        String result = original;
+        StringBuilder result = new StringBuilder( original );
         String illegalChars = getOSSpecificIllegalChars();
-        for ( int i = 0; i < illegalChars.length(); i++ )
+        for ( int i = 0, len = result.length(); i < len; i++ )
         {
-            result = result.replace( illegalChars.charAt( i ), '_' );
+            char charFromOriginal = result.charAt( i );
+            boolean isIllegalChar = illegalChars.indexOf( charFromOriginal ) != -1;
+            if ( isIllegalChar )
+            {
+                result.setCharAt( i, '_' );
+            }
         }
-
-        return result;
+        return result.toString();
     }
 
     private static String getOSSpecificIllegalChars()
