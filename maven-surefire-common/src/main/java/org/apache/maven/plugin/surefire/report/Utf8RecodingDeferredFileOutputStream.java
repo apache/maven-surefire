@@ -33,16 +33,16 @@ import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
  *
  * @author Andreas Gudian
  */
-class Utf8RecodingDeferredFileOutputStream
+final class Utf8RecodingDeferredFileOutputStream
 {
-    private DeferredFileOutputStream deferredFileOutputStream;
+    private final DeferredFileOutputStream deferredFileOutputStream;
 
-    private boolean closed = false;
+    private boolean closed;
 
     @SuppressWarnings( "checkstyle:magicnumber" )
     Utf8RecodingDeferredFileOutputStream( String channel )
     {
-        deferredFileOutputStream = new DeferredFileOutputStream( 1000000, channel, "deferred", null );
+        deferredFileOutputStream = new DeferredFileOutputStream( 1_000_000, channel, "deferred", null );
     }
 
     public synchronized void write( String output, boolean newLine )
@@ -88,12 +88,11 @@ class Utf8RecodingDeferredFileOutputStream
 
     public synchronized void free()
     {
-        if ( null != deferredFileOutputStream && null != deferredFileOutputStream.getFile() )
+        if ( deferredFileOutputStream.getFile() != null )
         {
             try
             {
-                closed = true;
-                deferredFileOutputStream.close();
+                close();
                 if ( !deferredFileOutputStream.getFile().delete() )
                 {
                     deferredFileOutputStream.getFile().deleteOnExit();
@@ -102,7 +101,6 @@ class Utf8RecodingDeferredFileOutputStream
             catch ( IOException ioe )
             {
                 deferredFileOutputStream.getFile().deleteOnExit();
-
             }
         }
     }
