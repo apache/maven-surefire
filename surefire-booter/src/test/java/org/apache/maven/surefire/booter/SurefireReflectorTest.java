@@ -119,6 +119,20 @@ public class SurefireReflectorTest
         assertTrue( isCalled( foo ) );
     }
 
+    public void testRunOrderParametersWithRunOrderRandomSeed()
+    {
+        SurefireReflector surefireReflector = getReflector();
+        Object foo = getFoo();
+
+        // Arbitrary random seed that should be ignored because RunOrder is not RANDOM
+        Long runOrderRandomSeed = 5L;
+
+        RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, new File( "." ),
+                                                                        runOrderRandomSeed );
+        surefireReflector.setRunOrderParameters( foo, runOrderParameters );
+        assertTrue( isCalled( foo ) );
+    }
+
     public void testNullRunOrderParameters()
     {
         SurefireReflector surefireReflector = getReflector();

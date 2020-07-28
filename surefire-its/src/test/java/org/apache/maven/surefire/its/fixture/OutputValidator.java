@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -221,6 +222,32 @@ public class OutputValidator
     public File getBaseDir()
     {
         return baseDir;
+    }
+
+    public String[] getStringsOrderInLog( String[] strings )
+        throws VerificationException
+    {
+        String[] retArr = new String[strings.length];
+        List<String> strList = new ArrayList<String>( Arrays.asList( strings ) );
+        int i = 0;
+        for ( String line : loadLogLines() )
+        {
+            for ( int j = 0; j < strList.size(); j++ )
+            {
+                if ( line.startsWith( strList.get( j ) ) ) 
+                {
+                    retArr[i] = strList.get( j );
+                    ++i;
+                    if ( i == strings.length )
+                    {
+                        return retArr;
+                    }
+                    strList.remove( j );
+                    break;
+                }
+            }
+        }
+        return retArr;
     }
 
     public boolean stringsAppearInSpecificOrderInLog( String[] strings )

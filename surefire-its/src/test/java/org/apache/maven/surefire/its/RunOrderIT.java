@@ -19,6 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import java.util.Arrays;
 import java.util.Calendar;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
@@ -60,6 +61,43 @@ public class RunOrderIT
         assertTestnamesAppearInSpecificOrder( validator, TESTS_IN_ALPHABETICAL_ORDER );
     }
 
+    @Test
+    public void testRandomJUnit4DifferentSeed()
+        throws Exception
+    {
+        long seed = 0L;
+        OutputValidator validator = executeWithRandomOrder( "junit4", seed );
+        String[] expected = validator.getStringsOrderInLog( TESTS_IN_ALPHABETICAL_ORDER );
+        for ( long i = seed; i < 5 + seed; i++ )
+        {
+            OutputValidator validator2 = executeWithRandomOrder( "junit4", i );
+            String[] observed = validator2.getStringsOrderInLog( TESTS_IN_ALPHABETICAL_ORDER );
+            if ( ! Arrays.equals( expected, observed ) )
+            {
+                return;
+            }
+        }
+        throw new VerificationException( "All random orders with the different seeds produced the same orders" );
+    }
+
+    @Test
+    public void testRandomJUnit4SameSeed()
+        throws Exception
+    {
+        long seed = 0L;
+        OutputValidator validator = executeWithRandomOrder( "junit4", seed );
+        String[] expected = validator.getStringsOrderInLog( TESTS_IN_ALPHABETICAL_ORDER );
+        for ( long i = 0; i < 5; i++ )
+        {
+            OutputValidator validator2 = executeWithRandomOrder( "junit4", seed );
+            String[] observed = validator2.getStringsOrderInLog( TESTS_IN_ALPHABETICAL_ORDER );
+            if ( ! Arrays.equals( expected, observed ) )
+            {
+                throw new VerificationException( "Random orders with the same seed produced different orders" );
+            }
+        }
+    }
+    
     @Test
     public void testReverseAlphabeticalJUnit4()
         throws Exception
@@ -145,6 +183,17 @@ public class RunOrderIT
             .activateProfile( profile )
             .forkMode( getForkMode() )
             .runOrder( runOrder )
+            .executeTest()
+            .verifyErrorFree( 3 );
+    }
+
+    private OutputValidator executeWithRandomOrder( String profile, long seed  )
+    {
+        return unpack()
+            .activateProfile( profile )
+            .forkMode( getForkMode() )
+            .runOrder( "random" )
+            .runOrderRandomSeed( String.valueOf( seed ) )
             .executeTest()
             .verifyErrorFree( 3 );
     }
