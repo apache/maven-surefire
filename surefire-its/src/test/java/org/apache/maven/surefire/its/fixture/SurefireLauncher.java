@@ -289,6 +289,12 @@ public final class SurefireLauncher
         return this;
     }
 
+    public SurefireLauncher runOrderRandomSeed( String runOrderRandomSeed )
+    {
+        mavenLauncher.sysProp( "surefire.runOrder.random.seed", runOrderRandomSeed );
+        return this;
+    }
+
     public SurefireLauncher failIfNoTests( boolean fail )
     {
         mavenLauncher.sysProp( "failIfNoTests", fail );

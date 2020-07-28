@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Applies the final runorder of the tests
@@ -45,12 +46,21 @@ public class DefaultRunOrderCalculator
 
     private final int threadCount;
 
+    private final Random random;
+
     public DefaultRunOrderCalculator( RunOrderParameters runOrderParameters, int threadCount )
     {
         this.runOrderParameters = runOrderParameters;
         this.threadCount = threadCount;
         this.runOrder = runOrderParameters.getRunOrder();
         this.sortOrder = this.runOrder.length > 0 ? getSortOrderComparator( this.runOrder[0] ) : null;
+        Long runOrderRandomSeed = runOrderParameters.getRunOrderRandomSeed();
+        if ( runOrderRandomSeed == null )
+        {
+            runOrderRandomSeed = System.nanoTime();
+            runOrderParameters.setRunOrderRandomSeed( runOrderRandomSeed );
+        }
+        this.random = new Random( runOrderRandomSeed );
     }
 
     @Override
@@ -72,7 +82,7 @@ public class DefaultRunOrderCalculator
     {
         if ( RunOrder.RANDOM.equals( runOrder ) )
         {
-            Collections.shuffle( testClasses );
+            Collections.shuffle( testClasses, random );
         }
         else if ( RunOrder.FAILEDFIRST.equals( runOrder ) )
         {

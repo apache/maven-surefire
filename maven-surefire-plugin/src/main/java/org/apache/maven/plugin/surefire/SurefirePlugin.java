@@ -293,6 +293,22 @@ public class SurefirePlugin
     private String runOrder;
 
     /**
+     * Sets the random seed that will be used to order the tests if {@code surefire.runOrder} is set to {@code random}.
+     * <br>
+     * <br>
+     * If no seeds are set and {@code surefire.runOrder} is set to {@code random}, then the seed used will be
+     * outputted (search for "To reproduce ordering use flag -Dsurefire.runOrder.random.seed").
+     * <br>
+     * <br>
+     * To deterministically reproduce any random test order that was run before, simply set the seed to 
+     * be the same value.
+     *
+     * @since 3.0.0-M6
+     */
+    @Parameter( property = "surefire.runOrder.random.seed" )
+    private Long runOrderRandomSeed;
+
+    /**
      * A file containing include patterns. Blank lines, or lines starting with # are ignored. If {@code includes} are
      * also specified, these patterns are appended. Example with path, simple and regex includes:
      * <pre><code>
@@ -792,6 +808,18 @@ public class SurefirePlugin
     public void setRunOrder( String runOrder )
     {
         this.runOrder = runOrder;
+    }
+
+    @Override
+    public Long getRunOrderRandomSeed()
+    {
+        return runOrderRandomSeed;
+    }
+
+    @Override
+    public void setRunOrderRandomSeed( Long runOrderRandomSeed )
+    {
+        this.runOrderRandomSeed = runOrderRandomSeed;
     }
 
     @Override

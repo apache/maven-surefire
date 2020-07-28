@@ -865,6 +865,10 @@ public abstract class AbstractSurefireMojo
 
     public abstract void setRunOrder( String runOrder );
 
+    public abstract Long getRunOrderRandomSeed();
+
+    public abstract void setRunOrderRandomSeed( Long runOrderRandomSeed );
+
     protected abstract void handleSummary( RunResult summary, Exception firstForkException )
         throws MojoExecutionException, MojoFailureException;
 
@@ -1129,6 +1133,7 @@ public abstract class AbstractSurefireMojo
             warnIfNotApplicableSkipAfterFailureCount();
             warnIfIllegalTempDir();
             warnIfForkCountIsZero();
+            printDefaultSeedIfNecessary();
         }
         return true;
     }
@@ -1285,7 +1290,7 @@ public abstract class AbstractSurefireMojo
         ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration();
         provider.addProviderProperties();
         RunOrderParameters runOrderParameters =
-            new RunOrderParameters( getRunOrder(), getStatisticsFile( getConfigChecksum() ) );
+            new RunOrderParameters( getRunOrder(), getStatisticsFile( getConfigChecksum() ), getRunOrderRandomSeed() );
 
         if ( isNotForking() )
         {
@@ -3048,6 +3053,17 @@ public abstract class AbstractSurefireMojo
         if ( isEmpty( getTempDir() ) )
         {
             throw new MojoFailureException( "Parameter 'tempDir' should not be blank string." );
+        }
+    }
+
+    private void printDefaultSeedIfNecessary()
+    {
+        if ( getRunOrderRandomSeed() == null && getRunOrder().equals( RunOrder.RANDOM.name() ) )
+        {
+            setRunOrderRandomSeed( System.nanoTime() );
+            getConsoleLogger().info(
+                "Tests will run in random order. To reproduce ordering use flag -D"
+                    + getPluginName() + ".runOrder.random.seed=" + getRunOrderRandomSeed() );
         }
     }
 
