@@ -77,7 +77,7 @@ public class LegacyMasterProcessChannelDecoder implements MasterProcessChannelDe
             tokens.clear();
             token.setLength( 0 );
             FrameCompletion completion = null;
-            for ( boolean frameStarted = false; !( endOfStream = channel.read( buffer ) == -1 ) ; completion = null )
+            for ( boolean frameStarted = false; !( endOfStream = channel.read( buffer ) == -1 ); completion = null )
             {
                 buffer.flip();
                 char c = (char) buffer.get();

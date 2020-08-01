@@ -19,10 +19,7 @@ package org.apache.maven.surefire.api.report;
  * under the License.
  */
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static java.util.Collections.unmodifiableMap;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 
 /**
  * Determines the purpose the provider started the tests. It can be either normal run or a kind of re-run type.
@@ -38,27 +35,22 @@ public enum RunMode
     RERUN_TEST_AFTER_FAILURE( "rerun-test-after-failure" );
     //todo add here RERUN_TESTSET, see https://github.com/apache/maven-surefire/pull/221
 
-    public static final Map<String, RunMode> MODES = modes();
+    private final String runmode;
+    private final byte[] runmodeBinary;
 
-    private static Map<String, RunMode> modes()
+    RunMode( String runmode )
     {
-        Map<String, RunMode> modes = new ConcurrentHashMap<>();
-        for ( RunMode mode : values() )
-        {
-            modes.put( mode.geRunName(), mode );
-        }
-        return unmodifiableMap( modes );
+        this.runmode = runmode;
+        runmodeBinary = runmode.getBytes( US_ASCII );
     }
 
-    private final String runName;
-
-    RunMode( String runName )
+    public String geRunmode()
     {
-        this.runName = runName;
+        return runmode;
     }
 
-    public String geRunName()
+    public byte[] getRunmodeBinary()
     {
-        return runName;
+        return runmodeBinary;
     }
 }

@@ -47,6 +47,9 @@ public interface ForkNodeArguments
     @Nonnull
     File dumpStreamText( @Nonnull String text );
 
+    @Nonnull
+    File dumpStreamException( @Nonnull Throwable t );
+
     void logWarningAtEnd( @Nonnull String text );
 
     @Nonnull

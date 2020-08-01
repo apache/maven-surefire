@@ -67,8 +67,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import static java.nio.channels.Channels.newChannel;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.maven.surefire.shared.codec.binary.Base64.encodeBase64String;
 import static org.apache.maven.plugin.surefire.booterclient.MockReporter.CONSOLE_DEBUG;
 import static org.apache.maven.plugin.surefire.booterclient.MockReporter.CONSOLE_ERR;
 import static org.apache.maven.plugin.surefire.booterclient.MockReporter.CONSOLE_INFO;
@@ -177,8 +175,6 @@ public class ForkClientTest
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
 
-        verify( logger ).isDebugEnabled();
-
         verifyNoMoreInteractions( logger );
     }
 
@@ -205,8 +201,6 @@ public class ForkClientTest
 
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
-
-        verify( logger ).isDebugEnabled();
 
         verifyNoMoreInteractions( logger );
     }
@@ -235,8 +229,6 @@ public class ForkClientTest
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
 
-        verify( logger ).isDebugEnabled();
-
         verifyNoMoreInteractions( logger );
     }
 
@@ -263,8 +255,6 @@ public class ForkClientTest
 
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
-
-        verify( logger ).isDebugEnabled();
 
         verifyNoMoreInteractions( logger );
     }
@@ -293,8 +283,6 @@ public class ForkClientTest
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
 
-        verify( logger ).isDebugEnabled();
-
         verifyNoMoreInteractions( logger );
     }
 
@@ -321,8 +309,6 @@ public class ForkClientTest
 
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
-
-        verify( logger ).isDebugEnabled();
 
         verifyNoMoreInteractions( logger );
     }
@@ -373,24 +359,22 @@ public class ForkClientTest
     @Test
     public void shouldLogJvmMessageAndProcessEvent() throws Exception
     {
-        String nativeStream = "Listening for transport dt_socket at address: bla\n:maven-surefire-event:bye:\n";
+        String nativeStream = "Listening for transport dt_socket at address: bla\n:maven-surefire-event:\u0003:bye:\n";
         EH eventHandler = new EH();
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        when( logger.isDebugEnabled() )
-            .thenReturn( false );
-        when( logger.isInfoEnabled() )
-            .thenReturn( true );
         ForkNodeArguments arguments = mock( ForkNodeArguments.class );
+        when( arguments.dumpStreamText( anyString() ) ).thenReturn( new File( "" ) );
+        ConsoleLogger logger = mock( ConsoleLogger.class );
         when( arguments.getConsoleLogger() ).thenReturn( logger );
         when( logger.isDebugEnabled() ).thenReturn( true );
-        when( logger.isInfoEnabled() ).thenReturn( false );
         ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
         try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
         {
             t.start();
 
             Event event = eventHandler.pullEvent();
+            assertThat( event )
+                .isNotNull();
             assertThat( event.isControlCategory() )
                 .isTrue();
             assertThat( event.getEventType() )
@@ -745,10 +729,9 @@ public class ForkClientTest
     @Test
     public void shouldLogConsoleErrorWithStackTrace() throws Exception
     {
-        String nativeStream = ":maven-surefire-event:console-error-log:UTF-8"
-            + ":" + encodeBase64String( "Listening for transport dt_socket at address: 5005".getBytes( UTF_8 ) )
-            + ":" + encodeBase64String( "s1".getBytes( UTF_8 ) )
-            + ":" + encodeBase64String( "s2".getBytes( UTF_8 ) ) + ":";
+        String nativeStream = ":maven-surefire-event:\u0011:console-error-log:\u0005:UTF-8"
+            + ":\u0000\u0000\u0000\u0032:Listening for transport dt_socket at address: 5005"
+            + ":\u0000\u0000\u0000\u0002:s1:\u0000\u0000\u0000\u0002:s2:";
         EH eventHandler = new EH();
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
         ConsoleLogger logger = mock( ConsoleLogger.class );

@@ -1,4 +1,4 @@
-package wellFormedXmlFailures;
+package org.apache.maven.surefire.api.booter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,44 +19,17 @@ package wellFormedXmlFailures;
  * under the License.
  */
 
-import junit.extensions.TestSetup;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import java.nio.charset.Charset;
 
-public class TestSurefire3
-    extends TestCase
+import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+/**
+ *
+ */
+public final class Constants
 {
-
-    public TestSurefire3( )
-    {
-        super( );
-    }
-
-    public TestSurefire3( String name )
-    {
-        super( name );
-    }
-
-
-    public void testQuote()
-    {
-        fail( "\"" );
-    }
-
-    public void testLower()
-    {
-        fail( "<" );
-    }
-
-    public void testGreater()
-    {
-        fail( ">" );
-    }
-
-    public void testU0000()
-    {
-        fail( "Hi \u0000 there!" );
-    }
-
+    public static final String MAGIC_NUMBER = "maven-surefire-event";
+    public static final byte[] MAGIC_NUMBER_BYTES = MAGIC_NUMBER.getBytes( US_ASCII );
+    public static final Charset DEFAULT_STREAM_ENCODING = UTF_8;
 }

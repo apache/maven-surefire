@@ -123,7 +123,7 @@ public class ThreadedStreamConsumerTest
     }
 
     @Test
-    public void test3() throws Exception
+    public void testBasicStatus() throws Exception
     {
         final QueueSynchronizer<String> sync = new QueueSynchronizer<>( 2, null );
         sync.pushNext( "1" );

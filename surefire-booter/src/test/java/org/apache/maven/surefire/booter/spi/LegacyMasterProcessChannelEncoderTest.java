@@ -19,6 +19,7 @@ package org.apache.maven.surefire.booter.spi;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLoggerUtils;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
@@ -33,20 +34,40 @@ import java.io.PrintStream;
 import java.io.StringReader;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.copyOfRange;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_BYE;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_CONSOLE_DEBUG;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_CONSOLE_ERROR;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_CONSOLE_INFO;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_CONSOLE_WARNING;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_JVM_EXIT_ERROR;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_NEXT_TEST;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_STDERR;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_STDERR_NEW_LINE;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_STDOUT;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_STDOUT_NEW_LINE;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_STOP_ON_NEXT_TEST;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_SYSPROPS;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TESTSET_COMPLETED;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TESTSET_STARTING;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TEST_ASSUMPTIONFAILURE;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TEST_ERROR;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TEST_FAILED;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TEST_SKIPPED;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TEST_STARTING;
+import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TEST_SUCCEEDED;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
-import static org.apache.maven.surefire.shared.codec.binary.Base64.encodeBase64String;
 import static org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder.encode;
 import static org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder.encodeHeader;
 import static org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder.encodeMessage;
 import static org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder.encodeOpcode;
-import static org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder.toBase64;
-import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_SYSPROPS;
-import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.MAGIC_NUMBER;
-import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
+import static org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder.estimateBufferLength;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -57,109 +78,109 @@ import static org.mockito.Mockito.when;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M4
  */
+@SuppressWarnings( { "checkstyle:linelength", "checkstyle:magicnumber" } )
 public class LegacyMasterProcessChannelEncoderTest
 {
     private static final int ELAPSED_TIME = 102;
+    private static final byte[] ELAPSED_TIME_HEXA = new byte[] {0, 0, 0, 0x66};
 
     @Test
-    public void shouldBeFailSafe()
+    public void shouldComputeStreamPreemptiveLength()
     {
-        assertThat( toBase64( null ) ).isEqualTo( "-" );
-        assertThat( toBase64( "" ) ).isEqualTo( "" );
-    }
+        CharsetEncoder encoder = UTF_8.newEncoder();
 
-    @Test
-    public void shouldHaveSystemProperty()
-    {
-        StringBuilder actualEncoded = encode( BOOTERCODE_SYSPROPS, NORMAL_RUN, "arg1", "arg2" );
-        String expected = ':' + MAGIC_NUMBER + ':' + BOOTERCODE_SYSPROPS.getOpcode()
-            + ":normal-run:UTF-8:YXJnMQ==:YXJnMg==:";
+        // :maven-surefire-event:8:sys-prop:10:normal-run:5:UTF-8:0001:kkk:0001:vvv:
+        assertThat( estimateBufferLength( BOOTERCODE_SYSPROPS, NORMAL_RUN, encoder, 0, "k", "v" ) )
+            .isEqualTo( 72 );
 
-        assertThat( actualEncoded.toString() )
-                .isEqualTo( expected );
-    }
+        // :maven-surefire-event:16:testset-starting:10:normal-run:5:UTF-8:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:X0001:0001:sss:0001:sss:0001:sss:
+        assertThat( estimateBufferLength( BOOTERCODE_TESTSET_STARTING, NORMAL_RUN, encoder, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
+            .isEqualTo( 149 );
 
-    @Test
-    public void safeThrowableShouldBeEncoded()
-    {
-        final String exceptionMessage = "msg";
-        final String encodedExceptionMsg = encodeBase64String( toArray( UTF_8.encode( exceptionMessage ) ) );
+        // :maven-surefire-event:17:testset-completed:10:normal-run:5:UTF-8:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:X0001:0001:sss:0001:sss:0001:sss:
+        assertThat( estimateBufferLength( BOOTERCODE_TESTSET_COMPLETED, NORMAL_RUN, encoder, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
+            .isEqualTo( 150 );
 
-        final String smartStackTrace = "MyTest:86 >> Error";
-        final String encodedSmartStackTrace = encodeBase64String( toArray( UTF_8.encode( smartStackTrace ) ) );
+        // :maven-surefire-event:13:test-starting:10:normal-run:5:UTF-8:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:X0001:0001:sss:0001:sss:0001:sss:
+        assertThat( estimateBufferLength( BOOTERCODE_TEST_STARTING, NORMAL_RUN, encoder, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
+            .isEqualTo( 146 );
 
-        final String stackTrace = "trace line 1\ntrace line 2";
-        final String encodedStackTrace = encodeBase64String( toArray( UTF_8.encode( stackTrace ) ) );
+        // :maven-surefire-event:14:test-succeeded:10:normal-run:5:UTF-8:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:X0001:0001:sss:0001:sss:0001:sss:
+        assertThat( estimateBufferLength( BOOTERCODE_TEST_SUCCEEDED, NORMAL_RUN, encoder, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
+            .isEqualTo( 147 );
 
-        final String trimmedStackTrace = "trace line 1\ntrace line 2";
-        final String encodedTrimmedStackTrace = encodeBase64String( toArray( UTF_8.encode( trimmedStackTrace ) ) );
+        // :maven-surefire-event:11:test-failed:10:normal-run:5:UTF-8:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:X0001:0001:sss:0001:sss:0001:sss:
+        assertThat( estimateBufferLength( BOOTERCODE_TEST_FAILED, NORMAL_RUN, encoder, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
+            .isEqualTo( 144 );
 
-        SafeThrowable safeThrowable = new SafeThrowable( new Exception( exceptionMessage ) );
-        StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
-        when( stackTraceWriter.getThrowable() ).thenReturn( safeThrowable );
-        when( stackTraceWriter.smartTrimmedStackTrace() ).thenReturn( smartStackTrace );
-        when( stackTraceWriter.writeTrimmedTraceToString() ).thenReturn( trimmedStackTrace );
-        when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
+        // :maven-surefire-event:12:test-skipped:10:normal-run:5:UTF-8:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:X0001:0001:sss:0001:sss:0001:sss:
+        assertThat( estimateBufferLength( BOOTERCODE_TEST_SKIPPED, NORMAL_RUN, encoder, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
+            .isEqualTo( 145 );
 
-        StringBuilder encoded = new StringBuilder();
-        encode( encoded, stackTraceWriter, false );
-        assertThat( encoded.toString() )
-                .isEqualTo( encodedExceptionMsg
-                    + ":" + encodedSmartStackTrace + ":" + encodedStackTrace + ":" );
+        // :maven-surefire-event:10:test-error:10:normal-run:5:UTF-8:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:X0001:0001:sss:0001:sss:0001:sss:
+        assertThat( estimateBufferLength( BOOTERCODE_TEST_ERROR, NORMAL_RUN, encoder, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
+            .isEqualTo( 143 );
 
-        encoded = new StringBuilder();
-        encode( encoded, stackTraceWriter, true );
-        assertThat( encoded.toString() )
-                .isEqualTo( encodedExceptionMsg
-                    + ":" + encodedSmartStackTrace + ":" + encodedTrimmedStackTrace + ":" );
-    }
+        // :maven-surefire-event:23:test-assumption-failure:10:normal-run:5:UTF-8:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:X0001:0001:sss:0001:sss:0001:sss:
+        assertThat( estimateBufferLength( BOOTERCODE_TEST_ASSUMPTIONFAILURE, NORMAL_RUN, encoder, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
+            .isEqualTo( 156 );
 
-    @Test
-    public void emptySafeThrowable()
-    {
-        SafeThrowable safeThrowable = new SafeThrowable( new Exception( "" ) );
+        // :maven-surefire-event:14:std-out-stream:10:normal-run:5:UTF-8:0001:sss:
+        assertThat( estimateBufferLength( BOOTERCODE_STDOUT, NORMAL_RUN, encoder, 0, "s" ) )
+            .isEqualTo( 69 );
 
-        StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
-        when( stackTraceWriter.getThrowable() ).thenReturn( safeThrowable );
-        when( stackTraceWriter.smartTrimmedStackTrace() ).thenReturn( "" );
-        when( stackTraceWriter.writeTraceToString() ).thenReturn( "" );
+        // :maven-surefire-event:23:std-out-stream-new-line:10:normal-run:5:UTF-8:0001:sss:
+        assertThat( estimateBufferLength( BOOTERCODE_STDOUT_NEW_LINE, NORMAL_RUN, encoder, 0, "s" ) )
+            .isEqualTo( 78 );
 
-        StringBuilder encoded = new StringBuilder();
-        encode( encoded, stackTraceWriter, false );
+        // :maven-surefire-event:14:std-err-stream:10:normal-run:5:UTF-8:0001:sss:
+        assertThat( estimateBufferLength( BOOTERCODE_STDERR, NORMAL_RUN, encoder, 0, "s" ) )
+            .isEqualTo( 69 );
 
-        assertThat( encoded.toString() )
-                .isEqualTo( ":::" );
-    }
+        // :maven-surefire-event:23:std-err-stream-new-line:10:normal-run:5:UTF-8:0001:sss:
+        assertThat( estimateBufferLength( BOOTERCODE_STDERR_NEW_LINE, NORMAL_RUN, encoder, 0, "s" ) )
+            .isEqualTo( 78 );
 
-    @Test
-    public void nullSafeThrowable()
-    {
-        SafeThrowable safeThrowable = new SafeThrowable( new Exception() );
+        // :maven-surefire-event:16:console-info-log:5:UTF-8:0001:sss:
+        assertThat( estimateBufferLength( BOOTERCODE_CONSOLE_INFO, null, encoder, 0, "s" ) )
+            .isEqualTo( 58 );
 
-        StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
-        when( stackTraceWriter.getThrowable() ).thenReturn( safeThrowable );
+        // :maven-surefire-event:17:console-debug-log:5:UTF-8:0001:sss:
+        assertThat( estimateBufferLength( BOOTERCODE_CONSOLE_DEBUG, null, encoder, 0, "s" ) )
+            .isEqualTo( 59 );
 
-        StringBuilder encoded = new StringBuilder();
-        encode( encoded, stackTraceWriter, false );
+        // :maven-surefire-event:19:console-warning-log:5:UTF-8:0001:sss:
+        assertThat( estimateBufferLength( BOOTERCODE_CONSOLE_WARNING, null, encoder, 0, "s" ) )
+            .isEqualTo( 61 );
 
-        assertThat( encoded.toString() )
-                .isEqualTo( "-:-:-:" );
+        // :maven-surefire-event:17:console-error-log:5:UTF-8:0001:sss:
+        assertThat( estimateBufferLength( BOOTERCODE_CONSOLE_ERROR, null, encoder, 0, "s" ) )
+            .isEqualTo( 59 );
+
+        // :maven-surefire-event:3:bye:
+        assertThat( estimateBufferLength( BOOTERCODE_BYE, null, null, 0 ) )
+            .isEqualTo( 28 );
+
+        // :maven-surefire-event:17:stop-on-next-test:
+        assertThat( estimateBufferLength( BOOTERCODE_STOP_ON_NEXT_TEST, null, null, 0 ) )
+            .isEqualTo( 42 );
+
+        // :maven-surefire-event:9:next-test:
+        assertThat( estimateBufferLength( BOOTERCODE_NEXT_TEST, null, null, 0 ) )
+            .isEqualTo( 34 );
+
+        // :maven-surefire-event:14:jvm-exit-error:
+        assertThat( estimateBufferLength( BOOTERCODE_JVM_EXIT_ERROR, null, null, 0 ) )
+            .isEqualTo( 39 );
     }
 
     @Test
     public void reportEntry() throws IOException
     {
         final String exceptionMessage = "msg";
-        final String encodedExceptionMsg = encodeBase64String( toArray( UTF_8.encode( exceptionMessage ) ) );
-
         final String smartStackTrace = "MyTest:86 >> Error";
-        final String encodedSmartStackTrace = encodeBase64String( toArray( UTF_8.encode( smartStackTrace ) ) );
-
         final String stackTrace = "trace line 1\ntrace line 2";
-        final String encodedStackTrace = encodeBase64String( toArray( UTF_8.encode( stackTrace ) ) );
-
         final String trimmedStackTrace = "trace line 1\ntrace line 2";
-        final String encodedTrimmedStackTrace = encodeBase64String( toArray( UTF_8.encode( trimmedStackTrace ) ) );
 
         SafeThrowable safeThrowable = new SafeThrowable( new Exception( exceptionMessage ) );
         StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
@@ -167,7 +188,6 @@ public class LegacyMasterProcessChannelEncoderTest
         when( stackTraceWriter.smartTrimmedStackTrace() ).thenReturn( smartStackTrace );
         when( stackTraceWriter.writeTrimmedTraceToString() ).thenReturn( trimmedStackTrace );
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
-
 
         ReportEntry reportEntry = mock( ReportEntry.class );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
@@ -178,140 +198,228 @@ public class LegacyMasterProcessChannelEncoderTest
         when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
-        String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
-        String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
-        String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
-        String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
+        ByteBuffer encoded = encode( BOOTERCODE_TEST_ERROR, NORMAL_RUN, reportEntry, false );
+        ByteArrayOutputStream expectedFrame = new ByteArrayOutputStream();
+        expectedFrame.write( ":maven-surefire-event:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 10 );
+        expectedFrame.write( ":test-error:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 10 );
+        expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 5 );
+        expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getSourceName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 7} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getGroup().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 12} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getMessage().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0xff );
+        expectedFrame.write( ELAPSED_TIME_HEXA );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 3} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( exceptionMessage.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 18} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getStackTraceWriter().smartTrimmedStackTrace().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 25} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( stackTrace.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        encoded.flip();
 
-        StringBuilder encode = encode( "X", "normal-run", reportEntry, false );
-        assertThat( encode.toString() )
-                .isEqualTo( ":maven-surefire-event:X:normal-run:UTF-8:"
-                                + encodedSourceName
-                                + ":"
-                                + "-"
-                                + ":"
-                                + encodedName
-                                + ":"
-                                + "-"
-                                + ":"
-                                + encodedGroup
-                                + ":"
-                                + encodedMessage
-                                + ":"
-                                + ELAPSED_TIME
-                                + ":"
+        assertThat( toArray( encoded ) )
+            .isEqualTo( expectedFrame.toByteArray() );
 
-                                + encodedExceptionMsg
-                                + ":"
-                                + encodedSmartStackTrace
-                                + ":"
-                                + encodedStackTrace
-                                + ":"
-                );
+        encoded = encode( BOOTERCODE_TEST_ERROR, NORMAL_RUN, reportEntry, true );
+        expectedFrame = new ByteArrayOutputStream();
+        expectedFrame.write( ":maven-surefire-event:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 10 );
+        expectedFrame.write( ":test-error:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 10 );
+        expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 5 );
+        expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getSourceName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 7} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getGroup().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 12} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getMessage().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0xff );
+        expectedFrame.write( ELAPSED_TIME_HEXA );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 3} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( exceptionMessage.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 18} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getStackTraceWriter().smartTrimmedStackTrace().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 25} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( trimmedStackTrace.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        encoded.flip();
 
-        encode = encode( "X", "normal-run", reportEntry, true );
-        assertThat( encode.toString() )
-                .isEqualTo( ":maven-surefire-event:X:normal-run:UTF-8:"
-                                + encodedSourceName
-                                + ":"
-                                + "-"
-                                + ":"
-                                + encodedName
-                                + ":"
-                                + "-"
-                                + ":"
-                                + encodedGroup
-                                + ":"
-                                + encodedMessage
-                                + ":"
-                                + ELAPSED_TIME
-                                + ":"
-
-                                + encodedExceptionMsg
-                                + ":"
-                                + encodedSmartStackTrace
-                                + ":"
-                                + encodedTrimmedStackTrace
-                                + ":"
-                );
+        assertThat( toArray( encoded ) )
+            .isEqualTo( expectedFrame.toByteArray() );
 
         Stream out = Stream.newStream();
         LegacyMasterProcessChannelEncoder encoder = new LegacyMasterProcessChannelEncoder( newBufferedChannel( out ) );
 
         encoder.testSetStarting( reportEntry, true );
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
-                .isEqualTo( ":maven-surefire-event:testset-starting:normal-run:UTF-8:"
-                                    + encodedSourceName
-                                    + ":"
-                                    + "-"
-                                    + ":"
-                                    + encodedName
-                                    + ":"
-                                    + "-"
-                                    + ":"
-                                    + encodedGroup
-                                    + ":"
-                                    + encodedMessage
-                                    + ":"
-                                    + ELAPSED_TIME
-                                    + ":"
-
-                                    + encodedExceptionMsg
-                                    + ":"
-                                    + encodedSmartStackTrace
-                                    + ":"
-                                    + encodedTrimmedStackTrace
-                                    + ":"
-                );
-        assertThat( printedLines.readLine() ).isNull();
+        expectedFrame = new ByteArrayOutputStream();
+        expectedFrame.write( ":maven-surefire-event:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 16 );
+        expectedFrame.write( ":testset-starting:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 10 );
+        expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 5 );
+        expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getSourceName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 7} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getGroup().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 12} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getMessage().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0xff );
+        expectedFrame.write( ELAPSED_TIME_HEXA );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 3} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( exceptionMessage.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 18} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getStackTraceWriter().smartTrimmedStackTrace().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 25} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( trimmedStackTrace.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        assertThat( out.toByteArray() )
+            .isEqualTo( expectedFrame.toByteArray() );
 
         out = Stream.newStream();
         encoder = new LegacyMasterProcessChannelEncoder( newBufferedChannel( out ) );
 
         encoder.testSetStarting( reportEntry, false );
-        printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
-                .isEqualTo( ":maven-surefire-event:testset-starting:normal-run:UTF-8:"
-                                    + encodedSourceName
-                                    + ":"
-                                    + "-"
-                                    + ":"
-                                    + encodedName
-                                    + ":"
-                                    + "-"
-                                    + ":"
-                                    + encodedGroup
-                                    + ":"
-                                    + encodedMessage
-                                    + ":"
-                                    + ELAPSED_TIME
-                                    + ":"
-
-                                    + encodedExceptionMsg
-                                    + ":"
-                                    + encodedSmartStackTrace
-                                    + ":"
-                                    + encodedStackTrace
-                                    + ":"
-                );
-        assertThat( printedLines.readLine() ).isNull();
+        expectedFrame = new ByteArrayOutputStream();
+        expectedFrame.write( ":maven-surefire-event:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 16 );
+        expectedFrame.write( ":testset-starting:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 10 );
+        expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 5 );
+        expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getSourceName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 7} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getGroup().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 12} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getMessage().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0xff );
+        expectedFrame.write( ELAPSED_TIME_HEXA );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 3} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( exceptionMessage.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 18} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getStackTraceWriter().smartTrimmedStackTrace().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 25} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( stackTrace.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        assertThat( out.toByteArray() )
+            .isEqualTo( expectedFrame.toByteArray() );
     }
 
     @Test
     public void testSetCompleted() throws IOException
     {
         String exceptionMessage = "msg";
-        String encodedExceptionMsg = encodeBase64String( toArray( UTF_8.encode( exceptionMessage ) ) );
-
         String smartStackTrace = "MyTest:86 >> Error";
-        String encodedSmartStackTrace = encodeBase64String( toArray( UTF_8.encode( smartStackTrace ) ) );
-
         String stackTrace = "trace line 1\ntrace line 2";
-        String encodedStackTrace = encodeBase64String( toArray( UTF_8.encode( stackTrace ) ) );
-
         String trimmedStackTrace = "trace line 1\ntrace line 2";
-        String encodedTrimmedStackTrace = encodeBase64String( toArray( UTF_8.encode( trimmedStackTrace ) ) );
 
         SafeThrowable safeThrowable = new SafeThrowable( new Exception( exceptionMessage ) );
         StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
@@ -329,57 +437,68 @@ public class LegacyMasterProcessChannelEncoderTest
         when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
-        String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
-        String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
-        String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
-        String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
-
         Stream out = Stream.newStream();
         LegacyMasterProcessChannelEncoder encoder = new LegacyMasterProcessChannelEncoder( newBufferedChannel( out ) );
 
         encoder.testSetCompleted( reportEntry, false );
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
-                .isEqualTo( ":maven-surefire-event:testset-completed:normal-run:UTF-8:"
-                        + encodedSourceName
-                        + ":"
-                        + "-"
-                        + ":"
-                        + encodedName
-                        + ":"
-                        + "-"
-                        + ":"
-                        + encodedGroup
-                        + ":"
-                        + encodedMessage
-                        + ":"
-                        + ELAPSED_TIME
-                        + ":"
-
-                        + encodedExceptionMsg
-                        + ":"
-                        + encodedSmartStackTrace
-                        + ":"
-                        + encodedStackTrace
-                        + ":"
-                );
-        assertThat( printedLines.readLine() ).isNull();
+        ByteArrayOutputStream expectedFrame = new ByteArrayOutputStream();
+        expectedFrame.write( ":maven-surefire-event:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 17 );
+        expectedFrame.write( ":testset-completed:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 10 );
+        expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 5 );
+        expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getSourceName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 7} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getGroup().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 12} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getMessage().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0xff );
+        expectedFrame.write( ELAPSED_TIME_HEXA );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 3} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( exceptionMessage.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 18} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getStackTraceWriter().smartTrimmedStackTrace().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 25} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( stackTrace.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        assertThat( out.toByteArray() )
+            .isEqualTo( expectedFrame.toByteArray() );
     }
 
     @Test
     public void testStarting() throws IOException
     {
         String exceptionMessage = "msg";
-        String encodedExceptionMsg = encodeBase64String( toArray( UTF_8.encode( exceptionMessage ) ) );
-
         String smartStackTrace = "MyTest:86 >> Error";
-        String encodedSmartStackTrace = encodeBase64String( toArray( UTF_8.encode( smartStackTrace ) ) );
-
         String stackTrace = "trace line 1\ntrace line 2";
-        String encodedStackTrace = encodeBase64String( toArray( UTF_8.encode( stackTrace ) ) );
-
         String trimmedStackTrace = "trace line 1\ntrace line 2";
-        String encodedTrimmedStackTrace = encodeBase64String( toArray( UTF_8.encode( trimmedStackTrace ) ) );
 
         SafeThrowable safeThrowable = new SafeThrowable( new Exception( exceptionMessage ) );
         StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
@@ -397,57 +516,69 @@ public class LegacyMasterProcessChannelEncoderTest
         when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
-        String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
-        String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
-        String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
-        String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
-
         Stream out = Stream.newStream();
         LegacyMasterProcessChannelEncoder encoder = new LegacyMasterProcessChannelEncoder( newBufferedChannel( out ) );
 
         encoder.testStarting( reportEntry, true );
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
-                .isEqualTo( ":maven-surefire-event:test-starting:normal-run:UTF-8:"
-                        + encodedSourceName
-                        + ":"
-                        + "-"
-                        + ":"
-                        + encodedName
-                        + ":"
-                        + "-"
-                        + ":"
-                        + encodedGroup
-                        + ":"
-                        + encodedMessage
-                        + ":"
-                        + ELAPSED_TIME
-                        + ":"
 
-                        + encodedExceptionMsg
-                        + ":"
-                        + encodedSmartStackTrace
-                        + ":"
-                        + encodedTrimmedStackTrace
-                        + ":"
-                );
-        assertThat( printedLines.readLine() ).isNull();
+        ByteArrayOutputStream expectedFrame = new ByteArrayOutputStream();
+        expectedFrame.write( ":maven-surefire-event:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 13 );
+        expectedFrame.write( ":test-starting:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 10 );
+        expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 5 );
+        expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getSourceName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 7} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getGroup().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 12} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getMessage().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0xff );
+        expectedFrame.write( ELAPSED_TIME_HEXA );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 3} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( exceptionMessage.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 18} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getStackTraceWriter().smartTrimmedStackTrace().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 25} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( stackTrace.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        assertThat( out.toByteArray() )
+            .isEqualTo( expectedFrame.toByteArray() );
     }
 
     @Test
     public void testSuccess() throws IOException
     {
         String exceptionMessage = "msg";
-        String encodedExceptionMsg = encodeBase64String( toArray( UTF_8.encode( exceptionMessage ) ) );
-
         String smartStackTrace = "MyTest:86 >> Error";
-        String encodedSmartStackTrace = encodeBase64String( toArray( UTF_8.encode( smartStackTrace ) ) );
-
         String stackTrace = "trace line 1\ntrace line 2";
-        String encodedStackTrace = encodeBase64String( toArray( UTF_8.encode( stackTrace ) ) );
-
         String trimmedStackTrace = "trace line 1\ntrace line 2";
-        String encodedTrimmedStackTrace = encodeBase64String( toArray( UTF_8.encode( trimmedStackTrace ) ) );
 
         SafeThrowable safeThrowable = new SafeThrowable( new Exception( exceptionMessage ) );
         StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
@@ -465,57 +596,68 @@ public class LegacyMasterProcessChannelEncoderTest
         when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
-        String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
-        String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
-        String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
-        String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
-
         Stream out = Stream.newStream();
         LegacyMasterProcessChannelEncoder encoder = new LegacyMasterProcessChannelEncoder( newBufferedChannel( out ) );
 
         encoder.testSucceeded( reportEntry, true );
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
-                .isEqualTo( ":maven-surefire-event:test-succeeded:normal-run:UTF-8:"
-                        + encodedSourceName
-                        + ":"
-                        + "-"
-                        + ":"
-                        + encodedName
-                        + ":"
-                        + "-"
-                        + ":"
-                        + encodedGroup
-                        + ":"
-                        + encodedMessage
-                        + ":"
-                        + ELAPSED_TIME
-                        + ":"
-
-                        + encodedExceptionMsg
-                        + ":"
-                        + encodedSmartStackTrace
-                        + ":"
-                        + encodedTrimmedStackTrace
-                        + ":"
-                );
-        assertThat( printedLines.readLine() ).isNull();
+        ByteArrayOutputStream expectedFrame = new ByteArrayOutputStream();
+        expectedFrame.write( ":maven-surefire-event:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 14 );
+        expectedFrame.write( ":test-succeeded:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 10 );
+        expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 5 );
+        expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getSourceName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 7} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getGroup().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 12} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getMessage().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0xff );
+        expectedFrame.write( ELAPSED_TIME_HEXA );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 3} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( exceptionMessage.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 18} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getStackTraceWriter().smartTrimmedStackTrace().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 25} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( stackTrace.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        assertThat( out.toByteArray() )
+            .isEqualTo( expectedFrame.toByteArray() );
     }
 
     @Test
     public void testFailed() throws IOException
     {
         String exceptionMessage = "msg";
-        String encodedExceptionMsg = encodeBase64String( toArray( UTF_8.encode( exceptionMessage ) ) );
-
         String smartStackTrace = "MyTest:86 >> Error";
-        String encodedSmartStackTrace = encodeBase64String( toArray( UTF_8.encode( smartStackTrace ) ) );
-
         String stackTrace = "trace line 1\ntrace line 2";
-        String encodedStackTrace = encodeBase64String( toArray( UTF_8.encode( stackTrace ) ) );
-
         String trimmedStackTrace = "trace line 1\ntrace line 2";
-        String encodedTrimmedStackTrace = encodeBase64String( toArray( UTF_8.encode( trimmedStackTrace ) ) );
 
         SafeThrowable safeThrowable = new SafeThrowable( new Exception( exceptionMessage ) );
         StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
@@ -533,56 +675,67 @@ public class LegacyMasterProcessChannelEncoderTest
         when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
-        String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
-        String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
-        String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
-        String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
-
         Stream out = Stream.newStream();
         LegacyMasterProcessChannelEncoder encoder = new LegacyMasterProcessChannelEncoder( newBufferedChannel( out ) );
 
         encoder.testFailed( reportEntry, false );
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
-                .isEqualTo( ":maven-surefire-event:test-failed:normal-run:UTF-8:"
-                        + encodedSourceName
-                        + ":"
-                        + "-"
-                        + ":"
-                        + encodedName
-                        + ":"
-                        + "-"
-                        + ":"
-                        + encodedGroup
-                        + ":"
-                        + encodedMessage
-                        + ":"
-                        + ELAPSED_TIME
-                        + ":"
-
-                        + encodedExceptionMsg
-                        + ":"
-                        + encodedSmartStackTrace
-                        + ":"
-                        + encodedStackTrace
-                        + ":"
-                );
-        assertThat( printedLines.readLine() ).isNull();
+        ByteArrayOutputStream expectedFrame = new ByteArrayOutputStream();
+        expectedFrame.write( ":maven-surefire-event:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 11 );
+        expectedFrame.write( ":test-failed:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 10 );
+        expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 5 );
+        expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getSourceName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 7} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getGroup().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 12} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getMessage().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0xff );
+        expectedFrame.write( ELAPSED_TIME_HEXA );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 3} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( exceptionMessage.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 18} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getStackTraceWriter().smartTrimmedStackTrace().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 25} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( stackTrace.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        assertThat( out.toByteArray() )
+            .isEqualTo( expectedFrame.toByteArray() );
     }
 
     @Test
     public void testSkipped() throws IOException
     {
-        String encodedExceptionMsg = "-";
-
         String smartStackTrace = "MyTest:86 >> Error";
-        String encodedSmartStackTrace = encodeBase64String( toArray( UTF_8.encode( smartStackTrace ) ) );
-
         String stackTrace = "trace line 1\ntrace line 2";
-        String encodedStackTrace = encodeBase64String( toArray( UTF_8.encode( stackTrace ) ) );
-
         String trimmedStackTrace = "trace line 1\ntrace line 2";
-        String encodedTrimmedStackTrace = encodeBase64String( toArray( UTF_8.encode( trimmedStackTrace ) ) );
 
         SafeThrowable safeThrowable = new SafeThrowable( new Exception() );
         StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
@@ -600,55 +753,67 @@ public class LegacyMasterProcessChannelEncoderTest
         when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
-        String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
-        String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
-        String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
-        String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
-
         Stream out = Stream.newStream();
         LegacyMasterProcessChannelEncoder encoder = new LegacyMasterProcessChannelEncoder( newBufferedChannel( out ) );
 
         encoder.testSkipped( reportEntry, false );
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
-                .isEqualTo( ":maven-surefire-event:test-skipped:normal-run:UTF-8:"
-                        + encodedSourceName
-                        + ":"
-                        + "-"
-                        + ":"
-                        + encodedName
-                        + ":"
-                        + "-"
-                        + ":"
-                        + encodedGroup
-                        + ":"
-                        + encodedMessage
-                        + ":"
-                        + ELAPSED_TIME
-                        + ":"
-
-                        + encodedExceptionMsg
-                        + ":"
-                        + encodedSmartStackTrace
-                        + ":"
-                        + encodedStackTrace
-                        + ":"
-                );
-        assertThat( printedLines.readLine() ).isNull();
+        ByteArrayOutputStream expectedFrame = new ByteArrayOutputStream();
+        expectedFrame.write( ":maven-surefire-event:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 12 );
+        expectedFrame.write( ":test-skipped:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 10 );
+        expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 5 );
+        expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getSourceName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 7} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getGroup().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 12} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getMessage().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0xFF );
+        expectedFrame.write( ELAPSED_TIME_HEXA );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 18} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getStackTraceWriter().smartTrimmedStackTrace().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 25} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( stackTrace.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        assertThat( out.toByteArray() )
+            .isEqualTo( expectedFrame.toByteArray() );
     }
 
     @Test
     public void testError() throws IOException
     {
-        String encodedExceptionMsg = "-";
-
-        String encodedSmartStackTrace = "-";
-
         String stackTrace = "trace line 1\ntrace line 2";
-        String encodedStackTrace = encodeBase64String( toArray( UTF_8.encode( stackTrace ) ) );
 
-        String trimmedStackTrace = "trace line 1\ntrace line 2";
-        String encodedTrimmedStackTrace = encodeBase64String( toArray( UTF_8.encode( trimmedStackTrace ) ) );
+        String trimmedStackTrace = "trace line 1";
 
         SafeThrowable safeThrowable = new SafeThrowable( new Exception() );
         StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
@@ -666,53 +831,66 @@ public class LegacyMasterProcessChannelEncoderTest
         when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
-        String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
-        String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
-        String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
-        String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
-
         Stream out = Stream.newStream();
         LegacyMasterProcessChannelEncoder encoder = new LegacyMasterProcessChannelEncoder( newBufferedChannel( out ) );
-
         encoder.testError( reportEntry, false );
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
-                .isEqualTo( ":maven-surefire-event:test-error:normal-run:UTF-8:"
-                        + encodedSourceName
-                        + ":"
-                        + "-"
-                        + ":"
-                        + encodedName
-                        + ":"
-                        + "-"
-                        + ":"
-                        + encodedGroup
-                        + ":"
-                        + encodedMessage
-                        + ":"
-                        + ELAPSED_TIME
-                        + ":"
-
-                        + encodedExceptionMsg
-                        + ":"
-                        + encodedSmartStackTrace
-                        + ":"
-                        + encodedStackTrace
-                        + ":"
-                );
-        assertThat( printedLines.readLine() ).isNull();
+        ByteArrayOutputStream expectedFrame = new ByteArrayOutputStream();
+        expectedFrame.write( ":maven-surefire-event:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 10 );
+        expectedFrame.write( ":test-error:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 10 );
+        expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 5 );
+        expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getSourceName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 7} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getGroup().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 12} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getMessage().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0xff );
+        expectedFrame.write( ELAPSED_TIME_HEXA );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 25} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( stackTrace.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        assertThat( out.toByteArray() )
+            .isEqualTo( expectedFrame.toByteArray() );
     }
 
     @Test
     public void testAssumptionFailure() throws IOException
     {
         String exceptionMessage = "msg";
-        String encodedExceptionMsg = encodeBase64String( toArray( UTF_8.encode( exceptionMessage ) ) );
 
         String smartStackTrace = "MyTest:86 >> Error";
-        String encodedSmartStackTrace = encodeBase64String( toArray( UTF_8.encode( smartStackTrace ) ) );
-
-        String encodedStackTrace = "-";
 
         SafeThrowable safeThrowable = new SafeThrowable( new Exception( exceptionMessage ) );
         StackTraceWriter stackTraceWriter = mock( StackTraceWriter.class );
@@ -730,106 +908,131 @@ public class LegacyMasterProcessChannelEncoderTest
         when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
-        String encodedSourceName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getSourceName() ) ) );
-        String encodedName = encodeBase64String( toArray( UTF_8.encode( reportEntry.getName() ) ) );
-        String encodedGroup = encodeBase64String( toArray( UTF_8.encode( reportEntry.getGroup() ) ) );
-        String encodedMessage = encodeBase64String( toArray( UTF_8.encode( reportEntry.getMessage() ) ) );
-
         Stream out = Stream.newStream();
         LegacyMasterProcessChannelEncoder encoder = new LegacyMasterProcessChannelEncoder( newBufferedChannel( out ) );
 
         encoder.testAssumptionFailure( reportEntry, false );
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
-                .isEqualTo( ":maven-surefire-event:test-assumption-failure:normal-run:UTF-8:"
-                        + encodedSourceName
-                        + ":"
-                        + "-"
-                        + ":"
-                        + encodedName
-                        + ":"
-                        + "-"
-                        + ":"
-                        + encodedGroup
-                        + ":"
-                        + encodedMessage
-                        + ":"
-                        + "-"
-                        + ":"
-
-                        + encodedExceptionMsg
-                        + ":"
-                        + encodedSmartStackTrace
-                        + ":"
-                        + encodedStackTrace
-                        + ":"
-                );
-        assertThat( printedLines.readLine() ).isNull();
+        ByteArrayOutputStream expectedFrame = new ByteArrayOutputStream();
+        expectedFrame.write( ":maven-surefire-event:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 23 );
+        expectedFrame.write( ":test-assumption-failure:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 10 );
+        expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( (byte) 5 );
+        expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getSourceName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 7} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getName().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 10} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getGroup().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 12} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( reportEntry.getMessage().getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 3} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( exceptionMessage.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 18} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( smartStackTrace.getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( new byte[] {0, 0, 0, 1} );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        assertThat( out.toByteArray() )
+                .isEqualTo( expectedFrame.toByteArray() );
     }
 
     @Test
-    public void testBye() throws IOException
+    public void testBye()
     {
         Stream out = Stream.newStream();
         LegacyMasterProcessChannelEncoder encoder = new LegacyMasterProcessChannelEncoder( newBufferedChannel( out ) );
 
         encoder.bye();
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
-                .isEqualTo( ":maven-surefire-event:bye:" );
-        assertThat( printedLines.readLine() ).isNull();
+
+        String encoded = new String( out.toByteArray(), UTF_8 );
+
+        assertThat( encoded )
+                .isEqualTo( ":maven-surefire-event:\u0003:bye:" );
     }
 
     @Test
-    public void testStopOnNextTest() throws IOException
+    public void testStopOnNextTest()
     {
         Stream out = Stream.newStream();
         LegacyMasterProcessChannelEncoder encoder = new LegacyMasterProcessChannelEncoder( newBufferedChannel( out ) );
 
         encoder.stopOnNextTest();
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
-                .isEqualTo( ":maven-surefire-event:stop-on-next-test:" );
-        assertThat( printedLines.readLine() ).isNull();
+
+        String encoded = new String( out.toByteArray(), UTF_8 );
+        assertThat( encoded )
+                .isEqualTo( ":maven-surefire-event:\u0011:stop-on-next-test:" );
     }
 
     @Test
-    public void testAcquireNextTest() throws IOException
+    public void testAcquireNextTest()
     {
         Stream out = Stream.newStream();
         LegacyMasterProcessChannelEncoder encoder = new LegacyMasterProcessChannelEncoder( newBufferedChannel( out ) );
 
         encoder.acquireNextTest();
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
-                .isEqualTo( ":maven-surefire-event:next-test:" );
-        assertThat( printedLines.readLine() ).isNull();
+
+        String encoded = new String( out.toByteArray(), UTF_8 );
+        assertThat( encoded )
+                .isEqualTo( ":maven-surefire-event:\u0009:next-test:" );
     }
 
     @Test
     public void testSendOpcode()
     {
-        StringBuilder encoded = encodeOpcode( "some-opcode", "normal-run" );
-        assertThat( encoded.toString() )
-                .isEqualTo( ":maven-surefire-event:some-opcode:normal-run:" );
+        CharsetEncoder encoder = UTF_8.newEncoder();
+        ByteBuffer result = ByteBuffer.allocate( 128 );
+        encodeOpcode( encoder, result, BOOTERCODE_TEST_ERROR, NORMAL_RUN );
+        assertThat( toString( result ) )
+                .isEqualTo( ":maven-surefire-event:" + (char) 10 + ":test-error:" + (char) 10 + ":normal-run:" );
 
-        encoded = encodeHeader( "some-opcode", "normal-run" );
-        assertThat( encoded.toString() )
-                .isEqualTo( ":maven-surefire-event:some-opcode:normal-run:UTF-8:" );
+        result = ByteBuffer.allocate( 1024 );
+        encodeHeader( encoder, result, BOOTERCODE_TEST_ERROR, NORMAL_RUN );
+        assertThat( toString( result ) )
+                .isEqualTo( ":maven-surefire-event:" + (char) 10 + ":test-error:" + (char) 10 + ":normal-run:"
+                    + (char) 5 + ":UTF-8:" );
 
-        encoded = encodeMessage( "some-opcode", "normal-run", "msg" );
-        assertThat( encoded.toString() )
-                .isEqualTo( ":maven-surefire-event:some-opcode:normal-run:UTF-8:msg:" );
+        result = encodeMessage( BOOTERCODE_TEST_ERROR, NORMAL_RUN, "msg" );
+        assertThat( toString( result ) )
+                .isEqualTo( ":maven-surefire-event:" + (char) 10 + ":test-error:" + (char) 10 + ":normal-run:"
+                    + (char) 5 + ":UTF-8:\u0000\u0000\u0000\u0003:msg:" );
 
-        Stream out = Stream.newStream();
-        LegacyMasterProcessChannelEncoder encoder = new LegacyMasterProcessChannelEncoder( newBufferedChannel( out ) );
-        encoded = encoder.print( "some-opcode", "msg" );
-        assertThat( encoded.toString() )
-                .isEqualTo( ":maven-surefire-event:some-opcode:UTF-8:bXNn:" );
+        Channel channel = new Channel();
+        new LegacyMasterProcessChannelEncoder( channel ).stdOut( "msg", false );
+        assertThat( toString( channel.src ) )
+                .isEqualTo( ":maven-surefire-event:" + (char) 14 + ":std-out-stream:" + (char) 10 + ":normal-run:"
+                    + (char) 5 + ":UTF-8:\u0000\u0000\u0000\u0003:msg:" );
 
-        encoded = encoder.print( "some-opcode", new String[] { null } );
-        assertThat( encoded.toString() )
-                .isEqualTo( ":maven-surefire-event:some-opcode:UTF-8:-:" );
+        channel = new Channel();
+        new LegacyMasterProcessChannelEncoder( channel ).stdErr( null, false );
+        assertThat( toString( channel.src ) )
+                .isEqualTo( ":maven-surefire-event:" + (char) 14 + ":std-err-stream:" + (char) 10 + ":normal-run:"
+                    + (char) 5 + ":UTF-8:\u0000\u0000\u0000\u0001:\u0000:" );
     }
 
     @Test
@@ -842,10 +1045,7 @@ public class LegacyMasterProcessChannelEncoderTest
 
         String encoded = new String( out.toByteArray(), UTF_8 );
 
-        String expected = ":maven-surefire-event:console-info-log:UTF-8:"
-                                  + encodeBase64String( toArray( UTF_8.encode( "msg" ) ) )
-                                  + ":"
-                                  + "\n";
+        String expected = ":maven-surefire-event:\u0010:console-info-log:\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:";
 
         assertThat( encoded )
                 .isEqualTo( expected );
@@ -861,9 +1061,10 @@ public class LegacyMasterProcessChannelEncoderTest
 
         String encoded = new String( out.toByteArray(), UTF_8 );
 
-        String expected = ":maven-surefire-event:console-error-log:UTF-8:"
-                + encodeBase64String( toArray( UTF_8.encode( "msg" ) ) )
-                + ":-:-:\n";
+        String expected = ":maven-surefire-event:\u0011:console-error-log:\u0005:UTF-8:"
+            + "\u0000\u0000\u0000\u0003:msg:"
+            + "\u0000\u0000\u0000\u0001:\u0000:"
+            + "\u0000\u0000\u0000\u0001:\u0000:";
 
         assertThat( encoded )
                 .isEqualTo( expected );
@@ -875,11 +1076,36 @@ public class LegacyMasterProcessChannelEncoderTest
         Stream out = Stream.newStream();
         LegacyMasterProcessChannelEncoder encoder = new LegacyMasterProcessChannelEncoder( newBufferedChannel( out ) );
 
-        encoder.consoleErrorLog( new Exception( "msg" ) );
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
-                .startsWith( ":maven-surefire-event:console-error-log:UTF-8:bXNn:-:" );
-        assertThat( printedLines.readLine() ).isNull();
+        Exception e = new Exception( "msg" );
+        encoder.consoleErrorLog( e );
+        String stackTrace = ConsoleLoggerUtils.toString( e );
+        ByteArrayOutputStream expectedFrame = new ByteArrayOutputStream();
+        expectedFrame.write( ":maven-surefire-event:\u0011:console-error-log:\u0005:UTF-8:".getBytes( UTF_8 ) );
+        expectedFrame.write( 0 );
+        expectedFrame.write( 0 );
+        expectedFrame.write( 0 );
+        expectedFrame.write( 3 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( "msg".getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( 0 );
+        expectedFrame.write( 0 );
+        expectedFrame.write( 1 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        byte[] stackTraceBytes = stackTrace.getBytes( UTF_8 );
+        int[] stackTraceLength = toBytes( stackTraceBytes.length );
+        expectedFrame.write( stackTraceLength[0] );
+        expectedFrame.write( stackTraceLength[1] );
+        expectedFrame.write( stackTraceLength[2] );
+        expectedFrame.write( stackTraceLength[3] );
+        expectedFrame.write( ':' );
+        expectedFrame.write( stackTraceBytes );
+        expectedFrame.write( ':' );
+        assertThat( out.toByteArray() )
+            .isEqualTo( expectedFrame.toByteArray() );
     }
 
     @Test
@@ -888,15 +1114,40 @@ public class LegacyMasterProcessChannelEncoderTest
         Stream out = Stream.newStream();
         LegacyMasterProcessChannelEncoder encoder = new LegacyMasterProcessChannelEncoder( newBufferedChannel( out ) );
 
-        encoder.consoleErrorLog( "msg2", new Exception( "msg" ) );
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
-                .startsWith( ":maven-surefire-event:console-error-log:UTF-8:bXNnMg==:-:" );
-        assertThat( printedLines.readLine() ).isNull();
+        Exception e = new Exception( "msg" );
+        encoder.consoleErrorLog( "msg2", e );
+        String stackTrace = ConsoleLoggerUtils.toString( e );
+        ByteArrayOutputStream expectedFrame = new ByteArrayOutputStream();
+        expectedFrame.write( ":maven-surefire-event:\u0011:console-error-log:\u0005:UTF-8:".getBytes( UTF_8 ) );
+        expectedFrame.write( 0 );
+        expectedFrame.write( 0 );
+        expectedFrame.write( 0 );
+        expectedFrame.write( 4 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( "msg2".getBytes( UTF_8 ) );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( 0 );
+        expectedFrame.write( 0 );
+        expectedFrame.write( 1 );
+        expectedFrame.write( ':' );
+        expectedFrame.write( 0 );
+        expectedFrame.write( ':' );
+        byte[] stackTraceBytes = stackTrace.getBytes( UTF_8 );
+        int[] stackTraceLength = toBytes( stackTraceBytes.length );
+        expectedFrame.write( stackTraceLength[0] );
+        expectedFrame.write( stackTraceLength[1] );
+        expectedFrame.write( stackTraceLength[2] );
+        expectedFrame.write( stackTraceLength[3] );
+        expectedFrame.write( ':' );
+        expectedFrame.write( stackTraceBytes );
+        expectedFrame.write( ':' );
+        assertThat( out.toByteArray() )
+            .isEqualTo( expectedFrame.toByteArray() );
     }
 
     @Test
-    public void testConsoleErrorLog3() throws IOException
+    public void testConsoleErrorLog3()
     {
         Stream out = Stream.newStream();
         LegacyMasterProcessChannelEncoder encoder = new LegacyMasterProcessChannelEncoder( newBufferedChannel( out ) );
@@ -908,10 +1159,9 @@ public class LegacyMasterProcessChannelEncoderTest
         when( stackTraceWriter.writeTrimmedTraceToString() ).thenReturn( "4" );
 
         encoder.consoleErrorLog( stackTraceWriter, true );
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
-                .startsWith( ":maven-surefire-event:console-error-log:UTF-8:MQ==:Mg==:NA==:" );
-        assertThat( printedLines.readLine() ).isNull();
+        String encoded = new String( out.toByteArray(), UTF_8 );
+        assertThat( encoded )
+                .startsWith( ":maven-surefire-event:\u0011:console-error-log:\u0005:UTF-8:\u0000\u0000\u0000\u0001:1:\u0000\u0000\u0000\u0001:2:\u0000\u0000\u0000\u0001:4:" );
     }
 
     @Test
@@ -924,10 +1174,7 @@ public class LegacyMasterProcessChannelEncoderTest
 
         String encoded = new String( out.toByteArray(), UTF_8 );
 
-        String expected = ":maven-surefire-event:console-debug-log:UTF-8:"
-                                  + encodeBase64String( toArray( UTF_8.encode( "msg" ) ) )
-                                  + ":"
-                                  + "\n";
+        String expected = ":maven-surefire-event:\u0011:console-debug-log:\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:";
 
         assertThat( encoded )
                 .isEqualTo( expected );
@@ -943,10 +1190,7 @@ public class LegacyMasterProcessChannelEncoderTest
 
         String encoded = new String( out.toByteArray(), UTF_8 );
 
-        String expected = ":maven-surefire-event:console-warning-log:UTF-8:"
-                                  + encodeBase64String( toArray( UTF_8.encode( "msg" ) ) )
-                                  + ":"
-                                  + "\n";
+        String expected = ":maven-surefire-event:\u0013:console-warning-log:\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:";
 
         assertThat( encoded )
                 .isEqualTo( expected );
@@ -962,13 +1206,11 @@ public class LegacyMasterProcessChannelEncoderTest
         encoder.stdOut( "msg", false );
         channel.close();
 
-        String expected = ":maven-surefire-event:std-out-stream:normal-run:UTF-8:bXNn:";
+        String expected = ":maven-surefire-event:\u000e:std-out-stream:"
+            + (char) 10 + ":normal-run:\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:";
 
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
+        assertThat( new String( out.toByteArray(), UTF_8 ) )
                 .isEqualTo( expected );
-        assertThat( printedLines.readLine() )
-                .isNull();
     }
 
     @Test
@@ -981,13 +1223,11 @@ public class LegacyMasterProcessChannelEncoderTest
         encoder.stdOut( "msg", true );
         channel.close();
 
-        String expected = ":maven-surefire-event:std-out-stream-new-line:normal-run:UTF-8:bXNn:";
+        String expected = ":maven-surefire-event:\u0017:std-out-stream-new-line:"
+            + (char) 10 + ":normal-run:\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:";
 
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
+        assertThat( new String( out.toByteArray(), UTF_8 ) )
                 .isEqualTo( expected );
-        assertThat( printedLines.readLine() )
-                .isNull();
     }
 
     @Test
@@ -1000,13 +1240,11 @@ public class LegacyMasterProcessChannelEncoderTest
         encoder.stdErr( "msg", false );
         channel.close();
 
-        String expected = ":maven-surefire-event:std-err-stream:normal-run:UTF-8:bXNn:";
+        String expected = ":maven-surefire-event:\u000e:std-err-stream:"
+            + (char) 10 + ":normal-run:\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:";
 
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
+        assertThat( new String( out.toByteArray(), UTF_8 ) )
                 .isEqualTo( expected );
-        assertThat( printedLines.readLine() )
-                .isNull();
     }
 
     @Test
@@ -1019,43 +1257,50 @@ public class LegacyMasterProcessChannelEncoderTest
         encoder.stdErr( "msg", true );
         channel.close();
 
-        String expected = ":maven-surefire-event:std-err-stream-new-line:normal-run:UTF-8:bXNn:";
+        String expected = ":maven-surefire-event:\u0017:std-err-stream-new-line:"
+            + (char) 10 + ":normal-run:\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:";
 
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
+        assertThat( new String( out.toByteArray(), UTF_8 ) )
                 .isEqualTo( expected );
-        assertThat( printedLines.readLine() )
-                .isNull();
     }
 
     @Test
     @SuppressWarnings( "checkstyle:innerassignment" )
     public void shouldCountSameNumberOfSystemProperties() throws IOException
     {
-        Stream out = Stream.newStream();
-        WritableBufferedByteChannel channel = newBufferedChannel( out );
+        Stream stream = Stream.newStream();
+        WritableBufferedByteChannel channel = newBufferedChannel( stream );
         LegacyMasterProcessChannelEncoder encoder = new LegacyMasterProcessChannelEncoder( channel );
 
         Map<String, String> sysProps = ObjectUtils.systemProps();
-        int expectedSize = sysProps.size();
         encoder.sendSystemProperties( sysProps );
         channel.close();
 
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-
-        int size = 0;
-        for ( String line; ( line = printedLines.readLine() ) != null; size++ )
+        for ( Entry<String, String> entry : sysProps.entrySet() )
         {
-            assertThat( line )
-                    .startsWith( ":maven-surefire-event:sys-prop:normal-run:UTF-8:" );
+            int[] k = toBytes( entry.getKey().length() );
+            int[] v = toBytes( entry.getValue() == null ? 1 : entry.getValue().getBytes( UTF_8 ).length );
+            ByteArrayOutputStream expectedFrame = new ByteArrayOutputStream();
+            expectedFrame.write( ":maven-surefire-event:sys-prop:normal-run:UTF-8:".getBytes( UTF_8 ) );
+            expectedFrame.write( k[0] );
+            expectedFrame.write( k[1] );
+            expectedFrame.write( k[2] );
+            expectedFrame.write( k[3] );
+            expectedFrame.write( ':' );
+            expectedFrame.write( v[0] );
+            expectedFrame.write( v[1] );
+            expectedFrame.write( v[2] );
+            expectedFrame.write( v[3] );
+            expectedFrame.write( ':' );
+            expectedFrame.write( ( entry.getValue() == null ? "\u0000" : entry.getValue() ).getBytes( UTF_8 ) );
+            expectedFrame.write( ':' );
+            assertThat( stream.toByteArray() )
+                .contains( expectedFrame.toByteArray() );
         }
-
-        assertThat( size )
-                .isEqualTo( expectedSize );
     }
 
     @Test
-    public void shouldHandleExit() throws IOException
+    public void shouldHandleExit()
     {
         Stream out = Stream.newStream();
 
@@ -1067,13 +1312,12 @@ public class LegacyMasterProcessChannelEncoderTest
         when( stackTraceWriter.writeTrimmedTraceToString() ).thenReturn( "4" );
         encoder.sendExitError( stackTraceWriter, false );
 
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
-                .startsWith( ":maven-surefire-event:jvm-exit-error:UTF-8:MQ==:Mg==:Mw==:" );
+        assertThat( new String( out.toByteArray(), UTF_8 ) )
+                .startsWith( ":maven-surefire-event:\u000e:jvm-exit-error:\u0005:UTF-8:\u0000\u0000\u0000\u0001:1:\u0000\u0000\u0000\u0001:2:\u0000\u0000\u0000\u0001:3:" );
     }
 
     @Test
-    public void shouldHandleExitWithTrimmedTrace() throws IOException
+    public void shouldHandleExitWithTrimmedTrace()
     {
         Stream out = Stream.newStream();
 
@@ -1085,9 +1329,8 @@ public class LegacyMasterProcessChannelEncoderTest
         when( stackTraceWriter.writeTrimmedTraceToString() ).thenReturn( "4" );
         encoder.sendExitError( stackTraceWriter, true );
 
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
-                .startsWith( ":maven-surefire-event:jvm-exit-error:UTF-8:MQ==:Mg==:NA==:" );
+        assertThat( new String( out.toByteArray(), UTF_8 ) )
+            .startsWith( ":maven-surefire-event:\u000e:jvm-exit-error:\u0005:UTF-8:\u0000\u0000\u0000\u0001:1:\u0000\u0000\u0000\u0001:2:\u0000\u0000\u0000\u0001:4:" );
     }
 
     @Test
@@ -1110,13 +1353,9 @@ public class LegacyMasterProcessChannelEncoderTest
                     .isTrue();
         }
 
-        String expected = ":maven-surefire-event:std-out-stream:normal-run:UTF-8:bXNn:";
-
-        LineNumberReader printedLines = out.newReader( UTF_8 );
-        assertThat( printedLines.readLine() )
-                .isEqualTo( expected );
-        assertThat( printedLines.readLine() )
-                .isNull();
+        assertThat( new String( out.toByteArray(), UTF_8 ) )
+                .isEqualTo( ":maven-surefire-event:\u000e:std-out-stream:"
+                    + (char) 10 + ":normal-run:\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:" );
     }
 
     private static class Stream extends PrintStream
@@ -1150,4 +1389,51 @@ public class LegacyMasterProcessChannelEncoderTest
         return copyOfRange( buffer.array(), buffer.arrayOffset(), buffer.arrayOffset() + buffer.remaining() );
     }
 
+    private static String toString( ByteBuffer frame )
+    {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        frame.flip();
+        os.write( frame.array(), frame.arrayOffset() + frame.position(), frame.remaining() );
+        return new String( os.toByteArray(), UTF_8 );
+    }
+
+    private static int[] toBytes( int i )
+    {
+        int[] result = new int[4];
+        result[0] = 0xff & ( i >> 24 );
+        result[1] = 0xff & ( i >> 16 );
+        result[2] = 0xff & ( i >> 8 );
+        result[3] = 0xff & i;
+        return result;
+    }
+
+    private static final class Channel implements WritableBufferedByteChannel
+    {
+        ByteBuffer src;
+
+        @Override
+        public void writeBuffered( ByteBuffer src ) throws IOException
+        {
+            this.src = src;
+        }
+
+        @Override
+        public int write( ByteBuffer src ) throws IOException
+        {
+            this.src = src;
+            return 0;
+        }
+
+        @Override
+        public boolean isOpen()
+        {
+            return false;
+        }
+
+        @Override
+        public void close()
+        {
+
+        }
+    }
 }

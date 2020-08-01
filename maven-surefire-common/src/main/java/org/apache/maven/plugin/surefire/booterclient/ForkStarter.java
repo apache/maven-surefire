@@ -912,6 +912,14 @@ public class ForkStarter
             return InPluginProcessDumpSingleton.getSingleton().dumpStreamText( text, dumpLogDir, forkChannelId );
         }
 
+        @Nonnull
+        @Override
+        public File dumpStreamException( @Nonnull Throwable t )
+        {
+            return InPluginProcessDumpSingleton.getSingleton()
+                .dumpStreamException( t, t.getLocalizedMessage(), dumpLogDir, forkChannelId );
+        }
+
         @Override
         public void logWarningAtEnd( @Nonnull String text )
         {
