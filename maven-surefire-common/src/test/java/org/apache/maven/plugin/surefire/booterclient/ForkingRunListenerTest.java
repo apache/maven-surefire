@@ -45,6 +45,7 @@ import javax.annotation.Nonnull;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
+import java.io.File;
 import java.io.PrintStream;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
@@ -57,7 +58,13 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
+import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.MapAssert.entry;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -193,20 +200,27 @@ public class ForkingRunListenerTest
         TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
         ForkClient forkStreamClient = new ForkClient( providerReporterFactory, new MockNotifiableTestStream(), 1 );
 
-        byte[] cmd = ":maven-surefire-event:sys-prop:normal-run:UTF-8:azE=:djE=:\n".getBytes();
+        byte[] cmd = ( ":maven-surefire-event:\u0008:sys-prop:" + (char) 10 + ":normal-run:\u0005:UTF-8:"
+            + "\u0000\u0000\u0000\u0002:k1:\u0000\u0000\u0000\u0002:v1:\n" ).getBytes();
         for ( Event e : streamToEvent( cmd ) )
         {
             forkStreamClient.handleEvent( e );
         }
-        cmd = "\n:maven-surefire-event:sys-prop:normal-run:UTF-8:azI=:djI=:\n".getBytes();
+        cmd = ( "\n:maven-surefire-event:\u0008:sys-prop:" + (char) 10 + ":normal-run:\u0005:UTF-8:"
+            + "\u0000\u0000\u0000\u0002:k2:\u0000\u0000\u0000\u0002:v2:\n" ).getBytes();
         for ( Event e : streamToEvent( cmd ) )
         {
             forkStreamClient.handleEvent( e );
         }
 
-        assertTrue( forkStreamClient.getTestVmSystemProperties().size() == 2 );
-        assertTrue( forkStreamClient.getTestVmSystemProperties().containsKey( "k1" ) );
-        assertTrue( forkStreamClient.getTestVmSystemProperties().containsKey( "k2" ) );
+        assertThat( forkStreamClient.getTestVmSystemProperties() )
+            .hasSize( 2 );
+
+        assertThat( forkStreamClient.getTestVmSystemProperties() )
+            .includes( entry( "k1", "v1" ) );
+
+        assertThat( forkStreamClient.getTestVmSystemProperties() )
+            .includes( entry( "k2", "v2" ) );
     }
 
     public void testMultipleEntries() throws Exception
@@ -286,12 +300,15 @@ public class ForkingRunListenerTest
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
         ConsoleLogger logger = mock( ConsoleLogger.class );
         ForkNodeArguments arguments = mock( ForkNodeArguments.class );
+        when( arguments.dumpStreamText( anyString() ) ).thenReturn( new File( "" ) );
         when( arguments.getConsoleLogger() ).thenReturn( logger );
         ReadableByteChannel channel = newChannel( new ByteArrayInputStream( stream ) );
         try ( EventConsumerThread t = new EventConsumerThread( "t", channel, handler, countdown, arguments ) )
         {
             t.start();
             countdown.awaitClosed();
+            verifyZeroInteractions( logger );
+            verify( arguments, never() ).dumpStreamText( anyString() );
             for ( int i = 0, size = handler.countEventsInCache(); i < size; i++ )
             {
                 events.add( handler.pullEvent() );

@@ -44,6 +44,7 @@ import org.apache.maven.plugin.surefire.booterclient.output.ForkClientTest;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumerTest;
 import org.apache.maven.plugin.surefire.extensions.ConsoleOutputReporterTest;
 import org.apache.maven.plugin.surefire.extensions.E2ETest;
+import org.apache.maven.plugin.surefire.extensions.EventConsumerThreadTest;
 import org.apache.maven.plugin.surefire.extensions.ForkedProcessEventNotifierTest;
 import org.apache.maven.plugin.surefire.extensions.StatelessReporterTest;
 import org.apache.maven.plugin.surefire.extensions.StreamFeederTest;
@@ -114,6 +115,7 @@ public class JUnit4SuiteTest extends TestCase
         suite.addTest( new JUnit4TestAdapter( StreamFeederTest.class ) );
         suite.addTest( new JUnit4TestAdapter( E2ETest.class ) );
         suite.addTest( new JUnit4TestAdapter( ThreadedStreamConsumerTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( EventConsumerThreadTest.class ) );
         return suite;
     }
 }

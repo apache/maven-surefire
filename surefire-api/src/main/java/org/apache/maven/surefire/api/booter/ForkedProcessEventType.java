@@ -19,11 +19,7 @@ package org.apache.maven.surefire.api.booter;
  * under the License.
  */
 
-import javax.annotation.Nonnull;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static java.util.Collections.unmodifiableMap;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 
 /**
  * Events sent back to the plugin process.
@@ -31,59 +27,278 @@ import static java.util.Collections.unmodifiableMap;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M4
  */
+@SuppressWarnings( "checkstyle:linelength" )
 public enum ForkedProcessEventType
 {
-    BOOTERCODE_SYSPROPS( "sys-prop" ),
+    /**
+     * This is the opcode "sys-prop". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:sys-prop:RunMode:UTF-8:0xFFFFFFFF:key:0xFFFFFFFF:value:
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "sys-prop"
+     * </ul>
+     */
+    BOOTERCODE_SYSPROPS( "sys-prop"  ),
 
+    /**
+     * This is the opcode "testset-starting". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:testset-starting:RunMode:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "testset-starting"
+     * </ul>
+     */
     BOOTERCODE_TESTSET_STARTING( "testset-starting" ),
+
+    /**
+     * This is the opcode "testset-completed". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:testset-completed:RunMode:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "testset-completed"
+     * </ul>
+     */
     BOOTERCODE_TESTSET_COMPLETED( "testset-completed" ),
+
+    /**
+     * This is the opcode "test-starting". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:test-starting:RunMode:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "test-starting"
+     * </ul>
+     */
     BOOTERCODE_TEST_STARTING( "test-starting" ),
+
+    /**
+     * This is the opcode "test-succeeded". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:test-succeeded:RunMode:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "test-succeeded"
+     * </ul>
+     */
     BOOTERCODE_TEST_SUCCEEDED( "test-succeeded" ),
+
+    /**
+     * This is the opcode "test-failed". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:test-failed:RunMode:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "test-failed"
+     * </ul>
+     */
     BOOTERCODE_TEST_FAILED( "test-failed" ),
+
+    /**
+     * This is the opcode "test-skipped". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:test-skipped:RunMode:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "test-skipped"
+     * </ul>
+     */
     BOOTERCODE_TEST_SKIPPED( "test-skipped" ),
+
+    /**
+     * This is the opcode "test-error". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:test-error:RunMode:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "test-error"
+     * </ul>
+     */
     BOOTERCODE_TEST_ERROR( "test-error" ),
+
+    /**
+     * This is the opcode "test-assumption-failure". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:test-assumption-failure:RunMode:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "test-assumption-failure"
+     * </ul>
+     */
     BOOTERCODE_TEST_ASSUMPTIONFAILURE( "test-assumption-failure" ),
 
+    /**
+     * This is the opcode "std-out-stream". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:std-out-stream:RunMode:UTF-8:0xFFFFFFFF:line:
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "std-out-stream"
+     * </ul>
+     */
     BOOTERCODE_STDOUT( "std-out-stream" ),
+
+    /**
+     * This is the opcode "std-out-stream-new-line". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:std-out-stream-new-line:RunMode:UTF-8:0xFFFFFFFF:line:
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "std-out-stream-new-line"
+     * </ul>
+     */
     BOOTERCODE_STDOUT_NEW_LINE( "std-out-stream-new-line" ),
+
+    /**
+     * This is the opcode "std-err-stream". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:std-err-stream:RunMode:UTF-8:0xFFFFFFFF:line:
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "std-err-stream"
+     * </ul>
+     */
     BOOTERCODE_STDERR( "std-err-stream" ),
+
+    /**
+     * This is the opcode "std-err-stream-new-line". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:std-err-stream-new-line:RunMode:UTF-8:0xFFFFFFFF:line:
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "std-err-stream-new-line"
+     * </ul>
+     */
     BOOTERCODE_STDERR_NEW_LINE( "std-err-stream-new-line" ),
 
+    /**
+     * This is the opcode "console-info-log". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:console-info-log:RunMode:UTF-8:0xFFFFFFFF:line:
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "console-info-log"
+     * </ul>
+     */
     BOOTERCODE_CONSOLE_INFO( "console-info-log" ),
+
+    /**
+     * This is the opcode "console-debug-log". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:console-debug-log:RunMode:UTF-8:0xFFFFFFFF:line:
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "console-debug-log"
+     * </ul>
+     */
     BOOTERCODE_CONSOLE_DEBUG( "console-debug-log" ),
+
+    /**
+     * This is the opcode "console-warning-log". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:console-warning-log:RunMode:UTF-8:0xFFFFFFFF:line:
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "console-warning-log"
+     * </ul>
+     */
     BOOTERCODE_CONSOLE_WARNING( "console-warning-log" ),
+
+    /**
+     * This is the opcode "console-error-log". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:console-error-log:RunMode:UTF-8:0xFFFFFFFF:line:
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "console-error-log"
+     * </ul>
+     */
     BOOTERCODE_CONSOLE_ERROR( "console-error-log" ),
 
+    /**
+     * This is the opcode "bye". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:bye:
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "bye"
+     * </ul>
+     */
     BOOTERCODE_BYE( "bye" ),
+
+    /**
+     * This is the opcode "stop-on-next-test". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:stop-on-next-test:
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "stop-on-next-test"
+     * </ul>
+     */
     BOOTERCODE_STOP_ON_NEXT_TEST( "stop-on-next-test" ),
+
+    /**
+     * This is the opcode "next-test". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:next-test:
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "next-test"
+     * </ul>
+     */
     BOOTERCODE_NEXT_TEST( "next-test" ),
 
+    /**
+     * This is the opcode "jvm-exit-error". The frame is composed of segments and the separator characters ':'
+     * <pre>
+     * :maven-surefire-event:jvm-exit-error:
+     * </pre>
+     * The constructor with one argument:
+     * <ul>
+     *     <li>the opcode is "jvm-exit-error"
+     * </ul>
+     */
     BOOTERCODE_JVM_EXIT_ERROR( "jvm-exit-error" );
 
-    public static final String MAGIC_NUMBER = "maven-surefire-event";
-
-    private static final Map<String, ForkedProcessEventType> EVENTS = events();
-
-    private static Map<String, ForkedProcessEventType> events()
-    {
-        Map<String, ForkedProcessEventType> events = new ConcurrentHashMap<>();
-        for ( ForkedProcessEventType event : values() )
-        {
-            events.put( event.getOpcode(), event );
-        }
-        return unmodifiableMap( events );
-    }
-
     private final String opcode;
+    private final byte[] opcodeBinary;
 
     ForkedProcessEventType( String opcode )
     {
         this.opcode = opcode;
+        opcodeBinary = opcode.getBytes( US_ASCII );
     }
 
     public String getOpcode()
     {
         return opcode;
+    }
+
+    public byte[] getOpcodeBinary()
+    {
+        return opcodeBinary;
     }
 
     public boolean isSysPropCategory()
@@ -129,10 +344,5 @@ public enum ForkedProcessEventType
     public boolean isJvmExitError()
     {
         return this == BOOTERCODE_JVM_EXIT_ERROR;
-    }
-
-    public static ForkedProcessEventType byOpcode( @Nonnull String opcode )
-    {
-        return EVENTS.get( opcode );
     }
 }

@@ -44,30 +44,41 @@ import org.apache.maven.surefire.api.event.TestStartingEvent;
 import org.apache.maven.surefire.api.event.TestSucceededEvent;
 import org.apache.maven.surefire.api.event.TestsetCompletedEvent;
 import org.apache.maven.surefire.api.event.TestsetStartingEvent;
+import org.apache.maven.surefire.api.report.RunMode;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.extensions.CloseableDaemonThread;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.ForkNodeArguments;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
-import org.apache.maven.surefire.api.report.RunMode;
-import org.apache.maven.surefire.api.report.StackTraceWriter;
-import org.apache.maven.surefire.api.report.TestSetReportEntry;
-import org.apache.maven.surefire.shared.codec.binary.Base64;
 
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CoderResult;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static java.nio.charset.CodingErrorAction.REPLACE;
 import static java.nio.charset.StandardCharsets.US_ASCII;
-import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.MAGIC_NUMBER;
+import static org.apache.maven.plugin.surefire.extensions.EventConsumerThread.StreamReadStatus.OVERFLOW;
+import static org.apache.maven.plugin.surefire.extensions.EventConsumerThread.StreamReadStatus.UNDERFLOW;
+import static org.apache.maven.surefire.api.booter.Constants.DEFAULT_STREAM_ENCODING;
+import static org.apache.maven.surefire.api.booter.Constants.MAGIC_NUMBER_BYTES;
 import static org.apache.maven.surefire.api.report.CategorizedReportEntry.reportEntry;
-import static org.apache.maven.surefire.api.report.RunMode.MODES;
 
 /**
  *
@@ -82,8 +93,64 @@ public class EventConsumerThread extends CloseableDaemonThread
             "could not reserve enough space", "could not allocate", "unable to allocate", // memory errors
             "java.lang.module.findexception" // JPMS errors
         };
+
     private static final String PRINTABLE_JVM_NATIVE_STREAM = "Listening for transport dt_socket at address:";
-    private static final Base64 BASE64 = new Base64();
+
+    private static final SegmentType[] EVENT_WITHOUT_DATA = new SegmentType[] {
+        SegmentType.END_OF_FRAME
+    };
+
+    private static final SegmentType[] EVENT_WITH_ERROR_TRACE = new SegmentType[] {
+        SegmentType.STRING_ENCODING,
+        SegmentType.DATA_STRING,
+        SegmentType.DATA_STRING,
+        SegmentType.DATA_STRING,
+        SegmentType.END_OF_FRAME
+    };
+
+    private static final SegmentType[] EVENT_WITH_ONE_STRING = new SegmentType[] {
+        SegmentType.STRING_ENCODING,
+        SegmentType.DATA_STRING,
+        SegmentType.END_OF_FRAME
+    };
+
+    private static final SegmentType[] EVENT_WITH_RUNMODE_AND_ONE_STRING = new SegmentType[] {
+        SegmentType.RUN_MODE,
+        SegmentType.STRING_ENCODING,
+        SegmentType.DATA_STRING,
+        SegmentType.END_OF_FRAME
+    };
+
+    private static final SegmentType[] EVENT_WITH_RUNMODE_AND_TWO_STRINGS = new SegmentType[] {
+        SegmentType.RUN_MODE,
+        SegmentType.STRING_ENCODING,
+        SegmentType.DATA_STRING,
+        SegmentType.DATA_STRING,
+        SegmentType.END_OF_FRAME
+    };
+
+    private static final SegmentType[] EVENT_TEST_CONTROL = new SegmentType[] {
+        SegmentType.RUN_MODE,
+        SegmentType.STRING_ENCODING,
+        SegmentType.DATA_STRING,
+        SegmentType.DATA_STRING,
+        SegmentType.DATA_STRING,
+        SegmentType.DATA_STRING,
+        SegmentType.DATA_STRING,
+        SegmentType.DATA_STRING,
+        SegmentType.DATA_INT,
+        SegmentType.DATA_STRING,
+        SegmentType.DATA_STRING,
+        SegmentType.DATA_STRING,
+        SegmentType.END_OF_FRAME
+    };
+
+    private static final int BUFFER_SIZE = 1024;
+    private static final byte[] DEFAULT_STREAM_ENCODING_BYTES = DEFAULT_STREAM_ENCODING.name().getBytes( US_ASCII );
+    private static final int DELIMITER_LENGTH = 1;
+    private static final int BYTE_LENGTH = 1;
+    private static final int INT_LENGTH = 4;
+    private static final int NO_POSITION = -1;
 
     private final ReadableByteChannel channel;
     private final EventHandler<Event> eventHandler;
@@ -133,105 +200,630 @@ public class EventConsumerThread extends CloseableDaemonThread
     @SuppressWarnings( "checkstyle:innerassignment" )
     private void decode() throws IOException
     {
-        List<String> tokens = new ArrayList<>();
-        StringBuilder line = new StringBuilder();
-        StringBuilder token = new StringBuilder( MAGIC_NUMBER.length() );
-        ByteBuffer buffer = ByteBuffer.allocate( 1024 );
-        buffer.position( buffer.limit() );
-        boolean streamContinues;
+        Map<Segment, ForkedProcessEventType> eventTypes = mapEventTypes();
+        Map<Segment, RunMode> runModes = mapRunModes();
+        Memento memento = new Memento();
+        memento.bb.limit( 0 );
 
-        start:
         do
         {
-            line.setLength( 0 );
-            tokens.clear();
-            token.setLength( 0 );
-            FrameCompletion completion = null;
-            for ( boolean frameStarted = false; streamContinues = read( buffer ); completion = null )
+            try
             {
-                char c = (char) buffer.get();
-
-                if ( c == '\n' || c == '\r' )
+                ForkedProcessEventType eventType = readEventType( eventTypes, memento );
+                if ( eventType == null )
                 {
-                    printExistingLine( line );
-                    continue start;
+                    throw new MalformedFrameException( memento.line.positionByteBuffer, memento.bb.position() );
                 }
-
-                line.append( c );
-
-                if ( !frameStarted )
+                RunMode runMode = null;
+                for ( SegmentType segmentType : nextSegmentType( eventType ) )
                 {
-                    if ( c == ':' )
+                    if ( segmentType == null )
                     {
-                        frameStarted = true;
-                        token.setLength( 0 );
-                        tokens.clear();
+                        break;
                     }
-                }
-                else
-                {
-                    if ( c == ':' )
+
+                    switch ( segmentType )
                     {
-                        tokens.add( token.toString() );
-                        token.setLength( 0 );
-                        completion = frameCompleteness( tokens );
-                        if ( completion == FrameCompletion.COMPLETE )
-                        {
-                            line.setLength( 0 );
+                        case RUN_MODE:
+                            runMode = runModes.get( readSegment( memento ) );
                             break;
-                        }
-                        else if ( completion == FrameCompletion.MALFORMED )
-                        {
-                            printExistingLine( line );
-                            continue start;
-                        }
-                    }
-                    else
-                    {
-                        token.append( c );
+                        case STRING_ENCODING:
+                            memento.setCharset( readCharset( memento ) );
+                            break;
+                        case DATA_STRING:
+                            memento.data.add( readString( memento ) );
+                            break;
+                        case DATA_INT:
+                            memento.data.add( readInteger( memento ) );
+                            break;
+                        case END_OF_FRAME:
+                            memento.line.positionByteBuffer = memento.bb.position();
+                            if ( !disabled )
+                            {
+                                eventHandler.handleEvent( toEvent( eventType, runMode, memento.data ) );
+                            }
+                            break;
+                        default:
+                            memento.line.positionByteBuffer = NO_POSITION;
+                            arguments.dumpStreamText( "Unknown enum ("
+                                + ForkedProcessEventType.class.getSimpleName()
+                                + ") "
+                                + segmentType );
                     }
                 }
             }
-
-            if ( completion == FrameCompletion.COMPLETE )
+            catch ( MalformedFrameException e )
             {
-                Event event = toEvent( tokens );
-                if ( !disabled && event != null )
+                if ( e.hasValidPositions() )
                 {
-                    eventHandler.handleEvent( event );
+                    int length = e.readTo - e.readFrom;
+                    memento.line.write( memento.bb, e.readFrom, length );
                 }
             }
-
-            if ( !streamContinues )
+            catch ( RuntimeException e )
             {
-                printExistingLine( line );
-                return;
+                arguments.dumpStreamException( e );
+            }
+            catch ( IOException e )
+            {
+                printRemainingStream( memento );
+                throw e;
+            }
+            finally
+            {
+                memento.reset();
             }
         }
         while ( true );
     }
 
-    private boolean read( ByteBuffer buffer ) throws IOException
+    protected ForkedProcessEventType readEventType( Map<Segment, ForkedProcessEventType> eventTypes, Memento memento )
+        throws IOException, MalformedFrameException
     {
-        if ( buffer.hasRemaining() && buffer.position() > 0 )
+        int readCount = DELIMITER_LENGTH + MAGIC_NUMBER_BYTES.length + DELIMITER_LENGTH
+            + BYTE_LENGTH + DELIMITER_LENGTH;
+        read( memento, readCount );
+        checkHeader( memento );
+        return eventTypes.get( readSegment( memento ) );
+    }
+
+    protected String readString( Memento memento ) throws IOException, MalformedFrameException
+    {
+        memento.cb.clear();
+        int readCount = readInt( memento );
+        read( memento, readCount + DELIMITER_LENGTH );
+
+        final String string;
+        if ( readCount == 0 )
         {
-            return true;
+            string = "";
+        }
+        else if ( readCount == 1 )
+        {
+            read( memento, 1 );
+            byte oneChar = memento.bb.get();
+            string = oneChar == 0 ? null : String.valueOf( (char) oneChar );
         }
         else
         {
-            buffer.clear();
-            boolean isEndOfStream = channel.read( buffer ) == -1;
-            buffer.flip();
-            return !isEndOfStream;
+            string = readString( memento, readCount );
+        }
+
+        checkDelimiter( memento );
+        return string;
+    }
+
+    @Nonnull
+    @SuppressWarnings( "checkstyle:magicnumber" )
+    protected Segment readSegment( Memento memento ) throws IOException, MalformedFrameException
+    {
+        int readCount = readByte( memento ) & 0xff;
+        read( memento, readCount + DELIMITER_LENGTH );
+        ByteBuffer bb = memento.bb;
+        Segment segment = new Segment( bb.array(), bb.arrayOffset() + bb.position(), readCount );
+        bb.position( bb.position() + readCount );
+        checkDelimiter( memento );
+        return segment;
+    }
+
+    @Nonnull
+    @SuppressWarnings( "checkstyle:magicnumber" )
+    protected Charset readCharset( Memento memento ) throws IOException, MalformedFrameException
+    {
+        int length = readByte( memento ) & 0xff;
+        read( memento, length + DELIMITER_LENGTH );
+        ByteBuffer bb = memento.bb;
+        byte[] array = bb.array();
+        int offset = bb.arrayOffset() + bb.position();
+        bb.position( bb.position() + length );
+        boolean isDefaultEncoding = false;
+        if ( length == DEFAULT_STREAM_ENCODING_BYTES.length )
+        {
+            isDefaultEncoding = true;
+            for ( int i = 0; i < length; i++ )
+            {
+                isDefaultEncoding &= DEFAULT_STREAM_ENCODING_BYTES[i] == array[offset + i];
+            }
+        }
+
+        try
+        {
+            Charset charset =
+                isDefaultEncoding
+                    ? DEFAULT_STREAM_ENCODING
+                    : Charset.forName( new String( array, offset, length, US_ASCII ) );
+
+            checkDelimiter( memento );
+            return charset;
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new MalformedFrameException( memento.line.positionByteBuffer, bb.position() );
         }
     }
 
-    private void printExistingLine( StringBuilder line )
+    private static void checkHeader( Memento memento ) throws MalformedFrameException
     {
-        if ( line.length() != 0 )
+        ByteBuffer bb = memento.bb;
+
+        checkDelimiter( memento );
+
+        int shift = 0;
+        try
         {
+            for ( int start = bb.arrayOffset() + bb.position(), length = MAGIC_NUMBER_BYTES.length;
+                  shift < length; shift++ )
+            {
+                if ( bb.array()[shift + start] != MAGIC_NUMBER_BYTES[shift] )
+                {
+                    throw new MalformedFrameException( memento.line.positionByteBuffer, bb.position() + shift );
+                }
+            }
+        }
+        finally
+        {
+            bb.position( bb.position() + shift );
+        }
+
+        checkDelimiter( memento );
+    }
+
+    @SuppressWarnings( "checkstyle:magicnumber" )
+    private static void checkDelimiter( Memento memento ) throws MalformedFrameException
+    {
+        ByteBuffer bb = memento.bb;
+        if ( ( 0xff & bb.get() ) != ':' )
+        {
+            throw new MalformedFrameException( memento.line.positionByteBuffer, bb.position() );
+        }
+    }
+
+    static SegmentType[] nextSegmentType( ForkedProcessEventType eventType )
+    {
+        switch ( eventType )
+        {
+            case BOOTERCODE_BYE:
+            case BOOTERCODE_STOP_ON_NEXT_TEST:
+            case BOOTERCODE_NEXT_TEST:
+                return EVENT_WITHOUT_DATA;
+            case BOOTERCODE_CONSOLE_ERROR:
+            case BOOTERCODE_JVM_EXIT_ERROR:
+                return EVENT_WITH_ERROR_TRACE;
+            case BOOTERCODE_CONSOLE_INFO:
+            case BOOTERCODE_CONSOLE_DEBUG:
+            case BOOTERCODE_CONSOLE_WARNING:
+                return EVENT_WITH_ONE_STRING;
+            case BOOTERCODE_STDOUT:
+            case BOOTERCODE_STDOUT_NEW_LINE:
+            case BOOTERCODE_STDERR:
+            case BOOTERCODE_STDERR_NEW_LINE:
+                return EVENT_WITH_RUNMODE_AND_ONE_STRING;
+            case BOOTERCODE_SYSPROPS:
+                return EVENT_WITH_RUNMODE_AND_TWO_STRINGS;
+            case BOOTERCODE_TESTSET_STARTING:
+            case BOOTERCODE_TESTSET_COMPLETED:
+            case BOOTERCODE_TEST_STARTING:
+            case BOOTERCODE_TEST_SUCCEEDED:
+            case BOOTERCODE_TEST_FAILED:
+            case BOOTERCODE_TEST_SKIPPED:
+            case BOOTERCODE_TEST_ERROR:
+            case BOOTERCODE_TEST_ASSUMPTIONFAILURE:
+                return EVENT_TEST_CONTROL;
+            default:
+                throw new IllegalArgumentException( "Unknown enum " + eventType );
+        }
+    }
+
+    protected StreamReadStatus read( Memento memento, int recommendedCount ) throws IOException
+    {
+        ByteBuffer buffer = memento.bb;
+        if ( buffer.remaining() >= recommendedCount && buffer.position() != 0 )
+        {
+            return OVERFLOW;
+        }
+        else
+        {
+            if ( buffer.position() != 0 && recommendedCount > buffer.capacity() - buffer.position() )
+            {
+                buffer.compact().flip();
+                memento.line.positionByteBuffer = 0;
+            }
+            int mark = buffer.position();
+            buffer.position( buffer.limit() );
+            buffer.limit( buffer.capacity() );
+            boolean isEnd = false;
+            while ( !isEnd && buffer.position() - mark < recommendedCount && buffer.position() != buffer.limit() )
+            {
+                isEnd = channel.read( buffer ) == -1;
+            }
+
+            buffer.limit( buffer.position() );
+            buffer.position( mark );
+            int readBytes = buffer.remaining();
+
+            if ( isEnd && readBytes < recommendedCount )
+            {
+                throw new EOFException();
+            }
+            else
+            {
+                return readBytes >= recommendedCount ? OVERFLOW : UNDERFLOW;
+            }
+        }
+    }
+
+    static Event toEvent( ForkedProcessEventType eventType, RunMode runMode, List<Object> args )
+    {
+        switch ( eventType )
+        {
+            case BOOTERCODE_BYE:
+                return new ControlByeEvent();
+            case BOOTERCODE_STOP_ON_NEXT_TEST:
+                return new ControlStopOnNextTestEvent();
+            case BOOTERCODE_NEXT_TEST:
+                return new ControlNextTestEvent();
+            case BOOTERCODE_CONSOLE_ERROR:
+                return new ConsoleErrorEvent( toStackTraceWriter( args ) );
+            case BOOTERCODE_JVM_EXIT_ERROR:
+                return new JvmExitErrorEvent( toStackTraceWriter( args ) );
+            case BOOTERCODE_CONSOLE_INFO:
+                return new ConsoleInfoEvent( (String) args.get( 0 ) );
+            case BOOTERCODE_CONSOLE_DEBUG:
+                return new ConsoleDebugEvent( (String) args.get( 0 ) );
+            case BOOTERCODE_CONSOLE_WARNING:
+                return new ConsoleWarningEvent( (String) args.get( 0 ) );
+            case BOOTERCODE_STDOUT:
+                return new StandardStreamOutEvent( runMode, (String) args.get( 0 ) );
+            case BOOTERCODE_STDOUT_NEW_LINE:
+                return new StandardStreamOutWithNewLineEvent( runMode, (String) args.get( 0 ) );
+            case BOOTERCODE_STDERR:
+                return new StandardStreamErrEvent( runMode, (String) args.get( 0 ) );
+            case BOOTERCODE_STDERR_NEW_LINE:
+                return new StandardStreamErrWithNewLineEvent( runMode, (String) args.get( 0 ) );
+            case BOOTERCODE_SYSPROPS:
+                String key = (String) args.get( 0 );
+                String value = (String) args.get( 1 );
+                return new SystemPropertyEvent( runMode, key, value );
+            case BOOTERCODE_TESTSET_STARTING:
+                return new TestsetStartingEvent( runMode, toReportEntry( args ) );
+            case BOOTERCODE_TESTSET_COMPLETED:
+                return new TestsetCompletedEvent( runMode, toReportEntry( args ) );
+            case BOOTERCODE_TEST_STARTING:
+                return new TestStartingEvent( runMode, toReportEntry( args ) );
+            case BOOTERCODE_TEST_SUCCEEDED:
+                return new TestSucceededEvent( runMode, toReportEntry( args ) );
+            case BOOTERCODE_TEST_FAILED:
+                return new TestFailedEvent( runMode, toReportEntry( args ) );
+            case BOOTERCODE_TEST_SKIPPED:
+                return new TestSkippedEvent( runMode, toReportEntry( args ) );
+            case BOOTERCODE_TEST_ERROR:
+                return new TestErrorEvent( runMode, toReportEntry( args ) );
+            case BOOTERCODE_TEST_ASSUMPTIONFAILURE:
+                return new TestAssumptionFailureEvent( runMode, toReportEntry( args ) );
+            default:
+                throw new IllegalArgumentException( "Missing a branch for the event type " + eventType );
+        }
+    }
+
+    private static void printCorruptedStream( Memento memento )
+    {
+        ByteBuffer bb = memento.bb;
+        if ( bb.hasRemaining() )
+        {
+            int bytesToWrite = bb.remaining();
+            memento.line.write( bb, bb.position(), bytesToWrite );
+            bb.position( bb.position() + bytesToWrite );
+        }
+    }
+
+    /**
+     * Print the last string which has not been finished by a new line character.
+     *
+     * @param memento current memento object
+     */
+    private static void printRemainingStream( Memento memento )
+    {
+        printCorruptedStream( memento );
+        memento.line.printExistingLine();
+        memento.line.count = 0;
+    }
+
+    @Nonnull
+    private static TestSetReportEntry toReportEntry( List<Object> args )
+    {
+        // ReportEntry:
+        String source = (String) args.get( 0 );
+        String sourceText = (String) args.get( 1 );
+        String name = (String) args.get( 2 );
+        String nameText = (String) args.get( 3 );
+        String group = (String) args.get( 4 );
+        String message = (String) args.get( 5 );
+        Integer timeElapsed = (Integer) args.get( 6 );
+        // StackTraceWriter:
+        String traceMessage = (String) args.get( 7 );
+        String smartTrimmedStackTrace = (String) args.get( 8 );
+        String stackTrace = (String) args.get( 9 );
+        return newReportEntry( source, sourceText, name, nameText, group, message, timeElapsed,
+            traceMessage, smartTrimmedStackTrace, stackTrace );
+    }
+
+    private static StackTraceWriter toStackTraceWriter( List<Object> args )
+    {
+        String traceMessage = (String) args.get( 0 );
+        String smartTrimmedStackTrace = (String) args.get( 1 );
+        String stackTrace = (String) args.get( 2 );
+        return toTrace( traceMessage, smartTrimmedStackTrace, stackTrace );
+    }
+
+    private static StackTraceWriter toTrace( String traceMessage, String smartTrimmedStackTrace, String stackTrace )
+    {
+        boolean exists = traceMessage != null || stackTrace != null || smartTrimmedStackTrace != null;
+        return exists ? new DeserializedStacktraceWriter( traceMessage, smartTrimmedStackTrace, stackTrace ) : null;
+    }
+
+    static TestSetReportEntry newReportEntry( // ReportEntry:
+                                              String source, String sourceText, String name,
+                                              String nameText, String group, String message,
+                                              Integer timeElapsed,
+                                              // StackTraceWriter:
+                                              String traceMessage,
+                                              String smartTrimmedStackTrace, String stackTrace )
+        throws NumberFormatException
+    {
+        StackTraceWriter stackTraceWriter = toTrace( traceMessage, smartTrimmedStackTrace, stackTrace );
+        return reportEntry( source, sourceText, name, nameText, group, stackTraceWriter, timeElapsed, message,
+            Collections.<String, String>emptyMap() );
+    }
+
+    private static boolean isJvmError( String line )
+    {
+        String lineLower = line.toLowerCase();
+        for ( String errorPattern : JVM_ERROR_PATTERNS )
+        {
+            if ( lineLower.contains( errorPattern ) )
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static int decodeString( @Nonnull CharsetDecoder decoder, @Nonnull ByteBuffer input,
+                                     @Nonnull CharBuffer output, @Nonnegative int bytesToDecode,
+                                     boolean endOfInput, @Nonnegative int errorStreamFrom )
+        throws MalformedFrameException
+    {
+        int limit = input.limit();
+        input.limit( input.position() + bytesToDecode );
+
+        CoderResult result = decoder.decode( input, output, endOfInput );
+        if ( result.isError() || result.isMalformed() )
+        {
+            throw new MalformedFrameException( errorStreamFrom, input.position() );
+        }
+        
+        int decodedBytes = bytesToDecode - input.remaining();
+        input.limit( limit );
+        return decodedBytes;
+    }
+
+    String readString( @Nonnull final Memento memento, @Nonnegative final int totalBytes )
+        throws IOException, MalformedFrameException
+    {
+        memento.getDecoder().reset();
+        final CharBuffer output = memento.cb;
+        output.clear();
+        final ByteBuffer input = memento.bb;
+        final List<String> strings = new ArrayList<>();
+        int countDecodedBytes = 0;
+        for ( boolean endOfInput = false; !endOfInput; )
+        {
+            final int bytesToRead = totalBytes - countDecodedBytes;
+            read( memento, bytesToRead - input.remaining() );
+            int bytesToDecode = min( input.remaining(), bytesToRead );
+            final boolean isLastChunk = bytesToDecode == bytesToRead;
+            endOfInput = countDecodedBytes + bytesToDecode >= totalBytes;
+            do
+            {
+                boolean endOfChunk = output.remaining() >= bytesToRead;
+                boolean endOfOutput = isLastChunk && endOfChunk;
+                int readInputBytes = decodeString( memento.getDecoder(), input, output, bytesToDecode, endOfOutput,
+                    memento.line.positionByteBuffer );
+                bytesToDecode -= readInputBytes;
+                countDecodedBytes += readInputBytes;
+            }
+            while ( isLastChunk && bytesToDecode > 0 && output.hasRemaining() );
+
+            if ( isLastChunk || !output.hasRemaining() )
+            {
+                strings.add( output.flip().toString() );
+                output.clear();
+            }
+        }
+
+        memento.getDecoder().reset();
+        output.clear();
+
+        return toString( strings );
+    }
+
+    protected byte readByte( Memento memento ) throws IOException, MalformedFrameException
+    {
+        read( memento, BYTE_LENGTH + DELIMITER_LENGTH );
+        byte b = memento.bb.get();
+        checkDelimiter( memento );
+        return b;
+    }
+
+    protected int readInt( Memento memento ) throws IOException, MalformedFrameException
+    {
+        read( memento, INT_LENGTH + DELIMITER_LENGTH );
+        int i = memento.bb.getInt();
+        checkDelimiter( memento );
+        return i;
+    }
+
+    protected Integer readInteger( Memento memento ) throws IOException, MalformedFrameException
+    {
+        read( memento, BYTE_LENGTH );
+        boolean isNullObject = memento.bb.get() == 0;
+        if ( isNullObject )
+        {
+            read( memento, DELIMITER_LENGTH );
+            checkDelimiter( memento );
+            return null;
+        }
+        return readInt( memento );
+    }
+
+    private static String toString( List<String> strings )
+    {
+        if ( strings.size() == 1 )
+        {
+            return strings.get( 0 );
+        }
+        StringBuilder concatenated = new StringBuilder( strings.size() * BUFFER_SIZE );
+        for ( String s : strings )
+        {
+            concatenated.append( s );
+        }
+        return concatenated.toString();
+    }
+
+    static Map<Segment, ForkedProcessEventType> mapEventTypes()
+    {
+        Map<Segment, ForkedProcessEventType> map = new HashMap<>();
+        for ( ForkedProcessEventType e : ForkedProcessEventType.values() )
+        {
+            byte[] array = e.getOpcode().getBytes( US_ASCII );
+            map.put( new Segment( array, 0, array.length ), e );
+        }
+        return map;
+    }
+
+    static Map<Segment, RunMode> mapRunModes()
+    {
+        Map<Segment, RunMode> map = new HashMap<>();
+        for ( RunMode e : RunMode.values() )
+        {
+            byte[] array = e.geRunmode().getBytes( US_ASCII );
+            map.put( new Segment( array, 0, array.length ), e );
+        }
+        return map;
+    }
+
+    enum StreamReadStatus
+    {
+        UNDERFLOW,
+        OVERFLOW,
+        EOF
+    }
+
+    enum SegmentType
+    {
+        RUN_MODE,
+        STRING_ENCODING,
+        DATA_STRING,
+        DATA_INT,
+        END_OF_FRAME
+    }
+
+    /**
+     * This class avoids locking which gains the performance of this decoder.
+     */
+    private class BufferedStream
+    {
+        private byte[] buffer;
+        private int count;
+        private int positionByteBuffer;
+        private boolean isNewLine;
+
+        BufferedStream( int capacity )
+        {
+            this.buffer = new byte[capacity];
+        }
+
+        void write( ByteBuffer bb, int position, int length )
+        {
+            ensureCapacity( length );
+            byte[] array = bb.array();
+            int pos = bb.arrayOffset() + position;
+            while ( length-- > 0 )
+            {
+                positionByteBuffer++;
+                byte b = array[pos++];
+                if ( b == '\r' || b == '\n' )
+                {
+                    if ( !isNewLine )
+                    {
+                        printExistingLine();
+                        count = 0;
+                    }
+                    isNewLine = true;
+                }
+                else
+                {
+                    buffer[count++] = b;
+                    isNewLine = false;
+                }
+            }
+        }
+
+        private boolean isEmpty()
+        {
+            return count == 0;
+        }
+
+        @Override
+        public String toString()
+        {
+            return new String( buffer, 0, count, DEFAULT_STREAM_ENCODING );
+        }
+
+        private void ensureCapacity( int addCapacity )
+        {
+            int oldCapacity = buffer.length;
+            int exactCapacity = count + addCapacity;
+            if ( exactCapacity < 0 )
+            {
+                throw new OutOfMemoryError();
+            }
+
+            if ( oldCapacity < exactCapacity )
+            {
+                int newCapacity = oldCapacity << 1;
+                buffer = Arrays.copyOf( buffer, max( newCapacity, exactCapacity ) );
+            }
+        }
+
+        void printExistingLine()
+        {
+            if ( isEmpty() )
+            {
+                return;
+            }
             ConsoleLogger logger = arguments.getConsoleLogger();
-            String s = line.toString().trim();
+            String s = toString();
             if ( s.contains( PRINTABLE_JVM_NATIVE_STREAM ) )
             {
                 if ( logger.isDebugEnabled() )
@@ -254,250 +846,132 @@ public class EventConsumerThread extends CloseableDaemonThread
                 {
                     logger.error( s );
                 }
+                else if ( logger.isDebugEnabled() )
+                {
+                    logger.debug( s );
+                }
+
                 String msg = "Corrupted STDOUT by directly writing to native stream in forked JVM "
                     + arguments.getForkChannelId() + ".";
                 File dumpFile = arguments.dumpStreamText( msg + " Stream '" + s + "'." );
                 arguments.logWarningAtEnd( msg + " See FAQ web page and the dump file " + dumpFile.getAbsolutePath() );
+            }
+        }
+    }
 
-                if ( logger.isDebugEnabled() )
+    class Memento
+    {
+        private final CharsetDecoder defaultDecoder;
+        private CharsetDecoder currentDecoder;
+        final BufferedStream line = new BufferedStream( 32 );
+        final List<Object> data = new ArrayList<>();
+        final CharBuffer cb = CharBuffer.allocate( BUFFER_SIZE );
+        final ByteBuffer bb = ByteBuffer.allocate( BUFFER_SIZE );
+
+        Memento()
+        {
+            defaultDecoder = DEFAULT_STREAM_ENCODING.newDecoder()
+                .onMalformedInput( REPLACE )
+                .onUnmappableCharacter( REPLACE );
+        }
+
+        void reset()
+        {
+            currentDecoder = null;
+            data.clear();
+        }
+
+        CharsetDecoder getDecoder()
+        {
+            return currentDecoder == null ? defaultDecoder : currentDecoder;
+        }
+
+        void setCharset( Charset charset )
+        {
+            if ( charset.name().equals( defaultDecoder.charset().name() ) )
+            {
+                currentDecoder = defaultDecoder;
+            }
+            else
+            {
+                currentDecoder = charset.newDecoder()
+                    .onMalformedInput( REPLACE )
+                    .onUnmappableCharacter( REPLACE );
+            }
+        }
+    }
+
+    static class Segment
+    {
+        private final byte[] array;
+        private final int fromIndex;
+        private final int length;
+        private final int hashCode;
+
+        Segment( byte[] array, int fromIndex, int length )
+        {
+            this.array = array;
+            this.fromIndex = fromIndex;
+            this.length = length;
+
+            int hashCode = 0;
+            int i = fromIndex;
+            for ( int loops = length >> 1; loops-- != 0; )
+            {
+                hashCode = 31 * hashCode + array[i++];
+                hashCode = 31 * hashCode + array[i++];
+            }
+            this.hashCode = i == fromIndex + length ? hashCode : 31 * hashCode + array[i];
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return hashCode;
+        }
+
+        @Override
+        public boolean equals( Object obj )
+        {
+            if ( !( obj instanceof Segment ) )
+            {
+                return false;
+            }
+
+            Segment that = (Segment) obj;
+            if ( that.length != length )
+            {
+                return false;
+            }
+
+            for ( int i = 0; i < length; i++ )
+            {
+                if ( that.array[that.fromIndex + i] != array[fromIndex + i] )
                 {
-                    logger.debug( s );
+                    return false;
                 }
             }
+            return true;
         }
-    }
-
-    private Event toEvent( List<String> tokensInFrame )
-    {
-        Iterator<String> tokens = tokensInFrame.iterator();
-        String header = tokens.next();
-        assert header != null;
-
-        ForkedProcessEventType event = ForkedProcessEventType.byOpcode( tokens.next() );
-
-        if ( event == null )
-        {
-            return null;
-        }
-
-        if ( event.isControlCategory() )
-        {
-            switch ( event )
-            {
-                case BOOTERCODE_BYE:
-                    return new ControlByeEvent();
-                case BOOTERCODE_STOP_ON_NEXT_TEST:
-                    return new ControlStopOnNextTestEvent();
-                case BOOTERCODE_NEXT_TEST:
-                    return new ControlNextTestEvent();
-                default:
-                    throw new IllegalStateException( "Unknown enum " + event );
-            }
-        }
-        else if ( event.isConsoleErrorCategory() || event.isJvmExitError() )
-        {
-            Charset encoding = Charset.forName( tokens.next() );
-            StackTraceWriter stackTraceWriter = decodeTrace( encoding, tokens.next(), tokens.next(), tokens.next() );
-            return event.isConsoleErrorCategory()
-                ? new ConsoleErrorEvent( stackTraceWriter )
-                : new JvmExitErrorEvent( stackTraceWriter );
-        }
-        else if ( event.isConsoleCategory() )
-        {
-            Charset encoding = Charset.forName( tokens.next() );
-            String msg = decode( tokens.next(), encoding );
-            switch ( event )
-            {
-                case BOOTERCODE_CONSOLE_INFO:
-                    return new ConsoleInfoEvent( msg );
-                case BOOTERCODE_CONSOLE_DEBUG:
-                    return new ConsoleDebugEvent( msg );
-                case BOOTERCODE_CONSOLE_WARNING:
-                    return new ConsoleWarningEvent( msg );
-                default:
-                    throw new IllegalStateException( "Unknown enum " + event );
-            }
-        }
-        else if ( event.isStandardStreamCategory() )
-        {
-            RunMode mode = MODES.get( tokens.next() );
-            Charset encoding = Charset.forName( tokens.next() );
-            String output = decode( tokens.next(), encoding );
-            switch ( event )
-            {
-                case BOOTERCODE_STDOUT:
-                    return new StandardStreamOutEvent( mode, output );
-                case BOOTERCODE_STDOUT_NEW_LINE:
-                    return new StandardStreamOutWithNewLineEvent( mode, output );
-                case BOOTERCODE_STDERR:
-                    return new StandardStreamErrEvent( mode, output );
-                case BOOTERCODE_STDERR_NEW_LINE:
-                    return new StandardStreamErrWithNewLineEvent( mode, output );
-                default:
-                    throw new IllegalStateException( "Unknown enum " + event );
-            }
-        }
-        else if ( event.isSysPropCategory() )
-        {
-            RunMode mode = MODES.get( tokens.next() );
-            Charset encoding = Charset.forName( tokens.next() );
-            String key = decode( tokens.next(), encoding );
-            String value = decode( tokens.next(), encoding );
-            return new SystemPropertyEvent( mode, key, value );
-        }
-        else if ( event.isTestCategory() )
-        {
-            RunMode mode = MODES.get( tokens.next() );
-            Charset encoding = Charset.forName( tokens.next() );
-            TestSetReportEntry reportEntry =
-                decodeReportEntry( encoding, tokens.next(), tokens.next(), tokens.next(), tokens.next(),
-                    tokens.next(), tokens.next(), tokens.next(), tokens.next(), tokens.next(), tokens.next() );
-
-            switch ( event )
-            {
-                case BOOTERCODE_TESTSET_STARTING:
-                    return new TestsetStartingEvent( mode, reportEntry );
-                case BOOTERCODE_TESTSET_COMPLETED:
-                    return new TestsetCompletedEvent( mode, reportEntry );
-                case BOOTERCODE_TEST_STARTING:
-                    return new TestStartingEvent( mode, reportEntry );
-                case BOOTERCODE_TEST_SUCCEEDED:
-                    return new TestSucceededEvent( mode, reportEntry );
-                case BOOTERCODE_TEST_FAILED:
-                    return new TestFailedEvent( mode, reportEntry );
-                case BOOTERCODE_TEST_SKIPPED:
-                    return new TestSkippedEvent( mode, reportEntry );
-                case BOOTERCODE_TEST_ERROR:
-                    return new TestErrorEvent( mode, reportEntry );
-                case BOOTERCODE_TEST_ASSUMPTIONFAILURE:
-                    return new TestAssumptionFailureEvent( mode, reportEntry );
-                default:
-                    throw new IllegalStateException( "Unknown enum " + event );
-            }
-        }
-
-        throw new IllegalStateException( "Missing a branch for the event type " + event );
-    }
-
-    private static FrameCompletion frameCompleteness( List<String> tokens )
-    {
-        if ( !tokens.isEmpty() && !MAGIC_NUMBER.equals( tokens.get( 0 ) ) )
-        {
-            return FrameCompletion.MALFORMED;
-        }
-
-        if ( tokens.size() >= 2 )
-        {
-            String opcode = tokens.get( 1 );
-            ForkedProcessEventType event = ForkedProcessEventType.byOpcode( opcode );
-            if ( event == null )
-            {
-                return FrameCompletion.MALFORMED;
-            }
-            else if ( event.isControlCategory() )
-            {
-                return FrameCompletion.COMPLETE;
-            }
-            else if ( event.isConsoleErrorCategory() )
-            {
-                return tokens.size() == 6 ? FrameCompletion.COMPLETE : FrameCompletion.NOT_COMPLETE;
-            }
-            else if ( event.isConsoleCategory() )
-            {
-                return tokens.size() == 4 ? FrameCompletion.COMPLETE : FrameCompletion.NOT_COMPLETE;
-            }
-            else if ( event.isStandardStreamCategory() )
-            {
-                return tokens.size() == 5 ? FrameCompletion.COMPLETE : FrameCompletion.NOT_COMPLETE;
-            }
-            else if ( event.isSysPropCategory() )
-            {
-                return tokens.size() == 6 ? FrameCompletion.COMPLETE : FrameCompletion.NOT_COMPLETE;
-            }
-            else if ( event.isTestCategory() )
-            {
-                return tokens.size() == 14 ? FrameCompletion.COMPLETE : FrameCompletion.NOT_COMPLETE;
-            }
-            else if ( event.isJvmExitError() )
-            {
-                return tokens.size() == 6 ? FrameCompletion.COMPLETE : FrameCompletion.NOT_COMPLETE;
-            }
-        }
-        return FrameCompletion.NOT_COMPLETE;
-    }
-
-    static String decode( String line, Charset encoding )
-    {
-        // ForkedChannelEncoder is encoding the stream with US_ASCII
-        return line == null || "-".equals( line )
-            ? null
-            : new String( BASE64.decode( line.getBytes( US_ASCII ) ), encoding );
-    }
-
-    private static StackTraceWriter decodeTrace( Charset encoding, String encTraceMessage,
-                                                 String encSmartTrimmedStackTrace, String encStackTrace )
-    {
-        String traceMessage = decode( encTraceMessage, encoding );
-        String stackTrace = decode( encStackTrace, encoding );
-        String smartTrimmedStackTrace = decode( encSmartTrimmedStackTrace, encoding );
-        boolean exists = traceMessage != null || stackTrace != null || smartTrimmedStackTrace != null;
-        return exists ? new DeserializedStacktraceWriter( traceMessage, smartTrimmedStackTrace, stackTrace ) : null;
-    }
-
-    static TestSetReportEntry decodeReportEntry( Charset encoding,
-                                                 // ReportEntry:
-                                                 String encSource, String encSourceText, String encName,
-                                                 String encNameText, String encGroup, String encMessage,
-                                                 String encTimeElapsed,
-                                                 // StackTraceWriter:
-                                                 String encTraceMessage,
-                                                 String encSmartTrimmedStackTrace, String encStackTrace )
-        throws NumberFormatException
-    {
-        if ( encoding == null )
-        {
-            // corrupted or incomplete stream
-            return null;
-        }
-
-        String source = decode( encSource, encoding );
-        String sourceText = decode( encSourceText, encoding );
-        String name = decode( encName, encoding );
-        String nameText = decode( encNameText, encoding );
-        String group = decode( encGroup, encoding );
-        StackTraceWriter stackTraceWriter =
-            decodeTrace( encoding, encTraceMessage, encSmartTrimmedStackTrace, encStackTrace );
-        Integer elapsed = decodeToInteger( encTimeElapsed );
-        String message = decode( encMessage, encoding );
-        return reportEntry( source, sourceText, name, nameText,
-            group, stackTraceWriter, elapsed, message, Collections.<String, String>emptyMap() );
-    }
-
-    static Integer decodeToInteger( String line )
-    {
-        return line == null || "-".equals( line ) ? null : Integer.decode( line );
-    }
-
-    private static boolean isJvmError( String line )
-    {
-        String lineLower = line.toLowerCase();
-        for ( String errorPattern : JVM_ERROR_PATTERNS )
-        {
-            if ( lineLower.contains( errorPattern ) )
-            {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
-     * Determines whether the frame is complete or malformed.
+     *
      */
-    private enum FrameCompletion
+    static class MalformedFrameException extends Exception
     {
-        NOT_COMPLETE,
-        COMPLETE,
-        MALFORMED
+        private final int readFrom;
+        private final int readTo;
+
+        MalformedFrameException( int readFrom, int readTo )
+        {
+            this.readFrom = readFrom;
+            this.readTo = readTo;
+        }
+
+        boolean hasValidPositions()
+        {
+            return readFrom != NO_POSITION && readTo != NO_POSITION && readTo - readFrom > 0;
+        }
     }
 }

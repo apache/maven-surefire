@@ -19,9 +19,12 @@ package org.apache.maven.plugin.surefire.extensions;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
 import org.apache.maven.surefire.api.event.Event;
+import org.apache.maven.surefire.api.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.extensions.EventHandler;
@@ -33,6 +36,8 @@ import org.junit.rules.ExpectedException;
 
 import javax.annotation.Nonnull;
 import java.io.Closeable;
+import java.io.File;
+import java.io.PrintStream;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
@@ -46,7 +51,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -65,11 +69,7 @@ public class E2ETest
     @Test
     public void endToEndTest() throws Exception
     {
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
-        when( arguments.getForkChannelId() ).thenReturn( 1 );
-        when( arguments.getConsoleLogger() ).thenReturn( logger );
-        when( arguments.getSessionId() ).thenReturn( UUID.randomUUID().toString() );
+        ForkNodeArguments arguments = new Arguments( UUID.randomUUID().toString(), 1, new NullConsoleLogger() );
         final SurefireForkChannel server = new SurefireForkChannel( arguments );
 
         final String connection = server.getForkNodeConnectionString();
@@ -83,6 +83,8 @@ public class E2ETest
         TimeUnit.SECONDS.sleep( 3L );
 
         final CountDownLatch awaitHandlerFinished = new CountDownLatch( 2 );
+
+        final int totalCalls = 400_000; // 400_000; // 1_000_000; // 10_000_000;
 
         Thread t = new Thread()
         {
@@ -98,23 +100,23 @@ public class E2ETest
                     }
                 };
 
-                //PrintStream out = System.out;
-                //PrintStream err = System.err;
+                PrintStream out = System.out;
+                PrintStream err = System.err;
 
-                //ConsoleOutputCapture.startCapture( target );
+                ConsoleOutputCapture.startCapture( target );
 
                 try
                 {
                     long t1 = System.currentTimeMillis();
-                    for ( int i = 0; i < 400_000; i++ )
+                    for ( int i = 0; i < totalCalls; i++ )
                     {
-                        //System.out.println( LONG_STRING );
-                        encoder.stdOut( LONG_STRING, true );
+                        System.out.println( LONG_STRING );
+                        //encoder.stdOut( LONG_STRING, true );
                     }
                     long t2 = System.currentTimeMillis();
                     long spent = t2 - t1;
-                    //System.setOut( out );
-                    //System.setErr( err );
+                    System.setOut( out );
+                    System.setErr( err );
                     System.out.println( spent + "ms on write" );
                     awaitHandlerFinished.countDown();
                 }
@@ -149,12 +151,12 @@ public class E2ETest
                     long t2 = System.currentTimeMillis();
                     long spent = t2 - t1;
 
-                    if ( counter.get() % 100_000 == 0 )
+                    if ( counter.get() % 500_000 == 0 )
                     {
                         System.out.println( spent + "ms: " + counter.get() );
                     }
 
-                    if ( counter.get() == 320_000 )
+                    if ( counter.get() == totalCalls - 64 * 1024 )
                     {
                         readTime.set( spent );
                         System.out.println( spent + "ms on read" );
@@ -168,17 +170,9 @@ public class E2ETest
             }
         };
 
-        Closeable c = new Closeable()
-        {
-            @Override
-            public void close()
-            {
-            }
-        };
+        ThreadedStreamConsumer queue = new ThreadedStreamConsumer( h );
 
-        ReadableByteChannel stdOut = mock( ReadableByteChannel.class );
-        when( stdOut.read( any( ByteBuffer.class ) ) ).thenReturn( -1 );
-        server.bindEventHandler( h, new CountdownCloseable( c, 1 ), stdOut )
+        server.bindEventHandler( queue, new CountdownCloseable( new DummyCloseable(), 1 ), new DummyReadableChannel() )
             .start();
 
         assertThat( awaitHandlerFinished.await( 30L, TimeUnit.SECONDS ) )
@@ -186,11 +180,11 @@ public class E2ETest
 
         factory.close();
         server.close();
+        queue.close();
 
-        // 2 seconds while using the encoder/decoder
-        // 160 millis of sending pure data without encoder/decoder
+        // 1.0 seconds while using the encoder/decoder
         assertThat( readTime.get() )
-            .describedAs( "The performance test should assert 2s of read time. "
+            .describedAs( "The performance test should assert 1.0s of read time. "
                 + "The limit 6s guarantees that the read time does not exceed this limit on overloaded CPU." )
             .isPositive()
             .isLessThanOrEqualTo( 6_000L );
@@ -259,6 +253,87 @@ public class E2ETest
             server.connectToClient();
 
             fail( task.get() );
+        }
+    }
+
+    private static class DummyReadableChannel implements ReadableByteChannel
+    {
+        @Override
+        public int read( ByteBuffer dst )
+        {
+            return 0;
+        }
+
+        @Override
+        public boolean isOpen()
+        {
+            return false;
+        }
+
+        @Override
+        public void close()
+        {
+        }
+    }
+
+    private static class DummyCloseable implements Closeable
+    {
+        @Override
+        public void close()
+        {
+        }
+    }
+
+    private static class Arguments implements ForkNodeArguments
+    {
+        private final String sessionId;
+        private final int id;
+        private final ConsoleLogger logger;
+
+        private Arguments( String sessionId, int id, ConsoleLogger logger )
+        {
+            this.sessionId = sessionId;
+            this.id = id;
+            this.logger = logger;
+        }
+
+        @Nonnull
+        @Override
+        public String getSessionId()
+        {
+            return sessionId;
+        }
+
+        @Override
+        public int getForkChannelId()
+        {
+            return id;
+        }
+
+        @Nonnull
+        @Override
+        public File dumpStreamText( @Nonnull String text )
+        {
+            return new File( "" );
+        }
+
+        @Nonnull
+        @Override
+        public File dumpStreamException( @Nonnull Throwable t )
+        {
+            return new File( "" );
+        }
+
+        @Override
+        public void logWarningAtEnd( @Nonnull String text )
+        {
+        }
+
+        @Nonnull
+        @Override
+        public ConsoleLogger getConsoleLogger()
+        {
+            return logger;
         }
     }
 }
