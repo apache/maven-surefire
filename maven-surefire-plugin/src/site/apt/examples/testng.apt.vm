@@ -454,7 +454,7 @@ Using TestNG
 +---+
 
   You may want to run two providers, e.g. <<<surefire-junit47>>> and <<<surefire-testng>>>, and avoid running JUnit
-  tests within <<<surefire-testng>>> provider by setting property <<<junit=false>>>.
+  tests within <<<surefire-testng>>> provider by setting property <<<junit=false>>> (note that this property is not applicable if you configure the <<<suiteXmlFiles>>> parameter).
 
 +---+
 <plugins>
