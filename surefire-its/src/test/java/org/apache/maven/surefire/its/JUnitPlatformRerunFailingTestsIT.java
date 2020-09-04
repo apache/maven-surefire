@@ -19,6 +19,8 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.PrintStreamLogger;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
@@ -52,27 +54,31 @@ public class JUnitPlatformRerunFailingTestsIT extends SurefireJUnit4IntegrationT
     @Test
     public void testRerunFailingErrorTestsWithOneRetry()
     {
+        // here should be total tests on 3 -> reruns shouldn't count to this sum
+        // if so, there should be another information about test count
+        // so it should be like this: Test count: 3, Tests run: 5, Errors: 1, Failures: 1, Skipped: 0, Flakes: 0
         OutputValidator outputValidator = unpack().setJUnitVersion( VERSION ).maven().addGoal(
                 "-Dsurefire.rerunFailingTestsCount=1" )
                 .withFailure()
                 .debugLogging()
                 .executeTest()
-                .assertTestSuiteResults( 5, 1, 1, 0, 0 );
+                .assertTestSuiteResults( 3, 1, 1, 0, 0 );
+
         verifyFailuresOneRetryAllClasses( outputValidator );
 
         outputValidator = unpack().setJUnitVersion( VERSION ).maven().debugLogging().addGoal(
                 "-Dsurefire.rerunFailingTestsCount=1" ).addGoal(
-                "-DforkCount=2" ).withFailure().executeTest().assertTestSuiteResults( 5, 1, 1, 0, 0 );
+                "-DforkCount=2" ).withFailure().executeTest().assertTestSuiteResults( 3, 1, 1, 0, 0 );
         verifyFailuresOneRetryAllClasses( outputValidator );
 
         outputValidator = unpack().setJUnitVersion( VERSION ).maven().debugLogging().addGoal(
                 "-Dsurefire.rerunFailingTestsCount=1" ).addGoal( "-Dparallel=methods" ).addGoal(
-                "-DuseUnlimitedThreads=true" ).withFailure().executeTest().assertTestSuiteResults( 5, 1, 1, 0, 0 );
+                "-DuseUnlimitedThreads=true" ).withFailure().executeTest().assertTestSuiteResults( 3, 1, 1, 0, 0 );
         verifyFailuresOneRetryAllClasses( outputValidator );
 
         outputValidator = unpack().setJUnitVersion( VERSION ).maven().debugLogging().addGoal(
                 "-Dsurefire.rerunFailingTestsCount=1" ).addGoal( "-Dparallel=classes" ).addGoal(
-                "-DuseUnlimitedThreads=true" ).withFailure().executeTest().assertTestSuiteResults( 5, 1, 1, 0, 0 );
+                "-DuseUnlimitedThreads=true" ).withFailure().executeTest().assertTestSuiteResults( 3, 1, 1, 0, 0 );
         verifyFailuresOneRetryAllClasses( outputValidator );
     }
 
