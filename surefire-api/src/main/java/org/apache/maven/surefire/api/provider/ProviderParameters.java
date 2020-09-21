@@ -30,6 +30,7 @@ import org.apache.maven.surefire.api.util.DirectoryScanner;
 import org.apache.maven.surefire.api.util.RunOrderCalculator;
 import org.apache.maven.surefire.api.util.ScanResult;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -68,6 +69,7 @@ public interface ProviderParameters
      *
      * @return A RunOrderCalculator
      */
+    @Nullable
     RunOrderCalculator getRunOrderCalculator();
 
     /**

@@ -290,6 +290,7 @@ public class JUnitCoreProvider
     private TestsToRun scanClassPath()
     {
         TestsToRun scanned = scanResult.applyFilter( scannerFilter, testClassLoader );
-        return runOrderCalculator.orderTestClasses( scanned );
+        return runOrderCalculator == null
+            ? scanned : runOrderCalculator.orderTestClasses( scanned );
     }
 }

@@ -26,8 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.maven.surefire.api.testset.TestSetFailedException;
-
 import static java.lang.Math.max;
 
 /**
@@ -55,7 +53,6 @@ public class TestsToRun implements Iterable<Class<?>>
     }
 
     public static TestsToRun fromClass( Class<?> clazz )
-        throws TestSetFailedException
     {
         return new TestsToRun( Collections.<Class<?>>singleton( clazz ) );
     }
