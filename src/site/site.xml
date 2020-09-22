@@ -64,12 +64,7 @@
     
     <footer>
 		<![CDATA[
-		<div class="row pull-left">
-		  <p>Apache ${project.name}, ${project.name}, Apache, the Apache feather logo, and the Apache ${project.name} project logos are trademarks of The Apache Software Foundation.</p>
-		</div>
-		<div class="row pull-left">
-		  <a href="${project.url}privacy-policy.html">Privacy Policy</a>
-        </div>
+		  <p>Apache ${project.name}, ${project.name}, Apache, the Apache feather logo, and the Apache ${project.name} project logos are trademarks of The Apache Software Foundation. <a href="${project.url}privacy-policy.html">Privacy Policy</a></p>
         ]]>
     </footer>
   </body>
