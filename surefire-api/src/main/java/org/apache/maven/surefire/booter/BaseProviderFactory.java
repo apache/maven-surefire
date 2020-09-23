@@ -111,8 +111,7 @@ public class BaseProviderFactory
     @Override
     public RunOrderCalculator getRunOrderCalculator()
     {
-        return directoryScannerParameters == null
-                ? null : new DefaultRunOrderCalculator( runOrderParameters, getThreadCount() );
+        return new DefaultRunOrderCalculator( runOrderParameters, getThreadCount() );
     }
 
     @Override

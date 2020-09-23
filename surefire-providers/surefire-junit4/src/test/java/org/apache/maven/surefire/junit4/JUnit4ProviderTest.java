@@ -21,9 +21,11 @@ package org.apache.maven.surefire.junit4;
 
 import junit.framework.TestCase;
 import org.apache.maven.surefire.booter.BaseProviderFactory;
+import org.apache.maven.surefire.testset.RunOrderParameters;
 import org.apache.maven.surefire.testset.TestRequest;
 import org.junit.runner.Description;
 
+import java.io.File;
 import java.util.HashMap;
 
 import static java.util.Arrays.asList;
@@ -48,6 +50,7 @@ public class JUnit4ProviderTest
         providerParameters.setProviderProperties( new HashMap<String, String>() );
         providerParameters.setClassLoaders( getClass().getClassLoader() );
         providerParameters.setTestRequest( new TestRequest( null, null, null ) );
+        providerParameters.setRunOrderParameters( new RunOrderParameters( "hourly", new File( "" ) ) );
         return new JUnit4Provider( providerParameters );
     }
 
