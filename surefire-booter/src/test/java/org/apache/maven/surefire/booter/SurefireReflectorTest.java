@@ -140,7 +140,15 @@ public class SurefireReflectorTest
 
         surefireReflector.setRunOrderParameters( foo, null );
         assertTrue( isCalled( foo ) );
-        assertNull( ( (Foo) foo ).getRunOrderCalculator() );
+        try
+        {
+            ( (Foo) foo ).getRunOrderCalculator();
+        }
+        catch ( NullPointerException e )
+        {
+            return;
+        }
+        fail();
     }
 
     public void testTestSuiteDefinition()

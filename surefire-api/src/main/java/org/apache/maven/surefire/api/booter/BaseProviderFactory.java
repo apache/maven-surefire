@@ -119,8 +119,7 @@ public class BaseProviderFactory
     @Override
     public RunOrderCalculator getRunOrderCalculator()
     {
-        return directoryScannerParameters == null
-                ? null : new DefaultRunOrderCalculator( runOrderParameters, getThreadCount() );
+        return new DefaultRunOrderCalculator( runOrderParameters, getThreadCount() );
     }
 
     public void setReporterFactory( ReporterFactory reporterFactory )
