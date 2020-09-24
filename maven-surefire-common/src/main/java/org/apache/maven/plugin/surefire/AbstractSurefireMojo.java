@@ -810,6 +810,18 @@ public abstract class AbstractSurefireMojo
     private Map<String, String> jdkToolchain;
 
     /**
+     * How often output is forced to be flushed.
+     * Useful when there is no output for N ms but some data are buffered.
+     * It will trigger a flush each configured interval to ensure
+     * data don't stay blocked in a buffer.
+     * Setting it to 0 disable that feature.
+     *
+     * @since 3.0.0-M6
+     */
+    @Parameter( property = "outputFlushInterval", defaultValue = "0" )
+    private long outputFlushInterval;
+
+    /**
      *
      */
     @Component
@@ -1871,7 +1883,8 @@ public abstract class AbstractSurefireMojo
                                           testSuiteDefinition, providerProperties, null,
                                           false, cli, getSkipAfterFailureCount(),
                                           Shutdown.parameterOf( getShutdown() ),
-                                          getForkedProcessExitTimeoutInSeconds() );
+                                          getForkedProcessExitTimeoutInSeconds(),
+                                          outputFlushInterval );
     }
 
     private static Map<String, String> toStringProperties( Properties properties )

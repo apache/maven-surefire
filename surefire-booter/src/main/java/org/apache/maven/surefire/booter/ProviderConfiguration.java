@@ -68,6 +68,8 @@ public class ProviderConfiguration
 
     private final Integer systemExitTimeout;
 
+    private final Long outputFlushInterval;
+
     @SuppressWarnings( "checkstyle:parameternumber" )
     public ProviderConfiguration( DirectoryScannerParameters directoryScannerParameters,
                                   RunOrderParameters runOrderParameters, boolean failIfNoTests,
@@ -75,7 +77,7 @@ public class ProviderConfiguration
                                   TestRequest testSuiteDefinition, Map<String, String> providerProperties,
                                   TypeEncodedValue typeEncodedTestSet, boolean readTestsFromInStream,
                                   List<CommandLineOption> mainCliOptions, int skipAfterFailureCount,
-                                  Shutdown shutdown, Integer systemExitTimeout )
+                                  Shutdown shutdown, Integer systemExitTimeout, Long outputFlushInterval )
     {
         this.runOrderParameters = runOrderParameters;
         this.providerProperties = providerProperties;
@@ -90,6 +92,12 @@ public class ProviderConfiguration
         this.skipAfterFailureCount = skipAfterFailureCount;
         this.shutdown = shutdown;
         this.systemExitTimeout = systemExitTimeout;
+        this.outputFlushInterval = outputFlushInterval;
+    }
+
+    public Long getOutputFlushInterval()
+    {
+        return outputFlushInterval;
     }
 
     public ReporterConfiguration getReporterConfiguration()
