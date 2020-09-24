@@ -93,10 +93,7 @@ final class Utf8RecodingDeferredFileOutputStream
             try
             {
                 close();
-                if ( !deferredFileOutputStream.getFile().delete() )
-                {
-                    deferredFileOutputStream.getFile().deleteOnExit();
-                }
+                deferredFileOutputStream.getFile().deleteOnExit();
             }
             catch ( IOException ioe )
             {
