@@ -19,12 +19,16 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
-import org.apache.maven.surefire.shared.io.output.DeferredFileOutputStream;
-
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
+import java.lang.ref.SoftReference;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.requireNonNull;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 
 /**
@@ -35,14 +39,20 @@ import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
  */
 final class Utf8RecodingDeferredFileOutputStream
 {
-    private final DeferredFileOutputStream deferredFileOutputStream;
+    private static final byte[] NL_BYTES = NL.getBytes( UTF_8 );
+    public static final int CACHE_SIZE = 64 * 1024;
 
+    private final String channel;
+    private Path file;
+    private RandomAccessFile storage;
     private boolean closed;
+    private SoftReference<byte[]> largeCache;
+    private ByteBuffer cache;
+    private boolean isDirty;
 
-    @SuppressWarnings( "checkstyle:magicnumber" )
     Utf8RecodingDeferredFileOutputStream( String channel )
     {
-        deferredFileOutputStream = new DeferredFileOutputStream( 1_000_000, channel, "deferred", null );
+        this.channel = requireNonNull( channel );
     }
 
     public synchronized void write( String output, boolean newLine )
@@ -53,55 +63,142 @@ final class Utf8RecodingDeferredFileOutputStream
             return;
         }
 
+        if ( storage == null )
+        {
+            file = Files.createTempFile( channel, "deferred" );
+            storage = new RandomAccessFile( file.toFile(), "rw" );
+        }
+
         if ( output == null )
         {
             output = "null";
         }
 
-        deferredFileOutputStream.write( output.getBytes( UTF_8 ) );
-        if ( newLine )
+        if ( cache == null )
         {
-            deferredFileOutputStream.write( NL.getBytes( UTF_8 ) );
+            cache = ByteBuffer.allocate( CACHE_SIZE );
+        }
+
+        isDirty = true;
+
+        byte[] decodedString = output.getBytes( UTF_8 );
+        int newLineLength = newLine ? NL_BYTES.length : 0;
+        if ( cache.remaining() >= decodedString.length + newLineLength )
+        {
+            cache.put( decodedString );
+            if ( newLine )
+            {
+                cache.put( NL_BYTES );
+            }
+        }
+        else
+        {
+            cache.flip();
+            int minLength = cache.remaining() + decodedString.length + NL_BYTES.length;
+            byte[] buffer = getLargeCache( minLength );
+            int bufferLength = 0;
+            System.arraycopy( cache.array(), cache.arrayOffset() + cache.position(),
+                buffer, bufferLength, cache.remaining() );
+            bufferLength += cache.remaining();
+            cache.clear();
+
+            System.arraycopy( decodedString, 0, buffer, bufferLength, decodedString.length );
+            bufferLength += decodedString.length;
+
+            if ( newLine )
+            {
+                System.arraycopy( NL_BYTES, 0, buffer, bufferLength, NL_BYTES.length );
+                bufferLength += NL_BYTES.length;
+            }
+
+            storage.write( buffer, 0, bufferLength );
         }
     }
 
-    public long getByteCount()
+    public synchronized long getByteCount()
     {
-        return deferredFileOutputStream.getByteCount();
+        try
+        {
+            long length = 0;
+            if ( storage != null )
+            {
+                sync();
+                length = storage.length();
+            }
+            return length;
+        }
+        catch ( IOException e )
+        {
+            return 0;
+        }
     }
 
-    public synchronized void close()
-        throws IOException
-    {
-        closed = true;
-        deferredFileOutputStream.close();
-    }
-
+    @SuppressWarnings( "checkstyle:innerassignment" )
     public synchronized void writeTo( OutputStream out )
         throws IOException
     {
-        if ( closed )
+        if ( storage != null )
         {
-            deferredFileOutputStream.writeTo( out );
+            sync();
+            storage.seek( 0L );
+            byte[] buffer = new byte[CACHE_SIZE];
+            for ( int readCount; ( readCount = storage.read( buffer ) ) != -1; )
+            {
+                out.write ( buffer, 0, readCount );
+            }
         }
     }
 
     public synchronized void free()
     {
-        if ( deferredFileOutputStream.getFile() != null )
+        if ( !closed )
         {
-            try
+            closed = true;
+            if ( cache != null )
             {
-                close();
-                if ( !deferredFileOutputStream.getFile().delete() )
+                try
                 {
-                    deferredFileOutputStream.getFile().deleteOnExit();
+                    sync();
+                    storage.close();
+                    Files.delete( file );
+                }
+                catch ( IOException e )
+                {
+                    file.toFile()
+                        .deleteOnExit();
                 }
             }
-            catch ( IOException ioe )
-            {
-                deferredFileOutputStream.getFile().deleteOnExit();
-            }
         }
+    }
+
+    private void sync() throws IOException
+    {
+        if ( !isDirty )
+        {
+            return;
+        }
+
+        isDirty = false;
+
+        cache.flip();
+        byte[] array = cache.array();
+        int offset = cache.arrayOffset() + cache.position();
+        int length = cache.remaining();
+        cache.clear();
+        storage.write( array, offset, length );
+        // the data that you wrote with the mode "rw" may still only be kept in memory and may be read back
+        // storage.getFD().sync();
+    }
+
+    @SuppressWarnings( "checkstyle:innerassignment" )
+    private byte[] getLargeCache( int minLength )
+    {
+        byte[] buffer;
+        if ( largeCache == null || ( buffer = largeCache.get() ) == null || buffer.length < minLength )
+        {
+            buffer = new byte[minLength];
+            largeCache = new SoftReference<>( buffer );
+        }
+        return buffer;
     }
 }

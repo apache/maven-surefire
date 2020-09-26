@@ -21,17 +21,21 @@ package org.apache.maven.plugin.surefire.report;
 
 import junit.framework.TestCase;
 import org.apache.maven.plugin.surefire.booterclient.output.DeserializedStacktraceWriter;
-import org.apache.maven.surefire.shared.utils.StringUtils;
-import org.apache.maven.surefire.shared.utils.xml.Xpp3Dom;
-import org.apache.maven.surefire.shared.utils.xml.Xpp3DomBuilder;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.shared.utils.StringUtils;
+import org.apache.maven.surefire.shared.utils.xml.Xpp3Dom;
+import org.apache.maven.surefire.shared.utils.xml.Xpp3DomBuilder;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.file.Path;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,6 +43,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
+import static org.fest.assertions.Assertions.assertThat;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.powermock.reflect.Whitebox.getInternalState;
+import static org.powermock.reflect.Whitebox.invokeMethod;
+import static org.powermock.reflect.Whitebox.setInternalState;
+import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 
 /**
  *
@@ -273,6 +287,128 @@ public class StatelessXmlReporterTest
         // system-out and system-err should not be present for flaky failures
         assertNull( testCaseThree.getChild( "system-out" ) );
         assertNull( testCaseThree.getChild( "system-err" ) );
+    }
+
+    public void testNoWritesOnDeferredFile() throws Exception
+    {
+        Utf8RecodingDeferredFileOutputStream out = new Utf8RecodingDeferredFileOutputStream( "test" );
+        out.free();
+        out.write( "a", false );
+        assertThat( (boolean) getInternalState( out, "isDirty" ) )
+            .isFalse();
+    }
+
+    public void testLengthOnDeferredFile() throws Exception
+    {
+        Utf8RecodingDeferredFileOutputStream out = new Utf8RecodingDeferredFileOutputStream( "test" );
+
+        assertThat( out.getByteCount() ).isZero();
+
+        RandomAccessFile storage = mock( RandomAccessFile.class );
+        setInternalState( out, "storage", storage );
+        when( storage.length() ).thenReturn( 1L );
+        assertThat( out.getByteCount() ).isEqualTo( 1 );
+
+        when( storage.length() ).thenThrow( IOException.class );
+        assertThat( out.getByteCount() ).isZero();
+        out.free();
+    }
+
+    @SuppressWarnings( "checkstyle:magicnumber" )
+    public void testWritesOnDeferredFile() throws Exception
+    {
+        Utf8RecodingDeferredFileOutputStream out = new Utf8RecodingDeferredFileOutputStream( "test" );
+        for ( int i = 0; i < 33_000; i++ )
+        {
+            out.write( "A", false );
+            out.write( "B", true );
+        }
+        out.write( null, false );
+        out.write( null, true );
+
+        assertThat( out.getByteCount() )
+            .isEqualTo( 33_000 * ( 1 + 1 + NL.length() ) + 4 + 4 + NL.length() );
+
+        StringBuilder expectedContent = new StringBuilder( 150_000 );
+        for ( int i = 0; i < 33_000; i++ )
+        {
+            expectedContent.append( 'A' ).append( 'B' ).append( NL );
+        }
+        expectedContent.append( "null" ).append( "null" ).append( NL );
+        ByteArrayOutputStream read = new ByteArrayOutputStream( 150_000 );
+        out.writeTo( read );
+        assertThat( read.toString() )
+            .isEqualTo( expectedContent.toString() );
+
+        out.free();
+    }
+
+    public void testFreeOnDeferredFile() throws Exception
+    {
+        Utf8RecodingDeferredFileOutputStream out = new Utf8RecodingDeferredFileOutputStream( "test" );
+        setInternalState( out, "cache", ByteBuffer.allocate( 0 ) );
+        Path path = mock( Path.class );
+        File file = mock( File.class );
+        when( path.toFile() ).thenReturn( file );
+        setInternalState( out, "file", path );
+        RandomAccessFile storage = mock( RandomAccessFile.class );
+        doThrow( IOException.class ).when( storage ).close();
+        setInternalState( out, "storage", storage );
+        out.free();
+        assertThat( (boolean) getInternalState( out, "closed" ) ).isTrue();
+        verify( file, times( 1 ) ).deleteOnExit();
+    }
+
+    public void testCacheOnDeferredFile() throws Exception
+    {
+        Utf8RecodingDeferredFileOutputStream out = new Utf8RecodingDeferredFileOutputStream( "test" );
+        byte[] b1 = invokeMethod( out, "getLargeCache", 1 );
+        byte[] b2 = invokeMethod( out, "getLargeCache", 1 );
+        assertThat( b1 ).isSameAs( b2 );
+        assertThat( b1 ).hasSize( 1 );
+
+        byte[] b3 = invokeMethod( out, "getLargeCache", 2 );
+        assertThat( b3 ).isNotSameAs( b1 );
+        assertThat( b3 ).hasSize( 2 );
+
+        byte[] b4 = invokeMethod( out, "getLargeCache", 1 );
+        assertThat( b4 ).isSameAs( b3 );
+        assertThat( b3 ).hasSize( 2 );
+    }
+
+    public void testSyncOnDeferredFile() throws Exception
+    {
+        Utf8RecodingDeferredFileOutputStream out = new Utf8RecodingDeferredFileOutputStream( "test" );
+        ByteBuffer cache = ByteBuffer.wrap( new byte[] {1, 2, 3} );
+        cache.position( 3 );
+        setInternalState( out, "cache", cache );
+        assertThat( (boolean) getInternalState( out, "isDirty" ) ).isFalse();
+        setInternalState( out, "isDirty", true );
+        File file = new File( reportDir, "test" );
+        setInternalState( out, "file", file.toPath() );
+        RandomAccessFile storage = new RandomAccessFile( file, "rw" );
+        setInternalState( out, "storage", storage );
+        invokeMethod( out, "sync" );
+        assertThat( (boolean) getInternalState( out, "isDirty" ) ).isFalse();
+        storage.seek( 0L );
+        assertThat( storage.read() ).isEqualTo( 1 );
+        assertThat( storage.read() ).isEqualTo( 2 );
+        assertThat( storage.read() ).isEqualTo( 3 );
+        assertThat( storage.read() ).isEqualTo( -1 );
+        assertThat( storage.length() ).isEqualTo( 3L );
+        assertThat( cache.position() ).isEqualTo( 0 );
+        assertThat( cache.limit() ).isEqualTo( 3 );
+        storage.seek( 3L );
+        invokeMethod( out, "sync" );
+        assertThat( (boolean) getInternalState( out, "isDirty" ) ).isFalse();
+        assertThat( storage.length() ).isEqualTo( 3L );
+        assertThat( out.getByteCount() ).isEqualTo( 3L );
+        assertThat( (boolean) getInternalState( out, "closed" ) ).isFalse();
+        out.free();
+        assertThat( (boolean) getInternalState( out, "closed" ) ).isTrue();
+        assertThat( file ).doesNotExist();
+        out.free();
+        assertThat( (boolean) getInternalState( out, "closed" ) ).isTrue();
     }
 
     private boolean defaultCharsetSupportsSpecialChar()

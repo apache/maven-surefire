@@ -95,6 +95,8 @@ public final class ThreadedStreamConsumer
                 }
                 catch ( Throwable t )
                 {
+                    // ensure the stack trace to be at the instance of the exception
+                    t.getStackTrace();
                     errors.addException( t );
                 }
             }

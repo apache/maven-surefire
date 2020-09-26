@@ -497,7 +497,6 @@ public class StatelessXmlReporter
             {
                 xmlWriter.writeText( "" ); // Cheat sax to emit element
                 outputStreamWriter.flush();
-                utf8RecodingDeferredFileOutputStream.close();
                 eos.getUnderlying().write( ByteConstantsHolder.CDATA_START_BYTES ); // emit cdata
                 utf8RecodingDeferredFileOutputStream.writeTo( eos );
                 eos.getUnderlying().write( ByteConstantsHolder.CDATA_END_BYTES );
