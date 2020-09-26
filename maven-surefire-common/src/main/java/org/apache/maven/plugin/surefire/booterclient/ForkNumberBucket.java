@@ -80,14 +80,6 @@ public final class ForkNumberBucket
     }
 
     /**
-     * @return the highest number that has been drawn
-     */
-    private int getHighestDrawnNumber()
-    {
-        return highWaterMark.get() - 1;
-    }
-
-    /**
      * @param number the number to return to the bucket so that it can be reused.
      */
     private void returnNumberInternal( int number )
