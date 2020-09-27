@@ -36,16 +36,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
-      - name: Set up JDK 14
+      - name: Set up JDK 1.8
         uses: actions/setup-java@v1
         with:
-          java-version: 14
+          java-version: 1.8
 
       - name: Build with Maven with Install
-        run: mvn install -e -B -V -nsu --no-transfer-progress -DskipTests
+        run: mvn clean install -e -B -V -nsu --no-transfer-progress -DskipTests
 
       - name: Build with Maven without Unit Tests
-        run: mvn install -e -B -V -nsu --no-transfer-progress -rf :surefire-its -P run-its "-Dit.test=!**/jiras/*IT*.java,!TestMethodPatternIT,!TestMultipleMethodPatternsIT,!TestMultipleMethodPatternsTestNGIT"
+        run: mvn clean install -e -B -V -nsu --no-transfer-progress -rf :surefire-its -P run-its "-Dit.test=!**/jiras/*IT*.java,!TestMethodPatternIT,!TestMultipleMethodPatternsIT,!TestMultipleMethodPatternsTestNGIT"
 
       - name: Upload artifact surefire-its
         uses: actions/upload-artifact@v2-preview
