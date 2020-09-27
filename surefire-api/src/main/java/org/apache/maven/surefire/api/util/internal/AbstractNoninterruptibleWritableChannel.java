@@ -67,17 +67,12 @@ abstract class AbstractNoninterruptibleWritableChannel implements WritableBuffer
             src.flip();
         }
 
-        int countWrittenBytes = 0;
-
-        if ( src.hasRemaining() )
+        int countWrittenBytes = src.remaining();
+        writeImpl( src );
+        src.position( src.limit() );
+        if ( flush )
         {
-            countWrittenBytes = src.remaining();
-            writeImpl( src );
-            src.position( src.limit() );
-            if ( flush )
-            {
-                flushImpl();
-            }
+            flushImpl();
         }
         return countWrittenBytes;
     }

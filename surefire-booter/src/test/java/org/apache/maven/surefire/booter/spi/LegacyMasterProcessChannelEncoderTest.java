@@ -1418,6 +1418,12 @@ public class LegacyMasterProcessChannelEncoderTest
         }
 
         @Override
+        public long countBufferOverflows()
+        {
+            return 0;
+        }
+
+        @Override
         public int write( ByteBuffer src ) throws IOException
         {
             this.src = src;

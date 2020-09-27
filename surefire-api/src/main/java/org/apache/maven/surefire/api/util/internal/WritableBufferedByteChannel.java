@@ -29,8 +29,10 @@ import java.nio.channels.WritableByteChannel;
  * and the channel is flushed after the buffer has overflew.
  * <br>
  * The method {@link #write(ByteBuffer)} flushes every written message.
+ * You can flush the channel by {@link #write(ByteBuffer) writing} the zero length of {@link ByteBuffer}.
  */
 public interface WritableBufferedByteChannel extends WritableByteChannel
 {
     void writeBuffered( ByteBuffer src ) throws IOException;
+    long countBufferOverflows();
 }

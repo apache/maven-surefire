@@ -52,6 +52,11 @@
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <artifactId>powermock-reflect</artifactId>
+      <groupId>org.powermock</groupId>
+        <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
