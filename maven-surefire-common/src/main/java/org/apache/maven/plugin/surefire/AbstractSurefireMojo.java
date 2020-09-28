@@ -815,8 +815,7 @@ public abstract class AbstractSurefireMojo
     @Component
     private ToolchainManager toolchainManager;
 
-    @Component
-    private LocationManager locationManager;
+    private LocationManager locationManager = null;
 
     @Component
     private RepositorySystem repositorySystem;
@@ -1998,7 +1997,11 @@ public abstract class AbstractSurefireMojo
      */
     private LocationManager getLocationManager()
     {
-        return locationManager;
+        if ( this.locationManager == null )
+        {
+            this.locationManager = new LocationManager();
+        }
+        return this.locationManager;
     }
 
     private StartupConfiguration newStartupConfigWithModularPath(
