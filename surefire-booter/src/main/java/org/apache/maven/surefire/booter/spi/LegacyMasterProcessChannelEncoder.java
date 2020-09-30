@@ -314,10 +314,9 @@ public class LegacyMasterProcessChannelEncoder implements MasterProcessChannelEn
 
     private void encodeOpcode( ForkedProcessEventType eventType, boolean sendImmediately )
     {
-        CharsetEncoder encoder = DEFAULT_STREAM_ENCODING.newEncoder();
         int bufferMaxLength = estimateBufferLength( eventType, null, null, 0 );
         ByteBuffer result = ByteBuffer.allocate( bufferMaxLength );
-        encodeOpcode( encoder, result, eventType, null );
+        encodeOpcode( result, eventType, null );
         encodeAndPrintEvent( result, sendImmediately );
     }
 
@@ -421,7 +420,7 @@ public class LegacyMasterProcessChannelEncoder implements MasterProcessChannelEn
         encodeString( encoder, result, reportEntry.getNameText() );
         encodeString( encoder, result, reportEntry.getGroup() );
         encodeString( encoder, result, reportEntry.getMessage() );
-        encodeInteger( encoder, result, reportEntry.getElapsed() );
+        encodeInteger( result, reportEntry.getElapsed() );
 
         encode( encoder, result, stackTraceWrapper );
 
@@ -457,7 +456,7 @@ public class LegacyMasterProcessChannelEncoder implements MasterProcessChannelEn
         result.put( (byte) ':' );
     }
 
-    private static void encodeInteger( CharsetEncoder encoder, ByteBuffer result, Integer i )
+    private static void encodeInteger( ByteBuffer result, Integer i )
     {
         if ( i == null )
         {
@@ -473,7 +472,7 @@ public class LegacyMasterProcessChannelEncoder implements MasterProcessChannelEn
     static void encodeHeader( CharsetEncoder encoder, ByteBuffer result, ForkedProcessEventType operation,
                               RunMode runMode )
     {
-        encodeOpcode( encoder, result, operation, runMode );
+        encodeOpcode( result, operation, runMode );
         String charsetName = encoder.charset().name();
         result.put( (byte) charsetName.length() );
         result.put( (byte) ':' );
@@ -488,8 +487,7 @@ public class LegacyMasterProcessChannelEncoder implements MasterProcessChannelEn
      * @param operation opcode
      * @param runMode   run mode
      */
-    static void encodeOpcode( CharsetEncoder encoder, ByteBuffer result, ForkedProcessEventType operation,
-                              RunMode runMode )
+    static void encodeOpcode( ByteBuffer result, ForkedProcessEventType operation, RunMode runMode )
     {
         result.put( (byte) ':' );
         result.put( MAGIC_NUMBER_BYTES );

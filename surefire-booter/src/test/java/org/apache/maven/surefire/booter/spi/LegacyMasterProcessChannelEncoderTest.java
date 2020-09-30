@@ -1007,7 +1007,7 @@ public class LegacyMasterProcessChannelEncoderTest
     {
         CharsetEncoder encoder = UTF_8.newEncoder();
         ByteBuffer result = ByteBuffer.allocate( 128 );
-        encodeOpcode( encoder, result, BOOTERCODE_TEST_ERROR, NORMAL_RUN );
+        encodeOpcode( result, BOOTERCODE_TEST_ERROR, NORMAL_RUN );
         assertThat( toString( result ) )
                 .isEqualTo( ":maven-surefire-event:" + (char) 10 + ":test-error:" + (char) 10 + ":normal-run:" );
 
