@@ -32,4 +32,5 @@ public final class Constants
     public static final String MAGIC_NUMBER = "maven-surefire-event";
     public static final byte[] MAGIC_NUMBER_BYTES = MAGIC_NUMBER.getBytes( US_ASCII );
     public static final Charset DEFAULT_STREAM_ENCODING = UTF_8;
+    public static final byte[] DEFAULT_STREAM_ENCODING_BYTES = UTF_8.name().getBytes( US_ASCII );
 }

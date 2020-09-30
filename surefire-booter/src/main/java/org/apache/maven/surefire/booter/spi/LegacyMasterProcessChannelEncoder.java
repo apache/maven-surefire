@@ -43,6 +43,7 @@ import static java.lang.Math.ceil;
 import static java.nio.CharBuffer.wrap;
 import static java.util.Objects.requireNonNull;
 import static org.apache.maven.surefire.api.booter.Constants.DEFAULT_STREAM_ENCODING;
+import static org.apache.maven.surefire.api.booter.Constants.DEFAULT_STREAM_ENCODING_BYTES;
 import static org.apache.maven.surefire.api.booter.Constants.MAGIC_NUMBER_BYTES;
 import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_BYE;
 import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_CONSOLE_DEBUG;
@@ -476,7 +477,7 @@ public class LegacyMasterProcessChannelEncoder implements MasterProcessChannelEn
         String charsetName = encoder.charset().name();
         result.put( (byte) charsetName.length() );
         result.put( (byte) ':' );
-        encoder.encode( wrap( charsetName ), result, true );
+        result.put( DEFAULT_STREAM_ENCODING_BYTES );
         result.put( (byte) ':' );
     }
 
