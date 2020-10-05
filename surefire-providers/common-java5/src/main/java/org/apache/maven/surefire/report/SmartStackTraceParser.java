@@ -196,11 +196,15 @@ public class SmartStackTraceParser
 
     private boolean rootIsInclass()
     {
-        return stackTrace.length > 0 && stackTrace[0].getClassName().equals( testClassName );
+        return stackTrace != null && stackTrace.length > 0 && stackTrace[0].getClassName().equals( testClassName );
     }
 
     static List<StackTraceElement> focusOnClass( StackTraceElement[] stackTrace, Class clazz )
     {
+        if ( stackTrace == null )
+        {
+            return Collections.emptyList();
+        }
         List<StackTraceElement> result = new ArrayList<StackTraceElement>();
         for ( StackTraceElement element : stackTrace )
         {
