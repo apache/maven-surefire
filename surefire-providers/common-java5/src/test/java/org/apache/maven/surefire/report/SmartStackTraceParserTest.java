@@ -340,6 +340,21 @@ public class SmartStackTraceParserTest
         }
     }
 
+    public void testNullStackTrace()
+    {
+        try
+        {
+            new ATestClass().aMockedException();
+        }
+        catch ( Exception e )
+        {
+            SmartStackTraceParser smartStackTraceParser =
+                new SmartStackTraceParser( ATestClass.class.getName(), e, null );
+            String res = smartStackTraceParser.getString();
+            assertEquals( "ATestClass » SomeMocked", res );
+        }
+    }
+
     private ExecutionException getSingleNested()
     {
         FutureTask<Object> futureTask = new FutureTask<>( new RunnableTestClass2() );

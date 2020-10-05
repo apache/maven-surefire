@@ -19,53 +19,42 @@ package org.apache.maven.surefire.report;
  * under the License.
  */
 
-import java.io.File;
-
 /**
- *
+ * @author Adam Jones
  */
-@SuppressWarnings( "UnusedDeclaration" )
-public class ATestClass
+public class SomeMockedException extends RuntimeException
 {
-
-    public void failInAssert()
+    public SomeMockedException()
     {
-        throw new AssertionError( "X is not Z" );
     }
 
-    public void nestedFailInAssert()
+    @Override
+    public String getMessage()
     {
-        failInAssert();
+        return null;
     }
 
-    public void npe()
+    @Override
+    public String getLocalizedMessage()
     {
-        throw new NullPointerException( "It was null" );
+        return null;
     }
 
-    public void nestedNpe()
+    @Override
+    public Throwable getCause()
     {
-        npe();
+        return null;
     }
 
-    public void npeOutsideTest()
+    @Override
+    public String toString()
     {
-        File file = new File( (String) null );
+        return null;
     }
 
-    public void nestedNpeOutsideTest()
+    @Override
+    public StackTraceElement[] getStackTrace()
     {
-        npeOutsideTest();
-    }
-
-    public void aLongTestErrorMessage()
-    {
-        throw new RuntimeException( "This message will be truncated, somewhere over the rainbow. "
-                                    + "Gangnam style, Gangnam style, Gangnam style, , Gangnam style, Gangnam style" );
-    }
-
-    public void aMockedException()
-    {
-        throw new SomeMockedException();
+        return null;
     }
 }
