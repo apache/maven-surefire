@@ -22,6 +22,7 @@ package org.apache.maven.surefire.report;
 import org.apache.maven.surefire.api.report.SafeThrowable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static java.lang.Math.min;
@@ -185,11 +186,15 @@ public class SmartStackTraceParser
 
     private boolean rootIsInclass()
     {
-        return stackTrace.length > 0 && stackTrace[0].getClassName().equals( testClassName );
+        return stackTrace != null && stackTrace.length > 0 && stackTrace[0].getClassName().equals( testClassName );
     }
 
     private static List<StackTraceElement> focusOnClass( StackTraceElement[] stackTrace, Class<?> clazz )
     {
+        if ( stackTrace == null )
+        {
+            return Collections.emptyList();
+        }
         List<StackTraceElement> result = new ArrayList<>();
         for ( StackTraceElement element : stackTrace )
         {
