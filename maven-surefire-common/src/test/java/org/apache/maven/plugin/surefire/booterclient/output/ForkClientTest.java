@@ -46,16 +46,15 @@ import org.apache.maven.surefire.api.event.TestStartingEvent;
 import org.apache.maven.surefire.api.event.TestSucceededEvent;
 import org.apache.maven.surefire.api.event.TestsetCompletedEvent;
 import org.apache.maven.surefire.api.event.TestsetStartingEvent;
-import org.apache.maven.surefire.extensions.EventHandler;
-import org.apache.maven.surefire.extensions.ForkNodeArguments;
-import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
+import org.apache.maven.surefire.extensions.EventHandler;
+import org.apache.maven.surefire.extensions.ForkNodeArguments;
+import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import javax.annotation.Nonnull;
 import java.io.ByteArrayInputStream;
@@ -63,6 +62,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.nio.channels.ReadableByteChannel;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -86,7 +86,6 @@ import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTER
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.MapAssert.entry;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -125,30 +124,26 @@ public class ForkClientTest
         String nativeStream = "Listening for transport dt_socket at address: bla";
         EH eventHandler = new EH();
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
-        when( arguments.getConsoleLogger() ).thenReturn( logger );
-        when( logger.isDebugEnabled() ).thenReturn( false );
-        when( logger.isInfoEnabled() ).thenReturn( true );
+        ConsoleLoggerMock logger = new ConsoleLoggerMock( false, true, true, true );
+        ForkNodeArgumentsMock arguments = new ForkNodeArgumentsMock( logger, new File( "" ) );
         ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
         try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
         {
             t.start();
-
             countdown.awaitClosed();
-
-            verify( logger )
-                .info( "Listening for transport dt_socket at address: bla" );
+            assertThat( logger.info )
+                .hasSize( 1 )
+                .contains( "Listening for transport dt_socket at address: bla" );
         }
 
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
 
-        verify( logger ).isDebugEnabled();
+        assertThat( logger.isDebugEnabledCalled )
+            .isTrue();
 
-        verify( logger ).isInfoEnabled();
-
-        verifyNoMoreInteractions( logger );
+        assertThat( logger.isInfoEnabledCalled )
+            .isTrue();
     }
 
     @Test
@@ -157,25 +152,20 @@ public class ForkClientTest
         String nativeStream = "\nCould not create the Java Virtual Machine\n";
         EH eventHandler = new EH();
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
-        when( arguments.dumpStreamText( anyString() ) ).thenReturn( new File( "" ) );
-        when( arguments.getConsoleLogger() ).thenReturn( logger );
+        ConsoleLoggerMock logger = new ConsoleLoggerMock( false, false, false, false );
+        ForkNodeArgumentsMock arguments = new ForkNodeArgumentsMock( logger, new File( "" ) );
         ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
         try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
         {
             t.start();
-
             countdown.awaitClosed();
-
-            verify( logger )
-                .error( "Could not create the Java Virtual Machine" );
+            assertThat( logger.error )
+                .hasSize( 1 )
+                .contains( "Could not create the Java Virtual Machine" );
         }
 
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
-
-        verifyNoMoreInteractions( logger );
     }
 
     @Test
@@ -184,25 +174,20 @@ public class ForkClientTest
         String nativeStream = "\nError occurred during initialization of VM\n";
         EH eventHandler = new EH();
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
-        when( arguments.dumpStreamText( anyString() ) ).thenReturn( new File( "" ) );
-        when( arguments.getConsoleLogger() ).thenReturn( logger );
+        ConsoleLoggerMock logger = new ConsoleLoggerMock( false, false, false, false );
+        ForkNodeArgumentsMock arguments = new ForkNodeArgumentsMock( logger, new File( "" ) );
         ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
         try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
         {
             t.start();
-
             countdown.awaitClosed();
-
-            verify( logger )
-                .error( "Error occurred during initialization of VM" );
+            assertThat( logger.error )
+                .hasSize( 1 )
+                .contains( "Error occurred during initialization of VM" );
         }
 
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
-
-        verifyNoMoreInteractions( logger );
     }
 
     @Test
@@ -211,25 +196,20 @@ public class ForkClientTest
         String nativeStream = "\nError: A fatal exception has occurred. Program will exit.\n";
         EH eventHandler = new EH();
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
-        when( arguments.dumpStreamText( anyString() ) ).thenReturn( new File( "" ) );
-        when( arguments.getConsoleLogger() ).thenReturn( logger );
+        ConsoleLoggerMock logger = new ConsoleLoggerMock( false, false, false, false );
+        ForkNodeArgumentsMock arguments = new ForkNodeArgumentsMock( logger, new File( "" ) );
         ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
         try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
         {
             t.start();
-
             countdown.awaitClosed();
-
-            verify( logger )
-                .error( "Error: A fatal exception has occurred. Program will exit." );
+            assertThat( logger.error )
+                .hasSize( 1 )
+                .contains( "Error: A fatal exception has occurred. Program will exit." );
         }
 
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
-
-        verifyNoMoreInteractions( logger );
     }
 
     @Test
@@ -238,25 +218,20 @@ public class ForkClientTest
         String nativeStream = "\nCould not reserve enough space for object heap\n";
         EH eventHandler = new EH();
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
-        when( arguments.dumpStreamText( anyString() ) ).thenReturn( new File( "" ) );
-        when( arguments.getConsoleLogger() ).thenReturn( logger );
+        ConsoleLoggerMock logger = new ConsoleLoggerMock( false, false, false, false );
+        ForkNodeArgumentsMock arguments = new ForkNodeArgumentsMock( logger, new File( "" ) );
         ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
         try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
         {
             t.start();
-
             countdown.awaitClosed();
-
-            verify( logger )
-                .error( "Could not reserve enough space for object heap" );
+            assertThat( logger.error )
+                .hasSize( 1 )
+                .contains( "Could not reserve enough space for object heap" );
         }
 
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
-
-        verifyNoMoreInteractions( logger );
     }
 
     @Test
@@ -265,25 +240,20 @@ public class ForkClientTest
         String nativeStream = "\njava.lang.module.FindException: Module java.ws.rs not found, required by com.foo.api";
         EH eventHandler = new EH();
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
-        when( arguments.dumpStreamText( anyString() ) ).thenReturn( new File( "" ) );
-        when( arguments.getConsoleLogger() ).thenReturn( logger );
+        ConsoleLoggerMock logger = new ConsoleLoggerMock( false, false, false, false );
+        ForkNodeArgumentsMock arguments = new ForkNodeArgumentsMock( logger, new File( "" ) );
         ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
         try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
         {
             t.start();
-
             countdown.awaitClosed();
-
-            verify( logger )
-                .error( "java.lang.module.FindException: Module java.ws.rs not found, required by com.foo.api" );
+            assertThat( logger.error )
+                .hasSize( 1 )
+                .contains( "java.lang.module.FindException: Module java.ws.rs not found, required by com.foo.api" );
         }
 
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
-
-        verifyNoMoreInteractions( logger );
     }
 
     @Test
@@ -292,25 +262,20 @@ public class ForkClientTest
         String nativeStream = "\njava.lang.module.FindException: Module java.ws.rs not found, required by com.foo.api";
         EH eventHandler = new EH();
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
-        when( arguments.dumpStreamText( anyString() ) ).thenReturn( new File( "" ) );
-        when( arguments.getConsoleLogger() ).thenReturn( logger );
+        ConsoleLoggerMock logger = new ConsoleLoggerMock( false, false, false, false );
+        ForkNodeArgumentsMock arguments = new ForkNodeArgumentsMock( logger, new File( "" ) );
         ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
         try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
         {
             t.start();
-
             countdown.awaitClosed();
-
-            verify( logger )
-                .error( "java.lang.module.FindException: Module java.ws.rs not found, required by com.foo.api" );
+            assertThat( logger.error )
+                .hasSize( 1 )
+                .contains( "java.lang.module.FindException: Module java.ws.rs not found, required by com.foo.api" );
         }
 
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
-
-        verifyNoMoreInteractions( logger );
     }
 
     @Test
@@ -319,41 +284,34 @@ public class ForkClientTest
         String nativeStream = "unordered error";
         EH eventHandler = new EH();
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
-        when( arguments.getConsoleLogger() ).thenReturn( logger );
-        when( logger.isDebugEnabled() )
-            .thenReturn( true );
-        when( arguments.dumpStreamText( anyString() ) ).thenReturn( new File( "" ) );
+        ConsoleLoggerMock logger = new ConsoleLoggerMock( true, true, true, true );
+        ForkNodeArgumentsMock arguments = new ForkNodeArgumentsMock( logger, new File( "" ) );
         ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
         try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
         {
             t.start();
-
             countdown.awaitClosed();
-
-            verify( logger )
-                .debug( "unordered error" );
+            assertThat( logger.debug )
+                .hasSize( 1 )
+                .contains( "unordered error" );
         }
 
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
 
-        verify( logger ).isDebugEnabled();
+        assertThat( logger.isDebugEnabledCalled )
+            .isTrue();
 
-        ArgumentCaptor<String> dumpText = ArgumentCaptor.forClass( String.class );
-        verify( arguments ).dumpStreamText( dumpText.capture() );
         String msg = "Corrupted STDOUT by directly writing to native stream in forked JVM 0. Stream 'unordered error'.";
-        assertThat( dumpText.getValue() )
-            .isEqualTo( msg );
+        assertThat( arguments.dumpStreamText )
+            .hasSize( 1 )
+            .contains( msg );
 
-        ArgumentCaptor<String> warningText = ArgumentCaptor.forClass( String.class );
-        verify( arguments ).logWarningAtEnd( warningText.capture() );
-        assertThat( warningText.getValue() )
+        assertThat( arguments.logWarningAtEnd )
+            .hasSize( 1 );
+        assertThat( arguments.logWarningAtEnd.peek() )
             .startsWith( "Corrupted STDOUT by directly writing to native stream in forked JVM 0. "
                 + "See FAQ web page and the dump file" );
-
-        verifyNoMoreInteractions( logger );
     }
 
     @Test
@@ -362,11 +320,8 @@ public class ForkClientTest
         String nativeStream = "Listening for transport dt_socket at address: bla\n:maven-surefire-event:\u0003:bye:\n";
         EH eventHandler = new EH();
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
-        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
-        when( arguments.dumpStreamText( anyString() ) ).thenReturn( new File( "" ) );
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        when( arguments.getConsoleLogger() ).thenReturn( logger );
-        when( logger.isDebugEnabled() ).thenReturn( true );
+        ConsoleLoggerMock logger = new ConsoleLoggerMock( true, true, true, true );
+        ForkNodeArgumentsMock arguments = new ForkNodeArgumentsMock( logger, new File( "" ) );
         ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
         try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
         {
@@ -380,8 +335,9 @@ public class ForkClientTest
             assertThat( event.getEventType() )
                 .isEqualTo( BOOTERCODE_BYE );
 
-            verify( logger )
-                .debug( "Listening for transport dt_socket at address: bla" );
+            assertThat( logger.debug )
+                .hasSize( 1 )
+                .contains( "Listening for transport dt_socket at address: bla" );
 
             countdown.awaitClosed();
         }
@@ -389,9 +345,8 @@ public class ForkClientTest
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
 
-        verify( logger ).isDebugEnabled();
-
-        verifyNoMoreInteractions( logger );
+        assertThat( logger.isDebugEnabledCalled )
+            .isTrue();
     }
 
     @Test
@@ -734,9 +689,8 @@ public class ForkClientTest
             + ":\u0000\u0000\u0000\u0002:s1:\u0000\u0000\u0000\u0002:s2:";
         EH eventHandler = new EH();
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
-        when( arguments.getConsoleLogger() ).thenReturn( logger );
+        ConsoleLoggerMock logger = new ConsoleLoggerMock( false, false, false, false );
+        ForkNodeArgumentsMock arguments = new ForkNodeArgumentsMock( logger, new File( "" ) );
         ReadableByteChannel channel = newChannel( new ByteArrayInputStream( nativeStream.getBytes() ) );
         try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
         {
@@ -762,13 +716,12 @@ public class ForkClientTest
 
             countdown.awaitClosed();
 
-            verifyZeroInteractions( logger );
+            assertThat( logger.isCalled() )
+                .isFalse();
         }
 
         assertThat( eventHandler.sizeOfEventCache() )
             .isEqualTo( 0 );
-
-        verifyNoMoreInteractions( logger );
     }
 
     @Test
@@ -1866,6 +1819,168 @@ public class ForkClientTest
         public void handleEvent( @Nonnull Event event )
         {
             cache.add( event );
+        }
+    }
+
+    /**
+     * Threadsafe impl. Mockito and Powermock are not thread-safe.
+     */
+    private static class ForkNodeArgumentsMock implements ForkNodeArguments
+    {
+        private final ConcurrentLinkedQueue<String> dumpStreamText = new ConcurrentLinkedQueue<>();
+        private final ConcurrentLinkedQueue<String> logWarningAtEnd = new ConcurrentLinkedQueue<>();
+        private final ConsoleLogger logger;
+        private final File dumpStreamTextFile;
+
+        ForkNodeArgumentsMock( ConsoleLogger logger, File dumpStreamTextFile )
+        {
+            this.logger = logger;
+            this.dumpStreamTextFile = dumpStreamTextFile;
+        }
+
+        @Nonnull
+        @Override
+        public String getSessionId()
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getForkChannelId()
+        {
+            return 0;
+        }
+
+        @Nonnull
+        @Override
+        public File dumpStreamText( @Nonnull String text )
+        {
+            dumpStreamText.add( text );
+            return dumpStreamTextFile;
+        }
+
+        @Nonnull
+        @Override
+        public File dumpStreamException( @Nonnull Throwable t )
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void logWarningAtEnd( @Nonnull String text )
+        {
+            logWarningAtEnd.add( text );
+        }
+
+        @Nonnull
+        @Override
+        public ConsoleLogger getConsoleLogger()
+        {
+            return logger;
+        }
+
+        boolean isCalled()
+        {
+            return !dumpStreamText.isEmpty() || !logWarningAtEnd.isEmpty();
+        }
+    }
+
+    /**
+     * Threadsafe impl. Mockito and Powermock are not thread-safe.
+     */
+    private static class ConsoleLoggerMock implements ConsoleLogger
+    {
+        final ConcurrentLinkedQueue<String> debug = new ConcurrentLinkedQueue<>();
+        final ConcurrentLinkedQueue<String> info = new ConcurrentLinkedQueue<>();
+        final ConcurrentLinkedQueue<String> error = new ConcurrentLinkedQueue<>();
+        final boolean isDebug;
+        final boolean isInfo;
+        final boolean isWarning;
+        final boolean isError;
+        boolean called;
+        boolean isDebugEnabledCalled;
+        boolean isInfoEnabledCalled;
+
+        ConsoleLoggerMock( boolean isDebug, boolean isInfo, boolean isWarning, boolean isError )
+        {
+            this.isDebug = isDebug;
+            this.isInfo = isInfo;
+            this.isWarning = isWarning;
+            this.isError = isError;
+        }
+
+        @Override
+        public boolean isDebugEnabled()
+        {
+            isDebugEnabledCalled = true;
+            called = true;
+            return isDebug;
+        }
+
+        @Override
+        public void debug( String message )
+        {
+            debug.add( message );
+            called = true;
+        }
+
+        @Override
+        public boolean isInfoEnabled()
+        {
+            isInfoEnabledCalled = true;
+            called = true;
+            return isInfo;
+        }
+
+        @Override
+        public void info( String message )
+        {
+            info.add( message );
+            called = true;
+        }
+
+        @Override
+        public boolean isWarnEnabled()
+        {
+            called = true;
+            return isWarning;
+        }
+
+        @Override
+        public void warning( String message )
+        {
+            called = true;
+        }
+
+        @Override
+        public boolean isErrorEnabled()
+        {
+            called = true;
+            return isError;
+        }
+
+        @Override
+        public void error( String message )
+        {
+            error.add( message );
+            called = true;
+        }
+
+        @Override
+        public void error( String message, Throwable t )
+        {
+            called = true;
+        }
+
+        @Override
+        public void error( Throwable t )
+        {
+            called = true;
+        }
+
+        boolean isCalled()
+        {
+            return called;
         }
     }
 }

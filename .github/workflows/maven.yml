@@ -45,7 +45,7 @@ jobs:
           java-version: 14
 
       - name: Build with Maven
-        run: mvn install -e -B -V -nsu --no-transfer-progress -P run-its
+        run: mvn clean install -e -B -V -nsu --no-transfer-progress -P run-its
 
       - name: Upload artifact surefire-its
         uses: actions/upload-artifact@v2-preview

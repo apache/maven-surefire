@@ -39,4 +39,4 @@ jobs:
           java-version: 14
 
       - name: Build with Maven
-        run: mvn install -e -B -V -nsu --no-transfer-progress -P run-its -DskipITs
+        run: mvn clean install -e -B -V -nsu --no-transfer-progress -P run-its -DskipITs

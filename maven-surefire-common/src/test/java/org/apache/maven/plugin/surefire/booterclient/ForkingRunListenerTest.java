@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -60,12 +61,8 @@ import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedCh
 import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.MapAssert.entry;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Kristian Rosenvold
@@ -299,22 +296,84 @@ public class ForkingRunListenerTest
         EH handler = new EH();
         CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 1 );
         ConsoleLogger logger = mock( ConsoleLogger.class );
-        ForkNodeArguments arguments = mock( ForkNodeArguments.class );
-        when( arguments.dumpStreamText( anyString() ) ).thenReturn( new File( "" ) );
-        when( arguments.getConsoleLogger() ).thenReturn( logger );
+        ForkNodeArgumentsMock arguments = new ForkNodeArgumentsMock( logger, new File( "" ) );
         ReadableByteChannel channel = newChannel( new ByteArrayInputStream( stream ) );
         try ( EventConsumerThread t = new EventConsumerThread( "t", channel, handler, countdown, arguments ) )
         {
             t.start();
             countdown.awaitClosed();
             verifyZeroInteractions( logger );
-            verify( arguments, never() ).dumpStreamText( anyString() );
+            assertThat( arguments.isCalled() )
+                .isFalse();
             for ( int i = 0, size = handler.countEventsInCache(); i < size; i++ )
             {
                 events.add( handler.pullEvent() );
             }
             assertEquals( 0, handler.countEventsInCache() );
             return events;
+        }
+    }
+
+    /**
+     * Threadsafe impl. Mockito and Powermock are not thread-safe.
+     */
+    private static class ForkNodeArgumentsMock implements ForkNodeArguments
+    {
+        private final ConcurrentLinkedQueue<String> dumpStreamText = new ConcurrentLinkedQueue<>();
+        private final ConcurrentLinkedQueue<String> logWarningAtEnd = new ConcurrentLinkedQueue<>();
+        private final ConsoleLogger logger;
+        private final File dumpStreamTextFile;
+
+        ForkNodeArgumentsMock( ConsoleLogger logger, File dumpStreamTextFile )
+        {
+            this.logger = logger;
+            this.dumpStreamTextFile = dumpStreamTextFile;
+        }
+
+        @Nonnull
+        @Override
+        public String getSessionId()
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getForkChannelId()
+        {
+            return 0;
+        }
+
+        @Nonnull
+        @Override
+        public File dumpStreamText( @Nonnull String text )
+        {
+            dumpStreamText.add( text );
+            return dumpStreamTextFile;
+        }
+
+        @Nonnull
+        @Override
+        public File dumpStreamException( @Nonnull Throwable t )
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void logWarningAtEnd( @Nonnull String text )
+        {
+            logWarningAtEnd.add( text );
+        }
+
+        @Nonnull
+        @Override
+        public ConsoleLogger getConsoleLogger()
+        {
+            return logger;
+        }
+
+        boolean isCalled()
+        {
+            return !dumpStreamText.isEmpty() || !logWarningAtEnd.isEmpty();
         }
     }
 

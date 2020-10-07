@@ -822,8 +822,14 @@ public class EventConsumerThread extends CloseableDaemonThread
             {
                 return;
             }
-            ConsoleLogger logger = arguments.getConsoleLogger();
+
             String s = toString();
+            if ( s == null )
+            {
+                return;
+            }
+
+            ConsoleLogger logger = arguments.getConsoleLogger();
             if ( s.contains( PRINTABLE_JVM_NATIVE_STREAM ) )
             {
                 if ( logger.isDebugEnabled() )
