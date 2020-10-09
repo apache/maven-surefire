@@ -24,7 +24,6 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
 import org.apache.maven.surefire.api.event.Event;
-import org.apache.maven.surefire.api.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.extensions.EventHandler;
@@ -37,7 +36,6 @@ import org.junit.rules.ExpectedException;
 import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.io.File;
-import java.io.PrintStream;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
@@ -100,23 +98,23 @@ public class E2ETest
                     }
                 };
 
-                PrintStream out = System.out;
-                PrintStream err = System.err;
+                //PrintStream out = System.out;
+                //PrintStream err = System.err;
 
-                ConsoleOutputCapture.startCapture( target );
+                //ConsoleOutputCapture.startCapture( target );
 
                 try
                 {
                     long t1 = System.currentTimeMillis();
                     for ( int i = 0; i < totalCalls; i++ )
                     {
-                        System.out.println( LONG_STRING );
-                        //encoder.stdOut( LONG_STRING, true );
+                        //System.out.println( LONG_STRING );
+                        encoder.stdOut( LONG_STRING, true );
                     }
                     long t2 = System.currentTimeMillis();
                     long spent = t2 - t1;
-                    System.setOut( out );
-                    System.setErr( err );
+                    //System.setOut( out );
+                    //System.setErr( err );
                     System.out.println( spent + "ms on write" );
                     awaitHandlerFinished.countDown();
                 }
