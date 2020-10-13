@@ -318,7 +318,7 @@ public class IntegrationTestMojo
      * outputted (search for "To reproduce ordering use flag -Dfailsafe.runOrder.random.seed").
      * <br>
      * <br>
-     * To deterministically reproduce any random test order that was run before, simply set the seed to 
+     * To deterministically reproduce any random test order that was run before, simply set the seed to
      * be the same value.
      *
      * @since 3.0.0-M6
@@ -391,10 +391,10 @@ public class IntegrationTestMojo
     private String shutdown;
 
     /**
-     * Disables modular path (aka Jigsaw project since of Java 9) even if <i>module-info.java</i> is used in project.
+     * When {@code true}, uses the modulepath when executing with JDK 9+ and <i>module-info.java</i> is
+     * present. When {@code false}, always uses the classpath.
      * <br>
-     * Enabled by default.
-     * If enabled, <i>module-info.java</i> exists and executes with JDK 9+, modular path is used.
+     * Defaults to {@code true}.
      *
      * @since 3.0.0-M2
      */
