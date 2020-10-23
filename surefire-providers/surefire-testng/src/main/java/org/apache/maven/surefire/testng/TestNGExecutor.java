@@ -25,6 +25,7 @@ import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.testng.conf.Configurator;
 import org.apache.maven.surefire.testng.utils.FailFastEventsSingleton;
 import org.apache.maven.surefire.testng.utils.FailFastListener;
+import org.apache.maven.surefire.testng.utils.FailFastNotifier;
 import org.apache.maven.surefire.testng.utils.Stoppable;
 import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
@@ -188,9 +189,9 @@ final class TestNGExecutor
 
     private static class SuiteAndNamedTests
     {
-        private XmlSuite xmlSuite = new XmlSuite();
+        private final XmlSuite xmlSuite = new XmlSuite();
 
-        private Map<String, XmlTest> testNameToTest = new HashMap<>();
+        private final Map<String, XmlTest> testNameToTest = new HashMap<>();
     }
 
     private static void addSelector( XmlTest xmlTest, XmlMethodSelector selector )
@@ -307,12 +308,9 @@ final class TestNGExecutor
 
         if ( skipAfterFailureCount > 0 )
         {
-            ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            testNG.addListener( (ITestNGListener)
-                                instantiate( cl, "org.apache.maven.surefire.testng.utils.FailFastNotifier",
-                                             Object.class ) );
-            testNG.addListener( (ITestNGListener)
-                                new FailFastListener( createStoppable( reportManager, skipAfterFailureCount ) ) );
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            testNG.addListener( instantiate( classLoader, FailFastNotifier.class.getName(), Object.class ) );
+            testNG.addListener( new FailFastListener( createStoppable( reportManager, skipAfterFailureCount ) ) );
         }
 
         // FIXME: use classifier to decide if we need to pass along the source dir (only for JDK14)
@@ -350,8 +348,8 @@ final class TestNGExecutor
         try
         {
             Class.forName( "org.testng.internal.IResultListener" );
-            Class c = Class.forName( "org.apache.maven.surefire.testng.ConfigurationAwareTestNGReporter" );
-            @SuppressWarnings( "unchecked" ) Constructor<?> ctor = c.getConstructor( RunListener.class );
+            Class<?> c = Class.forName( "org.apache.maven.surefire.testng.ConfigurationAwareTestNGReporter" );
+            Constructor<?> ctor = c.getConstructor( RunListener.class );
             return (TestNGReporter) ctor.newInstance( reportManager );
         }
         catch ( InvocationTargetException e )
