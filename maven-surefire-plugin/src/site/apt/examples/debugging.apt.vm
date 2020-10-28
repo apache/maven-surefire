@@ -54,11 +54,11 @@ mvn -Dmaven.${thisPlugin.toLowerCase()}.debug verify
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
-mvn -Dmaven.${thisPlugin.toLowerCase()}.debug="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 -Xnoagent -Djava.compiler=NONE" test
+mvn -Dmaven.${thisPlugin.toLowerCase()}.debug="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=localhost:8000" test
 +---+
 #{else}
 +---+
-mvn -Dmaven.${thisPlugin.toLowerCase()}.debug="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 -Xnoagent -Djava.compiler=NONE" verify
+mvn -Dmaven.${thisPlugin.toLowerCase()}.debug="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=localhost:8000" verify
 +---+
 #{end}
 

@@ -2570,8 +2570,7 @@ public abstract class AbstractSurefireMojo
         String debugForkedProcess = getDebugForkedProcess();
         if ( "true".equals( debugForkedProcess ) )
         {
-            return "-Xdebug -Xnoagent -Djava.compiler=NONE"
-                + " -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005";
+            return "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=localhost:5005";
         }
         return debugForkedProcess;
     }
