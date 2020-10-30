@@ -1,10 +1,10 @@
-------
-Using JUnit 5 Platform
-------
-Communication Channels in Surefire <users@maven.apache.org>
-------
-2020-03-15
-------
+  ------
+  Using JUnit 5 Platform
+  ------
+  Communication Channels in Surefire <users@maven.apache.org>
+  ------
+  2020-03-15
+  ------
 
 ~~ Licensed to the Apache Software Foundation (ASF) under one
 ~~ or more contributor license agreements.  See the NOTICE file
@@ -32,11 +32,11 @@ Communication Channels used between the Maven Process and Surefire Process
   The communication channel can be changed even by the user in the user's POM.
   The physical layer of the channel can be switched from Process Pipes to TCP/IP.
   The user select the default implementations in the POM or the user can implement his own channel without asking
-  the Apache Maven development team for a new support. This chapter will show you how this can be accomplished.
+  the Apache Maven development team for providing a new support. Let's show you how this can be accomplished.
 
 * forkNode
 
-  The configuration is done by using only one configuration parameter <<<forkMode>>>.
+  The configuration is done by using only one configuration parameter <<<forkNode>>>.
 
 * The TCP/IP communication channel
 
