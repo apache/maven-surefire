@@ -32,7 +32,7 @@ Rerun Failing Tests
   To use this feature through Maven surefire, set the <<<rerunFailingTestsCount>>> property to be a value larger than 0.
   Tests will be run until they pass or the number of reruns has been exhausted.
 
-  << NOTE : This feature is supported only for JUnit 4.x. >>
+  << NOTE : This feature is supported for JUnit 4.x, and (since 3.0.0-M4) JUnit 5.x. >>
 
 
 +---+
