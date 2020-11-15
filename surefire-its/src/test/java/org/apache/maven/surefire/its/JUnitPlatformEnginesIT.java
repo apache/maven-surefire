@@ -342,6 +342,38 @@ public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase
     }
 
     @Test
+    public void testJupiterEngineWithAssertionsFailMessage()
+    {
+        OutputValidator validator = unpack( "surefire-1857-assertion-message", "-" + jupiter )
+                .setTestToRun( "AssertionFailureMessageTest" )
+                .sysProp( "junit5.version", jupiter )
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog( "AssertionFailureMessageTest.failedTest:31" )
+                .assertTestSuiteResults( 1, 0, 1, 0 );
+
+        validator.getSurefireReportsFile( "TEST-jira1857.AssertionFailureMessageTest.xml", UTF_8 )
+                .assertContainsText( "message=\"fail_message\"" );
+    }
+
+    @Test
+    public void testJupiterEngineWithExceptionMessage()
+    {
+        OutputValidator validator = unpack( "surefire-1857-exception-message", "-" + jupiter )
+                .setTestToRun( "ExceptionMessageTest" )
+                .sysProp( "junit5.version", jupiter )
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog( "ExceptionMessageTest.errorTest:28" )
+                .assertTestSuiteResults( 1, 1, 0, 0 );
+
+        validator.getSurefireReportsFile( "TEST-jira1857.ExceptionMessageTest.xml", UTF_8 )
+                .assertContainsText( "message=\"error_message\"" );
+    }
+
+    @Test
     public void testJupiterEngineWithDisplayNames()
     {
         OutputValidator validator = unpack( "junit-platform-engine-jupiter", "-" + jupiter )

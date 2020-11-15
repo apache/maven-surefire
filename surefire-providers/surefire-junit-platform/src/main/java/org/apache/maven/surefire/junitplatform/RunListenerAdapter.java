@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.junit.platform.engine.TestExecutionResult;
@@ -124,13 +125,16 @@ final class RunListenerAdapter
                     }
                     break;
                 case FAILED:
+                    String reason = safeGetMessage( testExecutionResult.getThrowable().orElse( null ) );
+                    SimpleReportEntry reportEntry = createReportEntry( testIdentifier, testExecutionResult, 
+                            reason, elapsed );
                     if ( isAssertionError )
                     {
-                        runListener.testFailed( createReportEntry( testIdentifier, testExecutionResult, elapsed ) );
+                        runListener.testFailed( reportEntry );
                     }
                     else
                     {
-                        runListener.testError( createReportEntry( testIdentifier, testExecutionResult, elapsed ) );
+                        runListener.testError( reportEntry );
                     }
                     if ( isClass || isRootContainer )
                     {
@@ -158,6 +162,19 @@ final class RunListenerAdapter
         Long startTime = testStartTime.remove( testIdentifier );
         long endTime = System.currentTimeMillis();
         return startTime == null ? null : (int) ( endTime - startTime );
+    }
+
+    private String safeGetMessage( Throwable throwable )
+    {
+        try
+        {
+            SafeThrowable t = throwable == null ? null : new SafeThrowable( throwable );
+            return t == null ? null : t.getMessage();
+        }
+        catch ( Throwable t )
+        {
+            return t.getMessage();
+        }
     }
 
     @Override
@@ -202,6 +219,12 @@ final class RunListenerAdapter
                                                  TestExecutionResult testExecutionResult, Integer elapsedTime )
     {
         return createReportEntry( testIdentifier, testExecutionResult, emptyMap(), null, elapsedTime );
+    }
+
+    private SimpleReportEntry createReportEntry( TestIdentifier testIdentifier,
+            TestExecutionResult testExecutionResult, String reason, Integer elapsedTime )
+    {
+        return createReportEntry( testIdentifier, testExecutionResult, emptyMap(), reason, elapsedTime );
     }
 
     private StackTraceWriter toStackTraceWriter( String realClassName, String realMethodName,
