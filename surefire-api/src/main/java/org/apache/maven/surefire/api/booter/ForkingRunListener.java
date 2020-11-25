@@ -71,7 +71,7 @@ public class ForkingRunListener
     @Override
     public void testSetCompleted( TestSetReportEntry report )
     {
-        target.sendSystemProperties( report.getSystemProperties() );
+        target.systemProperties( report.getSystemProperties() );
         target.testSetCompleted( report, trim );
     }
 

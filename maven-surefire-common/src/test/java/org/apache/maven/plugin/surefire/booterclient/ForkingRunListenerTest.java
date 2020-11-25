@@ -25,10 +25,10 @@ import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.extensions.EventConsumerThread;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.booter.ForkingRunListener;
-import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder;
+import org.apache.maven.surefire.booter.spi.EventChannelEncoder;
 import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.extensions.EventHandler;
-import org.apache.maven.surefire.extensions.ForkNodeArguments;
+import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 import org.apache.maven.surefire.api.report.CategorizedReportEntry;
 import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
@@ -258,11 +258,11 @@ public class ForkingRunListenerTest
         ReportEntry expected = createDefaultReportEntry();
         SimpleReportEntry secondExpected = createAnotherDefaultReportEntry();
 
-        new ForkingRunListener( new LegacyMasterProcessChannelEncoder( newBufferedChannel( printStream ) ), false )
+        new ForkingRunListener( new EventChannelEncoder( newBufferedChannel( printStream ) ), false )
                 .testStarting( expected );
 
         new ForkingRunListener(
-            new LegacyMasterProcessChannelEncoder( newBufferedChannel( anotherPrintStream ) ), false )
+            new EventChannelEncoder( newBufferedChannel( anotherPrintStream ) ), false )
                 .testSkipped( secondExpected );
 
         TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
@@ -375,6 +375,18 @@ public class ForkingRunListenerTest
         {
             return !dumpStreamText.isEmpty() || !logWarningAtEnd.isEmpty();
         }
+
+        @Override
+        public File getEventStreamBinaryFile()
+        {
+            return null;
+        }
+
+        @Override
+        public File getCommandStreamBinaryFile()
+        {
+            return null;
+        }
     }
 
     private static class EH implements EventHandler<Event>
@@ -446,7 +458,7 @@ public class ForkingRunListenerTest
     private RunListener createForkingRunListener()
     {
         WritableBufferedByteChannel channel = (WritableBufferedByteChannel) newChannel( printStream );
-        return new ForkingRunListener( new LegacyMasterProcessChannelEncoder( channel ), false );
+        return new ForkingRunListener( new EventChannelEncoder( channel ), false );
     }
 
     private class StandardTestRun

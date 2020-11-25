@@ -201,6 +201,11 @@ public class SurefireProperties
         }
     }
 
+    public void setProperty( String key, int value )
+    {
+        setProperty( key, String.valueOf( value ) );
+    }
+
     public void setProperty( String key, Long value )
     {
         if ( value != null )

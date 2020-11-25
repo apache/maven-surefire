@@ -20,7 +20,7 @@ package org.apache.maven.plugin.surefire.extensions;
  */
 
 import org.apache.maven.surefire.extensions.ForkChannel;
-import org.apache.maven.surefire.extensions.ForkNodeArguments;
+import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 
 import javax.annotation.Nonnull;

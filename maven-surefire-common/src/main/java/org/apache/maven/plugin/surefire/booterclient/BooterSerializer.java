@@ -50,6 +50,7 @@ import static org.apache.maven.surefire.booter.BooterConstants.FAIL_FAST_COUNT;
 import static org.apache.maven.surefire.booter.BooterConstants.FAILIFNOTESTS;
 import static org.apache.maven.surefire.booter.BooterConstants.FORKTESTSET;
 import static org.apache.maven.surefire.booter.BooterConstants.FORKTESTSET_PREFER_TESTS_FROM_IN_STREAM;
+import static org.apache.maven.surefire.booter.BooterConstants.FORK_NUMBER;
 import static org.apache.maven.surefire.booter.BooterConstants.INCLUDES_PROPERTY_PREFIX;
 import static org.apache.maven.surefire.booter.BooterConstants.ISTRIMSTACKTRACE;
 import static org.apache.maven.surefire.booter.BooterConstants.MAIN_CLI_OPTIONS;
@@ -168,6 +169,7 @@ class BooterSerializer
         ReporterConfiguration reporterConfiguration = providerConfiguration.getReporterConfiguration();
         boolean rep = reporterConfiguration.isTrimStackTrace();
         File reportsDirectory = replaceForkThreadsInPath( reporterConfiguration.getReportsDirectory(), forkNumber );
+        properties.setProperty( FORK_NUMBER, forkNumber );
         properties.setProperty( ISTRIMSTACKTRACE, rep );
         properties.setProperty( REPORTSDIRECTORY, reportsDirectory );
         ClassLoaderConfiguration classLoaderConfig = startupConfiguration.getClassLoaderConfiguration();

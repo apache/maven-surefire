@@ -25,6 +25,8 @@ import org.apache.maven.surefire.api.runorder.ThreadedExecutionSchedulerTest;
 import org.apache.maven.surefire.SpecificTestClassFilterTest;
 import org.apache.maven.surefire.api.booter.ForkingRunListenerTest;
 import org.apache.maven.surefire.api.report.LegacyPojoStackTraceWriterTest;
+import org.apache.maven.surefire.api.stream.AbstractStreamDecoderTest;
+import org.apache.maven.surefire.api.stream.AbstractStreamEncoderTest;
 import org.apache.maven.surefire.api.suite.RunResultTest;
 import org.apache.maven.surefire.api.testset.FundamentalFilterTest;
 import org.apache.maven.surefire.api.testset.ResolvedTestTest;
@@ -68,7 +70,9 @@ import org.junit.runners.Suite;
     ReflectionUtilsTest.class,
     ChannelsReaderTest.class,
     ChannelsWriterTest.class,
-    AsyncSocketTest.class
+    AsyncSocketTest.class,
+    AbstractStreamEncoderTest.class,
+    AbstractStreamDecoderTest.class
 } )
 @RunWith( Suite.class )
 public class JUnit4SuiteTest

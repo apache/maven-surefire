@@ -62,6 +62,11 @@ public class BooterDeserializer
         properties = SystemPropertyManager.loadProperties( inputStream );
     }
 
+    public int getForkNumber()
+    {
+        return properties.getIntProperty( FORK_NUMBER );
+    }
+
     /**
      * Describes the current connection channel used by the client in the forked JVM
      * in order to connect to the plugin process.

@@ -52,6 +52,7 @@ public final class DumpFileUtils
      */
     public static synchronized File newDumpFile( File reportsDir, String dumpFileName )
     {
+        reportsDir.mkdirs();
         return new File( reportsDir, dumpFileName );
     }
 

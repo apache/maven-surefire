@@ -21,11 +21,12 @@ package org.apache.maven.surefire.booter;
 
 import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
+import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 import org.apache.maven.surefire.booter.spi.AbstractMasterProcessChannelProcessorFactory;
-import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelDecoder;
-import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder;
+import org.apache.maven.surefire.booter.spi.CommandChannelDecoder;
+import org.apache.maven.surefire.booter.spi.EventChannelEncoder;
 import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils;
@@ -44,6 +45,7 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -86,7 +88,7 @@ import static org.powermock.reflect.Whitebox.setInternalState;
 @PrepareForTest( {
                      PpidChecker.class,
                      ForkedBooter.class,
-                     LegacyMasterProcessChannelEncoder.class,
+                     EventChannelEncoder.class,
                      ShutdownHookUtils.class
 } )
 @PowerMockIgnore( { "org.jacoco.agent.rt.*", "com.vladium.emma.rt.*" } )
@@ -105,7 +107,7 @@ public class ForkedBooterMockTest
     private MasterProcessChannelProcessorFactory channelProcessorFactory;
 
     @Mock
-    private LegacyMasterProcessChannelEncoder eventChannel;
+    private EventChannelEncoder eventChannel;
 
     @Captor
     private ArgumentCaptor<StackTraceWriter> capturedStackTraceWriter;
@@ -292,10 +294,11 @@ public class ForkedBooterMockTest
 
             factory.connect( "pipe://3" );
 
-            MasterProcessChannelDecoder decoder = factory.createDecoder();
-            assertThat( decoder ).isInstanceOf( LegacyMasterProcessChannelDecoder.class );
-            MasterProcessChannelEncoder encoder = factory.createEncoder();
-            assertThat( encoder ).isInstanceOf( LegacyMasterProcessChannelEncoder.class );
+            ForkNodeArguments args = new ForkedNodeArg( 1, false );
+            MasterProcessChannelDecoder decoder = factory.createDecoder( args );
+            assertThat( decoder ).isInstanceOf( CommandChannelDecoder.class );
+            MasterProcessChannelEncoder encoder = factory.createEncoder( args );
+            assertThat( encoder ).isInstanceOf( EventChannelEncoder.class );
         }
     }
 
@@ -318,13 +321,13 @@ public class ForkedBooterMockTest
             }
 
             @Override
-            public MasterProcessChannelDecoder createDecoder()
+            public MasterProcessChannelDecoder createDecoder( @Nonnull  ForkNodeArguments args )
             {
                 return null;
             }
 
             @Override
-            public MasterProcessChannelEncoder createEncoder()
+            public MasterProcessChannelEncoder createEncoder( @Nonnull ForkNodeArguments args )
             {
                 return null;
             }
@@ -411,13 +414,13 @@ public class ForkedBooterMockTest
                 } );
 
                 factory.connect( "tcp://localhost:" + serverPort );
-
-                MasterProcessChannelDecoder decoder = factory.createDecoder();
+                ForkNodeArguments args = new ForkedNodeArg( 1, false );
+                MasterProcessChannelDecoder decoder = factory.createDecoder( args );
                 assertThat( decoder )
-                    .isInstanceOf( LegacyMasterProcessChannelDecoder.class );
-                MasterProcessChannelEncoder encoder = factory.createEncoder();
+                    .isInstanceOf( CommandChannelDecoder.class );
+                MasterProcessChannelEncoder encoder = factory.createEncoder( args );
                 assertThat( encoder )
-                    .isInstanceOf( LegacyMasterProcessChannelEncoder.class );
+                    .isInstanceOf( EventChannelEncoder.class );
             }
         }
     }

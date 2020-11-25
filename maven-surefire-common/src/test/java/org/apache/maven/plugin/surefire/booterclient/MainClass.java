@@ -35,7 +35,7 @@ public class MainClass
         else
         {
             System.out.println( ":maven-surefire-event:\u0003:bye:" );
-            String byeAck = ":maven-surefire-command:bye-ack:";
+            String byeAck = ":maven-surefire-command:\u0007:bye-ack:";
             byte[] cmd = new byte[byeAck.length()];
             int len = System.in.read( cmd );
             if ( len != -1 && new String( cmd, 0, len ).equals( byeAck ) )

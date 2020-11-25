@@ -23,8 +23,9 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
 import org.apache.maven.surefire.api.booter.Shutdown;
-import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelDecoder;
-import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoder;
+import org.apache.maven.surefire.api.fork.ForkNodeArguments;
+import org.apache.maven.surefire.booter.spi.CommandChannelDecoder;
+import org.apache.maven.surefire.booter.spi.EventChannelEncoder;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 import org.junit.After;
@@ -45,6 +46,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
 import static org.fest.assertions.Assertions.assertThat;
@@ -61,6 +63,7 @@ import static org.junit.Assert.fail;
  * @since 2.19
  */
 @RunWith( NewClassLoaderRunner.class )
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class CommandReaderTest
 {
     private static final long DELAY = 200L;
@@ -93,7 +96,9 @@ public class CommandReaderTest
         InputStream realInputStream = new SystemInputStream();
         addTestToPipeline( getClass().getName() );
         ConsoleLogger logger = new NullConsoleLogger();
-        MasterProcessChannelDecoder decoder = new LegacyMasterProcessChannelDecoder( newChannel( realInputStream ) );
+        ForkNodeArguments args = new ForkedNodeArg( 1, false );
+        MasterProcessChannelDecoder decoder =
+            new CommandChannelDecoder( newChannel( realInputStream ), args );
         reader = new CommandReader( decoder, Shutdown.DEFAULT, logger );
     }
 
@@ -106,7 +111,7 @@ public class CommandReaderTest
     @Test
     public void readJustOneClass()
     {
-        Iterator<String> it = reader.getIterableClasses( new LegacyMasterProcessChannelEncoder( nul() ) ).iterator();
+        Iterator<String> it = reader.getIterableClasses( new EventChannelEncoder( nul() ) ).iterator();
         assertTrue( it.hasNext() );
         assertThat( it.next(), is( getClass().getName() ) );
         reader.stop();
@@ -125,7 +130,7 @@ public class CommandReaderTest
     @Test
     public void manyClasses()
     {
-        Iterator<String> it1 = reader.getIterableClasses( new LegacyMasterProcessChannelEncoder( nul() ) ).iterator();
+        Iterator<String> it1 = reader.getIterableClasses( new EventChannelEncoder( nul() ) ).iterator();
         assertThat( it1.next(), is( getClass().getName() ) );
         addTestToPipeline( A.class.getName() );
         assertThat( it1.next(), is( A.class.getName() ) );
@@ -141,7 +146,7 @@ public class CommandReaderTest
     @Test
     public void twoIterators() throws Exception
     {
-        Iterator<String> it1 = reader.getIterableClasses( new LegacyMasterProcessChannelEncoder( nul() ) ).iterator();
+        Iterator<String> it1 = reader.getIterableClasses( new EventChannelEncoder( nul() ) ).iterator();
 
         assertThat( it1.next(), is( getClass().getName() ) );
         addTestToPipeline( A.class.getName() );
@@ -174,8 +179,7 @@ public class CommandReaderTest
             @Override
             public void run()
             {
-                Iterator<String> it =
-                    reader.getIterableClasses( new LegacyMasterProcessChannelEncoder( nul() ) ).iterator();
+                Iterator<String> it = reader.getIterableClasses( new EventChannelEncoder( nul() ) ).iterator();
                 assertThat( it.next(), is( CommandReaderTest.class.getName() ) );
             }
         };
@@ -203,7 +207,7 @@ public class CommandReaderTest
             public void run()
             {
                 Iterator<String> it =
-                    reader.getIterableClasses( new LegacyMasterProcessChannelEncoder( nul() ) ).iterator();
+                    reader.getIterableClasses( new EventChannelEncoder( nul() ) ).iterator();
                 assertThat( it.next(), is( CommandReaderTest.class.getName() ) );
                 counter.countDown();
                 assertThat( it.next(), is( Foo.class.getName() ) );
@@ -250,7 +254,25 @@ public class CommandReaderTest
 
     private void addTestToPipeline( String cls )
     {
-        for ( byte cmdByte : ( ":maven-surefire-command:run-testclass:" + cls + ":" ).getBytes() )
+        int clsLength = cls.length();
+        String cmd = new StringBuilder( 512 )
+            .append( ":maven-surefire-command:" )
+            .append( (char) 13 )
+            .append( ":run-testclass:" )
+            .append( (char) 10 )
+            .append( ":normal-run:" )
+            .append( (char) 5 )
+            .append( ":UTF-8:" )
+            .append( (char) ( clsLength >> 24 ) )
+            .append( (char) ( ( clsLength >> 16 ) & 0xff ) )
+            .append( (char) ( ( clsLength >> 8 ) & 0xff ) )
+            .append( (char) ( clsLength & 0xff ) )
+            .append( ":" )
+            .append( cls )
+            .append( ":" )
+            .toString();
+
+        for ( byte cmdByte : cmd.getBytes( US_ASCII ) )
         {
             blockingStream.add( cmdByte );
         }
@@ -258,7 +280,7 @@ public class CommandReaderTest
 
     private void addEndOfPipeline()
     {
-        for ( byte cmdByte : ":maven-surefire-command:testset-finished:".getBytes() )
+        for ( byte cmdByte : ( ":maven-surefire-command:" + (char) 16 + ":testset-finished:" ).getBytes( US_ASCII ) )
         {
             blockingStream.add( cmdByte );
         }

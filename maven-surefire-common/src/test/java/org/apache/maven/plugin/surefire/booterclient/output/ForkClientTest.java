@@ -52,7 +52,7 @@ import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.extensions.EventHandler;
-import org.apache.maven.surefire.extensions.ForkNodeArguments;
+import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 import org.junit.Test;
 
@@ -302,7 +302,8 @@ public class ForkClientTest
         assertThat( logger.isDebugEnabledCalled )
             .isTrue();
 
-        String msg = "Corrupted STDOUT by directly writing to native stream in forked JVM 0. Stream 'unordered error'.";
+        String msg =
+            "Corrupted channel by directly writing to native stream in forked JVM 0. Stream 'unordered error'.";
         assertThat( arguments.dumpStreamText )
             .hasSize( 1 )
             .contains( msg );
@@ -310,7 +311,7 @@ public class ForkClientTest
         assertThat( arguments.logWarningAtEnd )
             .hasSize( 1 );
         assertThat( arguments.logWarningAtEnd.peek() )
-            .startsWith( "Corrupted STDOUT by directly writing to native stream in forked JVM 0. "
+            .startsWith( "Corrupted channel by directly writing to native stream in forked JVM 0. "
                 + "See FAQ web page and the dump file" );
     }
 
@@ -1882,6 +1883,18 @@ public class ForkClientTest
         boolean isCalled()
         {
             return !dumpStreamText.isEmpty() || !logWarningAtEnd.isEmpty();
+        }
+
+        @Override
+        public File getEventStreamBinaryFile()
+        {
+            return null;
+        }
+
+        @Override
+        public File getCommandStreamBinaryFile()
+        {
+            return null;
         }
     }
 

@@ -52,7 +52,7 @@ public class JUnitPlatformStreamCorruptionIT
                 .verifyErrorFree( 1 );
 
         List<String> lines = validator.loadLogLines(
-                startsWith( "[WARNING] Corrupted STDOUT by directly writing to native stream in forked JVM" ) );
+                startsWith( "[WARNING] Corrupted channel by directly writing to native stream in forked JVM" ) );
 
         assertThat( lines )
                 .isEmpty();

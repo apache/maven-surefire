@@ -19,6 +19,12 @@ package org.apache.maven.surefire.api.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.api.stream.AbstractStreamDecoder.Segment;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -29,22 +35,37 @@ import static java.util.Objects.requireNonNull;
  */
 public enum MasterProcessCommand
 {
-    RUN_CLASS( String.class ),
-    TEST_SET_FINISHED( Void.class ),
-    SKIP_SINCE_NEXT_TEST( Void.class ),
-    SHUTDOWN( String.class ),
+    RUN_CLASS( "run-testclass", String.class ),
+    TEST_SET_FINISHED( "testset-finished", Void.class ),
+    SKIP_SINCE_NEXT_TEST( "skip-since-next-test", Void.class ),
+    SHUTDOWN( "shutdown", String.class ),
 
     /** To tell a forked process that the master process is still alive. Repeated after 10 seconds. */
-    NOOP( Void.class ),
-    BYE_ACK( Void.class );
+    NOOP( "noop", Void.class ),
+    BYE_ACK( "bye-ack", Void.class );
 
-    public static final String MAGIC_NUMBER = "maven-surefire-command";
+    // due to have fast and thread-safe Map
+    public static final Map<Segment, MasterProcessCommand> COMMAND_TYPES = segmentsToCmds();
 
+    private final String opcode;
+    private final byte[] opcodeBinary;
     private final Class<?> dataType;
 
-    MasterProcessCommand( Class<?> dataType )
+    MasterProcessCommand( String opcode, Class<?> dataType )
     {
+        this.opcode = requireNonNull( opcode, "value cannot be null" );
+        opcodeBinary = opcode.getBytes( US_ASCII );
         this.dataType = requireNonNull( dataType, "dataType cannot be null" );
+    }
+
+    public byte[] getOpcodeBinary()
+    {
+        return opcodeBinary;
+    }
+
+    public int getOpcodeLength()
+    {
+        return opcodeBinary.length;
     }
 
     public Class<?> getDataType()
@@ -55,5 +76,22 @@ public enum MasterProcessCommand
     public boolean hasDataType()
     {
         return dataType != Void.class;
+    }
+
+    @Override
+    public String toString()
+    {
+        return opcode;
+    }
+
+    private static Map<Segment, MasterProcessCommand> segmentsToCmds()
+    {
+        Map<Segment, MasterProcessCommand> commands = new HashMap<>();
+        for ( MasterProcessCommand command : MasterProcessCommand.values() )
+        {
+            byte[] array = command.toString().getBytes( US_ASCII );
+            commands.put( new Segment( array, 0, array.length ), command );
+        }
+        return commands;
     }
 }

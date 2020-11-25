@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.extensions;
+package org.apache.maven.surefire.api.fork;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -54,4 +54,8 @@ public interface ForkNodeArguments
 
     @Nonnull
     ConsoleLogger getConsoleLogger();
+
+    File getEventStreamBinaryFile();
+
+    File getCommandStreamBinaryFile();
 }

@@ -45,7 +45,7 @@ import org.apache.maven.surefire.extensions.CloseableDaemonThread;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.ForkChannel;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
-import org.apache.maven.surefire.extensions.ForkNodeArguments;
+import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.extensions.util.CommandlineExecutor;
 import org.apache.maven.surefire.extensions.util.CommandlineStreams;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
@@ -574,7 +574,8 @@ public class ForkStarter
         File dumpLogDir = replaceForkThreadsInPath( startupReportConfiguration.getReportsDirectory(), forkNumber );
         try
         {
-            ForkNodeArguments forkNodeArguments = new ForkedNodeArg( forkNumber, dumpLogDir, randomUUID().toString() );
+            ForkNodeArguments forkNodeArguments =
+                new ForkedNodeArg( forkConfiguration.isDebug(), forkNumber, dumpLogDir, randomUUID().toString() );
             forkChannel = forkNodeFactory.createForkChannel( forkNodeArguments );
             closer.addCloseable( forkChannel );
             tempDir = forkConfiguration.getTempDirectory().getCanonicalPath();
@@ -884,9 +885,11 @@ public class ForkStarter
         private final int forkChannelId;
         private final File dumpLogDir;
         private final String sessionId;
+        private final boolean debug;
 
-        ForkedNodeArg( int forkChannelId, File dumpLogDir, String sessionId )
+        ForkedNodeArg( boolean debug, int forkChannelId, File dumpLogDir, String sessionId )
         {
+            this.debug = debug;
             this.forkChannelId = forkChannelId;
             this.dumpLogDir = dumpLogDir;
             this.sessionId = sessionId;
@@ -931,6 +934,19 @@ public class ForkStarter
         public ConsoleLogger getConsoleLogger()
         {
             return log;
+        }
+
+        @Override
+        public File getEventStreamBinaryFile()
+        {
+            return debug ? InPluginProcessDumpSingleton.getSingleton()
+                .getEventStreamBinaryFile( dumpLogDir, forkChannelId ) : null;
+        }
+
+        @Override
+        public File getCommandStreamBinaryFile()
+        {
+            return null;
         }
     }
 }

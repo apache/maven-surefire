@@ -21,8 +21,10 @@ package org.apache.maven.surefire.booter.spi;
 
 import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
+import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
@@ -31,6 +33,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.util.StringTokenizer;
 import java.util.concurrent.ExecutionException;
 
@@ -69,7 +72,7 @@ public class SurefireMasterProcessChannelProcessorFactory
     {
         if ( !canUse( channelConfig ) )
         {
-            throw new MalformedURLException( "Unknown chanel string " + channelConfig );
+            throw new MalformedURLException( "Unknown channel string " + channelConfig );
         }
 
         try
@@ -97,17 +100,18 @@ public class SurefireMasterProcessChannelProcessorFactory
     }
 
     @Override
-    public MasterProcessChannelDecoder createDecoder()
+    public MasterProcessChannelDecoder createDecoder( @Nonnull ForkNodeArguments forkingArguments )
     {
-        return new LegacyMasterProcessChannelDecoder( newBufferedChannel( newInputStream( clientSocketChannel ) ) );
+        ReadableByteChannel bufferedChannel = newBufferedChannel( newInputStream( clientSocketChannel ) );
+        return new CommandChannelDecoder( bufferedChannel, forkingArguments );
     }
 
     @Override
-    public MasterProcessChannelEncoder createEncoder()
+    public MasterProcessChannelEncoder createEncoder( @Nonnull ForkNodeArguments forkingArguments )
     {
         WritableBufferedByteChannel channel = newBufferedChannel( newOutputStream( clientSocketChannel ) );
         schedulePeriodicFlusher( FLUSH_PERIOD_MILLIS, channel );
-        return new LegacyMasterProcessChannelEncoder( channel );
+        return new EventChannelEncoder( channel );
     }
 
     @Override

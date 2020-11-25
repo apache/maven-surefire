@@ -21,8 +21,10 @@ package org.apache.maven.surefire.booter.spi;
 
 import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
+import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
@@ -51,21 +53,21 @@ public class LegacyMasterProcessChannelProcessorFactory
     {
         if ( !canUse( channelConfig ) )
         {
-            throw new MalformedURLException( "Unknown chanel string " + channelConfig );
+            throw new MalformedURLException( "Unknown channel string " + channelConfig );
         }
     }
 
     @Override
-    public MasterProcessChannelDecoder createDecoder()
+    public MasterProcessChannelDecoder createDecoder( @Nonnull ForkNodeArguments forkingArguments )
     {
-        return new LegacyMasterProcessChannelDecoder( newBufferedChannel( System.in ) );
+        return new CommandChannelDecoder( newBufferedChannel( System.in ), forkingArguments );
     }
 
     @Override
-    public MasterProcessChannelEncoder createEncoder()
+    public MasterProcessChannelEncoder createEncoder( @Nonnull ForkNodeArguments forkingArguments )
     {
         WritableBufferedByteChannel channel = newBufferedChannel( System.out );
         schedulePeriodicFlusher( FLUSH_PERIOD_MILLIS, channel );
-        return new LegacyMasterProcessChannelEncoder( channel );
+        return new EventChannelEncoder( channel );
     }
 }

@@ -20,9 +20,9 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  */
 
 import org.apache.maven.surefire.api.booter.Command;
-import org.apache.maven.surefire.api.booter.MasterProcessCommand;
-import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelDecoder;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
+import org.apache.maven.surefire.booter.ForkedNodeArg;
+import org.apache.maven.surefire.booter.spi.CommandChannelDecoder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -33,17 +33,19 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import static java.nio.channels.Channels.newChannel;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream.TestLessInputStreamBuilder;
 import static org.apache.maven.surefire.api.booter.Command.SKIP_SINCE_NEXT_TEST;
+import static org.apache.maven.surefire.api.booter.MasterProcessCommand.NOOP;
 import static org.apache.maven.surefire.api.booter.MasterProcessCommand.SHUTDOWN;
 import static org.apache.maven.surefire.api.booter.Shutdown.EXIT;
 import static org.apache.maven.surefire.api.booter.Shutdown.KILL;
-import static org.apache.maven.plugin.surefire.extensions.StreamFeeder.encode;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Testing cached and immediate commands in {@link TestLessInputStream}.
@@ -144,6 +146,7 @@ public class TestLessInputStreamBuilderTest
         {
             private byte[] buffer;
             private int idx;
+            private boolean isLastBuffer;
 
             @Override
             public int read() throws IOException
@@ -154,8 +157,20 @@ public class TestLessInputStreamBuilderTest
                     Command cmd = pluginIs.readNextCommand();
                     if ( cmd != null )
                     {
-                        MasterProcessCommand cmdType = cmd.getCommandType();
-                        buffer = cmdType.hasDataType() ? encode( cmdType, cmd.getData() ) : encode( cmdType );
+                        if ( cmd.getCommandType() == SHUTDOWN )
+                        {
+                            buffer = ( ":maven-surefire-command:\u0008:shutdown:\u0005:UTF-8:\u0000\u0000\u0000\u0004:"
+                                + cmd.toShutdownData().getParam() + ":" ).getBytes( UTF_8 );
+                        }
+                        else if ( cmd.getCommandType() == NOOP )
+                        {
+                            buffer = ":maven-surefire-command:\u0004:noop:".getBytes( UTF_8 );
+                            isLastBuffer = true;
+                        }
+                        else
+                        {
+                            fail();
+                        }
                     }
                 }
 
@@ -169,10 +184,16 @@ public class TestLessInputStreamBuilderTest
                     }
                     return b;
                 }
+
+                if ( isLastBuffer )
+                {
+                    return -1;
+                }
                 throw new IOException();
             }
         };
-        MasterProcessChannelDecoder decoder = new LegacyMasterProcessChannelDecoder( newChannel( is ) );
+        MasterProcessChannelDecoder decoder =
+            new CommandChannelDecoder( newChannel( is ), new ForkedNodeArg( 1, false ) );
         builder.getImmediateCommands().shutdown( KILL );
         builder.getImmediateCommands().noop();
         Command bye = decoder.decode();
@@ -181,7 +202,7 @@ public class TestLessInputStreamBuilderTest
         assertThat( bye.getData(), is( KILL.name() ) );
         Command noop = decoder.decode();
         assertThat( noop, is( notNullValue() ) );
-        assertThat( noop.getCommandType(), is( MasterProcessCommand.NOOP ) );
+        assertThat( noop.getCommandType(), is( NOOP ) );
     }
 
     @Test( expected = UnsupportedOperationException.class )

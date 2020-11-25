@@ -42,7 +42,6 @@ public final class BooterConstants
     public static final String TESTARTIFACT_VERSION = "testFwJarVersion";
     public static final String TESTARTIFACT_CLASSIFIER = "testFwJarClassifier";
     public static final String REQUESTEDTEST = "requestedTest";
-    public static final String REQUESTEDTESTMETHOD = "requestedTestMethod";
     public static final String SOURCE_DIRECTORY = "testSuiteDefinitionTestSourceDirectory";
     public static final String TEST_CLASSES_DIRECTORY = "testClassesDirectory";
     public static final String RUN_ORDER = "runOrder";
@@ -60,4 +59,5 @@ public final class BooterConstants
     public static final String PLUGIN_PID = "pluginPid";
     public static final String PROCESS_CHECKER = "processChecker";
     public static final String FORK_NODE_CONNECTION_STRING = "forkNodeConnectionString";
+    public static final String FORK_NUMBER = "forkNumber";
 }

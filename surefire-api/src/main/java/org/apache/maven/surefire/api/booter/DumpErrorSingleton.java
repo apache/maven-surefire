@@ -40,6 +40,7 @@ public final class DumpErrorSingleton
 
     private File dumpFile;
     private File dumpStreamFile;
+    private File binaryDumpStreamFile;
 
     private DumpErrorSingleton()
     {
@@ -54,36 +55,50 @@ public final class DumpErrorSingleton
     {
         dumpFile = createDumpFile( reportsDir, dumpFileName );
         dumpStreamFile = createDumpStreamFile( reportsDir, dumpFileName );
+        String fileNameWithoutExtension =
+            dumpFileName.contains( "." ) ? dumpFileName.substring( 0, dumpFileName.lastIndexOf( '.' ) ) : dumpFileName;
+        binaryDumpStreamFile = newDumpFile( reportsDir, fileNameWithoutExtension + "-commands.bin" );
     }
 
-    public synchronized void dumpException( Throwable t, String msg )
+    public synchronized File dumpException( Throwable t, String msg )
     {
         DumpFileUtils.dumpException( t, msg == null ? "null" : msg, dumpFile );
+        return dumpFile;
     }
 
-    public synchronized void dumpException( Throwable t )
+    public synchronized File dumpException( Throwable t )
     {
         DumpFileUtils.dumpException( t, dumpFile );
+        return dumpFile;
     }
 
-    public synchronized void dumpText( String msg )
+    public synchronized File dumpText( String msg )
     {
         DumpFileUtils.dumpText( msg == null ? "null" : msg, dumpFile );
+        return dumpFile;
     }
 
-    public synchronized void dumpStreamException( Throwable t, String msg )
+    public synchronized File dumpStreamException( Throwable t, String msg )
     {
         DumpFileUtils.dumpException( t, msg == null ? "null" : msg, dumpStreamFile );
+        return dumpStreamFile;
     }
 
-    public synchronized void dumpStreamException( Throwable t )
+    public synchronized File dumpStreamException( Throwable t )
     {
         DumpFileUtils.dumpException( t, dumpStreamFile );
+        return dumpStreamFile;
     }
 
-    public synchronized void dumpStreamText( String msg )
+    public synchronized File dumpStreamText( String msg )
     {
         DumpFileUtils.dumpText( msg == null ? "null" : msg, dumpStreamFile );
+        return dumpStreamFile;
+    }
+
+    public File getCommandStreamBinaryFile()
+    {
+        return binaryDumpStreamFile;
     }
 
     private File createDumpFile( File reportsDir, String dumpFileName )

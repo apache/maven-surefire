@@ -36,7 +36,6 @@ import java.util.Iterator;
 
 import static java.util.Arrays.asList;
 import static org.apache.maven.surefire.api.booter.Command.TEST_SET_FINISHED;
-import static org.apache.maven.surefire.api.booter.MasterProcessCommand.NOOP;
 import static org.apache.maven.surefire.api.booter.MasterProcessCommand.RUN_CLASS;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -92,8 +91,8 @@ public class StreamFeederTest
                 {
                     ByteBuffer bb = invocation.getArgument( 0 );
                     bb.flip();
-                    out.write( bb.array() );
-                    return 0;
+                    out.write( bb.array(), 0, bb.limit() );
+                    return bb.limit();
                 }
             } );
 
@@ -104,8 +103,28 @@ public class StreamFeederTest
         streamFeeder.join();
         String commands = out.toString();
 
+        String expected = new StringBuilder()
+            .append( ":maven-surefire-command:" )
+            .append( (char) 13 )
+            .append( ":run-testclass:" )
+            .append( (char) 10 )
+            .append( ":normal-run:" )
+            .append( (char) 5 )
+            .append( ":UTF-8:" )
+            .append( (char) 0 )
+            .append( (char) 0 )
+            .append( (char) 0 )
+            .append( (char) 9 )
+            .append( ":" )
+            .append( "pkg.ATest" )
+            .append( ":" )
+            .append( ":maven-surefire-command:" )
+            .append( (char) 16 )
+            .append( ":testset-finished:" )
+            .toString();
+
         assertThat( commands )
-            .isEqualTo( ":maven-surefire-command:run-testclass:pkg.ATest::maven-surefire-command:testset-finished:" );
+            .isEqualTo( expected );
 
         verify( channel, times( 1 ) )
             .close();
@@ -146,17 +165,5 @@ public class StreamFeederTest
             .isInstanceOf( IOException.class );
 
         verifyZeroInteractions( logger );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailWithoutData()
-    {
-        StreamFeeder.encode( RUN_CLASS );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailWithData()
-    {
-        StreamFeeder.encode( NOOP, "" );
     }
 }

@@ -62,7 +62,7 @@ public class PropertiesWrapper
 
     public boolean getBooleanProperty( String propertyName )
     {
-        return Boolean.valueOf( properties.get( propertyName ) );
+        return Boolean.parseBoolean( properties.get( propertyName ) );
     }
 
     public int getIntProperty( String propertyName )

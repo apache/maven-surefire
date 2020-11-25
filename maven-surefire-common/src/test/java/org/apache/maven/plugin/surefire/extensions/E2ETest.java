@@ -27,7 +27,7 @@ import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.extensions.EventHandler;
-import org.apache.maven.surefire.extensions.ForkNodeArguments;
+import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 import org.junit.Rule;
 import org.junit.Test;
@@ -74,7 +74,7 @@ public class E2ETest
 
         final SurefireMasterProcessChannelProcessorFactory factory = new SurefireMasterProcessChannelProcessorFactory();
         factory.connect( connection );
-        final MasterProcessChannelEncoder encoder = factory.createEncoder();
+        final MasterProcessChannelEncoder encoder = factory.createEncoder( arguments );
 
         System.gc();
 
@@ -332,6 +332,18 @@ public class E2ETest
         public ConsoleLogger getConsoleLogger()
         {
             return logger;
+        }
+
+        @Override
+        public File getEventStreamBinaryFile()
+        {
+            return null;
+        }
+
+        @Override
+        public File getCommandStreamBinaryFile()
+        {
+            return null;
         }
     }
 }

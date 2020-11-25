@@ -27,16 +27,17 @@ import org.apache.maven.surefire.api.booter.ForkingReporterFactory;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
 import org.apache.maven.surefire.api.booter.Shutdown;
-import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelProcessorFactory;
-import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
+import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.api.provider.CommandListener;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
 import org.apache.maven.surefire.api.provider.SurefireProvider;
 import org.apache.maven.surefire.api.report.LegacyPojoStackTraceWriter;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelProcessorFactory;
+import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils;
 import org.apache.maven.surefire.spi.MasterProcessChannelProcessorFactory;
-import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -61,13 +62,14 @@ import static java.lang.Thread.currentThread;
 import static java.util.ServiceLoader.load;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.maven.surefire.api.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.instantiateOneArg;
+import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
+import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 import static org.apache.maven.surefire.booter.ProcessCheckerType.ALL;
 import static org.apache.maven.surefire.booter.ProcessCheckerType.NATIVE;
 import static org.apache.maven.surefire.booter.ProcessCheckerType.PING;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.setSystemProperties;
-import static org.apache.maven.surefire.api.util.ReflectionUtils.instantiateOneArg;
-import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
-import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 
 /**
  * The part of the booter that is unique to a forked vm.
@@ -113,10 +115,13 @@ public final class ForkedBooter
         DumpErrorSingleton.getSingleton()
                 .init( providerConfiguration.getReporterConfiguration().getReportsDirectory(), dumpFileName );
 
+        int forkNumber = booterDeserializer.getForkNumber();
+
         if ( isDebugging() )
         {
             DumpErrorSingleton.getSingleton()
-                    .dumpText( "Found Maven process ID " + booterDeserializer.getPluginPid() );
+                    .dumpText( "Found Maven process ID " + booterDeserializer.getPluginPid()
+                        + " for the fork " + forkNumber + "." );
         }
 
         startupConfiguration = booterDeserializer.getStartupConfiguration();
@@ -124,8 +129,11 @@ public final class ForkedBooter
         String channelConfig = booterDeserializer.getConnectionString();
         channelProcessorFactory = lookupDecoderFactory( channelConfig );
         channelProcessorFactory.connect( channelConfig );
-        eventChannel = channelProcessorFactory.createEncoder();
-        MasterProcessChannelDecoder decoder = channelProcessorFactory.createDecoder();
+        boolean isDebugging = isDebugging();
+        boolean debug = isDebugging || providerConfiguration.getMainCliOptions().contains( LOGGING_LEVEL_DEBUG );
+        ForkNodeArguments args = new ForkedNodeArg( forkNumber, debug );
+        eventChannel = channelProcessorFactory.createEncoder( args );
+        MasterProcessChannelDecoder decoder = channelProcessorFactory.createDecoder( args );
 
         flushEventChannelOnExit();
 
@@ -133,7 +141,7 @@ public final class ForkedBooter
         ConsoleLogger logger = (ConsoleLogger) forkingReporterFactory.createReporter();
         commandReader = new CommandReader( decoder, providerConfiguration.getShutdown(), logger );
 
-        pingScheduler = isDebugging() ? null : listenToShutdownCommands( booterDeserializer.getPluginPid(), logger );
+        pingScheduler = isDebugging ? null : listenToShutdownCommands( booterDeserializer.getPluginPid(), logger );
 
         systemExitTimeoutInSeconds = providerConfiguration.systemExitTimeout( DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS );
 
@@ -671,4 +679,5 @@ public final class ForkedBooter
         return ManagementFactory.getRuntimeMXBean()
                 .getName();
     }
+
 }

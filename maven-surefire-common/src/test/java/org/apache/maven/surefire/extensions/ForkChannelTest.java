@@ -26,6 +26,7 @@ import org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.event.ControlByeEvent;
 import org.apache.maven.surefire.api.event.Event;
+import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 import org.junit.Test;
 
@@ -67,6 +68,18 @@ public class ForkChannelTest
         final String sessionId = UUID.randomUUID().toString();
         ForkNodeArguments forkNodeArguments = new ForkNodeArguments()
         {
+            @Override
+            public File getEventStreamBinaryFile()
+            {
+                return null;
+            }
+
+            @Override
+            public File getCommandStreamBinaryFile()
+            {
+                return null;
+            }
+
             @Nonnull
             @Override
             public String getSessionId()
@@ -203,7 +216,7 @@ public class ForkChannelTest
                 byte[] data = new byte[128];
                 int readLength = socket.getInputStream().read( data );
                 String token = new String( data, 0, readLength, US_ASCII );
-                assertThat( token ).isEqualTo( ":maven-surefire-command:noop:" );
+                assertThat( token ).isEqualTo( ":maven-surefire-command:\u0004:noop:" );
                 socket.getOutputStream().write( ":maven-surefire-event:\u0003:bye:".getBytes( US_ASCII ) );
             }
             catch ( IOException e )

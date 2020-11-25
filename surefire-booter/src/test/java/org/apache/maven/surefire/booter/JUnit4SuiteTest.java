@@ -23,8 +23,8 @@ import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelDecoderTest;
-import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelEncoderTest;
+import org.apache.maven.surefire.booter.spi.CommandChannelDecoderTest;
+import org.apache.maven.surefire.booter.spi.EventChannelEncoderTest;
 
 /**
  * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
@@ -46,8 +46,8 @@ public class JUnit4SuiteTest extends TestCase
         suite.addTest( new JUnit4TestAdapter( BooterDeserializerTest.class ) );
         suite.addTestSuite( ClasspathTest.class );
         suite.addTestSuite( PropertiesWrapperTest.class );
-        suite.addTest( new JUnit4TestAdapter( LegacyMasterProcessChannelDecoderTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( LegacyMasterProcessChannelEncoderTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( CommandChannelDecoderTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( EventChannelEncoderTest.class ) );
         suite.addTestSuite( SurefireReflectorTest.class );
         return suite;
     }

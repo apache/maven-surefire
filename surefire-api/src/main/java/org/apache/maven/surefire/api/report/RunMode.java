@@ -19,6 +19,11 @@ package org.apache.maven.surefire.api.report;
  * under the License.
  */
 
+import org.apache.maven.surefire.api.stream.AbstractStreamDecoder.Segment;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 /**
@@ -34,6 +39,9 @@ public enum RunMode
     NORMAL_RUN( "normal-run" ),
     RERUN_TEST_AFTER_FAILURE( "rerun-test-after-failure" );
     //todo add here RERUN_TESTSET, see https://github.com/apache/maven-surefire/pull/221
+
+    // due to have fast and thread-safe Map
+    public static final Map<Segment, RunMode> RUN_MODES = segmentsToRunModes();
 
     private final String runmode;
     private final byte[] runmodeBinary;
@@ -52,5 +60,16 @@ public enum RunMode
     public byte[] getRunmodeBinary()
     {
         return runmodeBinary;
+    }
+
+    private static Map<Segment, RunMode> segmentsToRunModes()
+    {
+        Map<Segment, RunMode> runModes = new HashMap<>();
+        for ( RunMode runMode : RunMode.values() )
+        {
+            byte[] array = runMode.getRunmodeBinary();
+            runModes.put( new Segment( array, 0, array.length ), runMode );
+        }
+        return runModes;
     }
 }

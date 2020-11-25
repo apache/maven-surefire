@@ -64,6 +64,8 @@ public final class SurefireHelper
 
     public static final String DUMP_FILENAME = DUMP_FILE_DATE + DUMP_FILE_EXT;
 
+    public static final String EVENTS_BINARY_DUMP_FILENAME_FORMATTER = DUMP_FILE_DATE + "-jvmRun%d-events.bin";
+
     /**
      * The maximum path that does not require long path prefix on Windows.<br>
      * See {@code sun/nio/fs/WindowsPath} in

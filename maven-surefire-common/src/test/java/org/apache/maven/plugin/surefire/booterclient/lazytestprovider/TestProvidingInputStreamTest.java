@@ -20,9 +20,9 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  */
 
 import org.apache.maven.surefire.api.booter.Command;
-import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelDecoder;
-import org.apache.maven.plugin.surefire.extensions.StreamFeeder;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
+import org.apache.maven.surefire.booter.ForkedNodeArg;
+import org.apache.maven.surefire.booter.spi.CommandChannelDecoder;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -36,7 +36,8 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
 import static java.nio.channels.Channels.newChannel;
-import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.maven.surefire.api.booter.Command.TEST_SET_FINISHED;
 import static org.apache.maven.surefire.api.booter.MasterProcessCommand.BYE_ACK;
 import static org.apache.maven.surefire.api.booter.MasterProcessCommand.NOOP;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -44,6 +45,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Asserts that this stream properly reads bytes from queue.
@@ -93,8 +95,7 @@ public class TestProvidingInputStreamTest
     public void finishedTestsetShouldNotBlock()
         throws IOException
     {
-        Queue<String> commands = new ArrayDeque<>();
-        final TestProvidingInputStream is = new TestProvidingInputStream( commands );
+        final TestProvidingInputStream is = new TestProvidingInputStream( new ArrayDeque<String>() );
         is.testSetFinished();
         new Thread( new Runnable()
         {
@@ -105,16 +106,12 @@ public class TestProvidingInputStreamTest
             }
         } ).start();
 
-        Command cmd = is.readNextCommand();
-        assertThat( cmd.getData(), is( nullValue() ) );
-        String stream = new String( StreamFeeder.encode( cmd.getCommandType() ), US_ASCII );
-
-        cmd = is.readNextCommand();
-        assertThat( cmd.getData(), is( nullValue() ) );
-        stream += new String( StreamFeeder.encode( cmd.getCommandType() ), US_ASCII );
-
-        assertThat( stream,
-            is( ":maven-surefire-command:testset-finished::maven-surefire-command:testset-finished:" ) );
+        for ( int i = 0; i < 2; i++ )
+        {
+            Command cmd = is.readNextCommand();
+            assertThat( cmd.getData(), is( nullValue() ) );
+            assertThat( cmd, is( TEST_SET_FINISHED ) );
+        }
 
         boolean emptyStream = isInputStreamEmpty( is );
 
@@ -162,7 +159,21 @@ public class TestProvidingInputStreamTest
                 {
                     idx = 0;
                     Command cmd = pluginIs.readNextCommand();
-                    buffer = cmd == null ? null : StreamFeeder.encode( cmd.getCommandType() );
+                    if ( cmd != null )
+                    {
+                        if ( cmd.getCommandType() == BYE_ACK )
+                        {
+                            buffer = ":maven-surefire-command:\u0007:bye-ack:".getBytes( UTF_8 );
+                        }
+                        else if ( cmd.getCommandType() == NOOP )
+                        {
+                            buffer = ":maven-surefire-command:\u0004:noop:".getBytes( UTF_8 );
+                        }
+                        else
+                        {
+                            fail();
+                        }
+                    }
                 }
 
                 if ( buffer != null )
@@ -178,7 +189,8 @@ public class TestProvidingInputStreamTest
                 throw new IOException();
             }
         };
-        MasterProcessChannelDecoder decoder = new LegacyMasterProcessChannelDecoder( newChannel( is ) );
+        MasterProcessChannelDecoder decoder =
+            new CommandChannelDecoder( newChannel( is ), new ForkedNodeArg( 1, false ) );
         pluginIs.acknowledgeByeEventReceived();
         pluginIs.noop();
         Command bye = decoder.decode();

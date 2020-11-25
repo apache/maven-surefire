@@ -21,7 +21,9 @@ package org.apache.maven.surefire.spi;
 
 import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
+import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 
+import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.io.IOException;
 
@@ -48,15 +50,15 @@ public interface MasterProcessChannelProcessorFactory extends Closeable
 
     /**
      * Decoder factory method.
-     *
+     * @param forkingArguments forking arguments
      * @return a new instance of decoder
      */
-    MasterProcessChannelDecoder createDecoder() throws IOException;
+    MasterProcessChannelDecoder createDecoder( @Nonnull ForkNodeArguments forkingArguments ) throws IOException;
 
     /**
      * Encoder factory method.
-     *
+     * @param forkingArguments forking arguments
      * @return a new instance of encoder
      */
-    MasterProcessChannelEncoder createEncoder() throws IOException;
+    MasterProcessChannelEncoder createEncoder( @Nonnull ForkNodeArguments forkingArguments ) throws IOException;
 }

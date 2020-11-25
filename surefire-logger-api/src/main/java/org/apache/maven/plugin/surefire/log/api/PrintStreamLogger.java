@@ -22,7 +22,7 @@ package org.apache.maven.plugin.surefire.log.api;
 import java.io.PrintStream;
 
 /**
- * For testing purposes.
+ * Console logger for {@link PrintStream}.
  */
 public class PrintStreamLogger
     implements ConsoleLogger

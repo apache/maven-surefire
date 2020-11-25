@@ -32,15 +32,11 @@ import java.util.Map;
  */
 public interface MasterProcessChannelEncoder
 {
-    MasterProcessChannelEncoder asRerunMode();
-
-    MasterProcessChannelEncoder asNormalMode();
-
     boolean checkError();
 
     void onJvmExit();
 
-    void sendSystemProperties( Map<String, String> sysProps );
+    void systemProperties( Map<String, String> sysProps );
 
     void testSetStarting( ReportEntry reportEntry, boolean trimStackTraces );
 

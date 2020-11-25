@@ -19,6 +19,8 @@ package org.apache.maven.surefire.extensions;
  * under the License.
  */
 
+import org.apache.maven.surefire.api.fork.ForkNodeArguments;
+
 import javax.annotation.Nonnull;
 import java.io.IOException;
 

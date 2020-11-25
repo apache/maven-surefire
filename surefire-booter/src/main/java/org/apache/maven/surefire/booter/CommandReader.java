@@ -336,11 +336,11 @@ public final class CommandReader implements CommandChainReader
         {
             CommandReader.this.startMonitor.countDown();
             boolean isTestSetFinished = false;
-            try
+            try ( MasterProcessChannelDecoder commandReader = CommandReader.this.decoder )
             {
                 while ( CommandReader.this.state.get() == RUNNABLE )
                 {
-                    Command command = CommandReader.this.decoder.decode();
+                    Command command = commandReader.decode();
                     switch ( command.getCommandType() )
                     {
                         case RUN_CLASS:
