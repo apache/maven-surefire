@@ -24,9 +24,16 @@ In current `.` directory is your project which starts with root POM.
 
 (including `.` at the end of next line)
 
+For Windows/macOS Users:
+
+    $ docker build --no-cache -t my-image:1 -f ./Dockerfile .
+    $ docker run -it --rm my-image:1 /bin/sh
+
+For Linux Users:
+
     $ sudo docker build --no-cache -t my-image:1 -f ./Dockerfile .
     $ sudo docker run -it --rm my-image:1 /bin/sh
-    
+
 Run the command `mvn test` in the shell console of docker.
 
 Dockerfile in current directory
