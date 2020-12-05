@@ -1143,7 +1143,7 @@ public abstract class AbstractSurefireMojo
         if ( "0".equals( getForkCount() ) )
         {
             getConsoleLogger().warning( "The parameter forkCount should likely not be 0, not forking a JVM for tests "
-                + "reduce test accuracy, ensure to have a <forkCount> >= 1." );
+                + "reduces test accuracy, ensure to have a <forkCount> >= 1." );
         }
     }
 
