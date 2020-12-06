@@ -32,6 +32,7 @@ import org.apache.maven.plugin.surefire.SurefireHelperTest;
 import org.apache.maven.plugin.surefire.SurefirePropertiesTest;
 import org.apache.maven.plugin.surefire.booterclient.BooterDeserializerProviderConfigurationTest;
 import org.apache.maven.plugin.surefire.booterclient.BooterDeserializerStartupConfigurationTest;
+import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculatorTest;
 import org.apache.maven.plugin.surefire.booterclient.DefaultForkConfigurationTest;
 import org.apache.maven.plugin.surefire.booterclient.ForkConfigurationTest;
 import org.apache.maven.plugin.surefire.booterclient.ForkStarterTest;
@@ -116,6 +117,7 @@ public class JUnit4SuiteTest extends TestCase
         suite.addTest( new JUnit4TestAdapter( E2ETest.class ) );
         suite.addTest( new JUnit4TestAdapter( ThreadedStreamConsumerTest.class ) );
         suite.addTest( new JUnit4TestAdapter( EventConsumerThreadTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( ChecksumCalculatorTest.class ) );
         return suite;
     }
 }

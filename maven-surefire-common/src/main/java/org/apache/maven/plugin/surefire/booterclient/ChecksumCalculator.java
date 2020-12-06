@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author Kristian Rosenvold
@@ -155,7 +155,8 @@ public class ChecksumCalculator
         {
             MessageDigest md = MessageDigest.getInstance( "SHA-1" );
             String configValue = getConfig();
-            md.update( configValue.getBytes( ISO_8859_1 ), 0, configValue.length() );
+            byte[] configBytes = configValue.getBytes( UTF_8 );
+            md.update( configBytes );
             byte[] sha1hash = md.digest();
             return asHexString( sha1hash );
         }
