@@ -61,7 +61,9 @@ Inclusions and Exclusions of Tests
    []
 
   If the test classes do not follow any of these naming conventions, then configure
-  ${thisPlugin} Plugin and specify the tests you want to include.
+  ${thisPlugin} Plugin and specify the tests you want to include.  It will disable
+  the above default patterns.
+
 
 +---+
 <project>
