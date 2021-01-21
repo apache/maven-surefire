@@ -129,6 +129,12 @@ public class ForkedProcessEventNotifierTest
                     notifier.notifyEvent( eventHandler.pullEvent() );
                 }
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
+
             assertThat( logger.isCalled() )
                 .isFalse();
             assertThat( arguments.isCalled() )
@@ -169,6 +175,12 @@ public class ForkedProcessEventNotifierTest
                 t.start();
                 notifier.notifyEvent( eventHandler.pullEvent() );
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
+
             assertThat( logger.isCalled() )
                 .isFalse();
             assertThat( arguments.isCalled() )
@@ -209,6 +221,12 @@ public class ForkedProcessEventNotifierTest
                 t.start();
                 notifier.notifyEvent( eventHandler.pullEvent() );
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
+
             assertThat( logger.isCalled() )
                 .isFalse();
             assertThat( arguments.dumpStreamText )
@@ -263,6 +281,12 @@ public class ForkedProcessEventNotifierTest
                 t.start();
                 notifier.notifyEvent( eventHandler.pullEvent() );
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
+
             assertThat( logger.isCalled() )
                 .isFalse();
             assertThat( arguments.isCalled() )
@@ -297,6 +321,12 @@ public class ForkedProcessEventNotifierTest
                 t.start();
                 notifier.notifyEvent( eventHandler.pullEvent() );
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
+
             assertThat( logger.isCalled() )
                 .isFalse();
             assertThat( arguments.isCalled() )
@@ -327,6 +357,12 @@ public class ForkedProcessEventNotifierTest
                 t.start();
                 notifier.notifyEvent( eventHandler.pullEvent() );
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
+
             assertThat( logger.isCalled() )
                 .isFalse();
             assertThat( arguments.isCalled() )
@@ -357,6 +393,12 @@ public class ForkedProcessEventNotifierTest
                 t.start();
                 notifier.notifyEvent( eventHandler.pullEvent() );
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
+
             assertThat( logger.isCalled() )
                 .isFalse();
             assertThat( arguments.isCalled() )
@@ -389,6 +431,12 @@ public class ForkedProcessEventNotifierTest
                 t.start();
                 notifier.notifyEvent( eventHandler.pullEvent() );
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
+
             assertThat( logger.isCalled() )
                 .isFalse();
             assertThat( arguments.isCalled() )
@@ -421,6 +469,12 @@ public class ForkedProcessEventNotifierTest
                 t.start();
                 notifier.notifyEvent( eventHandler.pullEvent() );
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
+
             assertThat( logger.isCalled() )
                 .isFalse();
             assertThat( arguments.isCalled() )
@@ -452,6 +506,11 @@ public class ForkedProcessEventNotifierTest
                 t.start();
                 notifier.notifyEvent( eventHandler.pullEvent() );
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
 
             assertThat( logger.isCalled() )
                 .isFalse();
@@ -489,6 +548,12 @@ public class ForkedProcessEventNotifierTest
                 t.start();
                 notifier.notifyEvent( eventHandler.pullEvent() );
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
+
             assertThat( logger.isCalled() )
                 .isFalse();
             assertThat( arguments.isCalled() )
@@ -522,6 +587,12 @@ public class ForkedProcessEventNotifierTest
                 t.start();
                 notifier.notifyEvent( eventHandler.pullEvent() );
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
+
             assertThat( logger.isCalled() )
                 .isFalse();
             assertThat( arguments.isCalled() )
@@ -555,6 +626,12 @@ public class ForkedProcessEventNotifierTest
                 t.start();
                 notifier.notifyEvent( eventHandler.pullEvent() );
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
+
             assertThat( logger.isCalled() )
                 .isFalse();
             assertThat( arguments.isCalled() )
@@ -588,6 +665,12 @@ public class ForkedProcessEventNotifierTest
                 t.start();
                 notifier.notifyEvent( eventHandler.pullEvent() );
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
+
             assertThat( logger.isCalled() )
                 .isFalse();
             assertThat( arguments.isCalled() )
@@ -621,6 +704,12 @@ public class ForkedProcessEventNotifierTest
                 t.start();
                 notifier.notifyEvent( eventHandler.pullEvent() );
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
+
             assertThat( logger.isCalled() )
                 .isFalse();
             assertThat( arguments.isCalled() )
@@ -654,6 +743,12 @@ public class ForkedProcessEventNotifierTest
                 t.start();
                 notifier.notifyEvent( eventHandler.pullEvent() );
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
+
             assertThat( logger.isCalled() )
                 .isFalse();
             assertThat( arguments.isCalled() )
@@ -687,6 +782,12 @@ public class ForkedProcessEventNotifierTest
                 t.start();
                 notifier.notifyEvent( eventHandler.pullEvent() );
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
+
             assertThat( logger.isCalled() )
                 .isFalse();
             assertThat( arguments.isCalled() )
@@ -719,6 +820,12 @@ public class ForkedProcessEventNotifierTest
                 t.start();
                 notifier.notifyEvent( eventHandler.pullEvent() );
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
+
             assertThat( logger.isCalled() )
                 .isFalse();
             assertThat( arguments.isCalled() )
@@ -805,6 +912,12 @@ public class ForkedProcessEventNotifierTest
                 t.start();
                 notifier.notifyEvent( eventHandler.pullEvent() );
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
+
             assertThat( logger.isCalled() )
                 .isFalse();
             assertThat( arguments.isCalled() )
@@ -917,8 +1030,15 @@ public class ForkedProcessEventNotifierTest
                 t.start();
                 notifier.notifyEvent( eventHandler.pullEvent() );
             }
+
+            assertThat( logger.error ).isEmpty();
+            assertThat( logger.warning ).isEmpty();
+            assertThat( logger.info ).isEmpty();
+            assertThat( logger.debug ).isEmpty();
+
             assertThat( logger.isCalled() )
                 .isFalse();
+
             assertThat( arguments.isCalled() )
                 .isFalse();
         }
@@ -1209,6 +1329,7 @@ public class ForkedProcessEventNotifierTest
     {
         final ConcurrentLinkedQueue<String> debug = new ConcurrentLinkedQueue<>();
         final ConcurrentLinkedQueue<String> info = new ConcurrentLinkedQueue<>();
+        final ConcurrentLinkedQueue<String> warning = new ConcurrentLinkedQueue<>();
         final ConcurrentLinkedQueue<String> error = new ConcurrentLinkedQueue<>();
         final boolean isDebug;
         final boolean isInfo;
@@ -1266,6 +1387,7 @@ public class ForkedProcessEventNotifierTest
         @Override
         public synchronized void warning( String message )
         {
+            warning.add( message );
             called = true;
         }
 

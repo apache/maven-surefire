@@ -173,6 +173,7 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
                         break;
                     case END_OF_FRAME:
                         memento.getLine().setPositionByteBuffer( memento.getByteBuffer().position() );
+                        memento.getLine().clear();
                         return toMessage( eventType, runMode, memento );
                     default:
                         memento.getLine().setPositionByteBuffer( NO_POSITION );

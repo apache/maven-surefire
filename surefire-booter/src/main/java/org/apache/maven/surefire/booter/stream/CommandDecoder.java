@@ -119,6 +119,7 @@ public class CommandDecoder extends AbstractStreamDecoder<Command, MasterProcess
                         break;
                     case END_OF_FRAME:
                         memento.getLine().setPositionByteBuffer( memento.getByteBuffer().position() );
+                        memento.getLine().clear();
                         return toMessage( commandType, runMode, memento );
                     default:
                         memento.getLine().setPositionByteBuffer( NO_POSITION );

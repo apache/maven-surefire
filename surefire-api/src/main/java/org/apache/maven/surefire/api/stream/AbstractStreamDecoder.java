@@ -379,7 +379,7 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
     {
         printCorruptedStream( memento );
         memento.getLine().printExistingLine();
-        memento.getLine().setCount( 0 );
+        memento.getLine().clear();
     }
 
     /**
@@ -456,25 +456,42 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
             int mark = buffer.position();
             buffer.position( buffer.limit() );
             buffer.limit( min( buffer.position() + recommendedCount, buffer.capacity() ) );
-            boolean isEnd = false;
-            while ( !isEnd && buffer.position() - mark < recommendedCount && buffer.position() < buffer.limit() )
+            return read( buffer, mark, recommendedCount );
+        }
+    }
+
+    private StreamReadStatus read( ByteBuffer buffer, int oldPosition, int recommendedCount )
+        throws IOException
+    {
+        StreamReadStatus readStatus = null;
+        boolean isEnd = false;
+        try
+        {
+            while ( !isEnd && buffer.position() - oldPosition < recommendedCount && buffer.position() < buffer.limit() )
             {
                 isEnd = channel.read( buffer ) == -1;
             }
-
+        }
+        finally
+        {
             buffer.limit( buffer.position() );
-            buffer.position( mark );
+            buffer.position( oldPosition );
             int readBytes = buffer.remaining();
-
-            if ( isEnd && readBytes < recommendedCount )
-            {
-                throw new EOFException();
-            }
-            else
+            boolean readComplete = readBytes >= recommendedCount;
+            if ( !isEnd || readComplete )
             {
                 debugStream( buffer.array(), buffer.arrayOffset() + buffer.position(), buffer.remaining() );
-                return readBytes >= recommendedCount ? OVERFLOW : UNDERFLOW;
+                readStatus = readComplete ? OVERFLOW : UNDERFLOW;
             }
+        }
+
+        if ( readStatus == null )
+        {
+            throw new EOFException();
+        }
+        else
+        {
+            return readStatus;
         }
     }
 
@@ -595,9 +612,9 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
             }
         }
 
-        public void setCount( int count )
+        public void clear()
         {
-            this.count = count;
+            count = 0;
         }
 
         @Override
@@ -627,7 +644,7 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
             }
         }
 
-        public void printExistingLine()
+        void printExistingLine()
         {
             if ( isEmpty() )
             {

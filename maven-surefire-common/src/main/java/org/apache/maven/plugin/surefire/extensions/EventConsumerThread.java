@@ -30,6 +30,7 @@ import org.apache.maven.surefire.stream.EventDecoder;
 import javax.annotation.Nonnull;
 import java.io.EOFException;
 import java.io.IOException;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ReadableByteChannel;
 
 /**
@@ -76,7 +77,7 @@ public class EventConsumerThread extends CloseableDaemonThread
             }
             while ( true );
         }
-        catch ( EOFException e )
+        catch ( EOFException | ClosedChannelException e )
         {
             //
         }
