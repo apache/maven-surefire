@@ -419,7 +419,6 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
         try
         {
             debugSink.write( array, position, remaining );
-            debugSink.flush();
         }
         catch ( IOException e )
         {

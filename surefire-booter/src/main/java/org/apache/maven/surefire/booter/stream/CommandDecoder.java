@@ -228,7 +228,6 @@ public class CommandDecoder extends AbstractStreamDecoder<Command, MasterProcess
         try
         {
             debugSink.write( array, position, remaining );
-            debugSink.flush();
         }
         catch ( IOException e )
         {
