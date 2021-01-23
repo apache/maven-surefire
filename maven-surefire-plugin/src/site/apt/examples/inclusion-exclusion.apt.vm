@@ -60,8 +60,8 @@ Inclusions and Exclusions of Tests
 
    []
 
-  If the test classes do not follow any of these naming conventions, then configure
-  ${thisPlugin} Plugin and specify the tests you want to include.
+  If the test classes do not follow the default wildcard patterns, then override them by configuring the ${thisPlugin}
+  Plugin and specify the tests you want to include (or exclude) or another patterns.
 
 +---+
 <project>
