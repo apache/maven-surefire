@@ -56,10 +56,6 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
         </dependency>
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-        </dependency>
     </dependencies>
 
     <build>
@@ -78,7 +74,6 @@
                                     <incclude>commons-io:commons-io</incclude>
                                     <include>org.apache.commons:commons-lang3</include>
                                     <include>org.apache.commons:commons-compress</include>
-                                    <include>commons-codec:commons-codec</include>
                                 </includes>
                             </artifactSet>
                             <relocations>
@@ -97,10 +92,6 @@
                                 <relocation>
                                     <pattern>org.apache.commons.compress</pattern>
                                     <shadedPattern>org.apache.maven.surefire.shared.compress</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.apache.commons.codec</pattern>
-                                    <shadedPattern>org.apache.maven.surefire.shared.codec</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
