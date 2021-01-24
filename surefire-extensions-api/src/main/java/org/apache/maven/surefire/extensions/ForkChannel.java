@@ -31,11 +31,11 @@ import java.nio.channels.WritableByteChannel;
 
 /**
  * It's a session object used only by a particular Thread in ForkStarter
- * and dedicated forked JVM. It represents a server.
+ * and communicates with a dedicated forked JVM. It represents a server.
  * <br>
  * <br>
- * It connects with a client {@link #connectToClient()}, provides a connection string
- * {@link #getForkNodeConnectionString()} needed by the client in the JVM, binds event handler and command reader.
+ * It connects to a remote client by {@link #connectToClient()}, provides a connection string
+ * {@link #getForkNodeConnectionString()} needed by the client in forked JVM, binds event handler and command reader.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M5
