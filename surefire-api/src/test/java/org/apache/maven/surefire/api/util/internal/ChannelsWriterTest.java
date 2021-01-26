@@ -33,6 +33,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousByteChannel;
 import java.nio.channels.ClosedChannelException;
@@ -95,10 +96,10 @@ public class ChannelsWriterTest
             .hasSize( 1 )
             .containsOnly( true );
 
-        assertThat( bb.position() )
+        assertThat( ( (Buffer) bb ).position() )
             .isEqualTo( 3 );
 
-        assertThat( bb.limit() )
+        assertThat( ( (Buffer) bb ).limit() )
             .isEqualTo( 3 );
 
         assertThat( bb.capacity() )
@@ -123,10 +124,10 @@ public class ChannelsWriterTest
             .hasSize( 3 )
             .isEqualTo( new byte[] {1, 2, 3} );
 
-        assertThat( bb.position() )
+        assertThat( ( (Buffer) bb ).position() )
             .isEqualTo( 3 );
 
-        assertThat( bb.limit() )
+        assertThat( ( (Buffer) bb ).limit() )
             .isEqualTo( 3 );
 
         assertThat( bb.capacity() )
@@ -199,10 +200,10 @@ public class ChannelsWriterTest
             .hasSize( 4 )
             .isEqualTo( new byte[] {1, 2, 3, 4} );
 
-        assertThat( bb.position() )
+        assertThat( ( (Buffer) bb ).position() )
             .isEqualTo( 3 );
 
-        assertThat( bb.limit() )
+        assertThat( ( (Buffer) bb ).limit() )
             .isEqualTo( 3 );
 
         assertThat( bb.capacity() )

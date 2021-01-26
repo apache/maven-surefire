@@ -26,6 +26,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousByteChannel;
 import java.nio.channels.ClosedChannelException;
@@ -213,10 +214,10 @@ public final class Channels
             @Override
             protected int readImpl( ByteBuffer src ) throws IOException
             {
-                int count = bis.read( src.array(), src.arrayOffset() + src.position(), src.remaining() );
+                int count = bis.read( src.array(), src.arrayOffset() + ( (Buffer) src ).position(), src.remaining() );
                 if ( count > 0 )
                 {
-                    src.position( count + src.position() );
+                    ( (Buffer) src ).position( count + ( (Buffer) src ).position() );
                 }
                 return count;
             }
@@ -249,7 +250,7 @@ public final class Channels
             protected void writeImpl( ByteBuffer src ) throws IOException
             {
                 int count = src.remaining();
-                bos.write( src.array(), src.arrayOffset() + src.position(), count );
+                bos.write( src.array(), src.arrayOffset() + ( (Buffer) src ).position(), count );
                 bytesCounter.getAndAdd( count );
             }
 

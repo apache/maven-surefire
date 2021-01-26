@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.lang.ref.SoftReference;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -93,14 +94,14 @@ final class Utf8RecodingDeferredFileOutputStream
         }
         else
         {
-            cache.flip();
+            ( (Buffer) cache ).flip();
             int minLength = cache.remaining() + decodedString.length + NL_BYTES.length;
             byte[] buffer = getLargeCache( minLength );
             int bufferLength = 0;
-            System.arraycopy( cache.array(), cache.arrayOffset() + cache.position(),
+            System.arraycopy( cache.array(), cache.arrayOffset() + ( (Buffer) cache ).position(),
                 buffer, bufferLength, cache.remaining() );
             bufferLength += cache.remaining();
-            cache.clear();
+            ( (Buffer) cache ).clear();
 
             System.arraycopy( decodedString, 0, buffer, bufferLength, decodedString.length );
             bufferLength += decodedString.length;
@@ -180,11 +181,11 @@ final class Utf8RecodingDeferredFileOutputStream
 
         isDirty = false;
 
-        cache.flip();
+        ( (Buffer) cache ).flip();
         byte[] array = cache.array();
-        int offset = cache.arrayOffset() + cache.position();
+        int offset = cache.arrayOffset() + ( (Buffer) cache ).position();
         int length = cache.remaining();
-        cache.clear();
+        ( (Buffer) cache ).clear();
         storage.write( array, offset, length );
         // the data that you wrote with the mode "rw" may still only be kept in memory and may be read back
         // storage.getFD().sync();

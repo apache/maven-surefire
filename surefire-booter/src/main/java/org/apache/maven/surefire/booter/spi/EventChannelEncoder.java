@@ -32,6 +32,7 @@ import org.apache.maven.surefire.booter.stream.EventEncoder;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.CharsetEncoder;
@@ -139,7 +140,7 @@ public class EventChannelEncoder extends EventEncoder implements MasterProcessCh
             int bufferLength =
                 estimateBufferLength( BOOTERCODE_SYSPROPS.getOpcode().length(), runMode, encoder, 0, key, value );
             result = result != null && result.capacity() >= bufferLength ? result : ByteBuffer.allocate( bufferLength );
-            result.clear();
+            ( (Buffer) result ).clear();
             // :maven-surefire-event:sys-prop:rerun-test-after-failure:UTF-8:<integer>:<key>:<integer>:<value>:
             encode( encoder, result, BOOTERCODE_SYSPROPS, runMode, key, value );
             boolean sync = !it.hasNext();
@@ -336,7 +337,7 @@ public class EventChannelEncoder extends EventEncoder implements MasterProcessCh
         {
             if ( !onExit )
             {
-                String event = new String( frame.array(), frame.arrayOffset() + frame.position(), frame.remaining(),
+                String event = new String( frame.array(), frame.arrayOffset() + ( (Buffer) frame ).position(), frame.remaining(),
                     getCharset() );
 
                 DumpErrorSingleton.getSingleton()

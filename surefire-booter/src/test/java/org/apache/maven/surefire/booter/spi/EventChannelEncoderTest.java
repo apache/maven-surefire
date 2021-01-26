@@ -30,6 +30,7 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -129,7 +130,7 @@ public class EventChannelEncoderTest
         expectedFrame.write( ':' );
         expectedFrame.write( stackTrace.getBytes( UTF_8 ) );
         expectedFrame.write( ':' );
-        encoded.flip();
+        ( (Buffer) encoded ).flip();
 
         assertThat( toArray( encoded ) )
             .isEqualTo( expectedFrame.toByteArray() );
@@ -184,7 +185,7 @@ public class EventChannelEncoderTest
         expectedFrame.write( ':' );
         expectedFrame.write( trimmedStackTrace.getBytes( UTF_8 ) );
         expectedFrame.write( ':' );
-        encoded.flip();
+        ( (Buffer) encoded ).flip();
 
         assertThat( toArray( encoded ) )
             .isEqualTo( expectedFrame.toByteArray() );
@@ -1260,8 +1261,8 @@ public class EventChannelEncoderTest
     private static String toString( ByteBuffer frame )
     {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        frame.flip();
-        os.write( frame.array(), frame.arrayOffset() + frame.position(), frame.remaining() );
+        ( (Buffer) frame ).flip();
+        os.write( frame.array(), frame.arrayOffset() + ( (Buffer) frame ).position(), frame.remaining() );
         return new String( os.toByteArray(), UTF_8 );
     }
 

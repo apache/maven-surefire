@@ -29,6 +29,7 @@ import org.junit.Test;
 import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.io.File;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -83,7 +84,7 @@ public class EventConsumerThreadTest
             ":0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789:"
                 .getBytes( UTF_8 ) );
 
-        event.flip();
+        ( (Buffer) event ).flip();
         byte[] frame = copyOfRange( event.array(), event.arrayOffset(), event.arrayOffset() + event.remaining() );
         ReadableByteChannel channel = new Channel( frame, 100 )
         {

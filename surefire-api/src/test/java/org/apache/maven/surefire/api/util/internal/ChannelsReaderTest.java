@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousByteChannel;
 import java.nio.channels.ClosedChannelException;
@@ -116,30 +117,30 @@ public class ChannelsReaderTest
         assertThat( bb.arrayOffset() )
             .isEqualTo( 0 );
 
-        assertThat( bb.position() )
+        assertThat( ( (Buffer) bb ).position() )
             .isEqualTo( 3 );
 
         assertThat( bb.remaining() )
             .isEqualTo( 0 );
 
-        assertThat( bb.limit() )
+        assertThat( ( (Buffer) bb ).limit() )
             .isEqualTo( 3 );
 
         assertThat( bb.capacity() )
             .isEqualTo( 3 );
 
-        bb.flip();
+        ( (Buffer) bb ).flip();
 
         assertThat( bb.arrayOffset() )
             .isEqualTo( 0 );
 
-        assertThat( bb.position() )
+        assertThat( ( (Buffer) bb ).position() )
             .isEqualTo( 0 );
 
         assertThat( bb.remaining() )
             .isEqualTo( 3 );
 
-        assertThat( bb.limit() )
+        assertThat( ( (Buffer) bb ).limit() )
             .isEqualTo( 3 );
 
         assertThat( bb.capacity() )
@@ -172,30 +173,30 @@ public class ChannelsReaderTest
         assertThat( bb.arrayOffset() )
             .isEqualTo( 0 );
 
-        assertThat( bb.position() )
+        assertThat( ( (Buffer) bb ).position() )
             .isEqualTo( 3 );
 
         assertThat( bb.remaining() )
             .isEqualTo( 1 );
 
-        assertThat( bb.limit() )
+        assertThat( ( (Buffer) bb ).limit() )
             .isEqualTo( 4 );
 
         assertThat( bb.capacity() )
             .isEqualTo( 4 );
 
-        bb.flip();
+        ( (Buffer) bb ).flip();
 
         assertThat( bb.arrayOffset() )
             .isEqualTo( 0 );
 
-        assertThat( bb.position() )
+        assertThat( ( (Buffer) bb ).position() )
             .isEqualTo( 0 );
 
         assertThat( bb.remaining() )
             .isEqualTo( 3 );
 
-        assertThat( bb.limit() )
+        assertThat( ( (Buffer) bb ).limit() )
             .isEqualTo( 3 );
 
         assertThat( bb.capacity() )
@@ -228,30 +229,30 @@ public class ChannelsReaderTest
         assertThat( bb.arrayOffset() )
             .isEqualTo( 0 );
 
-        assertThat( bb.position() )
+        assertThat( ( (Buffer) bb ).position() )
             .isEqualTo( 3 );
 
         assertThat( bb.remaining() )
             .isEqualTo( 1 );
 
-        assertThat( bb.limit() )
+        assertThat( ( (Buffer) bb ).limit() )
             .isEqualTo( 4 );
 
         assertThat( bb.capacity() )
             .isEqualTo( 4 );
 
-        bb.flip();
+        ( (Buffer) bb ).flip();
 
         assertThat( bb.arrayOffset() )
             .isEqualTo( 0 );
 
-        assertThat( bb.position() )
+        assertThat( ( (Buffer) bb ).position() )
             .isEqualTo( 0 );
 
         assertThat( bb.remaining() )
             .isEqualTo( 3 );
 
-        assertThat( bb.limit() )
+        assertThat( ( (Buffer) bb ).limit() )
             .isEqualTo( 3 );
 
         assertThat( bb.capacity() )
@@ -322,30 +323,30 @@ public class ChannelsReaderTest
         assertThat( bb.arrayOffset() )
             .isEqualTo( 0 );
 
-        assertThat( bb.position() )
+        assertThat( ( (Buffer) bb ).position() )
             .isEqualTo( 3 );
 
         assertThat( bb.remaining() )
             .isEqualTo( 1 );
 
-        assertThat( bb.limit() )
+        assertThat( ( (Buffer) bb ).limit() )
             .isEqualTo( 4 );
 
         assertThat( bb.capacity() )
             .isEqualTo( 4 );
 
-        bb.flip();
+        ( (Buffer) bb ).flip();
 
         assertThat( bb.arrayOffset() )
             .isEqualTo( 0 );
 
-        assertThat( bb.position() )
+        assertThat( ( (Buffer) bb ).position() )
             .isEqualTo( 0 );
 
         assertThat( bb.remaining() )
             .isEqualTo( 3 );
 
-        assertThat( bb.limit() )
+        assertThat( ( (Buffer) bb ).limit() )
             .isEqualTo( 3 );
 
         assertThat( bb.capacity() )

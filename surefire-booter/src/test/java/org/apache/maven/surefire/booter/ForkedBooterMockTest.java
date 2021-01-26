@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
@@ -457,7 +458,7 @@ public class ForkedBooterMockTest
                             int read = channel.read( bb );
                             assertThat( read )
                                 .isEqualTo( uuid.length() );
-                            bb.flip();
+                            ( (Buffer) bb ).flip();
                             assertThat( new String( bb.array(), US_ASCII ) )
                                 .isEqualTo( uuid );
                             return true;

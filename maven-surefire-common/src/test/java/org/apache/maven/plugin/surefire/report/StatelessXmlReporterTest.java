@@ -34,6 +34,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.Deque;
@@ -380,7 +381,7 @@ public class StatelessXmlReporterTest
     {
         Utf8RecodingDeferredFileOutputStream out = new Utf8RecodingDeferredFileOutputStream( "test" );
         ByteBuffer cache = ByteBuffer.wrap( new byte[] {1, 2, 3} );
-        cache.position( 3 );
+        ( (Buffer) cache ).position( 3 );
         setInternalState( out, "cache", cache );
         assertThat( (boolean) getInternalState( out, "isDirty" ) ).isFalse();
         setInternalState( out, "isDirty", true );
@@ -396,8 +397,8 @@ public class StatelessXmlReporterTest
         assertThat( storage.read() ).isEqualTo( 3 );
         assertThat( storage.read() ).isEqualTo( -1 );
         assertThat( storage.length() ).isEqualTo( 3L );
-        assertThat( cache.position() ).isEqualTo( 0 );
-        assertThat( cache.limit() ).isEqualTo( 3 );
+        assertThat( ( (Buffer) cache ).position() ).isEqualTo( 0 );
+        assertThat( ( (Buffer) cache ).limit() ).isEqualTo( 3 );
         storage.seek( 3L );
         invokeMethod( out, "sync" );
         assertThat( (boolean) getInternalState( out, "isDirty" ) ).isFalse();
