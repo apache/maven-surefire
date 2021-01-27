@@ -34,6 +34,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.Deque;
@@ -379,7 +380,7 @@ public class StatelessXmlReporterTest
     public void testSyncOnDeferredFile() throws Exception
     {
         Utf8RecodingDeferredFileOutputStream out = new Utf8RecodingDeferredFileOutputStream( "test" );
-        ByteBuffer cache = ByteBuffer.wrap( new byte[] {1, 2, 3} );
+        Buffer cache = ByteBuffer.wrap( new byte[] {1, 2, 3} );
         cache.position( 3 );
         setInternalState( out, "cache", cache );
         assertThat( (boolean) getInternalState( out, "isDirty" ) ).isFalse();

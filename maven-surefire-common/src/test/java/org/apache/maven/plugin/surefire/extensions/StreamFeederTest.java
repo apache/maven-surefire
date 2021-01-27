@@ -30,6 +30,7 @@ import org.mockito.stubbing.Answer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.Iterator;
@@ -90,9 +91,9 @@ public class StreamFeederTest
                 public Object answer( InvocationOnMock invocation ) throws IOException
                 {
                     ByteBuffer bb = invocation.getArgument( 0 );
-                    bb.flip();
-                    out.write( bb.array(), 0, bb.limit() );
-                    return bb.limit();
+                    ( (Buffer) bb ).flip();
+                    out.write( bb.array(), 0, ( (Buffer) bb ).limit() );
+                    return ( (Buffer) bb ).limit();
                 }
             } );
 

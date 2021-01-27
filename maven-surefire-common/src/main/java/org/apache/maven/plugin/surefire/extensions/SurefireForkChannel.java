@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketOption;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
@@ -129,7 +130,7 @@ final class SurefireForkChannel extends ForkChannel
         {
             throw new IOException( "Channel closed while verifying the client." );
         }
-        buffer.flip();
+        ( (Buffer) buffer ).flip();
         String clientSessionId = new String( buffer.array(), US_ASCII );
         if ( !clientSessionId.equals( sessionId ) )
         {

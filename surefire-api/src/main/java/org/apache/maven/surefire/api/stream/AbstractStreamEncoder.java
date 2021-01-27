@@ -24,6 +24,7 @@ import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
@@ -112,17 +113,17 @@ public abstract class AbstractStreamEncoder<E extends Enum<E>>
     {
         String nonNullString = nonNull( string );
 
-        int counterPosition = result.position();
+        int counterPosition = ( (Buffer) result ).position();
 
         result.put( INT_BINARY ).put( (byte) ':' );
 
-        int msgStart = result.position();
+        int msgStart = ( (Buffer) result ).position();
         encoder.encode( wrap( nonNullString ), result, true );
-        int msgEnd = result.position();
+        int msgEnd = ( (Buffer) result ).position();
         int encodedMsgSize = msgEnd - msgStart;
         result.putInt( counterPosition, encodedMsgSize );
 
-        result.position( msgEnd );
+        ( (Buffer) result ).position( msgEnd );
 
         result.put( (byte) ':' );
     }

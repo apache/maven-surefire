@@ -35,6 +35,7 @@ import javax.annotation.Nonnull;
 import java.io.EOFException;
 import java.io.File;
 import java.math.BigInteger;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.ReadableByteChannel;
@@ -147,7 +148,7 @@ public class AbstractStreamDecoderTest
     {
         CharsetDecoder decoder = UTF_8.newDecoder().onMalformedInput( REPLACE ).onUnmappableCharacter( REPLACE );
         ByteBuffer input = ByteBuffer.allocate( 1024 );
-        input.put( PATTERN2_BYTES ).flip();
+        ( (Buffer) input.put( PATTERN2_BYTES ) ).flip();
         int bytesToDecode = PATTERN2_BYTES.length;
         CharBuffer output = CharBuffer.allocate( 1024 );
         int readBytes = invokeMethod( AbstractStreamDecoder.class, "decodeString", decoder, input, output,
@@ -165,10 +166,10 @@ public class AbstractStreamDecoderTest
     {
         CharsetDecoder decoder = UTF_8.newDecoder().onMalformedInput( REPLACE ).onUnmappableCharacter( REPLACE );
         ByteBuffer input = ByteBuffer.allocate( 1024 );
-        input.put( PATTERN1.getBytes( UTF_8 ) )
+        ( (Buffer) input.put( PATTERN1.getBytes( UTF_8 ) )
             .put( 90, (byte) 'A' )
             .put( 91, (byte) 'B' )
-            .put( 92, (byte) 'C' )
+            .put( 92, (byte) 'C' ) )
             .position( 90 );
         CharBuffer output = CharBuffer.allocate( 1024 );
         int readBytes =
@@ -273,7 +274,7 @@ public class AbstractStreamDecoderTest
 
         Memento memento = thread.new Memento();
         // whatever position will be compacted to 0
-        memento.getByteBuffer().limit( 974 ).position( 974 );
+        ( (Buffer) ( (Buffer) memento.getByteBuffer() ).limit( 974 ) ).position( 974 );
         assertThat( invokeMethod( thread, "readString", memento, PATTERN1.length() + 3 ) )
             .isEqualTo( PATTERN1 + "012" );
     }
@@ -316,7 +317,7 @@ public class AbstractStreamDecoderTest
 
         Memento memento = thread.new Memento();
         // whatever position will be compacted to 0
-        memento.getByteBuffer().limit( 974 ).position( 974 );
+        ( (Buffer) ( (Buffer) memento.getByteBuffer().limit( 974 ) ) ).position( 974 );
 
         StringBuilder expected = new StringBuilder( "789" );
         for ( int i = 0; i < 11; i++ )
@@ -370,7 +371,7 @@ public class AbstractStreamDecoderTest
             decoder.reset()
                 .decode( buffer, chars, true ); // CharsetDecoder 71 nanos
             s = chars.flip().toString(); // CharsetDecoder + toString = 91 nanos
-            buffer.clear();
+            ( (Buffer) buffer ).clear();
             chars.clear();
         }
         long l2 = System.currentTimeMillis();

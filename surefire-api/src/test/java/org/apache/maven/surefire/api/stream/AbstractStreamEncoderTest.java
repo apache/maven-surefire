@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
@@ -207,7 +208,7 @@ public class AbstractStreamEncoderTest
         Encoder streamEncoder = new Encoder( new DummyChannel() );
         ByteBuffer result = ByteBuffer.allocate( 4 );
         streamEncoder.encodeInteger( result, null );
-        assertThat( result.position() ).isEqualTo( 2 );
+        assertThat( ( (Buffer) result ).position() ).isEqualTo( 2 );
         assertThat( result.get( 0 ) ).isEqualTo( (byte) 0 );
         assertThat( result.get( 1 ) ).isEqualTo( (byte) ':' );
     }
@@ -218,8 +219,8 @@ public class AbstractStreamEncoderTest
         Encoder streamEncoder = new Encoder( new DummyChannel() );
         ByteBuffer result = ByteBuffer.allocate( 8 );
         streamEncoder.encodeInteger( result, 5 );
-        assertThat( result.position() ).isEqualTo( 6 );
-        result.position( 0 );
+        assertThat( ( (Buffer) result ).position() ).isEqualTo( 6 );
+        ( (Buffer) result ).position( 0 );
         assertThat( result.get() ).isEqualTo( (byte) 0xff );
         assertThat( result.getInt() ).isEqualTo( (byte) 5 );
         assertThat( result.get( 5 ) ).isEqualTo( (byte) ':' );
@@ -243,8 +244,8 @@ public class AbstractStreamEncoderTest
     private static String toString( ByteBuffer frame )
     {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        frame.flip();
-        os.write( frame.array(), frame.arrayOffset() + frame.position(), frame.remaining() );
+        ( (Buffer) frame ).flip();
+        os.write( frame.array(), frame.arrayOffset() + ( (Buffer) frame ).position(), frame.remaining() );
         return new String( os.toByteArray(), UTF_8 );
     }
 
@@ -327,5 +328,5 @@ public class AbstractStreamEncoderTest
         {
         }
     }
-  
+
 }
