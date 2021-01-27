@@ -380,8 +380,8 @@ public class StatelessXmlReporterTest
     public void testSyncOnDeferredFile() throws Exception
     {
         Utf8RecodingDeferredFileOutputStream out = new Utf8RecodingDeferredFileOutputStream( "test" );
-        ByteBuffer cache = ByteBuffer.wrap( new byte[] {1, 2, 3} );
-        ( (Buffer) cache ).position( 3 );
+        Buffer cache = ByteBuffer.wrap( new byte[] {1, 2, 3} );
+        cache.position( 3 );
         setInternalState( out, "cache", cache );
         assertThat( (boolean) getInternalState( out, "isDirty" ) ).isFalse();
         setInternalState( out, "isDirty", true );
@@ -397,8 +397,8 @@ public class StatelessXmlReporterTest
         assertThat( storage.read() ).isEqualTo( 3 );
         assertThat( storage.read() ).isEqualTo( -1 );
         assertThat( storage.length() ).isEqualTo( 3L );
-        assertThat( ( (Buffer) cache ).position() ).isEqualTo( 0 );
-        assertThat( ( (Buffer) cache ).limit() ).isEqualTo( 3 );
+        assertThat( cache.position() ).isEqualTo( 0 );
+        assertThat( cache.limit() ).isEqualTo( 3 );
         storage.seek( 3L );
         invokeMethod( out, "sync" );
         assertThat( (boolean) getInternalState( out, "isDirty" ) ).isFalse();
