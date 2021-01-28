@@ -204,6 +204,19 @@ public class JUnitPlatformRerunFailingTestsIT extends SurefireJUnit4IntegrationT
     }
 
     @Test
+    public void testFailOnTooManyFlakes()
+    {
+        OutputValidator outputValidator = unpack().setJUnitVersion( VERSION ).maven().debugLogging()
+            .addGoal( "-Dsurefire.rerunFailingTestsCount=2" )
+            .addGoal( "-Dsurefire.failOnFlakeCount=1" )
+            .withFailure()
+            .executeTest()
+            .assertTestSuiteResults( 5, 0, 0, 0, 4 );
+
+        outputValidator.verifyTextInLog( "There are 2 flakes and failOnFlakeCount is set to 1" );
+    }
+
+    @Test
     public void testParameterizedTest()
     {
         unpack()

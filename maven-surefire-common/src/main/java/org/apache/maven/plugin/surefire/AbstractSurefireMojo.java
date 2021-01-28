@@ -1133,6 +1133,7 @@ public abstract class AbstractSurefireMojo
             warnIfNotApplicableSkipAfterFailureCount();
             warnIfIllegalTempDir();
             warnIfForkCountIsZero();
+            warnIfIllegalFailOnFlakeCount();
             printDefaultSeedIfNecessary();
         }
         return true;
@@ -3053,6 +3054,11 @@ public abstract class AbstractSurefireMojo
         {
             throw new MojoFailureException( "Parameter 'tempDir' should not be blank string." );
         }
+    }
+
+    protected void warnIfIllegalFailOnFlakeCount() throws MojoFailureException
+    {
+
     }
 
     private void printDefaultSeedIfNecessary()

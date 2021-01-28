@@ -2026,6 +2026,7 @@ public class AbstractSurefireMojoTest
         private File mainBuildPath;
         private File testClassesDirectory;
         private boolean useModulePath;
+        private int failOnFlakeCount;
 
         private JUnitPlatformProviderInfo createJUnitPlatformProviderInfo( Artifact junitPlatformArtifact,
                                                                            TestClassPath testClasspathWrapper )
@@ -2468,6 +2469,18 @@ public class AbstractSurefireMojoTest
         public void setJvm( String jvm )
         {
             setInternalState( this, "jvm", jvm );
+        }
+
+        @Override
+        public int getFailOnFlakeCount()
+        {
+            return failOnFlakeCount;
+        }
+
+        @Override
+        public void setFailOnFlakeCount( int failOnFlakeCount )
+        {
+            this.failOnFlakeCount = failOnFlakeCount;
         }
     }
 

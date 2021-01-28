@@ -22,6 +22,8 @@ package org.apache.maven.plugin.surefire;
 import junit.framework.TestCase;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.surefire.api.suite.RunResult;
+import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 
 import java.io.File;
 
@@ -32,6 +34,9 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public class SurefirePluginTest extends TestCase
 {
+    @Rule
+    public final ExpectedException e = ExpectedException.none();
+
     public void testDefaultIncludes()
     {
         assertThat( new SurefirePlugin().getDefaultIncludes() )
@@ -113,5 +118,13 @@ public class SurefirePluginTest extends TestCase
         plugin.setSystemPropertiesFile( new File( "testShouldGetPropertyFile" ) );
         assertThat( plugin.getSystemPropertiesFile() )
                 .isEqualTo( new File( "testShouldGetPropertyFile" ) );
+    }
+
+    public void testFailOnFlakeCountVerification()
+    {
+        SurefirePlugin plugin = new SurefirePlugin();
+        plugin.setFailOnFlakeCount( -1 );
+        e.expect( MojoFailureException.class );
+        e.expectMessage( "Parameter \"failOnFlakeCount\" should not be negative." );
     }
 }

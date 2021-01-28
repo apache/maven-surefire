@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -254,6 +255,13 @@ public class SurefirePlugin
     private int rerunFailingTestsCount;
 
     /**
+     * Set this to a value greater than 0 to fail the whole test set if the cumulative number of flakes reaches
+     * this threshold. Set to 0 to allow an unlimited number of flakes.
+     */
+    @Parameter( property = "surefire.failOnFlakeCount", defaultValue = "0" )
+    private int failOnFlakeCount;
+
+    /**
      * (TestNG) List of &lt;suiteXmlFile&gt; elements specifying TestNG suite xml file locations. Note that
      * {@code suiteXmlFiles} is incompatible with several other parameters of this plugin, like
      * {@code includes} and {@code excludes}.<br>
@@ -460,6 +468,18 @@ public class SurefirePlugin
     protected int getRerunFailingTestsCount()
     {
         return rerunFailingTestsCount;
+    }
+
+    @Override
+    public int getFailOnFlakeCount()
+    {
+        return failOnFlakeCount;
+    }
+
+    @Override
+    public void setFailOnFlakeCount( int failOnFlakeCount )
+    {
+        this.failOnFlakeCount = failOnFlakeCount;
     }
 
     @Override
@@ -879,5 +899,20 @@ public class SurefirePlugin
     protected final ForkNodeFactory getForkNode()
     {
         return forkNode;
+    }
+
+    @Override
+    protected void warnIfIllegalFailOnFlakeCount() throws MojoFailureException
+    {
+        if ( failOnFlakeCount < 0 )
+        {
+            throw new MojoFailureException( "Parameter \"failOnFlakeCount\" should not be negative." );
+        }
+    }
+
+    @Override
+    protected void addPluginSpecificChecksumItems( ChecksumCalculator checksum )
+    {
+        checksum.add( skipAfterFailureCount );
     }
 }
