@@ -140,6 +140,13 @@ public class VerifyMojo
     private Boolean failIfNoTests;
 
     /**
+     * Set this to a value greater than 0 to fail the whole test set if the cumulative number of flakes reaches
+     * this threshold. Set to 0 to allow an unlimited number of flakes.
+     */
+    @Parameter( property = "failsafe.failOnFlakeCount", defaultValue = "0" )
+    private int failOnFlakeCount;
+
+    /**
      * The character encoding scheme to be applied.
      * Deprecated since 2.20.1 and used encoding UTF-8 in <tt>failsafe-summary.xml</tt>.
      *
@@ -234,6 +241,11 @@ public class VerifyMojo
         {
             getConsoleLogger().info( "No tests to run." );
             return false;
+        }
+
+        if ( failOnFlakeCount < 0 )
+        {
+            throw new MojoFailureException( "Parameter \"failOnFlakeCount\" should not be negative." );
         }
 
         return true;
@@ -355,6 +367,18 @@ public class VerifyMojo
     public void setFailIfNoTests( boolean failIfNoTests )
     {
         this.failIfNoTests = failIfNoTests;
+    }
+
+    @Override
+    public int getFailOnFlakeCount()
+    {
+        return failOnFlakeCount;
+    }
+
+    @Override
+    public void setFailOnFlakeCount( int failOnFlakeCount )
+    {
+        this.failOnFlakeCount = failOnFlakeCount;
     }
 
     private boolean existsSummaryFile()

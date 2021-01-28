@@ -22,7 +22,9 @@ package org.apache.maven.plugin.surefire;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojoTest.Mojo;
 import org.apache.maven.surefire.api.suite.RunResult;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -42,6 +44,10 @@ import static org.junit.Assume.assumeTrue;
  */
 public class SurefireHelperTest
 {
+
+    @Rule
+    public ExpectedException e = ExpectedException.none();
+
     @Test
     public void shouldReplaceForkNumberPath()
     {
@@ -142,6 +148,10 @@ public class SurefireHelperTest
         try
         {
             reportExecution( new Mojo(), summary, null, null );
+            fail( "Expected MojoFailureException with message "
+                + "'There are test failures.\n\nPlease refer to null "
+                + "for the individual test results.\nPlease refer to dump files (if any exist) "
+                + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.'" );
         }
         catch ( MojoFailureException e )
         {
@@ -149,11 +159,40 @@ public class SurefireHelperTest
                     .isEqualTo( "There are test failures.\n\nPlease refer to null "
                             + "for the individual test results.\nPlease refer to dump files (if any exist) "
                             + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream." );
-            return;
         }
-        fail( "Expected MojoFailureException with message "
-                + "'There are test failures.\n\nPlease refer to null "
-                + "for the individual test results.\nPlease refer to dump files (if any exist) "
-                + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.'" );
+    }
+
+    @Test
+    public void failsIfThereAreTooManyFlakes() throws Exception
+    {
+        RunResult summary = new RunResult( 1, 0, 0, 0, 1 );
+        Mojo reportParameters = new Mojo();
+        reportParameters.setFailOnFlakeCount( 1 );
+        e.expect( MojoFailureException.class );
+        e.expectMessage( "There is 1 flake and failOnFlakeCount is set to 1.\n\nPlease refer to null "
+            + "for the individual test results.\nPlease refer to dump files (if any exist) "
+            + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream." );
+        reportExecution( reportParameters, summary, null, null );
+    }
+
+    @Test
+    public void reportsFailuresAndFlakes() throws Exception
+    {
+        RunResult summary = new RunResult( 1, 0, 1, 0, 2 );
+        Mojo reportParameters = new Mojo();
+        reportParameters.setFailOnFlakeCount( 1 );
+        e.expect( MojoFailureException.class );
+        e.expectMessage( "There are test failures.\nThere are 2 flakes and failOnFlakeCount is set to 1."
+            + "\n\nPlease refer to null "
+            + "for the individual test results.\nPlease refer to dump files (if any exist) "
+            + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream." );
+        reportExecution( reportParameters, summary, null, null );
+    }
+
+    @Test
+    public void passesIfFlakesAreWithinThreshold() throws Exception
+    {
+        RunResult summary = new RunResult( 1, 0, 0, 0 , 1 );
+        reportExecution( new Mojo(), summary, null, null );
     }
 }
