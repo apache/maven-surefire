@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -52,6 +53,15 @@ public class SurefirePlugin
      */
     @Parameter( defaultValue = "${project.build.outputDirectory}" )
     private File classesDirectory;
+
+    /**
+     * Set this to "true" to skip running unit tests, but still compile them. Its use is NOT RECOMMENDED, but
+     * quite convenient on occasion.
+     *
+     * @since 3.0.0-M6
+     */
+    @Parameter( property = "skipUTs" )
+    private boolean skipUTs;
 
     /**
      * Set this to "true" to ignore a failure during testing. Its use is NOT RECOMMENDED, but quite convenient on
@@ -472,7 +482,7 @@ public class SurefirePlugin
     @Override
     protected boolean isSkipExecution()
     {
-        return isSkip() || isSkipTests() || isSkipExec();
+        return isSkip() || isSkipTests() || isSkipUTs() || isSkipExec();
     }
 
     @Override
@@ -518,6 +528,16 @@ public class SurefirePlugin
     public void setSkipTests( boolean skipTests )
     {
         this.skipTests = skipTests;
+    }
+
+    public boolean isSkipUTs()
+    {
+        return skipUTs;
+    }
+
+    public void setSkipUTs( boolean skipUTs )
+    {
+        this.skipUTs = skipUTs;
     }
 
     @Override
@@ -879,5 +899,11 @@ public class SurefirePlugin
     protected final ForkNodeFactory getForkNode()
     {
         return forkNode;
+    }
+
+    @Override
+    protected void addPluginSpecificChecksumItems( ChecksumCalculator checksum )
+    {
+        checksum.add( skipUTs );
     }
 }
