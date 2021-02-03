@@ -731,7 +731,7 @@
       </reporting>
     </profile>
     <profile>
-      <id>jdk9+</id>
+      <id>jdk9</id>
       <activation>
         <jdk>[9, )</jdk>
       </activation>
