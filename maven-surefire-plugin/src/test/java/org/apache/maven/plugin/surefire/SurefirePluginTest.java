@@ -120,11 +120,19 @@ public class SurefirePluginTest extends TestCase
                 .isEqualTo( new File( "testShouldGetPropertyFile" ) );
     }
 
-    public void testFailOnFlakeCountVerification()
+    public void testNegativeFailOnFlakeCount()
     {
         SurefirePlugin plugin = new SurefirePlugin();
         plugin.setFailOnFlakeCount( -1 );
         e.expect( MojoFailureException.class );
         e.expectMessage( "Parameter \"failOnFlakeCount\" should not be negative." );
+    }
+
+    public void testFailOnFlakeCountWithoutRerun()
+    {
+        SurefirePlugin plugin = new SurefirePlugin();
+        plugin.setFailOnFlakeCount( 1 );
+        e.expect( MojoFailureException.class );
+        e.expectMessage( "\"failOnFlakeCount\" requires rerunFailingTestsCount to be at least 1." );
     }
 }

@@ -257,6 +257,8 @@ public class SurefirePlugin
     /**
      * Set this to a value greater than 0 to fail the whole test set if the cumulative number of flakes reaches
      * this threshold. Set to 0 to allow an unlimited number of flakes.
+     *
+     * @since 3.0.0-M6
      */
     @Parameter( property = "surefire.failOnFlakeCount", defaultValue = "0" )
     private int failOnFlakeCount;
@@ -907,6 +909,10 @@ public class SurefirePlugin
         if ( failOnFlakeCount < 0 )
         {
             throw new MojoFailureException( "Parameter \"failOnFlakeCount\" should not be negative." );
+        }
+        if ( failOnFlakeCount > 0 && rerunFailingTestsCount < 1 )
+        {
+            throw new MojoFailureException( "\"failOnFlakeCount\" requires rerunFailingTestsCount to be at least 1." );
         }
     }
 

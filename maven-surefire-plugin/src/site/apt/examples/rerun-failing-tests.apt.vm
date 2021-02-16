@@ -154,3 +154,9 @@ mvn -D${thisPlugin.toLowerCase()}.rerunFailingTestsCount=2 test
   and skip the rest of the test-set if errors or failures reached <<<skipAfterFailureCount>>>.
   Notice that failed tests within re-run phase are not included in <<<skipAfterFailureCount>>>.
 
+
+* Re-run and fail the build upon flaky test count
+
+  Since 3.0.0-M6 you can use <<<rerunFailingTestsCount>>> together with <<<failOnFlakeCount>>>.
+  This will fail the build if more than the specified number of tests are flaky, i.e. if they
+  had a successful run after previously failing.
