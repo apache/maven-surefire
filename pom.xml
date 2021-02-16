@@ -106,7 +106,8 @@
     <jdk.home>${java.home}/..</jdk.home>
     <maven.compiler.testSource>1.${javaVersion}</maven.compiler.testSource>
     <maven.compiler.testTarget>1.${javaVersion}</maven.compiler.testTarget>
-    <jvm.args.tests>-Xms128m -Xmx144m -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</jvm.args.tests>
+    <jvm.args.tests>${jvm9.args.tests} -Xms128m -Xmx144m -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</jvm.args.tests>
+    <jvm9.args.tests></jvm9.args.tests>
     <project.build.outputTimestamp>2020-06-10T18:16:37Z</project.build.outputTimestamp>
   </properties>
 
@@ -737,6 +738,7 @@
       </activation>
       <properties>
         <jdk.home>${java.home}</jdk.home>
+        <jvm9.args.tests>--add-opens java.base/java.lang=ALL-UNNAMED</jvm9.args.tests>
       </properties>
     </profile>
       <profile>
