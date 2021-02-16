@@ -73,6 +73,7 @@ oses.eachWithIndex { osMapping, indexOfOs ->
                         }
                         if (jdk >= 9) {
                             allOptions += '\"-Djvm9.args.tests=--add-opens java.base/java.lang=ALL-UNNAMED\"'
+                            allOptions += '\"-Djvm9.args.tests=--add-opens java.base/java.math=ALL-UNNAMED\"'
                         }
                         if (!maven.startsWith('3.2') && !maven.startsWith('3.3') && !maven.startsWith('3.5')) {
                             allOptions += '--no-transfer-progress'
