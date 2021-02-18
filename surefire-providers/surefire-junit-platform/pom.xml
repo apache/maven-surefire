@@ -164,7 +164,6 @@
                 <version>3.0.0-M4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
                 <configuration>
                     <argLine>${jvm.args.tests} ${jacoco.agent}</argLine>
-                    <jvm>${java.home}/bin/java</jvm>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <includes>
                         <include>**/JUnit47SuiteTest.java</include>
@@ -173,4 +172,22 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>jdk7</id>
+            <activation>
+                <jdk>[1.7, 1.8)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skipTests>true</skipTests>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
