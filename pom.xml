@@ -106,8 +106,8 @@
     <jdk.home>${java.home}/..</jdk.home>
     <maven.compiler.testSource>1.${javaVersion}</maven.compiler.testSource>
     <maven.compiler.testTarget>1.${javaVersion}</maven.compiler.testTarget>
-    <jvm.args.tests>${jvm9.args.tests} -Xms128m -Xmx144m -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</jvm.args.tests>
-    <jvm9.args.tests></jvm9.args.tests>
+    <jvm.args.tests>${jvm9ArgsTests} -Xms128m -Xmx144m -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</jvm.args.tests>
+<!--    <jvm9ArgsTests></jvm9ArgsTests>-->
     <project.build.outputTimestamp>2020-06-10T18:16:37Z</project.build.outputTimestamp>
   </properties>
 
@@ -453,7 +453,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>1.12</version>
+          <version>3.2.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -511,6 +511,7 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>3.0.0-M4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
           <configuration>
+            <skipTests>${doSkipTests}</skipTests>
             <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
             <useSystemClassLoader>false</useSystemClassLoader>
             <argLine>${jvm.args.tests}</argLine><!-- -Dnet.bytebuddy.experimental=true ${jacoco.agent}-->
@@ -660,6 +661,56 @@
           <fail>true</fail>
         </configuration>
       </plugin>
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+                <execution>
+                    <id>bsh-property</id>
+                    <goals>
+                        <goal>bsh-property</goal>
+                    </goals>
+                    <configuration>
+                        <properties>
+                            <property>doSkipTests</property>
+                            <property>jvm9ArgsTests</property>
+                        </properties>
+                        <source>
+                            jdkHome = session.getUserProperties().getProperty("jdk.home", project.getProperties().getProperty("jdk.home"));
+                            release = new File(jdkHome, "release");
+                            System.out.println("Beanshell found jdkHome=" + jdkHome);
+                            System.out.println("Beanshell found jdk-release properties file=" + release.exists());
+                            props = new Properties();
+                            reader = new FileReader(release);
+                            props.load(reader);
+                            reader.close();
+                            javaVersion = props.getProperty("JAVA_VERSION").replace("\"", "");
+                            System.out.println("Beanshell found java version for tests " + javaVersion);
+                            majorJavaVersion = Integer.parseInt(javaVersion, 0, javaVersion.contains(".") ? javaVersion.indexOf('.') : javaVersion.length(), 10);
+                            isSkippedTests = project.getProperties().getProperty("skipTests", session.getUserProperties().getProperty("skipTests"));
+                            if (isSkippedTests == null) {
+                                isSkippedTests = "false";
+                            }
+
+                            skip = isSkippedTests;
+                            args = "--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/sun.nio.fs=ALL-UNNAMED --add-opens java.base/sun.nio.cs=ALL-UNNAMED --add-opens java.base/java.nio.file=ALL-UNNAMED --add-opens java.base/java.nio.charset=ALL-UNNAMED";
+
+                            if (majorJavaVersion == 1) {
+                                isJava7 = javaVersion.matches("^1\\.7.*");
+                                skip = "surefire-junit-platform".equals(project.getArtifactId()) ? "" + (Boolean.parseBoolean(isSkippedTests) || isJava7) : isSkippedTests;
+                                args = "";
+                            }
+
+                            doSkipTests = skip;
+                            jvm9ArgsTests = args;
+
+                            System.out.println("Beanshell doSkipTests=" + doSkipTests);
+                            System.out.println("Beanshell jvm9ArgsTests=" + jvm9ArgsTests);
+                        </source>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
@@ -738,7 +789,6 @@
       </activation>
       <properties>
         <jdk.home>${java.home}</jdk.home>
-        <jvm9.args.tests>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/sun.nio.fs=ALL-UNNAMED --add-opens java.base/sun.nio.cs=ALL-UNNAMED --add-opens java.base/java.nio.file=ALL-UNNAMED --add-opens java.base/java.nio.charset=ALL-UNNAMED</jvm9.args.tests>
       </properties>
     </profile>
       <profile>
