@@ -686,7 +686,7 @@
                             reader.close();
                             javaVersion = props.getProperty("JAVA_VERSION").replace("\"", "");
                             System.out.println("Beanshell found java version for tests " + javaVersion);
-                            majorJavaVersion = Integer.parseInt(javaVersion, 0, javaVersion.contains(".") ? javaVersion.indexOf('.') : javaVersion.length(), 10);
+                            majorJavaVersion = Integer.parseInt(javaVersion.substring(0, javaVersion.contains(".") ? javaVersion.indexOf('.') : javaVersion.length()));
                             isSkippedTests = project.getProperties().getProperty("skipTests", session.getUserProperties().getProperty("skipTests"));
                             if (isSkippedTests == null) {
                                 isSkippedTests = "false";
