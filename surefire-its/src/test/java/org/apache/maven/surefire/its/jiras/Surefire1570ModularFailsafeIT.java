@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.AbstractJigsawIT;
+import org.apache.maven.surefire.its.fixture.AbstractJava9PlusIT;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,7 +33,7 @@ import static org.hamcrest.Matchers.is;
  */
 @SuppressWarnings( "checkstyle:magicnumber" )
 public class Surefire1570ModularFailsafeIT
-    extends AbstractJigsawIT
+        extends AbstractJava9PlusIT
 {
     @Before
     public void setUp()

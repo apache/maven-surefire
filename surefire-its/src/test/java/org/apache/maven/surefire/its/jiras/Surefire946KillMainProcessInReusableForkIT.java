@@ -90,8 +90,7 @@ public class Surefire946KillMainProcessInReusableForkIT
         synchronized ( LOCK_DEPENDENCY )
         {
             classifierOfDummyDependency = shutdownMavenMethod + shutdownSurefireMethod;
-            unpack( Surefire946KillMainProcessInReusableForkIT.class,
-                    "surefire-946-dummy-dependency", classifierOfDummyDependency )
+            unpack( "surefire-946-dummy-dependency", classifierOfDummyDependency )
                     .sysProp( "distinct.classifier", classifierOfDummyDependency )
                     .executeInstall();
         }

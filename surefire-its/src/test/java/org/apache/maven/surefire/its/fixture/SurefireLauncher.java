@@ -22,11 +22,8 @@ package org.apache.maven.surefire.its.fixture;
 import org.apache.maven.it.VerificationException;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * Encapsulate all needed features to start a surefire run
@@ -38,19 +35,17 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  */
 public final class SurefireLauncher
 {
-    public static final String EXT_JDK_HOME_KEY = "jdk.home";
-
-    public static final String EXT_JDK_HOME = System.getProperty( EXT_JDK_HOME_KEY );
-
-    private static final File JAVA_HOME = javaHome();
-
     private final MavenLauncher mavenLauncher;
 
     private final String surefireVersion = System.getProperty( "surefire.version" );
 
-    public SurefireLauncher( MavenLauncher mavenLauncher )
+    private final File javaHome;
+
+    public SurefireLauncher( MavenLauncher mavenLauncher, File javaHome )
     {
         this.mavenLauncher = mavenLauncher;
+        this.javaHome = javaHome;
+        mavenLauncher.addEnvVar( "JAVA_HOME", javaHome.getAbsolutePath() );
         reset();
     }
 
@@ -71,52 +66,11 @@ public final class SurefireLauncher
         {
             mavenLauncher.addGoal( s );
         }
-        setInProcessJavaHome();
-    }
-
-    private static File javaHome()
-    {
-        String javaHome = isBlank( EXT_JDK_HOME ) ? System.getenv( "JAVA_HOME" ) : EXT_JDK_HOME;
-        if ( isBlank( javaHome ) )
-        {
-            javaHome = System.getProperty( "java.home" );
-            File jre = new File( javaHome );
-            if ( "jre".equals( jre.getName() ) )
-            {
-                javaHome = jre.getParent();
-            }
-        }
-
-        try
-        {
-            File javaHomeAsDir = new File( javaHome ).getCanonicalFile();
-            if ( !javaHomeAsDir.isDirectory() )
-            {
-                throw new RuntimeException( javaHomeAsDir.getAbsolutePath() + " is not a JAVA_HOME directory." );
-            }
-            System.out.println( "Using JAVA_HOME=" + javaHomeAsDir.getAbsolutePath() + " in forked launcher." );
-            return javaHomeAsDir;
-        }
-        catch ( IOException e )
-        {
-            throw new RuntimeException( e );
-        }
-    }
-
-    private void setInProcessJavaHome()
-    {
-        setLauncherJavaHome( JAVA_HOME.getPath() );
-    }
-
-    public SurefireLauncher setLauncherJavaHome( String javaHome )
-    {
-        mavenLauncher.addEnvVar( "JAVA_HOME", javaHome );
-        return this;
     }
 
     public SurefireLauncher getSubProjectLauncher( String subProject )
     {
-        return new SurefireLauncher( mavenLauncher.getSubProjectLauncher( subProject ) );
+        return new SurefireLauncher( mavenLauncher.getSubProjectLauncher( subProject ), javaHome );
     }
 
     public OutputValidator getSubProjectValidator( String subProject )

@@ -29,10 +29,13 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import static java.util.Collections.singletonMap;
 import static java.util.Collections.unmodifiableList;
 
 /**
@@ -51,6 +54,8 @@ public final class MavenLauncher
 
     private final Map<String, String> envVars = new HashMap<>();
 
+    private final Map<String, String> props = new LinkedHashMap<>();
+
     private File unpackedAt;
 
     private Verifier verifier;
@@ -65,21 +70,24 @@ public final class MavenLauncher
 
     private final String[] cli;
 
+    private final boolean useIllegalJava9Access;
+
     private boolean expectFailure;
 
-    MavenLauncher( Class testClass, String resourceName, String suffix, String[] cli )
+    MavenLauncher( Class testClass, String resourceName, String suffix, String[] cli, boolean useIllegalJava9Access )
     {
         this.testCaseBeingRun = testClass;
         this.resourceName = resourceName;
         this.suffix = suffix != null ? suffix : "";
         this.cli = cli == null ? null : cli.clone();
+        this.useIllegalJava9Access = useIllegalJava9Access;
         resetGoals();
         resetCliOptions();
     }
 
     public MavenLauncher( Class testClass, String resourceName, String suffix )
     {
-        this( testClass, resourceName, suffix, null );
+        this( testClass, resourceName, suffix, null, false );
     }
 
     public File getUnpackedAt()
@@ -152,8 +160,8 @@ public final class MavenLauncher
 
     public MavenLauncher getSubProjectLauncher( String subProject )
     {
-        MavenLauncher mavenLauncher =
-            new MavenLauncher( testCaseBeingRun, resourceName + File.separator + subProject, suffix, cli );
+        MavenLauncher mavenLauncher = new MavenLauncher( testCaseBeingRun,
+            resourceName + File.separator + subProject, suffix, cli, useIllegalJava9Access );
         mavenLauncher.unpackedAt = new File( ensureUnpacked(), subProject );
         return mavenLauncher;
     }
@@ -293,8 +301,30 @@ public final class MavenLauncher
     {
         try
         {
+            List<String> goalsAndProps = new ArrayList<>( goals );
+
+            if ( useIllegalJava9Access )
+            {
+                String argLine = props.get( "argLine" );
+                if ( argLine == null )
+                {
+                    props.put( "argLine", "--illegal-access=permit" );
+                }
+                else if ( !argLine.contains( "--illegal-access" ) )
+                {
+                    props.put( "argLine", "--illegal-access=permit " + argLine );
+                }
+            }
+
+            for ( Entry<String, String> e : props.entrySet() )
+            {
+                String key = e.getKey();
+                String val = e.getValue();
+                goalsAndProps.add( val == null ? "-D" + key : "-D" + key + "=" + val );
+            }
+
             getVerifier().setCliOptions( cliOptions );
-            getVerifier().executeGoals( goals, envVars );
+            getVerifier().executeGoals( goalsAndProps, envVars );
             return getValidator();
         }
         catch ( VerificationException e )
@@ -312,33 +342,30 @@ public final class MavenLauncher
         return addGoal( "-P" + profile );
     }
 
-    public MavenLauncher sysProp( String variable, String value )
+    public MavenLauncher sysProp( String key, String value )
     {
-        return addGoal( "-D" + variable + "=" + value );
+        return sysProp( singletonMap( key, value ) );
     }
 
     public MavenLauncher sysProp( Map<String, String> properties )
     {
-        for ( Map.Entry<String, String> property : properties.entrySet() )
-        {
-            sysProp( property.getKey(), property.getValue() );
-        }
+        props.putAll( properties );
         return this;
     }
 
-    public MavenLauncher sysProp( String variable, boolean value )
+    public MavenLauncher sysProp( String key, boolean value )
     {
-        return addGoal( "-D" + variable + "=" + value );
+        return sysProp( singletonMap( key, Boolean.toString( value ) ) );
     }
 
-    public MavenLauncher sysProp( String variable, int value )
+    public MavenLauncher sysProp( String key, int value )
     {
-        return addGoal( "-D" + variable + "=" + value );
+        return sysProp( singletonMap( key, Integer.toString( value ) ) );
     }
 
-    public MavenLauncher sysProp( String variable, double value )
+    public MavenLauncher sysProp( String key, double value )
     {
-        return addGoal( "-D" + variable + "=" + value );
+        return sysProp( singletonMap( key, Double.toString( value ) ) );
     }
 
     public MavenLauncher showExceptionMessages()

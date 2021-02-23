@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.AbstractJigsawIT;
+import org.apache.maven.surefire.its.fixture.AbstractJava9PlusIT;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ import java.io.IOException;
  * @since 2.20.1
  */
 public class Surefire1265Java9IT
-        extends AbstractJigsawIT
+        extends AbstractJava9PlusIT
 {
     @Test
     public void shouldRunInPluginJava9() throws IOException
