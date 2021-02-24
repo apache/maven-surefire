@@ -606,13 +606,13 @@
                                 <id>cucumber-java</id>
                                 <phase>pre-integration-test</phase>
                                 <goals><goal>get</goal></goals>
-                                <configuration><artifact>io.cucumber:cucumber-java:2.0.0</artifact></configuration>
+                                <configuration><artifact>io.cucumber:cucumber-java:6.1.0</artifact></configuration>
                             </execution>
                             <execution>
                                 <id>cucumber-junit</id>
                                 <phase>pre-integration-test</phase>
                                 <goals><goal>get</goal></goals>
-                                <configuration><artifact>io.cucumber:cucumber-junit:2.0.0</artifact></configuration>
+                                <configuration><artifact>io.cucumber:cucumber-junit:6.1.0</artifact></configuration>
                             </execution>
                             <execution>
                                 <id>vintage-5.1.1</id>

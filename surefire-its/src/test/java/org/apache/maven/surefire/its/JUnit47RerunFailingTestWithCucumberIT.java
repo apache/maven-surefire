@@ -64,8 +64,7 @@ public class JUnit47RerunFailingTestWithCucumberIT extends SurefireJUnit4Integra
     private SurefireLauncher unpack()
     {
         SurefireLauncher launcher =
-            unpack( "junit47-rerun-failing-tests-with-cucumber", profileId == null ? "" : "-" + profileId )
-            .setJUnitVersion( "4.13" );
+            unpack( "junit47-rerun-failing-tests-with-cucumber", profileId == null ? "" : "-" + profileId );
 
         if ( profileId != null )
         {
