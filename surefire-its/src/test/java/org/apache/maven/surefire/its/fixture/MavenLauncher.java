@@ -306,14 +306,14 @@ public final class MavenLauncher
             if ( useIllegalJava9Access )
             {
                 String argLine = props.get( "argLine" );
-                if ( argLine == null )
+                /*if ( argLine == null )
                 {
                     props.put( "argLine", "--illegal-access=permit" );
                 }
                 else if ( !argLine.contains( "--illegal-access" ) )
                 {
                     props.put( "argLine", "--illegal-access=permit " + argLine );
-                }
+                }*/
             }
 
             for ( Entry<String, String> e : props.entrySet() )
