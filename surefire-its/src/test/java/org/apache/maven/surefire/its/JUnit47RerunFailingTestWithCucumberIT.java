@@ -42,6 +42,7 @@ import static org.hamcrest.Matchers.equalTo;
  * @author mpkorstanje
  */
 @RunWith( ParallelParameterized.class )
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class JUnit47RerunFailingTestWithCucumberIT extends SurefireJUnit4IntegrationTestCase
 {
     private static final String LEGACY_FORK_NODE =

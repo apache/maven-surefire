@@ -33,6 +33,7 @@ import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaV
  * 
  * @author agudian
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class JUnit47WithCucumberIT
     extends SurefireJUnit4IntegrationTestCase
 {
