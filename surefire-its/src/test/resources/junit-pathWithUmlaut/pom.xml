@@ -58,6 +58,7 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.8.1</version>
           <configuration>
+            <encoding>UTF-8</encoding>
             <skip>${skipCompiler}</skip>
             <skipMain>${skipCompiler}</skipMain>
           </configuration>
