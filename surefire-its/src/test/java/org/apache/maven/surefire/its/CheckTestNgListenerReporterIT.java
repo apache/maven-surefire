@@ -98,6 +98,8 @@ public class CheckTestNgListenerReporterIT
 
         if ( version.equals( "5.13" ) )
         {
+            // only 5.13 uses Google Guice, reflection which breaks jdk 16+
+            // module java.base does not "opens java.lang" to unnamed module @209c0b14
             assumeJavaVersionExcluded( 16 );
         }
 
