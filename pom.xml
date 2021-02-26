@@ -675,7 +675,9 @@
                         <source>
                             jdkHome = session.getUserProperties().getProperty("jdk.home", project.getProperties().getProperty("jdk.home"));
                             if (jdkHome == null || jdkHome.isEmpty()) {
-                                jdkHome = System.getProperty("java.home");
+                                jreHome = System.getProperty("java.home");
+                                jrePath = new File(jreHome);
+                                jdkHome = "jre".equals(jrePath.getName()) ? jrePath.getParent() : jrePath.getPath();
                             }
                             release = new File(jdkHome, "release");
                             System.out.println("Beanshell found jdkHome=" + jdkHome);
