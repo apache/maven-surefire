@@ -720,7 +720,7 @@
                         <version>3.0.0-M4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
                         <configuration>
                             <skipTests>${skipTests}</skipTests>
-                            <jvm>${jdk.home}/bin/java</jvm>
+                            <jvm>${jdkHome}/bin/java</jvm>
                             <runOrder>alphabetical</runOrder>
                             <threadCount>1</threadCount>
                             <perCoreThreadCount>false</perCoreThreadCount>
@@ -738,7 +738,7 @@
                                 <maven.toolchains.file>${project.build.directory}/private/toolchains.xml</maven.toolchains.file>
                                 <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>
                                 <verifier.forkMode>forked</verifier.forkMode>
-                                <jdk.home>${jdk.home}</jdk.home>
+                                <jdkHome>${jdkHome}</jdkHome>
                                 <jacoco.agent>${jacoco-it.agent}</jacoco.agent>
 
                                 <!-- see the f/w com.googlecode.junit-toolbox:junit-toolbox -->

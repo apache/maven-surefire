@@ -291,7 +291,7 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <javaHome>${jdk.home}</javaHome>
+                            <javaHome>${jdkHome}</javaHome>
                         </configuration>
                     </plugin>
                 </plugins>

@@ -96,7 +96,7 @@
             <id>use-jvm-config-paramater</id>
             <activation>
                 <property>
-                    <name>jdk.home</name>
+                    <name>jdkHome</name>
                 </property>
             </activation>
             <build>
@@ -104,7 +104,7 @@
                     <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <jvm>${jdk.home}/bin/java</jvm>
+                            <jvm>${jdkHome}/bin/java</jvm>
                         </configuration>
                     </plugin>
                 </plugins>

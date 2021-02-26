@@ -514,7 +514,7 @@
             <argLine>${jvm.args.tests}</argLine><!-- -Dnet.bytebuddy.experimental=true ${jacoco.agent}-->
             <useFile>false</useFile>
             <redirectTestOutputToFile>false</redirectTestOutputToFile>
-            <jvm>${jdk.home}/bin/java</jvm>
+            <jvm>${jdkHome}/bin/java</jvm>
           </configuration>
         </plugin>
         <plugin>
@@ -674,7 +674,7 @@
                             <property>jvm9ArgsTests</property>
                         </properties>
                         <source>
-                            jdkHome = session.getUserProperties().getProperty("jdk.home", project.getProperties().getProperty("jdk.home"));
+                            jdkHome = session.getUserProperties().getProperty("jdkHome", project.getProperties().getProperty("jdkHome"));
                             if (jdkHome == null || jdkHome.isEmpty()) {
                                 jreHome = System.getProperty("java.home");
                                 jrePath = new File(jreHome);

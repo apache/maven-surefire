@@ -29,7 +29,7 @@
             <vendor>oracle</vendor>
         </provides>
         <configuration>
-            <jdkHome>${jdk.home}</jdkHome>
+            <jdkHome>${jdkHome}</jdkHome>
         </configuration>
     </toolchain>
 </toolchains>

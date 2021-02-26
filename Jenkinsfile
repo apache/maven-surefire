@@ -151,7 +151,7 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
                 ]) {
                     sh '$JAVA_HOME_IT/bin/java -version'
                     sh 'echo JAVA_HOME=$JAVA_HOME, JAVA_HOME_IT=$JAVA_HOME_IT, PATH=$PATH'
-                    def script = cmd + ['\"-Djdk.home=$JAVA_HOME_IT\"']
+                    def script = cmd + ['\"-DjdkHome=$JAVA_HOME_IT\"']
                     def error = sh(returnStatus: true, script: script.join(' '))
                     currentBuild.result = error == 0 ? 'SUCCESS' : 'FAILURE'
                 }
@@ -163,7 +163,7 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
                 ]) {
                     bat '%JAVA_HOME_IT%\\bin\\java -version'
                     bat 'echo JAVA_HOME=%JAVA_HOME%, JAVA_HOME_IT=%JAVA_HOME_IT%, PATH=%PATH%'
-                    def script = cmd + ['\"-Djdk.home=%JAVA_HOME_IT%\"']
+                    def script = cmd + ['\"-DjdkHome=%JAVA_HOME_IT%\"']
                     def error = bat(returnStatus: true, script: script.join(' '))
                     currentBuild.result = error == 0 ? 'SUCCESS' : 'FAILURE'
                 }
