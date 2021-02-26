@@ -40,7 +40,7 @@ public abstract class SurefireJUnit4IntegrationTestCase
 
     public static final File JAVA_HOME = javaHome();
 
-    public static final int JAVA_VERSION = javaVersion();
+    public static final double JAVA_VERSION = javaVersion();
 
     public static final boolean IS_JAVA9_PLUS = isJDK9Plus();
 
@@ -77,9 +77,9 @@ public abstract class SurefireJUnit4IntegrationTestCase
         return new SurefireLauncher( mavenLauncher, JAVA_HOME );
     }
 
-    private static int javaVersion()
+    private static double javaVersion()
     {
-        return (int) parseDouble( System.getProperty( "java.specification.version" ) );
+        return parseDouble( System.getProperty( "java.specification.version" ) );
     }
 
     private static boolean isJDK9Plus()

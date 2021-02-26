@@ -51,7 +51,7 @@ public class Java9FullApiIT
                 .verifyTextInLog( "loaded class javax.xml.bind.JAXBException" )
                 .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
                 .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
-                .assertThatLogLine( is( "java.specification.version=" + JAVA_VERSION ),
+                .assertThatLogLine( is( "java.specification.version=" + (int) JAVA_VERSION ),
                                     greaterThanOrEqualTo( 1 ) );
     }
 
@@ -70,7 +70,7 @@ public class Java9FullApiIT
                 .verifyTextInLog( "loaded class javax.xml.bind.JAXBException" )
                 .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
                 .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
-                .assertThatLogLine( is( "java.specification.version=" + JAVA_VERSION ),
+                .assertThatLogLine( is( "java.specification.version=" + (int) JAVA_VERSION ),
                                     greaterThanOrEqualTo( 1 ) );
     }
 
@@ -91,7 +91,7 @@ public class Java9FullApiIT
                 .verifyTextInLog( "loaded class javax.xml.bind.JAXBException" )
                 .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
                 .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
-                .assertThatLogLine( is( "java.specification.version=" + JAVA_VERSION ),
+                .assertThatLogLine( is( "java.specification.version=" + (int) JAVA_VERSION ),
                                     greaterThanOrEqualTo( 1 ) );
     }
 
