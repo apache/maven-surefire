@@ -23,7 +23,7 @@ cache:
   - "$HOME/.m2"
 
 install: true
-jdk: openjdk14
+jdk: openjdk15
 
 jobs:
   include:
