@@ -36,11 +36,11 @@ import static java.lang.Double.parseDouble;
  */
 public abstract class SurefireJUnit4IntegrationTestCase
 {
-    private static final double JAVA9_VERSION = 9.0d;
+    private static final int JAVA9_VERSION = 9;
 
     public static final File JAVA_HOME = javaHome();
 
-    public static final double JAVA_VERSION = javaVersion();
+    public static final int JAVA_VERSION = javaVersion();
 
     public static final boolean IS_JAVA9_PLUS = isJDK9Plus();
 
@@ -77,9 +77,9 @@ public abstract class SurefireJUnit4IntegrationTestCase
         return new SurefireLauncher( mavenLauncher, JAVA_HOME );
     }
 
-    private static double javaVersion()
+    private static int javaVersion()
     {
-        return parseDouble( System.getProperty( "java.specification.version" ) );
+        return (int) parseDouble( System.getProperty( "java.specification.version" ) );
     }
 
     private static boolean isJDK9Plus()

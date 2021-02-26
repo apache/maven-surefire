@@ -68,9 +68,6 @@ oses.eachWithIndex { osMapping, indexOfOs ->
                         boolean first = indexOfOs == 0 && indexOfMaven == 0 && indexOfJdk == 0
                         def failsafeItPort = 8000 + 100 * indexOfMaven + 10 * indexOfJdk
                         def allOptions = options + ['-Djava.awt.headless=true', "-Dfailsafe-integration-test-port=${failsafeItPort}", "-Dfailsafe-integration-test-stop-port=${1 + failsafeItPort}"]
-                        if (jdk >= 9) {
-                            allOptions += ['-P', 'jdk9+']
-                        }
                         if (jdk == 7) {
                             allOptions += '-Dhttps.protocols=TLSv1.2'
                         }

@@ -102,8 +102,6 @@
     <jacocoVersion>0.8.6</jacocoVersion>
     <maven.surefire.scm.devConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
     <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
-    <!-- Override with Jigsaw JRE 9 -->
-    <jdk.home>${java.home}/..</jdk.home>
     <maven.compiler.testSource>1.${javaVersion}</maven.compiler.testSource>
     <maven.compiler.testTarget>1.${javaVersion}</maven.compiler.testTarget>
     <jvm.args.tests>${jvm9ArgsTests} -Xms32m -Xmx144m -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</jvm.args.tests>
@@ -676,6 +674,9 @@
                         </properties>
                         <source>
                             jdkHome = session.getUserProperties().getProperty("jdk.home", project.getProperties().getProperty("jdk.home"));
+                            if (jdkHome == null || jdkHome.isEmpty()) {
+                                jdkHome = System.getProperty("java.home");
+                            }
                             release = new File(jdkHome, "release");
                             System.out.println("Beanshell found jdkHome=" + jdkHome);
                             System.out.println("Beanshell found jdk-release properties file=" + release.exists());
@@ -781,19 +782,9 @@
         </plugins>
       </reporting>
     </profile>
-    <profile>
-      <id>jdk9+</id>
-      <activation>
-        <jdk>[9, )</jdk>
-      </activation>
-      <properties>
-        <jdk.home>${java.home}</jdk.home>
-      </properties>
-    </profile>
       <profile>
           <id>apache-release</id>
           <build>
-
               <!-- after Maven Compiler 3.8.1 is fixed, use maven.compiler.release, see SUREFIRE-1820 -->
               <plugins>
                   <plugin>
