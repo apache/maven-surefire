@@ -20,10 +20,8 @@ package org.apache.maven.surefire.its.jiras;
  */
 
 import org.apache.maven.surefire.its.fixture.AbstractJava9PlusIT;
-import org.junit.Before;
 import org.junit.Test;
 
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersionExcluded;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
@@ -35,12 +33,6 @@ import static org.hamcrest.Matchers.is;
 public class Surefire1570ModularFailsafeIT
         extends AbstractJava9PlusIT
 {
-    @Before
-    public void setUp()
-    {
-        assumeJavaVersionExcluded( 11d );
-    }
-
     @Test
     public void shouldRunWithJupiterApi() throws Exception
     {
