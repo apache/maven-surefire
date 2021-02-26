@@ -669,6 +669,7 @@
                     </goals>
                     <configuration>
                         <properties>
+                            <property>jdkHome</property>
                             <property>doSkipTests</property>
                             <property>jvm9ArgsTests</property>
                         </properties>
