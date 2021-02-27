@@ -543,6 +543,12 @@
                                 <configuration><artifact>junit:junit:4.13</artifact></configuration>
                             </execution>
                             <execution>
+                                <id>junit-4.13.1</id>
+                                <phase>pre-integration-test</phase>
+                                <goals><goal>get</goal></goals>
+                                <configuration><artifact>junit:junit:4.13.1</artifact></configuration>
+                            </execution>
+                            <execution>
                                 <id>junit-dep-4.4</id>
                                 <phase>pre-integration-test</phase>
                                 <goals><goal>get</goal></goals>
@@ -705,6 +711,48 @@
                                 <configuration><artifact>org.junit.jupiter:junit-jupiter-engine:5.6.2</artifact></configuration>
                             </execution>
                             <execution>
+                                <id>jupiter-5.7.1</id>
+                                <phase>pre-integration-test</phase>
+                                <goals><goal>get</goal></goals>
+                                <configuration><artifact>org.junit.jupiter:junit-jupiter-engine:5.7.1</artifact></configuration>
+                            </execution>
+                            <execution>
+                                <id>jqwik-0.8.0</id>
+                                <phase>pre-integration-test</phase>
+                                <goals><goal>get</goal></goals>
+                                <configuration><artifact>net.jqwik:jqwik:0.8.0</artifact></configuration>
+                            </execution>
+                            <execution>
+                                <id>jqwik-0.9.0</id>
+                                <phase>pre-integration-test</phase>
+                                <goals><goal>get</goal></goals>
+                                <configuration><artifact>net.jqwik:jqwik:0.9.0</artifact></configuration>
+                            </execution>
+                            <execution>
+                                <id>jqwik-1.0.0</id>
+                                <phase>pre-integration-test</phase>
+                                <goals><goal>get</goal></goals>
+                                <configuration><artifact>net.jqwik:jqwik:1.0.0</artifact></configuration>
+                            </execution>
+                            <execution>
+                                <id>jqwik-0.8.15</id>
+                                <phase>pre-integration-test</phase>
+                                <goals><goal>get</goal></goals>
+                                <configuration><artifact>net.jqwik:jqwik:0.8.15</artifact></configuration>
+                            </execution>
+                            <execution>
+                                <id>jqwik-1.2.7</id>
+                                <phase>pre-integration-test</phase>
+                                <goals><goal>get</goal></goals>
+                                <configuration><artifact>net.jqwik:jqwik:1.2.7</artifact></configuration>
+                            </execution>
+                            <execution>
+                                <id>jqwik-1.5.0</id>
+                                <phase>pre-integration-test</phase>
+                                <goals><goal>get</goal></goals>
+                                <configuration><artifact>net.jqwik:jqwik:1.5.0</artifact></configuration>
+                            </execution>
+                            <execution>
                                 <id>crashjvm</id>
                                 <phase>pre-integration-test</phase>
                                 <goals><goal>get</goal></goals>
@@ -738,7 +786,6 @@
                                 <maven.toolchains.file>${project.build.directory}/private/toolchains.xml</maven.toolchains.file>
                                 <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>
                                 <verifier.forkMode>forked</verifier.forkMode>
-                                <jdkHome>${jdkHome}</jdkHome>
                                 <jacoco.agent>${jacoco-it.agent}</jacoco.agent>
 
                                 <!-- see the f/w com.googlecode.junit-toolbox:junit-toolbox -->
