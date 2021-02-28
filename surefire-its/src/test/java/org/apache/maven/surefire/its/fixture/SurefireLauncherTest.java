@@ -21,6 +21,7 @@ package org.apache.maven.surefire.its.fixture;
 
 import org.junit.Test;
 
+import static org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase.JAVA_HOME;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -32,7 +33,7 @@ public class SurefireLauncherTest
     public void launcherGetsProperMethodName()
     {
         MavenLauncher mavenLauncher = new MavenLauncher( SurefireLauncherTest.class, "foo", "" );
-        String method = new SurefireLauncher( mavenLauncher ).getTestMethodName();
+        String method = new SurefireLauncher( mavenLauncher, JAVA_HOME ).getTestMethodName();
         assertEquals( "launcherGetsProperMethodName", method );
 
     }

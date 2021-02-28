@@ -19,6 +19,11 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
+import java.io.File;
+import java.io.IOException;
+
+import static java.lang.Double.parseDouble;
+
 /**
  * Contains commonly used features for most tests, encapsulating
  * common use cases.
@@ -31,6 +36,14 @@ package org.apache.maven.surefire.its.fixture;
  */
 public abstract class SurefireJUnit4IntegrationTestCase
 {
+    private static final int JAVA9_VERSION = 9;
+
+    public static final File JAVA_HOME = javaHome();
+
+    public static final double JAVA_VERSION = javaVersion();
+
+    public static final boolean IS_JAVA9_PLUS = isJDK9Plus();
+
     public OutputValidator executeErrorFreeTest( String sourceName, int total )
     {
         return unpack( sourceName ).executeTest().verifyErrorFree( total );
@@ -46,15 +59,57 @@ public abstract class SurefireJUnit4IntegrationTestCase
         return unpack( getClass(), sourceName, suffix );
     }
 
-    public static SurefireLauncher unpack( Class testClass, String sourceName, String suffix, String[] cli )
+    public SurefireLauncher unpack( String sourceName, String suffix, String[] cli )
     {
-        MavenLauncher mavenLauncher = new MavenLauncher( testClass, sourceName, suffix, cli );
-        return new SurefireLauncher( mavenLauncher );
+        return unpack( getClass(), sourceName, suffix, cli );
     }
 
-    public static SurefireLauncher unpack( Class testClass, String sourceName, String suffix )
+    public static SurefireLauncher unpack( Class<?> testClass, String sourceName, String suffix )
     {
         return unpack( testClass, sourceName, suffix, null );
     }
 
+    private static SurefireLauncher unpack( Class<?> testClass, String sourceName, String suffix, String[] cli )
+    {
+        MavenLauncher mavenLauncher = new MavenLauncher( testClass, sourceName, suffix, cli );
+        return new SurefireLauncher( mavenLauncher, JAVA_HOME );
+    }
+
+    private static double javaVersion()
+    {
+        return parseDouble( System.getProperty( "java.specification.version" ) );
+    }
+
+    private static boolean isJDK9Plus()
+    {
+        return javaVersion() >= JAVA9_VERSION;
+    }
+
+    private static File javaHome()
+    {
+        String javaHome = System.getProperty( "java.home" );
+        if ( !isJDK9Plus() )
+        {
+            File jre = new File( javaHome );
+            if ( "jre".equals( jre.getName() ) )
+            {
+                javaHome = jre.getParent();
+            }
+        }
+
+        try
+        {
+            File javaHomeAsDir = new File( javaHome ).getCanonicalFile();
+            if ( !javaHomeAsDir.isDirectory() )
+            {
+                throw new RuntimeException( javaHomeAsDir.getAbsolutePath() + " is not a JAVA_HOME directory." );
+            }
+            System.out.println( "Using JAVA_HOME=" + javaHomeAsDir.getAbsolutePath() + " in forked launcher." );
+            return javaHomeAsDir;
+        }
+        catch ( IOException e )
+        {
+            throw new RuntimeException( e );
+        }
+    }
 }

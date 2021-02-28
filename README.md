@@ -59,13 +59,13 @@ Build the Surefire project using **Maven 3.1.0+** and **JDK 1.8+**.
   set MAVEN_OPTS="-server -Xmx256m -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=384m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Dhttps.protocols=TLSv1.2"
   ```
 
-* In order to run the tests with **JDK 1.7** (on Linux/Unix modify the system property **jdk.home**):  
+* In order to run the tests with **JDK 1.7** (on Linux/Unix modify the system property **jdkHome**):  
   ```
-  mvn install site site:stage -P reporting,run-its "-Djdk.home=e:\Program Files\Java\jdk1.7.0_80\"
+  mvn install site site:stage -P reporting,run-its "-DjdkHome=e:\Program Files\Java\jdk1.7.0_80\"
   ```
 * In order to run the build and the tests with **JDK 1.8+**, e.g. JDK 11:    
   ```
-  mvn install site site:stage -P reporting,run-its "-Djdk.home=e:\Program Files\Java\jdk11\"
+  mvn install site site:stage -P reporting,run-its "-DjdkHome=e:\Program Files\Java\jdk11\"
   ```
   
 

@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.AbstractJigsawIT;
+import org.apache.maven.surefire.its.fixture.AbstractJava9PlusIT;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.containsString;
@@ -28,7 +28,7 @@ import static org.hamcrest.Matchers.is;
 /**
  * Integration test for <a href="https://issues.apache.org/jira/browse/SUREFIRE-1733">SUREFIRE-1733</a>.
  */
-public class Surefire1733TestngIT extends AbstractJigsawIT
+public class Surefire1733TestngIT extends AbstractJava9PlusIT
 {
     @Test
     public void test() throws Exception

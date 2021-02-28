@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.AbstractJigsawIT;
+import org.apache.maven.surefire.its.fixture.AbstractJava9PlusIT;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
@@ -33,7 +33,7 @@ import static org.junit.Assert.assertTrue;
  *
  */
 public class Surefire1534ReuseForksFalseWithJavaModuleIT
-        extends AbstractJigsawIT
+        extends AbstractJava9PlusIT
 {
 
     @Test

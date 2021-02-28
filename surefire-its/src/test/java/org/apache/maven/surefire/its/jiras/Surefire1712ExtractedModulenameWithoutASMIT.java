@@ -19,7 +19,7 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.AbstractJigsawIT;
+import org.apache.maven.surefire.its.fixture.AbstractJava9PlusIT;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -32,7 +32,7 @@ import static org.hamcrest.CoreMatchers.is;
  * @since 3.0.0-M4
  */
 public class Surefire1712ExtractedModulenameWithoutASMIT
-        extends AbstractJigsawIT
+        extends AbstractJava9PlusIT
 {
     @Test
     public void test()

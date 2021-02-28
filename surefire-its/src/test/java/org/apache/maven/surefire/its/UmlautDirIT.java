@@ -33,6 +33,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersionExcluded;
 import static java.nio.file.Files.copy;
 import static java.nio.file.Files.createDirectories;
 import static java.nio.file.Files.exists;
@@ -53,6 +54,12 @@ public class UmlautDirIT extends SurefireJUnit4IntegrationTestCase
     @Before
     public void backupLocalRepo()
     {
+        // We touched the Javac bug, see the discussion [1].
+        // The fix [2] will be in Java 17, not in Java 16. So we cannot use Java 16 then!
+        // [1]: http://ant.1045680.n5.nabble.com/JDK-16-is-in-Rampdown-Phase-One-td5720549.html#a5720552
+        // [2]: https://bugs.openjdk.java.net/browse/JDK-8258246
+        assumeJavaVersionExcluded( 16 );
+
         localRepo = System.getProperty( "maven.repo.local" );
     }
 

@@ -19,6 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.AbstractJava9PlusIT;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.junit.Test;
 
@@ -31,7 +32,7 @@ import static org.hamcrest.Matchers.is;
 /**
  * Integration test for <a href="https://issues.apache.org/jira/browse/SUREFIRE-1733">SUREFIRE-1733</a>.
  */
-public class MultiModuleProjectWithJPMSIT extends AbstractJigsawIT
+public class MultiModuleProjectWithJPMSIT extends AbstractJava9PlusIT
 {
     @Test
     public void test() throws Exception

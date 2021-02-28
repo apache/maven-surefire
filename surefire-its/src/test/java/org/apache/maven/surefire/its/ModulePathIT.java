@@ -19,6 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.AbstractJava9PlusIT;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -27,7 +28,7 @@ import java.io.IOException;
  *
  */
 public class ModulePathIT
-        extends AbstractJigsawIT
+        extends AbstractJava9PlusIT
 {
     private String suffix;
 

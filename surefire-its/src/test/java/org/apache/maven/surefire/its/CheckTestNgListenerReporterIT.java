@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersionExcluded;
 import static org.junit.runners.Parameterized.Parameter;
 import static org.junit.runners.Parameterized.Parameters;
 
@@ -94,6 +95,14 @@ public class CheckTestNgListenerReporterIT
     public void testNgListenerReporter()
     {
         assumeJavaVersion( javaVersion );
+
+        if ( version.equals( "5.13" ) )
+        {
+            // only 5.13 uses Google Guice, reflection which breaks jdk 16+
+            // module java.base does not "opens java.lang" to unnamed module @209c0b14
+            assumeJavaVersionExcluded( 16 );
+        }
+
         final SurefireLauncher launcher = unpack( "testng-listener-reporter", "_" + version )
                                                   .sysProp( "testNgVersion", version );
 

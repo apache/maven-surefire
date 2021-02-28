@@ -19,13 +19,10 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.AbstractJava9PlusIT;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.junit.Test;
 
-import java.io.File;
-
-import static org.apache.maven.surefire.its.fixture.SurefireLauncher.EXT_JDK_HOME;
-import static org.apache.maven.surefire.its.fixture.SurefireLauncher.EXT_JDK_HOME_KEY;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 
@@ -37,10 +34,8 @@ import static org.hamcrest.Matchers.is;
  * @since 2.20.1
  */
 public class Java9FullApiIT
-        extends AbstractJigsawIT
+    extends AbstractJava9PlusIT
 {
-    private static final String JVM_SPEC_VERSION = System.getProperty( "java.specification.version" );
-
     @Test
     @SuppressWarnings( "checkstyle:methodname" )
     public void shouldLoadMultipleJavaModules_JavaHome() throws Exception
@@ -56,7 +51,7 @@ public class Java9FullApiIT
                 .verifyTextInLog( "loaded class javax.xml.bind.JAXBException" )
                 .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
                 .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
-                .assertThatLogLine( is( "java.specification.version=" + JVM_SPEC_VERSION ),
+                .assertThatLogLine( is( "java.specification.version=" + (int) JAVA_VERSION ),
                                     greaterThanOrEqualTo( 1 ) );
     }
 
@@ -64,10 +59,9 @@ public class Java9FullApiIT
     @SuppressWarnings( "checkstyle:methodname" )
     public void shouldLoadMultipleJavaModules_JvmParameter() throws Exception
     {
-        OutputValidator validator = assumeJava9Property()
+        OutputValidator validator = assumeJava9()
                                             .setForkJvm()
                                             .debugLogging()
-                                            .sysProp( EXT_JDK_HOME_KEY, new File( EXT_JDK_HOME ).getCanonicalPath() )
                                             .execute( "verify" )
                                             .verifyErrorFree( 1 );
 
@@ -76,7 +70,7 @@ public class Java9FullApiIT
                 .verifyTextInLog( "loaded class javax.xml.bind.JAXBException" )
                 .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
                 .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
-                .assertThatLogLine( is( "java.specification.version=" + JVM_SPEC_VERSION ),
+                .assertThatLogLine( is( "java.specification.version=" + (int) JAVA_VERSION ),
                                     greaterThanOrEqualTo( 1 ) );
     }
 
@@ -84,7 +78,7 @@ public class Java9FullApiIT
     @SuppressWarnings( "checkstyle:methodname" )
     public void shouldLoadMultipleJavaModules_ToolchainsXML() throws Exception
     {
-        OutputValidator validator = assumeJava9Property()
+        OutputValidator validator = assumeJava9()
                                             .setForkJvm()
                                             .activateProfile( "use-toolchains" )
                                             .addGoal( "--toolchains" )
@@ -97,7 +91,7 @@ public class Java9FullApiIT
                 .verifyTextInLog( "loaded class javax.xml.bind.JAXBException" )
                 .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
                 .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
-                .assertThatLogLine( is( "java.specification.version=" + JVM_SPEC_VERSION ),
+                .assertThatLogLine( is( "java.specification.version=" + (int) JAVA_VERSION ),
                                     greaterThanOrEqualTo( 1 ) );
     }
 

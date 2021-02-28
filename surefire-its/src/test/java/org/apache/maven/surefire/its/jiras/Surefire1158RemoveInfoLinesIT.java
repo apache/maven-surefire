@@ -21,13 +21,13 @@ package org.apache.maven.surefire.its.jiras;
 
 import com.googlecode.junittoolbox.ParallelParameterized;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireVerifierException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 
-import static org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase.unpack;
 import static org.junit.Assert.fail;
 import static org.junit.runners.Parameterized.Parameter;
 import static org.junit.runners.Parameterized.Parameters;
@@ -38,7 +38,7 @@ import static org.junit.runners.Parameterized.Parameters;
  * @since 2.19
  */
 @RunWith( ParallelParameterized.class )
-public class Surefire1158RemoveInfoLinesIT
+public class Surefire1158RemoveInfoLinesIT extends SurefireJUnit4IntegrationTestCase
 {
 
     @Parameters( name = "{0}" )
@@ -95,9 +95,13 @@ public class Surefire1158RemoveInfoLinesIT
     private OutputValidator assertTest() throws Exception
     {
         final String[] cli = {"--batch-mode"};
-        return unpack( getClass(), "/surefire-1158-remove-info-lines", "_" + description, cli ).sysProp( "provider",
-                provider ).addGoal( cliOption ).setTestToRun(
-                testToRun ).executeTest().verifyErrorFreeLog().assertTestSuiteResults( 1, 0, 0, 0 );
+        return unpack( "/surefire-1158-remove-info-lines", "_" + description, cli )
+            .sysProp( "provider", provider )
+            .addGoal( cliOption )
+            .setTestToRun( testToRun )
+            .executeTest()
+            .verifyErrorFreeLog()
+            .assertTestSuiteResults( 1, 0, 0, 0 );
     }
 
     private void assertJUnitTestLogs( OutputValidator validator )

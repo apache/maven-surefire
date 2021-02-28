@@ -22,6 +22,7 @@ package org.apache.maven.surefire.its;
 import com.googlecode.junittoolbox.ParallelParameterized;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized.Parameter;
@@ -29,6 +30,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import java.util.ArrayList;
 
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -40,6 +42,7 @@ import static org.hamcrest.Matchers.equalTo;
  * @author mpkorstanje
  */
 @RunWith( ParallelParameterized.class )
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class JUnit47RerunFailingTestWithCucumberIT extends SurefireJUnit4IntegrationTestCase
 {
     private static final String LEGACY_FORK_NODE =
@@ -47,6 +50,12 @@ public class JUnit47RerunFailingTestWithCucumberIT extends SurefireJUnit4Integra
 
     private static final String SUREFIRE_FORK_NODE =
         "org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory";
+
+    @Before
+    public void assumeJava8Plus()
+    {
+        assumeJavaVersion( 1.8d );
+    }
 
     @Parameters
     public static Iterable<Object[]> data()
@@ -64,8 +73,7 @@ public class JUnit47RerunFailingTestWithCucumberIT extends SurefireJUnit4Integra
     private SurefireLauncher unpack()
     {
         SurefireLauncher launcher =
-            unpack( "junit47-rerun-failing-tests-with-cucumber", profileId == null ? "" : "-" + profileId )
-            .setJUnitVersion( "4.13" );
+            unpack( "junit47-rerun-failing-tests-with-cucumber", profileId == null ? "" : "-" + profileId );
 
         if ( profileId != null )
         {

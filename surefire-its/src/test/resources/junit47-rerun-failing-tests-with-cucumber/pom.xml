@@ -33,7 +33,7 @@
     <name>Test for rerun failing cucumber tests in JUnit 47</name>
 
     <properties>
-        <cucumber.version>2.0.0</cucumber.version>
+        <cucumber.version>6.10.0</cucumber.version>
     </properties>
 
     <build>
@@ -57,12 +57,6 @@
     </build>
 
     <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-java</artifactId>
