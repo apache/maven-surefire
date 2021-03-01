@@ -576,7 +576,7 @@ public abstract class AbstractSurefireMojo
     /**
      * (TestNG provider) When you use the parameter {@code parallel}, TestNG will try to run all your test methods
      * in separate threads, except for methods that depend on each other, which will be run in the same thread in order
-     * to respect their order of execution.
+     * to respect their order of execution.  Supports two values: {@code classes} or {@code methods}.
      * <br>
      * (JUnit 4.7 provider) Supports values {@code classes}, {@code methods}, {@code both} to run
      * in separate threads been controlled by {@code threadCount}.
@@ -1528,10 +1528,15 @@ public abstract class AbstractSurefireMojo
                 }
                 return "org.apache.maven.surefire.testng.conf.TestNG5143Configurator";
             }
-            range = VersionRange.createFromVersionSpec( "[6.0,)" );
+            range = VersionRange.createFromVersionSpec( "[6.0,7.4.0)" );
             if ( range.containsVersion( version ) )
             {
                 return "org.apache.maven.surefire.testng.conf.TestNG60Configurator";
+            }
+            range = VersionRange.createFromVersionSpec( "[7.4.0,)" );
+            if ( range.containsVersion( version ) )
+            {
+                return "org.apache.maven.surefire.testng.conf.TestNG740Configurator";
             }
 
             throw new MojoExecutionException( "Unknown TestNG version " + version );
