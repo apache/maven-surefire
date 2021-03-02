@@ -62,7 +62,7 @@ public final class MavenLauncher
 
     private OutputValidator validator;
 
-    private final Class testCaseBeingRun;
+    private final Class<?> testCaseBeingRun;
 
     private final String resourceName;
 
@@ -72,7 +72,7 @@ public final class MavenLauncher
 
     private boolean expectFailure;
 
-    MavenLauncher( Class testClass, String resourceName, String suffix, String[] cli )
+    MavenLauncher( Class<?> testClass, String resourceName, String suffix, String[] cli )
     {
         this.testCaseBeingRun = testClass;
         this.resourceName = resourceName;
@@ -82,7 +82,7 @@ public final class MavenLauncher
         resetCliOptions();
     }
 
-    public MavenLauncher( Class testClass, String resourceName, String suffix )
+    public MavenLauncher( Class<?> testClass, String resourceName, String suffix )
     {
         this( testClass, resourceName, suffix, null );
     }
@@ -119,7 +119,7 @@ public final class MavenLauncher
         cliOptions.add( cliOption );
     }
 
-    private StackTraceElement findTopElemenent( StackTraceElement[] stackTrace, Class testClassToLookFor )
+    private StackTraceElement findTopElemenent( StackTraceElement[] stackTrace, Class<?> testClassToLookFor )
     {
         StackTraceElement bestmatch = null;
         for ( StackTraceElement stackTraceElement : stackTrace )
