@@ -20,7 +20,6 @@ package org.apache.maven.surefire.testng.conf;
  */
 
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
-import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.testng.xml.XmlSuite;
 
 import java.util.Map;
@@ -28,6 +27,8 @@ import java.util.Map;
 import static java.lang.Integer.parseInt;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.PARALLEL_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.THREADCOUNT_PROP;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeSetter;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.tryLoadClass;
 
 /**
  * TestNG 7.4.0 configurator. Changed setParallel type to enum value.
@@ -54,10 +55,9 @@ public class TestNG740Configurator extends TestNG60Configurator
                 throw new TestSetFailedException( "Unsupported TestNG parallel setting: "
                     + parallel + " ( only METHODS or CLASSES supported )" );
             }
-            Class enumClass = ReflectionUtils.tryLoadClass( XmlSuite.class.getClassLoader(),
-                "org.testng.xml.XmlSuite$ParallelMode" );
-            Object parallelEnum = Enum.valueOf( enumClass, parallel.toUpperCase() );
-            ReflectionUtils.invokeSetter( suite, "setParallel", enumClass, parallelEnum );
+            Class enumClass = tryLoadClass( XmlSuite.class.getClassLoader(), "org.testng.xml.XmlSuite$ParallelMode" );
+            Enum<?> parallelEnum = Enum.valueOf( enumClass, parallel.toUpperCase() );
+            invokeSetter( suite, "setParallel", enumClass, parallelEnum );
         }
 
         String dataProviderThreadCount = options.get( "dataproviderthreadcount" );
