@@ -36,6 +36,7 @@ import java.util.StringTokenizer;
 import static java.lang.Character.isDigit;
 import static java.lang.Thread.currentThread;
 import static java.util.Objects.requireNonNull;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.isNumeric;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_FREE_BSD;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_LINUX;
@@ -379,7 +380,7 @@ public final class SystemUtils
         Class<?> processHandle = tryLoadClass( classLoader, "java.lang.ProcessHandle" );
         Class<?>[] classesChain = { processHandle, processHandle };
         String[] methodChain = { "current", "pid" };
-        return (Long) invokeMethodChain( classesChain, methodChain, null );
+        return invokeMethodChain( classesChain, methodChain, null );
     }
 
     static ClassLoader reflectClassLoader( Class<?> target, String getterMethodName )
@@ -387,7 +388,7 @@ public final class SystemUtils
         try
         {
             Method getter = ReflectionUtils.getMethod( target, getterMethodName );
-            return (ClassLoader) ReflectionUtils.invokeMethodWithArray( null, getter );
+            return invokeMethodWithArray( null, getter );
         }
         catch ( RuntimeException e )
         {

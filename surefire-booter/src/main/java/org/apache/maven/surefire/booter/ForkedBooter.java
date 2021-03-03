@@ -496,7 +496,7 @@ public final class ForkedBooter
         bpf.setSkipAfterFailureCount( providerConfiguration.getSkipAfterFailureCount() );
         bpf.setSystemExitTimeout( providerConfiguration.getSystemExitTimeout() );
         String providerClass = startupConfiguration.getActualClassName();
-        return (SurefireProvider) instantiateOneArg( classLoader, providerClass, ProviderParameters.class, bpf );
+        return instantiateOneArg( classLoader, providerClass, ProviderParameters.class, bpf );
     }
 
     /**

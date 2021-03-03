@@ -45,11 +45,11 @@ public final class JUnit3Reflector
 
     private static final String TEST_SUITE = "junit.framework.TestSuite";
 
-    private static final Class[] EMPTY_CLASS_ARRAY = { };
+    private static final Class<?>[] EMPTY_CLASS_ARRAY = { };
 
     private static final Object[] EMPTY_OBJECT_ARRAY = { };
 
-    private final Class[] interfacesImplementedByDynamicProxy;
+    private final Class<?>[] interfacesImplementedByDynamicProxy;
 
     private final Class<?> testResultClass;
 
@@ -61,7 +61,7 @@ public final class JUnit3Reflector
 
     private final Class<?> testCase;
 
-    private final Constructor testsSuiteConstructor;
+    private final Constructor<?> testsSuiteConstructor;
 
     public JUnit3Reflector( ClassLoader testClassLoader )
     {
@@ -118,7 +118,7 @@ public final class JUnit3Reflector
     }
 
 
-    public Object constructTestObject( Class testClass )
+    public Object constructTestObject( Class<?> testClass )
         throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException
     {
         Object testObject = createInstanceFromSuiteMethod( testClass );
@@ -130,7 +130,7 @@ public final class JUnit3Reflector
 
         if ( testObject == null )
         {
-            Constructor testConstructor = getTestConstructor( testClass );
+            Constructor<?> testConstructor = getTestConstructor( testClass );
 
             if ( testConstructor.getParameterTypes().length == 0 )
             {
@@ -164,7 +164,7 @@ public final class JUnit3Reflector
         return testObject;
     }
 
-    private static Constructor getTestConstructor( Class<?> testClass )
+    private static Constructor<?> getTestConstructor( Class<?> testClass )
         throws NoSuchMethodException
     {
         try
@@ -177,7 +177,7 @@ public final class JUnit3Reflector
         }
     }
 
-    public Class[] getInterfacesImplementedByDynamicProxy()
+    public Class<?>[] getInterfacesImplementedByDynamicProxy()
     {
         return interfacesImplementedByDynamicProxy;
     }

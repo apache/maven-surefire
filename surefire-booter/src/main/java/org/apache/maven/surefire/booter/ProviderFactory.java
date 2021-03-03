@@ -51,9 +51,9 @@ public class ProviderFactory
 
     private final Object reporterManagerFactory;
 
-    private static final Class[] INVOKE_PARAMETERS = { Object.class };
+    private static final Class<?>[] INVOKE_PARAMETERS = { Object.class };
 
-    private static final Class[] INVOKE_EMPTY_PARAMETER_TYPES = { };
+    private static final Class<?>[] INVOKE_EMPTY_PARAMETER_TYPES = { };
 
     private static final Object[] INVOKE_EMPTY_PARAMETERS = { };
 
@@ -136,13 +136,12 @@ public class ProviderFactory
         }
 
         @Override
-        @SuppressWarnings( "unchecked" )
         public Iterable<Class<?>> getSuites()
         {
             ClassLoader current = swapClassLoader( testsClassLoader );
             try
             {
-                return (Iterable<Class<?>>) invokeGetter( providerInOtherClassLoader, "getSuites" );
+                return invokeGetter( providerInOtherClassLoader, "getSuites" );
             }
             finally
             {

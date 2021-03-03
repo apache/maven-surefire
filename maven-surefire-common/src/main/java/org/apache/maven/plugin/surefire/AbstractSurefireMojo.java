@@ -970,7 +970,7 @@ public abstract class AbstractSurefireMojo
         if ( getToolchainsMethod != null )
         {
             //noinspection unchecked
-            List<Toolchain> tcs = (List<Toolchain>) invokeMethodWithArray( toolchainManager,
+            List<Toolchain> tcs = invokeMethodWithArray( toolchainManager,
                 getToolchainsMethod, session, "jdk", toolchainArgs );
             if ( tcs.isEmpty() )
             {

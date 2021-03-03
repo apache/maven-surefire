@@ -65,12 +65,12 @@ public final class ReflectionUtils
         }
     }
 
-    public static Object invokeGetter( Object instance, String methodName )
+    public static <T> T invokeGetter( Object instance, String methodName )
     {
         return invokeGetter( instance.getClass(), instance, methodName );
     }
 
-    public static Object invokeGetter( Class<?> instanceType, Object instance, String methodName )
+    public static <T> T invokeGetter( Class<?> instanceType, Object instance, String methodName )
     {
         Method method = getMethod( instanceType, methodName );
         return invokeMethodWithArray( instance, method );
@@ -88,11 +88,12 @@ public final class ReflectionUtils
         }
     }
 
-    public static Object newInstance( Constructor<?> constructor, Object... params )
+    public static <T> T newInstance( Constructor<?> constructor, Object... params )
     {
         try
         {
-            return constructor.newInstance( params );
+            //noinspection unchecked
+            return (T) constructor.newInstance( params );
         }
         catch ( ReflectiveOperationException e )
         {
@@ -113,14 +114,15 @@ public final class ReflectionUtils
         }
     }
 
-    public static Object instantiateOneArg( ClassLoader classLoader, String className, Class<?> param1Class,
+    public static <T> T instantiateOneArg( ClassLoader classLoader, String className, Class<?> param1Class,
                                             Object param1 )
     {
         try
         {
             Class<?> aClass = loadClass( classLoader, className );
             Constructor<?> constructor = getConstructor( aClass, param1Class );
-            return constructor.newInstance( param1 );
+            //noinspection unchecked
+            return (T) constructor.newInstance( param1 );
         }
         catch ( InvocationTargetException e )
         {
@@ -138,16 +140,17 @@ public final class ReflectionUtils
         invokeSetter( o, setter, value );
     }
 
-    public static Object invokeSetter( Object target, Method method, Object value )
+    public static <T> T invokeSetter( Object target, Method method, Object value )
     {
         return invokeMethodWithArray( target, method, value );
     }
 
-    public static Object invokeMethodWithArray( Object target, Method method, Object... args )
+    public static <T> T invokeMethodWithArray( Object target, Method method, Object... args )
     {
         try
         {
-            return method.invoke( target, args );
+            //noinspection unchecked
+            return (T) method.invoke( target, args );
         }
         catch ( IllegalAccessException e )
         {
@@ -159,12 +162,13 @@ public final class ReflectionUtils
         }
     }
 
-    public static Object invokeMethodWithArray2( Object target, Method method, Object... args )
+    public static <T> T invokeMethodWithArray2( Object target, Method method, Object... args )
         throws InvocationTargetException
     {
         try
         {
-            return method.invoke( target, args );
+            //noinspection unchecked
+            return (T) method.invoke( target, args );
         }
         catch ( IllegalAccessException e )
         {
@@ -172,7 +176,7 @@ public final class ReflectionUtils
         }
     }
 
-    public static Object instantiateObject( String className, Class<?>[] types, Object[] params, ClassLoader cl )
+    public static <T> T instantiateObject( String className, Class<?>[] types, Object[] params, ClassLoader cl )
     {
         Class<?> clazz = loadClass( cl, className );
         final Constructor<?> constructor = getConstructor( clazz, types );
@@ -222,8 +226,8 @@ public final class ReflectionUtils
      * @throws SurefireReflectionException if the method could not be called or threw an exception.
      * It has original cause Exception.
      */
-    public static Object invokeStaticMethod( Class<?> clazz, String methodName,
-                                             Class<?>[] parameterTypes, Object[] parameters )
+    public static <T> T invokeStaticMethod( Class<?> clazz, String methodName,
+                                            Class<?>[] parameterTypes, Object[] parameters )
     {
         if ( parameterTypes.length != parameters.length )
         {
@@ -242,7 +246,7 @@ public final class ReflectionUtils
      * @return successfully returned value from the last method call; {@code fallback} otherwise
      * @throws IllegalArgumentException if {@code classes} and {@code noArgMethodNames} have different array length
      */
-    public static Object invokeMethodChain( Class<?>[] classesChain, String[] noArgMethodNames, Object fallback )
+    public static <T> T invokeMethodChain( Class<?>[] classesChain, String[] noArgMethodNames, Object fallback )
     {
         if ( classesChain.length != noArgMethodNames.length )
         {
@@ -264,11 +268,13 @@ public final class ReflectionUtils
                     obj = invokeMethodWithArray( obj, method );
                 }
             }
-            return obj;
+            //noinspection unchecked
+            return (T) obj;
         }
         catch ( RuntimeException e )
         {
-            return fallback;
+            //noinspection unchecked
+            return (T) fallback;
         }
     }
 }

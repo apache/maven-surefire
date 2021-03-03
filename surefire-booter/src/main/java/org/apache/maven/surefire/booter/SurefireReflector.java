@@ -114,10 +114,10 @@ public final class SurefireReflector
         {
             return result;
         }
-        int getCompletedCount1 = (Integer) invokeGetter( result, "getCompletedCount" );
-        int getErrors = (Integer) invokeGetter( result, "getErrors" );
-        int getSkipped = (Integer) invokeGetter( result, "getSkipped" );
-        int getFailures = (Integer) invokeGetter( result, "getFailures" );
+        int getCompletedCount1 = invokeGetter( result, "getCompletedCount" );
+        int getErrors = invokeGetter( result, "getErrors" );
+        int getSkipped = invokeGetter( result, "getSkipped" );
+        int getFailures = invokeGetter( result, "getFailures" );
         return new RunResult( getCompletedCount1, getErrors, getFailures, getSkipped );
     }
 
