@@ -169,7 +169,11 @@ public class SurefireProperties
     {
         if ( source != null )
         {
-            target.putAll( source );
+            for ( String key : source.keySet() )
+            {
+                String value = source.get( key );
+                target.setProperty( key, value == null ? "" : value );
+            }
         }
     }
 
