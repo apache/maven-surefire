@@ -38,6 +38,7 @@ import org.apache.maven.surefire.booter.KeyValueSource;
 import org.apache.maven.surefire.shared.utils.StringUtils;
 
 import static java.util.Arrays.asList;
+import static java.util.Map.Entry;
 
 /**
  * A properties implementation that preserves insertion order.
@@ -74,7 +75,7 @@ public class SurefireProperties
     @Override
     public synchronized void putAll( Map<?, ?> t )
     {
-        for ( Map.Entry<?, ?> entry : t.entrySet() )
+        for ( Entry<?, ?> entry : t.entrySet() )
         {
             put( entry.getKey(), entry.getValue() );
         }
@@ -117,7 +118,6 @@ public class SurefireProperties
 
     public Iterable<Object> getStringKeySet()
     {
-        //noinspection unchecked
         return keySet();
     }
 
@@ -126,6 +126,7 @@ public class SurefireProperties
         Set<Object> result = new HashSet<>();
         for ( Object key : getStringKeySet() )
         {
+            //noinspection SuspiciousMethodCalls
             if ( KEYS_THAT_CANNOT_BE_USED_AS_SYSTEM_PROPERTIES.contains( key ) )
             {
                 result.add( key );
@@ -136,13 +137,10 @@ public class SurefireProperties
 
     public void copyToSystemProperties()
     {
-
-        //noinspection unchecked
         for ( Object o : items )
         {
             String key = (String) o;
             String value = getProperty( key );
-
             System.setProperty( key, value );
         }
     }
@@ -167,15 +165,11 @@ public class SurefireProperties
         return result;
     }
 
-    public static void copyProperties( Properties target, Map<String, String> source )
+    private static void copyProperties( Properties target, Map<String, String> source )
     {
         if ( source != null )
         {
-            for ( String key : source.keySet() )
-            {
-                String value = source.get( key );
-                target.setProperty( key, value == null ? "" : value );
-            }
+            target.putAll( source );
         }
     }
 
