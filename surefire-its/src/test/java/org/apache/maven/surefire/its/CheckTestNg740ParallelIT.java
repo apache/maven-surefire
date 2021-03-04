@@ -27,6 +27,7 @@ import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaV
 
 /**
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class CheckTestNg740ParallelIT
     extends SurefireJUnit4IntegrationTestCase
 {
