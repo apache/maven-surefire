@@ -20,13 +20,22 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Before;
 import org.junit.Test;
+
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 
 /**
  */
 public class CheckTestNg740ParallelIT
     extends SurefireJUnit4IntegrationTestCase
 {
+    @Before
+    public void assumeJava8Plus()
+    {
+        assumeJavaVersion( 1.8d );
+    }
+
     @Test
     public void withTestNG740AndParallelSet()
     {
