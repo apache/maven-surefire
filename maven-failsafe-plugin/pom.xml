@@ -279,7 +279,7 @@
                                     <postBuildHookScript>verify</postBuildHookScript>
                                     <settingsFile>src/it/settings.xml</settingsFile>
                                     <skipInvocation>${skipTests}</skipInvocation>
-                                    <streamLogs>false</streamLogs>
+                                    <streamLogs>true</streamLogs>
                                     <showErrors>true</showErrors>
                                     <properties>
                                         <integration-test-port>${failsafe-integration-test-port}</integration-test-port>
