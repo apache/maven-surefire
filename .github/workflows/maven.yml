@@ -35,6 +35,7 @@ jobs:
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
 
     steps:
       - name: Checkout
@@ -46,7 +47,7 @@ jobs:
           java-version: ${{ matrix.java }}
 
       - name: Build with Maven
-        run: mvn clean install -e -B -V -nsu --no-transfer-progress -P run-its
+        run: mvn clean install -e -B -V -nsu --no-transfer-progress -P run-its -Dfailsafe-integration-test-port=8083
 
       - name: Upload artifact surefire-its
         uses: actions/upload-artifact@v2-preview
