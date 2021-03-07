@@ -94,6 +94,7 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersion;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
 import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_9;
@@ -102,6 +103,7 @@ import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.codehaus.plexus.languages.java.jpms.ModuleNameSource.MODULEDESCRIPTOR;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.MapAssert.entry;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -1997,6 +1999,14 @@ public class AbstractSurefireMojoTest
         e.expect( MojoFailureException.class );
         e.expectMessage( "Unexpected value 'fake' in the configuration parameter 'enableProcessChecker'." );
         mojo.verifyParameters();
+    }
+
+    @Test
+    public void shouldSupportBooleanSystemPropertiesValue()
+    {
+        AbstractSurefireMojo mojo = new Mojo();
+        mojo.setSystemPropertyVariables(singletonMap("offline", true));
+        assertEquals(singletonMap("offline", "true"), mojo.getSystemPropertyVariables());
     }
 
     private void setProjectDepedenciesToMojo( Artifact... deps )

@@ -3623,9 +3623,20 @@ public abstract class AbstractSurefireMojo
     }
 
     @SuppressWarnings( "UnusedDeclaration" )
-    public void setSystemPropertyVariables( Map<String, String> systemPropertyVariables )
+    public void setSystemPropertyVariables( Map<String, ?> systemPropertyVariables )
     {
-        this.systemPropertyVariables = systemPropertyVariables;
+        if (systemPropertyVariables != null)
+        {
+            this.systemPropertyVariables = new HashMap<>();
+            for ( final Map.Entry<String, ?> entry : systemPropertyVariables.entrySet() )
+            {
+                this.systemPropertyVariables.put( entry.getKey(), String.valueOf( entry.getValue() ) );
+            }
+        }
+        else
+        {
+            this.systemPropertyVariables = null;
+        }
     }
 
     /**
