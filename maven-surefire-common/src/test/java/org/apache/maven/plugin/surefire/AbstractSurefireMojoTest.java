@@ -2005,8 +2005,8 @@ public class AbstractSurefireMojoTest
     public void shouldSupportBooleanSystemPropertiesValue()
     {
         AbstractSurefireMojo mojo = new Mojo();
-        mojo.setSystemPropertyVariables(singletonMap("offline", true));
-        assertEquals(singletonMap("offline", "true"), mojo.getSystemPropertyVariables());
+        mojo.setSystemPropertyVariables( singletonMap( "offline", true ) );
+        assertEquals( singletonMap( "offline", "true" ), mojo.getSystemPropertyVariables() );
     }
 
     private void setProjectDepedenciesToMojo( Artifact... deps )
