@@ -124,6 +124,7 @@
                     </xs:complexType>
                 </xs:element>
             </xs:sequence>
+            <xs:attribute name="version" type="xs:string"/>
             <xs:attribute name="name" type="xs:string" use="required"/>
             <xs:attribute name="time" type="SUREFIRE_TIME"/>
             <xs:attribute name="tests" type="xs:string" use="required"/>
