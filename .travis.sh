@@ -1,3 +1,6 @@
+#!/bin/sh
+
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -6,7 +9,7 @@
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
 #
-#  http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
@@ -14,27 +17,8 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+#
 
-language: java
-sudo: false
-
-cache:
-  directories:
-  - "$HOME/.m2"
-
-matrix:
-  fast_finish: false
-
-install: true
-jdk: openjdk15
-
-jobs:
-  include:
-    - stage: repo cleanup
-      script: travis_wait 5 mvn -e -B -V -nsu org.apache.maven.plugins:maven-dependency-plugin:3.1.1:purge-local-repository
-
-    - stage: mvn build
-      script: travis_wait 30 mvn clean install -fn -e -B -V -nsu -P run-its -DskipITs -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-
-    - stage: post build check
-      script: bash .travis.sh
+if [ -f target/rat.txt ] ; then
+  cat target/rat.txt
+fi
