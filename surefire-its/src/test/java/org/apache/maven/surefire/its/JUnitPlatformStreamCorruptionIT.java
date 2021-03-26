@@ -53,4 +53,34 @@ public class JUnitPlatformStreamCorruptionIT
         assertThat( lines )
                 .isEmpty();
     }
+
+    @Test
+    public void warningIsNotEmittedWithJulToSlf4j() throws VerificationException
+    {
+        OutputValidator validator = unpack( "/surefire-1659-stream-corruption" )
+                .activateProfile( "junit-platform-with-jul-to-slf4j" )
+                .executeTest()
+                .verifyErrorFree( 1 );
+
+        List<String> lines = validator.loadLogLines(
+                startsWith( "[WARNING] Corrupted STDOUT by directly writing to native stream in forked JVM" ) );
+
+        assertThat( lines )
+                .isEmpty();
+    }
+
+    @Test
+    public void warningIsNotEmittedWithJulToLog4j() throws VerificationException
+    {
+        OutputValidator validator = unpack( "/surefire-1659-stream-corruption" )
+                .activateProfile( "junit-platform-with-jul-to-log4j" )
+                .executeTest()
+                .verifyErrorFree( 1 );
+
+        List<String> lines = validator.loadLogLines(
+                startsWith( "[WARNING] Corrupted STDOUT by directly writing to native stream in forked JVM" ) );
+
+        assertThat( lines )
+                .isEmpty();
+    }
 }

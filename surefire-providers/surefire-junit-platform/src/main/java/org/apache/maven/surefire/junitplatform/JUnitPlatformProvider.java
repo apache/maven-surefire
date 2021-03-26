@@ -61,7 +61,6 @@ import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TagFilter;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
-import org.junit.platform.launcher.core.LauncherFactory;
 
 /**
  * JUnit 5 Platform Provider.
@@ -83,7 +82,7 @@ public class JUnitPlatformProvider
 
     public JUnitPlatformProvider( ProviderParameters parameters )
     {
-        this( parameters, LauncherFactory.create() );
+        this( parameters, new LazyLauncher() );
     }
 
     JUnitPlatformProvider( ProviderParameters parameters, Launcher launcher )
