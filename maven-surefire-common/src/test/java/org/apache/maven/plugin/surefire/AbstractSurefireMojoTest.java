@@ -84,6 +84,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import static java.io.File.separatorChar;
@@ -1891,6 +1892,31 @@ public class AbstractSurefireMojoTest
                         entry( "org.opentest4j:opentest4j", testClasspathOpentest4j ) );
     }
 
+    @Test
+    public void shouldConvertJunitEngineParameters() throws Exception
+    {
+        Properties properties = new Properties();
+        setInternalState( mojo, "properties", properties );
+
+        invokeMethod( mojo, "convertJunitEngineParameters" );
+        assertThat( properties ).isEmpty();
+
+        mojo.setIncludeJUnit5Engines( new String[0] );
+        mojo.setExcludeJUnit5Engines( new String[0] );
+        invokeMethod( mojo, "convertJunitEngineParameters" );
+        assertThat( properties ).isEmpty();
+
+        mojo.setIncludeJUnit5Engines( new String[] { "e1", "e2" } );
+        invokeMethod( mojo, "convertJunitEngineParameters" );
+        assertThat( properties )
+            .includes( entry( "includejunit5engines", "e1,e2" ) );
+
+        mojo.setExcludeJUnit5Engines( new String[] { "e1", "e2" } );
+        invokeMethod( mojo, "convertJunitEngineParameters" );
+        assertThat( properties )
+            .includes( entry( "excludejunit5engines", "e1,e2" ) );
+    }
+
     private static ArtifactResolutionResult createJUnitPlatformLauncherResolutionResult(
             Artifact junit5Engine, Artifact apiguardian, Artifact commons, Artifact opentest4j )
     {
@@ -2027,6 +2053,8 @@ public class AbstractSurefireMojoTest
         private File testClassesDirectory;
         private boolean useModulePath;
         private int failOnFlakeCount;
+        private String[] includeJUnit5Engines;
+        private String[] excludeJUnit5Engines;
 
         private JUnitPlatformProviderInfo createJUnitPlatformProviderInfo( Artifact junitPlatformArtifact,
                                                                            TestClassPath testClasspathWrapper )
@@ -2481,6 +2509,30 @@ public class AbstractSurefireMojoTest
         public void setFailOnFlakeCount( int failOnFlakeCount )
         {
             this.failOnFlakeCount = failOnFlakeCount;
+        }
+
+        @Override
+        public String[] getIncludeJUnit5Engines()
+        {
+            return includeJUnit5Engines;
+        }
+
+        @Override
+        public void setIncludeJUnit5Engines( String[] includeJUnit5Engines )
+        {
+            this.includeJUnit5Engines = includeJUnit5Engines;
+        }
+
+        @Override
+        public String[] getExcludeJUnit5Engines()
+        {
+            return excludeJUnit5Engines;
+        }
+
+        @Override
+        public void setExcludeJUnit5Engines( String[] excludeJUnit5Engines )
+        {
+            this.excludeJUnit5Engines = excludeJUnit5Engines;
         }
     }
 

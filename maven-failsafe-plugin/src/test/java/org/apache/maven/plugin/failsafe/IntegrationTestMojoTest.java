@@ -103,4 +103,14 @@ public class IntegrationTestMojoTest
         assertThat( mojo.getSystemPropertiesFile() )
                 .isEqualTo( new File( "testShouldGetPropertyFile" ) );
     }
+
+    @Test
+    public void shouldHaveJUnit5EnginesFilter()
+    {
+        mojo.setIncludeJUnit5Engines( new String[] { "e1", "e2" } );
+        assertThat( mojo.getIncludeJUnit5Engines() ).isEqualTo( new String[] { "e1", "e2" } );
+
+        mojo.setExcludeJUnit5Engines( new String[] { "e1", "e2" } );
+        assertThat( mojo.getExcludeJUnit5Engines() ).isEqualTo( new String[] { "e1", "e2" } );
+    }
 }

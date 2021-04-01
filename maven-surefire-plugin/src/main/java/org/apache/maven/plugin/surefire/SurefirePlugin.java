@@ -466,6 +466,22 @@ public class SurefirePlugin
     @Parameter( property = "surefire.systemPropertiesFile" )
     private File systemPropertiesFile;
 
+    /**
+     * Provide the ID/s of an JUnit engine to be included in the test run.
+     *
+     * @since 3.0.0-M6
+     */
+    @Parameter( property = "includeJUnit5Engines" )
+    private String[] includeJUnit5Engines;
+
+    /**
+     * Provide the ID/s of an JUnit engine to be excluded in the test run.
+     *
+     * @since 3.0.0-M6
+     */
+    @Parameter( property = "excludeJUnit5Engines" )
+    private String[] excludeJUnit5Engines;
+
     @Override
     protected int getRerunFailingTestsCount()
     {
@@ -920,5 +936,27 @@ public class SurefirePlugin
     protected void addPluginSpecificChecksumItems( ChecksumCalculator checksum )
     {
         checksum.add( skipAfterFailureCount );
+    }
+
+    public String[] getIncludeJUnit5Engines()
+    {
+        return includeJUnit5Engines;
+    }
+
+    @SuppressWarnings( "UnusedDeclaration" )
+    public void setIncludeJUnit5Engines( String[] includeJUnit5Engines )
+    {
+        this.includeJUnit5Engines = includeJUnit5Engines;
+    }
+
+    public String[] getExcludeJUnit5Engines()
+    {
+        return excludeJUnit5Engines;
+    }
+
+    @SuppressWarnings( "UnusedDeclaration" )
+    public void setExcludeJUnit5Engines( String[] excludeJUnit5Engines )
+    {
+        this.excludeJUnit5Engines = excludeJUnit5Engines;
     }
 }

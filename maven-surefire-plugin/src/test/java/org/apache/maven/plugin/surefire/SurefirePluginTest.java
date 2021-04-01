@@ -135,4 +135,15 @@ public class SurefirePluginTest extends TestCase
         e.expect( MojoFailureException.class );
         e.expectMessage( "\"failOnFlakeCount\" requires rerunFailingTestsCount to be at least 1." );
     }
+
+    public void testShouldHaveJUnit5EnginesFilter()
+    {
+        SurefirePlugin plugin = new SurefirePlugin();
+
+        plugin.setIncludeJUnit5Engines( new String[] { "e1", "e2" } );
+        assertThat( plugin.getIncludeJUnit5Engines() ).isEqualTo( new String[] { "e1", "e2" } );
+
+        plugin.setExcludeJUnit5Engines( new String[] { "e1", "e2" } );
+        assertThat( plugin.getExcludeJUnit5Engines() ).isEqualTo( new String[] { "e1", "e2" } );
+    }
 }

@@ -518,6 +518,43 @@ else
 +---+
 
 
+* Filtering JUnit5 Engines
+
+   You can filter engines by the ID/s of an engine to be included or excluded in the test run.
+
+    * To include <<<engines>>>, use <<<includeJUnit5Engines>>>.
+
+    * To exclude <<<engines>>>, use <<<excludeJUnit5Engines>>>.
+
+   Be aware that this feature reserves system properties <<<includejunit5engines>>> and <<<excludejunit5engines>>>
+   for internal usage.
+
++---+
+...
+<build>
+    <plugins>
+        ...
+        <plugin>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>${project.artifactId}</artifactId>
+            <version>${project.version}</version>
+            <configuration>
+                <includeJUnit5Engines>
+                    <engine>my-first-engine-id-to-include</engine>
+                    <engine>my-second-engine-id-to-include</engine>
+                </includeJUnit5Engines>
+                <excludeJUnit5Engines>
+                    <engine>my-first-engine-id-to-include</engine>
+                    <engine>my-second-engine-id-to-include</engine>
+                </excludeJUnit5Engines>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+...
++---+
+
+
 * Configuration Parameters
 
    You can set JUnit Platform configuration parameters to influence test discovery and execution by

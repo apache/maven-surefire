@@ -22,8 +22,10 @@ package org.apache.maven.surefire.junitplatform;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -70,6 +72,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.platform.launcher.EngineFilter;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
@@ -764,6 +767,80 @@ public class JUnitPlatformProviderTest
         JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
 
         assertEquals( 2, provider.getFilters().length );
+    }
+
+    @Test
+    public void onlyIncludeJunit5EnginesIsDeclared()
+    {
+        Map<String, String> properties = singletonMap( INCLUDE_JUNIT5_ENGINES_PROP, "engine-one, engine-two" );
+
+        ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
+        when( providerParameters.getProviderProperties() ).thenReturn( properties );
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
+
+        assertThat( provider.getFilters() ).hasSize( 1 );
+        assertThat( provider.getFilters()[0] ).isInstanceOf( EngineFilter.class );
+    }
+
+    @Test
+    public void onlyExcludeJunit5EnginesIsDeclared()
+    {
+        Map<String, String> properties = singletonMap( EXCLUDE_JUNIT5_ENGINES_PROP, "engine-one, engine-two" );
+
+        ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
+        when( providerParameters.getProviderProperties() ).thenReturn( properties );
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
+
+        assertThat( provider.getFilters() ).hasSize( 1 );
+        assertThat( provider.getFilters()[0] ).isInstanceOf( EngineFilter.class );
+    }
+
+    @Test
+    public void noFiltersAreCreatedIfIncludeJunit5EnginesIsEmpty()
+    {
+        Map<String, String> properties = singletonMap( INCLUDE_JUNIT5_ENGINES_PROP, "" );
+
+        ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
+        when( providerParameters.getProviderProperties() ).thenReturn( properties );
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
+        assertEquals( 0, provider.getFilters().length );
+
+        assertThat( provider.getFilters() ).hasSize( 0 );
+    }
+
+    @Test
+    public void filtersWithEmptyJunitEngineAreNotRegistered()
+    {
+        // Here only tagOne is registered as a valid tag and other tags are ignored as they are empty
+        Map<String, String> properties = singletonMap( EXCLUDE_JUNIT5_ENGINES_PROP, "engine-one," );
+
+        ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
+        when( providerParameters.getProviderProperties() ).thenReturn( properties );
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
+
+        assertThat( provider.getFilters() ).hasSize( 1 );
+        assertThat( provider.getFilters()[0] ).isInstanceOf( EngineFilter.class );
+    }
+
+    @Test
+    public void bothIncludeAndExcludeJunit5EnginesAreAllowed()
+    {
+        Map<String, String> properties = new HashMap<>();
+        properties.put( INCLUDE_JUNIT5_ENGINES_PROP, "engine-one, engine-two" );
+        properties.put( EXCLUDE_JUNIT5_ENGINES_PROP, "engine-three, engine-four" );
+
+        ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
+        when( providerParameters.getProviderProperties() ).thenReturn( properties );
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
+
+        assertThat( provider.getFilters() ).hasSize( 2 );
+        assertThat( provider.getFilters()[0] ).isInstanceOf( EngineFilter.class );
+        assertThat( provider.getFilters()[1] ).isInstanceOf( EngineFilter.class );
     }
 
     @Test

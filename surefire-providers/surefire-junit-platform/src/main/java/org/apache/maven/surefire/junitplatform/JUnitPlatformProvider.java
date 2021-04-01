@@ -25,8 +25,10 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toList;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
@@ -60,6 +62,7 @@ import org.apache.maven.surefire.api.util.TestsToRun;
 import org.apache.maven.surefire.shared.utils.StringUtils;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
+import org.junit.platform.launcher.EngineFilter;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TagFilter;
@@ -229,6 +232,14 @@ public class JUnitPlatformProvider
         {
             filters.add( new TestMethodFilter( testListResolver ) );
         }
+
+        getPropertiesList( INCLUDE_JUNIT5_ENGINES_PROP )
+            .map( EngineFilter::includeEngines )
+            .ifPresent( filters::add );
+
+        getPropertiesList( EXCLUDE_JUNIT5_ENGINES_PROP )
+            .map( EngineFilter::excludeEngines )
+            .ifPresent( filters::add );
 
         return filters.toArray( new Filter<?>[ filters.size() ] );
     }

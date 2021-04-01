@@ -466,6 +466,27 @@ public class AbstractSurefireMojoJava7PlusTest
             "--add-opens", "org.junit.platform.commons/org.junit.platform.commons.logging=ALL-UNNAMED"}, atIndex( 1 ) );
     }
 
+    @Test
+    public void shouldJoinStrings() throws Exception
+    {
+        Class<?>[] methodArgTypes = {String[].class};
+
+        Object[] args = { new String[]{"my-engine"} };
+        String result = invokeMethod( AbstractSurefireMojo.class, "join", methodArgTypes, args );
+        assertThat( result ).isNotNull();
+        assertThat( result ).isEqualTo( "my-engine" );
+
+        args = new Object[]{ new String[]{"my-engine1", "my-engine2"} };
+        result = invokeMethod( AbstractSurefireMojo.class, "join", methodArgTypes, args );
+        assertThat( result ).isNotNull();
+        assertThat( result ).isEqualTo( "my-engine1,my-engine2" );
+
+        args = new Object[]{new String[0]};
+        result = invokeMethod( AbstractSurefireMojo.class, "join", methodArgTypes, args );
+        assertThat( result ).isNotNull();
+        assertThat( result ).isEmpty();
+    }
+
     private static File mockFile( String absolutePath )
     {
         File f = mock( File.class );
@@ -913,6 +934,30 @@ public class AbstractSurefireMojoJava7PlusTest
 
         @Override
         public void setSystemPropertiesFile( File systemPropertiesFile )
+        {
+
+        }
+
+        @Override
+        public String[] getIncludeJUnit5Engines()
+        {
+            return null;
+        }
+
+        @Override
+        public void setIncludeJUnit5Engines( String[] includeJUnit5Engines )
+        {
+
+        }
+
+        @Override
+        public String[] getExcludeJUnit5Engines()
+        {
+            return null;
+        }
+
+        @Override
+        public void setExcludeJUnit5Engines( String[] excludeJUnit5Engines )
         {
 
         }

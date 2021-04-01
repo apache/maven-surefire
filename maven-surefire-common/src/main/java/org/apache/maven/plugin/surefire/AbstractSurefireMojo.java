@@ -150,6 +150,8 @@ import static org.apache.maven.surefire.api.suite.RunResult.failure;
 import static org.apache.maven.surefire.api.suite.RunResult.noTestsRun;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.tryGetMethod;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
 
 /**
  * Abstract base class for running tests using Surefire.
@@ -1560,6 +1562,35 @@ public abstract class AbstractSurefireMojo
         }
     }
 
+    private void convertJunitEngineParameters()
+    {
+        if ( getIncludeJUnit5Engines() != null && getIncludeJUnit5Engines().length != 0 )
+        {
+            getProperties()
+                .setProperty( INCLUDE_JUNIT5_ENGINES_PROP, join( getIncludeJUnit5Engines() ) );
+        }
+
+        if ( getExcludeJUnit5Engines() != null && getExcludeJUnit5Engines().length != 0 )
+        {
+            getProperties()
+                .setProperty( EXCLUDE_JUNIT5_ENGINES_PROP, join( getExcludeJUnit5Engines() ) );
+        }
+    }
+
+    private static String join( String[] array )
+    {
+        StringBuilder stringBuilder = new StringBuilder();
+        for ( int i = 0, length = array.length; i < length; i++ )
+        {
+            stringBuilder.append( array[i] );
+            if ( i < length - 1 )
+            {
+                stringBuilder.append( ',' );
+            }
+        }
+        return stringBuilder.toString();
+    }
+
     protected boolean isAnyConcurrencySelected()
     {
         return getParallel() != null && !getParallel().trim().isEmpty();
@@ -2732,6 +2763,8 @@ public abstract class AbstractSurefireMojo
         checksum.add( isChildDelegation() );
         checksum.add( getGroups() );
         checksum.add( getExcludedGroups() );
+        checksum.add( getIncludeJUnit5Engines() );
+        checksum.add( getExcludeJUnit5Engines() );
         checksum.add( getSuiteXmlFiles() );
         checksum.add( getJunitArtifact() );
         checksum.add( getTestNGArtifactName() );
@@ -3238,6 +3271,7 @@ public abstract class AbstractSurefireMojo
         public void addProviderProperties()
         {
             convertGroupParameters();
+            convertJunitEngineParameters();
         }
 
         @Nonnull
@@ -3416,6 +3450,7 @@ public abstract class AbstractSurefireMojo
         {
             convertJunitCoreParameters();
             convertGroupParameters();
+            convertJunitEngineParameters();
         }
 
         @Nonnull
