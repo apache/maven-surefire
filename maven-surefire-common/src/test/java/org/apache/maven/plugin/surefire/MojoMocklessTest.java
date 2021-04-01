@@ -798,5 +798,29 @@ public class MojoMocklessTest
         {
 
         }
+
+        @Override
+        public String[] getIncludeJUnit5Engines()
+        {
+            return null;
+        }
+
+        @Override
+        public void setIncludeJUnit5Engines( String[] includeJUnit5Engines )
+        {
+
+        }
+
+        @Override
+        public String[] getExcludeJUnit5Engines()
+        {
+            return null;
+        }
+
+        @Override
+        public void setExcludeJUnit5Engines( String[] excludeJUnit5Engines )
+        {
+
+        }
     }
 }

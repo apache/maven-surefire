@@ -22,8 +22,10 @@ package org.apache.maven.surefire.junitplatform;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -70,6 +72,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.platform.launcher.EngineFilter;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
@@ -88,8 +91,7 @@ import org.mockito.InOrder;
 public class JUnitPlatformProviderTest
 {
     @Test
-    public void shouldFailClassOnBeforeAll()
-            throws Exception
+    public void shouldFailClassOnBeforeAll() throws Exception
     {
         Launcher launcher = LauncherFactory.create();
         JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParametersMock(), launcher );
@@ -109,34 +111,27 @@ public class JUnitPlatformProviderTest
         inOrder.verify( listener, times( 1 ) ).testFailed( testCaptor.capture() );
         inOrder.verify( listener, times( 1 ) ).testSetCompleted( testSetCaptor.capture() );
 
-        assertThat( testSetCaptor.getAllValues() )
-                .hasSize( 2 );
+        assertThat( testSetCaptor.getAllValues() ).hasSize( 2 );
 
-        assertThat( testSetCaptor.getAllValues().get( 0 ).getSourceName() )
-                .isEqualTo( FailingBeforeAllJupiterTest.class.getName() );
+        assertThat( testSetCaptor.getAllValues().get( 0 ).getSourceName() ).isEqualTo(
+            FailingBeforeAllJupiterTest.class.getName() );
 
-        assertThat( testSetCaptor.getAllValues().get( 0 ).getName() )
-                .isNull();
+        assertThat( testSetCaptor.getAllValues().get( 0 ).getName() ).isNull();
 
-        assertThat( testCaptor.getAllValues() )
-                .hasSize( 1 );
+        assertThat( testCaptor.getAllValues() ).hasSize( 1 );
 
-        assertThat( testCaptor.getValue().getSourceName() )
-                .isEqualTo( FailingBeforeAllJupiterTest.class.getName() );
+        assertThat( testCaptor.getValue().getSourceName() ).isEqualTo( FailingBeforeAllJupiterTest.class.getName() );
 
-        assertThat( testCaptor.getValue().getName() )
-                .isNull();
+        assertThat( testCaptor.getValue().getName() ).isNull();
 
-        assertThat( testSetCaptor.getAllValues().get( 1 ).getSourceName() )
-                .isEqualTo( FailingBeforeAllJupiterTest.class.getName() );
+        assertThat( testSetCaptor.getAllValues().get( 1 ).getSourceName() ).isEqualTo(
+            FailingBeforeAllJupiterTest.class.getName() );
 
-        assertThat( testSetCaptor.getAllValues().get( 1 ).getName() )
-                .isNull();
+        assertThat( testSetCaptor.getAllValues().get( 1 ).getName() ).isNull();
     }
 
     @Test
-    public void shouldErrorClassOnBeforeAll()
-            throws Exception
+    public void shouldErrorClassOnBeforeAll() throws Exception
     {
         Launcher launcher = LauncherFactory.create();
         JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParametersMock(), launcher );
@@ -156,29 +151,24 @@ public class JUnitPlatformProviderTest
         inOrder.verify( listener, times( 1 ) ).testError( testCaptor.capture() );
         inOrder.verify( listener, times( 1 ) ).testSetCompleted( testSetCaptor.capture() );
 
-        assertThat( testSetCaptor.getAllValues() )
-                .hasSize( 2 );
+        assertThat( testSetCaptor.getAllValues() ).hasSize( 2 );
 
-        assertThat( testSetCaptor.getAllValues().get( 0 ).getSourceName() )
-                .isEqualTo( FailingWithErrorBeforeAllJupiterTest.class.getName() );
+        assertThat( testSetCaptor.getAllValues().get( 0 ).getSourceName() ).isEqualTo(
+            FailingWithErrorBeforeAllJupiterTest.class.getName() );
 
-        assertThat( testSetCaptor.getAllValues().get( 0 ).getName() )
-                .isNull();
+        assertThat( testSetCaptor.getAllValues().get( 0 ).getName() ).isNull();
 
-        assertThat( testCaptor.getAllValues() )
-                .hasSize( 1 );
+        assertThat( testCaptor.getAllValues() ).hasSize( 1 );
 
-        assertThat( testCaptor.getValue().getSourceName() )
-                .isEqualTo( FailingWithErrorBeforeAllJupiterTest.class.getName() );
+        assertThat( testCaptor.getValue().getSourceName() ).isEqualTo(
+            FailingWithErrorBeforeAllJupiterTest.class.getName() );
 
-        assertThat( testCaptor.getValue().getName() )
-                .isNull();
+        assertThat( testCaptor.getValue().getName() ).isNull();
 
-        assertThat( testSetCaptor.getAllValues().get( 1 ).getSourceName() )
-                .isEqualTo( FailingWithErrorBeforeAllJupiterTest.class.getName() );
+        assertThat( testSetCaptor.getAllValues().get( 1 ).getSourceName() ).isEqualTo(
+            FailingWithErrorBeforeAllJupiterTest.class.getName() );
 
-        assertThat( testSetCaptor.getAllValues().get( 1 ).getName() )
-                .isNull();
+        assertThat( testSetCaptor.getAllValues().get( 1 ).getName() ).isNull();
     }
 
     @Test
@@ -186,8 +176,7 @@ public class JUnitPlatformProviderTest
     {
         ProviderParameters providerParameters = providerParametersMock( TestClass1.class, TestClass2.class );
         JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
-        assertThat( provider.getSuites() )
-                .containsOnly( TestClass1.class, TestClass2.class );
+        assertThat( provider.getSuites() ).containsOnly( TestClass1.class, TestClass2.class );
     }
 
     @Test
@@ -200,8 +189,7 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
-    public void allGivenTestsToRunAreInvoked()
-                    throws Exception
+    public void allGivenTestsToRunAreInvoked() throws Exception
     {
         Launcher launcher = LauncherFactory.create();
         JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParametersMock(), launcher );
@@ -215,20 +203,15 @@ public class JUnitPlatformProviderTest
         assertThat( executionListener.summaries ).hasSize( 1 );
         TestExecutionSummary summary = executionListener.summaries.get( 0 );
         assertEquals( TestClass1.TESTS_FOUND + TestClass2.TESTS_FOUND, summary.getTestsFoundCount() );
-        assertEquals(
-                        TestClass1.TESTS_STARTED + TestClass2.TESTS_STARTED, summary.getTestsStartedCount() );
-        assertEquals(
-                        TestClass1.TESTS_SKIPPED + TestClass2.TESTS_SKIPPED, summary.getTestsSkippedCount() );
-        assertEquals(
-                        TestClass1.TESTS_SUCCEEDED + TestClass2.TESTS_SUCCEEDED, summary.getTestsSucceededCount() );
-        assertEquals(
-                        TestClass1.TESTS_ABORTED + TestClass2.TESTS_ABORTED, summary.getTestsAbortedCount() );
+        assertEquals( TestClass1.TESTS_STARTED + TestClass2.TESTS_STARTED, summary.getTestsStartedCount() );
+        assertEquals( TestClass1.TESTS_SKIPPED + TestClass2.TESTS_SKIPPED, summary.getTestsSkippedCount() );
+        assertEquals( TestClass1.TESTS_SUCCEEDED + TestClass2.TESTS_SUCCEEDED, summary.getTestsSucceededCount() );
+        assertEquals( TestClass1.TESTS_ABORTED + TestClass2.TESTS_ABORTED, summary.getTestsAbortedCount() );
         assertEquals( TestClass1.TESTS_FAILED + TestClass2.TESTS_FAILED, summary.getTestsFailedCount() );
     }
 
     @Test
-    public void singleTestClassIsInvoked()
-                    throws Exception
+    public void singleTestClassIsInvoked() throws Exception
     {
         Launcher launcher = LauncherFactory.create();
         JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParametersMock(), launcher );
@@ -249,8 +232,7 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
-    public void singleTestClassIsInvokedLazily()
-        throws Exception
+    public void singleTestClassIsInvokedLazily() throws Exception
     {
         Launcher launcher = LauncherFactory.create();
         JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParametersMock(), launcher );
@@ -271,8 +253,7 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
-    public void failingTestCaseAfterRerun()
-            throws Exception
+    public void failingTestCaseAfterRerun() throws Exception
     {
         Launcher launcher = LauncherFactory.create();
         ProviderParameters parameters = providerParametersMock();
@@ -307,8 +288,7 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
-    public void rerunStillFailing()
-                    throws Exception
+    public void rerunStillFailing() throws Exception
     {
         Launcher launcher = LauncherFactory.create();
         ProviderParameters parameters = providerParametersMock();
@@ -380,16 +360,14 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
-    public void rerunWithSuccess()
-            throws Exception
+    public void rerunWithSuccess() throws Exception
     {
         Launcher launcher = LauncherFactory.create();
         ProviderParameters parameters = providerParametersMock();
         // Mock the rerun variable
         when( parameters.getTestRequest().getRerunFailingTestsCount() ).thenReturn( 2 );
-        when( parameters.getProviderProperties() )
-                .thenReturn( singletonMap( JUnitPlatformProvider.CONFIGURATION_PARAMETERS,
-                        "forkCount = 1\nreuseForks = true" ) );
+        when( parameters.getProviderProperties() ).thenReturn(
+            singletonMap( JUnitPlatformProvider.CONFIGURATION_PARAMETERS, "forkCount = 1\nreuseForks = true" ) );
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider( parameters, launcher );
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
@@ -444,8 +422,7 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
-    public void detectErroredParameterized()
-        throws Exception
+    public void detectErroredParameterized() throws Exception
     {
         Launcher launcher = LauncherFactory.create();
         ProviderParameters parameters = providerParametersMock();
@@ -482,8 +459,7 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
-    public void detectFailedParameterized()
-            throws Exception
+    public void detectFailedParameterized() throws Exception
     {
         Launcher launcher = LauncherFactory.create();
         ProviderParameters parameters = providerParametersMock();
@@ -520,16 +496,14 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
-    public void rerunParameterized()
-            throws Exception
+    public void rerunParameterized() throws Exception
     {
         Launcher launcher = LauncherFactory.create();
         ProviderParameters parameters = providerParametersMock();
         // Mock the rerun variable
         when( parameters.getTestRequest().getRerunFailingTestsCount() ).thenReturn( 2 );
-        when( parameters.getProviderProperties() )
-                .thenReturn( singletonMap( JUnitPlatformProvider.CONFIGURATION_PARAMETERS,
-                        "forkCount = 1\nreuseForks = true" ) );
+        when( parameters.getProviderProperties() ).thenReturn(
+            singletonMap( JUnitPlatformProvider.CONFIGURATION_PARAMETERS, "forkCount = 1\nreuseForks = true" ) );
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider( parameters, launcher );
 
@@ -588,12 +562,11 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
-    public void allDiscoveredTestsAreInvokedForNullArgument()
-                    throws Exception
+    public void allDiscoveredTestsAreInvokedForNullArgument() throws Exception
     {
         RunListener runListener = runListenerMock();
-        ProviderParameters providerParameters =
-                        providerParametersMock( runListener, TestClass1.class, TestClass2.class );
+        ProviderParameters providerParameters = providerParametersMock( runListener, TestClass1.class,
+            TestClass2.class );
         Launcher launcher = LauncherFactory.create();
         JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters, launcher );
 
@@ -605,54 +578,37 @@ public class JUnitPlatformProviderTest
         InOrder inOrder = inOrder( runListener );
 
         ArgumentCaptor<SimpleReportEntry> report = ArgumentCaptor.forClass( SimpleReportEntry.class );
-        inOrder.verify( runListener )
-                .testSetStarting( report.capture() );
-        Assertions.assertThat( report.getValue().getSourceName() )
-                .isEqualTo( TestClass1.class.getName() );
-        Assertions.assertThat( report.getValue().getName() )
-                .isNull();
+        inOrder.verify( runListener ).testSetStarting( report.capture() );
+        Assertions.assertThat( report.getValue().getSourceName() ).isEqualTo( TestClass1.class.getName() );
+        Assertions.assertThat( report.getValue().getName() ).isNull();
 
         report = ArgumentCaptor.forClass( SimpleReportEntry.class );
-        inOrder.verify( runListener )
-                .testSetCompleted( report.capture() );
-        Assertions.assertThat( report.getValue().getSourceName() )
-                .isEqualTo( TestClass1.class.getName() );
-        Assertions.assertThat( report.getValue().getName() )
-                .isNull();
+        inOrder.verify( runListener ).testSetCompleted( report.capture() );
+        Assertions.assertThat( report.getValue().getSourceName() ).isEqualTo( TestClass1.class.getName() );
+        Assertions.assertThat( report.getValue().getName() ).isNull();
 
         report = ArgumentCaptor.forClass( SimpleReportEntry.class );
-        inOrder.verify( runListener )
-                .testSetStarting( report.capture() );
-        Assertions.assertThat( report.getValue().getSourceName() )
-                .isEqualTo( TestClass2.class.getName() );
-        Assertions.assertThat( report.getValue().getName() )
-                .isNull();
+        inOrder.verify( runListener ).testSetStarting( report.capture() );
+        Assertions.assertThat( report.getValue().getSourceName() ).isEqualTo( TestClass2.class.getName() );
+        Assertions.assertThat( report.getValue().getName() ).isNull();
 
         report = ArgumentCaptor.forClass( SimpleReportEntry.class );
-        inOrder.verify( runListener )
-                .testSetCompleted( report.capture() );
-        Assertions.assertThat( report.getValue().getSourceName() )
-                .isEqualTo( TestClass2.class.getName() );
-        Assertions.assertThat( report.getValue().getName() )
-                .isNull();
+        inOrder.verify( runListener ).testSetCompleted( report.capture() );
+        Assertions.assertThat( report.getValue().getSourceName() ).isEqualTo( TestClass2.class.getName() );
+        Assertions.assertThat( report.getValue().getName() ).isNull();
 
         assertThat( executionListener.summaries ).hasSize( 1 );
         TestExecutionSummary summary = executionListener.summaries.get( 0 );
         assertEquals( TestClass1.TESTS_FOUND + TestClass2.TESTS_FOUND, summary.getTestsFoundCount() );
-        assertEquals(
-                        TestClass1.TESTS_STARTED + TestClass2.TESTS_STARTED, summary.getTestsStartedCount() );
-        assertEquals(
-                        TestClass1.TESTS_SKIPPED + TestClass2.TESTS_SKIPPED, summary.getTestsSkippedCount() );
-        assertEquals(
-                        TestClass1.TESTS_SUCCEEDED + TestClass2.TESTS_SUCCEEDED, summary.getTestsSucceededCount() );
-        assertEquals(
-                        TestClass1.TESTS_ABORTED + TestClass2.TESTS_ABORTED, summary.getTestsAbortedCount() );
+        assertEquals( TestClass1.TESTS_STARTED + TestClass2.TESTS_STARTED, summary.getTestsStartedCount() );
+        assertEquals( TestClass1.TESTS_SKIPPED + TestClass2.TESTS_SKIPPED, summary.getTestsSkippedCount() );
+        assertEquals( TestClass1.TESTS_SUCCEEDED + TestClass2.TESTS_SUCCEEDED, summary.getTestsSucceededCount() );
+        assertEquals( TestClass1.TESTS_ABORTED + TestClass2.TESTS_ABORTED, summary.getTestsAbortedCount() );
         assertEquals( TestClass1.TESTS_FAILED + TestClass2.TESTS_FAILED, summary.getTestsFailedCount() );
     }
 
     @Test
-    public void outputIsCaptured()
-                    throws Exception
+    public void outputIsCaptured() throws Exception
     {
         Launcher launcher = LauncherFactory.create();
         RunListener runListener = runListenerMock();
@@ -661,13 +617,9 @@ public class JUnitPlatformProviderTest
         invokeProvider( provider, VerboseTestClass.class );
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass( String.class );
-        verify( (ConsoleOutputReceiver) runListener )
-                        .writeTestOutput( captor.capture(), eq( true ), eq( true ) );
-        verify( (ConsoleOutputReceiver) runListener )
-                        .writeTestOutput( captor.capture(), eq( true ), eq( false ) );
-        assertThat( captor.getAllValues() )
-                .hasSize( 2 )
-                .containsExactly( "stdout", "stderr" );
+        verify( (ConsoleOutputReceiver) runListener ).writeTestOutput( captor.capture(), eq( true ), eq( true ) );
+        verify( (ConsoleOutputReceiver) runListener ).writeTestOutput( captor.capture(), eq( true ), eq( false ) );
+        assertThat( captor.getAllValues() ).hasSize( 2 ).containsExactly( "stdout", "stderr" );
     }
 
     @Test
@@ -767,6 +719,80 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
+    public void onlyIncludeJunit5EnginesIsDeclared()
+    {
+        Map<String, String> properties = singletonMap( INCLUDE_JUNIT5_ENGINES_PROP, "engine-one, engine-two" );
+
+        ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
+        when( providerParameters.getProviderProperties() ).thenReturn( properties );
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
+
+        assertThat( provider.getFilters() ).hasSize( 1 );
+        assertThat( provider.getFilters()[0] ).isInstanceOf( EngineFilter.class );
+    }
+
+    @Test
+    public void onlyExcludeJunit5EnginesIsDeclared()
+    {
+        Map<String, String> properties = singletonMap( EXCLUDE_JUNIT5_ENGINES_PROP, "engine-one, engine-two" );
+
+        ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
+        when( providerParameters.getProviderProperties() ).thenReturn( properties );
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
+
+        assertThat( provider.getFilters() ).hasSize( 1 );
+        assertThat( provider.getFilters()[0] ).isInstanceOf( EngineFilter.class );
+    }
+
+    @Test
+    public void noFiltersAreCreatedIfIncludeJunit5EnginesIsEmpty()
+    {
+        Map<String, String> properties = singletonMap( INCLUDE_JUNIT5_ENGINES_PROP, "" );
+
+        ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
+        when( providerParameters.getProviderProperties() ).thenReturn( properties );
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
+        assertEquals( 0, provider.getFilters().length );
+
+        assertThat( provider.getFilters() ).hasSize( 0 );
+    }
+
+    @Test
+    public void filtersWithEmptyJunitEngineAreNotRegistered()
+    {
+        // Here only tagOne is registered as a valid tag and other tags are ignored as they are empty
+        Map<String, String> properties = singletonMap( EXCLUDE_JUNIT5_ENGINES_PROP, "engine-one," );
+
+        ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
+        when( providerParameters.getProviderProperties() ).thenReturn( properties );
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
+
+        assertThat( provider.getFilters() ).hasSize( 1 );
+        assertThat( provider.getFilters()[0] ).isInstanceOf( EngineFilter.class );
+    }
+
+    @Test
+    public void bothIncludeAndExcludeJunit5EnginesAreAllowed()
+    {
+        Map<String, String> properties = new HashMap<>();
+        properties.put( INCLUDE_JUNIT5_ENGINES_PROP, "engine-one, engine-two" );
+        properties.put( EXCLUDE_JUNIT5_ENGINES_PROP, "engine-three, engine-four" );
+
+        ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
+        when( providerParameters.getProviderProperties() ).thenReturn( properties );
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
+
+        assertThat( provider.getFilters() ).hasSize( 2 );
+        assertThat( provider.getFilters()[0] ).isInstanceOf( EngineFilter.class );
+        assertThat( provider.getFilters()[1] ).isInstanceOf( EngineFilter.class );
+    }
+
+    @Test
     public void noFiltersAreCreatedIfNoPropertiesAreDeclared()
     {
         ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
@@ -791,9 +817,8 @@ public class JUnitPlatformProviderTest
     public void parsesConfigurationParameters()
     {
         ProviderParameters providerParameters = providerParametersMock( TestClass1.class );
-        when( providerParameters.getProviderProperties() )
-                        .thenReturn( singletonMap( JUnitPlatformProvider.CONFIGURATION_PARAMETERS,
-                                                     "foo = true\nbar 42\rbaz: *\r\nqux: EOF" ) );
+        when( providerParameters.getProviderProperties() ).thenReturn(
+            singletonMap( JUnitPlatformProvider.CONFIGURATION_PARAMETERS, "foo = true\nbar 42\rbaz: *\r\nqux: EOF" ) );
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
 
@@ -805,8 +830,7 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
-    public void executesSingleTestIncludedByName()
-                    throws Exception
+    public void executesSingleTestIncludedByName() throws Exception
     {
         // following is equivalent of adding '-Dtest=TestClass3#prefix1Suffix1'
         // '*' needed because it's a nested class and thus has name prefixed with '$'
@@ -816,68 +840,58 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
-    public void executesMultipleTestsIncludedByName()
-                    throws Exception
+    public void executesMultipleTestsIncludedByName() throws Exception
     {
         // following is equivalent of adding '-Dtest=TestClass3#prefix1Suffix1+prefix2Suffix1'
         // '*' needed because it's a nested class and thus has name prefixed with '$'
         String pattern = "*TestClass3#prefix1Suffix1+prefix2Suffix1";
 
-        testExecutionOfMatchingTestMethods(
-                        TestClass3.class, pattern, "prefix1Suffix1()", "prefix2Suffix1()" );
+        testExecutionOfMatchingTestMethods( TestClass3.class, pattern, "prefix1Suffix1()", "prefix2Suffix1()" );
     }
 
     @Test
-    public void executesMultipleTestsIncludedByNamePattern()
-                    throws Exception
+    public void executesMultipleTestsIncludedByNamePattern() throws Exception
     {
         // following is equivalent of adding '-Dtest=TestClass3#prefix1*'
         // '*' needed because it's a nested class and thus has name prefixed with '$'
         String pattern = "*TestClass3#prefix1*";
 
-        testExecutionOfMatchingTestMethods(
-                        TestClass3.class, pattern, "prefix1Suffix1()", "prefix1Suffix2()" );
+        testExecutionOfMatchingTestMethods( TestClass3.class, pattern, "prefix1Suffix1()", "prefix1Suffix2()" );
     }
 
     @Test
-    public void executesMultipleTestsIncludedByNamePatternWithQuestionMark()
-                    throws Exception
+    public void executesMultipleTestsIncludedByNamePatternWithQuestionMark() throws Exception
     {
         // following is equivalent of adding '-Dtest=TestClass3#prefix?Suffix2'
         // '*' needed because it's a nested class and thus has name prefixed with '$'
         String pattern = "*TestClass3#prefix?Suffix2";
 
-        testExecutionOfMatchingTestMethods(
-                        TestClass3.class, pattern, "prefix1Suffix2()", "prefix2Suffix2()" );
+        testExecutionOfMatchingTestMethods( TestClass3.class, pattern, "prefix1Suffix2()", "prefix2Suffix2()" );
     }
 
     @Test
-    public void doesNotExecuteTestsExcludedByName()
-                    throws Exception
+    public void doesNotExecuteTestsExcludedByName() throws Exception
     {
         // following is equivalent of adding '-Dtest=!TestClass3#prefix1Suffix2'
         // '*' needed because it's a nested class and thus has name prefixed with '$'
         String pattern = "!*TestClass3#prefix1Suffix2";
 
-        testExecutionOfMatchingTestMethods(
-                        TestClass3.class, pattern, "prefix1Suffix1()", "prefix2Suffix1()", "prefix2Suffix2()" );
+        testExecutionOfMatchingTestMethods( TestClass3.class, pattern, "prefix1Suffix1()", "prefix2Suffix1()",
+            "prefix2Suffix2()" );
     }
 
     @Test
-    public void doesNotExecuteTestsExcludedByNamePattern()
-                    throws Exception
+    public void doesNotExecuteTestsExcludedByNamePattern() throws Exception
     {
         // following is equivalent of adding '-Dtest=!TestClass3#prefix2*'
         // '*' needed because it's a nested class and thus has name prefixed with '$'
         String pattern = "!*TestClass3#prefix2*";
 
-        testExecutionOfMatchingTestMethods(
-                        TestClass3.class, pattern, "prefix1Suffix1()", "prefix1Suffix2()" );
+        testExecutionOfMatchingTestMethods( TestClass3.class, pattern, "prefix1Suffix1()", "prefix1Suffix2()" );
     }
 
-    private static void testExecutionOfMatchingTestMethods( Class<?> testClass, String pattern,
-                                                            String... expectedTestNames )
-                    throws Exception
+    private static void testExecutionOfMatchingTestMethods(
+        Class<?> testClass, String pattern, String... expectedTestNames ) throws Exception
     {
         TestListResolver testListResolver = new TestListResolver( pattern );
         ProviderParameters providerParameters = providerParametersMock( testListResolver, testClass );
@@ -904,21 +918,21 @@ public class JUnitPlatformProviderTest
         return providerParametersMock( runListenerMock(), testClasses );
     }
 
-    private static ProviderParameters providerParametersMock(
-                    RunListener runListener, Class<?>... testClasses )
+    private static ProviderParameters providerParametersMock( RunListener runListener, Class<?>... testClasses )
     {
         TestListResolver testListResolver = new TestListResolver( "" );
         return providerParametersMock( runListener, testListResolver, testClasses );
     }
 
-    private static ProviderParameters providerParametersMock(
-                    TestListResolver testListResolver, Class<?>... testClasses )
+    private static ProviderParameters providerParametersMock( TestListResolver testListResolver,
+                                                              Class<?>... testClasses )
     {
         return providerParametersMock( runListenerMock(), testListResolver, testClasses );
     }
 
-    private static ProviderParameters providerParametersMock(
-                    RunListener runListener, TestListResolver testListResolver, Class<?>... testClasses )
+    private static ProviderParameters providerParametersMock( RunListener runListener,
+                                                              TestListResolver testListResolver,
+                                                              Class<?>... testClasses )
     {
         TestsToRun testsToRun = newTestsToRun( testClasses );
 
@@ -951,11 +965,8 @@ public class JUnitPlatformProviderTest
     private static Set<String> failedTestDisplayNames( TestExecutionSummary summary )
     {
         // @formatter:off
-        return summary.getFailures()
-                .stream()
-                .map( Failure::getTestIdentifier )
-                .map( TestIdentifier::getDisplayName )
-                .collect( toSet() );
+        return summary.getFailures().stream().map( Failure::getTestIdentifier ).map(
+            TestIdentifier::getDisplayName ).collect( toSet() );
         // @formatter:on
     }
 
@@ -984,8 +995,7 @@ public class JUnitPlatformProviderTest
         return new LazyTestsToRunFake( new LinkedHashSet<>( classesList ) );
     }
 
-    private static class TestPlanSummaryListener
-                    extends SummaryGeneratingListener
+    private static class TestPlanSummaryListener extends SummaryGeneratingListener
     {
         private final List<TestExecutionSummary> summaries = new ArrayList<>();
 
@@ -1003,7 +1013,7 @@ public class JUnitPlatformProviderTest
      * @see <a href="https://github.com/junit-team/junit5/issues/986">#986</a>
      */
     private static void invokeProvider( JUnitPlatformProvider provider, Object forkTestSet )
-                    throws TestSetFailedException
+        throws TestSetFailedException
     {
         PrintStream systemOut = System.out;
         PrintStream systemErr = System.err;
@@ -1100,12 +1110,10 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
-    public void usesClassNamesForXmlReport()
-                    throws TestSetFailedException
+    public void usesClassNamesForXmlReport() throws TestSetFailedException
     {
-        String[] classNames = { Sub1Tests.class.getName(), Sub2Tests.class.getName() };
-        ProviderParameters providerParameters =
-                        providerParametersMock( Sub1Tests.class, Sub2Tests.class );
+        String[] classNames = {Sub1Tests.class.getName(), Sub2Tests.class.getName()};
+        ProviderParameters providerParameters = providerParametersMock( Sub1Tests.class, Sub2Tests.class );
 
         JUnitPlatformProvider jUnitPlatformProvider = new JUnitPlatformProvider( providerParameters );
         TestsToRun testsToRun = newTestsToRun( Sub1Tests.class, Sub2Tests.class );
@@ -1113,8 +1121,7 @@ public class JUnitPlatformProviderTest
         invokeProvider( jUnitPlatformProvider, testsToRun );
         RunListener reporter = providerParameters.getReporterFactory().createReporter();
 
-        ArgumentCaptor<ReportEntry> reportEntryArgumentCaptor =
-                        ArgumentCaptor.forClass( ReportEntry.class );
+        ArgumentCaptor<ReportEntry> reportEntryArgumentCaptor = ArgumentCaptor.forClass( ReportEntry.class );
         verify( reporter, times( 2 ) ).testSucceeded( reportEntryArgumentCaptor.capture() );
 
         List<ReportEntry> allValues = reportEntryArgumentCaptor.getAllValues();
@@ -1129,13 +1136,11 @@ public class JUnitPlatformProviderTest
         }
     }
 
-    static class Sub1Tests
-                    extends AbstractTestClass
+    static class Sub1Tests extends AbstractTestClass
     {
     }
 
-    static class Sub2Tests
-                    extends AbstractTestClass
+    static class Sub2Tests extends AbstractTestClass
     {
     }
 
@@ -1227,8 +1232,7 @@ public class JUnitPlatformProviderTest
     {
         static List<Object[]> params()
         {
-            return Arrays.asList(  new Object[] { "Always pass", true },
-                    new Object[] { "Always fail", false }  );
+            return Arrays.asList( new Object[] {"Always pass", true}, new Object[] {"Always fail", false} );
         }
 
         @org.junit.jupiter.params.ParameterizedTest

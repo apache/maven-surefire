@@ -28,6 +28,10 @@ public class ProviderParameterNames
 
     public static final String TESTNG_GROUPS_PROP = "groups";
 
+    public static final String INCLUDE_JUNIT5_ENGINES_PROP = "includejunit5engines";
+
+    public static final String EXCLUDE_JUNIT5_ENGINES_PROP = "excludejunit5engines";
+
     public static final String THREADCOUNT_PROP = "threadcount";
 
     public static final String PARALLEL_PROP = "parallel";

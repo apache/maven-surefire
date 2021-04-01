@@ -2027,6 +2027,8 @@ public class AbstractSurefireMojoTest
         private File testClassesDirectory;
         private boolean useModulePath;
         private int failOnFlakeCount;
+        private String[] includeJUnit5Engines;
+        private String[] excludeJUnit5Engines;
 
         private JUnitPlatformProviderInfo createJUnitPlatformProviderInfo( Artifact junitPlatformArtifact,
                                                                            TestClassPath testClasspathWrapper )
@@ -2481,6 +2483,30 @@ public class AbstractSurefireMojoTest
         public void setFailOnFlakeCount( int failOnFlakeCount )
         {
             this.failOnFlakeCount = failOnFlakeCount;
+        }
+
+        @Override
+        public String[] getIncludeJUnit5Engines()
+        {
+            return includeJUnit5Engines;
+        }
+
+        @Override
+        public void setIncludeJUnit5Engines( String[] includeJUnit5Engines )
+        {
+            this.includeJUnit5Engines = includeJUnit5Engines;
+        }
+
+        @Override
+        public String[] getExcludeJUnit5Engines()
+        {
+            return excludeJUnit5Engines;
+        }
+
+        @Override
+        public void setExcludeJUnit5Engines( String[] excludeJUnit5Engines )
+        {
+            this.excludeJUnit5Engines = excludeJUnit5Engines;
         }
     }
 
