@@ -27,7 +27,9 @@ on:
 
 jobs:
   build:
+    name: Build1 on Windows
     runs-on: windows-latest
+    timeout-minutes: 90
 
     strategy:
       fail-fast: false
