@@ -157,11 +157,11 @@ public class ForkChannelTest
             Client client = new Client( uri.getPort(), sessionId );
             client.start();
 
-            channel.connectToClient();
-            channel.bindCommandReader( commandReader, null ).start();
+            channel.tryConnectToClient();
+            channel.bindCommandReader( commandReader, null );
             ReadableByteChannel stdOut = mock( ReadableByteChannel.class );
             when( stdOut.read( any( ByteBuffer.class ) ) ).thenReturn( -1 );
-            channel.bindEventHandler( consumer, cc, stdOut ).start();
+            channel.bindEventHandler( consumer, cc, stdOut );
 
             commandReader.noop();
 

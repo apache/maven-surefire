@@ -34,8 +34,9 @@ import java.nio.channels.WritableByteChannel;
  * and communicates with a dedicated forked JVM. It represents a server.
  * <br>
  * <br>
- * It connects to a remote client by {@link #connectToClient()}, provides a connection string
+ * It connects to a remote client by {@link #tryConnectToClient()}, provides a connection string
  * {@link #getForkNodeConnectionString()} needed by the client in forked JVM, binds event handler and command reader.
+ * This object is called in one Thread.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M5
@@ -53,7 +54,13 @@ public abstract class ForkChannel implements Closeable
         this.arguments = arguments;
     }
 
-    public abstract void connectToClient() throws IOException;
+    /**
+     * Asynchronously connects to the client.
+     *
+     * @throws IOException if stream fails
+     * @throws InterruptedException if interrupted thread
+     */
+    public abstract void tryConnectToClient() throws IOException, InterruptedException;
 
     /**
      * This is server related class, which if binds to a TCP port, determines the connection string for the client.
@@ -68,33 +75,38 @@ public abstract class ForkChannel implements Closeable
     public abstract int getCountdownCloseablePermits();
 
     /**
-     * Binds command handler to the channel.
+     * Binds command handler to the channel. Starts a Thread streaming out the commands.
      *
      * @param commands command reader, see {@link CommandReader#readNextCommand()}
      * @param stdIn    optional standard input stream of the JVM to write the encoded commands into it
-     * @return the thread instance to start up in order to stream out the data
      * @throws IOException if an error in the fork channel
+     * @throws InterruptedException channel interrupted
      */
-    public abstract CloseableDaemonThread bindCommandReader( @Nonnull CommandReader commands,
-                                                             WritableByteChannel stdIn )
-        throws IOException;
+    public abstract void bindCommandReader( @Nonnull CommandReader commands, WritableByteChannel stdIn )
+        throws IOException, InterruptedException;
 
     /**
+     * Starts a Thread reading the events.
      *
      * @param eventHandler       event eventHandler
      * @param countdownCloseable count down of the final call of {@link Closeable#close()}
      * @param stdOut             optional standard output stream of the JVM
-     * @return the thread instance to start up in order to stream out the data
      * @throws IOException if an error in the fork channel
+     * @throws InterruptedException channel interrupted
      */
-    public abstract CloseableDaemonThread bindEventHandler( @Nonnull EventHandler<Event> eventHandler,
-                                                            @Nonnull CountdownCloseable countdownCloseable,
-                                                            ReadableByteChannel stdOut )
-        throws IOException;
+    public abstract void bindEventHandler( @Nonnull EventHandler<Event> eventHandler,
+                                           @Nonnull CountdownCloseable countdownCloseable,
+                                           ReadableByteChannel stdOut )
+        throws IOException, InterruptedException;
 
     @Nonnull
     protected ForkNodeArguments getArguments()
     {
         return arguments;
     }
+
+    public abstract void disable();
+
+    @Override
+    public abstract void close() throws IOException;
 }

@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.extensions;
+package org.apache.maven.surefire.extensions;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,22 +19,24 @@ package org.apache.maven.plugin.surefire.extensions;
  * under the License.
  */
 
-import org.apache.maven.surefire.extensions.ForkChannel;
-import org.apache.maven.surefire.extensions.util.CommandlineExecutor;
-
 import java.io.IOException;
 
 /**
- * After the authentication has failed, {@link ForkChannel#tryConnectToClient()}
- * throws {@link InvalidSessionIdException}
- * and {@link org.apache.maven.plugin.surefire.booterclient.ForkStarter} should close {@link CommandlineExecutor}.
+ * Forks the execution of task and the task completion.
+ * The method {@link #complete()} waits for the task to complete or fails.
  *
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M5
  */
-public class InvalidSessionIdException extends IOException
+public interface Completable
 {
-    public InvalidSessionIdException( String actualSessionId, String expectedSessionId )
+    Completable EMPTY_COMPLETABLE = new Completable()
     {
-        super( "The actual sessionId '" + actualSessionId + "' does not match '" + expectedSessionId + "'." );
-    }
+        @Override
+        public void complete()
+        {
+        }
+    };
+
+    void complete() throws IOException, InterruptedException;
 }

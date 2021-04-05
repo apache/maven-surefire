@@ -41,11 +41,11 @@ import org.apache.maven.surefire.api.booter.Shutdown;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
-import org.apache.maven.surefire.extensions.CloseableDaemonThread;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.ForkChannel;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
+import org.apache.maven.surefire.extensions.Stoppable;
 import org.apache.maven.surefire.extensions.util.CommandlineExecutor;
 import org.apache.maven.surefire.extensions.util.CommandlineStreams;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
@@ -628,31 +628,24 @@ public class ForkStarter
         Integer result = null;
         RunResult runResult = null;
         SurefireBooterForkException booterForkException = null;
-        CloseableDaemonThread in = null;
-        CloseableDaemonThread out = null;
-        CloseableDaemonThread err = null;
+        Stoppable err = null;
         DefaultReporterFactory reporter = forkClient.getDefaultReporterFactory();
         currentForkClients.add( forkClient );
         CountdownCloseable countdownCloseable =
             new CountdownCloseable( eventConsumer, forkChannel.getCountdownCloseablePermits() );
         try ( CommandlineExecutor exec = new CommandlineExecutor( cli, countdownCloseable ) )
         {
+            forkChannel.tryConnectToClient();
             CommandlineStreams streams = exec.execute();
             closer.addCloseable( streams );
 
-            forkChannel.connectToClient();
+            err = bindErrorStream( forkNumber, countdownCloseable, streams );
+
+            forkChannel.bindCommandReader( commandReader, streams.getStdInChannel() );
+
+            forkChannel.bindEventHandler( eventConsumer, countdownCloseable, streams.getStdOutChannel() );
+
             log.debug( "Fork Channel [" + forkNumber + "] connected to the client." );
-
-            in = forkChannel.bindCommandReader( commandReader, streams.getStdInChannel() );
-            in.start();
-
-            out = forkChannel.bindEventHandler( eventConsumer, countdownCloseable, streams.getStdOutChannel() );
-            out.start();
-
-            EventHandler<String> errConsumer = new NativeStdErrStreamConsumer( log );
-            err = new LineConsumerThread( "fork-" + forkNumber + "-err-thread", streams.getStdErrChannel(),
-                errConsumer, countdownCloseable );
-            err.start();
 
             result = exec.awaitExit();
 
@@ -670,8 +663,7 @@ public class ForkStarter
         {
             log.error( "Closing the streams after (InterruptedException) '" + e.getLocalizedMessage() + "'" );
             // maybe implement it in the Future.cancel() of the extension or similar
-            in.disable();
-            out.disable();
+            forkChannel.disable();
             err.disable();
         }
         catch ( Exception e )
@@ -759,6 +751,16 @@ public class ForkStarter
         }
 
         return runResult;
+    }
+
+    private Stoppable bindErrorStream( int forkNumber, CountdownCloseable countdownCloseable,
+                                       CommandlineStreams streams )
+    {
+        EventHandler<String> errConsumer = new NativeStdErrStreamConsumer( log );
+        LineConsumerThread stdErr = new LineConsumerThread( "fork-" + forkNumber + "-err-thread",
+            streams.getStdErrChannel(), errConsumer, countdownCloseable );
+        stdErr.start();
+        return stdErr;
     }
 
     private Iterable<Class<?>> getSuitesIterator()

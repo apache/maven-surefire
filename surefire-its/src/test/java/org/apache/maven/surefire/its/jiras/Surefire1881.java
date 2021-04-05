@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.extensions;
+package org.apache.maven.surefire.its.jiras;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,22 +19,21 @@ package org.apache.maven.plugin.surefire.extensions;
  * under the License.
  */
 
-import org.apache.maven.surefire.extensions.ForkChannel;
-import org.apache.maven.surefire.extensions.util.CommandlineExecutor;
-
-import java.io.IOException;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
 
 /**
- * After the authentication has failed, {@link ForkChannel#tryConnectToClient()}
- * throws {@link InvalidSessionIdException}
- * and {@link org.apache.maven.plugin.surefire.booterclient.ForkStarter} should close {@link CommandlineExecutor}.
  *
- * @since 3.0.0-M5
  */
-public class InvalidSessionIdException extends IOException
+@SuppressWarnings( "checkstyle:magicnumber" )
+public class Surefire1881 extends SurefireJUnit4IntegrationTestCase
 {
-    public InvalidSessionIdException( String actualSessionId, String expectedSessionId )
+
+    @Test( timeout = 30_000L )
+    public void test() throws Exception
     {
-        super( "The actual sessionId '" + actualSessionId + "' does not match '" + expectedSessionId + "'." );
+        unpack( "/surefire-1881" )
+            .executeVerify()
+            .assertIntegrationTestSuiteResults( 1, 0, 0, 0 );
     }
 }

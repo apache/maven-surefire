@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.extensions;
+package org.apache.maven.surefire.extensions;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,22 +19,12 @@ package org.apache.maven.plugin.surefire.extensions;
  * under the License.
  */
 
-import org.apache.maven.surefire.extensions.ForkChannel;
-import org.apache.maven.surefire.extensions.util.CommandlineExecutor;
-
-import java.io.IOException;
+import java.io.Closeable;
 
 /**
- * After the authentication has failed, {@link ForkChannel#tryConnectToClient()}
- * throws {@link InvalidSessionIdException}
- * and {@link org.apache.maven.plugin.surefire.booterclient.ForkStarter} should close {@link CommandlineExecutor}.
- *
- * @since 3.0.0-M5
+ * Used in {@link CloseableDaemonThread}.
  */
-public class InvalidSessionIdException extends IOException
+public interface Stoppable extends Closeable
 {
-    public InvalidSessionIdException( String actualSessionId, String expectedSessionId )
-    {
-        super( "The actual sessionId '" + actualSessionId + "' does not match '" + expectedSessionId + "'." );
-    }
+    void disable();
 }

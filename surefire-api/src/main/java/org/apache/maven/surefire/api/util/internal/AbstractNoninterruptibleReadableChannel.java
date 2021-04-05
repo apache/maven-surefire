@@ -63,7 +63,13 @@ abstract class AbstractNoninterruptibleReadableChannel implements ReadableByteCh
     @Override
     public final void close() throws IOException
     {
-        open = false;
-        closeImpl();
+        try
+        {
+            closeImpl();
+        }
+        finally
+        {
+            open = false;
+        }
     }
 }

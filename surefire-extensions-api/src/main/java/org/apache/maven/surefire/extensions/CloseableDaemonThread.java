@@ -20,18 +20,15 @@ package org.apache.maven.surefire.extensions;
  */
 
 import javax.annotation.Nonnull;
-import java.io.Closeable;
 
 /**
  * The base thread class used to handle a stream, transforms the stream to an object.
  */
-public abstract class CloseableDaemonThread extends Thread implements Closeable
+public abstract class CloseableDaemonThread extends Thread implements Stoppable
 {
     protected CloseableDaemonThread( @Nonnull String threadName )
     {
         setName( threadName );
         setDaemon( true );
     }
-
-    public abstract void disable();
 }
