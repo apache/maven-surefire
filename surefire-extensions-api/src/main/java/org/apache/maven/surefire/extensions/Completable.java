@@ -19,16 +19,24 @@ package org.apache.maven.surefire.extensions;
  * under the License.
  */
 
-import javax.annotation.Nonnull;
+import java.io.IOException;
 
 /**
- * The base thread class used to handle a stream, transforms the stream to an object.
+ * Forks the execution of task and the task completion.
+ * The method {@link #complete()} waits for the task to complete or fails.
+ *
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 3.0.0-M5
  */
-public abstract class CloseableDaemonThread extends Thread implements Stoppable
+public interface Completable
 {
-    protected CloseableDaemonThread( @Nonnull String threadName )
+    Completable EMPTY_COMPLETABLE = new Completable()
     {
-        setName( threadName );
-        setDaemon( true );
-    }
+        @Override
+        public void complete()
+        {
+        }
+    };
+
+    void complete() throws IOException, InterruptedException;
 }

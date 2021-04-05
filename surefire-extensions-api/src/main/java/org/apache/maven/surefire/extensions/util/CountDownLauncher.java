@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.extensions;
+package org.apache.maven.surefire.extensions.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,16 +19,35 @@ package org.apache.maven.surefire.extensions;
  * under the License.
  */
 
-import javax.annotation.Nonnull;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * The base thread class used to handle a stream, transforms the stream to an object.
+ * Counts down the calls {@link #countDown()} and the last reaching zero executes the {@link #job()}.
+ *
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @since 3.0.0-M5
  */
-public abstract class CloseableDaemonThread extends Thread implements Stoppable
+public abstract class CountDownLauncher
 {
-    protected CloseableDaemonThread( @Nonnull String threadName )
+    private final AtomicInteger countDown;
+
+    public CountDownLauncher( int count )
     {
-        setName( threadName );
-        setDaemon( true );
+        if ( count <= 0 )
+        {
+            throw new IllegalStateException( "count=" + count + " should be greater than zero" );
+        }
+
+        countDown = new AtomicInteger( count );
+    }
+
+    protected abstract void job();
+
+    public void countDown()
+    {
+        if ( countDown.decrementAndGet() == 0 )
+        {
+            job();
+        }
     }
 }

@@ -41,11 +41,12 @@ import org.apache.maven.surefire.api.booter.Shutdown;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
-import org.apache.maven.surefire.extensions.CloseableDaemonThread;
+import org.apache.maven.surefire.extensions.Completable;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.ForkChannel;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
+import org.apache.maven.surefire.extensions.Stoppable;
 import org.apache.maven.surefire.extensions.util.CommandlineExecutor;
 import org.apache.maven.surefire.extensions.util.CommandlineStreams;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
@@ -628,31 +629,29 @@ public class ForkStarter
         Integer result = null;
         RunResult runResult = null;
         SurefireBooterForkException booterForkException = null;
-        CloseableDaemonThread in = null;
-        CloseableDaemonThread out = null;
-        CloseableDaemonThread err = null;
+        Stoppable err = null;
         DefaultReporterFactory reporter = forkClient.getDefaultReporterFactory();
         currentForkClients.add( forkClient );
         CountdownCloseable countdownCloseable =
             new CountdownCloseable( eventConsumer, forkChannel.getCountdownCloseablePermits() );
         try ( CommandlineExecutor exec = new CommandlineExecutor( cli, countdownCloseable ) )
         {
+            Completable client = forkChannel.connectToClient();
             CommandlineStreams streams = exec.execute();
             closer.addCloseable( streams );
 
-            forkChannel.connectToClient();
-            log.debug( "Fork Channel [" + forkNumber + "] connected to the client." );
+            forkChannel.bindCommandReader( commandReader, streams.getStdInChannel() );
 
-            in = forkChannel.bindCommandReader( commandReader, streams.getStdInChannel() );
-            in.start();
-
-            out = forkChannel.bindEventHandler( eventConsumer, countdownCloseable, streams.getStdOutChannel() );
-            out.start();
+            forkChannel.bindEventHandler( eventConsumer, countdownCloseable, streams.getStdOutChannel() );
 
             EventHandler<String> errConsumer = new NativeStdErrStreamConsumer( log );
-            err = new LineConsumerThread( "fork-" + forkNumber + "-err-thread", streams.getStdErrChannel(),
-                errConsumer, countdownCloseable );
-            err.start();
+            LineConsumerThread stdErr = new LineConsumerThread( "fork-" + forkNumber + "-err-thread",
+                streams.getStdErrChannel(), errConsumer, countdownCloseable );
+            err = stdErr;
+            stdErr.start();
+
+            client.complete();
+            log.debug( "Fork Channel [" + forkNumber + "] connected to the client." );
 
             result = exec.awaitExit();
 
@@ -670,8 +669,7 @@ public class ForkStarter
         {
             log.error( "Closing the streams after (InterruptedException) '" + e.getLocalizedMessage() + "'" );
             // maybe implement it in the Future.cancel() of the extension or similar
-            in.disable();
-            out.disable();
+            forkChannel.disable();
             err.disable();
         }
         catch ( Exception e )

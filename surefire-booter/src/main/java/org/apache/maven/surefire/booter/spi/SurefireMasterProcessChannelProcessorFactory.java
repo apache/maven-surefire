@@ -132,7 +132,7 @@ public class SurefireMasterProcessChannelProcessorFactory
         {
             if ( clientSocketChannel.supportedOptions().contains( option ) )
             {
-                clientSocketChannel.setOption( option, true );
+                // clientSocketChannel.setOption( option, true );
             }
         }
     }

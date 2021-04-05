@@ -170,8 +170,7 @@ public class E2ETest
 
         ThreadedStreamConsumer queue = new ThreadedStreamConsumer( h );
 
-        server.bindEventHandler( queue, new CountdownCloseable( new DummyCloseable(), 1 ), new DummyReadableChannel() )
-            .start();
+        server.bindEventHandler( queue, new CountdownCloseable( new DummyCloseable(), 1 ), new DummyReadableChannel() );
 
         assertThat( awaitHandlerFinished.await( 30L, TimeUnit.SECONDS ) )
             .isTrue();

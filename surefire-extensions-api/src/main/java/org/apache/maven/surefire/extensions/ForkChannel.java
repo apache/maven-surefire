@@ -53,7 +53,7 @@ public abstract class ForkChannel implements Closeable
         this.arguments = arguments;
     }
 
-    public abstract void connectToClient() throws IOException;
+    public abstract Completable connectToClient() throws IOException, InterruptedException;
 
     /**
      * This is server related class, which if binds to a TCP port, determines the connection string for the client.
@@ -68,28 +68,26 @@ public abstract class ForkChannel implements Closeable
     public abstract int getCountdownCloseablePermits();
 
     /**
-     * Binds command handler to the channel.
+     * Binds command handler to the channel. Starts a Thread streaming out the commands.
      *
      * @param commands command reader, see {@link CommandReader#readNextCommand()}
      * @param stdIn    optional standard input stream of the JVM to write the encoded commands into it
-     * @return the thread instance to start up in order to stream out the data
      * @throws IOException if an error in the fork channel
      */
-    public abstract CloseableDaemonThread bindCommandReader( @Nonnull CommandReader commands,
-                                                             WritableByteChannel stdIn )
+    public abstract void bindCommandReader( @Nonnull CommandReader commands, WritableByteChannel stdIn )
         throws IOException;
 
     /**
+     * Starts a Thread reading the events.
      *
      * @param eventHandler       event eventHandler
      * @param countdownCloseable count down of the final call of {@link Closeable#close()}
      * @param stdOut             optional standard output stream of the JVM
-     * @return the thread instance to start up in order to stream out the data
      * @throws IOException if an error in the fork channel
      */
-    public abstract CloseableDaemonThread bindEventHandler( @Nonnull EventHandler<Event> eventHandler,
-                                                            @Nonnull CountdownCloseable countdownCloseable,
-                                                            ReadableByteChannel stdOut )
+    public abstract void bindEventHandler( @Nonnull EventHandler<Event> eventHandler,
+                                           @Nonnull CountdownCloseable countdownCloseable,
+                                           ReadableByteChannel stdOut )
         throws IOException;
 
     @Nonnull
@@ -97,4 +95,6 @@ public abstract class ForkChannel implements Closeable
     {
         return arguments;
     }
+
+    public abstract void disable();
 }

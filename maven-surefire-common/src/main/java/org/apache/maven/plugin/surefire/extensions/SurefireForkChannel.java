@@ -21,11 +21,13 @@ package org.apache.maven.plugin.surefire.extensions;
 
 import org.apache.maven.plugin.surefire.booterclient.output.NativeStdOutStreamConsumer;
 import org.apache.maven.surefire.api.event.Event;
+import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.extensions.CloseableDaemonThread;
 import org.apache.maven.surefire.extensions.CommandReader;
+import org.apache.maven.surefire.extensions.Completable;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.ForkChannel;
-import org.apache.maven.surefire.api.fork.ForkNodeArguments;
+import org.apache.maven.surefire.extensions.util.CountDownLauncher;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 import org.apache.maven.surefire.extensions.util.LineConsumerThread;
 
@@ -39,11 +41,13 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.CompletionHandler;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static java.net.StandardSocketOptions.SO_KEEPALIVE;
 import static java.net.StandardSocketOptions.SO_REUSEADDR;
@@ -79,8 +83,13 @@ final class SurefireForkChannel extends ForkChannel
     private final String localHost;
     private final int localPort;
     private final String sessionId;
-    private volatile AsynchronousSocketChannel worker;
+    private final AtomicReference<AsynchronousSocketChannel> worker = new AtomicReference<>();
+    private final Bindings bindings = new Bindings( 3 );
     private volatile LineConsumerThread out;
+    private volatile CloseableDaemonThread commandReaderBindings;
+    private volatile CloseableDaemonThread eventHandlerBindings;
+    private volatile EventBindings eventBindings;
+    private volatile CommandBindings commandBindings;
 
     SurefireForkChannel( @Nonnull ForkNodeArguments arguments ) throws IOException
     {
@@ -96,45 +105,73 @@ final class SurefireForkChannel extends ForkChannel
     }
 
     @Override
-    public void connectToClient() throws IOException
+    public Completable connectToClient()
     {
-        if ( worker != null )
+        if ( worker.get() != null )
         {
             throw new IllegalStateException( "already accepted TCP client connection" );
         }
+        AcceptanceHandler result = new AcceptanceHandler();
+        server.accept( null, result );
+        return result;
+    }
 
-        try
+    @Override
+    public String getForkNodeConnectionString()
+    {
+        return "tcp://" + localHost + ":" + localPort + "?sessionId=" + sessionId;
+    }
+
+    @Override
+    public int getCountdownCloseablePermits()
+    {
+        return 3;
+    }
+
+    @Override
+    public void bindCommandReader( @Nonnull CommandReader commands, WritableByteChannel stdIn )
+    {
+        commandBindings = new CommandBindings( commands );
+
+        bindings.countDown();
+    }
+
+    @Override
+    public void bindEventHandler( @Nonnull EventHandler<Event> eventHandler,
+                                  @Nonnull CountdownCloseable countdown,
+                                  ReadableByteChannel stdOut )
+    {
+        ForkNodeArguments args = getArguments();
+        out = new LineConsumerThread( "fork-" + args.getForkChannelId() + "-out-thread", stdOut,
+            new NativeStdOutStreamConsumer( args.getConsoleLogger() ), countdown );
+        out.start();
+
+        eventBindings = new EventBindings( eventHandler, countdown );
+
+        bindings.countDown();
+    }
+
+    @Override
+    public void disable()
+    {
+        if ( eventHandlerBindings != null )
         {
-            worker = server.accept().get();
-            verifySessionId();
+            eventHandlerBindings.disable();
         }
-        catch ( InterruptedException e )
+
+        if ( commandReaderBindings != null )
         {
-            throw new IOException( e.getLocalizedMessage(), e );
-        }
-        catch ( ExecutionException e )
-        {
-            throw new IOException( e.getLocalizedMessage(), e.getCause() );
+            commandReaderBindings.disable();
         }
     }
 
-    private void verifySessionId() throws InterruptedException, ExecutionException, IOException
+    @Override
+    public void close() throws IOException
     {
-        ByteBuffer buffer = ByteBuffer.allocate( sessionId.length() );
-        int read;
-        do
+        //noinspection unused,EmptyTryBlock,EmptyTryBlock
+        try ( Closeable c1 = worker.get(); Closeable c2 = server; Closeable c3 = out )
         {
-            read = worker.read( buffer ).get();
-        } while ( read != -1 && buffer.hasRemaining() );
-        if ( read == -1 )
-        {
-            throw new IOException( "Channel closed while verifying the client." );
-        }
-        ( (Buffer) buffer ).flip();
-        String clientSessionId = new String( buffer.array(), US_ASCII );
-        if ( !clientSessionId.equals( sessionId ) )
-        {
-            throw new InvalidSessionIdException( clientSessionId, sessionId );
+            // only close all channels
         }
     }
 
@@ -151,51 +188,131 @@ final class SurefireForkChannel extends ForkChannel
         }
     }
 
-    @Override
-    public String getForkNodeConnectionString()
+    private final class AcceptanceHandler
+        implements CompletionHandler<AsynchronousSocketChannel, Void>, Completable
     {
-        return "tcp://" + localHost + ":" + localPort + "?sessionId=" + sessionId;
-    }
+        private final CountDownLatch acceptanceSynchronizer = new CountDownLatch( 1 );
+        private final CountDownLatch authSynchronizer = new CountDownLatch( 1 );
+        private volatile String messageOfIOException;
+        private volatile String messageOfInvalidSessionIdException;
 
-    @Override
-    public int getCountdownCloseablePermits()
-    {
-        return 3;
-    }
-
-    @Override
-    public CloseableDaemonThread bindCommandReader( @Nonnull CommandReader commands,
-                                                    WritableByteChannel stdIn )
-    {
-        // dont use newBufferedChannel here - may cause the command is not sent and the JVM hangs
-        // only newChannel flushes the message
-        // newBufferedChannel does not flush
-        WritableByteChannel channel = newChannel( newOutputStream( worker ) );
-        return new StreamFeeder( "commands-fork-" + getArguments().getForkChannelId(), channel, commands,
-            getArguments().getConsoleLogger() );
-    }
-
-    @Override
-    public CloseableDaemonThread bindEventHandler( @Nonnull EventHandler<Event> eventHandler,
-                                                   @Nonnull CountdownCloseable countdownCloseable,
-                                                   ReadableByteChannel stdOut )
-    {
-        out = new LineConsumerThread( "fork-" + getArguments().getForkChannelId() + "-out-thread", stdOut,
-            new NativeStdOutStreamConsumer( getArguments().getConsoleLogger() ), countdownCloseable );
-        out.start();
-
-        ReadableByteChannel channel = newBufferedChannel( newInputStream( worker ) );
-        return new EventConsumerThread( "fork-" + getArguments().getForkChannelId() + "-event-thread", channel,
-            eventHandler, countdownCloseable, getArguments() );
-    }
-
-    @Override
-    public void close() throws IOException
-    {
-        //noinspection unused,EmptyTryBlock,EmptyTryBlock
-        try ( Closeable c1 = worker; Closeable c2 = server; Closeable c3 = out )
+        @Override
+        public void completed( AsynchronousSocketChannel channel, Void attachment )
         {
-            // only close all channels
+            if ( worker.compareAndSet( null, channel ) )
+            {
+                acceptanceSynchronizer.countDown();
+                final ByteBuffer buffer = ByteBuffer.allocate( sessionId.length() );
+                channel.read( buffer, null, new CompletionHandler<Integer, Object>()
+                {
+                    @Override
+                    public void completed( Integer read, Object attachment )
+                    {
+                        if ( read == -1 )
+                        {
+                            messageOfIOException = "Channel closed while verifying the client.";
+                        }
+                        ( (Buffer) buffer ).flip();
+                        String clientSessionId = new String( buffer.array(), US_ASCII );
+                        if ( !clientSessionId.equals( sessionId ) )
+                        {
+                            messageOfInvalidSessionIdException = "The actual sessionId '" + clientSessionId
+                                + "' does not match '" + sessionId + "'.";
+                        }
+                        authSynchronizer.countDown();
+
+                        bindings.countDown();
+                    }
+
+                    @Override
+                    public void failed( Throwable exception, Object attachment )
+                    {
+                        getArguments().dumpStreamException( exception );
+                    }
+                } );
+            }
+            else
+            {
+                getArguments().dumpStreamText( "Another TCP client attempts to connect." );
+            }
+        }
+
+        @Override
+        public void failed( Throwable exception, Void attachment )
+        {
+            getArguments().dumpStreamException( exception );
+            acceptanceSynchronizer.countDown();
+        }
+
+        @Override
+        public void complete() throws IOException, InterruptedException
+        {
+            completeAcceptance();
+            authSynchronizer.await();
+        }
+
+        void completeAcceptance() throws InterruptedException
+        {
+            acceptanceSynchronizer.await();
+        }
+    }
+
+    private class EventBindings
+    {
+        private final EventHandler<Event> eventHandler;
+        private final CountdownCloseable countdown;
+
+        private EventBindings( EventHandler<Event> eventHandler, CountdownCloseable countdown )
+        {
+            this.eventHandler = eventHandler;
+            this.countdown = countdown;
+        }
+
+        void bindEventHandler( AsynchronousSocketChannel source )
+        {
+            ForkNodeArguments args = getArguments();
+            String threadName = "fork-" + args.getForkChannelId() + "-event-thread";
+            ReadableByteChannel channel = newBufferedChannel( newInputStream( source ) );
+            eventHandlerBindings = new EventConsumerThread( threadName, channel, eventHandler, countdown, args );
+            eventHandlerBindings.start();
+        }
+    }
+
+    private class CommandBindings
+    {
+        private final CommandReader commands;
+
+        private CommandBindings( CommandReader commands )
+        {
+            this.commands = commands;
+        }
+
+        void bindCommandSender( AsynchronousSocketChannel source )
+        {
+            // dont use newBufferedChannel here - may cause the command is not sent and the JVM hangs
+            // only newChannel flushes the message
+            // newBufferedChannel does not flush
+            ForkNodeArguments args = getArguments();
+            WritableByteChannel channel = newChannel( newOutputStream( source ) );
+            String threadName = "commands-fork-" + args.getForkChannelId();
+            commandReaderBindings = new StreamFeeder( threadName, channel, commands, args.getConsoleLogger() );
+            commandReaderBindings.start();
+        }
+    }
+
+    private class Bindings extends CountDownLauncher
+    {
+        private Bindings( int count )
+        {
+            super( count );
+        }
+
+        @Override
+        protected void job()
+        {
+            AsynchronousSocketChannel channel = worker.get();
+            eventBindings.bindEventHandler( channel );
+            commandBindings.bindCommandSender( channel );
         }
     }
 }
