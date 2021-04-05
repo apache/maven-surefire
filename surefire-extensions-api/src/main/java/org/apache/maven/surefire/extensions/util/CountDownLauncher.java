@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.extensions;
+package org.apache.maven.surefire.extensions.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,22 +19,36 @@ package org.apache.maven.plugin.surefire.extensions;
  * under the License.
  */
 
-import org.apache.maven.surefire.extensions.ForkChannel;
-import org.apache.maven.surefire.extensions.util.CommandlineExecutor;
-
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * After the authentication has failed, {@link ForkChannel#tryConnectToClient()}
- * throws {@link InvalidSessionIdException}
- * and {@link org.apache.maven.plugin.surefire.booterclient.ForkStarter} should close {@link CommandlineExecutor}.
+ * Counts down the calls {@link #countDown()} and the last reaching zero executes the {@link #job()}.
  *
+ * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M5
  */
-public class InvalidSessionIdException extends IOException
+public abstract class CountDownLauncher
 {
-    public InvalidSessionIdException( String actualSessionId, String expectedSessionId )
+    private final AtomicInteger countDown;
+
+    public CountDownLauncher( int count )
     {
-        super( "The actual sessionId '" + actualSessionId + "' does not match '" + expectedSessionId + "'." );
+        if ( count <= 0 )
+        {
+            throw new IllegalStateException( "count=" + count + " should be greater than zero" );
+        }
+
+        countDown = new AtomicInteger( count );
+    }
+
+    protected abstract void job() throws IOException, InterruptedException;
+
+    public void countDown() throws IOException, InterruptedException
+    {
+        if ( countDown.decrementAndGet() == 0 )
+        {
+            job();
+        }
     }
 }

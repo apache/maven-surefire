@@ -41,13 +41,16 @@ import java.nio.channels.WritableByteChannel;
  */
 final class LegacyForkChannel extends ForkChannel
 {
+    private CloseableDaemonThread commandReaderBindings;
+    private CloseableDaemonThread eventHandlerBindings;
+
     LegacyForkChannel( @Nonnull ForkNodeArguments arguments )
     {
         super( arguments );
     }
 
     @Override
-    public void connectToClient()
+    public void tryConnectToClient()
     {
     }
 
@@ -64,20 +67,37 @@ final class LegacyForkChannel extends ForkChannel
     }
 
     @Override
-    public CloseableDaemonThread bindCommandReader( @Nonnull CommandReader commands,
-                                                    WritableByteChannel stdIn )
+    public void bindCommandReader( @Nonnull CommandReader commands, WritableByteChannel stdIn )
     {
-        return new StreamFeeder( "std-in-fork-" + getArguments().getForkChannelId(), stdIn, commands,
-            getArguments().getConsoleLogger() );
+        ForkNodeArguments args = getArguments();
+        String threadName = "commands-fork-" + args.getForkChannelId();
+        commandReaderBindings = new StreamFeeder( threadName, stdIn, commands, args.getConsoleLogger() );
+        commandReaderBindings.start();
     }
 
     @Override
-    public CloseableDaemonThread bindEventHandler( @Nonnull EventHandler<Event> eventHandler,
-                                                   @Nonnull CountdownCloseable countdownCloseable,
-                                                   ReadableByteChannel stdOut )
+    public void bindEventHandler( @Nonnull EventHandler<Event> eventHandler,
+                                  @Nonnull CountdownCloseable countdownCloseable,
+                                  ReadableByteChannel stdOut )
     {
-        return new EventConsumerThread( "fork-" + getArguments().getForkChannelId() + "-event-thread", stdOut,
-            eventHandler, countdownCloseable, getArguments() );
+        ForkNodeArguments args = getArguments();
+        String threadName = "fork-" + args.getForkChannelId() + "-event-thread";
+        eventHandlerBindings = new EventConsumerThread( threadName, stdOut, eventHandler, countdownCloseable, args );
+        eventHandlerBindings.start();
+    }
+
+    @Override
+    public void disable()
+    {
+        if ( eventHandlerBindings != null )
+        {
+            eventHandlerBindings.disable();
+        }
+
+        if ( commandReaderBindings != null )
+        {
+            commandReaderBindings.disable();
+        }
     }
 
     @Override
