@@ -19,8 +19,11 @@ package org.apache.maven.surefire.api.booter;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.api.report.AbstractRunListener;
+import org.apache.maven.surefire.api.report.ConsoleStream;
 import org.apache.maven.surefire.api.report.ReporterFactory;
-import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.RunListenerContext;
 import org.apache.maven.surefire.api.suite.RunResult;
 
 /**
@@ -32,20 +35,30 @@ import org.apache.maven.surefire.api.suite.RunResult;
 public class ForkingReporterFactory
     implements ReporterFactory
 {
-    private final boolean trimstackTrace;
+    private final ForkingRunListener runListener;
 
-    private final MasterProcessChannelEncoder eventChannel;
-
-    public ForkingReporterFactory( boolean trimstackTrace, MasterProcessChannelEncoder eventChannel )
+    public ForkingReporterFactory( RunListenerContext ctx, boolean trimStackTrace,
+                                   MasterProcessChannelEncoder eventChannel )
     {
-        this.trimstackTrace = trimstackTrace;
-        this.eventChannel = eventChannel;
+        runListener = new ForkingRunListener( ctx, eventChannel, trimStackTrace );
     }
 
     @Override
-    public RunListener createReporter()
+    public AbstractRunListener getRunListener()
     {
-        return new ForkingRunListener( eventChannel, trimstackTrace );
+        return runListener;
+    }
+
+    @Override
+    public ConsoleLogger getConsoleLogger()
+    {
+        return runListener;
+    }
+
+    @Override
+    public ConsoleStream getConsoleStream()
+    {
+        return runListener;
     }
 
     @Override

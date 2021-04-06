@@ -19,13 +19,13 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import org.apache.maven.surefire.api.report.AbstractRunListener;
+import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.util.internal.ClassMethod;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
-import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
@@ -49,8 +49,7 @@ public class NonConcurrentRunListener
 
     private Description lastFinishedDescription;
 
-    public NonConcurrentRunListener( RunListener reporter )
-        throws TestSetFailedException
+    public NonConcurrentRunListener( AbstractRunListener reporter )
     {
         super( reporter );
     }
@@ -65,13 +64,17 @@ public class NonConcurrentRunListener
     protected SimpleReportEntry createReportEntry( Description description )
     {
         ClassMethod classMethod = toClassMethod( description );
-        return new SimpleReportEntry( classMethod.getClazz(), null, classMethod.getMethod(), null );
+        RunMode runMode = reporter.getContext().getRunMode();
+        long testId = currentTestId();
+        return new SimpleReportEntry( runMode, testId, classMethod.getClazz(), null, classMethod.getMethod(), null );
     }
 
     private TestSetReportEntry createReportEntryForTestSet( Description description, Map<String, String> systemProps )
     {
         ClassMethod classMethod = toClassMethod( description );
-        return new SimpleReportEntry( classMethod.getClazz(), null, null, null, systemProps );
+        RunMode runMode = reporter.getContext().getRunMode();
+        long testId = currentTestId();
+        return new SimpleReportEntry( runMode, testId, classMethod.getClazz(), null, null, null, systemProps );
     }
 
     private TestSetReportEntry createTestSetReportEntryStarted( Description description )

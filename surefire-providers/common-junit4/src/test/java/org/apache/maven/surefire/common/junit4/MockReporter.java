@@ -19,8 +19,9 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
+import org.apache.maven.surefire.api.report.AbstractRunListener;
 import org.apache.maven.surefire.api.report.ReportEntry;
-import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.RunListenerContext;
 import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
@@ -32,7 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Internal tests use only.
  */
 final class MockReporter
-    implements RunListener
+    extends AbstractRunListener
 {
     private final List<String> events = new ArrayList<>();
 
@@ -56,6 +57,7 @@ final class MockReporter
 
     MockReporter()
     {
+        super( new RunListenerContext( RunMode.NORMAL_RUN ) );
     }
 
     @Override

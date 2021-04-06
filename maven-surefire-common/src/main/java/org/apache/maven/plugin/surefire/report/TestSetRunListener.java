@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
+import org.apache.maven.surefire.api.report.AbstractRunListener;
 import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
@@ -51,7 +52,8 @@ import static java.util.Objects.requireNonNull;
  * @author Kristian Rosenvold
  */
 public class TestSetRunListener
-    implements RunListener, ConsoleOutputReceiver, ConsoleLogger
+    extends AbstractRunListener
+    implements ConsoleOutputReceiver, ConsoleLogger
 {
     private final Queue<TestMethodStats> testMethodStats = new ConcurrentLinkedQueue<>();
 
@@ -77,7 +79,7 @@ public class TestSetRunListener
 
     @SuppressWarnings( "checkstyle:parameternumber" )
     public TestSetRunListener( StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats>
-                                           consoleReporter,
+                                       consoleReporter,
                                StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats>
                                        fileReporter,
                                StatelessReportEventListener<WrappedReportEntry, TestSetStats> simpleXMLReporter,
@@ -85,6 +87,7 @@ public class TestSetRunListener
                                StatisticsReporter statisticsReporter, boolean trimStackTrace,
                                boolean isPlainFormat, boolean briefOrPlainFormat )
     {
+        super(  );
         this.consoleReporter = consoleReporter;
         this.fileReporter = fileReporter;
         this.statisticsReporter = statisticsReporter;

@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.apache.maven.surefire.api.report.ConsoleStream;
 import org.apache.maven.surefire.api.report.ReporterFactory;
+import org.apache.maven.surefire.api.report.RunListenerContext;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.junit.runner.notification.RunListener.ThreadSafe;
 
@@ -33,11 +34,13 @@ import org.junit.runner.notification.RunListener.ThreadSafe;
 public class ClassesParallelRunListener
     extends ConcurrentRunListener
 {
-    public ClassesParallelRunListener( Map<String, TestSet> classMethodCounts, ReporterFactory reporterFactory,
+    public ClassesParallelRunListener( RunListenerContext ctx,
+                                       Map<String, TestSet> classMethodCounts,
+                                       ReporterFactory reporterFactory,
                                        ConsoleStream consoleStream )
         throws TestSetFailedException
     {
-        super( reporterFactory, consoleStream, false, classMethodCounts );
+        super( ctx, reporterFactory, consoleStream, false, classMethodCounts );
     }
 
     @Override

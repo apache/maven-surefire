@@ -25,6 +25,7 @@ import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.extensions.EventConsumerThread;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.booter.ForkingRunListener;
+import org.apache.maven.surefire.api.report.RunListenerContext;
 import org.apache.maven.surefire.booter.spi.EventChannelEncoder;
 import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.extensions.EventHandler;
@@ -57,6 +58,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
 import static org.fest.assertions.Assertions.assertThat;
@@ -257,12 +259,12 @@ public class ForkingRunListenerTest
         reset();
         ReportEntry expected = createDefaultReportEntry();
         SimpleReportEntry secondExpected = createAnotherDefaultReportEntry();
+        RunListenerContext ctx = new RunListenerContext( NORMAL_RUN );
 
-        new ForkingRunListener( new EventChannelEncoder( newBufferedChannel( printStream ) ), false )
+        new ForkingRunListener( ctx, new EventChannelEncoder( newBufferedChannel( printStream ) ), false )
                 .testStarting( expected );
 
-        new ForkingRunListener(
-            new EventChannelEncoder( newBufferedChannel( anotherPrintStream ) ), false )
+        new ForkingRunListener( ctx, new EventChannelEncoder( newBufferedChannel( anotherPrintStream ) ), false )
                 .testSkipped( secondExpected );
 
         TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
@@ -414,7 +416,8 @@ public class ForkingRunListenerTest
 
     private SimpleReportEntry createDefaultReportEntry( Map<String, String> sysProps )
     {
-        return new SimpleReportEntry( "com.abc.TestClass", null, "testMethod", null, null, 22, sysProps );
+        return new SimpleReportEntry( NORMAL_RUN, 1L,
+            "com.abc.TestClass", null, "testMethod", null, null, 22, sysProps );
     }
 
     private SimpleReportEntry createDefaultReportEntry()
@@ -424,7 +427,8 @@ public class ForkingRunListenerTest
 
     private SimpleReportEntry createAnotherDefaultReportEntry()
     {
-        return new SimpleReportEntry( "com.abc.AnotherTestClass", null, "testAnotherMethod", null, 42 );
+        return new SimpleReportEntry( NORMAL_RUN, 0L,
+            "com.abc.AnotherTestClass", null, "testAnotherMethod", null, 42 );
     }
 
     private SimpleReportEntry createReportEntryWithStackTrace()
@@ -437,7 +441,8 @@ public class ForkingRunListenerTest
         {
             StackTraceWriter stackTraceWriter =
                 new LegacyPojoStackTraceWriter( "org.apache.tests.TestClass", "testMethod11", e );
-            return new CategorizedReportEntry( "com.abc.TestClass", "testMethod", "aGroup", stackTraceWriter, 77 );
+            return new CategorizedReportEntry( NORMAL_RUN, 0,
+                "com.abc.TestClass", "testMethod", "aGroup", stackTraceWriter, 77 );
         }
     }
 
@@ -451,14 +456,16 @@ public class ForkingRunListenerTest
         {
             StackTraceWriter stackTraceWriter =
                 new LegacyPojoStackTraceWriter( "org.apache.tests.TestClass", "testMethod11", e );
-            return new CategorizedReportEntry( "com.abc.TestClass", "testMethod", "aGroup", stackTraceWriter, 77 );
+            return new CategorizedReportEntry( NORMAL_RUN, 0,
+                "com.abc.TestClass", "testMethod", "aGroup", stackTraceWriter, 77 );
         }
     }
 
     private RunListener createForkingRunListener()
     {
         WritableBufferedByteChannel channel = (WritableBufferedByteChannel) newChannel( printStream );
-        return new ForkingRunListener( new EventChannelEncoder( channel ), false );
+        RunListenerContext ctx = new RunListenerContext( NORMAL_RUN );
+        return new ForkingRunListener( ctx, new EventChannelEncoder( channel ), false );
     }
 
     private class StandardTestRun
@@ -500,7 +507,6 @@ public class ForkingRunListenerTest
             final ReportEntry firstData = getFirstData();
             assertEquals( expected.getSourceName(), firstData.getSourceName() );
             assertEquals( expected.getName(), firstData.getName() );
-            //noinspection deprecation
             assertEquals( expected.getElapsed(), firstData.getElapsed() );
             assertEquals( expected.getGroup(), firstData.getGroup() );
             if ( expected.getStackTraceWriter() != null )

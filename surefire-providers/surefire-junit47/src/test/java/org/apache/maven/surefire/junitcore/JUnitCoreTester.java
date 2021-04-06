@@ -26,9 +26,9 @@ import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoR
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.api.report.DefaultDirectConsoleReporter;
 import org.apache.maven.surefire.api.report.ReporterFactory;
 import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.RunListenerContext;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
@@ -38,8 +38,9 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
-import static org.apache.maven.surefire.junitcore.ConcurrentRunListener.createInstance;
 import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
+import static org.apache.maven.surefire.junitcore.ConcurrentRunListener.createInstance;
 
 /**
  * @author Kristian Rosenvold
@@ -66,8 +67,8 @@ public class JUnitCoreTester
         try
         {
             final HashMap<String, TestSet> classMethodCounts = new HashMap<>();
-            RunListener reporter = createInstance( classMethodCounts, reporterManagerFactory, parallelClasses, false,
-                                                         new DefaultDirectConsoleReporter( System.out ) );
+            RunListener reporter = createInstance( new RunListenerContext( NORMAL_RUN ), classMethodCounts,
+                reporterManagerFactory, parallelClasses, false, new DefaultDirectConsoleReporter( System.out ) );
             startCapture( (ConsoleOutputReceiver) reporter );
 
             JUnitCoreRunListener runListener = new JUnitCoreRunListener( reporter, classMethodCounts );

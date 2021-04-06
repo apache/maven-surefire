@@ -32,6 +32,7 @@ import org.apache.maven.surefire.api.provider.CommandListener;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
 import org.apache.maven.surefire.api.provider.SurefireProvider;
 import org.apache.maven.surefire.api.report.LegacyPojoStackTraceWriter;
+import org.apache.maven.surefire.api.report.RunListenerContext;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelProcessorFactory;
@@ -63,6 +64,7 @@ import static java.util.ServiceLoader.load;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.surefire.api.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.instantiateOneArg;
 import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
@@ -138,7 +140,7 @@ public final class ForkedBooter
         flushEventChannelOnExit();
 
         forkingReporterFactory = createForkingReporterFactory();
-        ConsoleLogger logger = (ConsoleLogger) forkingReporterFactory.createReporter();
+        ConsoleLogger logger = forkingReporterFactory.getConsoleLogger();
         commandReader = new CommandReader( decoder, providerConfiguration.getShutdown(), logger );
 
         pingScheduler = isDebugging ? null : listenToShutdownCommands( booterDeserializer.getPluginPid(), logger );
@@ -438,8 +440,9 @@ public final class ForkedBooter
 
     private ForkingReporterFactory createForkingReporterFactory()
     {
-        final boolean trimStackTrace = providerConfiguration.getReporterConfiguration().isTrimStackTrace();
-        return new ForkingReporterFactory( trimStackTrace, eventChannel );
+        RunListenerContext ctx = new RunListenerContext( NORMAL_RUN );
+        boolean trimStackTrace = providerConfiguration.getReporterConfiguration().isTrimStackTrace();
+        return new ForkingReporterFactory( ctx, trimStackTrace, eventChannel );
     }
 
     private synchronized ScheduledThreadPoolExecutor getJvmTerminator()
@@ -485,7 +488,6 @@ public final class ForkedBooter
         bpf.setCommandReader( commandReader );
         bpf.setTestRequest( providerConfiguration.getTestSuiteDefinition() );
         bpf.setReporterConfiguration( providerConfiguration.getReporterConfiguration() );
-        bpf.setForkedChannelEncoder( eventChannel );
         ClassLoader classLoader = currentThread().getContextClassLoader();
         bpf.setClassLoaders( classLoader );
         bpf.setTestArtifactInfo( providerConfiguration.getTestArtifact() );

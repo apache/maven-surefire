@@ -20,11 +20,14 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import java.util.Map;
+
+import org.apache.maven.surefire.api.report.AbstractRunListener;
 import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.api.report.ConsoleStream;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.ReporterFactory;
 import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.RunListenerContext;
 import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
@@ -43,8 +46,9 @@ import static org.apache.maven.surefire.junitcore.TestMethod.getThreadTestMethod
  * @see org.apache.maven.surefire.junitcore.JUnitCoreRunListener for details about regular junit run listening
  * @author Kristian Rosenvold
  */
-public abstract class ConcurrentRunListener
-    implements RunListener, ConsoleOutputReceiver
+abstract class ConcurrentRunListener
+    extends AbstractRunListener
+    implements ConsoleOutputReceiver
 {
     private final Map<String, TestSet> classMethodCounts;
 
@@ -54,10 +58,13 @@ public abstract class ConcurrentRunListener
 
     private final ConsoleStream consoleStream;
 
-    ConcurrentRunListener( final ReporterFactory reporterFactory, ConsoleStream consoleStream,
+    ConcurrentRunListener( RunListenerContext ctx,
+                           final ReporterFactory reporterFactory,
+                           ConsoleStream consoleStream,
                            boolean reportImmediately, Map<String, TestSet> classMethodCounts )
         throws TestSetFailedException
     {
+        super( ctx );
         this.reportImmediately = reportImmediately;
         this.classMethodCounts = classMethodCounts;
         this.consoleStream = consoleStream;
@@ -66,7 +73,7 @@ public abstract class ConcurrentRunListener
             @Override
             protected RunListener initialValue()
             {
-                return reporterFactory.createReporter();
+                return reporterFactory.getRunListener();
             }
         };
     }
@@ -206,15 +213,17 @@ public abstract class ConcurrentRunListener
         return reporterManagerThreadLocal.get();
     }
 
-    public static ConcurrentRunListener createInstance( Map<String, TestSet> classMethodCounts,
-                                                            ReporterFactory reporterFactory,
-                                                            boolean parallelClasses, boolean parallelBoth,
-                                                            ConsoleStream consoleStream )
+    public static ConcurrentRunListener createInstance( RunListenerContext ctx,
+                                                        Map<String, TestSet> classMethodCounts,
+                                                        ReporterFactory reporterFactory,
+                                                        boolean parallelClasses,
+                                                        boolean parallelBoth,
+                                                        ConsoleStream consoleStream )
         throws TestSetFailedException
     {
         return parallelClasses
-            ? new ClassesParallelRunListener( classMethodCounts, reporterFactory, consoleStream )
-            : new MethodsParallelRunListener( classMethodCounts, reporterFactory, !parallelBoth, consoleStream );
+            ? new ClassesParallelRunListener( ctx, classMethodCounts, reporterFactory, consoleStream )
+            : new MethodsParallelRunListener( ctx, classMethodCounts, reporterFactory, !parallelBoth, consoleStream );
     }
 
 

@@ -20,12 +20,14 @@ package org.apache.maven.surefire.booter;
  */
 
 import junit.framework.TestCase;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.booter.BaseProviderFactory;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
 import org.apache.maven.surefire.api.provider.SurefireProvider;
+import org.apache.maven.surefire.api.report.AbstractRunListener;
+import org.apache.maven.surefire.api.report.ConsoleStream;
 import org.apache.maven.surefire.api.report.ReporterConfiguration;
 import org.apache.maven.surefire.api.report.ReporterFactory;
-import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.api.testset.RunOrderParameters;
@@ -55,7 +57,19 @@ public class SurefireReflectorTest
         ReporterFactory factory = new ReporterFactory()
         {
             @Override
-            public RunListener createReporter()
+            public AbstractRunListener getRunListener()
+            {
+                return null;
+            }
+
+            @Override
+            public ConsoleLogger getConsoleLogger()
+            {
+                return null;
+            }
+
+            @Override
+            public ConsoleStream getConsoleStream()
             {
                 return null;
             }
@@ -255,7 +269,19 @@ public class SurefireReflectorTest
         ReporterFactory reporterFactory = new ReporterFactory()
         {
             @Override
-            public RunListener createReporter()
+            public AbstractRunListener getRunListener()
+            {
+                return null;
+            }
+
+            @Override
+            public ConsoleLogger getConsoleLogger()
+            {
+                return null;
+            }
+
+            @Override
+            public ConsoleStream getConsoleStream()
             {
                 return null;
             }
@@ -279,7 +305,19 @@ public class SurefireReflectorTest
         ReporterFactory reporterFactory = new ReporterFactory()
         {
             @Override
-            public RunListener createReporter()
+            public AbstractRunListener getRunListener()
+            {
+                return null;
+            }
+
+            @Override
+            public ConsoleLogger getConsoleLogger()
+            {
+                return null;
+            }
+
+            @Override
+            public ConsoleStream getConsoleStream()
             {
                 return null;
             }

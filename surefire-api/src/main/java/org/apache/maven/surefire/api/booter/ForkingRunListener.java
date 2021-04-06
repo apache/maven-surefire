@@ -20,15 +20,16 @@ package org.apache.maven.surefire.api.booter;
  */
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.api.report.AbstractRunListener;
 import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.api.report.ConsoleStream;
 import org.apache.maven.surefire.api.report.ReportEntry;
-import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.RunListenerContext;
 import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
-import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static java.util.Objects.requireNonNull;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 
 /**
  * Encodes the full output of the test run to the stdout stream.
@@ -47,8 +48,9 @@ import static java.util.Objects.requireNonNull;
  *
  * @author Kristian Rosenvold
  */
-public class ForkingRunListener
-    implements RunListener, ConsoleLogger, ConsoleOutputReceiver, ConsoleStream
+public final class ForkingRunListener
+    extends AbstractRunListener
+    implements ConsoleLogger, ConsoleOutputReceiver, ConsoleStream
 {
     private final MasterProcessChannelEncoder target;
 
@@ -56,8 +58,9 @@ public class ForkingRunListener
 
     private volatile RunMode runMode = NORMAL_RUN;
 
-    public ForkingRunListener( MasterProcessChannelEncoder target, boolean trim )
+    public ForkingRunListener( RunListenerContext ctx, MasterProcessChannelEncoder target, boolean trim )
     {
+        super( ctx );
         this.target = target;
         this.trim = trim;
     }

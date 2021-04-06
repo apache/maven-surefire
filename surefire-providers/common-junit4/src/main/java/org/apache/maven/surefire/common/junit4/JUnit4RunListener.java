@@ -19,8 +19,11 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
+import org.apache.maven.surefire.api.report.AbstractRunListener;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.RunListenerContext;
+import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
@@ -29,12 +32,14 @@ import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
-import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.isFailureInsideJUnitItself;
-import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClassMethod;
-import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.getAnnotatedIgnoreValue;
+import java.util.concurrent.atomic.AtomicLong;
+
 import static org.apache.maven.surefire.api.report.SimpleReportEntry.assumption;
 import static org.apache.maven.surefire.api.report.SimpleReportEntry.ignored;
 import static org.apache.maven.surefire.api.report.SimpleReportEntry.withException;
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.isFailureInsideJUnitItself;
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClassMethod;
+import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.getAnnotatedIgnoreValue;
 
 /**
  * RunListener for JUnit4, delegates to our own RunListener
@@ -43,7 +48,7 @@ import static org.apache.maven.surefire.api.report.SimpleReportEntry.withExcepti
 public class JUnit4RunListener
     extends org.junit.runner.notification.RunListener
 {
-    protected final RunListener reporter;
+    protected final AbstractRunListener reporter;
 
     /**
      * This flag is set after a failure has occurred so that a {@link RunListener#testSucceeded} event is not fired.
@@ -52,13 +57,14 @@ public class JUnit4RunListener
      * event-- even if there was a failure.
      */
     private final ThreadLocal<Boolean> failureFlag = new InheritableThreadLocal<>();
+    private final AtomicLong testIdCounter = new AtomicLong();
 
     /**
      * Constructor.
      *
      * @param reporter the reporter to log testing events to
      */
-    public JUnit4RunListener( RunListener reporter )
+    public JUnit4RunListener( AbstractRunListener reporter )
     {
         this.reporter = reporter;
     }
@@ -76,7 +82,10 @@ public class JUnit4RunListener
     {
         String reason = getAnnotatedIgnoreValue( description );
         ClassMethod classMethod = toClassMethod( description );
-        reporter.testSkipped( ignored( classMethod.getClazz(), null, classMethod.getMethod(), null, reason ) );
+        RunMode runMode = reporter.getContext().getRunMode();
+        long testId = reporter.getContext().getCurrentTestId();
+        reporter.testSkipped( ignored( runMode, testId, classMethod.getClazz(), null,
+            classMethod.getMethod(), null, reason ) );
     }
 
     /**
@@ -112,8 +121,10 @@ public class JUnit4RunListener
         {
             StackTraceWriter stackTrace = createStackTraceWriter( failure );
             ClassMethod classMethod = toClassMethod( failure.getDescription() );
-            ReportEntry report =
-                    withException( classMethod.getClazz(), null, classMethod.getMethod(), null, stackTrace );
+            RunMode runMode = reporter.getContext().getRunMode();
+            long testId = reporter.getContext().getCurrentTestId();
+            ReportEntry report = withException( runMode, testId, classMethod.getClazz(), null,
+                classMethod.getMethod(), null, stackTrace );
 
             if ( failure.getException() instanceof AssertionError )
             {
@@ -136,8 +147,10 @@ public class JUnit4RunListener
         {
             Description desc = failure.getDescription();
             ClassMethod classMethod = toClassMethod( desc );
-            ReportEntry report = assumption( classMethod.getClazz(), null, classMethod.getMethod(), null,
-                    failure.getMessage() );
+            RunMode runMode = reporter.getContext().getRunMode();
+            long testId = reporter.getContext().getCurrentTestId();
+            ReportEntry report = assumption( runMode, testId, classMethod.getClazz(), null,
+                classMethod.getMethod(), null, failure.getMessage() );
             reporter.testAssumptionFailure( report );
         }
         finally
@@ -178,7 +191,22 @@ public class JUnit4RunListener
     protected SimpleReportEntry createReportEntry( Description description )
     {
         ClassMethod classMethod = toClassMethod( description );
-        return new SimpleReportEntry( classMethod.getClazz(), null, classMethod.getMethod(), null );
+        RunMode runMode = reporter.getContext().getRunMode();
+        Long testId = currentTestId();
+        return new SimpleReportEntry( runMode, testId, classMethod.getClazz(), null,
+            classMethod.getMethod(), null );
+    }
+
+    protected final Long currentTestId()
+    {
+        RunListenerContext ctx = reporter.getContext();
+        Long testId = ctx.getCurrentTestId();
+        if ( testId == null )
+        {
+            testId = testIdCounter.incrementAndGet();
+            ctx.setCurrentTestId( testId );
+        }
+        return testId;
     }
 
     public static void rethrowAnyTestMechanismFailures( Result run )

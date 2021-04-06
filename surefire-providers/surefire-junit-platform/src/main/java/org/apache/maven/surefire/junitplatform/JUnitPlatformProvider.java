@@ -113,7 +113,7 @@ public class JUnitPlatformProvider
         final RunResult runResult;
         try
         {
-            RunListener runListener = reporterFactory.createReporter();
+            RunListener runListener = reporterFactory.getRunListener();
             startCapture( ( ConsoleOutputReceiver ) runListener );
             if ( forkTestSet instanceof TestsToRun )
             {

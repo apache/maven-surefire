@@ -19,6 +19,7 @@ package org.apache.maven.surefire.api.report;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.suite.RunResult;
 
 /**
@@ -29,11 +30,28 @@ import org.apache.maven.surefire.api.suite.RunResult;
 public interface ReporterFactory
 {
     /**
-     * Creates a reporter.
+     * Get a reporter.
      *
      * @return A reporter instance
      */
-    RunListener createReporter();
+    AbstractRunListener getRunListener();
+
+    /**
+     * Gets a logger intended for console output.
+     * <br>
+     * This output is intended for provider-oriented messages that are not attached to a single test-set
+     * and will normally be written to something console-like immediately.
+     *
+     * @return A console logger
+     */
+    ConsoleLogger getConsoleLogger();
+
+    /**
+     * Get a console stream (System.out) used by (forked) provider.
+     *
+     * @return A console stream
+     */
+    ConsoleStream getConsoleStream();
 
     /**
      * Closes the factory, freeing resources allocated in the factory.

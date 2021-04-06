@@ -20,9 +20,10 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.api.report.AbstractRunListener;
 import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.api.report.ReportEntry;
-import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.RunListenerContext;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.api.report.RunMode;
 
@@ -34,7 +35,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Internal tests use only.
  */
 public class MockReporter
-    implements RunListener, ConsoleLogger, ConsoleOutputReceiver
+    extends AbstractRunListener
+    implements ConsoleLogger, ConsoleOutputReceiver
 {
     private final List<String> events = new ArrayList<>();
 
@@ -73,6 +75,11 @@ public class MockReporter
     private final AtomicInteger testIgnored = new AtomicInteger();
 
     private final AtomicInteger testFailed = new AtomicInteger();
+
+    public MockReporter()
+    {
+        super( new RunListenerContext( RunMode.NORMAL_RUN ) );
+    }
 
     @Override
     public void testSetStarting( TestSetReportEntry report )

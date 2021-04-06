@@ -80,7 +80,7 @@ public class InPluginVMSurefireStarter
 
         CommonReflector surefireReflector = new CommonReflector( testClassLoader );
 
-        Object factory = surefireReflector.createReportingReporterFactory( startupReportConfig, consoleLogger );
+        Object factory = surefireReflector.createReporterFactory( startupReportConfig, consoleLogger );
 
         try
         {

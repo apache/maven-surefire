@@ -132,10 +132,11 @@ public class ForkClient
         public void handle( RunMode runMode, TestSetReportEntry reportEntry )
         {
             testsInProgress.clear();
-            TestSetReportEntry entry = reportEntry( reportEntry.getSourceName(), reportEntry.getSourceText(),
-                    reportEntry.getName(), reportEntry.getNameText(),
-                    reportEntry.getGroup(), reportEntry.getStackTraceWriter(), reportEntry.getElapsed(),
-                    reportEntry.getMessage(), getTestVmSystemProperties() );
+            TestSetReportEntry entry = reportEntry( reportEntry.getRunMode(),
+                reportEntry.getTestRunId(), reportEntry.getSourceName(), reportEntry.getSourceText(),
+                reportEntry.getName(), reportEntry.getNameText(),
+                reportEntry.getGroup(), reportEntry.getStackTraceWriter(), reportEntry.getElapsed(),
+                reportEntry.getMessage(), getTestVmSystemProperties() );
             getTestSetReporter().testSetCompleted( entry );
         }
     }
@@ -340,7 +341,7 @@ public class ForkClient
     {
         if ( forkedProcessTimeoutInSeconds > 0 )
         {
-            final long forkedProcessTimeoutInMillis = 1000 * forkedProcessTimeoutInSeconds;
+            final long forkedProcessTimeoutInMillis = 1000L * forkedProcessTimeoutInSeconds;
             final long startedAt = testSetStartedAt.get();
             if ( startedAt > START_TIME_ZERO && currentTimeMillis - startedAt >= forkedProcessTimeoutInMillis )
             {
@@ -380,7 +381,7 @@ public class ForkClient
     {
         if ( testSetReporter == null )
         {
-            testSetReporter = defaultReporterFactory.createReporter();
+            testSetReporter = defaultReporterFactory.getRunListener();
         }
         return testSetReporter;
     }

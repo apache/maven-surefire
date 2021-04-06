@@ -66,8 +66,8 @@ public class CommonReflector
         }
     }
 
-    public Object createReportingReporterFactory( @Nonnull StartupReportConfiguration startupReportConfiguration,
-                                                  @Nonnull ConsoleLogger consoleLogger )
+    public Object createReporterFactory( @Nonnull StartupReportConfiguration startupReportConfiguration,
+                                         @Nonnull ConsoleLogger consoleLogger )
     {
         Class<?>[] args = { this.startupReportConfiguration, this.consoleLogger };
         Object src = createStartupReportConfiguration( startupReportConfiguration );

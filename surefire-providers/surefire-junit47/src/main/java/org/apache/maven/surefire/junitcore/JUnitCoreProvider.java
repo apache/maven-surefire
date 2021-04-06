@@ -20,18 +20,13 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import org.apache.maven.surefire.api.booter.Command;
+import org.apache.maven.surefire.api.provider.AbstractProvider;
 import org.apache.maven.surefire.api.provider.CommandChainReader;
 import org.apache.maven.surefire.api.provider.CommandListener;
-import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
-import org.apache.maven.surefire.common.junit4.JUnitTestFailureListener;
-import org.apache.maven.surefire.common.junit4.Notifier;
-import org.apache.maven.surefire.common.junit48.FilterFactory;
-import org.apache.maven.surefire.common.junit48.JUnit48Reflector;
-import org.apache.maven.surefire.common.junit48.JUnit48TestChecker;
-import org.apache.maven.surefire.api.provider.AbstractProvider;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
 import org.apache.maven.surefire.api.report.ConsoleStream;
 import org.apache.maven.surefire.api.report.ReporterFactory;
+import org.apache.maven.surefire.api.report.RunListenerContext;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
@@ -39,6 +34,12 @@ import org.apache.maven.surefire.api.util.RunOrderCalculator;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.ScannerFilter;
 import org.apache.maven.surefire.api.util.TestsToRun;
+import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
+import org.apache.maven.surefire.common.junit4.JUnitTestFailureListener;
+import org.apache.maven.surefire.common.junit4.Notifier;
+import org.apache.maven.surefire.common.junit48.FilterFactory;
+import org.apache.maven.surefire.common.junit48.JUnit48Reflector;
+import org.apache.maven.surefire.common.junit48.JUnit48TestChecker;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
 
@@ -46,13 +47,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
+import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
+import static org.apache.maven.surefire.api.testset.TestListResolver.optionallyWildcardFilter;
+import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTestDescriptions;
 import static org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory.createCustomListeners;
 import static org.apache.maven.surefire.common.junit4.Notifier.pureNotifier;
 import static org.apache.maven.surefire.junitcore.ConcurrentRunListener.createInstance;
-import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
-import static org.apache.maven.surefire.api.testset.TestListResolver.optionallyWildcardFilter;
-import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
 
 /**
  * @author Kristian Rosenvold
@@ -119,10 +122,12 @@ public class JUnitCoreProvider
     {
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
 
-        final ConsoleStream consoleStream = providerParameters.getConsoleLogger();
+        final ConsoleStream consoleStream = reporterFactory.getConsoleStream();
+
+        RunListenerContext ctx = new RunListenerContext( NORMAL_RUN );
 
         Notifier notifier =
-            new Notifier( createRunListener( reporterFactory, consoleStream ), getSkipAfterFailureCount() );
+            new Notifier( createRunListener( ctx, reporterFactory, consoleStream ), getSkipAfterFailureCount() );
         // startCapture() called in createRunListener() in prior to setTestsToRun()
 
         Filter filter = jUnit48Reflector.isJUnit48Available() ? createJUnit48Filter() : null;
@@ -160,6 +165,7 @@ public class JUnitCoreProvider
             // Rerun failing tests if rerunFailingTestsCount is larger than 0
             if ( isRerunFailingTests() )
             {
+                ctx.setRunMode( RERUN_TEST_AFTER_FAILURE );
                 Notifier rerunNotifier = pureNotifier();
                 notifier.copyListenersTo( rerunNotifier );
                 JUnitCoreWrapper rerunCore = new JUnitCoreWrapper( rerunNotifier, jUnitCoreParameters, consoleStream );
@@ -238,12 +244,13 @@ public class JUnitCoreProvider
         } );
     }
 
-    private JUnit4RunListener createRunListener( ReporterFactory reporterFactory, ConsoleStream consoleStream )
+    private JUnit4RunListener createRunListener( RunListenerContext ctx, ReporterFactory reporterFactory,
+                                                 ConsoleStream consoleStream )
         throws TestSetFailedException
     {
         if ( isSingleThreaded() )
         {
-            NonConcurrentRunListener rm = new NonConcurrentRunListener( reporterFactory.createReporter() );
+            NonConcurrentRunListener rm = new NonConcurrentRunListener( reporterFactory.getRunListener() );
             startCapture( rm );
             return rm;
         }
@@ -251,7 +258,7 @@ public class JUnitCoreProvider
         {
             final Map<String, TestSet> testSetMap = new ConcurrentHashMap<>();
 
-            ConcurrentRunListener listener = createInstance( testSetMap, reporterFactory, isParallelTypes(),
+            ConcurrentRunListener listener = createInstance( ctx, testSetMap, reporterFactory, isParallelTypes(),
                                                              isParallelMethodsAndTypes(), consoleStream );
             startCapture( listener );
 

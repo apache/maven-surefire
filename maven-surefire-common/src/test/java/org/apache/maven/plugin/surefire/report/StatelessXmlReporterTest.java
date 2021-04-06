@@ -43,6 +43,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
+import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.doThrow;
@@ -106,7 +108,8 @@ public class StatelessXmlReporterTest
                         false, false, false, false );
         reporter.cleanTestHistoryMap();
 
-        ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), null, getClass().getName(), null, 12 );
+        ReportEntry reportEntry = new SimpleReportEntry( NORMAL_RUN, 0L,
+            getClass().getName(), null, getClass().getName(), null, 12 );
         WrappedReportEntry testSetReportEntry = new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS,
                 12, null, null, systemProps() );
         stats.testSucceeded( testSetReportEntry );
@@ -121,7 +124,8 @@ public class StatelessXmlReporterTest
     public void testAllFieldsSerialized()
             throws IOException
     {
-        ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), null, TEST_ONE, null, 12 );
+        ReportEntry reportEntry = new SimpleReportEntry( NORMAL_RUN, 0L,
+            getClass().getName(), null, TEST_ONE, null, 12 );
         WrappedReportEntry testSetReportEntry =
                 new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null, systemProps() );
         expectedReportFile = new File( reportDir, "TEST-" + getClass().getName() + ".xml" );
@@ -147,9 +151,9 @@ public class StatelessXmlReporterTest
         Utf8RecodingDeferredFileOutputStream stdErr = new Utf8RecodingDeferredFileOutputStream( "fds" );
 
         stdErr.write( stdErrPrefix + "?&-&amp;&#163;\u0020\u0000\u001F", false );
-        WrappedReportEntry t2 =
-                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), null, TEST_TWO, null,
-                        stackTraceWriter, 13 ), ReportEntryType.ERROR, 13, stdOut, stdErr );
+        WrappedReportEntry t2 = new WrappedReportEntry( new SimpleReportEntry( NORMAL_RUN, 0L,
+            getClass().getName(), null, TEST_TWO, null, stackTraceWriter, 13 ),
+            ReportEntryType.ERROR, 13, stdOut, stdErr );
 
         stats.testSucceeded( t2 );
         StatelessXmlReporter reporter = new StatelessXmlReporter( reportDir, null, false, 0,
@@ -190,7 +194,8 @@ public class StatelessXmlReporterTest
             throws IOException
     {
         WrappedReportEntry testSetReportEntry =
-                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), null, TEST_ONE, null, 12 ),
+                new WrappedReportEntry( new SimpleReportEntry( NORMAL_RUN, 0L,
+                    getClass().getName(), null, TEST_ONE, null, 12 ),
                         ReportEntryType.SUCCESS, 12, null, null, systemProps() );
         expectedReportFile = new File( reportDir, "TEST-" + getClass().getName() + ".xml" );
 
@@ -205,25 +210,22 @@ public class StatelessXmlReporterTest
         String secondRunOut = "second run out";
         String secondRunErr = "second run err";
 
-        WrappedReportEntry testTwoFirstError =
-                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), null, TEST_TWO, null,
-                        stackTraceWriterOne, 5 ), ReportEntryType.ERROR, 5, createStdOutput( firstRunOut ),
-                        createStdOutput( firstRunErr ) );
+        String cls = getClass().getName();
+        WrappedReportEntry testTwoFirstError = new WrappedReportEntry( new SimpleReportEntry( NORMAL_RUN, 0L,
+            cls, null, TEST_TWO, null, stackTraceWriterOne, 5 ),
+            ReportEntryType.ERROR, 5, createStdOutput( firstRunOut ), createStdOutput( firstRunErr ) );
 
-        WrappedReportEntry testTwoSecondError =
-                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), null, TEST_TWO, null,
-                        stackTraceWriterTwo, 13 ), ReportEntryType.ERROR, 13, createStdOutput( secondRunOut ),
-                        createStdOutput( secondRunErr ) );
+        WrappedReportEntry testTwoSecondError = new WrappedReportEntry( new SimpleReportEntry(
+            RERUN_TEST_AFTER_FAILURE, 1L, cls, null, TEST_TWO, null, stackTraceWriterTwo, 13 ),
+            ReportEntryType.ERROR, 13, createStdOutput( secondRunOut ), createStdOutput( secondRunErr ) );
 
-        WrappedReportEntry testThreeFirstRun =
-                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), null, TEST_THREE, null,
-                        stackTraceWriterOne, 13 ), ReportEntryType.FAILURE, 13, createStdOutput( firstRunOut ),
-                        createStdOutput( firstRunErr ) );
+        WrappedReportEntry testThreeFirstRun = new WrappedReportEntry( new SimpleReportEntry( NORMAL_RUN, 2L,
+            cls, null, TEST_THREE, null, stackTraceWriterOne, 13 ),
+            ReportEntryType.FAILURE, 13, createStdOutput( firstRunOut ), createStdOutput( firstRunErr ) );
 
-        WrappedReportEntry testThreeSecondRun =
-                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), null, TEST_THREE, null,
-                        stackTraceWriterTwo, 2 ), ReportEntryType.SUCCESS, 2, createStdOutput( secondRunOut ),
-                        createStdOutput( secondRunErr ) );
+        WrappedReportEntry testThreeSecondRun = new WrappedReportEntry( new SimpleReportEntry(
+            RERUN_TEST_AFTER_FAILURE, 3L, cls, null, TEST_THREE, null, stackTraceWriterTwo, 2 ),
+            ReportEntryType.SUCCESS, 2, createStdOutput( secondRunOut ), createStdOutput( secondRunErr ) );
 
         stats.testSucceeded( testTwoFirstError );
         stats.testSucceeded( testThreeFirstRun );
@@ -328,7 +330,7 @@ public class StatelessXmlReporterTest
         out.write( null, true );
 
         assertThat( out.getByteCount() )
-            .isEqualTo( 33_000 * ( 1 + 1 + NL.length() ) + 4 + 4 + NL.length() );
+            .isEqualTo( 33_000L * ( 1 + 1 + NL.length() ) + 4 + 4 + NL.length() );
 
         StringBuilder expectedContent = new StringBuilder( 150_000 );
         for ( int i = 0; i < 33_000; i++ )
