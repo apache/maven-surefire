@@ -20,7 +20,7 @@ under the License.
 Multi-line exception messages
 =============================
 
-Surefire 2.19 introduced special handling for multi-lined exception messages in order to faciliate vertical alignment. For example,
+Surefire 2.19 introduced special handling for multi-lined exception messages in order to facilitate vertical alignment. For example,
 
     java.lang.IllegalArgumentException: My Couch
        |
