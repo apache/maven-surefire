@@ -181,6 +181,67 @@ Fork Options and Parallel Test Execution
   See the keywords: <volatile>, <synchronized>, <<immutable>> and <final> in
   {{{https://jcp.org/en/jsr/detail?id=133}Java Memory Model - JSR-133}}.
 
+* Parallel Test-Suite Execution
+
+  ${project.artifactId}'s notion of "suite" is related to
+  {{{https://github.com/junit-team/junit4/wiki/Aggregating-tests-in-suites}junit4 Suite}}. 
+
+  For example, say your tests are laid out like this:
+
++---+
+src/test/java
++-features.areaA
+| +-SomeStory.java
+| +-AnotherStory.java
+| ...
++-features.areaB
+| +-DifferentStory.java
+| +-OtherStory.java
+| ...
+...
++---+
+
+  You would add a TestSuite.java for each package, that would look something like:
+
++---+
+package features.areaA;
+
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
+    SomeStory.class,
+    AnotherStory.class,
+    ...
+})
+public class TestSuite {
+    /* Suite holder */
+}
++---+
+
+  and similarly for <<<package features.areaB>>>. You would then configure
+  ${project.artifactId} like so:
+
++---+
+<plugin>
+  <groupId>${project.groupId}</groupId>
+  <artifactId>${project.artifactId}</artifactId>
+  <version>${project.version}</version>
+  <configuration>
+    <includes>
+      <include>features.*.*Suite</include>
+    </includes>
+    <parallel>suites</parallel>
+    <threadCount>4</threadCount>
+  </configuration>
+</plugin>
++---+
+
+  This would then run up to 4 threads, and each thread would be fed a TestSuite.class
+  one at a time. The test calsses within that Suite would be executed sequentially
+  in the order specified the Suite class.
+
 * Parallel ${project.artifactId} Execution in Multi-Module Maven Parallel Build
 
   Maven core allows building modules of multi-module projects in parallel with
