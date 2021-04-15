@@ -24,6 +24,7 @@ import org.apache.maven.surefire.junitcore.pc.ParallelComputer;
 import org.apache.maven.surefire.junitcore.pc.ParallelComputerBuilder;
 import org.apache.maven.surefire.api.report.ConsoleStream;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.util.RunOrderCalculator;
 import org.apache.maven.surefire.api.util.TestsToRun;
 import org.junit.Ignore;
 import org.junit.runner.Computer;
@@ -36,6 +37,7 @@ import org.junit.runner.notification.StoppedByUserException;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Queue;
 
@@ -55,12 +57,15 @@ final class JUnitCoreWrapper
     private final Notifier notifier;
     private final JUnitCoreParameters jUnitCoreParameters;
     private final ConsoleStream consoleStream;
+    private final RunOrderCalculator runOrderCalculator;
 
-    JUnitCoreWrapper( Notifier notifier, JUnitCoreParameters jUnitCoreParameters, ConsoleStream consoleStream )
+    JUnitCoreWrapper( Notifier notifier, JUnitCoreParameters jUnitCoreParameters, ConsoleStream consoleStream,
+                      RunOrderCalculator runOrderCalculator )
     {
         this.notifier = notifier;
         this.jUnitCoreParameters = jUnitCoreParameters;
         this.consoleStream = consoleStream;
+        this.runOrderCalculator = runOrderCalculator;
     }
 
     void execute( TestsToRun testsToRun, Filter filter )
@@ -124,6 +129,18 @@ final class JUnitCoreWrapper
         throws TestSetFailedException
     {
         Request req = classes( computer, classesToRun );
+        final Comparator<String> testOrderComparator = runOrderCalculator.comparatorForTestMethods();
+        if ( testOrderComparator != null )
+        {
+            req = req.sortWith( new Comparator<Description>()
+            {
+                @Override
+                public int compare( Description o1, Description o2 )
+                {
+                    return testOrderComparator.compare( o1.toString(), o2.toString() );
+                }
+            } );
+        }
         if ( filter != null )
         {
             req = new FilteringRequest( req, filter );
