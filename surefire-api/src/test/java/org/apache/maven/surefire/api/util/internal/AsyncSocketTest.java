@@ -52,8 +52,9 @@ import static org.apache.maven.surefire.api.util.internal.Channels.newOutputStre
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
- *
+ * Low level Java benchmark test.
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class AsyncSocketTest
 {
     private static final String LONG_STRING =
@@ -65,7 +66,7 @@ public class AsyncSocketTest
 
     private volatile InetSocketAddress address;
 
-    @Test
+    @Test( timeout = 10_000L )
     public void test() throws Exception
     {
         int forks = 2;
@@ -80,7 +81,7 @@ public class AsyncSocketTest
         AsynchronousChannelGroup group = AsynchronousChannelGroup.withThreadPool( executorService );
         AsynchronousServerSocketChannel server = AsynchronousServerSocketChannel.open( group );
         setTrueOptions( server, SO_REUSEADDR, TCP_NODELAY, SO_KEEPALIVE );
-        InetAddress ip = InetAddress.getLocalHost();
+        InetAddress ip = InetAddress.getLoopbackAddress();
         server.bind( new InetSocketAddress( ip, 0 ), 1 );
         address = (InetSocketAddress) server.getLocalAddress();
 
@@ -192,7 +193,7 @@ public class AsyncSocketTest
     @SuppressWarnings( "checkstyle:magicnumber" )
     private void client() throws Exception
     {
-        InetSocketAddress hostAddress = new InetSocketAddress( InetAddress.getLocalHost(), address.getPort() );
+        InetSocketAddress hostAddress = new InetSocketAddress( InetAddress.getLoopbackAddress(), address.getPort() );
         AsynchronousSocketChannel clientSocketChannel = AsynchronousSocketChannel.open();
         clientSocketChannel.connect( hostAddress ).get(); // Wait until connection is done.
         InputStream is = new BufferedInputStream( newInputStream( clientSocketChannel ), 64 * 1024 );
