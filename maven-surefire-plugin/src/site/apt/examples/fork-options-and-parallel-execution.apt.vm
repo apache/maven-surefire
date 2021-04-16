@@ -230,7 +230,7 @@ public class TestSuite {
   <version>${project.version}</version>
   <configuration>
     <includes>
-      <include>features.*.*Suite</include>
+      <include>features.*.TestSuite</include>
     </includes>
     <parallel>suites</parallel>
     <threadCount>4</threadCount>
