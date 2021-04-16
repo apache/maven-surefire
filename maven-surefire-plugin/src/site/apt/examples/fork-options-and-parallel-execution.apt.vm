@@ -232,7 +232,7 @@ public class TestSuite {
       <include>features.*.TestSuite</include>
     </includes>
     <parallel>suites</parallel>
-    <threadCount>4</threadCount>
+    <threadCountSuites>4</threadCountSuites>
   </configuration>
 </plugin>
 +---+
@@ -240,6 +240,9 @@ public class TestSuite {
   This would then run up to 4 threads, and each thread would be fed a TestSuite.class
   one at a time. The test classes within that Suite would be executed sequentially
   in the order specified the Suite class.
+
+  Note that in this specific case <<<threadCountSuites=4>>> has the same effect as
+  <<<threadCount=4>>>, since we are using <<<parallel=suites>>>.
 
 * Parallel ${project.artifactId} Execution in Multi-Module Maven Parallel Build
 
