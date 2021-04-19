@@ -193,12 +193,9 @@ src/test/java
 +-features.areaA
 | +-SomeTest.java
 | +-AnotherTest.java
-| ...
 +-features.areaB
 | +-DifferentTest.java
 | +-OtherTest.java
-| ...
-...
 +---+
 
   You would add a TestSuite.java for each package, that would look something like:
@@ -212,8 +209,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     SomeTest.class,
-    AnotherTest.class,
-    ...
+    AnotherTest.class
 })
 public class TestSuite {
 }
@@ -232,17 +228,17 @@ public class TestSuite {
       <include>features.*.TestSuite</include>
     </includes>
     <parallel>suites</parallel>
-    <threadCountSuites>4</threadCountSuites>
+    <threadCountSuites>2</threadCountSuites>
   </configuration>
 </plugin>
 +---+
 
-  This would then run up to 4 threads, and each thread would be fed a TestSuite.class
+  This would then run up to 2 threads, and each thread would be fed a TestSuite.class
   one at a time. The test classes within that Suite would be executed sequentially
   in the order specified the Suite class.
 
-  Note that in this specific case <<<threadCountSuites=4>>> has the same effect as
-  <<<threadCount=4>>>, since we are using <<<parallel=suites>>>.
+  Note that in this specific case <<<threadCountSuites=2>>> has the same effect as
+  <<<threadCount=2>>>, since we are using <<<parallel=suites>>>.
 
 * Parallel ${project.artifactId} Execution in Multi-Module Maven Parallel Build
 
