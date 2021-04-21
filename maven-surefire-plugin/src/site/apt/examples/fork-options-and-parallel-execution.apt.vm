@@ -229,16 +229,21 @@ public class TestSuite {
     </includes>
     <parallel>suites</parallel>
     <threadCountSuites>2</threadCountSuites>
+    <perCoreThreadCount>false</perCoreThreadCount>
   </configuration>
 </plugin>
 +---+
 
-  This would then run up to 2 threads, and each thread would be fed a TestSuite.class
+  This would then run up to 2 threads, and each thread would be fed a TestSuite.class,
   one at a time. The test classes within that Suite would be executed sequentially
   in the order specified the Suite class.
 
-  Note that in this specific case <<<threadCountSuites=2>>> has the same effect as
-  <<<threadCount=2>>>, since we are using <<<parallel=suites>>>.
+  Note that the <<<perCoreThreadCount>>> is a "multiplier" of a sorts. With this
+  parameter set to true (the default value), you will get the specified number of
+  threads <<per CPU core>>.
+
+  Also note that in this specific case <<<threadCountSuites=2>>> has the same effect
+  as <<<threadCount=2>>>, since we are using <<<parallel=suites>>>.
 
 * Parallel ${project.artifactId} Execution in Multi-Module Maven Parallel Build
 
