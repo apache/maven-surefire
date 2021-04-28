@@ -929,8 +929,16 @@ public abstract class AbstractSurefireMojo
             {
                 if ( getEffectiveFailIfNoTests() )
                 {
-                    throw new MojoFailureException(
-                        "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
+                    String message;
+                    String test = getTest();
+                    if (isNotBlank( test )) {
+                    	message = "No tests matching pattern " + test + " were executed!  (Set -Dsurefire.failIfNoSpecifiedTests=false to ignore this error.)";
+                    }
+                    else
+                    {
+                    	message = "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)";
+                    }
+					throw new MojoFailureException( message );
                 }
                 handleSummary( noTestsRun(), null );
                 return;
