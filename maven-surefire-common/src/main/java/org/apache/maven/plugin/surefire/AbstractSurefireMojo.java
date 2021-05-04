@@ -1090,7 +1090,6 @@ public abstract class AbstractSurefireMojo
                                                              getUserProperties(), sysProps );
 
         result.setProperty( "basedir", getBasedir().getAbsolutePath() );
-        result.setProperty( "user.dir", getWorkingDirectory().getAbsolutePath() );
         result.setProperty( "localRepository", getLocalRepository().getBasedir() );
         if ( isForking() )
         {
@@ -1114,10 +1113,16 @@ public abstract class AbstractSurefireMojo
                         );
             }
         }
+        else
+        {
+            result.setProperty( "user.dir", getWorkingDirectory().getAbsolutePath() );
+        }
+
         if ( getConsoleLogger().isDebugEnabled() )
         {
             showToLog( result, getConsoleLogger() );
         }
+
         return result;
     }
 
