@@ -1302,11 +1302,19 @@ public abstract class AbstractSurefireMojo
 
         if ( isNotForking() )
         {
-            createCopyAndReplaceForkNumPlaceholder( effectiveProperties, 1 ).copyToSystemProperties();
+            Properties originalSystemProperties = (Properties) System.getProperties().clone();
+            try
+            {
+                createCopyAndReplaceForkNumPlaceholder( effectiveProperties, 1 ).copyToSystemProperties();
 
-            InPluginVMSurefireStarter surefireStarter = createInprocessStarter( provider, classLoaderConfiguration,
-                    runOrderParameters, scanResult, platform, testClasspathWrapper );
-            return surefireStarter.runSuitesInProcess( scanResult );
+                InPluginVMSurefireStarter surefireStarter = createInprocessStarter( provider, classLoaderConfiguration,
+                        runOrderParameters, scanResult, platform, testClasspathWrapper );
+                return surefireStarter.runSuitesInProcess( scanResult );
+            }
+            finally
+            {
+                System.setProperties( originalSystemProperties );
+            }
         }
         else
         {
