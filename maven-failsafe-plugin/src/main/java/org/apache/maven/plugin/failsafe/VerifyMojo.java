@@ -132,12 +132,12 @@ public class VerifyMojo
     private File[] summaryFiles;
 
     /**
-     * Set this to "true" to cause a failure if there are no tests to run.
+     * Set this to "true" to cause a failure if there are no tests to run. Defaults to "false".
      *
      * @since 2.4
      */
-    @Parameter( property = "failIfNoTests" )
-    private Boolean failIfNoTests;
+    @Parameter( property = "failIfNoTests", defaultValue = "false" )
+    private boolean failIfNoTests;
 
     /**
      * Set this to a value greater than 0 to fail the whole test set if the cumulative number of flakes reaches
@@ -233,7 +233,7 @@ public class VerifyMojo
 
         if ( !getTestClassesDirectory().exists() )
         {
-            if ( getFailIfNoTests() != null && getFailIfNoTests() )
+            if ( getFailIfNoTests() )
             {
                 throw new MojoFailureException( "No tests to run!" );
             }
@@ -360,7 +360,7 @@ public class VerifyMojo
     }
 
     @Override
-    public Boolean getFailIfNoTests()
+    public boolean getFailIfNoTests()
     {
         return failIfNoTests;
     }

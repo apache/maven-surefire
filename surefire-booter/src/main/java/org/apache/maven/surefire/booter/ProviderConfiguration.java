@@ -54,8 +54,6 @@ public class ProviderConfiguration
 
     private final Map<String, String> providerProperties;
 
-    private final boolean failIfNoTests;
-
     private final TypeEncodedValue forkTestSet;
 
     private final boolean readTestsFromInStream;
@@ -70,7 +68,7 @@ public class ProviderConfiguration
 
     @SuppressWarnings( "checkstyle:parameternumber" )
     public ProviderConfiguration( DirectoryScannerParameters directoryScannerParameters,
-                                  RunOrderParameters runOrderParameters, boolean failIfNoTests,
+                                  RunOrderParameters runOrderParameters,
                                   ReporterConfiguration reporterConfiguration, TestArtifactInfo testArtifact,
                                   TestRequest testSuiteDefinition, Map<String, String> providerProperties,
                                   TypeEncodedValue typeEncodedTestSet, boolean readTestsFromInStream,
@@ -83,7 +81,6 @@ public class ProviderConfiguration
         this.testArtifact = testArtifact;
         this.testSuiteDefinition = testSuiteDefinition;
         this.dirScannerParams = directoryScannerParameters;
-        this.failIfNoTests = failIfNoTests;
         this.forkTestSet = typeEncodedTestSet;
         this.readTestsFromInStream = readTestsFromInStream;
         this.mainCliOptions = mainCliOptions;
@@ -95,11 +92,6 @@ public class ProviderConfiguration
     public ReporterConfiguration getReporterConfiguration()
     {
         return reporterConfiguration;
-    }
-
-    public boolean isFailIfNoTests()
-    {
-        return failIfNoTests;
     }
 
     public File getBaseDir()

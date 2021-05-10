@@ -191,14 +191,14 @@ public class BooterDeserializerStartupConfigurationTest
         File cwd = new File( "." );
         DirectoryScannerParameters directoryScannerParameters =
             new DirectoryScannerParameters( cwd, new ArrayList<String>(), new ArrayList<String>(),
-                                            new ArrayList<String>(), true, "hourly" );
+                                            new ArrayList<String>(), "hourly" );
         ReporterConfiguration reporterConfiguration = new ReporterConfiguration( cwd, true );
         TestRequest testSuiteDefinition =
             new TestRequest( Arrays.asList( getSuiteXmlFileStrings() ), getTestSourceDirectory(),
                              new TestListResolver( "aUserRequestedTest#aUserRequestedTestMethod" ) );
 
         RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null );
-        return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, true, reporterConfiguration,
+        return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, reporterConfiguration,
                 new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new HashMap<String, String>(),
                 BooterDeserializerProviderConfigurationTest.TEST_TYPED, true, cli, 0, Shutdown.DEFAULT, 0 );
     }

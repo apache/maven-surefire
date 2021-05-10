@@ -113,8 +113,7 @@ public class BooterDeserializer
         final int rerunFailingTestsCount = properties.getIntProperty( RERUN_FAILING_TESTS_COUNT );
 
         DirectoryScannerParameters dirScannerParams =
-            new DirectoryScannerParameters( testClassesDirectory, includes, excludes, specificTests,
-                                            properties.getBooleanProperty( FAILIFNOTESTS ), runOrder );
+            new DirectoryScannerParameters( testClassesDirectory, includes, excludes, specificTests, runOrder );
 
         RunOrderParameters runOrderParameters
                 = new RunOrderParameters( runOrder, runStatisticsFile == null ? null : new File( runStatisticsFile ),
@@ -138,8 +137,7 @@ public class BooterDeserializer
         Integer systemExitTimeout =
                 systemExitTimeoutAsString == null ? null : Integer.valueOf( systemExitTimeoutAsString );
 
-        return new ProviderConfiguration( dirScannerParams, runOrderParameters,
-                                          properties.getBooleanProperty( FAILIFNOTESTS ), reporterConfiguration, testNg,
+        return new ProviderConfiguration( dirScannerParams, runOrderParameters, reporterConfiguration, testNg,
                                           testSuiteDefinition, properties.getProperties(), typeEncodedTestForFork,
                                           preferTestsFromInStream, fromStrings( cli ), failFastCount, shutdown,
                                           systemExitTimeout );

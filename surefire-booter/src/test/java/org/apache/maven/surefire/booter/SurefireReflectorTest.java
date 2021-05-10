@@ -81,7 +81,7 @@ public class SurefireReflectorTest
 
         DirectoryScannerParameters directoryScannerParameters =
                 new DirectoryScannerParameters( new File( "ABC" ), new ArrayList<String>(), new ArrayList<String>(),
-                        new ArrayList<String>(), false, "hourly" );
+                        new ArrayList<String>(), "hourly" );
         surefireReflector.setDirectoryScannerParameters( foo, directoryScannerParameters );
         assertTrue( isCalled( foo ) );
         assertNotNull( ( (Foo) foo ).getDirectoryScannerParameters() );
@@ -104,7 +104,7 @@ public class SurefireReflectorTest
 
         DirectoryScannerParameters directoryScannerParameters =
             new DirectoryScannerParameters( new File( "ABC" ), new ArrayList<String>(), new ArrayList<String>(),
-                new ArrayList<String>(), false, "hourly" );
+                new ArrayList<String>(), "hourly" );
         surefireReflector.setIfDirScannerAware( foo, directoryScannerParameters );
         assertTrue( isCalled( foo ) );
     }

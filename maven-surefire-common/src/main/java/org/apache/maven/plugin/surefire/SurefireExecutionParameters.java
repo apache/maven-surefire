@@ -123,7 +123,7 @@ public interface SurefireExecutionParameters
 
     void setEncoding( String encoding );
 
-    Boolean getFailIfNoSpecifiedTests();
+    boolean getFailIfNoSpecifiedTests();
 
     void setFailIfNoSpecifiedTests( boolean failIfNoSpecifiedTests );
 

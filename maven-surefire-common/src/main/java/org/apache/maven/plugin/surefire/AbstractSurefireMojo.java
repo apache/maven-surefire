@@ -121,7 +121,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipFile;
 
-import static java.lang.Boolean.TRUE;
 import static java.lang.Integer.parseInt;
 import static java.lang.Thread.currentThread;
 import static java.util.Arrays.asList;
@@ -152,6 +151,9 @@ import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWit
 import static org.apache.maven.surefire.api.util.ReflectionUtils.tryGetMethod;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.PluginFailureReason.NONE;
+import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.PluginFailureReason.COULD_NOT_RUN_SPECIFIED_TESTS;
+import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.PluginFailureReason.COULD_NOT_RUN_DEFAULT_TESTS;
 
 /**
  * Abstract base class for running tests using Surefire.
@@ -383,8 +385,8 @@ public abstract class AbstractSurefireMojo
      *
      * @since 2.4
      */
-    @Parameter( property = "failIfNoTests" )
-    private Boolean failIfNoTests;
+    @Parameter( property = "failIfNoTests", defaultValue = "false" )
+    private boolean failIfNoTests;
 
     /**
      * <strong>DEPRECATED</strong> since version 2.14. Use {@code forkCount} and {@code reuseForks} instead.
@@ -927,13 +929,20 @@ public abstract class AbstractSurefireMojo
             DefaultScanResult scan = scanForTestClasses();
             if ( !hasSuiteXmlFiles() && scan.isEmpty() )
             {
-                if ( getEffectiveFailIfNoTests() )
+                switch ( getEffectiveFailIfNoTests() )
                 {
-                    throw new MojoFailureException(
-                        "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
+                    case COULD_NOT_RUN_DEFAULT_TESTS:
+                        throw new MojoFailureException(
+                            "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
+                    case COULD_NOT_RUN_SPECIFIED_TESTS:
+                        throw new MojoFailureException( "No tests matching pattern \""
+                            + getSpecificTests().toString()
+                            + "\" were executed! (Set "
+                            + "-D" + getPluginName() + ".failIfNoSpecifiedTests=false to ignore this error.)" );
+                    default:
+                        handleSummary( noTestsRun(), null );
+                        return;
                 }
-                handleSummary( noTestsRun(), null );
-                return;
             }
             logReportsDirectory();
             executeAfterPreconditionsChecked( scan, platform );
@@ -1115,7 +1124,7 @@ public abstract class AbstractSurefireMojo
         if ( !getTestClassesDirectory().exists()
             && ( getDependenciesToScan() == null || getDependenciesToScan().length == 0 ) )
         {
-            if ( TRUE.equals( getFailIfNoTests() ) )
+            if ( getFailIfNoTests() )
             {
                 throw new MojoFailureException( "No tests to run!" );
             }
@@ -1839,26 +1848,15 @@ public abstract class AbstractSurefireMojo
         return runOrders.contains( RunOrder.BALANCED ) || runOrders.contains( RunOrder.FAILEDFIRST );
     }
 
-    private boolean getEffectiveFailIfNoTests()
+    private PluginFailureReason getEffectiveFailIfNoTests()
     {
         if ( isSpecificTestSpecified() )
         {
-            if ( getFailIfNoSpecifiedTests() != null )
-            {
-                return getFailIfNoSpecifiedTests();
-            }
-            else if ( getFailIfNoTests() != null )
-            {
-                return getFailIfNoTests();
-            }
-            else
-            {
-                return true;
-            }
+            return getFailIfNoSpecifiedTests() ? COULD_NOT_RUN_SPECIFIED_TESTS : NONE;
         }
         else
         {
-            return getFailIfNoTests() != null && getFailIfNoTests();
+            return getFailIfNoTests() ? COULD_NOT_RUN_DEFAULT_TESTS : NONE;
         }
     }
 
@@ -1881,7 +1879,7 @@ public abstract class AbstractSurefireMojo
         DirectoryScannerParameters directoryScannerParameters = null;
         if ( hasSuiteXmlFiles() && !isSpecificTestSpecified() )
         {
-            actualFailIfNoTests = getFailIfNoTests() != null && getFailIfNoTests();
+            actualFailIfNoTests = getFailIfNoTests();
             if ( !isTestNg )
             {
                 throw new MojoExecutionException( "suiteXmlFiles is configured, but there is no TestNG dependency" );
@@ -1889,16 +1887,6 @@ public abstract class AbstractSurefireMojo
         }
         else
         {
-            if ( isSpecificTestSpecified() )
-            {
-                actualFailIfNoTests = getEffectiveFailIfNoTests();
-                setFailIfNoTests( actualFailIfNoTests );
-            }
-            else
-            {
-                actualFailIfNoTests = getFailIfNoTests() != null && getFailIfNoTests();
-            }
-
             // @todo remove these three params and use DirectoryScannerParameters to pass into DirectoryScanner only
             // @todo or remove it in next major version :: 3.0
             // @todo remove deprecated methods in ProviderParameters => included|excluded|specificTests not needed here
@@ -1910,12 +1898,12 @@ public abstract class AbstractSurefireMojo
 
             directoryScannerParameters =
                 new DirectoryScannerParameters( getTestClassesDirectory(), actualIncludes, actualExcludes,
-                                                specificTests, actualFailIfNoTests, getRunOrder() );
+                                                specificTests, getRunOrder() );
         }
 
         Map<String, String> providerProperties = toStringProperties( getProperties() );
 
-        return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, actualFailIfNoTests,
+        return new ProviderConfiguration( directoryScannerParameters, runOrderParameters,
                                           reporterConfiguration,
                                           testNg, // Not really used in provider. Limited to de/serializer.
                                           testSuiteDefinition, providerProperties, null,
@@ -3742,7 +3730,7 @@ public abstract class AbstractSurefireMojo
     }
 
 
-    public Boolean getFailIfNoTests()
+    public boolean getFailIfNoTests()
     {
         return failIfNoTests;
     }
@@ -4214,5 +4202,15 @@ public abstract class AbstractSurefireMojo
             setCachedClasspath( key, classpath );
             return classpath;
         }
+    }
+
+    /**
+     * Determines whether the plugin should fail if no tests found to run.
+     */
+    enum PluginFailureReason
+    {
+        NONE,
+        COULD_NOT_RUN_SPECIFIED_TESTS,
+        COULD_NOT_RUN_DEFAULT_TESTS,
     }
 }

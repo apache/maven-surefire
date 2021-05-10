@@ -118,8 +118,8 @@ public class SurefirePlugin
      *
      * @since 2.12
      */
-    @Parameter( property = "surefire.failIfNoSpecifiedTests" )
-    private Boolean failIfNoSpecifiedTests;
+    @Parameter( property = "surefire.failIfNoSpecifiedTests", defaultValue = "true" )
+    private boolean failIfNoSpecifiedTests;
 
     /**
      * Attach a debugger to the forked JVM. If set to "true", the process will suspend and wait for a debugger to attach
@@ -685,7 +685,7 @@ public class SurefirePlugin
     }
 
     @Override
-    public Boolean getFailIfNoSpecifiedTests()
+    public boolean getFailIfNoSpecifiedTests()
     {
         return failIfNoSpecifiedTests;
     }

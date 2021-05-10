@@ -135,8 +135,8 @@ public class IntegrationTestMojo
      *
      * @since 2.12
      */
-    @Parameter( property = "it.failIfNoSpecifiedTests" )
-    private Boolean failIfNoSpecifiedTests;
+    @Parameter( property = "it.failIfNoSpecifiedTests", defaultValue = "true" )
+    private boolean failIfNoSpecifiedTests;
 
     /**
      * Attach a debugger to the forked JVM. If set to "true", the process will suspend and wait for a debugger to attach
@@ -862,7 +862,7 @@ public class IntegrationTestMojo
     }
 
     @Override
-    public Boolean getFailIfNoSpecifiedTests()
+    public boolean getFailIfNoSpecifiedTests()
     {
         return failIfNoSpecifiedTests;
     }

@@ -60,7 +60,7 @@ public class CheckSingleTestIT
     public void singleTestNonExistentOverride()
     {
         final OutputValidator output =
-            unpack().setTestToRun( "DoesNotExist" ).failIfNoTests( false ).executeTest().verifyErrorFreeLog();
+            unpack().setTestToRun( "DoesNotExist" ).failIfNoSpecifiedTests( false ).executeTest().verifyErrorFreeLog();
         output.getTargetFile( "surefire-reports" );
         //   assertFalse( "Unexpected reports directory", reportsDir.exists() ); Hmpf. Not really a good test
     }
