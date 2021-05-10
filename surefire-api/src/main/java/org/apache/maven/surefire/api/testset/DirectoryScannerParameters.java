@@ -39,26 +39,23 @@ public class DirectoryScannerParameters
     @Deprecated
     private final List<String> specificTests;
 
-    private final boolean failIfNoTests;
-
     private final RunOrder[] runOrder;
 
     private DirectoryScannerParameters( File testClassesDirectory, List<String> includes, List<String> excludes,
-                                        List<String> specificTests, boolean failIfNoTests, RunOrder[] runOrder )
+                                        List<String> specificTests, RunOrder[] runOrder )
     {
         this.testClassesDirectory = testClassesDirectory;
         this.includes = includes;
         this.excludes = excludes;
         this.specificTests = specificTests;
-        this.failIfNoTests = failIfNoTests;
         this.runOrder = runOrder;
     }
 
     public DirectoryScannerParameters( File testClassesDirectory, @Deprecated List<String> includes,
                                        @Deprecated List<String> excludes, @Deprecated List<String> specificTests,
-                                       boolean failIfNoTests, String runOrder )
+                                       String runOrder )
     {
-        this( testClassesDirectory, includes, excludes, specificTests, failIfNoTests,
+        this( testClassesDirectory, includes, excludes, specificTests,
               runOrder == null ? RunOrder.DEFAULT : RunOrder.valueOfMulti( runOrder ) );
     }
 
@@ -98,16 +95,6 @@ public class DirectoryScannerParameters
     public List<String> getExcludes()
     {
         return excludes;
-    }
-
-    /**
-     * Indicates if lack of runable tests should fail the entire build
-     *
-     * @return true if no tests should fail the build
-     */
-    public boolean isFailIfNoTests()
-    {
-        return failIfNoTests;
     }
 
     public RunOrder[] getRunOrder()

@@ -253,7 +253,7 @@ public final class SurefireHelper
 
     private static boolean failIfNoTests( SurefireReportParameters reportParameters )
     {
-        return reportParameters.getFailIfNoTests() != null && reportParameters.getFailIfNoTests();
+        return reportParameters.getFailIfNoTests();
     }
 
     private static boolean isFatal( Exception firstForkException )

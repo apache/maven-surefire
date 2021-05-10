@@ -200,7 +200,6 @@ public class BooterDeserializerProviderConfigurationTest
         throws IOException
     {
         ProviderConfiguration reloaded = getReloadedProviderConfiguration();
-        assertTrue( reloaded.isFailIfNoTests() );
         assertEquals( cli, reloaded.getMainCliOptions() );
     }
 
@@ -238,7 +237,7 @@ public class BooterDeserializerProviderConfigurationTest
         excludes.add( "xx1" );
         excludes.add( "xx2" );
 
-        return new DirectoryScannerParameters( aDir, includes, excludes, Collections.<String>emptyList(), true,
+        return new DirectoryScannerParameters( aDir, includes, excludes, Collections.<String>emptyList(),
                                                RunOrder.asString( RunOrder.DEFAULT ) );
     }
 
@@ -277,7 +276,7 @@ public class BooterDeserializerProviderConfigurationTest
                              new TestListResolver( USER_REQUESTED_TEST + "#aUserRequestedTestMethod" ),
                     RERUN_FAILING_TEST_COUNT );
         RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null );
-        return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, true, reporterConfiguration,
+        return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, reporterConfiguration,
                 new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new HashMap<String, String>(), TEST_TYPED,
                 readTestsFromInStream, cli, 0, Shutdown.DEFAULT, 0 );
     }

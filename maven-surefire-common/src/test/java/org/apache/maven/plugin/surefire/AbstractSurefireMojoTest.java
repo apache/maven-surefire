@@ -2339,9 +2339,9 @@ public class AbstractSurefireMojoTest
         }
 
         @Override
-        public Boolean getFailIfNoSpecifiedTests()
+        public boolean getFailIfNoSpecifiedTests()
         {
-            return null;
+            return false;
         }
 
         @Override

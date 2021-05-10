@@ -47,7 +47,6 @@ import static org.apache.maven.surefire.booter.AbstractPathConfiguration.ENABLE_
 import static org.apache.maven.surefire.booter.AbstractPathConfiguration.SUREFIRE_CLASSPATH;
 import static org.apache.maven.surefire.booter.BooterConstants.EXCLUDES_PROPERTY_PREFIX;
 import static org.apache.maven.surefire.booter.BooterConstants.FAIL_FAST_COUNT;
-import static org.apache.maven.surefire.booter.BooterConstants.FAILIFNOTESTS;
 import static org.apache.maven.surefire.booter.BooterConstants.FORKTESTSET;
 import static org.apache.maven.surefire.booter.BooterConstants.FORKTESTSET_PREFER_TESTS_FROM_IN_STREAM;
 import static org.apache.maven.surefire.booter.BooterConstants.FORK_NUMBER;
@@ -151,7 +150,6 @@ class BooterSerializer
         DirectoryScannerParameters directoryScannerParameters = providerConfiguration.getDirScannerParams();
         if ( directoryScannerParameters != null )
         {
-            properties.setProperty( FAILIFNOTESTS, toString( directoryScannerParameters.isFailIfNoTests() ) );
             properties.addList( directoryScannerParameters.getIncludes(), INCLUDES_PROPERTY_PREFIX );
             properties.addList( directoryScannerParameters.getExcludes(), EXCLUDES_PROPERTY_PREFIX );
             properties.addList( directoryScannerParameters.getSpecificTests(), SPECIFIC_TEST_PROPERTY_PREFIX );
@@ -175,7 +173,6 @@ class BooterSerializer
         ClassLoaderConfiguration classLoaderConfig = startupConfiguration.getClassLoaderConfiguration();
         properties.setProperty( USESYSTEMCLASSLOADER, toString( classLoaderConfig.isUseSystemClassLoader() ) );
         properties.setProperty( USEMANIFESTONLYJAR, toString( classLoaderConfig.isUseManifestOnlyJar() ) );
-        properties.setProperty( FAILIFNOTESTS, toString( providerConfiguration.isFailIfNoTests() ) );
         properties.setProperty( PROVIDER_CONFIGURATION, startupConfiguration.getProviderClassName() );
         properties.setProperty( FAIL_FAST_COUNT, toString( providerConfiguration.getSkipAfterFailureCount() ) );
         properties.setProperty( SHUTDOWN, providerConfiguration.getShutdown().name() );
