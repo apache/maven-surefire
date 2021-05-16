@@ -410,13 +410,13 @@ public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase
         validator.getSurefireReportsFile( "TEST-junitplatformenginejupiter.BasicJupiterTest.xml", UTF_8 )
                 .assertContainsText( "<testcase name=\"test(TestInfo)\" "
                         + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
-                .assertContainsText( "<testcase name=\"0 + 1 = 1\" "
+                .assertContainsText( "<testcase name=\"add(int, int, int) 0 + 1 = 1\" "
                         + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
-                .assertContainsText( "<testcase name=\"1 + 2 = 3\" "
+                .assertContainsText( "<testcase name=\"add(int, int, int) 1 + 2 = 3\" "
                         + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
-                .assertContainsText( "<testcase name=\"49 + 51 = 100\" "
+                .assertContainsText( "<testcase name=\"add(int, int, int) 49 + 51 = 100\" "
                         + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
-                .assertContainsText( "<testcase name=\"1 + 100 = 101\" "
+                .assertContainsText( "<testcase name=\"add(int, int, int) 1 + 100 = 101\" "
                         + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" );
     }
 
