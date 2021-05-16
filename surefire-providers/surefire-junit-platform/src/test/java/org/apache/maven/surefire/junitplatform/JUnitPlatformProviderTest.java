@@ -554,22 +554,26 @@ public class JUnitPlatformProviderTest
         assertEquals( TestClass7.class.getName(), reportEntries.get( 0 ).getSourceName() );
         assertNull( reportEntries.get( 0 ).getSourceText() );
         assertEquals( "testParameterizedTestCases(String, boolean)[1]", reportEntries.get( 0 ).getName() );
-        assertEquals( "[1] Always pass, true", reportEntries.get( 0 ).getNameText() );
+        assertEquals( "testParameterizedTestCases(String, boolean)[1] Always pass, true",
+                       reportEntries.get( 0 ).getNameText() );
 
         assertEquals( TestClass7.class.getName(), reportEntries.get( 1 ).getSourceName() );
         assertNull( reportEntries.get( 1 ).getSourceText() );
         assertEquals( "testParameterizedTestCases(String, boolean)[2]", reportEntries.get( 1 ).getName() );
-        assertEquals( "[2] Always fail, false", reportEntries.get( 1 ).getNameText() );
+        assertEquals( "testParameterizedTestCases(String, boolean)[2] Always fail, false",
+                      reportEntries.get( 1 ).getNameText() );
 
         assertEquals( TestClass7.class.getName(), reportEntries.get( 2 ).getSourceName() );
         assertNull( reportEntries.get( 2 ).getSourceText() );
         assertEquals( "testParameterizedTestCases(String, boolean)[2]", reportEntries.get( 2 ).getName() );
-        assertEquals( "[2] Always fail, false", reportEntries.get( 2 ).getNameText() );
+        assertEquals( "testParameterizedTestCases(String, boolean)[2] Always fail, false",
+                      reportEntries.get( 2 ).getNameText() );
 
         assertEquals( TestClass7.class.getName(), reportEntries.get( 3 ).getSourceName() );
         assertNull( reportEntries.get( 3 ).getSourceText() );
         assertEquals( "testParameterizedTestCases(String, boolean)[2]", reportEntries.get( 3 ).getName() );
-        assertEquals( "[2] Always fail, false", reportEntries.get( 3 ).getNameText() );
+        assertEquals( "testParameterizedTestCases(String, boolean)[2] Always fail, false",
+                      reportEntries.get( 3 ).getNameText() );
 
         TestExecutionSummary summary = executionListener.summaries.get( 0 );
         assertEquals( 2, summary.getTestsFoundCount() );

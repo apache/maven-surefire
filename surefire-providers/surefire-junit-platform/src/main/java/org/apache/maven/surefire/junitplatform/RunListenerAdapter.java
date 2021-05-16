@@ -24,6 +24,7 @@ import static java.util.stream.Collectors.joining;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
 import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
 
 import java.util.Map;
 import java.util.Objects;
@@ -31,6 +32,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.api.report.RunListener;
@@ -55,6 +57,7 @@ final class RunListenerAdapter
 
     private final ConcurrentMap<TestIdentifier, Long> testStartTime = new ConcurrentHashMap<>();
     private final ConcurrentMap<TestIdentifier, TestExecutionResult> failures = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, TestIdentifier> runningTestIdentifiersByUniqueId = new ConcurrentHashMap<>();
     private final RunListener runListener;
     private volatile TestPlan testPlan;
 
@@ -79,6 +82,8 @@ final class RunListenerAdapter
     @Override
     public void executionStarted( TestIdentifier testIdentifier )
     {
+        runningTestIdentifiersByUniqueId.put( testIdentifier.getUniqueId(), testIdentifier );
+
         if ( testIdentifier.isContainer()
                         && testIdentifier.getSource().filter( ClassSource.class::isInstance ).isPresent() )
         {
@@ -155,6 +160,8 @@ final class RunListenerAdapter
                     }
             }
         }
+
+        runningTestIdentifiersByUniqueId.remove( testIdentifier.getUniqueId() );
     }
 
     private Integer computeElapsedTime( TestIdentifier testIdentifier )
@@ -162,6 +169,16 @@ final class RunListenerAdapter
         Long startTime = testStartTime.remove( testIdentifier );
         long endTime = System.currentTimeMillis();
         return startTime == null ? null : (int) ( endTime - startTime );
+    }
+
+    private Stream<TestIdentifier> collectAllTestIdentifiersInHierarchy( TestIdentifier testIdentifier )
+    {
+        return testIdentifier.getParentId()
+            .map( runningTestIdentifiersByUniqueId::get )
+            .map( parentTestIdentifier ->
+                Stream.concat( Stream.of( parentTestIdentifier ),
+                               collectAllTestIdentifiersInHierarchy( parentTestIdentifier ) ) )
+            .orElseGet( Stream::empty );
     }
 
     private String safeGetMessage( Throwable throwable )
@@ -275,6 +292,15 @@ final class RunListenerAdapter
                     .map( s -> new String[] { s[0], s[1] } )
                     .orElse( new String[] { realClassName, realClassName } );
 
+            String parentDisplay =
+                collectAllTestIdentifiersInHierarchy( testIdentifier )
+                    .filter( identifier -> identifier.getSource().filter( MethodSource.class::isInstance ).isPresent() )
+                    .map( TestIdentifier::getDisplayName )
+                    .collect( joining( " " ) );
+
+            boolean needsSpaceSeparator = !isBlank( parentDisplay ) && !display.startsWith( "[" );
+            String methodDisplay = parentDisplay + ( needsSpaceSeparator ? " " : "" ) + display;
+
             String simpleClassNames = COMMA_PATTERN.splitAsStream( methodSource.getMethodParameterTypes() )
                     .map( s -> s.substring( 1 + s.lastIndexOf( '.' ) ) )
                     .collect( joining( "," ) );
@@ -283,11 +309,11 @@ final class RunListenerAdapter
             String methodName = methodSource.getMethodName();
             String description = testIdentifier.getLegacyReportingName();
             String methodSign = hasParams ? methodName + '(' + simpleClassNames + ')' : methodName;
-            boolean equalDescriptions = display.equals( description );
+            boolean equalDescriptions = methodDisplay.equals( description );
             boolean hasLegacyDescription = description.startsWith( methodName + '(' );
             boolean hasDisplayName = !equalDescriptions || !hasLegacyDescription;
             String methodDesc = equalDescriptions || !hasParams ? methodSign : description;
-            String methodDisp = hasDisplayName ? display : methodDesc;
+            String methodDisp = hasDisplayName ? methodDisplay : methodDesc;
 
             // The behavior of methods getLegacyReportingName() and getDisplayName().
             //     test      ||  legacy  |  display
