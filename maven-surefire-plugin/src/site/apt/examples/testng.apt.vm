@@ -158,7 +158,7 @@ Using TestNG
   For example:
 
 +---+
-</plugins>
+<plugins>
     [...]
       <plugin>
         <groupId>${project.groupId}</groupId>
@@ -179,7 +179,7 @@ Using TestNG
   TestNG 5.10 and plugin version 2.19 or higher allows you to run methods in parallel test using data provider.
   
 +---+
-</plugins>
+<plugins>
     [...]
       <plugin>
         <groupId>${project.groupId}</groupId>
@@ -205,7 +205,7 @@ Using TestNG
   TestNG 6.9.8 (JRE 1.7) and plugin version 2.19 or higher allows you to run suites in parallel.
   
 +---+
-</plugins>
+<plugins>
     [...]
       <plugin>
         <groupId>${project.groupId}</groupId>
@@ -254,7 +254,7 @@ Using TestNG
 [...]
 </dependencies>
 [...]
-</plugins>
+<plugins>
     [...]
       <plugin>
         <groupId>${project.groupId}</groupId>
@@ -296,7 +296,7 @@ Using TestNG
   The default level is 0.
   
 +---+
-</plugins>
+<plugins>
     [...]
       <plugin>
         <groupId>${project.groupId}</groupId>
@@ -324,7 +324,7 @@ Using TestNG
   binding the class name to the key <<<objectfactory>>> in provider properties:
   
 +---+
-</plugins>
+<plugins>
     [...]
       <plugin>
         <groupId>${project.groupId}</groupId>
@@ -352,7 +352,7 @@ Using TestNG
   binding the class name to the key <<<testrunfactory>>> in provider properties:
   
 +---+
-</plugins>
+<plugins>
     [...]
       <plugin>
         <groupId>${project.groupId}</groupId>
@@ -380,7 +380,7 @@ Using TestNG
   The test <a-t3> does not match any test in <suite.xml>.
   
 +---+
-</plugins>
+<plugins>
     [...]
       <plugin>
         <groupId>${project.groupId}</groupId>
