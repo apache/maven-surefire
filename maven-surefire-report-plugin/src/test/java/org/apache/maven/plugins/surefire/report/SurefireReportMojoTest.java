@@ -221,10 +221,10 @@ public class SurefireReportMojoTest
 
         String htmlContent = FileUtils.fileRead( report );
 
-        int idx = htmlContent.indexOf( "<td><a name=\"TC_com.shape.CircleTest.testX\"></a>testX</td>" );
+        int idx = htmlContent.indexOf( "<td align=\"left\"><a name=\"TC_com.shape.CircleTest.testX\"></a>testX</td>" );
         assertTrue( idx > 0 );
 
-        idx = htmlContent.indexOf( "<td><a name=\"TC_com.shape.CircleTest.testRadius\"></a>"
+        idx = htmlContent.indexOf( "<td align=\"left\"><a name=\"TC_com.shape.CircleTest.testRadius\"></a>"
                                        + "<a href=\"#com.shape.CircleTest.testRadius\">testRadius</a>" );
         assertTrue( idx > 0 );
     }
@@ -243,36 +243,36 @@ public class SurefireReportMojoTest
 
         assertThat( htmlContent,
                     containsString( toSystemNewLine( "<tr class=\"b\">\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0%</td>\n"
-                                                         + "<td>0</td>" ) ) );
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0%</td>\n"
+                                                         + "<td align=\"left\">0</td>" ) ) );
 
         assertThat( htmlContent,
                     containsString( toSystemNewLine( "<tr class=\"b\">\n"
-                                                         + "<td><a href=\"#surefire\">surefire</a></td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0%</td>\n"
-                                                         + "<td>0</td></tr>" ) ) );
+                                                         + "<td align=\"left\"><a href=\"#surefire\">surefire</a></td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0%</td>\n"
+                                                         + "<td align=\"left\">0</td></tr>" ) ) );
         assertThat( htmlContent,
                     containsString( toSystemNewLine( "<tr class=\"b\">\n"
-                                                         + "<td>"
+                                                         + "<td align=\"left\">"
                                                          + "<a href=\"#surefire.MyTest\">"
                                                          + "<figure><img src=\"images/icon_error_sml.gif\" alt=\"\" /></figure>"
                                                          + "</a>"
                                                          + "</td>\n"
-                                                         + "<td><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0%</td>\n"
-                                                         + "<td>0</td></tr>" ) ) );
+                                                         + "<td align=\"left\"><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0%</td>\n"
+                                                         + "<td align=\"left\">0</td></tr>" ) ) );
 
         assertThat( htmlContent, containsString( ">surefire.MyTest:13</a>" ) );
 
@@ -328,36 +328,36 @@ public class SurefireReportMojoTest
 
         assertThat( htmlContent,
                     containsString( toSystemNewLine( "<tr class=\"b\">\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0%</td>\n"
-                                                         + "<td>0</td>" ) ) );
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0%</td>\n"
+                                                         + "<td align=\"left\">0</td>" ) ) );
 
         assertThat( htmlContent,
                     containsString( toSystemNewLine( "<tr class=\"b\">\n"
-                                        + "<td><a href=\"#surefire\">surefire</a></td>\n"
-                                        + "<td>1</td>\n"
-                                        + "<td>1</td>\n"
-                                        + "<td>0</td>\n"
-                                        + "<td>0</td>\n"
-                                        + "<td>0%</td>\n"
-                                        + "<td>0</td></tr>" ) ) );
+                                        + "<td align=\"left\"><a href=\"#surefire\">surefire</a></td>\n"
+                                        + "<td align=\"left\">1</td>\n"
+                                        + "<td align=\"left\">1</td>\n"
+                                        + "<td align=\"left\">0</td>\n"
+                                        + "<td align=\"left\">0</td>\n"
+                                        + "<td align=\"left\">0%</td>\n"
+                                        + "<td align=\"left\">0</td></tr>" ) ) );
         assertThat( htmlContent,
                     containsString( toSystemNewLine( "<tr class=\"b\">\n"
-                                                         + "<td>"
+                                                         + "<td align=\"left\">"
                                                          + "<a href=\"#surefire.MyTest\">"
                                                          + "<figure><img src=\"images/icon_error_sml.gif\" alt=\"\" /></figure>"
                                                          + "</a>"
                                                          + "</td>\n"
-                                                         + "<td><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0%</td>\n"
-                                                         + "<td>0</td></tr>" ) ) );
+                                                         + "<td align=\"left\"><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0%</td>\n"
+                                                         + "<td align=\"left\">0</td></tr>" ) ) );
         assertThat( htmlContent,
                     containsString( ">surefire.MyTest:13</a>" ) );
 
@@ -391,36 +391,36 @@ public class SurefireReportMojoTest
 
         assertThat( htmlContent,
                     containsString( toSystemNewLine( "<tr class=\"b\">\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0%</td>\n"
-                                                         + "<td>0</td>" ) ) );
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0%</td>\n"
+                                                         + "<td align=\"left\">0</td>" ) ) );
 
         assertThat( htmlContent,
                     containsString( toSystemNewLine( "<tr class=\"b\">\n"
-                                                         + "<td><a href=\"#surefire\">surefire</a></td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0%</td>\n"
-                                                         + "<td>0</td></tr>" ) ) );
+                                                         + "<td align=\"left\"><a href=\"#surefire\">surefire</a></td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0%</td>\n"
+                                                         + "<td align=\"left\">0</td></tr>" ) ) );
         assertThat( htmlContent,
                     containsString( toSystemNewLine( "<tr class=\"b\">\n"
-                                                         + "<td>"
+                                                         + "<td align=\"left\">"
                                                          + "<a href=\"#surefire.MyTest\">"
                                                          + "<figure><img src=\"images/icon_error_sml.gif\" alt=\"\" /></figure>"
                                                          + "</a>"
                                                          + "</td>\n"
-                                                         + "<td><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0%</td>\n"
-                                                         + "<td>0</td></tr>" ) ) );
+                                                         + "<td align=\"left\"><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0%</td>\n"
+                                                         + "<td align=\"left\">0</td></tr>" ) ) );
         assertThat( htmlContent,
                     containsString( ">surefire.MyTest:13</a>" ) );
 
@@ -478,36 +478,36 @@ public class SurefireReportMojoTest
 
         assertThat( htmlContent,
                     containsString( toSystemNewLine( "<tr class=\"b\">\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0%</td>\n"
-                                                         + "<td>0</td>" ) ) );
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0%</td>\n"
+                                                         + "<td align=\"left\">0</td>" ) ) );
 
         assertThat( htmlContent,
                     containsString( toSystemNewLine( "<tr class=\"b\">\n"
-                                                         + "<td><a href=\"#surefire\">surefire</a></td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0%</td>\n"
-                                                         + "<td>0</td></tr>" ) ) );
+                                                         + "<td align=\"left\"><a href=\"#surefire\">surefire</a></td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0%</td>\n"
+                                                         + "<td align=\"left\">0</td></tr>" ) ) );
         assertThat( htmlContent,
                     containsString( toSystemNewLine( "<tr class=\"b\">\n"
-                                                         + "<td>"
+                                                         + "<td align=\"left\">"
                                                          + "<a href=\"#surefire.MyTest$A\">"
                                                          + "<figure><img src=\"images/icon_error_sml.gif\" alt=\"\" /></figure>"
                                                          + "</a>"
                                                          + "</td>\n"
-                                                         + "<td><a href=\"#surefire.MyTest$A\">MyTest$A</a></td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0%</td>\n"
-                                                         + "<td>0</td></tr>" ) ) );
+                                                         + "<td align=\"left\"><a href=\"#surefire.MyTest$A\">MyTest$A</a></td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0%</td>\n"
+                                                         + "<td align=\"left\">0</td></tr>" ) ) );
 
         assertThat( htmlContent, containsString( ">surefire.MyTest$A:45</a>" ) );
 
@@ -540,36 +540,36 @@ public class SurefireReportMojoTest
 
         assertThat( htmlContent,
                     containsString( toSystemNewLine( "<tr class=\"b\">\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0%</td>\n"
-                                                         + "<td>0</td>" ) ) );
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0%</td>\n"
+                                                         + "<td align=\"left\">0</td>" ) ) );
 
         assertThat( htmlContent,
                     containsString( toSystemNewLine( "<tr class=\"b\">\n"
-                                                         + "<td><a href=\"#surefire\">surefire</a></td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>1</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0</td>\n"
-                                                         + "<td>0%</td>\n"
-                                                         + "<td>0</td></tr>" ) ) );
+                                                         + "<td align=\"left\"><a href=\"#surefire\">surefire</a></td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">1</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0</td>\n"
+                                                         + "<td align=\"left\">0%</td>\n"
+                                                         + "<td align=\"left\">0</td></tr>" ) ) );
         assertThat( htmlContent,
                     containsString( toSystemNewLine( "<tr class=\"b\">\n"
-                                        + "<td>"
+                                        + "<td align=\"left\">"
                                         + "<a href=\"#surefire.MyTest$A\">"
                                         + "<figure><img src=\"images/icon_error_sml.gif\" alt=\"\" /></figure>"
                                         + "</a>"
                                         + "</td>\n"
-                                        + "<td><a href=\"#surefire.MyTest$A\">MyTest$A</a></td>\n"
-                                        + "<td>1</td>\n"
-                                        + "<td>1</td>\n"
-                                        + "<td>0</td>\n"
-                                        + "<td>0</td>\n"
-                                        + "<td>0%</td>\n"
-                                        + "<td>0</td></tr>" ) ) );
+                                        + "<td align=\"left\"><a href=\"#surefire.MyTest$A\">MyTest$A</a></td>\n"
+                                        + "<td align=\"left\">1</td>\n"
+                                        + "<td align=\"left\">1</td>\n"
+                                        + "<td align=\"left\">0</td>\n"
+                                        + "<td align=\"left\">0</td>\n"
+                                        + "<td align=\"left\">0%</td>\n"
+                                        + "<td align=\"left\">0</td></tr>" ) ) );
 
         assertThat( htmlContent, containsString( ">surefire.MyTest$A:45</a>" ) );
 
