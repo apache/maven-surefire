@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.api.report;
+package org.apache.maven.surefire.junitcore;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -18,6 +18,8 @@ package org.apache.maven.surefire.api.report;
  * specific language governing permissions and limitations
  * under the License.
  */
+
+import org.apache.maven.surefire.api.report.ConsoleStream;
 
 import java.io.PrintStream;
 

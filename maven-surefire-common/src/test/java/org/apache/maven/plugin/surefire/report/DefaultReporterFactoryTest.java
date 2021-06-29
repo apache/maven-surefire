@@ -286,7 +286,7 @@ public class DefaultReporterFactoryTest
 
         DefaultReporterFactory factory = new DefaultReporterFactory( reportConfig, reporter );
 
-        TestSetRunListener runListener = (TestSetRunListener) factory.createReporter();
+        TestSetRunListener runListener = (TestSetRunListener) factory.getRunListener();
 
         assertTrue( runListener.isDebugEnabled() );
         assertTrue( runListener.isInfoEnabled() );
@@ -358,7 +358,7 @@ public class DefaultReporterFactoryTest
         DefaultReporterFactory factory = new DefaultReporterFactory( reportConfig, reporter );
         assertEquals( reportsDirectory, factory.getReportsDirectory() );
 
-        TestSetRunListener runListener = (TestSetRunListener) factory.createReporter();
+        TestSetRunListener runListener = (TestSetRunListener) factory.getRunListener();
         Collection listeners = getInternalState( factory, "listeners" );
         assertEquals( 1, listeners.size() );
         assertTrue( listeners.contains( runListener ) );

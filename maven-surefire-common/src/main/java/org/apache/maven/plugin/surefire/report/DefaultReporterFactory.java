@@ -23,6 +23,8 @@ import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.Level;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
+import org.apache.maven.surefire.api.report.AbstractRunListener;
+import org.apache.maven.surefire.api.report.ConsoleStream;
 import org.apache.maven.surefire.shared.utils.logging.MessageBuilder;
 import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessReportEventListener;
@@ -97,7 +99,7 @@ public class DefaultReporterFactory
     }
 
     @Override
-    public RunListener createReporter()
+    public AbstractRunListener getRunListener()
     {
         TestSetRunListener testSetRunListener =
             new TestSetRunListener( createConsoleReporter(),
@@ -110,6 +112,18 @@ public class DefaultReporterFactory
                                     reportConfiguration.isBriefOrPlainFormat() );
         addListener( testSetRunListener );
         return testSetRunListener;
+    }
+
+    @Override
+    public ConsoleLogger getConsoleLogger()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ConsoleStream getConsoleStream()
+    {
+        throw new UnsupportedOperationException();
     }
 
     public File getReportsDirectory()

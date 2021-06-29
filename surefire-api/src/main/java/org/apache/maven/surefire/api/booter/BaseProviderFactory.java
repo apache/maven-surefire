@@ -22,8 +22,6 @@ package org.apache.maven.surefire.api.booter;
 import org.apache.maven.surefire.api.cli.CommandLineOption;
 import org.apache.maven.surefire.api.provider.CommandChainReader;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
-import org.apache.maven.surefire.api.report.ConsoleStream;
-import org.apache.maven.surefire.api.report.DefaultDirectConsoleReporter;
 import org.apache.maven.surefire.api.report.ReporterConfiguration;
 import org.apache.maven.surefire.api.report.ReporterFactory;
 import org.apache.maven.surefire.api.testset.DirectoryScannerParameters;
@@ -52,8 +50,6 @@ public class BaseProviderFactory
     private final boolean insideFork;
 
     private ReporterFactory reporterFactory;
-
-    private MasterProcessChannelEncoder masterProcessChannelEncoder;
 
     private List<CommandLineOption> mainCliOptions = emptyList();
 
@@ -146,14 +142,6 @@ public class BaseProviderFactory
     public void setClassLoaders( ClassLoader testClassLoader )
     {
         this.testClassLoader = testClassLoader;
-    }
-
-    @Override
-    public ConsoleStream getConsoleLogger()
-    {
-        return insideFork
-            ? new ForkingRunListener( masterProcessChannelEncoder, reporterConfiguration.isTrimStackTrace() )
-            : new DefaultDirectConsoleReporter( reporterConfiguration.getOriginalSystemOut() );
     }
 
     public void setTestRequest( TestRequest testRequest )
@@ -259,10 +247,5 @@ public class BaseProviderFactory
     public void setSystemExitTimeout( Integer systemExitTimeout )
     {
         this.systemExitTimeout = systemExitTimeout;
-    }
-
-    public void setForkedChannelEncoder( MasterProcessChannelEncoder masterProcessChannelEncoder )
-    {
-        this.masterProcessChannelEncoder = masterProcessChannelEncoder;
     }
 }

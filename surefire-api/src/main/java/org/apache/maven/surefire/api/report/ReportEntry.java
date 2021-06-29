@@ -19,6 +19,10 @@ package org.apache.maven.surefire.api.report;
  * under the License.
  */
 
+import javax.annotation.Nonnegative;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
  * Describes a single entry for a test report
  *
@@ -105,4 +109,21 @@ public interface ReportEntry
      * @return A string with the test case text and group/category, or just the source text.
      */
     String getReportNameWithGroup();
+
+    /**
+     * Run mode.
+     *
+     * @return a normal run, or re-run.
+     */
+    @Nonnull
+    RunMode getRunMode();
+
+    /**
+     * This represents a reference pointing to a literal representation of test description or literal unique id.
+     *
+     * @return id
+     */
+    @Nonnegative
+    @Nullable
+    Long getTestRunId();
 }

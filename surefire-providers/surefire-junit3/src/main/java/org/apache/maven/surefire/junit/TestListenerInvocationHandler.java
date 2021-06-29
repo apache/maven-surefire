@@ -52,17 +52,17 @@ public class TestListenerInvocationHandler
 
     private final Set<FailedTest> failedTestsSet = new HashSet<>();
 
-    private RunListener reporter;
+    private final RunListener reporter;
 
-    private static final Class[] EMPTY_CLASS_ARRAY = { };
+    private static final Class<?>[] EMPTY_CLASS_ARRAY = { };
 
     private static final Object[] EMPTY_STRING_ARRAY = { };
 
     private static class FailedTest
     {
-        private Object testThatFailed;
+        private final Object testThatFailed;
 
-        private Thread threadOnWhichTestFailed;
+        private final Thread threadOnWhichTestFailed;
 
         FailedTest( Object testThatFailed, Thread threadOnWhichTestFailed )
         {

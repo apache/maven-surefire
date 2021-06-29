@@ -312,35 +312,35 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
                 return new SystemPropertyEvent( runMode, key, value );
             case BOOTERCODE_TESTSET_STARTING:
                 checkArguments( runMode, memento, 10 );
-                return new TestsetStartingEvent( runMode, toReportEntry( memento.getData() ) );
+                return new TestsetStartingEvent( runMode, toReportEntry( runMode, , memento.getData() ) );
             case BOOTERCODE_TESTSET_COMPLETED:
                 checkArguments( runMode, memento, 10 );
-                return new TestsetCompletedEvent( runMode, toReportEntry( memento.getData() ) );
+                return new TestsetCompletedEvent( runMode, toReportEntry( runMode, , memento.getData() ) );
             case BOOTERCODE_TEST_STARTING:
                 checkArguments( runMode, memento, 10 );
-                return new TestStartingEvent( runMode, toReportEntry( memento.getData() ) );
+                return new TestStartingEvent( runMode, toReportEntry( runMode, , memento.getData() ) );
             case BOOTERCODE_TEST_SUCCEEDED:
                 checkArguments( runMode, memento, 10 );
-                return new TestSucceededEvent( runMode, toReportEntry( memento.getData() ) );
+                return new TestSucceededEvent( runMode, toReportEntry( runMode, , memento.getData() ) );
             case BOOTERCODE_TEST_FAILED:
                 checkArguments( runMode, memento, 10 );
-                return new TestFailedEvent( runMode, toReportEntry( memento.getData() ) );
+                return new TestFailedEvent( runMode, toReportEntry( runMode, , memento.getData() ) );
             case BOOTERCODE_TEST_SKIPPED:
                 checkArguments( runMode, memento, 10 );
-                return new TestSkippedEvent( runMode, toReportEntry( memento.getData() ) );
+                return new TestSkippedEvent( runMode, toReportEntry( runMode, , memento.getData() ) );
             case BOOTERCODE_TEST_ERROR:
                 checkArguments( runMode, memento, 10 );
-                return new TestErrorEvent( runMode, toReportEntry( memento.getData() ) );
+                return new TestErrorEvent( runMode, toReportEntry( runMode, , memento.getData() ) );
             case BOOTERCODE_TEST_ASSUMPTIONFAILURE:
                 checkArguments( runMode, memento, 10 );
-                return new TestAssumptionFailureEvent( runMode, toReportEntry( memento.getData() ) );
+                return new TestAssumptionFailureEvent( runMode, toReportEntry( runMode, , memento.getData() ) );
             default:
                 throw new IllegalArgumentException( "Missing a branch for the event type " + eventType );
         }
     }
 
     @Nonnull
-    private static TestSetReportEntry toReportEntry( List<Object> args )
+    private static TestSetReportEntry toReportEntry( RunMode runMode, Long testId, List<Object> args )
     {
         // ReportEntry:
         String source = (String) args.get( 0 );
@@ -354,7 +354,7 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
         String traceMessage = (String) args.get( 7 );
         String smartTrimmedStackTrace = (String) args.get( 8 );
         String stackTrace = (String) args.get( 9 );
-        return newReportEntry( source, sourceText, name, nameText, group, message, timeElapsed,
+        return newReportEntry( runMode, testId, source, sourceText, name, nameText, group, message, timeElapsed,
             traceMessage, smartTrimmedStackTrace, stackTrace );
     }
 
@@ -372,7 +372,8 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
         return exists ? new DeserializedStacktraceWriter( traceMessage, smartTrimmedStackTrace, stackTrace ) : null;
     }
 
-    static TestSetReportEntry newReportEntry( // ReportEntry:
+    static TestSetReportEntry newReportEntry( RunMode runMode, Long testId,
+                                              // ReportEntry:
                                               String source, String sourceText, String name,
                                               String nameText, String group, String message,
                                               Integer timeElapsed,
@@ -382,8 +383,8 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
         throws NumberFormatException
     {
         StackTraceWriter stackTraceWriter = toTrace( traceMessage, smartTrimmedStackTrace, stackTrace );
-        return reportEntry( source, sourceText, name, nameText, group, stackTraceWriter, timeElapsed, message,
-            Collections.<String, String>emptyMap() );
+        return reportEntry( runMode, testId, source, sourceText, name, nameText, group, stackTraceWriter,
+            timeElapsed, message, Collections.<String, String>emptyMap() );
     }
 
     private static Map<Segment, ForkedProcessEventType> segmentsToEvents()

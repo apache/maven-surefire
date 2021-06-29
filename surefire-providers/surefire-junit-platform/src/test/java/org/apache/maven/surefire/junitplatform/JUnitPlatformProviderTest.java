@@ -1006,7 +1006,7 @@ public class JUnitPlatformProviderTest
         when( runOrderCalculator.orderTestClasses( any() ) ).thenReturn( testsToRun );
 
         ReporterFactory reporterFactory = mock( ReporterFactory.class );
-        when( reporterFactory.createReporter() ).thenReturn( runListener );
+        when( reporterFactory.getRunListener() ).thenReturn( runListener );
 
         TestRequest testRequest = mock( TestRequest.class );
         when( testRequest.getTestListResolver() ).thenReturn( testListResolver );
@@ -1188,7 +1188,7 @@ public class JUnitPlatformProviderTest
         TestsToRun testsToRun = newTestsToRun( Sub1Tests.class, Sub2Tests.class );
 
         invokeProvider( jUnitPlatformProvider, testsToRun );
-        RunListener reporter = providerParameters.getReporterFactory().createReporter();
+        RunListener reporter = providerParameters.getReporterFactory().getRunListener();
 
         ArgumentCaptor<ReportEntry> reportEntryArgumentCaptor =
                         ArgumentCaptor.forClass( ReportEntry.class );

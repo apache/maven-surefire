@@ -20,7 +20,7 @@ package org.apache.maven.surefire.junitcore.pc;
  */
 
 import org.apache.maven.surefire.api.report.ConsoleStream;
-import org.apache.maven.surefire.api.report.DefaultDirectConsoleReporter;
+import org.apache.maven.surefire.junitcore.DefaultDirectConsoleReporter;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutorService;

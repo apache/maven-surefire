@@ -46,9 +46,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.maven.surefire.api.booter.BaseProviderFactory;
 import org.apache.maven.surefire.api.booter.ProviderParameterNames;
+import org.apache.maven.surefire.api.report.RunListenerContext;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.Notifier;
-import org.apache.maven.surefire.api.report.DefaultDirectConsoleReporter;
 import org.apache.maven.surefire.api.report.ReporterConfiguration;
 import org.apache.maven.surefire.api.report.ReporterFactory;
 import org.apache.maven.surefire.api.report.RunListener;
@@ -66,6 +66,7 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
 
 import static junit.framework.Assert.assertEquals;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 
 /**
  * {@code
@@ -120,8 +121,8 @@ public class Surefire746Test
 
         final Map<String, TestSet> testSetMap = new ConcurrentHashMap<>();
 
-        RunListener listener = ConcurrentRunListener.createInstance( testSetMap, reporterFactory, false, false,
-                new DefaultDirectConsoleReporter( System.out ) );
+        RunListener listener = ConcurrentRunListener.createInstance( new RunListenerContext( NORMAL_RUN ),
+            testSetMap, reporterFactory, false, false, new DefaultDirectConsoleReporter( System.out ) );
 
         TestsToRun testsToRun = new TestsToRun( Collections.<Class<?>>singleton( TestClassTest.class ) );
 
@@ -137,7 +138,8 @@ public class Surefire746Test
             exception.expect( TestSetFailedException.class );
             JUnit4RunListener dummy = new JUnit4RunListener( new MockReporter() );
             new JUnitCoreWrapper( new Notifier( dummy, 0 ), jUnitCoreParameters,
-                    new DefaultDirectConsoleReporter( System.out ) ).execute( testsToRun, customRunListeners, null );
+                    new DefaultDirectConsoleReporter( System.out ) )
+                .execute( testsToRun, customRunListeners, null );
         }
         finally
         {

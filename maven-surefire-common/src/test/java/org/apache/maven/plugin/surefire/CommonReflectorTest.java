@@ -59,7 +59,7 @@ public class CommonReflectorTest
     private File reportsDirectory;
     private File statistics;
     private SurefireStatelessReporter xmlReporter;
-    private SurefireConsoleOutputReporter consoleOutputReporter = new SurefireConsoleOutputReporter();
+    private final SurefireConsoleOutputReporter consoleOutputReporter = new SurefireConsoleOutputReporter();
     private SurefireStatelessTestsetInfoReporter infoReporter = new SurefireStatelessTestsetInfoReporter();
 
     @Before
@@ -82,7 +82,7 @@ public class CommonReflectorTest
     public void createReportingReporterFactory()
     {
         CommonReflector reflector = new CommonReflector( Thread.currentThread().getContextClassLoader() );
-        DefaultReporterFactory factory = (DefaultReporterFactory) reflector.createReportingReporterFactory(
+        DefaultReporterFactory factory = (DefaultReporterFactory) reflector.createReporterFactory(
                 startupReportConfiguration, consoleLogger );
 
         assertThat( factory )

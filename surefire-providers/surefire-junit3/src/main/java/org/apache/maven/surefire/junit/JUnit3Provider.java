@@ -97,7 +97,7 @@ public class JUnit3Provider
         RunResult runResult;
         try
         {
-            final RunListener reporter = reporterFactory.createReporter();
+            final RunListener reporter = reporterFactory.getRunListener();
             ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
             Map<String, String> systemProperties = systemProps();
             String smClassName = System.getProperty( "surefire.security.manager" );

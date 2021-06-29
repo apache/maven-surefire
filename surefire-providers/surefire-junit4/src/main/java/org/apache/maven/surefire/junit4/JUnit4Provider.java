@@ -22,6 +22,7 @@ package org.apache.maven.surefire.junit4;
 import org.apache.maven.surefire.api.booter.Command;
 import org.apache.maven.surefire.api.provider.CommandChainReader;
 import org.apache.maven.surefire.api.provider.CommandListener;
+import org.apache.maven.surefire.api.report.AbstractRunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.common.junit4.JUnitTestFailureListener;
@@ -121,7 +122,7 @@ public class JUnit4Provider
         RunResult runResult;
         try
         {
-            RunListener reporter = reporterFactory.createReporter();
+            AbstractRunListener reporter = reporterFactory.getRunListener();
 
             startCapture( (ConsoleOutputReceiver) reporter );
             // startCapture() called in prior to setTestsToRun()

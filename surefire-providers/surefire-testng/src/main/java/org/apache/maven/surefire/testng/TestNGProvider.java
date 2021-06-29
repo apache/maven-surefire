@@ -98,7 +98,7 @@ public class TestNGProvider
         }
 
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
-        final RunListener reporter = reporterFactory.createReporter();
+        final RunListener reporter = reporterFactory.getRunListener();
         /*
          * {@link org.apache.maven.surefire.api.report.ConsoleOutputCapture#startCapture(ConsoleOutputReceiver)}
          * called in prior to initializing variable {@link #testsToRun}

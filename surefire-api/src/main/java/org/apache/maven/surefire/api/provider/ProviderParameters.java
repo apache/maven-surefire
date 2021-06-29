@@ -20,7 +20,6 @@ package org.apache.maven.surefire.api.provider;
  */
 
 import org.apache.maven.surefire.api.cli.CommandLineOption;
-import org.apache.maven.surefire.api.report.ConsoleStream;
 import org.apache.maven.surefire.api.report.ReporterConfiguration;
 import org.apache.maven.surefire.api.report.ReporterFactory;
 import org.apache.maven.surefire.api.testset.DirectoryScannerParameters;
@@ -76,16 +75,6 @@ public interface ProviderParameters
      * @return A ReporterFactory that allows the creation of one or more ReporterManagers
      */
     ReporterFactory getReporterFactory();
-
-    /**
-     * Gets a logger intended for console output.
-     * <br>
-     * This output is intended for provider-oriented messages that are not attached to a single test-set
-     * and will normally be written to something console-like immediately.
-     *
-     * @return A console stream logger
-     */
-    ConsoleStream getConsoleLogger();
 
     /**
      * The raw parameters used in creating the directory scanner

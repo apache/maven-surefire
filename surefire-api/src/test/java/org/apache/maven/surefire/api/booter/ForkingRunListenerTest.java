@@ -20,8 +20,10 @@ package org.apache.maven.surefire.api.booter;
  */
 
 import junit.framework.TestCase;
+import org.apache.maven.surefire.api.report.RunListenerContext;
 import org.mockito.ArgumentCaptor;
 
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -41,7 +43,8 @@ public class ForkingRunListenerTest
         MasterProcessChannelEncoder encoder = mock( MasterProcessChannelEncoder.class );
         ArgumentCaptor<String> argument1 = ArgumentCaptor.forClass( String.class );
         doNothing().when( encoder ).consoleInfoLog( anyString() );
-        ForkingRunListener forkingRunListener = new ForkingRunListener( encoder, true );
+        RunListenerContext ctx = new RunListenerContext( NORMAL_RUN );
+        ForkingRunListener forkingRunListener = new ForkingRunListener( ctx, encoder, true );
         forkingRunListener.info( new String( new byte[]{ (byte) 'A' } ) );
         forkingRunListener.info( new String( new byte[]{ } ) );
         verify( encoder, times( 2 ) ).consoleInfoLog( argument1.capture() );

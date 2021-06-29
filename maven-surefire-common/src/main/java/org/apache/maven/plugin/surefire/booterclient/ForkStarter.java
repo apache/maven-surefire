@@ -770,7 +770,7 @@ public class ForkStarter
             ClassLoader unifiedClassLoader = classpathConfiguration.createMergedClassLoader();
 
             CommonReflector commonReflector = new CommonReflector( unifiedClassLoader );
-            Object reporterFactory = commonReflector.createReportingReporterFactory( startupReportConfiguration, log );
+            Object reporterFactory = commonReflector.createReporterFactory( startupReportConfiguration, log );
 
             ProviderFactory providerFactory =
                 new ProviderFactory( startupConfiguration, providerConfiguration, unifiedClassLoader, reporterFactory );

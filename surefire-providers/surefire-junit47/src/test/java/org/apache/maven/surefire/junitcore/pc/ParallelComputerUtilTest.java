@@ -21,7 +21,7 @@ package org.apache.maven.surefire.junitcore.pc;
 
 import org.apache.maven.surefire.junitcore.JUnitCoreParameters;
 import org.apache.maven.surefire.api.report.ConsoleStream;
-import org.apache.maven.surefire.api.report.DefaultDirectConsoleReporter;
+import org.apache.maven.surefire.junitcore.DefaultDirectConsoleReporter;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
