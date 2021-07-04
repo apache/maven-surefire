@@ -26,7 +26,7 @@ import org.junit.Test;
  *
  */
 @SuppressWarnings( "checkstyle:magicnumber" )
-public class Surefire1881 extends SurefireJUnit4IntegrationTestCase
+public class Surefire1881IT extends SurefireJUnit4IntegrationTestCase
 {
 
     @Test( timeout = 30_000L )
