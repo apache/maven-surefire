@@ -26,13 +26,24 @@ import org.junit.Test;
  *
  */
 @SuppressWarnings( "checkstyle:magicnumber" )
-public class Surefire1881 extends SurefireJUnit4IntegrationTestCase
+public class Surefire1881IT extends SurefireJUnit4IntegrationTestCase
 {
+    @Test( timeout = 30_000L )
+    public void testJVMLogging() throws Exception
+    {
+        // Before SUREFIRE-1881, use of SurefireForkNodeFactory would make the test hang
+        // if the JVM would log something to stdOut or stdErr before Surefire was fully initialised
+        unpack( "/surefire-1881-jvm-logging" )
+            .executeTest()
+            .assertTestSuiteResults( 1, 0, 0, 0 );
+    }
 
     @Test( timeout = 30_000L )
-    public void test() throws Exception
+    public void testJavaAgent() throws Exception
     {
-        unpack( "/surefire-1881" )
+        // Before SUREFIRE-1881, use of SurefireForkNodeFactory would make the test hang
+        // if a Java agent would log something to stdOut or stdErr before Failsafe was fully initialised
+        unpack( "/surefire-1881-java-agent" )
             .executeVerify()
             .assertIntegrationTestSuiteResults( 1, 0, 0, 0 );
     }
