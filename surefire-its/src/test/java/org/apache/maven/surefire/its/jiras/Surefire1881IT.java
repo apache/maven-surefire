@@ -29,11 +29,12 @@ import org.junit.Test;
 public class Surefire1881IT extends SurefireJUnit4IntegrationTestCase
 {
 
-    @Test( timeout = 30_000L )
+    @Test( timeout = 60_000L )
     public void test() throws Exception
     {
         unpack( "/surefire-1881" )
             .executeVerify()
+            .assertTestSuiteResults( 1, 0, 0, 0 )
             .assertIntegrationTestSuiteResults( 1, 0, 0, 0 );
     }
 }

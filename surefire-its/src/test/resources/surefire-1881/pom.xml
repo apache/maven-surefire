@@ -41,7 +41,49 @@
                     </archive>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.version}</version>
+                <configuration>
+                    <!-- JVM prints nothing, no unexpected output on console -->
+                    <!--<argLine></argLine>-->
+                    <!-- JVM prints nothing, start forked booter in debug mode  -->
+                    <!--<argLine>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=localhost:34567</argLine>-->
+                    <!-- JVM prints loaded classes  -->
+                    <argLine>-verbose:class</argLine>
+                    <!-- JVM prints loaded classes, start forked booter in debug mode  -->
+                    <!--<argLine>-verbose:class -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=localhost:34567</argLine>-->
 
+                    <!-- Fix for "[WARNING] Corrupted STDOUT by directly writing to native stream in forked JVM" -->
+                    <!-- FIXME:
+                           Using this option is meant to fix "[WARNING] Corrupted STDOUT by directly writing to native stream in
+                           forked JVM" and creation of "*-jvmRun1.dumpstream" files. Unfortunately, it makes Surefire/Failsafe
+                           freeze if a either the JVM prints something to stdOut or stdErr. This happens both in M5 and in
+                           M6-SNAPSHOT after both SUREFIRE-1788 and SUREFIRE-1809 have been merged in already.
+                         FIXME:
+                           *Not* using this option leads to garbled log output when the JVM writes to both stdOut and stdErr
+                           before/during tests.
+                         TODO:
+                           If the garbled output would also appear with this option activated, cannot be tested at present due to
+                           the Surefire/Failsafe freeze -> re-test after the freeze has been fixed.
+                     -->
+                    <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
+
+                    <!-- TODO:
+                           We have to use this until SUREFIRE-1809 is fixed in M6, otherwise there are JPMS problems with
+                           libraries added to the boot class path. -> re-test, then remove this option
+                     -->
+                    <useModulePath>false</useModulePath>
+
+                    <!--
+                    <consoleOutputReporter implementation="org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter">
+                      &lt;!&ndash; Suppress Surefire/Failsafe output in favour of test output only &ndash;&gt;
+                      <disable>true</disable>
+                      <encoding>UTF-8</encoding>
+                    </consoleOutputReporter>
+                    -->
+                </configuration>
+            </plugin>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${surefire.version}</version>

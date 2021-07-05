@@ -6,7 +6,7 @@ import java.security.ProtectionDomain;
 
 public class Agent
 {
-    public static Instrumentation INSTRUMENTATION;
+    public static volatile Instrumentation INSTRUMENTATION;
 
     public static void premain( String commandLineOptions, Instrumentation instrumentation )
     {
