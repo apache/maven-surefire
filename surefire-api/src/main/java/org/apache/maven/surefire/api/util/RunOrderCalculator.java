@@ -19,10 +19,14 @@ package org.apache.maven.surefire.api.util;
  * under the License.
  */
 
+import java.util.Comparator;
+
 /**
  * @author Kristian Rosenvold
  */
 public interface RunOrderCalculator
 {
     TestsToRun orderTestClasses( TestsToRun scannedClasses );
+
+    Comparator<String> comparatorForTestMethods();
 }

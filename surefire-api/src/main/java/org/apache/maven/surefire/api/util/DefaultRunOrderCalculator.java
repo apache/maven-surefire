@@ -21,8 +21,10 @@ package org.apache.maven.surefire.api.util;
 
 import org.apache.maven.surefire.api.runorder.RunEntryStatisticsMap;
 import org.apache.maven.surefire.api.testset.RunOrderParameters;
+import org.apache.maven.surefire.api.testset.TestListResolver;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,6 +50,8 @@ public class DefaultRunOrderCalculator
 
     private final Random random;
 
+    private final TestListResolver testListResolver;
+
     public DefaultRunOrderCalculator( RunOrderParameters runOrderParameters, int threadCount )
     {
         this.runOrderParameters = runOrderParameters;
@@ -61,6 +65,14 @@ public class DefaultRunOrderCalculator
             runOrderParameters.setRunOrderRandomSeed( runOrderRandomSeed );
         }
         this.random = new Random( runOrderRandomSeed );
+        if ( RunOrder.TESTORDER.equals( getRunOrderMethod() ) )
+        {
+            this.testListResolver = getTestListResolver();
+        }
+        else
+        {
+            this.testListResolver = null;
+        }
     }
 
     @Override
@@ -78,9 +90,80 @@ public class DefaultRunOrderCalculator
         return new TestsToRun( new LinkedHashSet<>( result ) );
     }
 
+    @Override
+    public Comparator<String> comparatorForTestMethods()
+    {
+        RunOrder methodRunOrder = getRunOrderMethod();
+        if ( RunOrder.TESTORDER.equals( methodRunOrder ) )
+        {
+            return new Comparator<String>()
+            {
+                @Override
+                public int compare( String o1, String o2 )
+                {
+                    String[] classAndMethod1 = getClassAndMethod( o1 );
+                    String className1 = classAndMethod1[0];
+                    String methodName1 = classAndMethod1[1];
+                    String[] classAndMethod2 = getClassAndMethod( o2 );
+                    String className2 = classAndMethod2[0];
+                    String methodName2 = classAndMethod2[1];
+                    return testListResolver.testOrderComparator( className1, className2, methodName1, methodName2 );
+                }
+            };
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public TestListResolver getTestListResolver()
+    {
+        String orderParam = System.getProperty( "test" );
+        if ( orderParam == null  )
+        {
+            throw new IllegalStateException( "TestListResolver in RunOrderCalculator should be used only when "
+                    + "system property -Dtest is set and runOrder is testorder" );
+        }
+        return new TestListResolver( Arrays.asList( orderParam.split( "," ) ) );
+    }
+
+    public String[] getClassAndMethod( String request )
+    {
+        String[] classAndMethod = { request, request };
+        if ( request.contains( "(" ) )
+        {
+            String[] nameSplit1 = request.split( "\\(" );
+            classAndMethod[0] = nameSplit1[1].substring( 0, nameSplit1[1].length() - 1 );
+            classAndMethod[1] = nameSplit1[0];
+        }
+        return classAndMethod;
+    }
+
+    private RunOrder getRunOrderMethod()
+    {
+        if ( runOrder.length > 1 && Arrays.asList( runOrder ).contains( RunOrder.TESTORDER ) )
+        {
+            // Use of testorder and other runOrders are currently not supported
+            throw new IllegalStateException( "Expected only testorder. Got: " + runOrder.length );
+        }
+        return runOrder[0];
+    }
+
     private void orderTestClasses( List<Class<?>> testClasses, RunOrder runOrder )
     {
-        if ( RunOrder.RANDOM.equals( runOrder ) )
+        if ( RunOrder.TESTORDER.equals( runOrder ) )
+        {
+            Collections.sort( testClasses, new Comparator<Class<?>>()
+                    {
+                        @Override
+                        public int compare( Class<?> o1, Class<?> o2 )
+                        {
+                            return testListResolver.testOrderComparator( o1.getName(), o2.getName(), null, null );
+                        }
+                    } );
+        }
+        else if ( RunOrder.RANDOM.equals( runOrder ) )
         {
             Collections.shuffle( testClasses, random );
         }

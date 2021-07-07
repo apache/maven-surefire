@@ -145,7 +145,8 @@ public class JUnitCoreProvider
 
         try
         {
-            JUnitCoreWrapper core = new JUnitCoreWrapper( notifier, jUnitCoreParameters, consoleStream );
+            JUnitCoreWrapper core = new JUnitCoreWrapper( notifier, jUnitCoreParameters, consoleStream,
+                runOrderCalculator );
 
             if ( commandsReader != null )
             {
@@ -162,7 +163,8 @@ public class JUnitCoreProvider
             {
                 Notifier rerunNotifier = pureNotifier();
                 notifier.copyListenersTo( rerunNotifier );
-                JUnitCoreWrapper rerunCore = new JUnitCoreWrapper( rerunNotifier, jUnitCoreParameters, consoleStream );
+                JUnitCoreWrapper rerunCore = new JUnitCoreWrapper( rerunNotifier, jUnitCoreParameters, consoleStream,
+                    runOrderCalculator );
                 for ( int i = 0; i < rerunFailingTestsCount && !testFailureListener.getAllFailures().isEmpty(); i++ )
                 {
                     Set<Description> failures = generateFailingTestDescriptions( testFailureListener.getAllFailures() );
