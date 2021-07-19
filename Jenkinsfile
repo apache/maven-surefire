@@ -172,9 +172,6 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
     } finally {
         try {
             if (makeReports) {
-                openTasks(ignoreCase: true, canComputeNew: true, defaultEncoding: 'UTF-8', pattern: sourcesPatternCsv(),
-                        high: tasksViolationHigh(), normal: tasksViolationNormal(), low: tasksViolationLow())
-
                 jacoco(changeBuildStatus: false,
                         execPattern: '**/*.exec',
                         sourcePattern: sourcesPatternCsv(),
@@ -240,22 +237,6 @@ static def classPatternCsv() {
             '**/surefire-logger-api/target/classes,' +
             '**/surefire-providers/**/target/classes,' +
             '**/surefire-report-parser/target/classes'
-}
-
-@NonCPS
-static def tasksViolationLow() {
-    return '@SuppressWarnings'
-}
-
-@NonCPS
-static def tasksViolationNormal() {
-    return 'TODO,FIXME,@deprecated'
-}
-
-@NonCPS
-static def tasksViolationHigh() {
-    return 'finalize(),Locale.setDefault,TimeZone.setDefault,\
-System.out,System.err,System.setOut,System.setErr,System.setIn,System.exit,System.gc,System.runFinalization,System.load'
 }
 
 @NonCPS
