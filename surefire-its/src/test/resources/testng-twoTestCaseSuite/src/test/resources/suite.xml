@@ -1,7 +1,0 @@
-<suite name="Foo">
-    <test name="Bar"> 
-	    <packages>
-	        <package name="testng.two" />
-	    </packages>
-    </test>
-</suite>

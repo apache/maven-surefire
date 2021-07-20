@@ -1,4 +1,0 @@
-module it
-{
-    exports it;
-}

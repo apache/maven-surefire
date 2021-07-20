@@ -1,3 +1,0 @@
-# simple-mixed includes
-
-**/*Test.java
