@@ -25,9 +25,9 @@ Contributing to [Apache Maven Surefire](https://maven.apache.org/surefire/)
 [![Apache License, Version 2.0, January 2004](https://img.shields.io/github/license/apache/maven.svg?label=License&style=for-the-badge)][license]
 
 [![CI](https://img.shields.io/badge/CI-Jenkins-blue.svg?style=for-the-badge)](https://jenkins-ci.org/)
-[![Jenkins Status](https://img.shields.io/jenkins/s/https/ci-builds.apache.org/job/Maven/job/maven-box/job/maven-surefire/job/master.svg?style=for-the-badge)][build]
-[![Jenkins tests](https://img.shields.io/jenkins/t/https/ci-builds.apache.org/job/Maven/job/maven-box/job/maven-surefire/job/master.svg?style=for-the-badge)][test-results]
-[![Jenkins JaCoCo](https://img.shields.io/jenkins/coverage/jacoco/https/ci-builds.apache.org/job/Maven/job/maven-box/job/maven-surefire/job/master.svg?style=for-the-badge&color=green)](https://ci-builds.apache.org/job/Maven/job/maven-box/job/maven-surefire/job/master/lastBuild/jacoco/)
+[![Jenkins Status](https://img.shields.io/jenkins/s/https/ci-maven.apache.org/job/Maven/job/maven-box/job/maven-surefire/job/master.svg?style=for-the-badge)][build]
+[![Jenkins tests](https://img.shields.io/jenkins/t/https/ci-maven.apache.org/job/Maven/job/maven-box/job/maven-surefire/job/master.svg?style=for-the-badge)][test-results]
+[![Jenkins JaCoCo](https://img.shields.io/jenkins/coverage/jacoco/https/ci-maven.apache.org/job/Maven/job/maven-box/job/maven-surefire/job/master.svg?style=for-the-badge&color=green)](https://ci-maven.apache.org/job/Maven/job/maven-box/job/maven-surefire/job/master/lastBuild/jacoco/)
 
 [![Actions Status](https://github.com/apache/maven-surefire/workflows/GitHub%20CI/badge.svg?branch=master)](https://github.com/apache/maven-surefire/actions)
 
@@ -78,8 +78,8 @@ See http://maven.apache.org/developers/website/deploy-component-reference-docume
 
 [jira]: https://issues.apache.org/jira/browse/SUREFIRE/
 [license]: https://www.apache.org/licenses/LICENSE-2.0
-[build]: https://ci-builds.apache.org/job/Maven/job/maven-box/job/maven-surefire/job/master/
-[test-results]: https://ci-builds.apache.org/job/Maven/job/maven-box/job/maven-surefire/job/master/lastCompletedBuild/testReport/
+[build]: https://ci-maven.apache.org/job/Maven/job/maven-box/job/maven-surefire/job/master/
+[test-results]: https://ci-maven.apache.org/job/Maven/job/maven-box/job/maven-surefire/job/master/lastCompletedBuild/testReport/
 [Join us @ irc://freenode/maven]: https://www.irccloud.com/invite?channel=maven&amp;hostname=irc.freenode.net&amp;port=6697&amp;ssl=1
 [Webchat with us @channel maven]: http://webchat.freenode.net/?channels=%23maven
 [JIRA Change Log]: https://issues.apache.org/jira/browse/SUREFIRE/?selectedTab=com.atlassian.jira.jira-projects-plugin:changelog-panel
