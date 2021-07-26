@@ -84,8 +84,12 @@ final class RunListenerAdapter
     {
         runningTestIdentifiersByUniqueId.put( testIdentifier.getUniqueId(), testIdentifier );
 
-        if ( testIdentifier.isContainer()
-                        && testIdentifier.getSource().filter( ClassSource.class::isInstance ).isPresent() )
+        boolean isClass = testIdentifier.isContainer()
+            && testIdentifier.getSource().filter( ClassSource.class::isInstance ).isPresent();
+
+        boolean isRootContainer = testIdentifier.isContainer() && !testIdentifier.getParentId().isPresent();
+
+        if ( isClass || isRootContainer )
         {
             testStartTime.put( testIdentifier, System.currentTimeMillis() );
             runListener.testSetStarting( createReportEntry( testIdentifier ) );
@@ -112,7 +116,7 @@ final class RunListenerAdapter
 
         boolean isRootContainer = testIdentifier.isContainer() && !testIdentifier.getParentId().isPresent();
 
-        if ( failed || isClass || isTest )
+        if ( failed || isClass || isTest || isRootContainer )
         {
             Integer elapsed = computeElapsedTime( testIdentifier );
             switch ( testExecutionResult.getStatus() )
