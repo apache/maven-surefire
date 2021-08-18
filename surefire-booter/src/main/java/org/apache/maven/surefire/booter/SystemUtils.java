@@ -88,7 +88,7 @@ public final class SystemUtils
     public static File toJdkHomeFromJvmExec( String jvmExecutable )
     {
         File bin = new File( jvmExecutable ).getAbsoluteFile().getParentFile();
-        if ( "bin".equals( bin.getName() ) )
+        if ( bin != null && "bin".equals( bin.getName() ) )
         {
             File parent = bin.getParentFile();
             if ( "jre".equals( parent.getName() ) )

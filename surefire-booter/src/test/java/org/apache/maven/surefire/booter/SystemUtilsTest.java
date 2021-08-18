@@ -99,6 +99,15 @@ public class SystemUtilsTest
         }
 
         @Test
+        public void incorrectJdkPathShouldNotNPE()
+        {
+            File jre = new File( "/opt/jdk" );
+            File jdk = jre.getParentFile();
+            File incorrect = jdk.getParentFile();
+            assertThat( SystemUtils.isJava9AtLeast( incorrect.getAbsolutePath() ) ).isFalse();
+        }
+
+        @Test
         public void shouldHaveJavaPath()
         {
             String javaPath = System.getProperty( "java.home" ) + separator + "bin" + separator + "java";
