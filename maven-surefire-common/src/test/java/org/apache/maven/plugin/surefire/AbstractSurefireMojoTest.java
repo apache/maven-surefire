@@ -2022,7 +2022,7 @@ public class AbstractSurefireMojoTest
 
         e.expect( MojoFailureException.class );
         e.expectMessage( "Unexpected value 'fake' in the configuration parameter 'enableProcessChecker'." );
-        mojo.verifyParameters();
+        mojo.verifyParameters( true );
     }
 
     private void setProjectDepedenciesToMojo( Artifact... deps )

@@ -924,7 +924,7 @@ public abstract class AbstractSurefireMojo
         setupStuff();
         Platform platform = PLATFORM.withJdkExecAttributesForTests( getEffectiveJvm() );
 
-        if ( verifyParameters() && !hasExecutedBefore() )
+        if ( verifyParameters( false ) && !hasExecutedBefore() )
         {
             DefaultScanResult scan = scanForTestClasses();
             if ( !hasSuiteXmlFiles() && scan.isEmpty() )
@@ -944,6 +944,7 @@ public abstract class AbstractSurefireMojo
                         return;
                 }
             }
+            verifyParameters( true );
             logReportsDirectory();
             executeAfterPreconditionsChecked( scan, platform );
         }
@@ -1101,7 +1102,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    boolean verifyParameters()
+    boolean verifyParameters( boolean pluginActive )
         throws MojoFailureException, MojoExecutionException
     {
         setProperties( new SurefireProperties( getProperties() ) );
@@ -1138,7 +1139,10 @@ public abstract class AbstractSurefireMojo
             ensureParallelRunningCompatibility();
             ensureThreadCountWithPerThread();
             warnIfUselessUseSystemClassLoaderParameter();
-            warnIfDefunctGroupsCombinations();
+            if ( pluginActive )
+            {
+                warnIfDefunctGroupsCombinations();
+            }
             warnIfRerunClashes();
             warnIfWrongShutdownValue();
             warnIfNotApplicableSkipAfterFailureCount();
