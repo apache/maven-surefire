@@ -25,10 +25,10 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toList;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
 import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
@@ -58,6 +58,7 @@ import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.ScanResult;
+import org.apache.maven.surefire.api.util.SurefireReflectionException;
 import org.apache.maven.surefire.api.util.TestsToRun;
 import org.apache.maven.surefire.shared.utils.StringUtils;
 import org.junit.platform.engine.DiscoverySelector;
@@ -104,7 +105,14 @@ public class JUnitPlatformProvider
     @Override
     public Iterable<Class<?>> getSuites()
     {
-        return scanClasspath();
+        try
+        { 
+            return scanClasspath();
+        }
+        finally
+        {
+            closeLauncher();
+        }
     }
 
     @Override
@@ -153,22 +161,37 @@ public class JUnitPlatformProvider
     private void invokeAllTests( TestsToRun testsToRun, RunListener runListener )
     {
         RunListenerAdapter adapter = new RunListenerAdapter( runListener );
-        execute( testsToRun, adapter );
+        try
+        {
+            execute( testsToRun, adapter );
+        }
+        finally
+        {
+            closeLauncher();
+        }
         // Rerun failing tests if requested
         int count = parameters.getTestRequest().getRerunFailingTestsCount();
         if ( count > 0 && adapter.hasFailingTests() )
         {
             for ( int i = 0; i < count; i++ )
             {
-                // Replace the "discoveryRequest" so that it only specifies the failing tests
-                LauncherDiscoveryRequest discoveryRequest = buildLauncherDiscoveryRequestForRerunFailures( adapter );
-                // Reset adapter's recorded failures and invoke the failed tests again
-                adapter.reset();
-                launcher.execute( discoveryRequest, adapter );
-                // If no tests fail in the rerun, we're done
-                if ( !adapter.hasFailingTests() )
+                try
                 {
-                    break;
+                    // Replace the "discoveryRequest" so that it only specifies the failing tests
+                    LauncherDiscoveryRequest discoveryRequest =
+                            buildLauncherDiscoveryRequestForRerunFailures( adapter );
+                    // Reset adapter's recorded failures and invoke the failed tests again
+                    adapter.reset();
+                    launcher.execute( discoveryRequest, adapter );
+                    // If no tests fail in the rerun, we're done
+                    if ( !adapter.hasFailingTests() )
+                    {
+                        break;
+                    }
+                }
+                finally
+                {
+                    closeLauncher();
                 }
             }
         }
@@ -200,6 +223,21 @@ public class JUnitPlatformProvider
                         .selectors( selectClass( c.getName() ) );
                     launcher.execute( builder.build(), adapter );
                 } );
+        }
+    }
+    
+    private void closeLauncher()
+    {
+        if ( launcher instanceof AutoCloseable )
+        {
+            try
+            {
+                ( (AutoCloseable) launcher ).close();
+            }
+            catch ( Exception e )
+            {
+                throw new SurefireReflectionException( e );
+            }
         }
     }
 
