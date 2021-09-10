@@ -19,6 +19,7 @@ package org.apache.maven.surefire.junitplatform;
  * under the License.
  */
 
+import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TestExecutionListener;
@@ -29,8 +30,9 @@ import org.junit.platform.launcher.core.LauncherFactory;
  * Launcher proxy which delays the most possible the initialization of the real JUnit
  * Launcher in order to avoid stream/stdout corruption due to early logging.
  */
-class LazyLauncher implements Launcher
+class LazyLauncher implements Launcher, AutoCloseable
 {
+    private AutoCloseable launcherSession;
 
     private Launcher launcher;
 
@@ -57,8 +59,28 @@ class LazyLauncher implements Launcher
     {
         if ( launcher == null )
         {
-            launcher = LauncherFactory.create();
+            try
+            {
+                Class<?> sessionClass = Class.forName( "org.junit.platform.launcher.LauncherSession" );
+                launcherSession = ReflectionUtils.invokeGetter( LauncherFactory.class, null, "openSession" ); 
+                launcher = ReflectionUtils.invokeGetter( sessionClass, launcherSession, "getLauncher" );
+            }
+            catch ( ClassNotFoundException e )
+            {
+                launcher = LauncherFactory.create();
+            }
         }
         return launcher;
+    }
+
+    @Override
+    public void close() throws Exception
+    {
+        if ( launcherSession != null )
+        {
+            launcherSession.close();
+            launcherSession = null;
+        }
+        launcher = null;
     }
 }
