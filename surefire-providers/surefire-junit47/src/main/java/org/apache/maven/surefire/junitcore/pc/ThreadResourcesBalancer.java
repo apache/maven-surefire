@@ -34,7 +34,7 @@ final class ThreadResourcesBalancer
     private final int numPermits;
 
     /**
-     * <tt>fair</tt> set to false.
+     * <code>fair</code> set to false.
      *
      * @param numPermits number of permits to acquire when maintaining concurrency on tests.
      *                   Must be &gt;0 and &lt; {@link Integer#MAX_VALUE}.
@@ -49,7 +49,7 @@ final class ThreadResourcesBalancer
      * @param numPermits number of permits to acquire when maintaining concurrency on tests.
      *                   Must be &gt;0 and &lt; {@link Integer#MAX_VALUE}.
      * @param fair       {@code true} guarantees the waiting schedulers to wake up in order they acquired a permit
-     * @throws IllegalArgumentException if <tt>numPermits</tt> is not positive number
+     * @throws IllegalArgumentException if <code>numPermits</code> is not positive number
      */
     ThreadResourcesBalancer( int numPermits, boolean fair )
     {

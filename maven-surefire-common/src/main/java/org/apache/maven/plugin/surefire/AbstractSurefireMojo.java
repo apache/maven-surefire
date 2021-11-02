@@ -848,7 +848,7 @@ public abstract class AbstractSurefireMojo
 
     /**
      * Calls {@link #getSuiteXmlFiles()} as {@link List list}.
-     * Never returns <tt>null</tt>.
+     * Never returns <code>null</code>.
      *
      * @return list of TestNG suite XML files provided by MOJO
      */
