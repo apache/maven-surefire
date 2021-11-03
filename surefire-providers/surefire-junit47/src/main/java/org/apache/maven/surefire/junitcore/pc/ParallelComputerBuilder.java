@@ -148,9 +148,9 @@ public final class ParallelComputerBuilder
 
     /**
      * @param totalPoolSize Pool size where suites, classes and methods are executed in parallel.
-     *                      If the <tt>totalPoolSize</tt> is {@link Integer#MAX_VALUE}, the pool capacity is not
+     *                      If the <code>totalPoolSize</code> is {@link Integer#MAX_VALUE}, the pool capacity is not
      *                      limited.
-     * @throws IllegalArgumentException If <tt>totalPoolSize</tt> is &lt; 1.
+     * @throws IllegalArgumentException If <code>totalPoolSize</code> is &lt; 1.
      */
     ParallelComputerBuilder useOnePool( int totalPoolSize )
     {

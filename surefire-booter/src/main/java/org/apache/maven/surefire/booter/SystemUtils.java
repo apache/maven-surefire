@@ -77,13 +77,13 @@ public final class SystemUtils
     }
 
     /**
-     * If {@code jvmExecutable} is <tt>/jdk/bin/java</tt> (since jdk9) or <tt>/jdk/jre/bin/java</tt> (prior to jdk9)
-     * then the absolute path to JDK home is returned <tt>/jdk</tt>.
+     * If {@code jvmExecutable} is <code>/jdk/bin/java</code> (since jdk9) or <code>/jdk/jre/bin/java</code>
+     * (prior to jdk9) then the absolute path to JDK home is returned <code>/jdk</code>.
      * <br>
      * Null is returned if {@code jvmExecutable} is incorrect.
      *
      * @param jvmExecutable    /jdk/bin/java* or /jdk/jre/bin/java*
-     * @return path to jdk directory; or <tt>null</tt> if wrong path or directory layout of JDK installation.
+     * @return path to jdk directory; or <code>null</code> if wrong path or directory layout of JDK installation.
      */
     public static File toJdkHomeFromJvmExec( String jvmExecutable )
     {
@@ -102,9 +102,9 @@ public final class SystemUtils
     }
 
     /**
-     * If system property <tt>java.home</tt> is <tt>/jdk</tt> (since jdk9) or <tt>/jdk/jre</tt> (prior to jdk9) then
-     * the absolute path to
-     * JDK home is returned <tt>/jdk</tt>.
+     * If system property <code>java.home</code> is <code>/jdk</code> (since jdk9) or <code>/jdk/jre</code>
+     * (prior to jdk9) then the absolute path to
+     * JDK home is returned <code>/jdk</code>.
      *
      * @return path to JDK
      */
@@ -114,10 +114,10 @@ public final class SystemUtils
     }
 
     /**
-     * If {@code jreHome} is <tt>/jdk</tt> (since jdk9) or <tt>/jdk/jre</tt> (prior to jdk9) then
-     * the absolute path to JDK home is returned <tt>/jdk</tt>.
+     * If {@code jreHome} is <code>/jdk</code> (since jdk9) or <code>/jdk/jre</code> (prior to jdk9) then
+     * the absolute path to JDK home is returned <code>/jdk</code>.
      * <br>
-     * JRE home directory {@code jreHome} must be taken from system property <tt>java.home</tt>.
+     * JRE home directory {@code jreHome} must be taken from system property <code>java.home</code>.
      *
      * @param jreHome    path to /jdk or /jdk/jre
      * @return path to JDK

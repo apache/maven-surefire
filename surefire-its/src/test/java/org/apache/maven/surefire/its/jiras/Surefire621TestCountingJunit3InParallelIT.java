@@ -26,7 +26,7 @@ import org.junit.Test;
  * SUREFIRE-621 Asserts proper test counts when running junit 3 tests in parallel<br>
  * SUREFIRE-1264 Some tests can be lost when running in parallel with parameterized tests<br>
  * <br>
- * Removed decision making with JUnit3 in {@code TestSet} class during Jira activity of <tt>SUREFIRE-1264</tt>
+ * Removed decision making with JUnit3 in {@code TestSet} class during Jira activity of <code>SUREFIRE-1264</code>
  * which results in one hot spot where the test class is determined (see JUnitCoreRunListener#fillTestCountMap()).
  *
  * @author Kristian Rosenvold
