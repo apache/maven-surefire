@@ -19,6 +19,12 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import java.io.File;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
@@ -27,46 +33,27 @@ import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
-import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugin.surefire.SurefireDependencyResolver.RuntimeArtifactFilter;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.repository.RepositorySystem;
-import org.apache.maven.shared.artifact.filter.resolve.ScopeFilter;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.powermock.api.mockito.PowerMockito;
-
-import java.io.File;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
 
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
-import static org.apache.maven.artifact.Artifact.SCOPE_COMPILE;
-import static org.apache.maven.artifact.Artifact.SCOPE_COMPILE_PLUS_RUNTIME;
-import static org.apache.maven.artifact.Artifact.SCOPE_RUNTIME;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
 import static org.apache.maven.plugin.surefire.SurefireDependencyResolver.PROVIDER_GROUP_ID;
 import static org.fest.assertions.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.powermock.reflect.Whitebox.invokeMethod;
 
 /**
  *
@@ -81,7 +68,7 @@ public class SurefireDependencyResolverTest
     {
         boolean result = SurefireDependencyResolver.isWithinVersionSpec( null, "[4.7,)" );
         assertThat( result )
-                .isFalse();
+            .isFalse();
     }
 
     @Test
@@ -90,7 +77,7 @@ public class SurefireDependencyResolverTest
         Artifact api = createArtifact( "junit", "junit", "4.6" );
         boolean result = SurefireDependencyResolver.isWithinVersionSpec( api, "[4.7,)" );
         assertThat( result )
-                .isFalse();
+            .isFalse();
     }
 
     @Test
@@ -99,7 +86,7 @@ public class SurefireDependencyResolverTest
         Artifact api = createArtifact( "junit", "junit", "4.7" );
         boolean result = SurefireDependencyResolver.isWithinVersionSpec( api, "[4.7,)" );
         assertThat( result )
-                .isTrue();
+            .isTrue();
     }
 
     @Test
@@ -108,7 +95,7 @@ public class SurefireDependencyResolverTest
         Artifact api = createArtifact( "junit", "junit", "4.13" );
         boolean result = SurefireDependencyResolver.isWithinVersionSpec( api, "[4.7,)" );
         assertThat( result )
-                .isTrue();
+            .isTrue();
     }
 
     @Test
@@ -127,70 +114,66 @@ public class SurefireDependencyResolverTest
         RepositorySystem repositorySystem = mock( RepositorySystem.class );
         final ArtifactResolutionResult expectedResult = mock( ArtifactResolutionResult.class );
         when( repositorySystem.resolve( any( ArtifactResolutionRequest.class ) ) )
-                .then( new Answer<ArtifactResolutionResult>()
+            .then( new Answer<ArtifactResolutionResult>()
+            {
+                @Override
+                public ArtifactResolutionResult answer( InvocationOnMock invocation )
                 {
-                    @Override
-                    public ArtifactResolutionResult answer( InvocationOnMock invocation )
-                    {
-                        Object[] args = invocation.getArguments();
-                        assertThat( args )
-                                .hasSize( 1 );
-                        ArtifactResolutionRequest request = (ArtifactResolutionRequest) args[0];
-                        assertThat( request.getArtifact() )
-                                .isSameAs( provider );
-                        assertThat( request.isResolveTransitively() )
-                                .isTrue();
-                        assertThat( request.getArtifactDependencies() )
-                                .isNull();
-                        assertThat( request.getRemoteRepositories() )
-                                .isNull();
-                        assertThat( request.getLocalRepository() )
-                                .isNull();
-                        assertThat( request.getCache() )
-                                .isNull();
-                        assertThat( request.getCollectionFilter() )
-                                .isNotNull();
-                        assertThat( request.getCollectionFilter() )
-                                .isInstanceOf( RuntimeArtifactFilter.class );
-                        assertThat( request.getManagedVersionMap() )
-                                .isNull();
-                        assertThat( request.getMirrors() )
-                                .isEmpty();
-                        assertThat( request.getProxies() )
-                                .isEmpty();
-                        assertThat( request.getResolutionFilter() )
-                                .isNull();
-                        assertThat( request.getServers() )
-                                .isEmpty();
-                        return expectedResult;
-                    }
-                } );
+                    Object[] args = invocation.getArguments();
+                    assertThat( args )
+                        .hasSize( 1 );
+                    ArtifactResolutionRequest request = (ArtifactResolutionRequest) args[0];
+                    assertThat( request.getArtifact() )
+                        .isSameAs( provider );
+                    assertThat( request.isResolveTransitively() )
+                        .isTrue();
+                    assertThat( request.getArtifactDependencies() )
+                        .isNull();
+                    assertThat( request.getRemoteRepositories() )
+                        .isNull();
+                    assertThat( request.getLocalRepository() )
+                        .isNull();
+                    assertThat( request.getCache() )
+                        .isNull();
+                    assertThat( request.getCollectionFilter() )
+                        .isNotNull();
+                    assertThat( request.getCollectionFilter() )
+                        .isInstanceOf( RuntimeArtifactFilter.class );
+                    assertThat( request.getManagedVersionMap() )
+                        .isNull();
+                    assertThat( request.getMirrors() )
+                        .isEmpty();
+                    assertThat( request.getProxies() )
+                        .isEmpty();
+                    assertThat( request.getResolutionFilter() )
+                        .isNull();
+                    assertThat( request.getServers() )
+                        .isEmpty();
+                    return expectedResult;
+                }
+            } );
 
         SurefireDependencyResolver surefireDependencyResolver =
-                new SurefireDependencyResolver( repositorySystem, null, null, null, null, null, null, false );
+            new SurefireDependencyResolver( repositorySystem, null, null, null, null, null, false );
 
         ArtifactResolutionResult actualResult = surefireDependencyResolver.resolvePluginArtifact( provider );
 
         assertThat( actualResult )
-                .isSameAs( expectedResult );
+            .isSameAs( expectedResult );
     }
 
     @Test
     public void testGetProviderClasspath() throws Exception
     {
+
+        Artifact commonJunit4 = createArtifact( "common-junit4" );
         Artifact api = createArtifact( "surefire-api" );
-        api.setFile( new File( "" ) );
-
         final Artifact provider = createArtifact( "surefire-junit-platform" );
-        provider.setFile( new File( "" ) );
-
         Artifact ext = createArtifact( "org.apiguardian", "apiguardian-api" );
-        ext.setFile( new File( "" ) );
-
         Artifact logger = createArtifact( "surefire-logger-api" );
-        logger.setFile( new File( "" ) );
 
         Set<Artifact> providerArtifacts = new LinkedHashSet<>();
+        providerArtifacts.add( commonJunit4 );
         providerArtifacts.add( api );
         providerArtifacts.add( provider );
         providerArtifacts.add( ext );
@@ -198,198 +181,155 @@ public class SurefireDependencyResolverTest
 
         final ArtifactResolutionResult result = mock( ArtifactResolutionResult.class );
         when( result.getArtifacts() )
-                .thenReturn( providerArtifacts );
+            .thenReturn( providerArtifacts );
 
         RepositorySystem repositorySystem = mock( RepositorySystem.class );
         when( repositorySystem.resolve( any( ArtifactResolutionRequest.class ) ) )
-                .then( new Answer<ArtifactResolutionResult>()
+            .then( new Answer<ArtifactResolutionResult>()
+            {
+                @Override
+                public ArtifactResolutionResult answer( InvocationOnMock invocation )
                 {
-                    @Override
-                    public ArtifactResolutionResult answer( InvocationOnMock invocation )
-                    {
-                        Object[] args = invocation.getArguments();
-                        assertThat( args )
-                                .hasSize( 1 );
-                        ArtifactResolutionRequest request = (ArtifactResolutionRequest) args[0];
-                        assertThat( request.getArtifact() )
-                                .isSameAs( provider );
-                        assertThat( request.isResolveTransitively() )
-                                .isTrue();
-                        assertThat( request.getArtifactDependencies() )
-                                .isNull();
-                        assertThat( request.getRemoteRepositories() )
-                                .isNull();
-                        assertThat( request.getLocalRepository() )
-                                .isNull();
-                        assertThat( request.getCache() )
-                                .isNull();
-                        assertThat( request.getCollectionFilter() )
-                                .isNotNull();
-                        assertThat( request.getCollectionFilter() )
-                                .isInstanceOf( RuntimeArtifactFilter.class );
-                        assertThat( request.getManagedVersionMap() )
-                                .isNull();
-                        assertThat( request.getMirrors() )
-                                .isEmpty();
-                        assertThat( request.getProxies() )
-                                .isEmpty();
-                        assertThat( request.getResolutionFilter() )
-                                .isNull();
-                        assertThat( request.getServers() )
-                                .isEmpty();
-                        return result;
-                    }
-                } );
+                    Object[] args = invocation.getArguments();
+                    assertThat( args )
+                        .hasSize( 1 );
+                    ArtifactResolutionRequest request = (ArtifactResolutionRequest) args[0];
+                    assertThat( request.getArtifact() )
+                        .isSameAs( provider );
+                    assertThat( request.isResolveTransitively() )
+                        .isTrue();
+                    assertThat( request.getArtifactDependencies() )
+                        .isNull();
+                    assertThat( request.getRemoteRepositories() )
+                        .isNull();
+                    assertThat( request.getLocalRepository() )
+                        .isNull();
+                    assertThat( request.getCache() )
+                        .isNull();
+                    assertThat( request.getCollectionFilter() )
+                        .isNotNull();
+                    assertThat( request.getCollectionFilter() )
+                        .isInstanceOf( RuntimeArtifactFilter.class );
+                    assertThat( request.getManagedVersionMap() )
+                        .isNull();
+                    assertThat( request.getMirrors() )
+                        .isEmpty();
+                    assertThat( request.getProxies() )
+                        .isEmpty();
+                    assertThat( request.getResolutionFilter() )
+                        .isNull();
+                    assertThat( request.getServers() )
+                        .isEmpty();
+                    return result;
+                }
+            } );
         when( repositorySystem.createDependencyArtifact( any( Dependency.class ) ) )
-                .then( new Answer<Artifact>()
+            .then( new Answer<Artifact>()
+            {
+                @Override
+                public Artifact answer( InvocationOnMock invocation )
                 {
-                    @Override
-                    public Artifact answer( InvocationOnMock invocation )
-                    {
-                        Object[] args = invocation.getArguments();
-                        assertThat( args )
-                                .hasSize( 1 );
-                        Dependency request = (Dependency) args[0];
-                        assertThat( request.getGroupId() )
-                                .isEqualTo( provider.getGroupId() );
-                        assertThat( request.getArtifactId() )
-                                .isEqualTo( provider.getArtifactId() );
-                        assertThat( request.getVersion() )
-                                .isEqualTo( provider.getVersion() );
-                        assertThat( request.getType() )
-                                .isEqualTo( provider.getType() );
-                        assertThat( request.getScope() )
-                                .isNull();
-                        return provider;
-                    }
-                } );
+                    Object[] args = invocation.getArguments();
+                    assertThat( args )
+                        .hasSize( 1 );
+                    Dependency request = (Dependency) args[0];
+                    assertThat( request.getGroupId() )
+                        .isEqualTo( provider.getGroupId() );
+                    assertThat( request.getArtifactId() )
+                        .isEqualTo( provider.getArtifactId() );
+                    assertThat( request.getVersion() )
+                        .isEqualTo( provider.getVersion() );
+                    assertThat( request.getType() )
+                        .isEqualTo( provider.getType() );
+                    assertThat( request.getScope() )
+                        .isNull();
+                    return provider;
+                }
+            } );
 
         ConsoleLogger log = mock( ConsoleLogger.class );
 
         SurefireDependencyResolver surefireDependencyResolver =
-                new SurefireDependencyResolver( repositorySystem, log, null, null, null, null, null, false );
+            new SurefireDependencyResolver( repositorySystem, log, null, null, null, null, false );
 
         when( log.isDebugEnabled() )
-                .thenReturn( true );
+            .thenReturn( true );
 
         Set<Artifact> classpath = surefireDependencyResolver.getProviderClasspath( "surefire-junit-platform", "1" );
 
         assertThat( classpath )
-                .hasSize( 4 );
+            .hasSize( 5 );
 
         Iterator<Artifact> it = classpath.iterator();
 
+        // result should be ordered
         assertThat( it.next() )
-                .isSameAs( provider );
+            .isSameAs( provider );
 
         assertThat( it.next() )
-                .isSameAs( api );
+            .isSameAs( api );
 
         assertThat( it.next() )
-                .isSameAs( logger );
+            .isSameAs( logger );
 
         assertThat( it.next() )
-                .isSameAs( ext );
+            .isSameAs( commonJunit4 );
+
+        assertThat( it.next() )
+            .isSameAs( ext );
     }
 
     @Test
-    public void testAddProviderToClasspath() throws Exception
+    public void testResolvePluginDependencies() throws Exception
     {
         Dependency providerAsDependency = new Dependency();
         providerAsDependency.setGroupId( PROVIDER_GROUP_ID );
         providerAsDependency.setArtifactId( "surefire-shadefire" );
         providerAsDependency.setVersion( "1" );
 
-        final Artifact providerAsArtifact = createArtifact( "surefire-shadefire" );
+        Artifact providerAsArtifact = createArtifact( "surefire-shadefire" );
 
-        PluginDescriptor pluginDescriptor = PowerMockito.mock( PluginDescriptor.class );
-        Plugin plugin = PowerMockito.mock( Plugin.class );
-        when( pluginDescriptor.getPlugin() )
-            .thenReturn( plugin );
+        Plugin plugin = mock( Plugin.class );
         when( plugin.getDependencies() )
             .thenReturn( singletonList( providerAsDependency ) );
 
-        DependencyResolver depencencyResolver = mock( DependencyResolver.class );
-        SurefireDependencyResolver surefireDependencyResolver =
-            new SurefireDependencyResolver( null, null, null, null, null, null, depencencyResolver, false );
+        RepositorySystem repositorySystem = mock( RepositorySystem.class );
+        when( repositorySystem.createDependencyArtifact( providerAsDependency ) )
+            .thenReturn( providerAsArtifact );
 
-        ProjectBuildingRequest request = mock( ProjectBuildingRequest.class );
-
-        ArgumentCaptor<Collection<Dependency>> dep = ArgumentCaptor.forClass( Collection.class );
-        ArgumentCaptor<ScopeFilter> filter = ArgumentCaptor.forClass( ScopeFilter.class );
-        ArtifactResult result = mock( ArtifactResult.class );
-        when( result.getArtifact() ).thenReturn( providerAsArtifact );
-        when( depencencyResolver.resolveDependencies( same( request ), dep.capture(), isNull( Collection.class ),
-            filter.capture() ) )
-            .thenReturn( singleton( result ) );
-
-        final ArtifactResolutionResult resolutionResult = mock( ArtifactResolutionResult.class );
+        ArtifactResolutionResult resolutionResult = mock( ArtifactResolutionResult.class );
         when( resolutionResult.getArtifacts() )
             .thenReturn( singleton( providerAsArtifact ) );
 
+        ArgumentCaptor<ArtifactResolutionRequest> resolutionRequestCaptor =
+            ArgumentCaptor.forClass( ArtifactResolutionRequest.class );
+        when( repositorySystem.resolve( resolutionRequestCaptor.capture() ) )
+            .thenReturn( resolutionResult );
+
         Map<String, Artifact> pluginResolvedDependencies =
             singletonMap( PROVIDER_GROUP_ID + ":surefire-shadefire", providerAsArtifact );
-        Map<String, Artifact> providers =
-            surefireDependencyResolver.resolvePluginDependencies( request, plugin, pluginResolvedDependencies );
 
-        verify( depencencyResolver, times( 1 ) )
-            .resolveDependencies( request, dep.getValue(), null, filter.getValue() );
+        SurefireDependencyResolver surefireDependencyResolver =
+            new SurefireDependencyResolver( repositorySystem, null, null, null, null, null, false );
+
+        Map<String, Artifact> providers =
+            surefireDependencyResolver.resolvePluginDependencies( plugin, pluginResolvedDependencies );
 
         assertThat( providers.values() )
             .hasSize( 1 )
             .containsOnly( providerAsArtifact );
 
-        assertThat( dep.getValue() )
-            .hasSize( 1 )
-            .containsOnly( providerAsDependency );
+        assertThat( resolutionRequestCaptor.getAllValues() )
+            .hasSize( 1 );
 
-        assertThat( filter.getValue().getIncluded() )
-            .containsOnly( SCOPE_COMPILE, SCOPE_COMPILE_PLUS_RUNTIME, SCOPE_RUNTIME );
+        ArtifactResolutionRequest resolutionRequest = resolutionRequestCaptor.getValue();
 
-        assertThat( filter.getValue().getExcluded() )
+        assertThat( resolutionRequest.getArtifact() )
+            .isSameAs( providerAsArtifact );
 
-            .isNull();
-    }
-
-    @Test
-    public void shouldOrderedProviderArtifacts() throws Exception
-    {
-        Artifact api = createArtifact( "surefire-api" );
-        Artifact provider = createArtifact( "surefire-junit-platform" );
-        Artifact ext = createArtifact( "org.apiguardian", "apiguardian-api" );
-        Artifact logger = createArtifact( "surefire-logger-api" );
-
-        Set<Artifact> providerArtifacts = new LinkedHashSet<>();
-        providerArtifacts.add( api );
-        providerArtifacts.add( provider );
-        providerArtifacts.add( ext );
-        providerArtifacts.add( logger );
-
-        Iterator<Artifact> it = providerArtifacts.iterator();
-
-        assertThat( it.next() )
-                .isEqualTo( api );
-
-        assertThat( it.next() )
-                .isEqualTo( provider );
-
-        assertThat( it.next() )
-                .isEqualTo( ext );
-
-        assertThat( it.next() )
-                .isEqualTo( logger );
-
-        Set<Artifact> actual =
-                invokeMethod( SurefireDependencyResolver.class, "orderProviderArtifacts", providerArtifacts );
-
-        Set<Artifact> expected = new LinkedHashSet<>();
-        expected.add( provider );
-        expected.add( api );
-        expected.add( logger );
-        expected.add( ext );
-
-        assertThat( actual )
-                .isEqualTo( expected );
+        verify( repositorySystem ).createDependencyArtifact( any( Dependency.class ) );
+        verify( repositorySystem ).resolve( any( ArtifactResolutionRequest.class ) );
+        verifyNoMoreInteractions( repositorySystem );
     }
 
     private static Artifact createArtifact( String artifactId ) throws InvalidVersionSpecificationException
@@ -398,15 +338,18 @@ public class SurefireDependencyResolverTest
     }
 
     private static Artifact createArtifact( String groupId, String artifactId )
-            throws InvalidVersionSpecificationException
+        throws InvalidVersionSpecificationException
     {
         return createArtifact( groupId, artifactId, "1" );
     }
 
     private static Artifact createArtifact( String groupId, String artifactId, String version )
-            throws InvalidVersionSpecificationException
+        throws InvalidVersionSpecificationException
     {
         VersionRange versionSpec = createFromVersionSpec( version );
-        return new DefaultArtifact( groupId, artifactId, versionSpec, "compile", "jar", "", null );
+        DefaultArtifact defaultArtifact =
+            new DefaultArtifact( groupId, artifactId, versionSpec, "compile", "jar", "", null );
+        defaultArtifact.setFile( new File( "" ) );
+        return defaultArtifact;
     }
 }

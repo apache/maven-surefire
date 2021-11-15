@@ -30,7 +30,6 @@ import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
@@ -58,7 +57,6 @@ import org.apache.maven.plugin.surefire.util.DirectoryScanner;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
 import org.apache.maven.surefire.shared.utils.io.FileUtils;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
@@ -825,9 +823,6 @@ public abstract class AbstractSurefireMojo
     @Component
     private RepositorySystem repositorySystem;
 
-    @Component
-    private DependencyResolver dependencyResolver;
-
     private Toolchain toolchain;
 
     private int effectiveForkCount = -1;
@@ -1018,7 +1013,7 @@ public abstract class AbstractSurefireMojo
                 getConsoleLogger(), getLocalRepository(),
                 getRemoteRepositories(),
                 getProjectRemoteRepositories(),
-                getPluginName(), getDependencyResolver(),
+                getPluginName(),
                 getSession().isOffline() );
 
         if ( getBooterArtifact() == null )
@@ -1403,16 +1398,6 @@ public abstract class AbstractSurefireMojo
     public void setRepositorySystem( RepositorySystem repositorySystem )
     {
         this.repositorySystem = repositorySystem;
-    }
-
-    public DependencyResolver getDependencyResolver()
-    {
-        return dependencyResolver;
-    }
-
-    public void setDependencyResolver( DependencyResolver dependencyResolver )
-    {
-        this.dependencyResolver = dependencyResolver;
     }
 
     private boolean existsModuleDescriptor( ResolvePathResultWrapper resolvedJavaModularityResult )
@@ -3292,10 +3277,9 @@ public abstract class AbstractSurefireMojo
                     surefireDependencyResolver.getProviderClasspathAsMap( "surefire-junit-platform", surefireVersion );
             Map<String, Artifact> testDeps = testClasspath.getTestDependencies();
 
-            ProjectBuildingRequest request = getSession().getProjectBuildingRequest();
             Plugin plugin = getPluginDescriptor().getPlugin();
             Map<String, Artifact> pluginDeps =
-                surefireDependencyResolver.resolvePluginDependencies( request, plugin, getPluginArtifactMap() );
+                surefireDependencyResolver.resolvePluginDependencies( plugin, getPluginArtifactMap() );
 
             if ( hasDependencyPlatformEngine( pluginDeps ) )
             {
@@ -3521,10 +3505,9 @@ public abstract class AbstractSurefireMojo
         @Nonnull
         public Set<Artifact> getProviderClasspath() throws MojoExecutionException
         {
-            ProjectBuildingRequest request = getSession().getProjectBuildingRequest();
             Plugin plugin = getPluginDescriptor().getPlugin();
             Map<String, Artifact> providerArtifacts =
-                surefireDependencyResolver.resolvePluginDependencies( request, plugin, getPluginArtifactMap() );
+                surefireDependencyResolver.resolvePluginDependencies( plugin, getPluginArtifactMap() );
             return new LinkedHashSet<>( providerArtifacts.values() );
         }
     }
