@@ -19,6 +19,9 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -38,16 +41,8 @@ import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.repository.RepositorySystem;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolverException;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import static java.util.Arrays.asList;
 import static org.apache.maven.artifact.Artifact.SCOPE_COMPILE;
@@ -55,7 +50,6 @@ import static org.apache.maven.artifact.Artifact.SCOPE_COMPILE_PLUS_RUNTIME;
 import static org.apache.maven.artifact.Artifact.SCOPE_RUNTIME;
 import static org.apache.maven.artifact.ArtifactUtils.artifactMapByVersionlessId;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
-import static org.apache.maven.shared.artifact.filter.resolve.ScopeFilter.including;
 
 /**
  * Does dependency resolution and artifact handling for the surefire plugin.
@@ -68,19 +62,19 @@ final class SurefireDependencyResolver
     static final String PROVIDER_GROUP_ID = "org.apache.maven.surefire";
 
     private static final String[] PROVIDER_CLASSPATH_ORDER = {
-            "surefire-junit3",
-            "surefire-junit4",
-            "surefire-junit47",
-            "surefire-testng",
-            "surefire-junit-platform",
-            "surefire-api",
-            "surefire-logger-api",
-            "surefire-shared-utils",
-            "common-java5",
-            "common-junit3",
-            "common-junit4",
-            "common-junit48",
-            "common-testng-utils"
+        "surefire-junit3",
+        "surefire-junit4",
+        "surefire-junit47",
+        "surefire-testng",
+        "surefire-junit-platform",
+        "surefire-api",
+        "surefire-logger-api",
+        "surefire-shared-utils",
+        "common-java5",
+        "common-junit3",
+        "common-junit4",
+        "common-junit48",
+        "common-testng-utils"
     };
 
     private final RepositorySystem repositorySystem;
@@ -95,15 +89,14 @@ final class SurefireDependencyResolver
 
     private final String pluginName;
 
-    private final DependencyResolver dependencyResolver;
 
     private final boolean offline;
 
     SurefireDependencyResolver( RepositorySystem repositorySystem, ConsoleLogger log,
                                 ArtifactRepository localRepository,
                                 List<ArtifactRepository> pluginRemoteRepositories,
-                                List<ArtifactRepository> projectRemoteRepositories, String pluginName,
-                                DependencyResolver dependencyResolver, boolean offline )
+                                List<ArtifactRepository> projectRemoteRepositories,
+                                String pluginName, boolean offline )
     {
         this.repositorySystem = repositorySystem;
         this.log = log;
@@ -111,7 +104,6 @@ final class SurefireDependencyResolver
         this.pluginRemoteRepositories = pluginRemoteRepositories;
         this.projectRemoteRepositories = projectRemoteRepositories;
         this.pluginName = pluginName;
-        this.dependencyResolver = dependencyResolver;
         this.offline = offline;
     }
 
@@ -139,20 +131,17 @@ final class SurefireDependencyResolver
         }
     }
 
-    Map<String, Artifact> resolvePluginDependencies( ProjectBuildingRequest request,
-                                                     Plugin plugin, Map<String, Artifact> pluginResolvedDependencies )
-            throws MojoExecutionException
+    Map<String, Artifact> resolvePluginDependencies( Plugin plugin, Map<String, Artifact> pluginResolvedDependencies )
     {
+        Map<String, Artifact> resolved = new LinkedHashMap<>();
         Collection<Dependency> pluginDependencies = plugin.getDependencies();
-        try
-        {
-            Iterable<ArtifactResult> resolvedArtifacts = dependencyResolver.resolveDependencies( request,
-                pluginDependencies, null, including( RuntimeArtifactFilter.SCOPES ) );
 
-            Map<String, Artifact> resolved = new LinkedHashMap<>();
-            for ( ArtifactResult resolvedArtifact : resolvedArtifacts )
+        for ( Dependency dependency : pluginDependencies )
+        {
+            Artifact dependencyArtifact = repositorySystem.createDependencyArtifact( dependency );
+            ArtifactResolutionResult artifactResolutionResult = resolvePluginArtifact( dependencyArtifact );
+            for ( Artifact artifact : artifactResolutionResult.getArtifacts() )
             {
-                Artifact artifact = resolvedArtifact.getArtifact();
                 String key = artifact.getGroupId() + ":" + artifact.getArtifactId();
                 Artifact resolvedPluginDependency = pluginResolvedDependencies.get( key );
                 if ( resolvedPluginDependency != null )
@@ -160,12 +149,8 @@ final class SurefireDependencyResolver
                     resolved.put( key, artifact );
                 }
             }
-            return resolved;
         }
-        catch ( DependencyResolverException e )
-        {
-            throw new MojoExecutionException( e.getLocalizedMessage(), e );
-        }
+        return resolved;
     }
 
     ArtifactResolutionResult resolvePluginArtifact( Artifact artifact )
@@ -192,12 +177,12 @@ final class SurefireDependencyResolver
                                                       ArtifactFilter filter )
     {
         ArtifactResolutionRequest request = new ArtifactResolutionRequest()
-                .setOffline( offline )
-                .setArtifact( artifact )
-                .setLocalRepository( localRepository )
-                .setResolveTransitively( true )
-                .setCollectionFilter( filter )
-                .setRemoteRepositories( repositories );
+            .setOffline( offline )
+            .setArtifact( artifact )
+            .setLocalRepository( localRepository )
+            .setResolveTransitively( true )
+            .setCollectionFilter( filter )
+            .setRemoteRepositories( repositories );
 
         return repositorySystem.resolve( request );
     }
@@ -230,6 +215,9 @@ final class SurefireDependencyResolver
         return artifactMapByVersionlessId( getProviderClasspath( providerArtifactId, providerVersion ) );
     }
 
+    // FIXME
+    // method argument should be unchanged
+    // what if providerArtifacts will be unmodifiable
     private static Set<Artifact> orderProviderArtifacts( Set<Artifact> providerArtifacts )
     {
         Set<Artifact> orderedProviderArtifacts = new LinkedHashSet<>();
@@ -263,7 +251,7 @@ final class SurefireDependencyResolver
     static class RuntimeArtifactFilter implements ArtifactFilter
     {
         private static final Collection<String> SCOPES =
-                asList( SCOPE_COMPILE, SCOPE_COMPILE_PLUS_RUNTIME, SCOPE_RUNTIME );
+            asList( SCOPE_COMPILE, SCOPE_COMPILE_PLUS_RUNTIME, SCOPE_RUNTIME );
 
         private final Artifact filter;
 
