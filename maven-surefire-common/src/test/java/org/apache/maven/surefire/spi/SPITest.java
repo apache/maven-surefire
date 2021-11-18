@@ -19,11 +19,10 @@ package org.apache.maven.surefire.spi;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.booterclient.ProviderDetector;
+import java.io.IOException;
+
 import org.apache.maven.surefire.providerapi.ServiceLoader;
 import org.junit.Test;
-
-import java.io.IOException;
 
 import static java.lang.Thread.currentThread;
 import static org.fest.assertions.Assertions.assertThat;
@@ -35,56 +34,42 @@ import static org.fest.assertions.Assertions.assertThat;
 public class SPITest
 {
     private final ServiceLoader spi = new ServiceLoader();
-    private final ProviderDetector providerDetector = new ProviderDetector();
     private final ClassLoader ctx = currentThread().getContextClassLoader();
 
     @Test
     public void shouldNotLoadSpiDoesNotExist() throws IOException
     {
         assertThat( spi.lookup( NoServiceInterface.class, ctx ) )
-                .isEmpty();
+            .isEmpty();
 
         assertThat( spi.load( NoServiceInterface.class, ctx ) )
-                .isEmpty();
-
-        assertThat( providerDetector.lookupServiceNames( NoServiceInterface.class, ctx ) )
-                .isEmpty();
+            .isEmpty();
     }
 
     @Test
     public void shouldNotLoadEmptySpi() throws IOException
     {
         assertThat( spi.lookup( EmptyServiceInterface.class, ctx ) )
-                .isEmpty();
+            .isEmpty();
 
         assertThat( spi.load( EmptyServiceInterface.class, ctx ) )
-                .isEmpty();
-
-        assertThat( providerDetector.lookupServiceNames( EmptyServiceInterface.class, ctx ) )
-                .isEmpty();
+            .isEmpty();
     }
 
     @Test
     public void shouldLoad2SpiObjects() throws IOException
     {
         assertThat( spi.lookup( ExistingServiceInterface.class, ctx ) )
-                .hasSize( 2 );
+            .hasSize( 2 );
 
         assertThat( spi.lookup( ExistingServiceInterface.class, ctx ) )
-                .containsOnly( SPImpl1.class.getName(), SPImpl2.class.getName() );
+            .containsOnly( SPImpl1.class.getName(), SPImpl2.class.getName() );
 
 
         assertThat( spi.load( ExistingServiceInterface.class, ctx ) )
-                .hasSize( 2 );
+            .hasSize( 2 );
 
         assertThat( spi.load( ExistingServiceInterface.class, ctx ) )
-                .contains( new SPImpl1(), new SPImpl2() );
-
-
-        assertThat( providerDetector.lookupServiceNames( ExistingServiceInterface.class, ctx ) )
-                .hasSize( 2 );
-
-        assertThat( providerDetector.lookupServiceNames( ExistingServiceInterface.class, ctx ) )
-                .containsOnly( SPImpl1.class.getName(), SPImpl2.class.getName() );
+            .contains( new SPImpl1(), new SPImpl2() );
     }
 }
