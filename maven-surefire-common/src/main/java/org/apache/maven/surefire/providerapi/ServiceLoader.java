@@ -20,6 +20,7 @@ package org.apache.maven.surefire.providerapi;
  */
 
 import javax.annotation.Nonnull;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +29,8 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.codehaus.plexus.component.annotations.Component;
 
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isJavaIdentifierStart;
@@ -42,7 +45,8 @@ import static org.apache.maven.surefire.api.util.ReflectionUtils.getConstructor;
  *
  * @since 2.20
  */
-public final class ServiceLoader
+@Component( role = ServiceLoader.class )
+public class ServiceLoader
 {
 
     @Nonnull
@@ -67,7 +71,7 @@ public final class ServiceLoader
 
     @Nonnull
     public Set<String> lookup( Class<?> clazz, ClassLoader classLoader )
-            throws IOException
+        throws IOException
     {
         final String resourceName = "META-INF/services/" + clazz.getName();
 
@@ -90,7 +94,7 @@ public final class ServiceLoader
     @Nonnull
     @SuppressWarnings( "checkstyle:innerassignment" )
     private static Set<String> lookupSpiImplementations( final Enumeration<URL> urlEnumeration )
-            throws IOException
+        throws IOException
     {
         final Set<String> names = new HashSet<>();
         nextUrl:
@@ -143,7 +147,7 @@ public final class ServiceLoader
 
     @Nonnull
     private static BufferedReader getReader( @Nonnull URL url )
-            throws IOException
+        throws IOException
     {
         final InputStream inputStream = url.openStream();
         final InputStreamReader inputStreamReader = new InputStreamReader( inputStream );

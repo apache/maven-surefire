@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire;
+package org.apache.maven.surefire.providerapi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -24,30 +24,30 @@ package org.apache.maven.plugin.surefire;
  *
  * @see ProviderInfo#getJpmsArguments(ProviderRequirements)
  */
-final class ProviderRequirements
+public final class ProviderRequirements
 {
     private final boolean modularPath;
     private final boolean mainModuleDescriptor;
     private final boolean testModuleDescriptor;
 
-    ProviderRequirements( boolean modularPath, boolean mainModuleDescriptor, boolean testModuleDescriptor )
+    public ProviderRequirements( boolean modularPath, boolean mainModuleDescriptor, boolean testModuleDescriptor )
     {
         this.modularPath = modularPath;
         this.mainModuleDescriptor = mainModuleDescriptor;
         this.testModuleDescriptor = testModuleDescriptor;
     }
 
-    boolean isModularPath()
+    public boolean isModularPath()
     {
         return modularPath;
     }
 
-    boolean hasMainModuleDescriptor()
+    public boolean hasMainModuleDescriptor()
     {
         return mainModuleDescriptor;
     }
 
-    boolean hasTestModuleDescriptor()
+    public boolean hasTestModuleDescriptor()
     {
         return testModuleDescriptor;
     }
