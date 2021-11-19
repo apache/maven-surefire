@@ -425,52 +425,6 @@
           <artifactId>build-helper-maven-plugin</artifactId>
           <version>3.2.0</version>
         </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <executions>
-            <execution>
-              <id>compile-generated</id>
-              <phase>process-sources</phase>
-              <goals>
-                <goal>compile</goal>
-              </goals>
-              <configuration>
-                <includes>
-                  <include>HelpMojo.java</include>
-                  <include>**/HelpMojo.java</include>
-                </includes>
-                <compilerArgs>
-                  <!-- FIXME: maven-plugin-plugin therefore used -syntax or none due to HelpMojo -->
-                  <arg>-Xdoclint:none</arg>
-                </compilerArgs>
-              </configuration>
-            </execution>
-            <execution>
-              <id>default-compile</id>
-              <phase>compile</phase>
-              <goals>
-                <goal>compile</goal>
-              </goals>
-              <configuration>
-                <excludes>
-                  <exclude>HelpMojo.java</exclude>
-                  <exclude>**/HelpMojo.java</exclude>
-                </excludes>
-                <compilerArgs>
-                  <arg>-Xdoclint:all</arg>
-                </compilerArgs>
-              </configuration>
-            </execution>
-          </executions>
-          <configuration>
-            <fork>true</fork>
-            <compilerArgs>
-              <arg>-Xdoclint:all</arg>
-            </compilerArgs>
-            <encoding>UTF-8</encoding>
-          </configuration>
-        </plugin>
         <!-- NOTE: animal sniffer does not check test classes: https://jira.codehaus.org/browse/MANIMALSNIFFER-40 -->
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -499,9 +453,15 @@
         </plugin>
         <plugin>
           <artifactId>maven-plugin-plugin</artifactId>
-          <configuration>
-            <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
-          </configuration>
+          <version>3.6.1</version><!-- TODO remove when upgrading parent to 35 -->
+          <executions>
+            <execution>
+              <id>help-goal</id>
+              <goals>
+                <goal>helpmojo</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <artifactId>maven-invoker-plugin</artifactId>
