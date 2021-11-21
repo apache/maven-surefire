@@ -24,6 +24,8 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojoJava7PlusTest;
+import org.apache.maven.plugin.surefire.AbstractSurefireMojoJunitCoreProvidersInfoTest;
+import org.apache.maven.plugin.surefire.AbstractSurefireMojoProvidersInfoTest;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojoTest;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojoToolchainsTest;
 import org.apache.maven.plugin.surefire.CommonReflectorTest;
@@ -120,6 +122,8 @@ public class JUnit4SuiteTest extends TestCase
         suite.addTest( new JUnit4TestAdapter( EventDecoderTest.class ) );
         suite.addTest( new JUnit4TestAdapter( EventConsumerThreadTest.class ) );
         suite.addTest( new JUnit4TestAdapter( ChecksumCalculatorTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoJunitCoreProvidersInfoTest.class ) );
+        suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoProvidersInfoTest.class ) );
         return suite;
     }
 }
