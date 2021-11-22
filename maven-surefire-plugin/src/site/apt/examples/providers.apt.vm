@@ -28,12 +28,41 @@
 
 Selecting Providers
 
-* Selecting a Provider
+* Automatically selecting a Provider
 
   Surefire normally automatically selects which test-framework provider to use based on the version of
-  TestNG/JUnit present in your project's classpath. In some cases it may be desirable to manually
-  override such a selection. This can be done by adding the required provider as a dependency to
-  the surefire-plugin.
+  TestNG/JUnit present in your project's classpath.
+
+  If your project's classpath contains multiple different test-framework,
+  surefire select <<only first>> of matching provider.
+
+  The order for automatically selecting is:
+
+  [[1]] <<<surefire-junit-platform>>>
+
+  [[1]] <<<surefire-testng>>>
+
+  [[1]] <<<surefire-junit47>>>
+
+  [[1]] <<<surefire-junit4>>>
+
+  [[1]] <<<surefire-junit3>>>
+
+  []
+
+  In order to be informed about skipping some of providers you can use option: <<<multipleFrameworks>>>
+  which may have value:
+
+  [<<<warn>>>] only inform about skipping providers
+
+  [<<<fail>>>] break a build in situation when providers can be skipped
+
+  [<<<empty>>>] <<default>> - silently select first matching provider
+
+* Manually selecting a Provider
+
+  In some cases it may be desirable to manually override such a selection.
+  This can be done by adding the required provider as a dependency to the surefire-plugin.
 
   The following example shows how to force usage of the JUnit 4.7 provider:
 
@@ -62,4 +91,3 @@ Selecting Providers
 
   You can also specify multiple providers as dependencies, and they will all be run and produce a common report.
   This may be especially handy with external providers, since there are few use cases for combining the included providers.
-

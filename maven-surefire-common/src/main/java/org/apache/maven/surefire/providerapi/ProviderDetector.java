@@ -23,6 +23,7 @@ import javax.annotation.Nonnull;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -46,35 +47,96 @@ public final class ProviderDetector
     private ServiceLoader serviceLoader;
 
     @Nonnull
-    public List<ProviderInfo> resolve( ConfigurableProviderInfo dynamicProvider, ProviderInfo... wellKnownProviders )
+    public List<ProviderInfo> resolve( ProviderDetectorRequest request )
     {
         List<ProviderInfo> providersToRun = new ArrayList<>();
         Set<String> manuallyConfiguredProviders = getManuallyConfiguredProviders();
         for ( String name : manuallyConfiguredProviders )
         {
-            ProviderInfo wellKnown = findByName( name, wellKnownProviders );
-            ProviderInfo providerToAdd = wellKnown != null ? wellKnown : dynamicProvider.instantiate( name );
+            ProviderInfo wellKnown = findByName( name, request.getWellKnownProviders() );
+            ProviderInfo providerToAdd =
+                wellKnown != null ? wellKnown : request.getDynamicProvider().instantiate( name );
             logger.info( "Using configured provider " + providerToAdd.getProviderName() );
             providersToRun.add( providerToAdd );
         }
-        return manuallyConfiguredProviders.isEmpty() ? autoDetectOneWellKnownProvider( wellKnownProviders )
-            : providersToRun;
+
+        return providersToRun.isEmpty() ? autoDetectOneWellKnownProvider( request ) : providersToRun;
     }
 
     @Nonnull
-    private List<ProviderInfo> autoDetectOneWellKnownProvider( ProviderInfo... wellKnownProviders )
+    private List<ProviderInfo> autoDetectOneWellKnownProvider( ProviderDetectorRequest request )
     {
-        List<ProviderInfo> providersToRun = new ArrayList<>();
-        for ( ProviderInfo wellKnownProvider : wellKnownProviders )
+        List<ProviderInfo> applicableProviders = new ArrayList<>();
+        for ( ProviderInfo wellKnownProvider : request.getWellKnownProviders() )
         {
             if ( wellKnownProvider.isApplicable() )
             {
-                logger.info( "Using auto detected provider " + wellKnownProvider.getProviderName() );
-                providersToRun.add( wellKnownProvider );
-                return providersToRun;
+                applicableProviders.add( wellKnownProvider );
             }
         }
-        return providersToRun;
+
+        if ( applicableProviders.isEmpty() )
+        {
+            return Collections.singletonList(  request.getDefaultProvider() );
+        }
+
+        ProviderInfo providerInfoToReturn = applicableProviders.get( 0 );
+        if ( applicableProviders.size() > 1 && !isJunit4SpecialCase( applicableProviders ) )
+        {
+            if ( request.isFailOnMultipleFrameworks() )
+            {
+                logger.error( "There are many providers automatically detected:" );
+                for ( ProviderInfo providerInfo : applicableProviders )
+                {
+                    logger.error( "   " + providerInfo.getProviderName() );
+                }
+                logger.error( "" );
+                logger.error( "Please select providers manually or check project dependency tree." );
+                logger.error( "" );
+                providerInfoToReturn = null;
+            }
+            else if ( request.isWarnOnMultipleFrameworks() )
+            {
+                logger.warn( "There are many providers automatically detected:" );
+                for ( ProviderInfo providerInfo : applicableProviders )
+                {
+                    logger.warn( "   " + providerInfo.getProviderName() );
+                }
+                logger.warn( "" );
+                logger.warn( "Only first will be used." );
+                logger.warn( "" );
+            }
+        }
+
+        if ( providerInfoToReturn != null )
+        {
+            logger.info( "Using auto detected provider " + providerInfoToReturn.getProviderName() );
+            return Collections.singletonList( providerInfoToReturn );
+        }
+
+        return Collections.<ProviderInfo>emptyList();
+    }
+
+    /**
+     * For JUnit, we have two providers and both can be applicable for junit &gt;= 4.7.
+     * In this special case we don't generate warning or break executions.
+     * <p>
+     * Should be removed after SUREFIRE-1494.
+     */
+    private boolean isJunit4SpecialCase( List<ProviderInfo> applicableProviders )
+    {
+
+        if ( applicableProviders.size() == 2 )
+        {
+            String providerName1 = applicableProviders.get( 0 ).getProviderName();
+            String providerName2 = applicableProviders.get( 1 ).getProviderName();
+
+            boolean p1 = providerName1.endsWith( "JUnitCoreProvider" ) || providerName1.endsWith( "JUnit4Provider" );
+            boolean p2 = providerName2.endsWith( "JUnitCoreProvider" ) || providerName2.endsWith( "JUnit4Provider" );
+            return p1 && p2;
+        }
+
+        return false;
     }
 
     private Set<String> getManuallyConfiguredProviders()
