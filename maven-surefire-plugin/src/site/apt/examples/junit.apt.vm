@@ -292,7 +292,7 @@ else
       }
 
       @Test
-      @Category(com.cmycompany.FastTests.class)
+      @Category(com.mycompany.FastTests.class)
       public void testSlow() {
         System.out.println("fast");
       }

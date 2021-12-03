@@ -76,7 +76,8 @@ public interface ReportEntry
     Integer getElapsed();
 
     /**
-     * Returns same value as {@link #getElapsed()} and fallbacks to {@code fallback} for <tt>null</tt> elapsed timed.
+     * Returns same value as {@link #getElapsed()} and fallbacks to {@code fallback} for <code>null</code> elapsed
+     * timed.
      *
      * @param fallback usually 0
      * @return elapsed time if {@link #getElapsed()} is not null; otherwise returns {@code fallback}

@@ -54,9 +54,9 @@ public abstract class SchedulingStrategy
      * Schedules tasks if {@link #canSchedule()}.
      *
      * @param task runnable to schedule in a thread pool or invoke
-     * @throws java.util.concurrent.RejectedExecutionException if <tt>task</tt>
+     * @throws java.util.concurrent.RejectedExecutionException if <code>task</code>
      *                                    cannot be scheduled for execution
-     * @throws NullPointerException       if <tt>task</tt> is <tt>null</tt>
+     * @throws NullPointerException       if <code>task</code> is <code>null</code>
      * @see org.junit.runners.model.RunnerScheduler#schedule(Runnable)
      * @see java.util.concurrent.Executor#execute(Runnable)
      */

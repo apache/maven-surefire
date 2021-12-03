@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire;
+package org.apache.maven.surefire.providerapi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -22,7 +22,7 @@ package org.apache.maven.plugin.surefire;
 /**
  * @author Kristian Rosenvold
  */
-interface ConfigurableProviderInfo
+public interface ConfigurableProviderInfo
     extends ProviderInfo
 {
     ProviderInfo instantiate( String providerName );

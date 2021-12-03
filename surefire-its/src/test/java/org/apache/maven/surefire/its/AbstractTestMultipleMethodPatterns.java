@@ -26,10 +26,7 @@ import org.junit.Test;
 
 import static org.apache.maven.surefire.its.fixture.TestFramework.JUNIT47;
 import static org.apache.maven.surefire.its.fixture.TestFramework.TestNG;
-import static org.apache.maven.surefire.its.fixture.Configuration.INCLUDES;
-import static org.apache.maven.surefire.its.fixture.Configuration.INCLUDES_EXCLUDES;
 import static org.apache.maven.surefire.its.fixture.Configuration.INCLUDES_EXCLUDES_FILE;
-import static org.apache.maven.surefire.its.fixture.Configuration.INCLUDES_FILE;
 import static org.apache.maven.surefire.its.fixture.Configuration.TEST;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.Is.is;
@@ -475,14 +472,24 @@ public abstract class AbstractTestMultipleMethodPatterns
     }
 
     @Test
-    public void negativeTest()
+    public void shouldNotRunExcludedTestMethodByExcludesFile() 
     {
-        assumeThat( getSettings().getConfiguration(), anyOf( is( INCLUDES ), is( INCLUDES_EXCLUDES ),
-                                                             is( INCLUDES_FILE ), is( INCLUDES_EXCLUDES_FILE ) ) );
-        String pattern = "TestFive#testSuccessOne+testSuccessThree";
+        assumeThat( getSettings().getConfiguration(), is( INCLUDES_EXCLUDES_FILE ) );
+        String pattern = "!TestFive#testSuccessOne+testSuccessThree";
         prepare( pattern )
             .executeTest()
             .verifyErrorFree( 1 )
+            .verifyErrorFreeLog();
+    }
+    
+    @Test
+    public void shouldRunIncludedTestMethodByIncludesFile() 
+    {
+        assumeThat( getSettings().getConfiguration(), is( INCLUDES_EXCLUDES_FILE ) );
+        String pattern = "TestFive#testSuccessOne+testSuccessThree";
+        prepare( pattern )
+            .executeTest()
+            .verifyErrorFree( 2 )
             .verifyErrorFreeLog();
     }
 }

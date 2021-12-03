@@ -66,7 +66,7 @@ public class SchedulingStrategies
     }
 
     /**
-     * The <tt>threadPool</tt> passed to this strategy can be shared in other strategies.
+     * The <code>threadPool</code> passed to this strategy can be shared in other strategies.
      * <br>
      * The call {@link SchedulingStrategy#finished()} is waiting until own tasks have finished.
      * New tasks will not be scheduled by this call in this strategy. This strategy is not
@@ -76,7 +76,7 @@ public class SchedulingStrategies
      * @param logger current error logger
      * @param threadPool thread pool possibly shared with other strategies
      * @return parallel strategy with shared thread pool
-     * @throws NullPointerException if <tt>threadPool</tt> is null
+     * @throws NullPointerException if <code>threadPool</code> is null
      */
     public static SchedulingStrategy createParallelSharedStrategy( ConsoleStream logger, ExecutorService threadPool )
     {

@@ -20,91 +20,15 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DefaultArtifact;
-import org.apache.maven.artifact.handler.ArtifactHandler;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.plugin.surefire.extensions.LegacyForkNodeFactory;
-import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter;
-import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
-import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
-import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.repository.RepositorySystem;
-import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
-import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
-import org.apache.maven.artifact.versioning.ArtifactVersion;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
-import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.descriptor.PluginDescriptor;
-import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
-import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
-import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
-import org.apache.maven.plugin.surefire.booterclient.ClasspathForkConfiguration;
-import org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration;
-import org.apache.maven.plugin.surefire.booterclient.ModularClasspathForkConfiguration;
-import org.apache.maven.plugin.surefire.booterclient.Platform;
-import org.apache.maven.plugin.surefire.booterclient.ProviderDetector;
-import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.plugin.surefire.util.DependencyScanner;
-import org.apache.maven.plugin.surefire.util.DirectoryScanner;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
-import org.apache.maven.shared.transfer.dependencies.resolve.DependencyResolver;
-import org.apache.maven.surefire.shared.utils.io.FileUtils;
-import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
-import org.apache.maven.surefire.booter.Classpath;
-import org.apache.maven.surefire.booter.ClasspathConfiguration;
-import org.apache.maven.surefire.booter.KeyValueSource;
-import org.apache.maven.surefire.booter.ModularClasspath;
-import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
-import org.apache.maven.surefire.booter.ProcessCheckerType;
-import org.apache.maven.surefire.booter.ProviderConfiguration;
-import org.apache.maven.surefire.api.booter.ProviderParameterNames;
-import org.apache.maven.surefire.api.booter.Shutdown;
-import org.apache.maven.surefire.booter.StartupConfiguration;
-import org.apache.maven.surefire.booter.SurefireBooterForkException;
-import org.apache.maven.surefire.booter.SurefireExecutionException;
-import org.apache.maven.surefire.api.cli.CommandLineOption;
-import org.apache.maven.surefire.extensions.ForkNodeFactory;
-import org.apache.maven.surefire.api.provider.SurefireProvider;
-import org.apache.maven.surefire.api.report.ReporterConfiguration;
-import org.apache.maven.surefire.api.suite.RunResult;
-import org.apache.maven.surefire.api.testset.DirectoryScannerParameters;
-import org.apache.maven.surefire.api.testset.RunOrderParameters;
-import org.apache.maven.surefire.api.testset.TestArtifactInfo;
-import org.apache.maven.surefire.api.testset.TestListResolver;
-import org.apache.maven.surefire.api.testset.TestRequest;
-import org.apache.maven.surefire.api.testset.TestSetFailedException;
-import org.apache.maven.surefire.api.util.DefaultScanResult;
-import org.apache.maven.surefire.api.util.RunOrder;
-import org.apache.maven.toolchain.DefaultToolchain;
-import org.apache.maven.toolchain.Toolchain;
-import org.apache.maven.toolchain.ToolchainManager;
-import org.apache.maven.toolchain.java.DefaultJavaToolChain;
-import org.codehaus.plexus.languages.java.jpms.JavaModuleDescriptor;
-import org.codehaus.plexus.languages.java.jpms.ResolvePathRequest;
-import org.codehaus.plexus.languages.java.jpms.ResolvePathResult;
-import org.codehaus.plexus.logging.Logger;
-import org.codehaus.plexus.languages.java.jpms.LocationManager;
-import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
-import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
-
 import javax.annotation.Nonnull;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -122,39 +46,116 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipFile;
 
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.ArtifactHandler;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
+import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
+import org.apache.maven.plugin.surefire.booterclient.ClasspathForkConfiguration;
+import org.apache.maven.plugin.surefire.booterclient.ForkConfiguration;
+import org.apache.maven.plugin.surefire.booterclient.ForkStarter;
+import org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration;
+import org.apache.maven.plugin.surefire.booterclient.ModularClasspathForkConfiguration;
+import org.apache.maven.plugin.surefire.booterclient.Platform;
+import org.apache.maven.plugin.surefire.extensions.LegacyForkNodeFactory;
+import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter;
+import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
+import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
+import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.util.DependencyScanner;
+import org.apache.maven.plugin.surefire.util.DirectoryScanner;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.repository.RepositorySystem;
+import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
+import org.apache.maven.surefire.api.booter.ProviderParameterNames;
+import org.apache.maven.surefire.api.booter.Shutdown;
+import org.apache.maven.surefire.api.cli.CommandLineOption;
+import org.apache.maven.surefire.api.report.ReporterConfiguration;
+import org.apache.maven.surefire.api.suite.RunResult;
+import org.apache.maven.surefire.api.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.api.testset.RunOrderParameters;
+import org.apache.maven.surefire.api.testset.TestArtifactInfo;
+import org.apache.maven.surefire.api.testset.TestListResolver;
+import org.apache.maven.surefire.api.testset.TestRequest;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.util.DefaultScanResult;
+import org.apache.maven.surefire.api.util.RunOrder;
+import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
+import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.booter.ClasspathConfiguration;
+import org.apache.maven.surefire.booter.KeyValueSource;
+import org.apache.maven.surefire.booter.ModularClasspath;
+import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
+import org.apache.maven.surefire.booter.ProcessCheckerType;
+import org.apache.maven.surefire.booter.ProviderConfiguration;
+import org.apache.maven.surefire.booter.StartupConfiguration;
+import org.apache.maven.surefire.booter.SurefireBooterForkException;
+import org.apache.maven.surefire.booter.SurefireExecutionException;
+import org.apache.maven.surefire.extensions.ForkNodeFactory;
+import org.apache.maven.surefire.providerapi.ConfigurableProviderInfo;
+import org.apache.maven.surefire.providerapi.ProviderDetector;
+import org.apache.maven.surefire.providerapi.ProviderInfo;
+import org.apache.maven.surefire.providerapi.ProviderRequirements;
+import org.apache.maven.surefire.shared.utils.io.FileUtils;
+import org.apache.maven.toolchain.DefaultToolchain;
+import org.apache.maven.toolchain.Toolchain;
+import org.apache.maven.toolchain.ToolchainManager;
+import org.apache.maven.toolchain.java.DefaultJavaToolChain;
+import org.codehaus.plexus.languages.java.jpms.JavaModuleDescriptor;
+import org.codehaus.plexus.languages.java.jpms.LocationManager;
+import org.codehaus.plexus.languages.java.jpms.ResolvePathRequest;
+import org.codehaus.plexus.languages.java.jpms.ResolvePathResult;
+import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
+import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
+import org.codehaus.plexus.logging.Logger;
+
 import static java.lang.Integer.parseInt;
-import static java.lang.Thread.currentThread;
 import static java.util.Arrays.asList;
 import static java.util.Collections.addAll;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
-import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
-import static org.apache.maven.surefire.shared.lang3.StringUtils.substringBeforeLast;
-import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
+import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.PluginFailureReason.COULD_NOT_RUN_DEFAULT_TESTS;
+import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.PluginFailureReason.COULD_NOT_RUN_SPECIFIED_TESTS;
+import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.PluginFailureReason.NONE;
 import static org.apache.maven.plugin.surefire.SurefireDependencyResolver.isWithinVersionSpec;
-import static org.apache.maven.plugin.surefire.util.DependencyScanner.filter;
 import static org.apache.maven.plugin.surefire.SurefireHelper.replaceThreadNumberPlaceholders;
-import static org.apache.maven.surefire.shared.utils.StringUtils.capitalizeFirstLetter;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isEmpty;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isNotEmpty;
-import static org.apache.maven.surefire.shared.utils.StringUtils.split;
+import static org.apache.maven.plugin.surefire.util.DependencyScanner.filter;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.suite.RunResult.failure;
+import static org.apache.maven.surefire.api.suite.RunResult.noTestsRun;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.tryGetMethod;
+import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 import static org.apache.maven.surefire.booter.SystemUtils.JAVA_SPECIFICATION_VERSION;
 import static org.apache.maven.surefire.booter.SystemUtils.endsWithJavaPath;
 import static org.apache.maven.surefire.booter.SystemUtils.isBuiltInJava9AtLeast;
 import static org.apache.maven.surefire.booter.SystemUtils.isJava9AtLeast;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkHomeFromJvmExec;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkVersionFromReleaseFile;
-import static org.apache.maven.surefire.api.suite.RunResult.failure;
-import static org.apache.maven.surefire.api.suite.RunResult.noTestsRun;
-import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray;
-import static org.apache.maven.surefire.api.util.ReflectionUtils.tryGetMethod;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
-import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.PluginFailureReason.NONE;
-import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.PluginFailureReason.COULD_NOT_RUN_SPECIFIED_TESTS;
-import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.PluginFailureReason.COULD_NOT_RUN_DEFAULT_TESTS;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.substringBeforeLast;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
+import static org.apache.maven.surefire.shared.utils.StringUtils.capitalizeFirstLetter;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isEmpty;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isNotEmpty;
+import static org.apache.maven.surefire.shared.utils.StringUtils.split;
 
 /**
  * Abstract base class for running tests using Surefire.
@@ -173,8 +174,6 @@ public abstract class AbstractSurefireMojo
     private static final Map<String, String> JAVA_9_MATCHER_OLD_NOTATION = singletonMap( "version", "[1.9,)" );
     private static final Map<String, String> JAVA_9_MATCHER = singletonMap( "version", "[9,)" );
     private static final Platform PLATFORM = new Platform();
-
-    private final ProviderDetector providerDetector = new ProviderDetector();
 
     private final ClasspathCache classpathCache = new ClasspathCache();
 
@@ -827,7 +826,7 @@ public abstract class AbstractSurefireMojo
     private RepositorySystem repositorySystem;
 
     @Component
-    private DependencyResolver dependencyResolver;
+    private ProviderDetector providerDetector;
 
     private Toolchain toolchain;
 
@@ -849,7 +848,7 @@ public abstract class AbstractSurefireMojo
 
     /**
      * Calls {@link #getSuiteXmlFiles()} as {@link List list}.
-     * Never returns <tt>null</tt>.
+     * Never returns <code>null</code>.
      *
      * @return list of TestNG suite XML files provided by MOJO
      */
@@ -1019,7 +1018,7 @@ public abstract class AbstractSurefireMojo
                 getConsoleLogger(), getLocalRepository(),
                 getRemoteRepositories(),
                 getProjectRemoteRepositories(),
-                getPluginName(), getDependencyResolver(),
+                getPluginName(),
                 getSession().isOffline() );
 
         if ( getBooterArtifact() == null )
@@ -1198,13 +1197,12 @@ public abstract class AbstractSurefireMojo
         throws MojoExecutionException
     {
         Artifact junitDepArtifact = getJunitDepArtifact();
-        return new ProviderList( new DynamicProviderInfo( null ),
-                              new JUnitPlatformProviderInfo( getJUnit5Artifact(), testClasspath ),
-                              new TestNgProviderInfo( getTestNgArtifact() ),
-                              new JUnitCoreProviderInfo( getJunitArtifact(), junitDepArtifact ),
-                              new JUnit4ProviderInfo( getJunitArtifact(), junitDepArtifact ),
-                              new JUnit3ProviderInfo() )
-            .resolve();
+        return providerDetector.resolve( new DynamicProviderInfo( null ),
+            new JUnitPlatformProviderInfo( getJUnit5Artifact(), testClasspath ),
+            new TestNgProviderInfo( getTestNgArtifact() ),
+            new JUnitCoreProviderInfo( getJunitArtifact(), junitDepArtifact ),
+            new JUnit4ProviderInfo( getJunitArtifact(), junitDepArtifact ),
+            new JUnit3ProviderInfo() );
     }
 
     private SurefireProperties setupProperties()
@@ -1404,16 +1402,6 @@ public abstract class AbstractSurefireMojo
     public void setRepositorySystem( RepositorySystem repositorySystem )
     {
         this.repositorySystem = repositorySystem;
-    }
-
-    public DependencyResolver getDependencyResolver()
-    {
-        return dependencyResolver;
-    }
-
-    public void setDependencyResolver( DependencyResolver dependencyResolver )
-    {
-        this.dependencyResolver = dependencyResolver;
     }
 
     private boolean existsModuleDescriptor( ResolvePathResultWrapper resolvedJavaModularityResult )
@@ -2226,7 +2214,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    @Nonnull private ExcludeList getExcludeList()
+    @Nonnull private IncludeExcludeList getExcludeList()
         throws MojoFailureException
     {
         
@@ -2256,7 +2244,7 @@ public abstract class AbstractSurefireMojo
                 actualExcludes = Collections.singletonList( getDefaultExcludes() );
             }
         }
-        return new ExcludeList( filterNulls( actualExcludes ), 
+        return new IncludeExcludeList( filterNulls( actualExcludes ), 
                 filterNulls ( getExcludedMethods( 
                         getMethodFilterInIncludesExcludes( actualExcludes ) ) ) );
     }
@@ -2329,33 +2317,61 @@ public abstract class AbstractSurefireMojo
     {
         if ( includedExcludedTests == null )
         {
+            StringBuilder sb = new StringBuilder();
             List<String> includeList = getIncludeList();
-            ExcludeList excludeList = getExcludeList();
+            for ( String include: includeList ) 
+            {
+                sb.append( "," ).append( include );
+            }
+            IncludeExcludeList excludeList = getExcludeList();
             List<String> excludedTestMethods = excludeList.getTestMethods();
             if ( !excludedTestMethods.isEmpty() ) 
             {
                 includeList.removeAll( asList( getDefaultIncludes() ) );
                 includeList.addAll( excludedTestMethods );
-                StringBuilder sb = new StringBuilder();
                 for ( String method : excludedTestMethods ) 
                 {
                   sb.append( "," ).append( method );
                 }
-                setTest( sb.deleteCharAt( 0 ).toString( ) );
             }
-            includedExcludedTests = new TestListResolver( includeList, excludeList.getTestClasses() );
+            if ( !Arrays.equals( 
+                    Collections.singletonList( getDefaultExcludes() )
+                        .toArray( new String[0] ),
+                    excludeList.getTestClasses().toArray( new String[0] ) ) )
+            {
+                for ( String clazz : excludeList.getTestClasses() ) 
+                {
+                    sb.append( "," ).append( clazz );
+                }
+            }
+            
+            if ( sb.length() == 0 ) 
+            {
+                includedExcludedTests = new TestListResolver( 
+                        asList ( getDefaultIncludes() ), 
+                        Collections.singletonList( getDefaultExcludes() ) );
+            } 
+            else 
+            {
+                String testToIncludeExclude = sb.deleteCharAt( 0 ).toString( );
+                if ( !Arrays.equals( getDefaultIncludes(), split( testToIncludeExclude, "," ) ) ) 
+                {
+                    setTest( testToIncludeExclude );
+                }
+                includedExcludedTests = new TestListResolver( includeList, excludeList.getTestClasses() );
+            }
         }
         return includedExcludedTests;
     }
     
-    class ExcludeList 
+    class IncludeExcludeList 
     {
         
         private List<String> testClasses = new LinkedList<>();
         
         private List<String> testMethods = new LinkedList<>();
 
-        ExcludeList( List<String> testClasses, List<String> testMethods ) 
+        IncludeExcludeList( List<String> testClasses, List<String> testMethods ) 
         {
             super();
             this.testClasses = testClasses;
@@ -2371,6 +2387,21 @@ public abstract class AbstractSurefireMojo
         {
             return testMethods;
         }
+        
+        List<String> all() 
+        {
+            List<String> all = new LinkedList<>();
+            if ( testClasses != null )
+            {
+                all.addAll( testClasses );
+            }
+            if ( testMethods != null )
+            {
+                all.addAll( testMethods );
+            }
+            return all;
+        }
+        
     }
 
     public TestListResolver getSpecificTests()
@@ -3343,10 +3374,9 @@ public abstract class AbstractSurefireMojo
                     surefireDependencyResolver.getProviderClasspathAsMap( "surefire-junit-platform", surefireVersion );
             Map<String, Artifact> testDeps = testClasspath.getTestDependencies();
 
-            ProjectBuildingRequest request = getSession().getProjectBuildingRequest();
             Plugin plugin = getPluginDescriptor().getPlugin();
             Map<String, Artifact> pluginDeps =
-                surefireDependencyResolver.resolvePluginDependencies( request, plugin, getPluginArtifactMap() );
+                surefireDependencyResolver.resolvePluginDependencies( plugin, getPluginArtifactMap() );
 
             if ( hasDependencyPlatformEngine( pluginDeps ) )
             {
@@ -3572,80 +3602,10 @@ public abstract class AbstractSurefireMojo
         @Nonnull
         public Set<Artifact> getProviderClasspath() throws MojoExecutionException
         {
-            ProjectBuildingRequest request = getSession().getProjectBuildingRequest();
             Plugin plugin = getPluginDescriptor().getPlugin();
             Map<String, Artifact> providerArtifacts =
-                surefireDependencyResolver.resolvePluginDependencies( request, plugin, getPluginArtifactMap() );
+                surefireDependencyResolver.resolvePluginDependencies( plugin, getPluginArtifactMap() );
             return new LinkedHashSet<>( providerArtifacts.values() );
-        }
-    }
-
-    /**
-     * @author Kristian Rosenvold
-     */
-    final class ProviderList
-    {
-        private final ProviderInfo[] wellKnownProviders;
-
-        private final ConfigurableProviderInfo dynamicProvider;
-
-        ProviderList( ConfigurableProviderInfo dynamicProviderInfo, ProviderInfo... wellKnownProviders )
-        {
-            this.wellKnownProviders = wellKnownProviders;
-            this.dynamicProvider = dynamicProviderInfo;
-        }
-
-        @Nonnull List<ProviderInfo> resolve()
-        {
-            List<ProviderInfo> providersToRun = new ArrayList<>();
-            Set<String> manuallyConfiguredProviders = getManuallyConfiguredProviders();
-            for ( String name : manuallyConfiguredProviders )
-            {
-                ProviderInfo wellKnown = findByName( name );
-                ProviderInfo providerToAdd = wellKnown != null ? wellKnown : dynamicProvider.instantiate( name );
-                logDebugOrCliShowErrors( "Using configured provider " + providerToAdd.getProviderName() );
-                providersToRun.add( providerToAdd );
-            }
-            return manuallyConfiguredProviders.isEmpty() ? autoDetectOneWellKnownProvider() : providersToRun;
-        }
-
-        @Nonnull private List<ProviderInfo> autoDetectOneWellKnownProvider()
-        {
-            List<ProviderInfo> providersToRun = new ArrayList<>();
-            for ( ProviderInfo wellKnownProvider : wellKnownProviders )
-            {
-                if ( wellKnownProvider.isApplicable() )
-                {
-                    providersToRun.add( wellKnownProvider );
-                    return providersToRun;
-                }
-            }
-            return providersToRun;
-        }
-
-        private Set<String> getManuallyConfiguredProviders()
-        {
-            try
-            {
-                ClassLoader cl = currentThread().getContextClassLoader();
-                return providerDetector.lookupServiceNames( SurefireProvider.class, cl );
-            }
-            catch ( IOException e )
-            {
-                throw new RuntimeException( e );
-            }
-        }
-
-        private ProviderInfo findByName( String providerClassName )
-        {
-            for ( ProviderInfo wellKnownProvider : wellKnownProviders )
-            {
-                if ( wellKnownProvider.getProviderName().equals( providerClassName ) )
-                {
-                    return wellKnownProvider;
-                }
-            }
-            return null;
         }
     }
 

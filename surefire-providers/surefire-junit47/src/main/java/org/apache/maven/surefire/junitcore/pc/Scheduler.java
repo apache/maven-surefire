@@ -92,7 +92,7 @@ public class Scheduler
      * @param description description of current runner
      * @param strategy    scheduling strategy with a shared thread pool
      * @param concurrency determines maximum concurrent children scheduled a time via {@link #schedule(Runnable)}
-     * @throws NullPointerException if null <tt>strategy</tt>
+     * @throws NullPointerException if null <code>strategy</code>
      */
     public Scheduler( ConsoleStream logger, Description description, SchedulingStrategy strategy, int concurrency )
     {
@@ -100,19 +100,19 @@ public class Scheduler
     }
 
     /**
-     * New instances should be used by schedulers with limited concurrency by <tt>balancer</tt>
+     * New instances should be used by schedulers with limited concurrency by <code>balancer</code>
      * against other groups of schedulers. The schedulers share one pool.
      * <br>
      * Unlike in {@link #Scheduler(ConsoleStream, org.junit.runner.Description, SchedulingStrategy, int)} which was
-     * limiting the <tt>concurrency</tt> of children of a runner where this scheduler was set, {@code this}
-     * <tt>balancer</tt> is limiting the concurrency of all children in runners having schedulers created by this
+     * limiting the <code>concurrency</code> of children of a runner where this scheduler was set, {@code this}
+     * <code>balancer</code> is limiting the concurrency of all children in runners having schedulers created by this
      * constructor.
      *
      * @param logger current logger implementation
      * @param description description of current runner
      * @param strategy    scheduling strategy which may share threads with other strategy
      * @param balancer    determines maximum concurrent children scheduled a time via {@link #schedule(Runnable)}
-     * @throws NullPointerException if null <tt>strategy</tt> or <tt>balancer</tt>
+     * @throws NullPointerException if null <code>strategy</code> or <code>balancer</code>
      */
     public Scheduler( ConsoleStream logger, Description description, SchedulingStrategy strategy, Balancer balancer )
     {
@@ -133,7 +133,7 @@ public class Scheduler
      * @param masterScheduler scheduler sharing own threads with this slave
      * @param strategy        scheduling strategy for this scheduler
      * @param balancer        determines maximum concurrent children scheduled a time via {@link #schedule(Runnable)}
-     * @throws NullPointerException if null <tt>masterScheduler</tt>, <tt>strategy</tt> or <tt>balancer</tt>
+     * @throws NullPointerException if null <code>masterScheduler</code>, <code>strategy</code> or <code>balancer</code>
      */
     public Scheduler( ConsoleStream logger, Description description, Scheduler masterScheduler,
                       SchedulingStrategy strategy, Balancer balancer )
@@ -191,7 +191,7 @@ public class Scheduler
 
     /**
      * @param slave a slave scheduler to register
-     * @return {@code true} if successfully registered the <tt>slave</tt>.
+     * @return {@code true} if successfully registered the <code>slave</code>.
      */
     private boolean register( Scheduler slave )
     {
@@ -237,7 +237,7 @@ public class Scheduler
      * of descriptions of those tasks which have started prior to this call.
      * <br>
      * This scheduler and other registered schedulers will stop, see {@link #register(Scheduler)}.
-     * If <tt>shutdownNow</tt> is set, waiting methods will be interrupted via {@link Thread#interrupt}.
+     * If <code>shutdownNow</code> is set, waiting methods will be interrupted via {@link Thread#interrupt}.
      *
      * @param stopNow if {@code true} interrupts waiting test methods
      * @return collection of descriptions started before shutting down

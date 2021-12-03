@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire;
+package org.apache.maven.surefire.providerapi;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,12 +19,12 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.plugin.MojoExecutionException;
-
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nonnull;
+
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugin.MojoExecutionException;
 
 /**
  * @author Kristian Rosenvold

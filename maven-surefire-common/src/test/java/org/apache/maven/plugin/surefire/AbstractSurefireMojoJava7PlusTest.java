@@ -31,6 +31,8 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.util.DefaultScanResult;
+import org.apache.maven.surefire.providerapi.ProviderInfo;
+import org.apache.maven.surefire.providerapi.ProviderRequirements;
 import org.codehaus.plexus.languages.java.jpms.JavaModuleDescriptor;
 import org.codehaus.plexus.languages.java.jpms.LocationManager;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathResult;
