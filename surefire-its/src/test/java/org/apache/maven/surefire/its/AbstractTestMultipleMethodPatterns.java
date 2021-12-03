@@ -481,9 +481,8 @@ public abstract class AbstractTestMultipleMethodPatterns
                                                              is( INCLUDES_FILE ), is( INCLUDES_EXCLUDES_FILE ) ) );
         String pattern = "TestFive#testSuccessOne+testSuccessThree";
         prepare( pattern )
-            .failNever()
             .executeTest()
-            .verifyTextInLog( "Method filter prohibited in includes|excludes|includesFile|excludesFile parameter: "
-                                  + pattern );
+            .verifyErrorFree( 1 )
+            .verifyErrorFreeLog();
     }
 }
