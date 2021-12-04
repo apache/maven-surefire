@@ -19,11 +19,10 @@ name: GitHub CI for Windows 1
 
 on:
   push:
-    branches:
-      - '**'
+    branches-ignore:
+      - dependabot/**
   pull_request:
-    branches:
-      - '**'
+
 
 jobs:
   build:
