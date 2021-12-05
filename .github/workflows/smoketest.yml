@@ -19,11 +19,9 @@ name: Unit Tests
 
 on:
   push:
-    branches:
-      - '**'
+    branches-ignore:
+      - dependabot/**
   pull_request:
-    branches:
-      - '**'
 
 jobs:
   build:
@@ -35,10 +33,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
-      - name: Set up JDK 16
-        uses: actions/setup-java@v1
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2.4.0
         with:
-          java-version: 16
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'maven'
 
       - name: Build with Maven
         run: mvn clean install -e -B -V -nsu --no-transfer-progress -P run-its -DskipITs
