@@ -469,6 +469,8 @@
               <arg>-Xdoclint:all</arg>
             </compilerArgs>
             <encoding>UTF-8</encoding>
+          	<useIncrementalCompilation>true</useIncrementalCompilation>
+
           </configuration>
         </plugin>
         <!-- NOTE: animal sniffer does not check test classes: https://jira.codehaus.org/browse/MANIMALSNIFFER-40 -->
