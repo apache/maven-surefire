@@ -141,6 +141,7 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
         def properties = ["-Djacoco.skip=${!makeReports}", "\"-Dmaven.repo.local=${mvnLocalRepoDir}\""]
         println "Setting JDK for testing ${jdkTestName}"
         def cmd = ['mvn'] + goals + options + properties
+        def errorStatus = -99;
 
         stage("build ${stageKey}") {
             if (isUnix()) {
@@ -152,8 +153,7 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
                     sh '$JAVA_HOME_IT/bin/java -version'
                     sh 'echo JAVA_HOME=$JAVA_HOME, JAVA_HOME_IT=$JAVA_HOME_IT, PATH=$PATH'
                     def script = cmd + ['\"-DjdkHome=$JAVA_HOME_IT\"']
-                    def error = sh(returnStatus: true, script: script.join(' '))
-                    currentBuild.result = error == 0 ? 'SUCCESS' : 'FAILURE'
+                    errorStatus = sh(returnStatus: true, script: script.join(' '))
                 }
             } else {
                 withEnv(["JAVA_HOME=${tool(jdkName)}",
@@ -164,9 +164,14 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
                     bat '%JAVA_HOME_IT%\\bin\\java -version'
                     bat 'echo JAVA_HOME=%JAVA_HOME%, JAVA_HOME_IT=%JAVA_HOME_IT%, PATH=%PATH%'
                     def script = cmd + ['\"-DjdkHome=%JAVA_HOME_IT%\"']
-                    def error = bat(returnStatus: true, script: script.join(' '))
-                    currentBuild.result = error == 0 ? 'SUCCESS' : 'FAILURE'
+                    errorStatus = bat(returnStatus: true, script: script.join(' '))
                 }
+            }
+
+            if ( errorStatus != 0 )
+            {
+                currentBuild.result = 'FAILURE'
+                unstable(" executing command status= " + errorStatus)
             }
         }
     } finally {
