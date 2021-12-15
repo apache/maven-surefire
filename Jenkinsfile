@@ -141,6 +141,8 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
 
         stage("build ${stageKey}") {
 
+             println "NODE_NAME = ${env.NODE_NAME}"
+
              checkout scm
 
             if (isUnix()) {
