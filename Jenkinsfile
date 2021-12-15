@@ -134,16 +134,15 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
         println "Maven Local Repository = ${mvnLocalRepoDir}."
         assert mvnLocalRepoDir != null : 'Local Maven Repository is undefined.'
 
-        stage("checkout ${stageKey}") {
-            checkout scm
-        }
-
         def properties = ["-Djacoco.skip=${!makeReports}", "\"-Dmaven.repo.local=${mvnLocalRepoDir}\""]
         println "Setting JDK for testing ${jdkTestName}"
         def cmd = ['mvn'] + goals + options + properties
         def errorStatus = -99;
 
         stage("build ${stageKey}") {
+
+             checkout scm
+
             if (isUnix()) {
                 withEnv(["JAVA_HOME=${tool(jdkName)}",
                          "JAVA_HOME_IT=${tool(jdkTestName)}",
