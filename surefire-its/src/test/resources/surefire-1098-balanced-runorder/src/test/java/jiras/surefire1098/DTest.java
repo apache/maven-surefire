@@ -28,7 +28,13 @@ public final class DTest {
     @Test
     public void someMethod() throws InterruptedException {
         System.out.println(getClass() + " " + Thread.currentThread().getName());
-        TimeUnit.SECONDS.sleep(8);
+        // wait from result from 3 tests
+        // so test will be the longest and finish as last
+        Locker.QUEUE.take();
+        Locker.QUEUE.take();
+        Locker.QUEUE.take();
+        // and sleep a little
+        TimeUnit.MILLISECONDS.sleep(100);
     }
 
 }

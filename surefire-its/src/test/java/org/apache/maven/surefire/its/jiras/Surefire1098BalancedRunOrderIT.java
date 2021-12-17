@@ -51,14 +51,15 @@ public class Surefire1098BalancedRunOrderIT extends SurefireJUnit4IntegrationTes
     @Test
     public void reorderedParallelClasses() throws VerificationException
     {
-        SurefireLauncher launcher = unpack();
-
-        launcher
+        // first execution
+        unpack().setLogFileName( "log1.txt" )
                 // .runOrder( "balanced" ) call it in 3.x and remove it in surefire-1098-balanced-runorder/pom.xml
                 // as soon as there is prefix available "failsafe" and "surefire" in system property for this parameter.
                 .parallelClasses().threadCount( 2 ).disablePerCoreThreadCount().executeTest().verifyErrorFree( 4 );
 
-        OutputValidator validator = launcher
+
+        // and second from new instance - if we use the same instance - hasExecutedBefore return true
+        OutputValidator validator = unpack().setLogFileName( "log2.txt" )
                 // .runOrder( "balanced" ) call it in 3.x and remove it in surefire-1098-balanced-runorder/pom.xml
                 // as soon as there is prefix available "failsafe" and "surefire" in system property for this parameter.
                 .parallelClasses().threadCount( 2 ).disablePerCoreThreadCount().executeTest().verifyErrorFree( 4 );
