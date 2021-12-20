@@ -444,4 +444,11 @@ public final class SurefireLauncher
         mavenLauncher.setForkJvm( true );
         return this;
     }
+
+
+    public SurefireLauncher setLogFileName( String logFileName )
+    {
+        mavenLauncher.setLogFileName( logFileName );
+        return this;
+    }
 }

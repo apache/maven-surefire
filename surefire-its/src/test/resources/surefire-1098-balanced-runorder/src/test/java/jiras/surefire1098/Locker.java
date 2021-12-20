@@ -19,14 +19,13 @@ package jiras.surefire1098;
  * under the License.
  */
 
-import org.junit.Test;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
-public final class ATest {
-
-    @Test
-    public void someMethod() throws InterruptedException {
-        System.out.println(getClass() + " " + Thread.currentThread().getName());
-        Locker.QUEUE.put( "A" );
-    }
-
+/**
+ * Tests are executet in one jvm in parallel,
+ * so we can use simple synchronization.
+ */
+class Locker {
+    static BlockingQueue<String> QUEUE = new ArrayBlockingQueue<>( 3 );
 }

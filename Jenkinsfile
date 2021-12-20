@@ -31,7 +31,8 @@ properties(
 )
 
 final def oses = ['linux':'ubuntu', 'windows':'Windows']
-final def mavens = env.BRANCH_NAME == 'master' ? ['3.6.x', '3.2.x'] : ['3.6.x']
+//final def mavens = env.BRANCH_NAME == 'master' ? ['3.6.x', '3.2.x'] : ['3.6.x']
+final def mavens = ['3.6.x', '3.2.x']
 // all non-EOL versions and the first EA
 final def jdks = [17, 8, 7]
 
@@ -134,15 +135,17 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
         println "Maven Local Repository = ${mvnLocalRepoDir}."
         assert mvnLocalRepoDir != null : 'Local Maven Repository is undefined.'
 
-        stage("checkout ${stageKey}") {
-            checkout scm
-        }
-
         def properties = ["-Djacoco.skip=${!makeReports}", "\"-Dmaven.repo.local=${mvnLocalRepoDir}\""]
         println "Setting JDK for testing ${jdkTestName}"
         def cmd = ['mvn'] + goals + options + properties
+        def errorStatus = -99;
 
         stage("build ${stageKey}") {
+
+             println "NODE_NAME = ${env.NODE_NAME}"
+
+             checkout scm
+
             if (isUnix()) {
                 withEnv(["JAVA_HOME=${tool(jdkName)}",
                          "JAVA_HOME_IT=${tool(jdkTestName)}",
@@ -152,8 +155,7 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
                     sh '$JAVA_HOME_IT/bin/java -version'
                     sh 'echo JAVA_HOME=$JAVA_HOME, JAVA_HOME_IT=$JAVA_HOME_IT, PATH=$PATH'
                     def script = cmd + ['\"-DjdkHome=$JAVA_HOME_IT\"']
-                    def error = sh(returnStatus: true, script: script.join(' '))
-                    currentBuild.result = error == 0 ? 'SUCCESS' : 'FAILURE'
+                    errorStatus = sh(returnStatus: true, script: script.join(' '))
                 }
             } else {
                 withEnv(["JAVA_HOME=${tool(jdkName)}",
@@ -164,9 +166,14 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
                     bat '%JAVA_HOME_IT%\\bin\\java -version'
                     bat 'echo JAVA_HOME=%JAVA_HOME%, JAVA_HOME_IT=%JAVA_HOME_IT%, PATH=%PATH%'
                     def script = cmd + ['\"-DjdkHome=%JAVA_HOME_IT%\"']
-                    def error = bat(returnStatus: true, script: script.join(' '))
-                    currentBuild.result = error == 0 ? 'SUCCESS' : 'FAILURE'
+                    errorStatus = bat(returnStatus: true, script: script.join(' '))
                 }
+            }
+
+            if ( errorStatus != 0 )
+            {
+                currentBuild.result = 'FAILURE'
+                unstable(" executing command status= " + errorStatus)
             }
         }
     } finally {

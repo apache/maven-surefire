@@ -395,6 +395,11 @@ public final class MavenLauncher
         getVerifier().setAutoclean( autoclean );
     }
 
+    public void setLogFileName( String logFileName )
+    {
+        getVerifier().setLogFileName( logFileName );
+    }
+
     private Verifier getVerifier()
     {
         if ( verifier == null )
@@ -476,7 +481,6 @@ public final class MavenLauncher
                 basedir, settingsFile, false, defaultCliOptions );
 
         verifier.getVerifierProperties().setProperty( "use.mavenRepoLocal", "true" );
-
         return verifier;
     }
 
