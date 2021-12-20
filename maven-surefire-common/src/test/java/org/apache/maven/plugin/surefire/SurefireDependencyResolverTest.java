@@ -133,8 +133,6 @@ public class SurefireDependencyResolverTest
                         .isNull();
                     assertThat( request.getLocalRepository() )
                         .isNull();
-                    assertThat( request.getCache() )
-                        .isNull();
                     assertThat( request.getCollectionFilter() )
                         .isNotNull();
                     assertThat( request.getCollectionFilter() )
@@ -203,8 +201,6 @@ public class SurefireDependencyResolverTest
                     assertThat( request.getRemoteRepositories() )
                         .isNull();
                     assertThat( request.getLocalRepository() )
-                        .isNull();
-                    assertThat( request.getCache() )
                         .isNull();
                     assertThat( request.getCollectionFilter() )
                         .isNotNull();
