@@ -2327,7 +2327,7 @@ public abstract class AbstractSurefireMojo
             List<String> excludedTestMethods = excludeList.getTestMethods();
             if ( !excludedTestMethods.isEmpty() ) 
             {
-                includeList.removeAll( asList( getDefaultIncludes() ) );
+                includeList.clear();
                 includeList.addAll( excludedTestMethods );
                 for ( String method : excludedTestMethods ) 
                 {
