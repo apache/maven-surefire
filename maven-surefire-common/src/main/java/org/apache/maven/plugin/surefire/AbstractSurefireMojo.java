@@ -914,6 +914,7 @@ public abstract class AbstractSurefireMojo
     private List<CommandLineOption> cli;
 
     private volatile PluginConsoleLogger consoleLogger;
+    private String testToIncludeExclude;
 
     @Override
     public void execute()
@@ -1841,12 +1842,36 @@ public abstract class AbstractSurefireMojo
     {
         if ( isSpecificTestSpecified() )
         {
-            return getFailIfNoSpecifiedTests() ? COULD_NOT_RUN_SPECIFIED_TESTS : NONE;
+            if ( getFailIfNoSpecifiedTests() 
+                    && isTestToIncludeExcludeNoSpecified() )
+            {
+                return COULD_NOT_RUN_SPECIFIED_TESTS; 
+            }
+            else 
+            {
+                return NONE;
+            }
         }
         else
         {
             return getFailIfNoTests() ? COULD_NOT_RUN_DEFAULT_TESTS : NONE;
         }
+    }
+
+    private boolean isTestToIncludeExcludeNoSpecified() 
+    {
+        return getTestToIncludeExclude().isEmpty();
+    }
+    
+    private void setTestToIncludeExclude( String test ) 
+    {
+        this.testToIncludeExclude = test;
+        setTest( test );
+    }
+    
+    public String getTestToIncludeExclude() 
+    {
+        return testToIncludeExclude;
     }
 
     private ProviderConfiguration createProviderConfiguration( RunOrderParameters runOrderParameters )
@@ -2371,7 +2396,7 @@ public abstract class AbstractSurefireMojo
                 String testToIncludeExclude = sb.deleteCharAt( 0 ).toString( );
                 if ( !Arrays.equals( getDefaultIncludes(), split( testToIncludeExclude, "," ) ) ) 
                 {
-                    setTest( testToIncludeExclude );
+                    setTestToIncludeExclude( testToIncludeExclude );
                 }
                 includedExcludedTests = new TestListResolver( includeList, excludeList.getTestClasses() );
             }
