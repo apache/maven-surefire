@@ -2244,11 +2244,26 @@ public abstract class AbstractSurefireMojo
                 actualExcludes = Collections.singletonList( getDefaultExcludes() );
             }
         }
-        return new IncludeExcludeList( filterNulls( actualExcludes ), 
+        return new IncludeExcludeList( 
+                filterNulls( filterClasses (
+                        actualExcludes ) ), 
                 filterNulls ( getExcludedMethods( 
                         getMethodFilterInIncludesExcludes( actualExcludes ) ) ) );
     }
 
+    private List<String> filterClasses( List<String> excludes ) 
+    {
+        List<String> filter = new LinkedList<>();
+        for ( String exclude : excludes ) 
+        {
+            if ( exclude != null && !exclude.contains ( "#" ) ) 
+            {
+                filter.add( exclude );
+            }
+        }
+        return filter;
+    }
+    
     private List<String> getExcludedMethods( List<String> methodFilterInIncludesExcludes ) 
     {
         List<String> excludedMethods = new LinkedList<>();
