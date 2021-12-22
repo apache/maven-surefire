@@ -914,7 +914,6 @@ public abstract class AbstractSurefireMojo
     private List<CommandLineOption> cli;
 
     private volatile PluginConsoleLogger consoleLogger;
-    private String testToIncludeExclude;
 
     @Override
     public void execute()
@@ -1842,36 +1841,12 @@ public abstract class AbstractSurefireMojo
     {
         if ( isSpecificTestSpecified() )
         {
-            if ( getFailIfNoSpecifiedTests() 
-                    && isTestToIncludeExcludeNoSpecified() )
-            {
-                return COULD_NOT_RUN_SPECIFIED_TESTS; 
-            }
-            else 
-            {
-                return NONE;
-            }
+            return getFailIfNoSpecifiedTests() ? COULD_NOT_RUN_SPECIFIED_TESTS : NONE; 
         }
         else
         {
             return getFailIfNoTests() ? COULD_NOT_RUN_DEFAULT_TESTS : NONE;
         }
-    }
-
-    private boolean isTestToIncludeExcludeNoSpecified() 
-    {
-        return getTestToIncludeExclude().isEmpty();
-    }
-    
-    private void setTestToIncludeExclude( String test ) 
-    {
-        this.testToIncludeExclude = test;
-        setTest( test );
-    }
-    
-    public String getTestToIncludeExclude() 
-    {
-        return testToIncludeExclude;
     }
 
     private ProviderConfiguration createProviderConfiguration( RunOrderParameters runOrderParameters )
@@ -2367,7 +2342,6 @@ public abstract class AbstractSurefireMojo
             List<String> excludedTestMethods = excludeList.getTestMethods();
             if ( !excludedTestMethods.isEmpty() ) 
             {
-                includeList.clear();
                 includeList.addAll( excludedTestMethods );
                 for ( String method : excludedTestMethods ) 
                 {
@@ -2396,7 +2370,7 @@ public abstract class AbstractSurefireMojo
                 String testToIncludeExclude = sb.deleteCharAt( 0 ).toString( );
                 if ( !Arrays.equals( getDefaultIncludes(), split( testToIncludeExclude, "," ) ) ) 
                 {
-                    setTestToIncludeExclude( testToIncludeExclude );
+                    setTest( testToIncludeExclude );
                 }
                 includedExcludedTests = new TestListResolver( includeList, excludeList.getTestClasses() );
             }
