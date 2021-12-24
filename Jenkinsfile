@@ -32,7 +32,7 @@ properties(
 final def oses = ['linux':'ubuntu', 'windows':'windows-he']
 final def mavens = env.BRANCH_NAME == 'master' ? ['3.6.x', '3.2.x'] : ['3.2.x']
 // all non-EOL versions and the first EA
-final def jdks = [18, 17, 8, 7]
+final def jdks = [18, 17, 8]
 
 final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
 final def goals = ['clean', 'install']
@@ -44,22 +44,19 @@ oses.eachWithIndex { osMapping, indexOfOs ->
         jdks.eachWithIndex { jdk, indexOfJdk ->
             def os = osMapping.key
             def label = osMapping.value
-            final String jdkTestName = jenkinsEnv.jdkFromVersion(os, jdk.toString())
-            final String jdkName = jenkinsEnv.jdkFromVersion(os, '8')
+            final String jdkName = jenkinsEnv.jdkFromVersion(os, jdk.toString())
             final String mvnName = jenkinsEnv.mvnFromVersion(os, maven)
             final String stageKey = "${os}-jdk${jdk}-maven${maven}"
 
-// Referenses for TLS:
-// https://central.sonatype.org/articles/2018/May/04/discontinued-support-for-tlsv11-and-below/?__hstc=31049440.ab2fd229e7f8b6176196d9f78621e1f5.1534324377408.1534324377408.1534324377408.1&__hssc=31049440.1.1534324377409&__hsfp=2729160845
             def mavenOpts = '-Xms64m -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn'
             mavenOpts += (os == 'linux' ? ' -Xmx1g' : ' -Xmx256m')
 
-            if (label == null || jdkTestName == null || mvnName == null) {
+            if (label == null || jdkName == null || mvnName == null) {
                 println "Skipping ${stageKey} as unsupported by Jenkins Environment."
                 return
             }
 
-            println "${stageKey}  ==>  Label: ${label}, JDK: ${jdkTestName}, Maven: ${mvnName}."
+            println "${stageKey}  ==>  Label: ${label}, JDK: ${jdkName}, Maven: ${mvnName}."
 
             stages[stageKey] = {
                 node(label) {
@@ -67,14 +64,12 @@ oses.eachWithIndex { osMapping, indexOfOs ->
                         boolean first = indexOfOs == 0 && indexOfMaven == 0 && indexOfJdk == 0
                         def failsafeItPort = 8000 + 100 * indexOfMaven + 10 * indexOfJdk
                         def allOptions = options + ['-Djava.awt.headless=true', "-Dfailsafe-integration-test-port=${failsafeItPort}", "-Dfailsafe-integration-test-stop-port=${1 + failsafeItPort}"]
-                        if (jdk == 7) {
-                            allOptions += '-Dhttps.protocols=TLSv1.2'
-                        }
+
                         if (!maven.startsWith('3.2') && !maven.startsWith('3.3') && !maven.startsWith('3.5')) {
                             allOptions += '--no-transfer-progress'
                         }
                         ws(dir: "${os == 'windows' ? "${TEMP}\\${BUILD_TAG}" : pwd()}") {
-                            buildProcess(stageKey, jdkName, jdkTestName, mvnName, first ? goalsDepl : goals, allOptions, mavenOpts, first)
+                            buildProcess(stageKey, jdkName, mvnName, first ? goalsDepl : goals, allOptions, mavenOpts, first)
                         }
                     }
                 }
@@ -118,7 +113,7 @@ timeout(time: 12, unit: 'HOURS') {
     }
 }
 
-def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvnName, goals, options, mavenOpts, boolean makeReports) {
+def buildProcess(String stageKey, String jdkName, String mvnName, goals, options, mavenOpts, boolean makeReports) {
     cleanWs()
     def errorStatus = -99
     try {
@@ -135,7 +130,6 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
         assert mvnLocalRepoDir != null : 'Local Maven Repository is undefined.'
 
         def properties = ["-Djacoco.skip=${!makeReports}", "\"-Dmaven.repo.local=${mvnLocalRepoDir}\""]
-        println "Setting JDK for testing ${jdkTestName}"
         def cmd = ['mvn'] + goals + options + properties
 
         stage("build ${stageKey}") {
@@ -146,25 +140,21 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
 
             if (isUnix()) {
                 withEnv(["JAVA_HOME=${tool(jdkName)}",
-                         "JAVA_HOME_IT=${tool(jdkTestName)}",
                          "MAVEN_OPTS=${mavenOpts}",
                          "PATH+MAVEN=${tool(mvnName)}/bin:${tool(jdkName)}/bin"
                 ]) {
-                    sh '$JAVA_HOME_IT/bin/java -version'
-                    sh 'echo JAVA_HOME=$JAVA_HOME, JAVA_HOME_IT=$JAVA_HOME_IT, PATH=$PATH'
-                    def script = cmd + ['\"-DjdkHome=$JAVA_HOME_IT\"']
-                    errorStatus = sh(returnStatus: true, script: script.join(' '))
+                    sh 'echo JAVA_HOME=$JAVA_HOME, PATH=$PATH'
+                    sh '$JAVA_HOME/bin/java -version'
+                    errorStatus = sh(returnStatus: true, script: cmd.join(' '))
                 }
             } else {
                 withEnv(["JAVA_HOME=${tool(jdkName)}",
-                         "JAVA_HOME_IT=${tool(jdkTestName)}",
                          "MAVEN_OPTS=${mavenOpts}",
                          "PATH+MAVEN=${tool(mvnName)}\\bin;${tool(jdkName)}\\bin"
                 ]) {
-                    bat '%JAVA_HOME_IT%\\bin\\java -version'
-                    bat 'echo JAVA_HOME=%JAVA_HOME%, JAVA_HOME_IT=%JAVA_HOME_IT%, PATH=%PATH%'
-                    def script = cmd + ['\"-DjdkHome=%JAVA_HOME_IT%\"']
-                    errorStatus = bat(returnStatus: true, script: script.join(' '))
+                    bat 'echo JAVA_HOME=%JAVA_HOME%, PATH=%PATH%'
+                    bat '%JAVA_HOME%\\bin\\java -version'
+                    errorStatus = bat(returnStatus: true, script: cmd.join(' '))
                 }
             }
 

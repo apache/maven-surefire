@@ -271,15 +271,10 @@
                                     <properties>
                                         <integration-test-port>${failsafe-integration-test-port}</integration-test-port>
                                         <integration-test-stop-port>${failsafe-integration-test-stop-port}</integration-test-stop-port>
-                                        <https.protocols>${https.protocols}</https.protocols>
-                                        <jdk.tls.client.protocols>${https.protocols}</jdk.tls.client.protocols>
                                     </properties>
                                 </configuration>
                             </execution>
                         </executions>
-                        <configuration>
-                            <javaHome>${jdkHome}</javaHome>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>

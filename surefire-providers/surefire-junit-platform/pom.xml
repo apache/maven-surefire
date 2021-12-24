@@ -31,10 +31,6 @@
     <name>SureFire JUnit Platform Runner</name>
     <description>SureFire JUnit Platform Runner</description>
 
-    <properties>
-        <javaVersion>8</javaVersion>
-    </properties>
-
     <contributors>
         <contributor>
             <name>Konstantin Lutovich</name>
@@ -133,31 +129,6 @@
                 <configuration>
                     <propertyName>jacoco.agent</propertyName>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>animal-sniffer-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>signature-check</id>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                        <configuration>
-                            <signature combine.self="override">
-                                <groupId>org.codehaus.mojo.signature</groupId>
-                                <artifactId>java18</artifactId>
-                                <version>1.0</version>
-                            </signature>
-                            <excludeDependencies>
-                                <param>org.junit.platform:junit-platform-commons</param>
-                            </excludeDependencies>
-                            <ignores>
-                                <param>org.junit.platform.commons.*</param>
-                            </ignores>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>

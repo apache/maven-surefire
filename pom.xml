@@ -87,7 +87,7 @@
   </distributionManagement>
 
   <properties>
-    <javaVersion>7</javaVersion>
+    <javaVersion>8</javaVersion>
     <mavenVersion>3.2.5</mavenVersion>
     <!-- <shadedVersion>3.0.0-M2</shadedVersion> commented out due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
     <commonsLang3Version>3.8.1</commonsLang3Version>
@@ -105,6 +105,7 @@
     <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
     <maven.compiler.testSource>1.${javaVersion}</maven.compiler.testSource>
     <maven.compiler.testTarget>1.${javaVersion}</maven.compiler.testTarget>
+    <jvm9ArgsTests/>
     <jvm.args.tests>${jvm9ArgsTests} -Xms32m -Xmx144m -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</jvm.args.tests>
     <project.build.outputTimestamp>2020-06-10T18:16:37Z</project.build.outputTimestamp>
   </properties>
@@ -414,11 +415,6 @@
           <version>3.2.3</version><!-- TODO remove when upgrading parent to 35 -->
         </plugin>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>build-helper-maven-plugin</artifactId>
-          <version>3.2.0</version>
-        </plugin>
-        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <executions>
@@ -477,13 +473,11 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>3.0.0-M4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
           <configuration>
-            <skipTests>${doSkipTests}</skipTests>
             <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
             <useSystemClassLoader>false</useSystemClassLoader>
             <argLine>${jvm.args.tests}</argLine><!-- -Dnet.bytebuddy.experimental=true ${jacoco.agent}-->
             <useFile>false</useFile>
             <redirectTestOutputToFile>false</redirectTestOutputToFile>
-            <jvm>${jdkHome}/bin/java</jvm>
           </configuration>
         </plugin>
         <plugin>
@@ -603,7 +597,6 @@
             <configuration>
               <rules>
                 <requireJavaVersion>
-                  <!-- We use JDK 1.8 to check -Xdoclint:all at compile time but with javac -source 1.7 -target 1.7 -->
                   <version>[1.8, )</version>
                 </requireJavaVersion>
               </rules>
@@ -644,62 +637,6 @@
           <fail>true</fail>
         </configuration>
       </plugin>
-        <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <executions>
-                <execution>
-                    <id>bsh-property</id>
-                    <goals>
-                        <goal>bsh-property</goal>
-                    </goals>
-                    <configuration>
-                        <properties>
-                            <property>jdkHome</property>
-                            <property>doSkipTests</property>
-                            <property>jvm9ArgsTests</property>
-                        </properties>
-                        <source>
-                            jdkHome = session.getUserProperties().getProperty("jdkHome", project.getProperties().getProperty("jdkHome"));
-                            if (jdkHome == null || jdkHome.isEmpty()) {
-                                jreHome = System.getProperty("java.home");
-                                jrePath = new File(jreHome);
-                                jdkHome = "jre".equals(jrePath.getName()) ? jrePath.getParent() : jrePath.getPath();
-                            }
-                            release = new File(jdkHome, "release");
-                            System.out.println("Beanshell found jdkHome=" + jdkHome);
-                            System.out.println("Beanshell found jdk-release properties file=" + release.exists());
-                            props = new Properties();
-                            reader = new FileReader(release);
-                            props.load(reader);
-                            reader.close();
-                            javaVersion = props.getProperty("JAVA_VERSION").replace("\"", "");
-                            System.out.println("Beanshell found java version for tests " + javaVersion);
-                            majorJavaVersion = Integer.parseInt(javaVersion.substring(0, javaVersion.contains(".") ? javaVersion.indexOf('.') : javaVersion.length()));
-                            isSkippedTests = project.getProperties().getProperty("skipTests", session.getUserProperties().getProperty("skipTests"));
-                            if (isSkippedTests == null) {
-                                isSkippedTests = "false";
-                            }
-
-                            skip = isSkippedTests;
-                            args = "--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/sun.nio.fs=ALL-UNNAMED --add-opens java.base/sun.nio.cs=ALL-UNNAMED --add-opens java.base/java.nio.file=ALL-UNNAMED --add-opens java.base/java.nio.charset=ALL-UNNAMED";
-
-                            if (majorJavaVersion == 1) {
-                                isJava7 = javaVersion.matches("^1\\.7.*");
-                                skip = "surefire-junit-platform".equals(project.getArtifactId()) ? "" + (Boolean.parseBoolean(isSkippedTests) || isJava7) : isSkippedTests;
-                                args = "";
-                            }
-
-                            doSkipTests = skip;
-                            jvm9ArgsTests = args;
-
-                            System.out.println("Beanshell doSkipTests=" + doSkipTests);
-                            System.out.println("Beanshell jvm9ArgsTests=" + jvm9ArgsTests);
-                        </source>
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
@@ -712,7 +649,7 @@
             <configuration>
               <signature>
                 <groupId>org.codehaus.mojo.signature</groupId>
-                <artifactId>java17</artifactId>
+                <artifactId>java18</artifactId>
                 <version>1.0</version>
               </signature>
             </configuration>
@@ -750,6 +687,17 @@
   </reporting>
 
   <profiles>
+
+    <profile>
+      <id>jdk9+</id>
+      <activation>
+        <jdk>[9,)</jdk>
+      </activation>
+      <properties>
+        <jvm9ArgsTests>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/sun.nio.fs=ALL-UNNAMED --add-opens java.base/sun.nio.cs=ALL-UNNAMED --add-opens java.base/java.nio.file=ALL-UNNAMED --add-opens java.base/java.nio.charset=ALL-UNNAMED</jvm9ArgsTests>
+      </properties>
+    </profile>
+
     <profile>
       <id>reporting</id>
       <reporting>

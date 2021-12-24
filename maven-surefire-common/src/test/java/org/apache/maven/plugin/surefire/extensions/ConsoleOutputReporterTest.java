@@ -19,15 +19,16 @@ package org.apache.maven.plugin.surefire.extensions;
  * under the License.
  */
 
-import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
-import org.apache.maven.surefire.extensions.ConsoleOutputReporter;
+import java.io.File;
+import java.io.PrintStream;
+
 import org.apache.maven.plugin.surefire.extensions.junit5.JUnit5ConsoleOutputReporter;
 import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
 import org.apache.maven.plugin.surefire.report.DirectConsoleOutput;
+import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
+import org.apache.maven.surefire.extensions.ConsoleOutputReporter;
 import org.fest.assertions.Assertions;
 import org.junit.Test;
-
-import java.io.File;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.powermock.reflect.Whitebox.getInternalState;
@@ -73,9 +74,9 @@ public class ConsoleOutputReporterTest
         ConsoleOutputReportEventListener listener1 = extension.createListener( System.out, System.err );
         assertThat( listener1 )
                 .isInstanceOf( DirectConsoleOutput.class );
-        assertThat( getInternalState( listener1, "out" ) )
+        assertThat( (PrintStream) getInternalState( listener1, "out" ) )
                 .isSameAs( System.out );
-        assertThat( getInternalState( listener1, "err" ) )
+        assertThat( (PrintStream) getInternalState( listener1, "err" ) )
                 .isSameAs( System.err );
 
         File target = new File( System.getProperty( "user.dir" ), "target" );
@@ -89,17 +90,17 @@ public class ConsoleOutputReporterTest
                 extension.createListener( reportsDirectory, reportNameSuffix, forkNumber );
         assertThat( listener2 )
                 .isInstanceOf( ConsoleOutputFileReporter.class );
-        assertThat( getInternalState( listener2, "reportsDirectory" ) )
+        assertThat( (File) getInternalState( listener2, "reportsDirectory" ) )
                 .isSameAs( reportsDirectory );
-        assertThat( getInternalState( listener2, "reportNameSuffix" ) )
+        assertThat( (String) getInternalState( listener2, "reportNameSuffix" ) )
                 .isSameAs( reportNameSuffix );
-        assertThat( getInternalState( listener2, "usePhrasedFileName" ) )
+        assertThat( (boolean) getInternalState( listener2, "usePhrasedFileName" ) )
                 .isEqualTo( usePhrasedFileName );
-        assertThat( getInternalState( listener2, "forkNumber" ) )
+        assertThat( (Integer) getInternalState( listener2, "forkNumber" ) )
                 .isSameAs( forkNumber );
-        assertThat( getInternalState( listener2, "encoding" ) )
+        assertThat( (String) getInternalState( listener2, "encoding" ) )
                 .isSameAs( encoding );
-        assertThat( getInternalState( listener2, "reportEntryName" ) )
+        assertThat( (String) getInternalState( listener2, "reportEntryName" ) )
                 .isNull();
     }
 
@@ -142,9 +143,9 @@ public class ConsoleOutputReporterTest
         ConsoleOutputReportEventListener listener1 = extension.createListener( System.out, System.err );
         assertThat( listener1 )
                 .isInstanceOf( DirectConsoleOutput.class );
-        assertThat( getInternalState( listener1, "out" ) )
+        assertThat( (PrintStream) getInternalState( listener1, "out" ) )
                 .isSameAs( System.out );
-        assertThat( getInternalState( listener1, "err" ) )
+        assertThat( (PrintStream) getInternalState( listener1, "err" ) )
                 .isSameAs( System.err );
 
         File target = new File( System.getProperty( "user.dir" ), "target" );
@@ -159,17 +160,17 @@ public class ConsoleOutputReporterTest
                 extension.createListener( reportsDirectory, reportNameSuffix, forkNumber );
         assertThat( listener2 )
                 .isInstanceOf( ConsoleOutputFileReporter.class );
-        assertThat( getInternalState( listener2, "reportsDirectory" ) )
+        assertThat( (File) getInternalState( listener2, "reportsDirectory" ) )
                 .isSameAs( reportsDirectory );
-        assertThat( getInternalState( listener2, "reportNameSuffix" ) )
+        assertThat( (String) getInternalState( listener2, "reportNameSuffix" ) )
                 .isSameAs( reportNameSuffix );
-        assertThat( getInternalState( listener2, "usePhrasedFileName" ) )
+        assertThat( (boolean) getInternalState( listener2, "usePhrasedFileName" ) )
                 .isEqualTo( usePhrasedFileName );
-        assertThat( getInternalState( listener2, "forkNumber" ) )
+        assertThat( (Integer) getInternalState( listener2, "forkNumber" ) )
                 .isSameAs( forkNumber );
-        assertThat( getInternalState( listener2, "encoding" ) )
+        assertThat( (String) getInternalState( listener2, "encoding" ) )
                 .isSameAs( encoding );
-        assertThat( getInternalState( listener2, "reportEntryName" ) )
+        assertThat( (String) getInternalState( listener2, "reportEntryName" ) )
                 .isNull();
     }
 }

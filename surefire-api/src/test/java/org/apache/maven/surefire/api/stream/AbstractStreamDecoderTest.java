@@ -19,19 +19,8 @@ package org.apache.maven.surefire.api.stream;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.api.booter.Constants;
-import org.apache.maven.surefire.api.booter.ForkedProcessEventType;
-import org.apache.maven.surefire.api.event.Event;
-import org.apache.maven.surefire.api.fork.ForkNodeArguments;
-import org.apache.maven.surefire.api.report.RunMode;
-import org.apache.maven.surefire.api.stream.AbstractStreamDecoder.MalformedFrameException;
-import org.apache.maven.surefire.api.stream.AbstractStreamDecoder.Memento;
-import org.apache.maven.surefire.api.stream.AbstractStreamDecoder.Segment;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import javax.annotation.Nonnull;
+
 import java.io.EOFException;
 import java.io.File;
 import java.math.BigInteger;
@@ -44,6 +33,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.api.booter.Constants;
+import org.apache.maven.surefire.api.booter.ForkedProcessEventType;
+import org.apache.maven.surefire.api.event.Event;
+import org.apache.maven.surefire.api.fork.ForkNodeArguments;
+import org.apache.maven.surefire.api.report.RunMode;
+import org.apache.maven.surefire.api.stream.AbstractStreamDecoder.MalformedFrameException;
+import org.apache.maven.surefire.api.stream.AbstractStreamDecoder.Memento;
+import org.apache.maven.surefire.api.stream.AbstractStreamDecoder.Segment;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import static java.lang.Math.min;
 import static java.lang.System.arraycopy;
@@ -275,7 +276,7 @@ public class AbstractStreamDecoderTest
         Memento memento = thread.new Memento();
         // whatever position will be compacted to 0
         ( (Buffer) ( (Buffer) memento.getByteBuffer() ).limit( 974 ) ).position( 974 );
-        assertThat( invokeMethod( thread, "readString", memento, PATTERN1.length() + 3 ) )
+        assertThat( (String) invokeMethod( thread, "readString", memento, PATTERN1.length() + 3 ) )
             .isEqualTo( PATTERN1 + "012" );
     }
 
@@ -295,7 +296,7 @@ public class AbstractStreamDecoderTest
             Collections.<Segment, ForkedProcessEventType>emptyMap() );
 
         Memento memento = thread.new Memento();
-        assertThat( invokeMethod( thread, "readString", memento, PATTERN1.length() ) )
+        assertThat( (String) invokeMethod( thread, "readString", memento, PATTERN1.length() ) )
             .isEqualTo( "789" + PATTERN1.substring( 0, 97 ) );
     }
 
@@ -325,7 +326,7 @@ public class AbstractStreamDecoderTest
             expected.append( PATTERN1 );
         }
         expected.setLength( 1100 );
-        assertThat( invokeMethod( thread, "readString", memento, 1100 ) )
+        assertThat( (String) invokeMethod( thread, "readString", memento, 1100 ) )
             .isEqualTo( expected.toString() );
     }
 
