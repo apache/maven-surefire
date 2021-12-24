@@ -96,27 +96,27 @@ public class StatelessReporterTest
         StatelessReportEventListener<WrappedReportEntry, TestSetStats> listener = extension.createListener( config );
         assertThat( listener )
                 .isInstanceOf( StatelessXmlReporter.class );
-        assertThat( getInternalState( listener, "reportsDirectory" ) )
+        assertThat( (File) getInternalState( listener, "reportsDirectory" ) )
                 .isSameAs( reportsDirectory );
-        assertThat( getInternalState( listener, "reportNameSuffix" ) )
+        assertThat( (String) getInternalState( listener, "reportNameSuffix" ) )
                 .isSameAs( reportNameSuffix );
-        assertThat( getInternalState( listener, "trimStackTrace" ) )
+        assertThat( (boolean) getInternalState( listener, "trimStackTrace" ) )
                 .isEqualTo( true );
-        assertThat( getInternalState( listener, "rerunFailingTestsCount" ) )
+        assertThat( (Integer) getInternalState( listener, "rerunFailingTestsCount" ) )
                 .isEqualTo( 5 );
-        assertThat( getInternalState( listener, "xsdSchemaLocation" ) )
+        assertThat( (String) getInternalState( listener, "xsdSchemaLocation" ) )
                 .isSameAs( schema );
-        assertThat( getInternalState( listener, "xsdVersion" ) )
+        assertThat( (String) getInternalState( listener, "xsdVersion" ) )
                 .isEqualTo( "V3" );
-        assertThat( getInternalState( listener, "testClassMethodRunHistoryMap" ) )
+        assertThat( (Map<?, ?>) getInternalState( listener, "testClassMethodRunHistoryMap" ) )
                 .isSameAs( testClassMethodRunHistory );
-        assertThat( getInternalState( listener, "phrasedFileName" ) )
+        assertThat( (boolean) getInternalState( listener, "phrasedFileName" ) )
                 .isEqualTo( false );
-        assertThat( getInternalState( listener, "phrasedSuiteName" ) )
+        assertThat( (boolean) getInternalState( listener, "phrasedSuiteName" ) )
                 .isEqualTo( false );
-        assertThat( getInternalState( listener, "phrasedClassName" ) )
+        assertThat( (boolean) getInternalState( listener, "phrasedClassName" ) )
                 .isEqualTo( false );
-        assertThat( getInternalState( listener, "phrasedMethodName" ) )
+        assertThat( (boolean) getInternalState( listener, "phrasedMethodName" ) )
                 .isEqualTo( false );
     }
 
@@ -217,27 +217,27 @@ public class StatelessReporterTest
         StatelessReportEventListener<WrappedReportEntry, TestSetStats> listener = extension.createListener( config );
         assertThat( listener )
                 .isInstanceOf( StatelessXmlReporter.class );
-        assertThat( getInternalState( listener, "reportsDirectory" ) )
+        assertThat( (File) getInternalState( listener, "reportsDirectory" ) )
                 .isSameAs( reportsDirectory );
-        assertThat( getInternalState( listener, "reportNameSuffix" ) )
+        assertThat( (String) getInternalState( listener, "reportNameSuffix" ) )
                 .isSameAs( reportNameSuffix );
-        assertThat( getInternalState( listener, "trimStackTrace" ) )
+        assertThat( (boolean) getInternalState( listener, "trimStackTrace" ) )
                 .isEqualTo( true );
-        assertThat( getInternalState( listener, "rerunFailingTestsCount" ) )
+        assertThat( (Integer) getInternalState( listener, "rerunFailingTestsCount" ) )
                 .isEqualTo( 5 );
-        assertThat( getInternalState( listener, "xsdSchemaLocation" ) )
+        assertThat( (String) getInternalState( listener, "xsdSchemaLocation" ) )
                 .isSameAs( schema );
-        assertThat( getInternalState( listener, "xsdVersion" ) )
+        assertThat( (String) getInternalState( listener, "xsdVersion" ) )
                 .isEqualTo( "V3" );
-        assertThat( getInternalState( listener, "testClassMethodRunHistoryMap" ) )
+        assertThat( (Map<?, ?>) getInternalState( listener, "testClassMethodRunHistoryMap" ) )
                 .isSameAs( testClassMethodRunHistory );
-        assertThat( getInternalState( listener, "phrasedFileName" ) )
+        assertThat( (boolean) getInternalState( listener, "phrasedFileName" ) )
                 .isEqualTo( true );
-        assertThat( getInternalState( listener, "phrasedSuiteName" ) )
+        assertThat( (boolean) getInternalState( listener, "phrasedSuiteName" ) )
                 .isEqualTo( true );
-        assertThat( getInternalState( listener, "phrasedClassName" ) )
+        assertThat( (boolean) getInternalState( listener, "phrasedClassName" ) )
                 .isEqualTo( true );
-        assertThat( getInternalState( listener, "phrasedMethodName" ) )
+        assertThat( (boolean) getInternalState( listener, "phrasedMethodName" ) )
                 .isEqualTo( true );
     }
 }

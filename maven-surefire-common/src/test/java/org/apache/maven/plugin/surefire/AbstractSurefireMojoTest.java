@@ -172,7 +172,7 @@ public class AbstractSurefireMojoTest
         assertThat( wrapper.getResolvePathResult() )
             .isNull();
 
-        assertThat( invokeMethod( mojo, "existsModuleDescriptor", wrapper ) )
+        assertThat( (boolean) invokeMethod( mojo, "existsModuleDescriptor", wrapper ) )
             .isEqualTo( false );
 
         when( mojo.useModulePath() ).thenReturn( true );
@@ -180,7 +180,7 @@ public class AbstractSurefireMojoTest
         File jvmExecutable = new File( jdkHome, IS_OS_WINDOWS ? "bin\\java.exe" : "bin/java" );
         JdkAttributes jdkAttributes = new JdkAttributes( jvmExecutable, jdkHome, true );
         Platform platform = new Platform().withJdkExecAttributesForTests( jdkAttributes );
-        assertThat( invokeMethod( mojo, "canExecuteProviderWithModularPath", platform, wrapper ) )
+        assertThat( (boolean) invokeMethod( mojo, "canExecuteProviderWithModularPath", platform, wrapper ) )
             .isEqualTo( false );
     }
 
@@ -217,7 +217,7 @@ public class AbstractSurefireMojoTest
         assertThat( wrapper.getResolvePathResult().getModuleDescriptor() )
             .isSameAs( descriptor );
 
-        assertThat( invokeMethod( mojo, "existsModuleDescriptor", wrapper ) )
+        assertThat( (boolean) invokeMethod( mojo, "existsModuleDescriptor", wrapper ) )
             .isEqualTo( true );
 
         when( mojo.useModulePath() ).thenReturn( true );
@@ -225,19 +225,19 @@ public class AbstractSurefireMojoTest
         File jvmExecutable = new File( jdkHome, IS_OS_WINDOWS ? "bin\\java.exe" : "bin/java" );
         JdkAttributes jdkAttributes = new JdkAttributes( jvmExecutable, jdkHome, true );
         Platform platform = new Platform().withJdkExecAttributesForTests( jdkAttributes );
-        assertThat( invokeMethod( mojo, "canExecuteProviderWithModularPath", platform, wrapper ) )
+        assertThat( (boolean) invokeMethod( mojo, "canExecuteProviderWithModularPath", platform, wrapper ) )
             .isEqualTo( true );
 
         jdkAttributes = new JdkAttributes( jvmExecutable, jdkHome, false );
         platform = new Platform().withJdkExecAttributesForTests( jdkAttributes );
-        assertThat( invokeMethod( mojo, "canExecuteProviderWithModularPath", platform, wrapper ) )
+        assertThat( (boolean) invokeMethod( mojo, "canExecuteProviderWithModularPath", platform, wrapper ) )
             .isEqualTo( false );
 
         when( mojo.useModulePath() ).thenReturn( false );
 
         jdkAttributes = new JdkAttributes( jvmExecutable, jdkHome, true );
         platform = new Platform().withJdkExecAttributesForTests( jdkAttributes );
-        assertThat( invokeMethod( mojo, "canExecuteProviderWithModularPath", platform, wrapper ) )
+        assertThat( (boolean) invokeMethod( mojo, "canExecuteProviderWithModularPath", platform, wrapper ) )
             .isEqualTo( false );
     }
 
@@ -271,7 +271,7 @@ public class AbstractSurefireMojoTest
         assertThat( wrapper.getResolvePathResult() )
             .isNull();
 
-        assertThat( invokeMethod( mojo, "existsModuleDescriptor", wrapper ) )
+        assertThat( (boolean) invokeMethod( mojo, "existsModuleDescriptor", wrapper ) )
             .isEqualTo( false );
     }
 

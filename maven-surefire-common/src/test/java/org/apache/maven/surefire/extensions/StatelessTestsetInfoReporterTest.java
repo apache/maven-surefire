@@ -118,11 +118,11 @@ public class StatelessTestsetInfoReporterTest
                 .isSameAs( reportNameSuffix );
         assertThat( listener.getEncoding() )
                 .isSameAs( encoding );
-        assertThat( getInternalState( listener, "usePhrasedFileName" ) )
+        assertThat( (boolean) getInternalState( listener, "usePhrasedFileName" ) )
                 .isEqualTo( false );
-        assertThat( getInternalState( listener, "usePhrasedClassNameInRunning" ) )
+        assertThat( (boolean) getInternalState( listener, "usePhrasedClassNameInRunning" ) )
                 .isEqualTo( false );
-        assertThat( getInternalState( listener, "usePhrasedClassNameInTestCaseSummary" ) )
+        assertThat( (boolean) getInternalState( listener, "usePhrasedClassNameInTestCaseSummary" ) )
                 .isEqualTo( false );
     }
 
@@ -143,9 +143,9 @@ public class StatelessTestsetInfoReporterTest
                 .isInstanceOf( ConsoleReporter.class );
         assertThat( listener.getConsoleLogger() )
                 .isSameAs( consoleLogger );
-        assertThat( getInternalState( listener, "usePhrasedClassNameInRunning" ) )
+        assertThat( (boolean) getInternalState( listener, "usePhrasedClassNameInRunning" ) )
                 .isEqualTo( false );
-        assertThat( getInternalState( listener, "usePhrasedClassNameInTestCaseSummary" ) )
+        assertThat( (boolean) getInternalState( listener, "usePhrasedClassNameInTestCaseSummary" ) )
                 .isEqualTo( false );
     }
 
