@@ -111,21 +111,41 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- project artifacts -->
       <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-compress</artifactId>
-        <version>${commonsCompress}</version>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>surefire-shared-utils</artifactId>
+        <version>${project.version}</version>
       </dependency>
+      <!-- /project artifacts -->
+
+      <!-- surefire-shared-utils artifacts in provided scope - will be shaded -->
       <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-lang3</artifactId>
-        <version>${commonsLang3Version}</version>
+        <groupId>org.apache.maven.shared</groupId>
+        <artifactId>maven-shared-utils</artifactId>
+        <version>${mavenSharedUtilsVersion}</version>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>${commonsIoVersion}</version>
+        <scope>provided</scope>
       </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commonsLang3Version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>${commonsCompress}</version>
+        <scope>provided</scope>
+      </dependency>
+      <!-- /surefire-shared-utils artifacts -->
+
       <dependency>
         <groupId>org.apache.maven.reporting</groupId>
         <artifactId>maven-reporting-api</artifactId>
@@ -163,17 +183,6 @@
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-settings</artifactId>
         <version>${mavenVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.shared</groupId>
-        <artifactId>maven-shared-utils</artifactId>
-        <version>${mavenSharedUtilsVersion}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.reporting</groupId>
@@ -715,6 +724,9 @@
                 <artifactId>java17</artifactId>
                 <version>1.0</version>
               </signature>
+              <ignores>
+                <ignore>shade.*</ignore>
+              </ignores>
             </configuration>
           </execution>
         </executions>

@@ -21,12 +21,12 @@ package org.apache.maven.plugin.surefire.report;
 
 import junit.framework.TestCase;
 import org.apache.maven.plugin.surefire.booterclient.output.DeserializedStacktraceWriter;
+import org.apache.maven.shared.utils.StringUtils;
+import org.apache.maven.shared.utils.xml.Xpp3Dom;
+import org.apache.maven.shared.utils.xml.Xpp3DomBuilder;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
-import org.apache.maven.surefire.shared.utils.StringUtils;
-import org.apache.maven.surefire.shared.utils.xml.Xpp3Dom;
-import org.apache.maven.surefire.shared.utils.xml.Xpp3DomBuilder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

@@ -43,18 +43,22 @@
         <dependency>
             <groupId>org.apache.maven.shared</groupId>
             <artifactId>maven-shared-utils</artifactId>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -68,6 +72,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <minimizeJar>true</minimizeJar>
                             <artifactSet>
                                 <includes>
                                     <include>org.apache.maven.shared:maven-shared-utils</include>
@@ -79,19 +84,19 @@
                             <relocations>
                                 <relocation>
                                     <pattern>org.apache.maven.shared.utils</pattern>
-                                    <shadedPattern>org.apache.maven.surefire.shared.utils</shadedPattern>
+                                    <shadedPattern>shade.org.apache.maven.shared.utils</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.apache.commons.io</pattern>
-                                    <shadedPattern>org.apache.maven.surefire.shared.io</shadedPattern>
+                                    <shadedPattern>shade.org.apache.commons.io</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.apache.commons.lang3</pattern>
-                                    <shadedPattern>org.apache.maven.surefire.shared.lang3</shadedPattern>
+                                    <shadedPattern>shade.org.apache.commons.lang3</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.apache.commons.compress</pattern>
-                                    <shadedPattern>org.apache.maven.surefire.shared.compress</shadedPattern>
+                                    <shadedPattern>shade.org.apache.commons.compress</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>

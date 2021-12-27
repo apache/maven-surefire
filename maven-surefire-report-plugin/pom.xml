@@ -106,6 +106,18 @@
             <artifactId>doxia-site-renderer</artifactId>
         </dependency>
         <dependency>
+            <!-- needed by maven-reporting-impl -->
+            <groupId>org.apache.maven.shared</groupId>
+            <artifactId>maven-shared-utils</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <!-- needed by doxia -->
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
         </dependency>

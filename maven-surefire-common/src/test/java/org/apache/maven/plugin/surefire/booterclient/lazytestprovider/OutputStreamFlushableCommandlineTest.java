@@ -59,13 +59,15 @@ public class OutputStreamFlushableCommandlineTest
     }
 
     @Test
-    public void shouldExecute() throws CommandLineException
+    public void shouldExecute() throws CommandLineException, InterruptedException
     {
         OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
         cli.getShell().setWorkingDirectory( System.getProperty( "user.dir" ) );
         cli.getShell().setExecutable( IS_OS_WINDOWS ? "dir" : "ls" );
         assertThat( cli.getFlushReceiver() ).isNull();
-        cli.execute();
+        Process process = cli.execute();
+        int exitCode = process.waitFor();
+        assertThat( exitCode ).isEqualTo( 0 );
         assertThat( cli.getFlushReceiver() ).isNotNull();
     }
 

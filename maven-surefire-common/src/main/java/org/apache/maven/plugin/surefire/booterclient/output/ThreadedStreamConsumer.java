@@ -21,7 +21,6 @@ package org.apache.maven.plugin.surefire.booterclient.output;
 
 import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.extensions.EventHandler;
-import org.apache.maven.surefire.shared.utils.cli.StreamConsumer;
 
 import javax.annotation.Nonnull;
 import java.io.Closeable;
@@ -69,7 +68,7 @@ public final class ThreadedStreamConsumer
         /**
          * Calls {@link ForkClient#handleEvent(Event)} which may throw any {@link RuntimeException}.<br>
          * Even if {@link ForkClient} is not fault-tolerant, this method MUST be fault-tolerant and thus the
-         * try-catch block must be inside of the loop which prevents from loosing events from {@link StreamConsumer}.
+         * try-catch block must be inside of the loop which prevents from loosing events from StreamConsumer.
          * <br>
          * If {@link org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter#writeTestOutput} throws
          * {@link java.io.IOException} and then {@code target.consumeLine()} throws any RuntimeException, this method

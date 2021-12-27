@@ -22,6 +22,8 @@ package org.apache.maven.surefire.booter;
 import org.apache.maven.surefire.api.booter.DumpErrorSingleton;
 
 import javax.annotation.Nonnull;
+
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -39,7 +41,6 @@ import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.regex.Pattern.compile;
-import static org.apache.maven.surefire.shared.io.IOUtils.closeQuietly;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_HP_UX;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_LINUX;
@@ -441,11 +442,24 @@ final class PpidChecker
                 {
                     destroyableCommands.remove( process );
                     process.destroy();
+                    // process.destroy() - probably close those streams
                     closeQuietly( process.getInputStream() );
                     closeQuietly( process.getErrorStream() );
                     closeQuietly( process.getOutputStream() );
                 }
             }
+        }
+    }
+
+    private void closeQuietly( Closeable closeable )
+    {
+        try
+        {
+            closeable.close();
+        }
+        catch ( IOException e )
+        {
+            // ignore
         }
     }
 
