@@ -431,6 +431,13 @@ public class E2ETest
             return logger;
         }
 
+        @Nonnull
+        @Override
+        public Object getConsoleLock()
+        {
+            return logger;
+        }
+
         @Override
         public File getEventStreamBinaryFile()
         {

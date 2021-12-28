@@ -143,7 +143,7 @@ final class SurefireForkChannel extends ForkChannel
     {
         ForkNodeArguments args = getArguments();
         out = new LineConsumerThread( "fork-" + args.getForkChannelId() + "-out-thread", stdOut,
-            new NativeStdOutStreamConsumer( args.getConsoleLogger() ), countdown );
+            new NativeStdOutStreamConsumer( args.getConsoleLock() ), countdown );
         out.start();
 
         eventBindings = new EventBindings( eventHandler, countdown );

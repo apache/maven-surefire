@@ -55,6 +55,9 @@ public interface ForkNodeArguments
     @Nonnull
     ConsoleLogger getConsoleLogger();
 
+    @Nonnull
+    Object getConsoleLock();
+
     File getEventStreamBinaryFile();
 
     File getCommandStreamBinaryFile();

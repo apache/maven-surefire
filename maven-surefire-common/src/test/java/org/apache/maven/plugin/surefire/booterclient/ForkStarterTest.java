@@ -28,6 +28,9 @@ import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessIn
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStream;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.extensions.LegacyForkNodeFactory;
+import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter;
+import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
+import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.booter.AbstractPathConfiguration;
@@ -155,15 +158,21 @@ public class ForkStarterTest
         when( forkConfiguration.createCommandLine( eq( startupConfiguration ), eq( 1 ), eq( tmp ) ) )
             .thenReturn( cli );
 
+        SurefireStatelessTestsetInfoReporter statelessTestsetInfoReporter = new SurefireStatelessTestsetInfoReporter();
+        SurefireConsoleOutputReporter outputReporter = new SurefireConsoleOutputReporter();
+        SurefireStatelessReporter xmlReporter = new SurefireStatelessReporter( true, "3" );
+
         StartupReportConfiguration startupReportConfiguration = new StartupReportConfiguration( true, true, null,
-            false, tmp, true, "", null, false, 0, null, null, true, null, null, null );
+            false, tmp, true, "", null, false, 0, null, null, true,
+            xmlReporter, outputReporter, statelessTestsetInfoReporter );
 
         ConsoleLogger logger = mock( ConsoleLogger.class );
 
         ForkStarter forkStarter = new ForkStarter( providerConfiguration, startupConfiguration, forkConfiguration,
             0, startupReportConfiguration, logger );
 
-        DefaultReporterFactory reporterFactory = new DefaultReporterFactory( startupReportConfiguration, logger, 1 );
+        DefaultReporterFactory reporterFactory =
+            new DefaultReporterFactory( startupReportConfiguration, logger, 1 );
 
         e.expect( SurefireBooterForkException.class );
         e.expectMessage( containsString( "Process Exit Code: 1" ) );
@@ -214,15 +223,21 @@ public class ForkStarterTest
         when( forkConfiguration.createCommandLine( eq( startupConfiguration ), eq( 1 ), eq( tmp ) ) )
             .thenReturn( cli );
 
+        SurefireStatelessTestsetInfoReporter statelessTestsetInfoReporter = new SurefireStatelessTestsetInfoReporter();
+        SurefireConsoleOutputReporter outputReporter = new SurefireConsoleOutputReporter();
+        SurefireStatelessReporter xmlReporter = new SurefireStatelessReporter( true, "3" );
+
         StartupReportConfiguration startupReportConfiguration = new StartupReportConfiguration( true, true, null,
-            false, tmp, true, "", null, false, 0, null, null, true, null, null, null );
+            false, tmp, true, "", null, false, 0, null, null, true,
+            xmlReporter, outputReporter, statelessTestsetInfoReporter );
 
         ConsoleLogger logger = mock( ConsoleLogger.class );
 
         ForkStarter forkStarter = new ForkStarter( providerConfiguration, startupConfiguration, forkConfiguration,
             0, startupReportConfiguration, logger );
 
-        DefaultReporterFactory reporterFactory = new DefaultReporterFactory( startupReportConfiguration, logger, 1 );
+        DefaultReporterFactory reporterFactory =
+            new DefaultReporterFactory( startupReportConfiguration, logger, 1 );
 
         Class<?>[] types = {Object.class, PropertiesWrapper.class, ForkClient.class, SurefireProperties.class,
             int.class, AbstractCommandReader.class, ForkNodeFactory.class, boolean.class};

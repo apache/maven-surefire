@@ -371,6 +371,13 @@ public class ForkingRunListenerTest
             return logger;
         }
 
+        @Nonnull
+        @Override
+        public Object getConsoleLock()
+        {
+            return logger;
+        }
+
         boolean isCalled()
         {
             return !dumpStreamText.isEmpty() || !logWarningAtEnd.isEmpty();

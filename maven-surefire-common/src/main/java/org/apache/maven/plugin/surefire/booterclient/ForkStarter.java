@@ -33,6 +33,7 @@ import org.apache.maven.plugin.surefire.booterclient.output.NativeStdErrStreamCo
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
+import org.apache.maven.plugin.surefire.report.ReportsMerger;
 import org.apache.maven.surefire.booter.AbstractPathConfiguration;
 import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
@@ -155,7 +156,7 @@ public class ForkStarter
 
     private final ConsoleLogger log;
 
-    private final DefaultReporterFactory defaultReporterFactory;
+    private final ReportsMerger reportMerger;
 
     private final Collection<DefaultReporterFactory> defaultReporterFactories;
 
@@ -206,7 +207,7 @@ public class ForkStarter
                     // if tests failed, but if this does not happen then printing warning to console is the only way to
                     // inform the users.
                     String msg = "ForkStarter IOException: " + e.getLocalizedMessage() + ".";
-                    File reportsDir = defaultReporterFactory.getReportsDirectory();
+                    File reportsDir = reportMerger.getReportsDirectory();
                     File dump = InPluginProcessDumpSingleton.getSingleton()
                                         .dumpStreamException( e, msg, reportsDir, jvmRun );
                     log.warning( msg + " See the dump file " + dump.getAbsolutePath() );
@@ -247,8 +248,8 @@ public class ForkStarter
         this.startupConfiguration = startupConfiguration;
         this.startupReportConfiguration = startupReportConfiguration;
         this.log = log;
-        defaultReporterFactory = new DefaultReporterFactory( startupReportConfiguration, log );
-        defaultReporterFactory.runStarting();
+        reportMerger = new DefaultReporterFactory( startupReportConfiguration, log );
+        reportMerger.runStarting();
         defaultReporterFactories = new ConcurrentLinkedQueue<>();
         currentForkClients = new ConcurrentLinkedQueue<>();
         timeoutCheckScheduler = createTimeoutCheckScheduler();
@@ -268,8 +269,8 @@ public class ForkStarter
         }
         finally
         {
-            defaultReporterFactory.mergeFromOtherFactories( defaultReporterFactories );
-            defaultReporterFactory.close();
+            reportMerger.mergeFromOtherFactories( defaultReporterFactories );
+            reportMerger.close();
             pingThreadScheduler.shutdownNow();
             timeoutCheckScheduler.shutdownNow();
             for ( String line : logsAtEnd )
@@ -574,8 +575,8 @@ public class ForkStarter
         File dumpLogDir = replaceForkThreadsInPath( startupReportConfiguration.getReportsDirectory(), forkNumber );
         try
         {
-            ForkNodeArguments forkNodeArguments =
-                new ForkedNodeArg( forkConfiguration.isDebug(), forkNumber, dumpLogDir, randomUUID().toString() );
+            ForkNodeArguments forkNodeArguments = new ForkedNodeArg( forkConfiguration.isDebug(), forkNumber,
+                dumpLogDir, randomUUID().toString() );
             forkChannel = forkNodeFactory.createForkChannel( forkNodeArguments );
             closer.addCloseable( forkChannel );
             tempDir = forkConfiguration.getTempDirectory().getCanonicalPath();
@@ -639,7 +640,7 @@ public class ForkStarter
             CommandlineStreams streams = exec.execute();
             closer.addCloseable( streams );
 
-            err = bindErrorStream( forkNumber, countdownCloseable, streams );
+            err = bindErrorStream( forkNumber, countdownCloseable, streams, forkClient.getConsoleOutputReceiver() );
 
             forkChannel.bindCommandReader( commandReader, streams.getStdInChannel() );
 
@@ -753,10 +754,10 @@ public class ForkStarter
         return runResult;
     }
 
-    private Stoppable bindErrorStream( int forkNumber, CountdownCloseable countdownCloseable,
-                                       CommandlineStreams streams )
+    private static Stoppable bindErrorStream( int forkNumber, CountdownCloseable countdownCloseable,
+                                              CommandlineStreams streams, Object errorStreamLock )
     {
-        EventHandler<String> errConsumer = new NativeStdErrStreamConsumer( log );
+        EventHandler<String> errConsumer = new NativeStdErrStreamConsumer( errorStreamLock );
         LineConsumerThread stdErr = new LineConsumerThread( "fork-" + forkNumber + "-err-thread",
             streams.getStdErrChannel(), errConsumer, countdownCloseable );
         stdErr.start();
@@ -934,6 +935,13 @@ public class ForkStarter
         @Nonnull
         @Override
         public ConsoleLogger getConsoleLogger()
+        {
+            return log;
+        }
+
+        @Nonnull
+        @Override
+        public Object getConsoleLock()
         {
             return log;
         }
