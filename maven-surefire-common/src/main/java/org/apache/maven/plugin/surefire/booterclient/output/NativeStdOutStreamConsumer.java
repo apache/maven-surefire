@@ -19,13 +19,12 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.extensions.EventHandler;
 
 import javax.annotation.Nonnull;
 
 /**
- * The output/INFO logger for the output stream of the forked JMV,
+ * The standard output logger for the output stream of the forked JMV,
  * see org.apache.maven.plugin.surefire.extensions.SurefireForkChannel.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -34,16 +33,19 @@ import javax.annotation.Nonnull;
 public final class NativeStdOutStreamConsumer
     implements EventHandler<String>
 {
-    private final ConsoleLogger logger;
+    private final Object outStreamLock;
 
-    public NativeStdOutStreamConsumer( ConsoleLogger logger )
+    public NativeStdOutStreamConsumer( Object outStreamLock )
     {
-        this.logger = logger;
+        this.outStreamLock = outStreamLock;
     }
 
     @Override
-    public void handleEvent( @Nonnull String event )
+    public void handleEvent( @Nonnull String message )
     {
-        logger.info( event );
+        synchronized ( outStreamLock )
+        {
+            System.out.println( message );
+        }
     }
 }

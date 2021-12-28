@@ -118,6 +118,13 @@ public class ForkChannelTest
             {
                 return reporter;
             }
+
+            @Nonnull
+            @Override
+            public Object getConsoleLock()
+            {
+                return reporter;
+            }
         };
 
         ForkNodeFactory factory = new SurefireForkNodeFactory();

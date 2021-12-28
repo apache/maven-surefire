@@ -78,7 +78,7 @@ public class ForkClient
 
     private final int forkNumber;
 
-    private RunListener testSetReporter;
+    private volatile RunListener testSetReporter;
 
     /**
      * Written by one Thread and read by another: Main Thread and ForkStarter's Thread.
@@ -340,7 +340,7 @@ public class ForkClient
     {
         if ( forkedProcessTimeoutInSeconds > 0 )
         {
-            final long forkedProcessTimeoutInMillis = 1000 * forkedProcessTimeoutInSeconds;
+            final long forkedProcessTimeoutInMillis = 1000L * forkedProcessTimeoutInSeconds;
             final long startedAt = testSetStartedAt.get();
             if ( startedAt > START_TIME_ZERO && currentTimeMillis - startedAt >= forkedProcessTimeoutInMillis )
             {
@@ -376,11 +376,20 @@ public class ForkClient
         return testSetStartedAt.get() == START_TIME_NEGATIVE_TIMEOUT;
     }
 
+    /**
+     * Only {@link #getConsoleOutputReceiver()} may call this method in another Thread.
+     */
     private RunListener getTestSetReporter()
     {
         if ( testSetReporter == null )
         {
-            testSetReporter = defaultReporterFactory.createReporter();
+            synchronized ( this )
+            {
+                if ( testSetReporter == null )
+                {
+                    testSetReporter = defaultReporterFactory.createReporter();
+                }
+            }
         }
         return testSetReporter;
     }
@@ -394,7 +403,7 @@ public class ForkClient
 
     private void writeTestOutput( String output, boolean newLine, boolean isStdout )
     {
-        getOrCreateConsoleOutputReceiver()
+        getConsoleOutputReceiver()
                 .writeTestOutput( output, newLine, isStdout );
     }
 
@@ -414,7 +423,7 @@ public class ForkClient
         return getTestSetReporter();
     }
 
-    private ConsoleOutputReceiver getOrCreateConsoleOutputReceiver()
+    public ConsoleOutputReceiver getConsoleOutputReceiver()
     {
         return (ConsoleOutputReceiver) getTestSetReporter();
     }

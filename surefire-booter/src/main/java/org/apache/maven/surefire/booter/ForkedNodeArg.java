@@ -83,10 +83,17 @@ public final class ForkedNodeArg implements ForkNodeArguments
         return logger;
     }
 
+    @Nonnull
+    @Override
+    public Object getConsoleLock()
+    {
+        return logger;
+    }
+
     @Override
     public File getEventStreamBinaryFile()
     {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override

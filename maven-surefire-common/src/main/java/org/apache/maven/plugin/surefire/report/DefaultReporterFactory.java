@@ -65,7 +65,7 @@ import static org.apache.maven.surefire.api.util.internal.ObjectUtils.useNonNull
  * @author Kristian Rosenvold
  */
 public class DefaultReporterFactory
-    implements ReporterFactory
+    implements ReporterFactory, ReportsMerger
 {
     private final Collection<TestSetRunListener> listeners = new ConcurrentLinkedQueue<>();
     private final StartupReportConfiguration reportConfiguration;
@@ -107,11 +107,13 @@ public class DefaultReporterFactory
                                     createStatisticsReporter(),
                                     reportConfiguration.isTrimStackTrace(),
                                     PLAIN.equals( reportConfiguration.getReportFormat() ),
-                                    reportConfiguration.isBriefOrPlainFormat() );
+                                    reportConfiguration.isBriefOrPlainFormat(),
+                                    consoleLogger );
         addListener( testSetRunListener );
         return testSetRunListener;
     }
 
+    @Override
     public File getReportsDirectory()
     {
         return reportConfiguration.getReportsDirectory();
@@ -151,6 +153,7 @@ public class DefaultReporterFactory
         return useNonNull( statisticsReporter, NullStatisticsReporter.INSTANCE );
     }
 
+    @Override
     public void mergeFromOtherFactories( Collection<DefaultReporterFactory> factories )
     {
         for ( DefaultReporterFactory factory : factories )
@@ -176,6 +179,7 @@ public class DefaultReporterFactory
         return globalStats.getRunResult();
     }
 
+    @Override
     public void runStarting()
     {
         if ( reportConfiguration.isPrintSummary() )

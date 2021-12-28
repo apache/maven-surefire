@@ -69,6 +69,8 @@ public class TestSetRunListener
 
     private final StatisticsReporter statisticsReporter;
 
+    private final Object lock;
+
     private Utf8RecodingDeferredFileOutputStream testStdOut = initDeferred( "stdout" );
 
     private Utf8RecodingDeferredFileOutputStream testStdErr = initDeferred( "stderr" );
@@ -83,7 +85,7 @@ public class TestSetRunListener
                                StatelessReportEventListener<WrappedReportEntry, TestSetStats> simpleXMLReporter,
                                ConsoleOutputReportEventListener consoleOutputReceiver,
                                StatisticsReporter statisticsReporter, boolean trimStackTrace,
-                               boolean isPlainFormat, boolean briefOrPlainFormat )
+                               boolean isPlainFormat, boolean briefOrPlainFormat, Object lock )
     {
         this.consoleReporter = consoleReporter;
         this.fileReporter = fileReporter;
@@ -92,6 +94,7 @@ public class TestSetRunListener
         this.consoleOutputReceiver = consoleOutputReceiver;
         this.briefOrPlainFormat = briefOrPlainFormat;
         detailsForThis = new TestSetStats( trimStackTrace, isPlainFormat );
+        this.lock = lock;
     }
 
     @Override
@@ -103,7 +106,10 @@ public class TestSetRunListener
     @Override
     public void debug( String message )
     {
-        consoleReporter.getConsoleLogger().debug( trimTrailingNewLine( message ) );
+        synchronized ( lock )
+        {
+            consoleReporter.getConsoleLogger().debug( trimTrailingNewLine( message ) );
+        }
     }
 
     @Override
@@ -115,7 +121,10 @@ public class TestSetRunListener
     @Override
     public void info( String message )
     {
-        consoleReporter.getConsoleLogger().info( trimTrailingNewLine( message ) );
+        synchronized ( lock )
+        {
+            consoleReporter.getConsoleLogger().info( trimTrailingNewLine( message ) );
+        }
     }
 
     @Override
@@ -127,7 +136,10 @@ public class TestSetRunListener
     @Override
     public void warning( String message )
     {
-        consoleReporter.getConsoleLogger().warning( trimTrailingNewLine( message ) );
+        synchronized ( lock )
+        {
+            consoleReporter.getConsoleLogger().warning( trimTrailingNewLine( message ) );
+        }
     }
 
     @Override
@@ -139,19 +151,28 @@ public class TestSetRunListener
     @Override
     public void error( String message )
     {
-        consoleReporter.getConsoleLogger().error( trimTrailingNewLine( message ) );
+        synchronized ( lock )
+        {
+            consoleReporter.getConsoleLogger().error( trimTrailingNewLine( message ) );
+        }
     }
 
     @Override
     public void error( String message, Throwable t )
     {
-        consoleReporter.getConsoleLogger().error( trimTrailingNewLine( message ), t );
+        synchronized ( lock )
+        {
+            consoleReporter.getConsoleLogger().error( trimTrailingNewLine( message ), t );
+        }
     }
 
     @Override
     public void error( Throwable t )
     {
-        consoleReporter.getConsoleLogger().error( t );
+        synchronized ( lock )
+        {
+            consoleReporter.getConsoleLogger().error( t );
+        }
     }
 
     @Override
@@ -159,9 +180,12 @@ public class TestSetRunListener
     {
         try
         {
-            Utf8RecodingDeferredFileOutputStream stream = stdout ? testStdOut : testStdErr;
-            stream.write( output, newLine );
-            consoleOutputReceiver.writeTestOutput( output, newLine, stdout );
+            synchronized ( lock )
+            {
+                Utf8RecodingDeferredFileOutputStream stream = stdout ? testStdOut : testStdErr;
+                stream.write( output, newLine );
+                consoleOutputReceiver.writeTestOutput( output, newLine, stdout );
+            }
         }
         catch ( IOException e )
         {
