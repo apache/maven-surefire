@@ -29,12 +29,10 @@ properties(
         disableConcurrentBuilds()
     ]
 )
-// windows-he - INFRA-22534
 final def oses = ['linux':'ubuntu', 'windows':'windows-he']
-//final def mavens = env.BRANCH_NAME == 'master' ? ['3.6.x', '3.2.x'] : ['3.6.x']
-final def mavens = ['3.6.x', '3.2.x']
+final def mavens = env.BRANCH_NAME == 'master' ? ['3.6.x', '3.2.x'] : ['3.2.x']
 // all non-EOL versions and the first EA
-final def jdks = [17, 8, 7]
+final def jdks = [18, 17, 8, 7]
 
 final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
 final def goals = ['clean', 'install']
@@ -122,6 +120,7 @@ timeout(time: 12, unit: 'HOURS') {
 
 def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvnName, goals, options, mavenOpts, boolean makeReports) {
     cleanWs()
+    def errorStatus = -99
     try {
         def mvnLocalRepoDir
         if (isUnix()) {
@@ -138,7 +137,6 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
         def properties = ["-Djacoco.skip=${!makeReports}", "\"-Dmaven.repo.local=${mvnLocalRepoDir}\""]
         println "Setting JDK for testing ${jdkTestName}"
         def cmd = ['mvn'] + goals + options + properties
-        def errorStatus = -99;
 
         stage("build ${stageKey}") {
 
@@ -194,7 +192,8 @@ def buildProcess(String stageKey, String jdkName, String jdkTestName, String mvn
                 }
             }
 
-            if (currentBuild.result != null && currentBuild.result != 'SUCCESS') {
+            if (errorStatus != 0) {
+                println "errorStatus=${errorStatus} we are going to archive.."
                 zip(zipFile: "maven-failsafe-plugin--${stageKey}.zip", dir: 'maven-failsafe-plugin/target/it', archive: true)
                 zip(zipFile: "surefire-its--${stageKey}.zip", dir: 'surefire-its/target', archive: true)
                 archiveArtifacts(artifacts: "*--${stageKey}.zip", allowEmptyArchive: true, onlyIfSuccessful: false)
