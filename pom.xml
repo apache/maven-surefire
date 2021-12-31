@@ -256,7 +256,12 @@
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-java</artifactId>
-        <version>0.9.10</version>
+        <version>1.0.7</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>9.2</version>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
@@ -635,7 +640,7 @@
           <plugins>
             <!-- Moving to a profile, since these dependencies won't exist the first
                  time a new snapshot version is built. This prevents the first
-                 snapshot build from proceeding beyond the build for the top-level 
+                 snapshot build from proceeding beyond the build for the top-level
                  Surefire parent POM.
             -->
             <plugin>
