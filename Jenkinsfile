@@ -36,7 +36,7 @@ final def jdks = [18, 17, 8]
 
 final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
 final def goals = ['clean', 'install']
-final def goalsDepl = ['clean', 'deploy', 'jacoco:report']
+final def goalsDepl = ['clean', 'deploy']
 final Map stages = [:]
 
 oses.eachWithIndex { osMapping, indexOfOs ->
@@ -69,7 +69,9 @@ oses.eachWithIndex { osMapping, indexOfOs ->
                             allOptions += '--no-transfer-progress'
                         }
                         ws(dir: "${os == 'windows' ? "${TEMP}\\${BUILD_TAG}" : pwd()}") {
-                            buildProcess(stageKey, jdkName, mvnName, first ? goalsDepl : goals, allOptions, mavenOpts, first)
+                            buildProcess(stageKey, jdkName, mvnName,
+                                first  && env.BRANCH_NAME == 'master' ? goalsDepl : goals,
+                                allOptions, mavenOpts, first)
                         }
                     }
                 }
@@ -164,6 +166,10 @@ def buildProcess(String stageKey, String jdkName, String mvnName, goals, options
                 unstable(" executing command status= " + errorStatus)
             }
         }
+
+    } catch (Throwable e) {
+        println "Throwable: ${e}"
+        throw e
     } finally {
         try {
             if (makeReports) {
