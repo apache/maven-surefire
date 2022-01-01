@@ -48,6 +48,7 @@
   </contributors>
 
   <modules>
+    <module>surefire-shared</module>
     <module>surefire-logger-api</module>
     <module>surefire-api</module>
     <module>surefire-extensions-api</module>
@@ -62,7 +63,6 @@
     <module>maven-failsafe-plugin</module>
     <module>maven-surefire-report-plugin</module>
     <module>surefire-its</module>
-    <module>surefire-shared-utils</module>
   </modules>
 
   <scm>
@@ -666,12 +666,6 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <configuration>
-          <deployAtEnd>true</deployAtEnd>
-        </configuration>
       </plugin>
     </plugins>
   </build>
