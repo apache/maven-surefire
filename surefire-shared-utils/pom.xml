@@ -29,7 +29,9 @@
 
     <artifactId>surefire-shared-utils</artifactId>
     <name>Surefire Shared Utils</name>
-    <description>Relocated Java packages of maven-shared-utils in Surefire</description>
+    <description>
+        Relocated Java packages of maven-shared-utils and several Apache Commons utilities in Surefire.
+    </description>
 
     <licenses>
         <license>
@@ -100,5 +102,35 @@
             </plugin>
         </plugins>
     </build>
-
+    <profiles>
+        <profile>
+            <!-- First, install the project without tests -> mvn install -DskipTests
+            This is a workaround for IntelliJ IDEA, see https://youtrack.jetbrains.com/issue/IDEA-148573
+            IDEA is able to recognize external artifacts with classifiers. But IDEA expects modules and their artifacts
+            without classifier. If the version differs from project, the idea would understand it as external artifact.
+            -->
+            <id>ide-development</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-install-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>install-devel-jar</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>install-file</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactId>surefire-shared-utils</artifactId>
+                                    <version>3-SNAPSHOT</version>
+                                    <file>target/${project.build.finalName}.jar</file>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

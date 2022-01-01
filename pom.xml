@@ -48,6 +48,7 @@
   </contributors>
 
   <modules>
+    <module>surefire-shared-utils</module>
     <module>surefire-logger-api</module>
     <module>surefire-api</module>
     <module>surefire-extensions-api</module>
@@ -62,7 +63,6 @@
     <module>maven-failsafe-plugin</module>
     <module>maven-surefire-report-plugin</module>
     <module>surefire-its</module>
-    <module>surefire-shared-utils</module>
   </modules>
 
   <scm>
@@ -101,6 +101,7 @@
     <powermockVersion>2.0.9</powermockVersion>
     <mavenPluginToolsVersion>3.6.2</mavenPluginToolsVersion>
     <jacocoVersion>0.8.7</jacocoVersion>
+    <surefire-shared-utils.version>${project.version}</surefire-shared-utils.version>
     <maven.surefire.scm.devConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
     <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
     <maven.compiler.testSource>1.${javaVersion}</maven.compiler.testSource>
@@ -687,7 +688,17 @@
   </reporting>
 
   <profiles>
-
+    <profile>
+        <!-- First, install the project without tests -> mvn install -DskipTests
+        This is a workaround for IntelliJ IDEA, see https://youtrack.jetbrains.com/issue/IDEA-148573
+        IDEA is able to recognize external artifacts with classifiers. But IDEA expects modules and their artifacts
+        without classifier. If the version differs from project, the idea would understand it as external artifact.
+        -->
+        <id>ide-development</id>
+        <properties>
+            <surefire-shared-utils.version>3-SNAPSHOT</surefire-shared-utils.version>
+        </properties>
+    </profile>
     <profile>
       <id>jdk9+</id>
       <activation>
@@ -697,7 +708,6 @@
         <jvm9ArgsTests>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/sun.nio.fs=ALL-UNNAMED --add-opens java.base/sun.nio.cs=ALL-UNNAMED --add-opens java.base/java.nio.file=ALL-UNNAMED --add-opens java.base/java.nio.charset=ALL-UNNAMED</jvm9ArgsTests>
       </properties>
     </profile>
-
     <profile>
       <id>reporting</id>
       <reporting>

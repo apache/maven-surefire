@@ -266,12 +266,12 @@
                                     <postBuildHookScript>verify</postBuildHookScript>
                                     <settingsFile>src/it/settings.xml</settingsFile>
                                     <skipInvocation>${skipTests}</skipInvocation>
-                                    <streamLogs>true</streamLogs>
                                     <showErrors>true</showErrors>
                                     <properties>
                                         <integration-test-port>${failsafe-integration-test-port}</integration-test-port>
                                         <integration-test-stop-port>${failsafe-integration-test-stop-port}</integration-test-stop-port>
                                     </properties>
+                                    <debug>true</debug>
                                 </configuration>
                             </execution>
                         </executions>

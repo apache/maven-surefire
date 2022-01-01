@@ -56,6 +56,8 @@ import static java.io.File.pathSeparator;
 public class NewClassLoaderRunner
     extends BlockJUnit4ClassRunner
 {
+    private static final String PROJECT_DIR = System.getProperty( "java.dir" );
+
     private Class<?> cls;
 
     public NewClassLoaderRunner( Class<?> clazz )
@@ -236,17 +238,14 @@ public class NewClassLoaderRunner
             Collection<URL> classPath = new HashSet<>();
             try
             {
-                String[] files = FileUtils.fileRead( new File( "target/test-classpath/cp.txt" ), "UTF-8" )
-                        .split( pathSeparator );
+                File classPathFile = new File( PROJECT_DIR, "target/test-classpath/cp.txt" );
+                String[] files = FileUtils.fileRead( classPathFile, "UTF-8" ).split( pathSeparator );
                 for ( String file : files )
                 {
-                    File f = new File( file );
-                    File dir = f.getParentFile();
-                    classPath.add(
-                        ( dir.getName().equals( "target" ) ? new File( dir, "classes" ) : f ).toURI().toURL() );
+                    classPath.add( new File( file ).toURI().toURL() );
                 }
-                classPath.add( new File( "target/classes" ).toURI().toURL() );
-                classPath.add( new File( "target/test-classes" ).toURI().toURL() );
+                classPath.add( new File( PROJECT_DIR, "target/classes" ).toURI().toURL() );
+                classPath.add( new File( PROJECT_DIR, "target/test-classes" ).toURI().toURL() );
             }
             catch ( IOException e )
             {
