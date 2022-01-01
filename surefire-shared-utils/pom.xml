@@ -27,7 +27,7 @@
         <version>3.0.0-M6-SNAPSHOT</version>
     </parent>
 
-    <artifactId>surefire-shared-utils</artifactId>
+    <artifactId>surefire-shared-utils-project</artifactId>
     <name>Surefire Shared Utils</name>
     <description>Relocated Java packages of maven-shared-utils in Surefire</description>
 
@@ -94,6 +94,38 @@
                                     <shadedPattern>org.apache.maven.surefire.shared.compress</shadedPattern>
                                 </relocation>
                             </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-install-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>install-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <file>target/${project.build.finalName}.jar</file>
+                            <artifactId>surefire-shared-utils</artifactId>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>deploy-jar</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>deploy-file</goal>
+                        </goals>
+                        <configuration>
+                            <file>target/${project.build.finalName}.jar</file>
+                            <artifactId>surefire-shared-utils</artifactId>
                         </configuration>
                     </execution>
                 </executions>
