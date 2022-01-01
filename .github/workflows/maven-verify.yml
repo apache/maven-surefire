@@ -26,8 +26,10 @@ jobs:
     name: Verify
     uses: apache/maven-gh-actions-shared/.github/workflows/maven-verify.yml@v2
     with:
-      ff-goal: 'install'
-      verify-goal: 'install -P run-its'
+      ff-goal: 'clean install -nsu -P run-its'
+      ff-site-goal: 'clean install site -nsu -DskipTests -P reporting'
+      verify-goal: 'clean install -nsu -P run-its'
+      verify-site-goal: 'clean install site -nsu -DskipTests -P reporting'
       verify-fail-fast: false
       failure-upload-path: |
         surefire-its/target/*/log.txt
