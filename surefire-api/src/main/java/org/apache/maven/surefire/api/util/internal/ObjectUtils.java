@@ -22,8 +22,11 @@ package org.apache.maven.surefire.api.util.internal;
 import java.lang.management.ManagementFactory;
 import java.util.Map;
 
+import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_16;
+import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_RECENT;
+
 /**
- * Similar to Java 7 java.util.Objects.
+ * Similar to Java 7 java.util.Objects, and another utility methods.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20
@@ -43,5 +46,16 @@ public final class ObjectUtils
     public static Map<String, String> systemProps()
     {
         return ManagementFactory.getRuntimeMXBean().getSystemProperties();
+    }
+
+    /**
+     * The {@link SecurityManager} is deprecated since Java 17.
+     *
+     * @return <code>true</code> if Java Specification Version is less than
+     *         or equal to 16; <code>false</code> otherwise.
+     */
+    public static boolean isSecurityManagerSupported()
+    {
+        return JAVA_RECENT.atMost( JAVA_16 );
     }
 }
