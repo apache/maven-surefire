@@ -19,15 +19,18 @@ name: Verify
 
 on:
   push:
-    branches-ignore:
-      - dependabot/**
   pull_request:
 
 jobs:
   build:
     name: Verify
-    uses: apache/maven-gh-actions-shared/.github/workflows/maven-verify.yml@v1
+    uses: apache/maven-gh-actions-shared/.github/workflows/maven-verify.yml@v2
     with:
       ff-goal: 'install'
       verify-goal: 'install -P run-its'
       verify-fail-fast: false
+      failure-upload-path: |
+        surefire-its/target/*/log.txt
+        surefire-its/target/**/surefire-reports/*
+        surefire-its/target/**/failsafe-reports/*
+        !surefire-its/target/failsafe-reports
