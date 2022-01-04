@@ -33,4 +33,3 @@ jobs:
         surefire-its/target/*/log.txt
         surefire-its/target/**/surefire-reports/*
         surefire-its/target/**/failsafe-reports/*
-        !surefire-its/target/failsafe-reports
