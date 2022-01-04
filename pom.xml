@@ -98,7 +98,7 @@
     <plexus-java-version>1.1.0</plexus-java-version>
     <!-- maven-shared-utils:3.2.0+ another behavior - broke Surefire performance - end of subprocess notification not arrived in ForkStarter -->
     <mavenSharedUtilsVersion>3.1.0</mavenSharedUtilsVersion>
-    <powermockVersion>2.0.5</powermockVersion>
+    <powermockVersion>2.0.9</powermockVersion>
     <mavenPluginToolsVersion>3.6.2</mavenPluginToolsVersion>
     <jacocoVersion>0.8.7</jacocoVersion>
     <maven.surefire.scm.devConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
