@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessReportEventListener;
@@ -51,7 +50,7 @@ import static java.util.Objects.requireNonNull;
  * @author Kristian Rosenvold
  */
 public class TestSetRunListener
-    implements RunListener, ConsoleOutputReceiver, ConsoleLogger
+    implements RunListener, ConsoleOutputReceiver
 {
     private final Queue<TestMethodStats> testMethodStats = new ConcurrentLinkedQueue<>();
 
@@ -92,66 +91,6 @@ public class TestSetRunListener
         this.consoleOutputReceiver = consoleOutputReceiver;
         this.briefOrPlainFormat = briefOrPlainFormat;
         detailsForThis = new TestSetStats( trimStackTrace, isPlainFormat );
-    }
-
-    @Override
-    public boolean isDebugEnabled()
-    {
-        return consoleReporter.getConsoleLogger().isDebugEnabled();
-    }
-
-    @Override
-    public void debug( String message )
-    {
-        consoleReporter.getConsoleLogger().debug( trimTrailingNewLine( message ) );
-    }
-
-    @Override
-    public boolean isInfoEnabled()
-    {
-        return consoleReporter.getConsoleLogger().isInfoEnabled();
-    }
-
-    @Override
-    public void info( String message )
-    {
-        consoleReporter.getConsoleLogger().info( trimTrailingNewLine( message ) );
-    }
-
-    @Override
-    public boolean isWarnEnabled()
-    {
-        return consoleReporter.getConsoleLogger().isWarnEnabled();
-    }
-
-    @Override
-    public void warning( String message )
-    {
-        consoleReporter.getConsoleLogger().warning( trimTrailingNewLine( message ) );
-    }
-
-    @Override
-    public boolean isErrorEnabled()
-    {
-        return consoleReporter.getConsoleLogger().isErrorEnabled();
-    }
-
-    @Override
-    public void error( String message )
-    {
-        consoleReporter.getConsoleLogger().error( trimTrailingNewLine( message ) );
-    }
-
-    @Override
-    public void error( String message, Throwable t )
-    {
-        consoleReporter.getConsoleLogger().error( trimTrailingNewLine( message ), t );
-    }
-
-    @Override
-    public void error( Throwable t )
-    {
-        consoleReporter.getConsoleLogger().error( t );
     }
 
     @Override

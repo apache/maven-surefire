@@ -271,59 +271,6 @@ public class DefaultReporterFactoryTest
         assertEquals( skipped, getTestResultType( skippedList, 1 ) );
     }
 
-    public void testLogger()
-    {
-        MessageUtils.setColorEnabled( false );
-        File target = new File( System.getProperty( "user.dir" ), "target" );
-        File reportsDirectory = new File( target, "tmp6" );
-        StartupReportConfiguration reportConfig =
-                new StartupReportConfiguration( true, true, "PLAIN", false, reportsDirectory, false, null,
-                        new File( reportsDirectory, "TESTHASH" ), false, 1, null, null, false,
-                        new SurefireStatelessReporter(), new SurefireConsoleOutputReporter(),
-                        new SurefireStatelessTestsetInfoReporter() );
-
-        DummyTestReporter reporter = new DummyTestReporter();
-
-        DefaultReporterFactory factory = new DefaultReporterFactory( reportConfig, reporter );
-
-        TestSetRunListener runListener = (TestSetRunListener) factory.createReporter();
-
-        assertTrue( runListener.isDebugEnabled() );
-        assertTrue( runListener.isInfoEnabled() );
-        assertTrue( runListener.isWarnEnabled() );
-        assertTrue( runListener.isErrorEnabled() );
-
-        runListener.debug( "msg" );
-        assertEquals( 1, reporter.getMessages().size() );
-        assertEquals( "msg", reporter.getMessages().get( 0 ) );
-        reporter.reset();
-
-        runListener.info( "msg\n" );
-        assertEquals( 1, reporter.getMessages().size() );
-        assertEquals( "msg", reporter.getMessages().get( 0 ) );
-        reporter.reset();
-
-        runListener.warning( "msg\r\n" );
-        assertEquals( 1, reporter.getMessages().size() );
-        assertEquals( "msg", reporter.getMessages().get( 0 ) );
-        reporter.reset();
-
-        runListener.error( "msg" );
-        assertEquals( 1, reporter.getMessages().size() );
-        assertEquals( "msg", reporter.getMessages().get( 0 ) );
-        reporter.reset();
-
-        runListener.error( "msg\n", new Exception( "e" ) );
-        assertEquals( 1, reporter.getMessages().size() );
-        assertEquals( "msg e", reporter.getMessages().get( 0 ) );
-        reporter.reset();
-
-        runListener.error( new Exception( "e" ) );
-        assertEquals( 1, reporter.getMessages().size() );
-        assertEquals( "e", reporter.getMessages().get( 0 ) );
-        reporter.reset();
-    }
-
     public void testCreateReporterWithZeroStatistics()
     {
         MessageUtils.setColorEnabled( false );
