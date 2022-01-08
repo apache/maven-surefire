@@ -20,6 +20,7 @@ package org.apache.maven.surefire.booter;
  */
 
 import java.io.File;
+import java.net.URI;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
@@ -201,8 +202,8 @@ public class ClasspathTest
         URL url = target.getResource( thisPath );
         assertTrue( url.toString().endsWith( thisPath ) );
         String s = url.toString().replace( thisPath, "" ).replace( "!", "" ).replace( "jar:file:", "file:" );
-        String oneClasspath = new URL( s ).getFile();
-        assertTrue( new File( oneClasspath ).exists() );
+        URI oneClasspath = new URI( s );
+        assertTrue( "File: '" + oneClasspath + "' should exist", new File( oneClasspath ).exists() );
         Classpath classpath = Classpath.emptyClasspath();
         ClassLoader classLoader = classpath.addClassPathElementUrl( new File( oneClasspath ).getCanonicalPath() )
             .createClassLoader( false, true, "" );
@@ -212,22 +213,20 @@ public class ClasspathTest
         assertNotSame( cls, target );
     }
 
-    public void testDontLoadInNewClassLoader()
+    public void testDontLoadInNewClassLoader() throws SurefireExecutionException
     {
         Class<?> target = ConsoleLogger.class;
-        String thisPath = "/" + target.getName().replace( '.', '/' ) + ".class";
-        URL url = target.getResource( thisPath );
-        assertTrue( url.toString().endsWith( thisPath ) );
+
+        ClassLoader classLoader = emptyClasspath().createClassLoader( false, true, "" );
+
         try
         {
-            Classpath.emptyClasspath()
-                .addClassPathElementUrl( "\u0000" )
-                .createClassLoader( false, true, "" );
-            fail();
+            classLoader.loadClass( target.getName() );
+            fail( "Class should not be loaded" );
         }
-        catch ( SurefireExecutionException e )
+        catch ( ClassNotFoundException e )
         {
-            // expected
+            assertEquals( target.getName(), e.getMessage() );
         }
     }
 }

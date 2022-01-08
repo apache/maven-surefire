@@ -50,7 +50,7 @@ public class IsolatedClassLoaderTest
 
         for ( String file : files )
         {
-            URL fileUrl = new File( file ).toURL();
+            URL fileUrl = new File( file ).toURI().toURL();
             classLoader.addURL( fileUrl );
         }
     }

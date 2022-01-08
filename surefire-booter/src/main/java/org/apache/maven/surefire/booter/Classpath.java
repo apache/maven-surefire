@@ -146,7 +146,7 @@ public final class Classpath implements Iterable<String>, Cloneable
             IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation, roleName );
             for ( String classPathElement : unmodifiableElements )
             {
-                classLoader.addURL( new File( classPathElement ).toURL() );
+                classLoader.addURL( new File( classPathElement ).toURI().toURL() );
             }
             if ( parent != null )
             {

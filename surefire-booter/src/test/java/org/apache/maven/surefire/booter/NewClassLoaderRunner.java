@@ -216,6 +216,7 @@ public class NewClassLoaderRunner
             }
             catch ( IOException e )
             {
+                e.printStackTrace();
                 return new URL[0];
             }
         }
@@ -225,7 +226,7 @@ public class NewClassLoaderRunner
             Collection<URL> classPath = new HashSet<>();
             for ( String file : path.split( pathSeparator ) )
             {
-                classPath.add( new File( file ).toURL() );
+                classPath.add( new File( file ).toURI().toURL() );
             }
             return classPath;
         }
@@ -241,13 +242,15 @@ public class NewClassLoaderRunner
                 {
                     File f = new File( file );
                     File dir = f.getParentFile();
-                    classPath.add( ( dir.getName().equals( "target" ) ? new File( dir, "classes" ) : f ).toURL() );
+                    classPath.add(
+                        ( dir.getName().equals( "target" ) ? new File( dir, "classes" ) : f ).toURI().toURL() );
                 }
-                classPath.add( new File( "target/classes" ).toURL() );
-                classPath.add( new File( "target/test-classes" ).toURL() );
+                classPath.add( new File( "target/classes" ).toURI().toURL() );
+                classPath.add( new File( "target/test-classes" ).toURI().toURL() );
             }
             catch ( IOException e )
             {
+                e.printStackTrace();
                 // turn to java.class.path
                 classPath.clear();
             }
