@@ -88,6 +88,18 @@ public final class ReflectionUtils
         }
     }
 
+    public static <T> Constructor<T> tryGetConstructor( Class<T> clazz, Class<?>... arguments )
+    {
+        try
+        {
+            return clazz.getConstructor( arguments );
+        }
+        catch ( NoSuchMethodException e )
+        {
+            return null;
+        }
+    }
+
     public static <T> T newInstance( Constructor<?> constructor, Object... params )
     {
         try

@@ -21,6 +21,8 @@ package org.apache.maven.surefire.api.util;
 
 import org.junit.Test;
 
+import java.lang.reflect.Constructor;
+
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
@@ -31,6 +33,23 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public class ReflectionUtilsTest
 {
+    @Test
+    public void shouldGetConstructor() throws Exception
+    {
+        Constructor<ClassWithParameterizedConstructor> constructor =
+                ReflectionUtils.tryGetConstructor( ClassWithParameterizedConstructor.class, int.class );
+        assertThat( constructor ).isNotNull();
+        // Verify the Constructor returned really is for the class it should be
+        assertThat( constructor.newInstance( 10 ) ).isInstanceOf( ClassWithParameterizedConstructor.class );
+    }
+
+    @Test
+    public void shouldNotGetNonExistingConstructor()
+    {
+        assertThat( ReflectionUtils.tryGetConstructor( ClassWithParameterizedConstructor.class, String.class ) )
+            .isNull();
+    }
+
     @Test
     public void shouldReloadClass() throws Exception
     {
@@ -119,6 +138,16 @@ public class ReflectionUtilsTest
         public long pid()
         {
             return 1L;
+        }
+    }
+
+    // The constructor has to be public for ReflectionUtils.tryGetConstructor to find it. Currently, the checkstyle
+    // rules require that class be public too, and a public class must be documented, hence minimalist javadoc.
+    /** */
+    public static class ClassWithParameterizedConstructor
+    {
+        public ClassWithParameterizedConstructor( int param )
+        {
         }
     }
 }

@@ -52,6 +52,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.apache.maven.surefire.api.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
 import static org.apache.maven.surefire.api.cli.CommandLineOption.SHOW_ERRORS;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.instantiate;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeSetter;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.newInstance;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.tryGetConstructor;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.tryGetMethod;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.tryLoadClass;
 import static org.apache.maven.surefire.api.util.internal.ConcurrencyUtils.countDownToZero;
 
@@ -71,6 +75,17 @@ final class TestNGExecutor
 
     private static final boolean HAS_TEST_ANNOTATION_ON_CLASSPATH =
             tryLoadClass( TestNGExecutor.class.getClassLoader(), "org.testng.annotations.Test" ) != null;
+
+    // Using reflection because XmlClass.setIndex is available since TestNG 6.3
+    // XmlClass.m_index field is available since TestNG 5.13, but prior to 6.3 required invoking constructor
+    // and constructor XmlClass constructor signatures evolved over time.
+    private static final Method XML_CLASS_SET_INDEX = tryGetMethod( XmlClass.class, "setIndex", int.class );
+
+    // For TestNG versions [5.13, 6.3) where XmlClass.setIndex is not available, invoke XmlClass(String, boolean, int)
+    // constructor. Note that XmlClass(String, boolean, int) was replaced with XmlClass(String, int) when
+    // XmlClass.setIndex already existed.
+    private static final Constructor<XmlClass> XML_CLASS_CONSTRUCTOR_WITH_INDEX =
+            tryGetConstructor( XmlClass.class, String.class, boolean.class, int.class );
 
     private TestNGExecutor()
     {
@@ -127,7 +142,7 @@ final class TestNGExecutor
                 suiteAndNamedTests.testNameToTest.put( metadata.testName, xmlTest );
             }
 
-            xmlTest.getXmlClasses().add( new XmlClass( testClass.getName() ) );
+            xmlTest.getXmlClasses().add( newXmlClassInstance( testClass.getName(), xmlTest.getXmlClasses().size() ) );
         }
 
         testng.setXmlSuites( xmlSuites );
@@ -135,6 +150,31 @@ final class TestNGExecutor
         postConfigure( testng, testSourceDirectory, reportManager, reportsDirectory, skipAfterFailureCount,
                        extractVerboseLevel( options ) );
         testng.run();
+    }
+
+    private static XmlClass newXmlClassInstance( String testClassName, int index )
+    {
+        // In case of parallel test execution with parallel="methods", TestNG orders test execution
+        // by XmlClass.m_index field. When unset (equal for all XmlClass instances), TestNG can
+        // invoke `@BeforeClass` setup methods on many instances, without invoking `@AfterClass`
+        // tearDown methods, thus leading to high resource consumptions when test instances
+        // allocate resources.
+        // With index set, order of setup, test and tearDown methods is reasonable, with approximately
+        // #thread-count many test classes being initialized at given point in time.
+        // Note: XmlClass.m_index field is set automatically by TestNG when it reads a suite file.
+
+        if ( XML_CLASS_SET_INDEX != null )
+        {
+            XmlClass xmlClass = new XmlClass( testClassName );
+            invokeSetter( xmlClass, XML_CLASS_SET_INDEX, index );
+            return xmlClass;
+        }
+        if ( XML_CLASS_CONSTRUCTOR_WITH_INDEX != null )
+        {
+            boolean loadClass = true; // this is the default
+            return newInstance( XML_CLASS_CONSTRUCTOR_WITH_INDEX, testClassName, loadClass, index );
+        }
+        return new XmlClass( testClassName );
     }
 
     private static boolean isCliDebugOrShowErrors( List<CommandLineOption> mainCliOptions )
