@@ -79,7 +79,7 @@ public class Surefire1914XmlReportingParameterizedTestIT extends SurefireJUnit4I
     }
 
     @Test
-    public void testXmlReportWithParameterizedTestMethodsAndPhrasedNamingActive()
+    public void testXmlReport()
     {
         OutputValidator validator = unpack( "surefire-1914-xml-reporting-parameterizedtest", "-" + jupiter )
                 .sysProp( "junit5.version", jupiter )
