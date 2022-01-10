@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static java.lang.Double.parseDouble;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static org.apache.commons.io.Charsets.UTF_8;
@@ -49,6 +50,12 @@ public class HelperAssertions
     {
         IntegrationTestSuiteResults suite = parseTestResults( testDir );
         assertTestSuiteResults( total, errors, failures, skipped, flakes, suite );
+    }
+
+    public static void assumeJavaMaxVersion( double expectedMaxVersion )
+    {
+        String thisVersion = System.getProperty( "java.specification.version" );
+        assumeTrue( "java.specification.version: " + thisVersion, parseDouble( thisVersion ) <= expectedMaxVersion );
     }
 
     public static void assertTestSuiteResults( int total, File testDir )
