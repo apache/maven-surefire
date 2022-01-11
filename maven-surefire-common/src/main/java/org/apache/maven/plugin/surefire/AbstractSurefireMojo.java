@@ -925,6 +925,7 @@ public abstract class AbstractSurefireMojo
 
         if ( verifyParameters() && !hasExecutedBefore() )
         {
+            solveMethodFilteringOnIncludedExcludedTests();
             DefaultScanResult scan = scanForTestClasses();
             if ( !hasSuiteXmlFiles() && scan.isEmpty() )
             {
@@ -1043,7 +1044,7 @@ public abstract class AbstractSurefireMojo
     private DefaultScanResult scanDirectories()
         throws MojoFailureException
     {
-        DirectoryScanner scanner = new DirectoryScanner( getTestClassesDirectory(), solveIncludedAndExcludedTests() );
+        DirectoryScanner scanner = new DirectoryScanner( getTestClassesDirectory(), getIncludedAndExcludedTests() );
         return scanner.scan();
     }
 
@@ -1080,13 +1081,13 @@ public abstract class AbstractSurefireMojo
                     if ( out.isFile() )
                     {
                         DependencyScanner scanner =
-                                new DependencyScanner( singletonList( out ), solveIncludedAndExcludedTests() );
+                                new DependencyScanner( singletonList( out ), getIncludedAndExcludedTests() );
                         result = result == null ? scanner.scan() : result.append( scanner.scan() );
                     }
                     else if ( out.isDirectory() )
                     {
                         DirectoryScanner scanner =
-                                new DirectoryScanner( out, solveIncludedAndExcludedTests() );
+                                new DirectoryScanner( out, getIncludedAndExcludedTests() );
                         result = result == null ? scanner.scan() : result.append( scanner.scan() );
                     }
                 }
@@ -1629,11 +1630,7 @@ public abstract class AbstractSurefireMojo
         }
 
         getProperties().setProperty( ProviderParameterNames.PARALLEL_PROP, usedParallel );
-        if ( this.getThreadCount() > 0 )
-        {
-            getProperties().setProperty( ProviderParameterNames.THREADCOUNT_PROP,
-                                         Integer.toString( getThreadCount() ) );
-        }
+        getProperties().setProperty( ProviderParameterNames.THREADCOUNT_PROP, Integer.toString( getThreadCount() ) );
         getProperties().setProperty( "perCoreThreadCount", Boolean.toString( getPerCoreThreadCount() ) );
         getProperties().setProperty( "useUnlimitedThreads", Boolean.toString( getUseUnlimitedThreads() ) );
         getProperties().setProperty( ProviderParameterNames.THREADCOUNTSUITES_PROP,
@@ -2298,17 +2295,16 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    private TestListResolver solveIncludedAndExcludedTests()
+    /**
+     * Solves the included and excluded tests and in case it has method patterns
+     * it applies the filtering via test parameter
+     * @throws MojoFailureException
+     */
+    private void solveMethodFilteringOnIncludedExcludedTests()
         throws MojoFailureException
     {
-        // Obtain the included and excluded tests
-        if ( includedExcludedTests == null )
-        {
-            includedExcludedTests = getIncludedAndExcludedTests();
-        }
-        
         // Perform method filtering from included and excluded tests
-        if ( includedExcludedTests.hasMethodPatterns() && getTest() == null )
+        if ( getIncludedAndExcludedTests().hasMethodPatterns() && getTest() == null )
         {
             StringBuilder sb = new StringBuilder();
             for ( ResolvedTest test : includedExcludedTests.getIncludedPatterns() ) 
@@ -2327,14 +2323,16 @@ public abstract class AbstractSurefireMojo
             }
             setTest( sb.deleteCharAt( 0 ).toString() );
         }
-        
-        return includedExcludedTests;
     }
 
     private TestListResolver getIncludedAndExcludedTests()
         throws MojoFailureException 
     {
-        return new TestListResolver( getIncludeList(), getExcludeList() );
+        if ( includedExcludedTests == null )
+        {
+            includedExcludedTests = new TestListResolver( getIncludeList(), getExcludeList() );
+        }
+        return includedExcludedTests;
     }
 
     public TestListResolver getSpecificTests()
