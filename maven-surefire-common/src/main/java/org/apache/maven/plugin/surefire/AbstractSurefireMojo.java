@@ -28,14 +28,12 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -88,6 +86,7 @@ import org.apache.maven.surefire.api.cli.CommandLineOption;
 import org.apache.maven.surefire.api.report.ReporterConfiguration;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.api.testset.ResolvedTest;
 import org.apache.maven.surefire.api.testset.RunOrderParameters;
 import org.apache.maven.surefire.api.testset.TestArtifactInfo;
 import org.apache.maven.surefire.api.testset.TestListResolver;
@@ -1044,7 +1043,7 @@ public abstract class AbstractSurefireMojo
     private DefaultScanResult scanDirectories()
         throws MojoFailureException
     {
-        DirectoryScanner scanner = new DirectoryScanner( getTestClassesDirectory(), getIncludedAndExcludedTests() );
+        DirectoryScanner scanner = new DirectoryScanner( getTestClassesDirectory(), solveIncludedAndExcludedTests() );
         return scanner.scan();
     }
 
@@ -1081,13 +1080,13 @@ public abstract class AbstractSurefireMojo
                     if ( out.isFile() )
                     {
                         DependencyScanner scanner =
-                                new DependencyScanner( singletonList( out ), getIncludedAndExcludedTests() );
+                                new DependencyScanner( singletonList( out ), solveIncludedAndExcludedTests() );
                         result = result == null ? scanner.scan() : result.append( scanner.scan() );
                     }
                     else if ( out.isDirectory() )
                     {
                         DirectoryScanner scanner =
-                                new DirectoryScanner( out, getIncludedAndExcludedTests() );
+                                new DirectoryScanner( out, solveIncludedAndExcludedTests() );
                         result = result == null ? scanner.scan() : result.append( scanner.scan() );
                     }
                 }
@@ -1630,7 +1629,11 @@ public abstract class AbstractSurefireMojo
         }
 
         getProperties().setProperty( ProviderParameterNames.PARALLEL_PROP, usedParallel );
-        getProperties().setProperty( ProviderParameterNames.THREADCOUNT_PROP, Integer.toString( getThreadCount() ) );
+        if ( this.getThreadCount() > 0 )
+        {
+            getProperties().setProperty( ProviderParameterNames.THREADCOUNT_PROP,
+                                         Integer.toString( getThreadCount() ) );
+        }
         getProperties().setProperty( "perCoreThreadCount", Boolean.toString( getPerCoreThreadCount() ) );
         getProperties().setProperty( "useUnlimitedThreads", Boolean.toString( getUseUnlimitedThreads() ) );
         getProperties().setProperty( ProviderParameterNames.THREADCOUNTSUITES_PROP,
@@ -1841,7 +1844,7 @@ public abstract class AbstractSurefireMojo
     {
         if ( isSpecificTestSpecified() )
         {
-            return getFailIfNoSpecifiedTests() ? COULD_NOT_RUN_SPECIFIED_TESTS : NONE; 
+            return getFailIfNoSpecifiedTests() ? COULD_NOT_RUN_SPECIFIED_TESTS : NONE;
         }
         else
         {
@@ -1881,7 +1884,7 @@ public abstract class AbstractSurefireMojo
             // @todo remove deprecated methods in ProviderParameters => included|excluded|specificTests not needed here
 
             List<String> actualIncludes = getIncludeList(); // Collections.emptyList(); behaves same
-            List<String> actualExcludes = getExcludeList().getTestClasses(); // Collections.emptyList(); behaves same
+            List<String> actualExcludes = getExcludeList(); // Collections.emptyList(); behaves same
             // Collections.emptyList(); behaves same
             List<String> specificTests = Collections.emptyList();
 
@@ -2214,10 +2217,9 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    @Nonnull private IncludeExcludeList getExcludeList()
+    @Nonnull private List<String> getExcludeList()
         throws MojoFailureException
     {
-        
         List<String> actualExcludes = null;
         if ( isSpecificTestSpecified() )
         {
@@ -2225,18 +2227,17 @@ public abstract class AbstractSurefireMojo
         }
         else
         {
+            actualExcludes = getExcludes();
+            
+            checkMethodFilterInIncludesExcludes( actualExcludes );
+            
             if ( getExcludesFile() != null )
             {
-                actualExcludes = readListFromFile( getExcludesFile() );
-            }
-
-            if ( actualExcludes == null )
-            {
-                actualExcludes = getExcludes();
-            }
-            else
-            {
-                maybeAppendList( actualExcludes, getExcludes() );
+                if ( actualExcludes == null )
+                {
+                    actualExcludes = new ArrayList<>();
+                }
+                actualExcludes.addAll( readListFromFile( getExcludesFile() ) );
             }
 
             if ( actualExcludes == null || actualExcludes.isEmpty() )
@@ -2244,34 +2245,7 @@ public abstract class AbstractSurefireMojo
                 actualExcludes = Collections.singletonList( getDefaultExcludes() );
             }
         }
-        return new IncludeExcludeList( 
-                filterNulls( filterClasses (
-                        actualExcludes ) ), 
-                filterNulls ( getExcludedMethods( 
-                        getMethodFilterInIncludesExcludes( actualExcludes ) ) ) );
-    }
-
-    private List<String> filterClasses( List<String> excludes ) 
-    {
-        List<String> filter = new LinkedList<>();
-        for ( String exclude : excludes ) 
-        {
-            if ( exclude != null && !exclude.contains ( "#" ) ) 
-            {
-                filter.add( exclude );
-            }
-        }
-        return filter;
-    }
-    
-    private List<String> getExcludedMethods( List<String> methodFilterInIncludesExcludes ) 
-    {
-        List<String> excludedMethods = new LinkedList<>();
-        for ( String method : methodFilterInIncludesExcludes ) 
-        {
-            excludedMethods.add( String.format( "!%s", method ) );
-        }
-        return excludedMethods;
+        return filterNulls( actualExcludes );
     }
 
     private List<String> getIncludeList()
@@ -2285,22 +2259,18 @@ public abstract class AbstractSurefireMojo
         }
         else
         {
+            includes = getIncludes();
+            
+            checkMethodFilterInIncludesExcludes( includes );
+
             if ( getIncludesFile() != null )
             {
-                includes = readListFromFile( getIncludesFile() );
+                if ( includes == null )
+                {
+                    includes = new ArrayList<>();
+                }
+                includes.addAll( readListFromFile( getIncludesFile() ) );
             }
-
-            if ( includes == null )
-            {
-                includes = getIncludes();
-            }
-            else
-            {
-                maybeAppendList( includes, getIncludes() );
-            }
-
-            List<String> methodFilterInIncludes = getMethodFilterInIncludesExcludes( includes );
-            addAll( includes, methodFilterInIncludes.toArray( new String[0] ) );
 
             if ( includes == null || includes.isEmpty() )
             {
@@ -2311,111 +2281,60 @@ public abstract class AbstractSurefireMojo
         return filterNulls( includes );
     }
 
-    private List<String> getMethodFilterInIncludesExcludes( Iterable<String> patterns )
+    private void checkMethodFilterInIncludesExcludes( Iterable<String> patterns )
+        throws MojoFailureException
     {
-        List<String> methodFilterInIncludesExcludes = new LinkedList<>();
         if ( patterns != null )
         {
             for ( String pattern : patterns )
             {
                 if ( pattern != null && pattern.contains( "#" ) )
                 {
-                    methodFilterInIncludesExcludes.add( pattern );
+                    throw new MojoFailureException( "Method filter prohibited in "
+                                                        + "includes|excludes parameter: "
+                                                        + pattern );
                 }
             }
         }
-        return methodFilterInIncludesExcludes;
+    }
+
+    private TestListResolver solveIncludedAndExcludedTests()
+        throws MojoFailureException
+    {
+        // Obtain the included and excluded tests
+        if ( includedExcludedTests == null )
+        {
+            includedExcludedTests = getIncludedAndExcludedTests();
+        }
+        
+        // Perform method filtering from included and excluded tests
+        if ( includedExcludedTests.hasMethodPatterns() && getTest() == null )
+        {
+            StringBuilder sb = new StringBuilder();
+            for ( ResolvedTest test : includedExcludedTests.getIncludedPatterns() ) 
+            {
+                if ( test.hasTestMethodPattern() )
+                {
+                    sb.append( "," ).append( test );
+                }
+            }
+            for ( ResolvedTest test : includedExcludedTests.getExcludedPatterns() ) 
+            {
+                if ( test.hasTestMethodPattern() )
+                {
+                    sb.append( ",!" ).append( test );
+                }
+            }
+            setTest( sb.deleteCharAt( 0 ).toString() );
+        }
+        
+        return includedExcludedTests;
     }
 
     private TestListResolver getIncludedAndExcludedTests()
-        throws MojoFailureException
+        throws MojoFailureException 
     {
-        if ( includedExcludedTests == null )
-        {
-            StringBuilder sb = new StringBuilder();
-            List<String> includeList = getIncludeList();
-            for ( String include: includeList ) 
-            {
-                sb.append( "," ).append( include );
-            }
-            IncludeExcludeList excludeList = getExcludeList();
-            List<String> excludedTestMethods = excludeList.getTestMethods();
-            if ( !excludedTestMethods.isEmpty() ) 
-            {
-                includeList.addAll( excludedTestMethods );
-                for ( String method : excludedTestMethods ) 
-                {
-                  sb.append( "," ).append( method );
-                }
-            }
-            if ( !Arrays.equals( 
-                    Collections.singletonList( getDefaultExcludes() )
-                        .toArray( new String[0] ),
-                    excludeList.getTestClasses().toArray( new String[0] ) ) )
-            {
-                for ( String clazz : excludeList.getTestClasses() ) 
-                {
-                    sb.append( "," ).append( clazz );
-                }
-            }
-            
-            if ( sb.length() == 0 ) 
-            {
-                includedExcludedTests = new TestListResolver( 
-                        asList ( getDefaultIncludes() ), 
-                        Collections.singletonList( getDefaultExcludes() ) );
-            } 
-            else 
-            {
-                String testToIncludeExclude = sb.deleteCharAt( 0 ).toString( );
-                if ( !Arrays.equals( getDefaultIncludes(), split( testToIncludeExclude, "," ) ) ) 
-                {
-                    setTest( testToIncludeExclude );
-                }
-                includedExcludedTests = new TestListResolver( includeList, excludeList.getTestClasses() );
-            }
-        }
-        return includedExcludedTests;
-    }
-    
-    class IncludeExcludeList 
-    {
-        
-        private List<String> testClasses = new LinkedList<>();
-        
-        private List<String> testMethods = new LinkedList<>();
-
-        IncludeExcludeList( List<String> testClasses, List<String> testMethods ) 
-        {
-            super();
-            this.testClasses = testClasses;
-            this.testMethods = testMethods;
-        }
-
-        List<String> getTestClasses() 
-        {
-            return testClasses;
-        }
-
-        List<String> getTestMethods() 
-        {
-            return testMethods;
-        }
-        
-        List<String> all() 
-        {
-            List<String> all = new LinkedList<>();
-            if ( testClasses != null )
-            {
-                all.addAll( testClasses );
-            }
-            if ( testMethods != null )
-            {
-                all.addAll( testMethods );
-            }
-            return all;
-        }
-        
+        return new TestListResolver( getIncludeList(), getExcludeList() );
     }
 
     public TestListResolver getSpecificTests()
