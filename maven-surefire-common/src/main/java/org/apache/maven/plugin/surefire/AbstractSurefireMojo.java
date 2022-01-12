@@ -2208,78 +2208,110 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    private void maybeAppendList( List<String> base, List<String> list )
-    {
-        if ( list != null )
-        {
-            base.addAll( list );
-        }
-    }
-
-    @Nonnull private List<String> getExcludeList()
+    @Nonnull
+    private List<String> getExcludedScanList()
         throws MojoFailureException
     {
-        List<String> actualExcludes = null;
+        return getExcludeList( true );
+    }
+
+    @Nonnull
+    private List<String> getExcludeList()
+        throws MojoFailureException
+    {
+        return getExcludeList( false );
+    }
+
+    /**
+     * Computes a merge list of test exclusions.
+     * Used only in {@link #getExcludeList()} and {@link #getExcludedScanList()}.
+     * @param asScanList true if dependency or directory scanner
+     * @return list of patterns
+     * @throws MojoFailureException if the excludes breaks a pattern format
+     */
+    @Nonnull
+    private List<String> getExcludeList( boolean asScanList )
+        throws MojoFailureException
+    {
+        List<String> excludes;
         if ( isSpecificTestSpecified() )
         {
-            actualExcludes = Collections.emptyList();
+            excludes = Collections.emptyList();
         }
         else
         {
+            excludes = new ArrayList<>();
+            if ( asScanList )
+            {
+                if ( getExcludes() != null )
+                {
+                    excludes.addAll( getExcludes() );
+                }
+                checkMethodFilterInIncludesExcludes( excludes );
+            }
+
             if ( getExcludesFile() != null )
             {
-                actualExcludes = readListFromFile( getExcludesFile() );
+                excludes.addAll( readListFromFile( getExcludesFile() ) );
             }
 
-            if ( actualExcludes == null )
+            if ( asScanList && excludes.isEmpty() )
             {
-                actualExcludes = getExcludes();
-            }
-            else
-            {
-                maybeAppendList( actualExcludes, getExcludes() );
-            }
-
-            checkMethodFilterInIncludesExcludes( actualExcludes );
-
-            if ( actualExcludes == null || actualExcludes.isEmpty() )
-            {
-                actualExcludes = Collections.singletonList( getDefaultExcludes() );
+                excludes = Collections.singletonList( getDefaultExcludes() );
             }
         }
-        return filterNulls( actualExcludes );
+        return filterNulls( excludes );
     }
 
+    @Nonnull
+    private List<String> getIncludedScanList()
+        throws MojoFailureException
+    {
+        return getIncludeList( true );
+    }
+
+    @Nonnull
     private List<String> getIncludeList()
         throws MojoFailureException
     {
-        List<String> includes = null;
+        return getIncludeList( false );
+    }
+
+    /**
+     * Computes a merge list of test inclusions.
+     * Used only in {@link #getIncludeList()} and {@link #getIncludedScanList()}.
+     * @param asScanList true if dependency or directory scanner
+     * @return list of patterns
+     * @throws MojoFailureException if the includes breaks a pattern format
+     */
+    @Nonnull
+    private List<String> getIncludeList( boolean asScanList )
+        throws MojoFailureException
+    {
+        final List<String> includes = new ArrayList<>();
         if ( isSpecificTestSpecified() )
         {
-            includes = new ArrayList<>();
             addAll( includes, split( getTest(), "," ) );
         }
         else
         {
+            if ( asScanList )
+            {
+                if ( getIncludes() != null )
+                {
+                    includes.addAll( getIncludes() );
+                }
+                checkMethodFilterInIncludesExcludes( includes );
+            }
+
             if ( getIncludesFile() != null )
             {
-                includes = readListFromFile( getIncludesFile() );
+                includes.addAll( readListFromFile( getIncludesFile() ) );
             }
 
-            if ( includes == null )
+            if ( asScanList && includes.isEmpty() )
             {
-                includes = getIncludes();
-            }
-            else
-            {
-                maybeAppendList( includes, getIncludes() );
-            }
-
-            checkMethodFilterInIncludesExcludes( includes );
-
-            if ( includes == null || includes.isEmpty() )
-            {
-                includes = asList( getDefaultIncludes() );
+                addAll( includes, getDefaultIncludes() );
             }
         }
 
@@ -2289,16 +2321,13 @@ public abstract class AbstractSurefireMojo
     private void checkMethodFilterInIncludesExcludes( Iterable<String> patterns )
         throws MojoFailureException
     {
-        if ( patterns != null )
+        for ( String pattern : patterns )
         {
-            for ( String pattern : patterns )
+            if ( pattern != null && pattern.contains( "#" ) )
             {
-                if ( pattern != null && pattern.contains( "#" ) )
-                {
-                    throw new MojoFailureException( "Method filter prohibited in "
-                                                        + "includes|excludes|includesFile|excludesFile parameter: "
-                                                        + pattern );
-                }
+                throw new MojoFailureException( "Method filter prohibited in "
+                    + "includes|excludes|includesFile|excludesFile parameter: "
+                    + pattern );
             }
         }
     }
@@ -2308,16 +2337,18 @@ public abstract class AbstractSurefireMojo
     {
         if ( includedExcludedTests == null )
         {
-            includedExcludedTests = new TestListResolver( getIncludeList(), getExcludeList() );
+            includedExcludedTests = new TestListResolver( getIncludedScanList(), getExcludedScanList() );
+            getConsoleLogger().debug( "Resolved included and excluded patterns: " + includedExcludedTests );
         }
         return includedExcludedTests;
     }
 
     public TestListResolver getSpecificTests()
+        throws MojoFailureException
     {
         if ( specificTests == null )
         {
-            specificTests = new TestListResolver( getTest() );
+            specificTests = new TestListResolver( getIncludeList(), getExcludeList() );
         }
         return specificTests;
     }
