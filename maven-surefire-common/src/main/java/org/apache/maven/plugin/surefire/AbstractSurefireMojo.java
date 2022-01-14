@@ -2326,7 +2326,7 @@ public abstract class AbstractSurefireMojo
             if ( pattern != null && pattern.contains( "#" ) )
             {
                 throw new MojoFailureException( "Method filter prohibited in "
-                    + "includes|excludes|includesFile|excludesFile parameter: "
+                    + "includes|excludes parameter: "
                     + pattern );
             }
         }
