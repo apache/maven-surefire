@@ -27,7 +27,7 @@
         <version>3.0.0-M6-SNAPSHOT</version>
     </parent>
 
-    <artifactId>surefire-shared</artifactId>
+    <artifactId>surefire-shared-utils</artifactId>
     <name>Surefire Shared Utils</name>
     <description>
         Relocated Java packages of maven-shared-utils and several Apache Commons utilities in Surefire.
@@ -40,11 +40,6 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-
-    <properties>
-        <distRepoId>${distributionManagement.snapshotRepository.id}</distRepoId>
-        <distRepoUrl>${distributionManagement.snapshotRepository.url}</distRepoUrl>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -105,53 +100,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <artifactId>maven-install-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>install-jar</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <artifactId>surefire-shared-utils</artifactId>
-                            <file>target/${project.build.finalName}.jar</file>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>deploy-jar</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>deploy-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>${project.groupId}</groupId>
-                            <artifactId>surefire-shared-utils</artifactId>
-                            <version>${project.version}</version>
-                            <file>target/${project.build.finalName}.jar</file>
-                            <url>${distRepoUrl}</url>
-                            <repositoryId>${distRepoId}</repositoryId>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>apache-release</id>
-            <properties>
-                <distRepoId>${distributionManagement.repository.id}</distRepoId>
-                <distRepoUrl>${distributionManagement.repository.url}</distRepoUrl>
-            </properties>
-        </profile>
-    </profiles>
 
 </project>

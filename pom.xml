@@ -48,7 +48,6 @@
   </contributors>
 
   <modules>
-    <module>surefire-shared</module>
     <module>surefire-logger-api</module>
     <module>surefire-api</module>
     <module>surefire-extensions-api</module>
@@ -579,11 +578,77 @@
                 <exclude>.m2</exclude>
                 <exclude>.travis.yml</exclude>
                 <exclude>.mvn/wrapper/maven-wrapper.properties</exclude>
+                <exclude>surefire-shared-utils/target/**</exclude>
               </excludes>
             </configuration>
           </execution>
         </executions>
       </plugin>
+        <plugin>
+            <groupId>org.codehaus.gmavenplus</groupId>
+            <artifactId>gmavenplus-plugin</artifactId>
+            <version>1.13.1</version>
+            <executions>
+                <execution>
+                    <id>examine-cmd</id>
+                    <phase>validate</phase>
+                    <inherited>false</inherited>
+                    <goals>
+                        <goal>execute</goal>
+                    </goals>
+                    <configuration>
+                        <scripts>
+                            <script>
+                                import static java.util.stream.Collectors.joining
+                                def mvnGoals = String.join(" ", session.goals)
+                                log.info "Maven commandline goals: $mvnGoals"
+                                project.properties.setProperty('mvnGoals', mvnGoals)
+                                def mvnProfiles = project.activeProfiles.stream()
+                                    .map { p -> "-P " + p.id }
+                                    .collect(joining(" "))
+                                log.info "Maven commandline profiles: $mvnProfiles"
+                                project.properties.setProperty('mvnProfiles', mvnProfiles)
+                                def mvnProps = session.userProperties.entrySet().stream()
+                                    .map { s -> "-D" + s.key + "=" + s.value }
+                                    .collect(joining(" "))
+                                project.properties.setProperty('mvnProps', mvnProps)
+                                log.info "Maven commandline user properties: $mvnProps"
+                            </script>
+                        </scripts>
+                    </configuration>
+                </execution>
+            </executions>
+            <dependencies>
+                <dependency>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-ant</artifactId>
+                    <version>3.0.9</version>
+                </dependency>
+            </dependencies>
+        </plugin>
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.0.0</version>
+            <executions>
+                <execution>
+                    <id>build-module-surefire-surefire-utils</id>
+                    <phase>test</phase>
+                    <inherited>false</inherited>
+                    <goals>
+                        <goal>exec</goal>
+                    </goals>
+                    <configuration>
+                        <workingDirectory>${project.basedir}</workingDirectory>
+                        <executable>mvn</executable>
+                        <commandlineArgs>
+                            ${mvnGoals} -f surefire-shared-utils/pom.xml ${mvnProfiles} ${mvnProps}
+                        </commandlineArgs>
+                        <useMavenLogger>true</useMavenLogger>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
