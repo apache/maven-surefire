@@ -35,3 +35,5 @@ jobs:
         surefire-its/target/*/log.txt
         surefire-its/target/**/surefire-reports/*
         surefire-its/target/**/failsafe-reports/*
+      max-parallel: 4
+      timeout-minutes: 420
