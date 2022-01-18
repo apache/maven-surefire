@@ -91,7 +91,7 @@
     <mavenVersion>3.2.5</mavenVersion>
     <commonsLang3Version>3.12.0</commonsLang3Version>
     <commonsCompress>1.20</commonsCompress>
-    <commonsIoVersion>2.6</commonsIoVersion>
+    <commonsIoVersion>2.11.0</commonsIoVersion>
     <doxiaVersion>1.11.1</doxiaVersion>
     <doxiaSitetoolsVersion>1.11.1</doxiaSitetoolsVersion>
     <plexus-java-version>1.1.0</plexus-java-version>
