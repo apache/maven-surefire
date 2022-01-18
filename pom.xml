@@ -95,8 +95,8 @@
     <doxiaVersion>1.11.1</doxiaVersion>
     <doxiaSitetoolsVersion>1.11.1</doxiaSitetoolsVersion>
     <plexus-java-version>1.1.0</plexus-java-version>
-    <!-- maven-shared-utils:3.2.0+ another behavior - broke Surefire performance - end of subprocess notification not arrived in ForkStarter -->
-    <mavenSharedUtilsVersion>3.1.0</mavenSharedUtilsVersion>
+    <!-- maven-shared-utils:3.3.4 uses org.fusesource.jansi:jansi:2.2.0 -->
+    <mavenSharedUtilsVersion>3.3.4</mavenSharedUtilsVersion>
     <powermockVersion>2.0.9</powermockVersion>
     <mavenPluginToolsVersion>3.6.2</mavenPluginToolsVersion>
     <jacocoVersion>0.8.7</jacocoVersion>
@@ -257,9 +257,10 @@
         <version>2.33</version>
       </dependency>
       <dependency>
+        <!-- used in the unit tests and maven-shared-utils:3.3.4 -->
         <groupId>org.fusesource.jansi</groupId>
         <artifactId>jansi</artifactId>
-        <version>1.13</version>
+        <version>2.2.0</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.shared</groupId>

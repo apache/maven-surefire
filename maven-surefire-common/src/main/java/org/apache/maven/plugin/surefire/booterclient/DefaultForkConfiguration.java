@@ -28,6 +28,7 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.api.util.internal.ImmutableMap;
+import org.apache.maven.surefire.shared.utils.cli.CommandLineException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -133,35 +134,42 @@ public abstract class DefaultForkConfiguration
                                                                @Nonnull File dumpLogDirectory )
             throws SurefireBooterForkException
     {
-        OutputStreamFlushableCommandline cli =
-                new OutputStreamFlushableCommandline( getExcludedEnvironmentVariables() );
-
-        cli.setWorkingDirectory( getWorkingDirectory( forkNumber ).getAbsolutePath() );
-
-        for ( Entry<String, String> entry : getEnvironmentVariables().entrySet() )
+        try
         {
-            String value = entry.getValue();
-            cli.addEnvironment( entry.getKey(), value == null ? "" : value );
+            OutputStreamFlushableCommandline cli =
+                    new OutputStreamFlushableCommandline( getExcludedEnvironmentVariables() );
+
+            cli.setWorkingDirectory( getWorkingDirectory( forkNumber ).getAbsolutePath() );
+
+            for ( Entry<String, String> entry : getEnvironmentVariables().entrySet() )
+            {
+                String value = entry.getValue();
+                cli.addEnvironment( entry.getKey(), value == null ? "" : value );
+            }
+
+            cli.setExecutable( getJdkForTests().getJvmExecutable().getAbsolutePath() );
+
+            String jvmArgLine = newJvmArgLine( forkNumber );
+            if ( !jvmArgLine.isEmpty() )
+            {
+                cli.createArg()
+                        .setLine( jvmArgLine );
+            }
+
+            if ( getDebugLine() != null && !getDebugLine().isEmpty() )
+            {
+                cli.createArg()
+                        .setLine( getDebugLine() );
+            }
+
+            resolveClasspath( cli, findStartClass( config ), config, dumpLogDirectory );
+
+            return cli;
         }
-
-        cli.setExecutable( getJdkForTests().getJvmExecutable().getAbsolutePath() );
-
-        String jvmArgLine = newJvmArgLine( forkNumber );
-        if ( !jvmArgLine.isEmpty() )
+        catch ( CommandLineException e )
         {
-            cli.createArg()
-                    .setLine( jvmArgLine );
+            throw new SurefireBooterForkException( e.getLocalizedMessage(), e );
         }
-
-        if ( getDebugLine() != null && !getDebugLine().isEmpty() )
-        {
-            cli.createArg()
-                    .setLine( getDebugLine() );
-        }
-
-        resolveClasspath( cli, findStartClass( config ), config, dumpLogDirectory );
-
-        return cli;
     }
 
     protected ConsoleLogger getLogger()

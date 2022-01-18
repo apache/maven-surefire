@@ -87,7 +87,7 @@ public class Surefire1367AssumptionLogsIT extends SurefireJUnit4IntegrationTestC
     {
         String xmlReport = outputValidator.getSurefireReportsXmlFile( "TEST-ATest.xml" ).readFileToString();
 
-        String outputCData = "<system-out><![CDATA[Hi" + NL + NL + "There!" + NL + "]]></system-out>" + NL + "    "
+        String outputCData = "<system-out><![CDATA[Hi" + NL + NL + "There!" + NL + "]]></system-out>\n    "
                 + "<system-err><![CDATA[Hello" + NL + NL + "What's up!" + NL + "]]></system-err>";
 
         assertThat( xmlReport ).contains( outputCData );

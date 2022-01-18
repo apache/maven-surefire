@@ -23,7 +23,6 @@ import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpS
 import org.apache.maven.surefire.shared.utils.xml.PrettyPrintXMLWriter;
 import org.apache.maven.surefire.shared.utils.xml.XMLWriter;
 import org.apache.maven.surefire.extensions.StatelessReportEventListener;
-import org.apache.maven.surefire.api.report.ReporterException;
 import org.apache.maven.surefire.api.report.SafeThrowable;
 
 import java.io.BufferedOutputStream;
@@ -135,8 +134,10 @@ public class StatelessXmlReporter
         Map<String, Map<String, List<WrappedReportEntry>>> classMethodStatistics =
                 arrangeMethodStatistics( testSetReportEntry, testSetStats );
 
-        OutputStream outputStream = getOutputStream( testSetReportEntry );
-        try ( OutputStreamWriter fw = getWriter( outputStream ) )
+        // The Java Language Spec:
+        // "Note that the close methods of resources are called in the opposite order of their creation."
+        try ( OutputStream outputStream = getOutputStream( testSetReportEntry );
+              OutputStreamWriter fw = getWriter( outputStream ) )
         {
             XMLWriter ppw = new PrettyPrintXMLWriter( fw );
             ppw.setEncoding( UTF_8.name() );
@@ -155,7 +156,7 @@ public class StatelessXmlReporter
 
             ppw.endElement(); // TestSuite
         }
-        catch ( Exception e )
+        catch ( IOException e )
         {
             // It's not a test error.
             // This method must be sail-safe and errors are in a dump log.
@@ -201,6 +202,7 @@ public class StatelessXmlReporter
 
     private void serializeTestClass( OutputStream outputStream, OutputStreamWriter fw, XMLWriter ppw,
                                      List<WrappedReportEntry> methodEntries )
+        throws IOException
     {
         if ( rerunFailingTestsCount > 0 )
         {
@@ -216,6 +218,7 @@ public class StatelessXmlReporter
 
     private void serializeTestClassWithoutRerun( OutputStream outputStream, OutputStreamWriter fw, XMLWriter ppw,
                                                  List<WrappedReportEntry> methodEntries )
+        throws IOException
     {
         for ( WrappedReportEntry methodEntry : methodEntries )
         {
@@ -232,6 +235,7 @@ public class StatelessXmlReporter
 
     private void serializeTestClassWithRerun( OutputStream outputStream, OutputStreamWriter fw, XMLWriter ppw,
                                               List<WrappedReportEntry> methodEntries )
+        throws IOException
     {
         WrappedReportEntry firstMethodEntry = methodEntries.get( 0 );
         switch ( getTestResultType( methodEntries ) )
@@ -339,6 +343,7 @@ public class StatelessXmlReporter
     }
 
     private OutputStream getOutputStream( WrappedReportEntry testSetReportEntry )
+        throws IOException
     {
         File reportFile = getReportFile( testSetReportEntry );
 
@@ -346,15 +351,7 @@ public class StatelessXmlReporter
 
         //noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
-
-        try
-        {
-            return new BufferedOutputStream( new FileOutputStream( reportFile ), 64 * 1024 );
-        }
-        catch ( Exception e )
-        {
-            throw new ReporterException( "When writing report", e );
-        }
+        return new BufferedOutputStream( new FileOutputStream( reportFile ), 64 * 1024 );
     }
 
     private static OutputStreamWriter getWriter( OutputStream fos )
@@ -370,6 +367,7 @@ public class StatelessXmlReporter
     }
 
     private void startTestElement( XMLWriter ppw, WrappedReportEntry report )
+        throws IOException
     {
         ppw.startElement( "testcase" );
         String name = phrasedMethodName ? report.getReportName() : report.getName();
@@ -391,6 +389,7 @@ public class StatelessXmlReporter
     }
 
     private void createTestSuiteElement( XMLWriter ppw, WrappedReportEntry report, TestSetStats testSetStats )
+        throws IOException
     {
         ppw.startElement( "testsuite" );
 
@@ -421,6 +420,7 @@ public class StatelessXmlReporter
     private static void getTestProblems( OutputStreamWriter outputStreamWriter, XMLWriter ppw,
                                          WrappedReportEntry report, boolean trimStackTrace, OutputStream fw,
                                          String testErrorType, boolean createOutErrElementsInside )
+        throws IOException
     {
         ppw.startElement( testErrorType );
 
@@ -478,6 +478,7 @@ public class StatelessXmlReporter
     // Create system-out and system-err elements
     private static void createOutErrElements( OutputStreamWriter outputStreamWriter, XMLWriter ppw,
                                               WrappedReportEntry report, OutputStream fw )
+        throws IOException
     {
         EncodingOutputStream eos = new EncodingOutputStream( fw );
         addOutputStreamElement( outputStreamWriter, eos, ppw, report.getStdout(), "system-out" );
@@ -488,24 +489,17 @@ public class StatelessXmlReporter
                                          EncodingOutputStream eos, XMLWriter xmlWriter,
                                          Utf8RecodingDeferredFileOutputStream utf8RecodingDeferredFileOutputStream,
                                          String name )
+        throws IOException
     {
         if ( utf8RecodingDeferredFileOutputStream != null && utf8RecodingDeferredFileOutputStream.getByteCount() > 0 )
         {
             xmlWriter.startElement( name );
-
-            try
-            {
-                xmlWriter.writeText( "" ); // Cheat sax to emit element
-                outputStreamWriter.flush();
-                eos.getUnderlying().write( ByteConstantsHolder.CDATA_START_BYTES ); // emit cdata
-                utf8RecodingDeferredFileOutputStream.writeTo( eos );
-                eos.getUnderlying().write( ByteConstantsHolder.CDATA_END_BYTES );
-                eos.flush();
-            }
-            catch ( IOException e )
-            {
-                throw new ReporterException( "When writing xml report stdout/stderr", e );
-            }
+            xmlWriter.writeText( "" ); // Cheat sax to emit element
+            outputStreamWriter.flush();
+            eos.getUnderlying().write( ByteConstantsHolder.CDATA_START_BYTES ); // emit cdata
+            utf8RecodingDeferredFileOutputStream.writeTo( eos );
+            eos.getUnderlying().write( ByteConstantsHolder.CDATA_END_BYTES );
+            eos.flush();
             xmlWriter.endElement();
         }
     }
@@ -517,6 +511,7 @@ public class StatelessXmlReporter
      * @param xmlWriter The test suite to report to
      */
     private static void showProperties( XMLWriter xmlWriter, Map<String, String> systemProperties )
+        throws IOException
     {
         xmlWriter.startElement( "properties" );
         for ( final Entry<String, String> entry : systemProperties.entrySet() )
@@ -559,6 +554,7 @@ public class StatelessXmlReporter
      */
     private static void extraEscapeElementValue( String message, OutputStreamWriter outputStreamWriter,
                                                  XMLWriter xmlWriter, OutputStream fw )
+        throws IOException
     {
         // Someday convert to xml 1.1 which handles everything but 0 inside string
         if ( containsEscapesIllegalXml10( message ) )
@@ -567,20 +563,13 @@ public class StatelessXmlReporter
         }
         else
         {
-            try
-            {
-                EncodingOutputStream eos = new EncodingOutputStream( fw );
-                xmlWriter.writeText( "" ); // Cheat sax to emit element
-                outputStreamWriter.flush();
-                eos.getUnderlying().write( ByteConstantsHolder.CDATA_START_BYTES );
-                eos.write( message.getBytes( UTF_8 ) );
-                eos.getUnderlying().write( ByteConstantsHolder.CDATA_END_BYTES );
-                eos.flush();
-            }
-            catch ( IOException e )
-            {
-                throw new ReporterException( "When writing xml element", e );
-            }
+            EncodingOutputStream eos = new EncodingOutputStream( fw );
+            xmlWriter.writeText( "" ); // Cheat sax to emit element
+            outputStreamWriter.flush();
+            eos.getUnderlying().write( ByteConstantsHolder.CDATA_START_BYTES );
+            eos.write( message.getBytes( UTF_8 ) );
+            eos.getUnderlying().write( ByteConstantsHolder.CDATA_END_BYTES );
+            eos.flush();
         }
     }
 

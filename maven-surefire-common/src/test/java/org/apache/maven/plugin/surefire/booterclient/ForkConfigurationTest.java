@@ -32,7 +32,6 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.shared.io.FileUtils;
-import org.apache.maven.surefire.shared.lang3.SystemUtils;
 import org.apache.maven.surefire.shared.utils.StringUtils;
 import org.apache.maven.surefire.shared.utils.cli.Commandline;
 import org.junit.After;
@@ -56,6 +55,7 @@ import static java.util.Collections.singletonList;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 import static org.apache.maven.surefire.booter.ProcessCheckerType.ALL;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.util.Files.temporaryFolder;
 import static org.junit.Assert.assertEquals;
@@ -168,11 +168,7 @@ public class ForkConfigurationTest
         // "/path/to/java arg1 @/path/to/argfile"
         int beginOfFileArg = cliAsString.indexOf( '@', cliAsString.lastIndexOf( "arg1" ) );
         assertThat( beginOfFileArg ).isPositive();
-        int endOfFileArg = cliAsString.indexOf( '"', beginOfFileArg );
-        if ( endOfFileArg == -1 )
-        {
-            endOfFileArg = cliAsString.length();
-        }
+        int endOfFileArg = cliAsString.indexOf( IS_OS_WINDOWS ? '"' : '\'', beginOfFileArg );
         assertThat( endOfFileArg ).isPositive();
         Path argFile = Paths.get( cliAsString.substring( beginOfFileArg + 1, endOfFileArg ) );
         String argFileText = new String( readAllBytes( argFile ) );
@@ -283,7 +279,7 @@ public class ForkConfigurationTest
             new StartupConfiguration( "", cpConfig, clc, ALL, Collections.<String[]>emptyList() );
 
         Commandline commandLine = config.createCommandLine( startup, 1, temporaryFolder() );
-        assertTrue( commandLine.toString().contains( "abc def" ) );
+        assertThat( commandLine.toString() ).contains( IS_OS_WINDOWS ? "abc def" : "'abc' 'def'" );
     }
 
     @Test
@@ -357,7 +353,7 @@ public class ForkConfigurationTest
             FileUtils.deleteDirectory( cwd );
         }
 
-        if ( SystemUtils.IS_OS_WINDOWS || isJavaVersionAtLeast7u60() )
+        if ( IS_OS_WINDOWS || isJavaVersionAtLeast7u60() )
         {
             fail();
         }
