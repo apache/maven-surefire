@@ -46,7 +46,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
-import static org.powermock.reflect.Whitebox.invokeMethod;
 
 /**
  * Test of {@link SystemUtils}.
@@ -63,17 +62,6 @@ public class SystemUtilsTest
      */
     public static class PlainUnitTests
     {
-
-        @Test
-        public void shouldMatchJavaSpecVersion() throws Exception
-        {
-            BigDecimal actual = invokeMethod( SystemUtils.class, "getJavaSpecificationVersion" );
-            BigDecimal expected =
-                    new BigDecimal( System.getProperty( "java.specification.version" ) ).stripTrailingZeros();
-            assertThat( actual ).isEqualTo( expected );
-            assertThat( SystemUtils.JAVA_SPECIFICATION_VERSION ).isEqualTo( expected );
-        }
-
         @Test
         public void shouldParseProprietaryReleaseFile() throws IOException
         {

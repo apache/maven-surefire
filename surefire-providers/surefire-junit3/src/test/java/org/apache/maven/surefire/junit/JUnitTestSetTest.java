@@ -22,14 +22,21 @@ package org.apache.maven.surefire.junit;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
+import java.security.AccessControlException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_17;
+import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_RECENT;
 
 /**
  *
@@ -52,6 +59,57 @@ public class JUnitTestSetTest
                 succeededTests.get( 0 ).getSourceName() );
         assertEquals( "testSuccess",
                       succeededTests.get( 0 ).getName() );
+    }
+
+    public void testSystemManager()
+    {
+        boolean isDeprecated = !JAVA_RECENT.atMost( JAVA_17 );
+        Object originalSm = null;
+        try
+        {
+            if ( !isDeprecated )
+            {
+                originalSm = System.getSecurityManager();
+            }
+
+            JUnit3Provider.setSystemManager( "java.lang.SecurityManager" );
+
+            if ( isDeprecated )
+            {
+                fail();
+            }
+
+            Object sm = System.getSecurityManager();
+            assertNotNull( sm );
+            assertEquals( "java.lang.SecurityManager", sm.getClass().getName() );
+            assertNotSame( originalSm, sm );
+        }
+        catch ( TestSetFailedException e )
+        {
+            if ( !isDeprecated )
+            {
+                fail();
+            }
+        }
+        finally
+        {
+            if ( !isDeprecated )
+            {
+                try
+                {
+                    SecurityManager sm = (SecurityManager) originalSm;
+                    AccessController.doPrivileged( (PrivilegedAction<Object>) () ->
+                    {
+                        System.setSecurityManager( sm );
+                        return null;
+                    } );
+                }
+                catch ( AccessControlException e )
+                {
+                    // ignore
+                }
+            }
+        }
     }
 
     /**

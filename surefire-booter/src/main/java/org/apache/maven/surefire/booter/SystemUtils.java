@@ -33,17 +33,18 @@ import java.math.BigDecimal;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import static java.lang.Character.isDigit;
 import static java.lang.Thread.currentThread;
 import static java.util.Objects.requireNonNull;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray;
+import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_RECENT;
+import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_9;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.isNumeric;
-import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_FREE_BSD;
-import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_LINUX;
-import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_NET_BSD;
-import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_OPEN_BSD;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodChain;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.tryLoadClass;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_LINUX;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_FREE_BSD;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_NET_BSD;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_OPEN_BSD;
 
 /**
  * JDK 9 support.
@@ -53,8 +54,6 @@ import static org.apache.maven.surefire.api.util.ReflectionUtils.tryLoadClass;
  */
 public final class SystemUtils
 {
-    public static final BigDecimal JAVA_SPECIFICATION_VERSION = getJavaSpecificationVersion();
-
     private static final BigDecimal JIGSAW_JAVA_VERSION = new BigDecimal( 9 ).stripTrailingZeros();
 
     private static final int PROC_STATUS_PID_FIRST_CHARS = 20;
@@ -165,43 +164,6 @@ public final class SystemUtils
         }
     }
 
-    /**
-     * Safely extracts major and minor version as fractional number from
-     * <pre>
-     *     $MAJOR.$MINOR.$SECURITY
-     * </pre>.
-     * <br>
-     *     The security version is usually not needed to know.
-     *     It can be applied to not certified JRE.
-     *
-     * @return major.minor version derived from java specification version of <em>this</em> JVM, e.g. 1.8, 9, etc.
-     */
-    private static BigDecimal getJavaSpecificationVersion()
-    {
-        StringBuilder fractionalVersion = new StringBuilder( "0" );
-        for ( char c : org.apache.maven.surefire.shared.lang3.SystemUtils.JAVA_SPECIFICATION_VERSION.toCharArray() )
-        {
-            if ( isDigit( c ) )
-            {
-                fractionalVersion.append( c );
-            }
-            else if ( c == '.' )
-            {
-                if ( fractionalVersion.indexOf( "." ) == -1 )
-                {
-                    fractionalVersion.append( '.' );
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-        String majorMinorVersion = fractionalVersion.toString();
-        return new BigDecimal( majorMinorVersion.endsWith( "." ) ? majorMinorVersion + "0" : majorMinorVersion )
-                .stripTrailingZeros();
-    }
-
     public static boolean isJava9AtLeast( String jvmExecutablePath )
     {
         File externalJavaHome = toJdkHomeFromJvmExec( jvmExecutablePath );
@@ -220,7 +182,7 @@ public final class SystemUtils
 
     public static boolean isBuiltInJava9AtLeast()
     {
-        return JAVA_SPECIFICATION_VERSION.compareTo( JIGSAW_JAVA_VERSION ) >= 0;
+        return JAVA_RECENT.atLeast( JAVA_9 );
     }
 
     public static boolean isJava9AtLeast( BigDecimal version )
