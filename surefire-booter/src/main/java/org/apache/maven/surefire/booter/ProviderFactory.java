@@ -32,6 +32,7 @@ import static org.apache.maven.surefire.api.util.ReflectionUtils.getMethod;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeGetter;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray2;
+import static org.apache.maven.surefire.api.util.internal.ObjectUtils.isSecurityManagerSupported;
 
 /**
  * Creates the surefire provider.
@@ -85,7 +86,7 @@ public class ProviderFactory
         }
         finally
         {
-            if ( restoreStreams && System.getSecurityManager() == null )
+            if ( restoreStreams && ( !isSecurityManagerSupported() || System.getSecurityManager() == null ) )
             {
                 System.setOut( orgSystemOut );
                 System.setErr( orgSystemErr );

@@ -21,7 +21,10 @@ package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaMaxVersion;
 
 /**
  * SUREFIRE-621 Asserts proper test counts when running junit 3 tests in parallel
@@ -31,6 +34,12 @@ import org.junit.Test;
 public class Surefire34SecurityManagerIT
     extends SurefireJUnit4IntegrationTestCase
 {
+    @BeforeClass
+    public static void checkJavaVersion()
+    {
+        assumeJavaMaxVersion( 17 );
+    }
+
     @Test
     public void testSecurityManager()
     {

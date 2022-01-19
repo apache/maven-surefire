@@ -42,6 +42,7 @@ import org.apache.maven.surefire.api.util.internal.ChannelsReaderTest;
 import org.apache.maven.surefire.api.util.internal.ChannelsWriterTest;
 import org.apache.maven.surefire.api.util.internal.ConcurrencyUtilsTest;
 import org.apache.maven.surefire.api.util.internal.ImmutableMapTest;
+import org.apache.maven.surefire.api.util.internal.ObjectUtilsTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -72,7 +73,8 @@ import org.junit.runners.Suite;
     ChannelsWriterTest.class,
     AsyncSocketTest.class,
     AbstractStreamEncoderTest.class,
-    AbstractStreamDecoderTest.class
+    AbstractStreamDecoderTest.class,
+    ObjectUtilsTest.class
 } )
 @RunWith( Suite.class )
 public class JUnit4SuiteTest

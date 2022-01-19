@@ -141,12 +141,12 @@ import static org.apache.maven.surefire.api.suite.RunResult.noTestsRun;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.tryGetMethod;
 import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
-import static org.apache.maven.surefire.booter.SystemUtils.JAVA_SPECIFICATION_VERSION;
 import static org.apache.maven.surefire.booter.SystemUtils.endsWithJavaPath;
 import static org.apache.maven.surefire.booter.SystemUtils.isBuiltInJava9AtLeast;
 import static org.apache.maven.surefire.booter.SystemUtils.isJava9AtLeast;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkHomeFromJvmExec;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkVersionFromReleaseFile;
+import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_RECENT;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.substringBeforeLast;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.surefire.shared.utils.StringUtils.capitalizeFirstLetter;
@@ -2673,8 +2673,7 @@ public abstract class AbstractSurefireMojo
 
         // use the same JVM as the one used to run Maven (the "java.home" one)
         String jvmToUse = System.getProperty( "java.home" ) + File.separator + "bin" + File.separator + "java";
-        getConsoleLogger().debug( "Using JVM: " + jvmToUse + " with Java version "
-                + JAVA_SPECIFICATION_VERSION.toPlainString() );
+        getConsoleLogger().debug( "Using JVM: " + jvmToUse + " with Java version " + JAVA_RECENT );
 
         return new JdkAttributes( jvmToUse, isBuiltInJava9AtLeast() );
     }

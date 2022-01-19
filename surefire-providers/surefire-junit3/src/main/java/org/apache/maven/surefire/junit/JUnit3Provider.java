@@ -31,13 +31,14 @@ import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
-import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.apache.maven.surefire.api.util.RunOrderCalculator;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.TestsToRun;
 
 import java.util.Map;
 
+import static org.apache.maven.surefire.api.util.ReflectionUtils.instantiate;
+import static org.apache.maven.surefire.api.util.internal.ObjectUtils.isSecurityManagerSupported;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
 
 /**
@@ -100,13 +101,7 @@ public class JUnit3Provider
             final RunListener reporter = reporterFactory.createReporter();
             ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
             Map<String, String> systemProperties = systemProps();
-            String smClassName = System.getProperty( "surefire.security.manager" );
-            if ( smClassName != null )
-            {
-                SecurityManager securityManager =
-                    ReflectionUtils.instantiate( getClass().getClassLoader(), smClassName, SecurityManager.class );
-                System.setSecurityManager( securityManager );
-            }
+            setSystemManager( System.getProperty( "surefire.security.manager" ) );
 
             for ( Class<?> clazz : testsToRun )
             {
@@ -119,6 +114,21 @@ public class JUnit3Provider
             runResult = reporterFactory.close();
         }
         return runResult;
+    }
+
+    static void setSystemManager( String smClassName ) throws TestSetFailedException
+    {
+        if ( smClassName != null )
+        {
+            if ( !isSecurityManagerSupported() )
+            {
+                throw new TestSetFailedException( "JDK does not support overriding Security Manager with "
+                    + "a value in system property 'surefire.security.manager'." );
+            }
+            ClassLoader classLoader = JUnit3Provider.class.getClassLoader();
+            SecurityManager sm = instantiate( classLoader, smClassName, SecurityManager.class );
+            System.setSecurityManager( sm );
+        }
     }
 
     private SurefireTestSet createTestSet( Class<?> clazz )
