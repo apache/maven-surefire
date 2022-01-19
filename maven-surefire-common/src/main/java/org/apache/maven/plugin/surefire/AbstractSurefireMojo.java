@@ -2325,8 +2325,7 @@ public abstract class AbstractSurefireMojo
         {
             if ( pattern != null && pattern.contains( "#" ) )
             {
-                throw new MojoFailureException( "Method filter prohibited in "
-                    + "includes|excludes parameter: "
+                throw new MojoFailureException( "Method filter prohibited in includes|excludes parameter: "
                     + pattern );
             }
         }
