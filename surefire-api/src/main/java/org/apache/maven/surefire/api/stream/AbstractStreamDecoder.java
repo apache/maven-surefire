@@ -171,7 +171,7 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
 
     protected String readString( @Nonnull Memento memento ) throws IOException, MalformedFrameException
     {
-        memento.getCharBuffer().clear();
+        ( (Buffer) memento.getCharBuffer() ).clear();
         int readCount = readInt( memento );
         if ( readCount < 0 )
         {
@@ -293,7 +293,7 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
     {
         memento.getDecoder().reset();
         final CharBuffer output = memento.getCharBuffer();
-        output.clear();
+        ( (Buffer) output ).clear();
         final ByteBuffer input = memento.getByteBuffer();
         final List<String> strings = new ArrayList<>();
         int countDecodedBytes = 0;
@@ -317,13 +317,13 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
 
             if ( isLastChunk || !output.hasRemaining() )
             {
-                strings.add( output.flip().toString() );
-                output.clear();
+                strings.add( ( (Buffer) output ).flip().toString() );
+                ( (Buffer) output ).clear();
             }
         }
 
         memento.getDecoder().reset();
-        output.clear();
+        ( (Buffer) output ).clear();
 
         return toString( strings );
     }

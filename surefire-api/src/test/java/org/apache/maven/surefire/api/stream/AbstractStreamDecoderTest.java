@@ -151,7 +151,7 @@ public class AbstractStreamDecoderTest
         ByteBuffer input = ByteBuffer.allocate( 1024 );
         ( (Buffer) input.put( PATTERN2_BYTES ) ).flip();
         int bytesToDecode = PATTERN2_BYTES.length;
-        CharBuffer output = CharBuffer.allocate( 1024 );
+        Buffer output = CharBuffer.allocate( 1024 );
         int readBytes = invokeMethod( AbstractStreamDecoder.class, "decodeString", decoder, input, output,
             bytesToDecode, true, 0 );
 
@@ -172,7 +172,7 @@ public class AbstractStreamDecoderTest
             .put( 91, (byte) 'B' )
             .put( 92, (byte) 'C' ) )
             .position( 90 );
-        CharBuffer output = CharBuffer.allocate( 1024 );
+        Buffer output = CharBuffer.allocate( 1024 );
         int readBytes =
             invokeMethod( AbstractStreamDecoder.class, "decodeString", decoder, input, output, 2, true, 0 );
 
@@ -371,9 +371,9 @@ public class AbstractStreamDecoderTest
         {
             decoder.reset()
                 .decode( buffer, chars, true ); // CharsetDecoder 71 nanos
-            s = chars.flip().toString(); // CharsetDecoder + toString = 91 nanos
+            s = ( (Buffer) chars ).flip().toString(); // CharsetDecoder + toString = 91 nanos
             ( (Buffer) buffer ).clear();
-            chars.clear();
+            ( (Buffer) chars ).clear();
         }
         long l2 = System.currentTimeMillis();
         System.out.println( "decoded 100 bytes within " + ( l2 - l1 ) + " millis (10 million cycles)" );
