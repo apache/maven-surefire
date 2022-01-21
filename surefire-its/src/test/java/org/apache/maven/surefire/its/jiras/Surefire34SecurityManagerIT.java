@@ -19,30 +19,29 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.BeforeClass;
+import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
 
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaMaxVersion;
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
+import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * SUREFIRE-621 Asserts proper test counts when running junit 3 tests in parallel
  *
  * @author Kristian Rosenvold
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class Surefire34SecurityManagerIT
     extends SurefireJUnit4IntegrationTestCase
 {
-    @BeforeClass
-    public static void checkJavaVersion()
-    {
-        assumeJavaMaxVersion( 17 );
-    }
-
     @Test
     public void testSecurityManager()
     {
+        assumeJavaMaxVersion( 17 );
         SurefireLauncher surefireLauncher = unpack( "surefire-34-securityManager" ).failNever();
         surefireLauncher.executeTest().assertTestSuiteResults( 2, 1, 0, 0 );
     }
@@ -50,8 +49,27 @@ public class Surefire34SecurityManagerIT
     @Test
     public void testSecurityManagerSuccessful()
     {
+        assumeJavaMaxVersion( 17 );
         SurefireLauncher surefireLauncher = unpack( "surefire-34-securityManager-success" );
         surefireLauncher.executeTest().assertTestSuiteResults( 2, 0, 0, 0 );
     }
 
+    @Test
+    public void shouldFailOnJDK()
+    {
+        assumeJavaVersion( 18 );
+
+        OutputValidator validator = unpack( "surefire-34-securityManager" )
+            .failNever()
+            .executeTest()
+            .verifyTextInLog( "JDK does not support overriding Security Manager with "
+                + "a value in system property 'surefire.security.manager'." );
+
+        TestFile xmlReport = validator.getSurefireReportsFile( "junit4.SecurityManagerTest.xml" );
+
+        assertThat( xmlReport.exists() )
+            .describedAs( "junit4.SecurityManagerTest.xml should not exist. "
+                + "The provider should fail before starting any test." )
+            .isFalse();
+    }
 }
