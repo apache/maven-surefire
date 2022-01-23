@@ -29,9 +29,11 @@ import java.lang.reflect.Method;
 
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.junit.Test;
+import org.junit.jupiter.engine.config.DefaultJupiterConfiguration;
 import org.junit.jupiter.engine.config.JupiterConfiguration;
 import org.junit.jupiter.engine.descriptor.ClassTestDescriptor;
 import org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor;
+import org.junit.platform.engine.ConfigurationParameters;
 import org.junit.platform.engine.FilterResult;
 import org.junit.platform.engine.UniqueId;
 
@@ -42,7 +44,8 @@ import org.junit.platform.engine.UniqueId;
  */
 public class TestMethodFilterTest
 {
-    private static final JupiterConfiguration JUPITER_CONFIGURATION = mock(JupiterConfiguration.class);
+    private static final JupiterConfiguration JUPITER_CONFIGURATION =
+            new DefaultJupiterConfiguration( mock( ConfigurationParameters.class ) );
 
     private final TestListResolver resolver = mock( TestListResolver.class );
 

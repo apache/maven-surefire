@@ -46,9 +46,11 @@ import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.engine.config.DefaultJupiterConfiguration;
 import org.junit.jupiter.engine.config.JupiterConfiguration;
 import org.junit.jupiter.engine.descriptor.ClassTestDescriptor;
 import org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor;
+import org.junit.platform.engine.ConfigurationParameters;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestDescriptor.Type;
 import org.junit.platform.engine.TestExecutionResult;
@@ -69,7 +71,8 @@ import org.mockito.InOrder;
  */
 public class RunListenerAdapterTest
 {
-    private static final JupiterConfiguration JUPITER_CONFIGURATION = mock(JupiterConfiguration.class);
+    private static final JupiterConfiguration JUPITER_CONFIGURATION =
+            new DefaultJupiterConfiguration( mock( ConfigurationParameters.class ) );
 
     private RunListener listener;
 
