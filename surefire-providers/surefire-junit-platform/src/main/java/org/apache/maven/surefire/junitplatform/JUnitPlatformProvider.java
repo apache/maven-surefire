@@ -99,7 +99,6 @@ public class JUnitPlatformProvider
         this.launcher = launcher;
         filters = newFilters();
         configurationParameters = newConfigurationParameters();
-        Logger.getLogger( "org.junit" ).setLevel( WARNING );
     }
 
     @Override
@@ -125,6 +124,7 @@ public class JUnitPlatformProvider
         {
             RunListener runListener = reporterFactory.createReporter();
             startCapture( ( ConsoleOutputReceiver ) runListener );
+            setupJunitLogger();
             if ( forkTestSet instanceof TestsToRun )
             {
                 invokeAllTests( (TestsToRun) forkTestSet, runListener );
@@ -148,6 +148,15 @@ public class JUnitPlatformProvider
             runResult = reporterFactory.close();
         }
         return runResult;
+    }
+
+    private static void setupJunitLogger()
+    {
+        Logger logger = Logger.getLogger( "org.junit" );
+        if ( logger.getLevel() == null )
+        {
+            logger.setLevel( WARNING );
+        }
     }
 
     private TestsToRun scanClasspath()
