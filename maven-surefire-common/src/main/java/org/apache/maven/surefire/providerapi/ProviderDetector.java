@@ -22,8 +22,9 @@ package org.apache.maven.surefire.providerapi;
 import javax.annotation.Nonnull;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.maven.surefire.api.provider.SurefireProvider;
@@ -32,6 +33,9 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.Logger;
 
 import static java.lang.Thread.currentThread;
+import static java.util.Arrays.stream;
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author Kristian Rosenvold
@@ -48,33 +52,37 @@ public final class ProviderDetector
     @Nonnull
     public List<ProviderInfo> resolve( ConfigurableProviderInfo dynamicProvider, ProviderInfo... wellKnownProviders )
     {
-        List<ProviderInfo> providersToRun = new ArrayList<>();
         Set<String> manuallyConfiguredProviders = getManuallyConfiguredProviders();
-        for ( String name : manuallyConfiguredProviders )
+
+        List<ProviderInfo> providersToRun = manuallyConfiguredProviders.stream()
+            .map( name ->
+                findByName( name, wellKnownProviders )
+                    .orElseGet( () -> dynamicProvider.instantiate( name ) ) )
+            .collect( toList() );
+
+        providersToRun.forEach( p -> logger.info( "Using configured provider " + p.getProviderName() ) );
+
+        if ( providersToRun.isEmpty() )
         {
-            ProviderInfo wellKnown = findByName( name, wellKnownProviders );
-            ProviderInfo providerToAdd = wellKnown != null ? wellKnown : dynamicProvider.instantiate( name );
-            logger.info( "Using configured provider " + providerToAdd.getProviderName() );
-            providersToRun.add( providerToAdd );
+            return autoDetectOneWellKnownProvider( wellKnownProviders )
+                .map( Collections::singletonList )
+                .orElse( emptyList() );
         }
-        return manuallyConfiguredProviders.isEmpty() ? autoDetectOneWellKnownProvider( wellKnownProviders )
-            : providersToRun;
+        else
+        {
+            return Collections.unmodifiableList( providersToRun );
+        }
     }
 
-    @Nonnull
-    private List<ProviderInfo> autoDetectOneWellKnownProvider( ProviderInfo... wellKnownProviders )
+    private Optional<ProviderInfo> autoDetectOneWellKnownProvider( ProviderInfo... wellKnownProviders )
     {
-        List<ProviderInfo> providersToRun = new ArrayList<>();
-        for ( ProviderInfo wellKnownProvider : wellKnownProviders )
-        {
-            if ( wellKnownProvider.isApplicable() )
-            {
-                logger.info( "Using auto detected provider " + wellKnownProvider.getProviderName() );
-                providersToRun.add( wellKnownProvider );
-                return providersToRun;
-            }
-        }
-        return providersToRun;
+        Optional<ProviderInfo> providerInfo = stream( wellKnownProviders )
+            .filter( ProviderInfo::isApplicable )
+            .findFirst();
+
+        providerInfo.ifPresent( p -> logger.info( "Using auto detected provider " + p.getProviderName() ) );
+
+        return providerInfo;
     }
 
     private Set<String> getManuallyConfiguredProviders()
@@ -90,15 +98,11 @@ public final class ProviderDetector
         }
     }
 
-    private ProviderInfo findByName( String providerClassName, ProviderInfo... wellKnownProviders )
+    @Nonnull
+    private Optional<ProviderInfo> findByName( String providerClassName, ProviderInfo... wellKnownProviders )
     {
-        for ( ProviderInfo wellKnownProvider : wellKnownProviders )
-        {
-            if ( wellKnownProvider.getProviderName().equals( providerClassName ) )
-            {
-                return wellKnownProvider;
-            }
-        }
-        return null;
+        return stream( wellKnownProviders )
+            .filter( p -> p.getProviderName().equals( providerClassName ) )
+            .findFirst();
     }
 }
