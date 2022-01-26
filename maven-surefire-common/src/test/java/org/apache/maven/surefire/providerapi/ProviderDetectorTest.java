@@ -64,11 +64,12 @@ public class ProviderDetectorTest
     private ProviderDetector providerDetector;
 
     @Test
-    public void emptyProviderList() throws Exception
+    public void defaultWhenAllKnownProviderNotApplicable() throws Exception
     {
         // given
         ProviderInfo providerInfo1 = mock( ProviderInfo.class );
         ProviderInfo providerInfo2 = mock( ProviderInfo.class );
+        ProviderInfo defaultProvider = mock( ProviderInfo.class );
 
         // no manually configured providers
         when( serviceLoader.lookup( eq( SurefireProvider.class ), any( ClassLoader.class ) ) )
@@ -79,10 +80,14 @@ public class ProviderDetectorTest
         when( providerInfo2.isApplicable() ).thenReturn( false );
 
         // when
-        List<ProviderInfo> providerInfoList = providerDetector.resolve( null, providerInfo1, providerInfo2 );
+        ProviderDetectorRequest request = new ProviderDetectorRequest();
+        request.setDefaultProvider( defaultProvider );
+        request.setWellKnownProviders( providerInfo1, providerInfo2 );
+        List<ProviderInfo> providerInfoList = providerDetector.resolve( request );
 
         // then
-        assertThat( providerInfoList ).isEmpty();
+        assertThat( providerInfoList )
+            .containsExactly( defaultProvider );
 
         verify( serviceLoader ).lookup( eq( SurefireProvider.class ), any( ClassLoader.class ) );
 
@@ -93,7 +98,7 @@ public class ProviderDetectorTest
     }
 
     @Test
-    public void onlyFirstAutomaticallyProviderIsReturned() throws Exception
+    public void onlyOneWhenAllKnownProviderIsApplicable() throws Exception
     {
         // given
         ProviderInfo providerInfo1 = mock( ProviderInfo.class );
@@ -105,20 +110,144 @@ public class ProviderDetectorTest
 
         // first well known providers are applicable
         when( providerInfo1.isApplicable() ).thenReturn( true );
+        // second not
+        when( providerInfo2.isApplicable() ).thenReturn( false );
 
         // when
-        List<ProviderInfo> providerInfoList = providerDetector.resolve( null, providerInfo1, providerInfo2 );
+        ProviderDetectorRequest request = new ProviderDetectorRequest();
+        request.setWellKnownProviders( providerInfo1, providerInfo2 );
+        List<ProviderInfo> providerInfoList = providerDetector.resolve( request );
 
         // then - only first is returned
         assertThat( providerInfoList ).containsExactly( providerInfo1 );
 
         verify( serviceLoader ).lookup( eq( SurefireProvider.class ), any( ClassLoader.class ) );
 
+        // all providers are checked
         verify( providerInfo1 ).isApplicable();
+        verify( providerInfo2 ).isApplicable();
         verify( providerInfo1 ).getProviderName();
 
-        // second provider is not checked
-        verify( providerInfo2, never() ).isApplicable();
+        verify( logger ).info( anyString() );
+
+        verifyNoMoreInteractions( logger, serviceLoader, providerInfo1, providerInfo2 );
+    }
+
+    @Test
+    public void manyAllKnownProviderIsAllowedWithWarn() throws Exception
+    {
+        // given
+        ProviderInfo providerInfo1 = mock( ProviderInfo.class );
+        ProviderInfo providerInfo2 = mock( ProviderInfo.class );
+
+        // no manually configured providers
+        when( serviceLoader.lookup( eq( SurefireProvider.class ), any( ClassLoader.class ) ) )
+            .thenReturn( Collections.<String>emptySet() );
+
+        when( providerInfo1.isApplicable() ).thenReturn( true );
+        when( providerInfo1.getProviderName() ).thenReturn( "someProvider1" );
+
+        when( providerInfo2.isApplicable() ).thenReturn( true );
+        when( providerInfo2.getProviderName() ).thenReturn( "someProvider2" );
+
+        // when
+        ProviderDetectorRequest request = new ProviderDetectorRequest();
+        request.setWellKnownProviders( providerInfo1, providerInfo2 );
+        request.setMultipleFrameworks( "warn" );
+        List<ProviderInfo> providerInfoList = providerDetector.resolve( request );
+
+        // then - only first is returned
+        assertThat( providerInfoList ).containsExactly( providerInfo1 );
+
+        verify( serviceLoader ).lookup( eq( SurefireProvider.class ), any( ClassLoader.class ) );
+
+        // all providers are checked
+        verify( providerInfo1 ).isApplicable();
+        verify( providerInfo1, times( 3 ) ).getProviderName();
+        verify( providerInfo2 ).isApplicable();
+        verify( providerInfo2, times( 2 ) ).getProviderName();
+
+        // warn for user is generated
+        verify( logger, times( 6 ) ).warn( anyString() );
+        verify( logger ).info( anyString() );
+
+        verifyNoMoreInteractions( logger, serviceLoader, providerInfo1, providerInfo2 );
+    }
+
+    @Test
+    public void manyAllKnownProviderIsNotAllowed() throws Exception
+    {
+        // given
+        ProviderInfo providerInfo1 = mock( ProviderInfo.class );
+        ProviderInfo providerInfo2 = mock( ProviderInfo.class );
+
+        // no manually configured providers
+        when( serviceLoader.lookup( eq( SurefireProvider.class ), any( ClassLoader.class ) ) )
+            .thenReturn( Collections.<String>emptySet() );
+
+        when( providerInfo1.isApplicable() ).thenReturn( true );
+        when( providerInfo1.getProviderName() ).thenReturn( "someProvider1" );
+
+        when( providerInfo2.isApplicable() ).thenReturn( true );
+        when( providerInfo2.getProviderName() ).thenReturn( "someProvider2" );
+
+        // when
+        ProviderDetectorRequest request = new ProviderDetectorRequest();
+        request.setWellKnownProviders( providerInfo1, providerInfo2 );
+        request.setMultipleFrameworks( "fail" );
+        List<ProviderInfo> providerInfoList = providerDetector.resolve( request );
+
+        // then - list of providers will be empty
+        assertThat( providerInfoList ).isEmpty();
+
+        verify( serviceLoader ).lookup( eq( SurefireProvider.class ), any( ClassLoader.class ) );
+
+        // all providers are checked
+        verify( providerInfo1 ).isApplicable();
+        verify( providerInfo1, times( 2 ) ).getProviderName();
+        verify( providerInfo2 ).isApplicable();
+        verify( providerInfo2, times( 2 ) ).getProviderName();
+
+        // error for user is generated
+        verify( logger, times( 6 ) ).error( anyString() );
+
+        verifyNoMoreInteractions( logger, serviceLoader, providerInfo1, providerInfo2 );
+    }
+
+    @Test
+    public void specialCaseForJunit4AndJunit47() throws IOException
+    {
+        // given
+        ProviderInfo providerInfo1 = mock( ProviderInfo.class );
+        ProviderInfo providerInfo2 = mock( ProviderInfo.class );
+
+        // no manually configured providers
+        when( serviceLoader.lookup( eq( SurefireProvider.class ), any( ClassLoader.class ) ) )
+            .thenReturn( Collections.<String>emptySet() );
+
+        when( providerInfo1.isApplicable() ).thenReturn( true );
+        when( providerInfo1.getProviderName() ).thenReturn( "org.apache.maven.surefire.junitcore.JUnitCoreProvider" );
+
+        when( providerInfo2.isApplicable() ).thenReturn( true );
+        when( providerInfo2.getProviderName() ).thenReturn( "org.apache.maven.surefire.junit4.JUnit4Provider" );
+
+        // when
+        ProviderDetectorRequest request = new ProviderDetectorRequest();
+        request.setWellKnownProviders( providerInfo1, providerInfo2 );
+        request.setMultipleFrameworks( "fail" );
+        List<ProviderInfo> providerInfoList = providerDetector.resolve( request );
+
+        // then - list of providers will be empty
+        assertThat( providerInfoList ).containsExactly( providerInfo1 );
+
+        verify( serviceLoader ).lookup( eq( SurefireProvider.class ), any( ClassLoader.class ) );
+
+        // all providers are checked
+        verify( providerInfo1 ).isApplicable();
+        verify( providerInfo1, times( 2 ) ).getProviderName();
+
+        verify( providerInfo2 ).isApplicable();
+        verify( providerInfo2 ).getProviderName();
 
         verify( logger ).info( anyString() );
 
@@ -140,7 +269,9 @@ public class ProviderDetectorTest
         when( providerInfo2.getProviderName() ).thenReturn( "provider2" );
 
         // when
-        List<ProviderInfo> providerInfoList = providerDetector.resolve( null, providerInfo1, providerInfo2 );
+        ProviderDetectorRequest request = new ProviderDetectorRequest();
+        request.setWellKnownProviders( providerInfo1, providerInfo2 );
+        List<ProviderInfo> providerInfoList = providerDetector.resolve( request );
 
         // then - all providers on list
         assertThat( providerInfoList ).containsExactly( providerInfo1, providerInfo2 );
@@ -179,7 +310,10 @@ public class ProviderDetectorTest
         when( providerInfo2.getProviderName() ).thenReturn( "provider2" );
 
         // when
-        List<ProviderInfo> providerInfoList = providerDetector.resolve( dynamicProvider, providerInfo1, providerInfo2 );
+        ProviderDetectorRequest request = new ProviderDetectorRequest();
+        request.setDynamicProvider( dynamicProvider );
+        request.setWellKnownProviders( providerInfo1, providerInfo2 );
+        List<ProviderInfo> providerInfoList = providerDetector.resolve( request );
 
         // then - all providers on list
         assertThat( providerInfoList ).containsExactly( dynProviderInfo, providerInfo2 );

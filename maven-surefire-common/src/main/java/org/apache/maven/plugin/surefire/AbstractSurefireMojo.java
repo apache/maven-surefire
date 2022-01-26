@@ -107,6 +107,7 @@ import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.providerapi.ConfigurableProviderInfo;
 import org.apache.maven.surefire.providerapi.ProviderDetector;
+import org.apache.maven.surefire.providerapi.ProviderDetectorRequest;
 import org.apache.maven.surefire.providerapi.ProviderInfo;
 import org.apache.maven.surefire.providerapi.ProviderRequirements;
 import org.apache.maven.surefire.shared.utils.io.FileUtils;
@@ -812,6 +813,16 @@ public abstract class AbstractSurefireMojo
     private Map<String, String> jdkToolchain;
 
     /**
+     * Option to specify the action when multiple tests frameworks are present on project classpath.
+     * <p>
+     * Can be {@code warn} - only warn, or {@code fail} to break execution.
+     *
+     * @since 3.0.0-M6
+     */
+    @Parameter
+    private String multipleFrameworks;
+
+    /**
      *
      */
     @Component
@@ -1194,13 +1205,31 @@ public abstract class AbstractSurefireMojo
     protected List<ProviderInfo> createProviders( TestClassPath testClasspath )
         throws MojoExecutionException
     {
+        Artifact junitArtifact = getJunitArtifact();
         Artifact junitDepArtifact = getJunitDepArtifact();
-        return providerDetector.resolve( new DynamicProviderInfo( null ),
+
+        ProviderDetectorRequest request = new ProviderDetectorRequest();
+        request.setDynamicProvider( new DynamicProviderInfo( null ) );
+
+        // after change order of well known providers, please update:
+        // maven-surefire-plugin/src/site/apt/examples/providers.apt.vm
+        request.setWellKnownProviders(
             new JUnitPlatformProviderInfo( getJUnit5Artifact(), testClasspath ),
             new TestNgProviderInfo( getTestNgArtifact() ),
-            new JUnitCoreProviderInfo( getJunitArtifact(), junitDepArtifact ),
-            new JUnit4ProviderInfo( getJunitArtifact(), junitDepArtifact ),
-            new JUnit3ProviderInfo() );
+            new JUnitCoreProviderInfo( junitArtifact, junitDepArtifact ),
+            new JUnit4ProviderInfo( junitArtifact, junitDepArtifact )
+        );
+
+        request.setDefaultProvider( new JUnit3ProviderInfo() );
+        request.setMultipleFrameworks( multipleFrameworks );
+
+        List<ProviderInfo> providerInfoList = providerDetector.resolve( request );
+
+        if ( providerInfoList.isEmpty() )
+        {
+            throw new MojoExecutionException( "No test-framework providers for test execution was found." );
+        }
+        return providerInfoList;
     }
 
     private SurefireProperties setupProperties()
