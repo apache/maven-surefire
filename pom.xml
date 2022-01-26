@@ -254,7 +254,7 @@
       <dependency>
         <groupId>net.sourceforge.htmlunit</groupId>
         <artifactId>htmlunit</artifactId>
-        <version>2.33</version>
+        <version>2.57.0</version>
       </dependency>
       <dependency>
         <!-- used in the unit tests and maven-shared-utils:3.3.4 -->
