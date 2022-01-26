@@ -48,11 +48,6 @@
             <artifactId>surefire-grouper</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.maven.shared</groupId>
-            <artifactId>maven-shared-utils</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>

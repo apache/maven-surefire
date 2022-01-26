@@ -169,12 +169,6 @@
         <groupId>org.apache.maven.shared</groupId>
         <artifactId>maven-shared-utils</artifactId>
         <version>${mavenSharedUtilsVersion}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.reporting</groupId>

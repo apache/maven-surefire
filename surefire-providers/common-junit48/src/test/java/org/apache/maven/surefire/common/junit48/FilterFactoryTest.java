@@ -19,7 +19,7 @@ package org.apache.maven.surefire.common.junit48;
  * under the License.
  */
 
-import org.apache.maven.shared.utils.io.MatchPatterns;
+import org.apache.maven.surefire.shared.utils.io.MatchPatterns;
 import org.apache.maven.surefire.common.junit48.tests.pt.PT;
 import org.apache.maven.surefire.api.testset.ResolvedTest;
 import org.apache.maven.surefire.api.testset.TestListResolver;

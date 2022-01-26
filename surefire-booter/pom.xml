@@ -43,11 +43,6 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.maven.shared</groupId>
-      <artifactId>maven-shared-utils</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
       <scope>provided</scope>
