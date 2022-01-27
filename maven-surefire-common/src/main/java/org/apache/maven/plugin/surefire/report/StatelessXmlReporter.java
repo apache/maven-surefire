@@ -346,9 +346,8 @@ public class StatelessXmlReporter
         throws IOException
     {
         File reportFile = getReportFile( testSetReportEntry );
-
         File reportDir = reportFile.getParentFile();
-
+        reportFile.delete();
         //noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
         return new BufferedOutputStream( new FileOutputStream( reportFile ), 64 * 1024 );
