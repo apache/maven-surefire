@@ -315,5 +315,11 @@ public class AbstractSurefireMojoToolchainsTest
         {
             return buildContextToolchain;
         }
+
+        @Override
+        public List<Toolchain> getToolchains( MavenSession session, String type, Map<String, String> requirements )
+        {
+            throw new UnsupportedOperationException();
+        }
     }
 }

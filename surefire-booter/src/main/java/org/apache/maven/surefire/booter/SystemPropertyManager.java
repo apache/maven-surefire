@@ -44,7 +44,7 @@ public class SystemPropertyManager
     public static PropertiesWrapper loadProperties( InputStream inStream )
         throws IOException
     {
-        try ( final InputStream stream = inStream )
+        try ( InputStream stream = inStream )
         {
             Properties p = new Properties();
             p.load( stream );

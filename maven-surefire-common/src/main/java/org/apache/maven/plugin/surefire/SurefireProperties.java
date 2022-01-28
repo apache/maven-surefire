@@ -248,7 +248,7 @@ public class SurefireProperties
     private static SurefireProperties loadProperties( InputStream inStream )
         throws IOException
     {
-        try ( final InputStream surefirePropertiesStream = inStream )
+        try ( InputStream surefirePropertiesStream = inStream )
         {
             Properties p = new Properties();
             p.load( surefirePropertiesStream );

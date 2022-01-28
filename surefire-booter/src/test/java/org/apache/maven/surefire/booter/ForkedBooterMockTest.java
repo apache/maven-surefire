@@ -274,7 +274,7 @@ public class ForkedBooterMockTest
         doCallRealMethod()
             .when( ForkedBooter.class, "lookupDecoderFactory", anyString() );
 
-        try ( final MasterProcessChannelProcessorFactory factory =
+        try ( MasterProcessChannelProcessorFactory factory =
                   invokeMethod( ForkedBooter.class, "lookupDecoderFactory", "pipe://3" ) )
         {
             assertThat( factory ).isInstanceOf( LegacyMasterProcessChannelProcessorFactory.class );
@@ -434,13 +434,13 @@ public class ForkedBooterMockTest
         doCallRealMethod()
             .when( ForkedBooter.class, "lookupDecoderFactory", anyString() );
 
-        try ( final ServerSocketChannel server = ServerSocketChannel.open() )
+        try ( ServerSocketChannel server = ServerSocketChannel.open() )
         {
             server.bind( new InetSocketAddress( 0 ) );
             int serverPort = ( (InetSocketAddress) server.getLocalAddress() ).getPort();
             final String uuid = UUID.randomUUID().toString();
             String url = "tcp://localhost:" + serverPort + "?sessionId=" + uuid;
-            try ( final MasterProcessChannelProcessorFactory factory =
+            try ( MasterProcessChannelProcessorFactory factory =
                       invokeMethod( ForkedBooter.class, "lookupDecoderFactory", url ) )
             {
                 assertThat( factory )

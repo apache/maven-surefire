@@ -23,7 +23,7 @@
   <parent>
     <artifactId>maven-parent</artifactId>
     <groupId>org.apache.maven</groupId>
-    <version>34</version>
+    <version>35-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.maven.surefire</groupId>
@@ -88,15 +88,15 @@
 
   <properties>
     <javaVersion>8</javaVersion>
-    <mavenVersion>3.2.5</mavenVersion>
+    <mavenVersion>4.0.0-alpha-1-SNAPSHOT</mavenVersion>
     <commonsLang3Version>3.12.0</commonsLang3Version>
     <commonsCompress>1.21</commonsCompress>
     <commonsIoVersion>2.11.0</commonsIoVersion>
-    <doxiaVersion>1.11.1</doxiaVersion>
-    <doxiaSitetoolsVersion>1.11.1</doxiaSitetoolsVersion>
+    <doxiaVersion>2.0.0-M2-SNAPSHOT</doxiaVersion>
+    <doxiaSitetoolsVersion>2.0.0-M1-SNAPSHOT</doxiaSitetoolsVersion>
     <plexus-java-version>1.1.0</plexus-java-version>
     <!-- maven-shared-utils:3.3.4 uses org.fusesource.jansi:jansi:2.2.0 -->
-    <mavenSharedUtilsVersion>3.3.4</mavenSharedUtilsVersion>
+    <mavenSharedUtilsVersion>4.0.0-SNAPSHOT</mavenSharedUtilsVersion>
     <powermockVersion>2.0.9</powermockVersion>
     <mavenPluginToolsVersion>3.6.2</mavenPluginToolsVersion>
     <jacocoVersion>0.8.7</jacocoVersion>
@@ -130,7 +130,7 @@
       <dependency>
         <groupId>org.apache.maven.reporting</groupId>
         <artifactId>maven-reporting-api</artifactId>
-        <version>3.0</version>
+        <version>3.1.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
@@ -188,7 +188,7 @@
       <dependency>
         <groupId>org.apache.maven.shared</groupId>
         <artifactId>maven-common-artifact-filters</artifactId>
-        <version>3.1.1</version>
+        <version>3.2.1-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.apache.maven.shared</groupId>
@@ -238,7 +238,7 @@
       <dependency>
         <groupId>org.apache.maven.plugin-testing</groupId>
         <artifactId>maven-plugin-testing-harness</artifactId>
-        <version>3.3.0</version>
+          <version>3.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.xmlunit</groupId>
@@ -462,7 +462,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>animal-sniffer-maven-plugin</artifactId>
-          <version>1.17</version>
+          <version>1.20</version>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
@@ -582,7 +582,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.0.0-M3</version>
+        <version>3.0.0</version>
         <executions>
           <execution>
             <id>enforce-java</id>
