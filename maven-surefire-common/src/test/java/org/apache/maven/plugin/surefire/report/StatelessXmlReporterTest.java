@@ -21,15 +21,16 @@ package org.apache.maven.plugin.surefire.report;
 
 import junit.framework.TestCase;
 import org.apache.maven.plugin.surefire.booterclient.output.DeserializedStacktraceWriter;
-import org.apache.maven.shared.utils.StringUtils;
 import org.apache.maven.shared.utils.xml.Xpp3Dom;
 import org.apache.maven.shared.utils.xml.Xpp3DomBuilder;
 import org.apache.maven.surefire.report.ReportEntry;
 import org.apache.maven.surefire.report.SimpleReportEntry;
 import org.apache.maven.surefire.report.StackTraceWriter;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
@@ -38,10 +39,15 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
+import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
+import static org.apache.maven.plugin.surefire.report.ReportEntryType.SKIPPED;
+import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
 import static org.apache.maven.surefire.util.internal.ObjectUtils.systemProps;
+import static org.apache.maven.surefire.util.internal.StringUtils.isBlank;
 import static org.apache.maven.surefire.util.internal.StringUtils.UTF_8;
 
-@SuppressWarnings( "ResultOfMethodCallIgnored" )
+@SuppressWarnings( { "ResultOfMethodCallIgnored", "checkstyle:magicnumber" } )
 public class StatelessXmlReporterTest
     extends TestCase
 {
@@ -91,7 +97,7 @@ public class StatelessXmlReporterTest
 
         ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), getClass().getName(), 12 );
         WrappedReportEntry testSetReportEntry =
-            new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null, systemProps() );
+            new WrappedReportEntry( reportEntry, SUCCESS, 12, null, null, systemProps() );
         stats.testSucceeded( testSetReportEntry );
         reporter.testSetCompleted( testSetReportEntry, stats );
 
@@ -106,7 +112,7 @@ public class StatelessXmlReporterTest
     {
         ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), TEST_ONE, 12 );
         WrappedReportEntry testSetReportEntry =
-            new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null, systemProps() );
+            new WrappedReportEntry( reportEntry, SUCCESS, 12, null, null, systemProps() );
         expectedReportFile = new File( reportDir, "TEST-" + TEST_ONE + ".xml" );
 
         stats.testSucceeded( testSetReportEntry );
@@ -135,7 +141,7 @@ public class StatelessXmlReporterTest
         stdErr.write( stdErrBytes, 0, stdErrBytes.length );
         WrappedReportEntry t2 =
             new WrappedReportEntry( new SimpleReportEntry( Inner.class.getName(), TEST_TWO, stackTraceWriter, 13 ),
-                                    ReportEntryType.ERROR, 13, stdOut, stdErr );
+                                    ERROR, 13, stdOut, stdErr );
 
         stats.testSucceeded( t2 );
         StatelessXmlReporter reporter = new StatelessXmlReporter( reportDir, null, false, 0,
@@ -149,8 +155,8 @@ public class StatelessXmlReporterTest
         Xpp3Dom properties = testSuite.getChild( "properties" );
         assertEquals( System.getProperties().size(), properties.getChildCount() );
         Xpp3Dom child = properties.getChild( 1 );
-        assertFalse( StringUtils.isEmpty( child.getAttribute( "value" ) ) );
-        assertFalse( StringUtils.isEmpty( child.getAttribute( "name" ) ) );
+        assertFalse( isBlank( child.getAttribute( "value" ) ) );
+        assertFalse( isBlank( child.getAttribute( "name" ) ) );
 
         Xpp3Dom[] testcase = testSuite.getChildren( "testcase" );
         Xpp3Dom tca = testcase[0];
@@ -178,7 +184,7 @@ public class StatelessXmlReporterTest
         ReportEntry reportEntry = new SimpleReportEntry( getClass().getName(), TEST_ONE, 12 );
 
         WrappedReportEntry testSetReportEntry =
-            new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null, systemProps() );
+                new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null, systemProps() );
         expectedReportFile = new File( reportDir, "TEST-" + TEST_ONE + ".xml" );
 
         stats.testSucceeded( testSetReportEntry );
@@ -194,22 +200,22 @@ public class StatelessXmlReporterTest
 
         WrappedReportEntry testTwoFirstError =
             new WrappedReportEntry( new SimpleReportEntry( Inner.class.getName(), TEST_TWO, stackTraceWriterOne, 5 ),
-                                    ReportEntryType.ERROR, 5, createStdOutput( firstRunOut ),
+                                    ERROR, 5, createStdOutput( firstRunOut ),
                                     createStdOutput( firstRunErr ) );
 
         WrappedReportEntry testTwoSecondError =
             new WrappedReportEntry( new SimpleReportEntry( Inner.class.getName(), TEST_TWO, stackTraceWriterTwo, 13 ),
-                                    ReportEntryType.ERROR, 13, createStdOutput( secondRunOut ),
+                                    ERROR, 13, createStdOutput( secondRunOut ),
                                     createStdOutput( secondRunErr ) );
 
         WrappedReportEntry testThreeFirstRun =
             new WrappedReportEntry( new SimpleReportEntry( Inner.class.getName(), TEST_THREE, stackTraceWriterOne, 13 ),
-                                    ReportEntryType.FAILURE, 13, createStdOutput( firstRunOut ),
+                                    FAILURE, 13, createStdOutput( firstRunOut ),
                                     createStdOutput( firstRunErr ) );
 
         WrappedReportEntry testThreeSecondRun =
             new WrappedReportEntry( new SimpleReportEntry( Inner.class.getName(), TEST_THREE, stackTraceWriterTwo, 2 ),
-                                    ReportEntryType.SUCCESS, 2, createStdOutput( secondRunOut ),
+                                    SUCCESS, 2, createStdOutput( secondRunOut ),
                                     createStdOutput( secondRunErr ) );
 
         stats.testSucceeded( testTwoFirstError );
@@ -226,14 +232,14 @@ public class StatelessXmlReporterTest
 
         FileInputStream fileInputStream = new FileInputStream( expectedReportFile );
 
-        Xpp3Dom testSuite = Xpp3DomBuilder.build( new InputStreamReader( fileInputStream, UTF_8 ) );
+        Xpp3Dom testSuite = Xpp3DomBuilder.build( new InputStreamReader( fileInputStream, UTF_8) );
         assertEquals( "testsuite", testSuite.getName() );
         assertEquals( "0.012", testSuite.getAttribute( "time" ) );
         Xpp3Dom properties = testSuite.getChild( "properties" );
         assertEquals( System.getProperties().size(), properties.getChildCount() );
         Xpp3Dom child = properties.getChild( 1 );
-        assertFalse( StringUtils.isEmpty( child.getAttribute( "value" ) ) );
-        assertFalse( StringUtils.isEmpty( child.getAttribute( "name" ) ) );
+        assertFalse( isBlank( child.getAttribute( "value" ) ) );
+        assertFalse( isBlank( child.getAttribute( "name" ) ) );
 
         Xpp3Dom[] testcase = testSuite.getChildren( "testcase" );
         Xpp3Dom testCaseOne = testcase[0];
@@ -275,6 +281,79 @@ public class StatelessXmlReporterTest
         // system-out and system-err should not be present for flaky failures
         assertNull( testCaseThree.getChild( "system-out" ) );
         assertNull( testCaseThree.getChild( "system-err" ) );
+    }
+
+    public void testOutputRerunFlakyAssumption()
+            throws IOException
+    {
+        expectedReportFile = new File( reportDir, "TEST-" + getClass().getName() + ".xml" );
+
+        StackTraceWriter stackTraceWriterOne = new DeserializedStacktraceWriter( "A fud msg", "trimmed",
+                "fail at foo" );
+
+        StackTraceWriter stackTraceWriterTwo =
+                new DeserializedStacktraceWriter( "A fud msg two", "trimmed two", "fail at foo two" );
+
+        String firstRunOut = "first run out";
+        String firstRunErr = "first run err";
+        String secondRunOut = "second run out";
+        String secondRunErr = "second run err";
+
+        WrappedReportEntry testTwoFirstError =
+                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), TEST_TWO,
+                        stackTraceWriterOne, 5 ), ERROR, 5, createStdOutput( firstRunOut ),
+                        createStdOutput( firstRunErr ) );
+
+        stats.testSucceeded( testTwoFirstError );
+
+        WrappedReportEntry testTwoSecondError =
+                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), TEST_TWO,
+                        stackTraceWriterTwo, 13 ), SKIPPED, 13, createStdOutput( secondRunOut ),
+                        createStdOutput( secondRunErr ) );
+
+        rerunStats.testSucceeded( testTwoSecondError );
+
+        StatelessXmlReporter reporter =
+                new StatelessXmlReporter( reportDir, null, false, 1,
+                        new HashMap<String, Map<String, List<WrappedReportEntry>>>(), XSD );
+
+        WrappedReportEntry testSetReportEntry =
+                new WrappedReportEntry( new SimpleReportEntry( getClass().getName(), getClass().getName(),
+                        stackTraceWriterOne, 5 ), ERROR, 20, createStdOutput( firstRunOut ),
+                        createStdOutput( firstRunErr ) );
+
+        reporter.testSetCompleted( testSetReportEntry, stats );
+        reporter.testSetCompleted( testSetReportEntry, rerunStats );
+
+        FileInputStream fileInputStream = new FileInputStream( expectedReportFile );
+
+        Xpp3Dom testSuite = Xpp3DomBuilder.build( new InputStreamReader( fileInputStream, UTF_8) );
+        assertEquals( "testsuite", testSuite.getName() );
+        assertEquals( "0.02", testSuite.getAttribute( "time" ) );
+
+        Xpp3Dom[] testcase = testSuite.getChildren( "testcase" );
+        assertEquals( 1, testcase.length );
+        Xpp3Dom testCaseOne = testcase[0];
+        assertEquals( getClass().getName(), testCaseOne.getAttribute( "classname" ) );
+        assertEquals( TEST_TWO, testCaseOne.getAttribute( "name" ) );
+        assertEquals( "0.005", testCaseOne.getAttribute( "time" ) );
+
+        Xpp3Dom[] testCaseElements = testCaseOne.getChildren();
+        assertEquals( 3, testCaseElements.length );
+        assertEquals( "error", testCaseElements[0].getName() );
+        assertEquals( "system-out", testCaseElements[1].getName() );
+        assertEquals( "system-err", testCaseElements[2].getName() );
+        long linesWithComments = 0;
+        BufferedReader reader = new BufferedReader( new FileReader( expectedReportFile ) );
+        for( String line = reader.readLine(); line != null; line = reader.readLine() )
+        {
+            line = reader.readLine();
+            if ( line.contains( "<!-- a skipped test execution in re-run phase -->" ) )
+            {
+                linesWithComments++;
+            }
+        }
+        assertEquals( 1, linesWithComments );
     }
 
     private boolean defaultCharsetSupportsSpecialChar()
