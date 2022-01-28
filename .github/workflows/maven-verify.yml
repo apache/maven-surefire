@@ -27,6 +27,8 @@ jobs:
     uses: apache/maven-gh-actions-shared/.github/workflows/maven-verify.yml@v2
     with:
       jdk-matrix: '[ "8", "11", "17", "18-ea" ]'
+      ff-os: 'macOS-latest'
+      ff-jdk: '18-ea'
       ff-goal: 'clean install -nsu -P run-its'
       ff-site-goal: 'clean install site -nsu -DskipTests -P reporting'
       verify-goal: 'clean install -nsu -P run-its'
@@ -36,5 +38,5 @@ jobs:
         surefire-its/target/*/log.txt
         surefire-its/target/**/surefire-reports/*
         surefire-its/target/**/failsafe-reports/*
-      max-parallel: 4
-      timeout-minutes: 540
+      max-parallel: 3
+      timeout-minutes: 600
