@@ -63,7 +63,25 @@ Build the Surefire project using **Maven 3.2.5+** and **JDK 1.8+**.
   ```
   mvn install site site:stage -P reporting,run-its
   ```
-  
+
+* To set up the project in [Eclipse IDE](https://www.eclipse.org/), please follow these steps:
+
+  * Build module `surefire-shared-utils` with profile `ide-development` and install it into the local maven repository using this Maven command:
+    ```
+    mvn install -P ide-development -f surefire-shared-utils/pom.xml
+    ```
+  * Build module `surefire-grouper` in order to generate and compile sources into `target/generated-sources/javacc` using this Maven command:
+    ```
+    mvn compile -f surefire-grouper/pom.xml
+    ```
+  * In Eclipse, select _File > Import ... > Maven Project_
+
+     * Select all projects (poms) except `surefire-shared-utils`,
+       enter profile `ide-development` in _Advanced -> Profiles_
+     * Check module `surefire-grouper` has source folder `target/generated-sources/javacc`.
+       If not, add it manually in the module's project properties
+
+* Setup for development in [IntelliJ IDEA](https://www.jetbrains.com/idea/) should work out of the box.
 
 ### Deploying web site
 
