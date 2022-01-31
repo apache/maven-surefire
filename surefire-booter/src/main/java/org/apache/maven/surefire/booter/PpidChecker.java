@@ -59,7 +59,7 @@ import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
  */
 final class PpidChecker
 {
-    private static final int MINUTES_TO_MILLIS = 60 * 1000;
+    private static final long MINUTES_TO_MILLIS = 60L * 1000L;
     // 25 chars https://superuser.com/questions/937380/get-creation-time-of-file-in-milliseconds/937401#937401
     private static final int WMIC_CREATION_DATE_VALUE_LENGTH = 25;
     private static final int WMIC_CREATION_DATE_TIMESTAMP_LENGTH = 18;
@@ -250,7 +250,7 @@ final class PpidChecker
         }
     }
 
-    private boolean isStopped()
+    boolean isStopped()
     {
         return stopped;
     }

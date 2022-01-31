@@ -84,7 +84,7 @@ public class PpidCheckerTest
                 .isEqualTo( expectedPid );
 
         assertThat( processInfo.getTime() )
-                .isNotNull();
+                .isGreaterThan( 0L );
     }
 
     @Test
@@ -117,7 +117,7 @@ public class PpidCheckerTest
                 .isEqualTo( expectedPid );
 
         assertThat( processInfo.getTime() )
-                .isNotNull();
+                .isGreaterThan( 0L );
 
         assertThat( checker.toString() )
                 .contains( "ppid=" + expectedPid )
@@ -329,6 +329,6 @@ public class PpidCheckerTest
 
     private static long windowsProcessStartTime( PpidChecker checker )
     {
-        return (long) checker.windows().getTime();
+        return checker.windows().getTime();
     }
 }

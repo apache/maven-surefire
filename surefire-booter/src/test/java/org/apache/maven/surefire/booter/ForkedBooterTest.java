@@ -34,7 +34,6 @@ import java.util.Collection;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.fest.assertions.Assertions.assertThat;
@@ -134,7 +133,7 @@ public class ForkedBooterTest
         ScheduledExecutorService scheduler = null;
         try
         {
-            scheduler = invokeMethod( ForkedBooter.class, "createPingScheduler" );
+            scheduler = invokeMethod( ForkedBooter.class, "createScheduler", "thread name" );
             assertThat( scheduler )
                     .isNotNull();
         }
@@ -178,11 +177,10 @@ public class ForkedBooterTest
     @Test
     public void testScheduler() throws Exception
     {
-        ScheduledThreadPoolExecutor executor = invokeMethod( ForkedBooter.class, "createPingScheduler" );
+        ScheduledThreadPoolExecutor executor = invokeMethod( ForkedBooter.class, "createScheduler", "thread name" );
         executor.shutdown();
         assertThat( executor.getCorePoolSize() ).isEqualTo( 1 );
-        assertThat( executor.getKeepAliveTime( TimeUnit.SECONDS ) ).isEqualTo( 3L );
-        assertThat( executor.getMaximumPoolSize() ).isEqualTo( 2 );
+        assertThat( executor.getMaximumPoolSize() ).isEqualTo( 1 );
     }
 
     @Test
