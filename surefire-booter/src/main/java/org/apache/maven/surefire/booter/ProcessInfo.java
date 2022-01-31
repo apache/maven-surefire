@@ -34,8 +34,8 @@ import javax.annotation.Nonnull;
  */
 final class ProcessInfo
 {
-    static final ProcessInfo INVALID_PROCESS_INFO = new ProcessInfo( null, null );
-    static final ProcessInfo ERR_PROCESS_INFO = new ProcessInfo( null, null );
+    static final ProcessInfo INVALID_PROCESS_INFO = new ProcessInfo( null, 0 );
+    static final ProcessInfo ERR_PROCESS_INFO = new ProcessInfo( null, 0 );
 
     /**
      * On Unix we do not get PID due to the command is interested only to etime of PPID:
@@ -53,9 +53,9 @@ final class ProcessInfo
     }
 
     private final String pid;
-    private final Comparable time;
+    private final long time;
 
-    private ProcessInfo( String pid, Comparable time )
+    private ProcessInfo( String pid, long time )
     {
         this.pid = pid;
         this.time = time;
@@ -82,26 +82,24 @@ final class ProcessInfo
         return pid;
     }
 
-    Comparable getTime()
+    long getTime()
     {
         checkValid();
         return time;
     }
 
-    @SuppressWarnings( "unchecked" )
     boolean isTimeEqualTo( ProcessInfo that )
     {
         checkValid();
         that.checkValid();
-        return time.compareTo( that.time ) == 0;
+        return time == that.time;
     }
 
-    @SuppressWarnings( "unchecked" )
     boolean isTimeBefore( ProcessInfo that )
     {
         checkValid();
         that.checkValid();
-        return time.compareTo( that.time ) < 0;
+        return time < that.time;
     }
 
     private void checkValid()
