@@ -791,7 +791,6 @@
                                 <maxParallelTestThreads>3</maxParallelTestThreads>
                             </systemPropertyVariables>
                             <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                            <enableProcessChecker>native</enableProcessChecker>
                             <shutdown>kill</shutdown>
                         </configuration>
                         <dependencies>
