@@ -539,7 +539,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase
             if ( line.contains( "These tests are incomplete:" ) )
             {
                 assertThat( it.hasNext() ).isTrue();
-                assertThat( it.next() ).matches( "^.*\\s+surefireparallel\\.Waiting(\\d{1,1})Test$" );
+                assertThat( it.next() ).matches( "^.*surefireparallel\\.Waiting(\\d{1,1})Test$" );
             }
         }
     }
