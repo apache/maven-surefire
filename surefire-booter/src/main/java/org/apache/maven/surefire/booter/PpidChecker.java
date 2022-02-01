@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
+import static java.lang.String.join;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -397,6 +398,8 @@ final class PpidChecker
             Process process = null;
             ProcessInfo processInfo = INVALID_PROCESS_INFO;
             StringBuilder out = new StringBuilder( 64 );
+            out.append( join( " ", command ) )
+                .append( NL );
             try
             {
                 if ( IS_OS_HP_UX ) // force to run shell commands in UNIX Standard mode on HP-UX
@@ -414,13 +417,17 @@ final class PpidChecker
                 }
                 checkValid( scanner );
                 int exitCode = process.waitFor();
-                if ( exitCode != 0 || isStopped() )
+                boolean isError = Thread.interrupted() || isStopped();
+                if ( exitCode != 0 || isError )
                 {
-                    out.append( "<<exit>> <<" ).append( exitCode ).append( ">>" ).append( NL );
+                    out.append( "<<exit>> <<" ).append( exitCode ).append( ">>" )
+                        .append( NL )
+                        .append( "<<stopped>> <<" ).append( isStopped() ).append( ">>" );
                     DumpErrorSingleton.getSingleton()
                             .dumpText( out.toString() );
                 }
-                return isStopped() ? ERR_PROCESS_INFO : exitCode == 0 ? processInfo : INVALID_PROCESS_INFO;
+
+                return isError ? ERR_PROCESS_INFO : ( exitCode == 0 ? processInfo : INVALID_PROCESS_INFO );
             }
             catch ( Exception e )
             {
