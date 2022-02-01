@@ -19,9 +19,14 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
+
+import java.util.Iterator;
+
+import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * Testing JUnitCoreWrapper with ParallelComputerBuilder.
@@ -514,14 +519,29 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase
 
     @Test
     public void forcedShutdownVerifyingLogs()
+        throws Exception
     {
         // attempts to run for 2.4 sec until timeout has elapsed
-        unpack().parallelMethods().threadCountMethods(
-                3 ).disablePerCoreThreadCount().parallelTestsTimeoutForcedInSeconds( 1.05d ).setTestToRun(
-                "Waiting*Test" ).failNever().executeTest().verifyTextInLog(
-                "The test run has finished abruptly after timeout of 1.05 seconds." ).verifyTextInLog(
-                "These tests were executed in prior to the shutdown operation:" ).verifyTextInLog(
-                "These tests are incomplete:" );
+        OutputValidator validator = unpack()
+            .parallelMethods()
+            .threadCountMethods( 3 )
+            .disablePerCoreThreadCount()
+            .parallelTestsTimeoutForcedInSeconds( 1.05d )
+            .setTestToRun( "Waiting*Test" )
+            .failNever()
+            .executeTest()
+            .verifyTextInLog( "The test run has finished abruptly after timeout of 1.05 seconds." )
+            .verifyTextInLog( "These tests were executed in prior to the shutdown operation:" );
+
+        for ( Iterator<String> it = validator.loadLogLines().iterator(); it.hasNext(); )
+        {
+            String line = it.next();
+            if ( line.contains( "These tests are incomplete:" ) )
+            {
+                assertThat( it.hasNext() ).isTrue();
+                assertThat( it.next() ).matches( "^.*\\s+surefireparallel\\.Waiting(\\d{1,1})Test$" );
+            }
+        }
     }
 
     private SurefireLauncher unpack()
