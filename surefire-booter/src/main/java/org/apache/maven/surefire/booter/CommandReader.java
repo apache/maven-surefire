@@ -33,6 +33,7 @@ import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.nio.channels.ClosedChannelException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -393,8 +394,9 @@ public final class CommandReader implements CommandChainReader
             catch ( IOException e )
             {
                 CommandReader.this.state.set( TERMINATED );
-                // If #stop() method is called, reader thread is interrupted and cause is InterruptedException.
-                if ( !( e.getCause() instanceof InterruptedException ) )
+                // If #stop() method is called, reader thread is interrupted
+                // and exception is InterruptedIOException or its cause is InterruptedException.
+                if ( !( e instanceof InterruptedIOException || e.getCause() instanceof InterruptedException ) )
                 {
                     String msg = "[SUREFIRE] std/in stream corrupted";
                     DumpErrorSingleton.getSingleton().dumpStreamException( e, msg );
