@@ -27,7 +27,6 @@ import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.surefire.api.cli.CommandLineOption;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
-import org.apache.maven.surefire.api.util.internal.DumpFileUtils;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -38,6 +37,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static java.util.Collections.unmodifiableList;
+import static org.apache.maven.surefire.api.util.internal.DumpFileUtils.newFormattedDateFileName;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.surefire.api.booter.DumpErrorSingleton.DUMPSTREAM_FILE_EXT;
 import static org.apache.maven.surefire.api.booter.DumpErrorSingleton.DUMP_FILE_EXT;
@@ -52,7 +52,7 @@ import static org.apache.maven.surefire.api.cli.CommandLineOption.SHOW_ERRORS;
  */
 public final class SurefireHelper
 {
-    private static final String DUMP_FILE_DATE = DumpFileUtils.newFormattedDateFileName();
+    private static final String DUMP_FILE_DATE = newFormattedDateFileName();
 
     public static final String DUMP_FILE_PREFIX = DUMP_FILE_DATE + "-jvmRun";
 
