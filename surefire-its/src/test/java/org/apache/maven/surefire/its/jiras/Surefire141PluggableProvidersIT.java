@@ -28,7 +28,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FilenameFilter;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * SUREFIRE-613 Asserts proper test counts when running in parallel

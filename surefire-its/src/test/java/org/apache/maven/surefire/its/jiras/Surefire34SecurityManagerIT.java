@@ -27,7 +27,7 @@ import org.junit.Test;
 
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaMaxVersion;
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * SUREFIRE-621 Asserts proper test counts when running junit 3 tests in parallel

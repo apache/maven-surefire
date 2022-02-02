@@ -59,8 +59,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
-import static org.fest.assertions.Assertions.assertThat;
-import static org.fest.assertions.MapAssert.entry;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
@@ -214,10 +213,10 @@ public class ForkingRunListenerTest
             .hasSize( 2 );
 
         assertThat( forkStreamClient.getTestVmSystemProperties() )
-            .includes( entry( "k1", "v1" ) );
+            .containsEntry( "k1", "v1" );
 
         assertThat( forkStreamClient.getTestVmSystemProperties() )
-            .includes( entry( "k2", "v2" ) );
+            .containsEntry( "k2", "v2" );
     }
 
     public void testMultipleEntries() throws Exception

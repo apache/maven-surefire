@@ -23,7 +23,7 @@ import org.junit.Test;
 
 import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_17;
 import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_RECENT;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @since 3.0.0-M6

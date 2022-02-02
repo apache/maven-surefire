@@ -36,7 +36,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.powermock.reflect.Whitebox.invokeMethod;
 
 /**

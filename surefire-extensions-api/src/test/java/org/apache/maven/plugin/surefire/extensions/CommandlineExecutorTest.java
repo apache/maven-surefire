@@ -33,8 +33,8 @@ import java.io.Closeable;
 import java.nio.file.Paths;
 
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
-import static org.fest.assertions.Assertions.assertThat;
-import static org.fest.util.Files.delete;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.util.Files.delete;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;

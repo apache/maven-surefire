@@ -20,14 +20,14 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  */
 
 import org.apache.maven.surefire.shared.utils.cli.CommandLineException;
-import org.fest.assertions.Condition;
+import org.assertj.core.api.Condition;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mock;

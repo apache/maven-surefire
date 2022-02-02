@@ -24,7 +24,7 @@ import org.junit.Test;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for {@link ConsoleLoggerUtils}.

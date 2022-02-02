@@ -25,7 +25,7 @@ import org.apache.maven.surefire.providerapi.ServiceLoader;
 import org.junit.Test;
 
 import static java.lang.Thread.currentThread;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>

@@ -42,7 +42,7 @@ import java.util.zip.ZipOutputStream;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.powermock.reflect.Whitebox.invokeMethod;
 import static org.powermock.reflect.Whitebox.setInternalState;

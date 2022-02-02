@@ -38,7 +38,7 @@ import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_FREE_BSD;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_LINUX;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_NET_BSD;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_OPEN_BSD;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;

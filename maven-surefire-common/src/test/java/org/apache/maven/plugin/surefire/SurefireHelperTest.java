@@ -35,7 +35,7 @@ import static java.util.Collections.singleton;
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
 import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
 
 /**

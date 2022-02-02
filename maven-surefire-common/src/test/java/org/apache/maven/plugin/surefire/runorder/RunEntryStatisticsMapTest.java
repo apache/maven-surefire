@@ -40,7 +40,7 @@ import org.apache.maven.surefire.api.util.internal.ClassMethod;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.shared.io.IOUtils.readLines;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.powermock.reflect.Whitebox.getInternalState;
 
 /**

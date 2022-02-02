@@ -36,7 +36,7 @@ import java.io.File;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.getMethod;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;

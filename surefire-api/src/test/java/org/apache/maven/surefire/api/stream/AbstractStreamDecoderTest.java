@@ -56,7 +56,7 @@ import static java.util.Collections.singletonMap;
 import static org.apache.maven.surefire.api.booter.Constants.DEFAULT_STREAM_ENCODING;
 import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_STDOUT;
 import static org.apache.maven.surefire.api.stream.SegmentType.END_OF_FRAME;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.powermock.reflect.Whitebox.invokeMethod;
 
 /**

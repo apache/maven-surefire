@@ -62,8 +62,8 @@ import java.util.concurrent.FutureTask;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
-import static org.fest.assertions.Assertions.assertThat;
-import static org.fest.assertions.Fail.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -275,7 +275,7 @@ public class ForkedBooterMockTest
                 public void run() throws Throwable
                 {
                     factory.connect( "tcp://localhost:123" );
-                    fail();
+                    fail( "should not connect to the port 123" );
                 }
             } );
 
@@ -386,7 +386,7 @@ public class ForkedBooterMockTest
                     public void run() throws Throwable
                     {
                         factory.connect( "pipe://1" );
-                        fail();
+                        fail( "should not connect" );
                     }
                 } );
 
@@ -396,7 +396,7 @@ public class ForkedBooterMockTest
                     public void run() throws Throwable
                     {
                         factory.connect( "tcp://localhost:123\u0000\u0000\u0000" );
-                        fail();
+                        fail( "should not connect to incorrect uri" );
                     }
                 } );
 

@@ -34,7 +34,7 @@ import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.shared.utils.io.FileUtils;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *

@@ -27,7 +27,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 import static java.util.Objects.requireNonNull;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 
 /**

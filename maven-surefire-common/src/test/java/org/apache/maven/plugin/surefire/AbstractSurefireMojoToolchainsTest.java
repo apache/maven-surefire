@@ -26,7 +26,6 @@ import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.apache.maven.toolchain.java.DefaultJavaToolChain;
 import org.codehaus.plexus.logging.Logger;
-import org.fest.assertions.MapAssert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -49,7 +48,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static junit.framework.TestCase.assertNull;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkHomeFromJre;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -166,7 +165,7 @@ public class AbstractSurefireMojoToolchainsTest
 
         assertThat( mojo.getEnvironmentVariables() ).isEmpty();
         JdkAttributes effectiveJvm = invokeMethod( mojo, "getEffectiveJvm" );
-        assertThat( mojo.getEnvironmentVariables() ).includes( MapAssert.entry( "JAVA_HOME", "/some/path" ) );
+        assertThat( mojo.getEnvironmentVariables() ).containsEntry( "JAVA_HOME", "/some/path" );
         assertThat( effectiveJvm.getJvmExecutable().getPath() )
             .contains( "/path/from/toolchain".replace( '/', separatorChar ) );
     }
@@ -183,7 +182,7 @@ public class AbstractSurefireMojoToolchainsTest
         mojo.setToolchain( toolchain );
 
         JdkAttributes effectiveJvm = invokeMethod( mojo, "getEffectiveJvm" );
-        assertThat( mojo.getEnvironmentVariables() ).includes( MapAssert.entry( "JAVA_HOME", "/already/set/path" ) );
+        assertThat( mojo.getEnvironmentVariables() ).containsEntry( "JAVA_HOME", "/already/set/path" );
         assertThat( effectiveJvm.getJvmExecutable().getPath() )
             .contains( "/path/from/toolchain".replace( '/', separatorChar ) );
     }
@@ -206,7 +205,7 @@ public class AbstractSurefireMojoToolchainsTest
         assertThat( mojo.getEnvironmentVariables() ).isEmpty();
         JdkAttributes effectiveJvm = invokeMethod( mojo, "getEffectiveJvm" );
         assertThat( mojo.getEnvironmentVariables() )
-            .includes( MapAssert.entry( "JAVA_HOME", currentJdkHome.getAbsolutePath() ) );
+            .containsEntry( "JAVA_HOME", currentJdkHome.getAbsolutePath() );
         assertThat( effectiveJvm.getJvmExecutable().getPath() ).contains( javaExecutablePath );
     }
 
@@ -227,7 +226,7 @@ public class AbstractSurefireMojoToolchainsTest
 
         JdkAttributes effectiveJvm = invokeMethod( mojo, "getEffectiveJvm" );
         assertThat( mojo.getEnvironmentVariables() )
-            .includes( MapAssert.entry( "JAVA_HOME", "/already/set/path" ) );
+            .containsEntry( "JAVA_HOME", "/already/set/path" );
         assertThat( effectiveJvm.getJvmExecutable().getPath() ).contains( javaExecutablePath );
     }
 

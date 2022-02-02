@@ -84,8 +84,7 @@ import static org.apache.maven.plugin.surefire.booterclient.MockReporter.TEST_SU
 import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_BYE;
 import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_CONSOLE_ERROR;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
-import static org.fest.assertions.Assertions.assertThat;
-import static org.fest.assertions.MapAssert.entry;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -888,7 +887,7 @@ public class ForkClientTest
         assertThat( client.getTestVmSystemProperties() )
                 .hasSize( 1 );
         assertThat( client.getTestVmSystemProperties() )
-                .includes( entry( "k1", "v1" ) );
+                .containsEntry( "k1", "v1" );
     }
 
     @Test

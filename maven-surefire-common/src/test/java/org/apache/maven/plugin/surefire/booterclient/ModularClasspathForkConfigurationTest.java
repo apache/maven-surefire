@@ -46,7 +46,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 import static org.apache.maven.surefire.shared.utils.StringUtils.replace;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**

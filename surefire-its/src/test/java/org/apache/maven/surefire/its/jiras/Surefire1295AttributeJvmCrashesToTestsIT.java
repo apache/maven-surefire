@@ -38,7 +38,7 @@ import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.surefire.its.jiras.Surefire1295AttributeJvmCrashesToTestsIT.ForkMode.DEFAULT;
 import static org.apache.maven.surefire.its.jiras.Surefire1295AttributeJvmCrashesToTestsIT.ForkMode.ONE_FORK_NO_REUSE;
 import static org.apache.maven.surefire.its.jiras.Surefire1295AttributeJvmCrashesToTestsIT.ForkMode.ONE_FORK_REUSE;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 

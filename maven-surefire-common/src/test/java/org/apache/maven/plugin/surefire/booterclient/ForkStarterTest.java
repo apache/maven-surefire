@@ -63,7 +63,7 @@ import java.util.Collections;
 import java.util.jar.Manifest;
 import java.util.zip.Deflater;
 
-import static org.fest.util.Files.delete;
+import static org.apache.commons.io.FileUtils.deleteQuietly;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -120,7 +120,7 @@ public class ForkStarterTest
     @AfterClass
     public static void deleteTmp()
     {
-        delete( tmp );
+        deleteQuietly( tmp );
     }
 
     @Test

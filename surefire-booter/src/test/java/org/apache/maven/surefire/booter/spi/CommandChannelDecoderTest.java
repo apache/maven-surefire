@@ -49,7 +49,7 @@ import static org.apache.maven.surefire.api.booter.MasterProcessCommand.TEST_SET
 import static org.apache.maven.surefire.api.booter.Shutdown.DEFAULT;
 import static org.apache.maven.surefire.api.booter.Shutdown.EXIT;
 import static org.apache.maven.surefire.api.booter.Shutdown.KILL;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;

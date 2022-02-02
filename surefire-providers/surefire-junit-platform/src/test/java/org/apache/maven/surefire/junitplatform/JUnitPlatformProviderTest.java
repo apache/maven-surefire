@@ -67,7 +67,6 @@ import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.RunOrderCalculator;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.TestsToRun;
-import org.fest.assertions.Assertions;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -614,33 +613,33 @@ public class JUnitPlatformProviderTest
         ArgumentCaptor<SimpleReportEntry> report = ArgumentCaptor.forClass( SimpleReportEntry.class );
         inOrder.verify( runListener )
                 .testSetStarting( report.capture() );
-        Assertions.assertThat( report.getValue().getSourceName() )
+        assertThat( report.getValue().getSourceName() )
                 .isEqualTo( TestClass1.class.getName() );
-        Assertions.assertThat( report.getValue().getName() )
+        assertThat( report.getValue().getName() )
                 .isNull();
 
         report = ArgumentCaptor.forClass( SimpleReportEntry.class );
         inOrder.verify( runListener )
                 .testSetCompleted( report.capture() );
-        Assertions.assertThat( report.getValue().getSourceName() )
+        assertThat( report.getValue().getSourceName() )
                 .isEqualTo( TestClass1.class.getName() );
-        Assertions.assertThat( report.getValue().getName() )
+        assertThat( report.getValue().getName() )
                 .isNull();
 
         report = ArgumentCaptor.forClass( SimpleReportEntry.class );
         inOrder.verify( runListener )
                 .testSetStarting( report.capture() );
-        Assertions.assertThat( report.getValue().getSourceName() )
+        assertThat( report.getValue().getSourceName() )
                 .isEqualTo( TestClass2.class.getName() );
-        Assertions.assertThat( report.getValue().getName() )
+        assertThat( report.getValue().getName() )
                 .isNull();
 
         report = ArgumentCaptor.forClass( SimpleReportEntry.class );
         inOrder.verify( runListener )
                 .testSetCompleted( report.capture() );
-        Assertions.assertThat( report.getValue().getSourceName() )
+        assertThat( report.getValue().getSourceName() )
                 .isEqualTo( TestClass2.class.getName() );
-        Assertions.assertThat( report.getValue().getName() )
+        assertThat( report.getValue().getName() )
                 .isNull();
 
         assertThat( executionListener.summaries ).hasSize( 1 );

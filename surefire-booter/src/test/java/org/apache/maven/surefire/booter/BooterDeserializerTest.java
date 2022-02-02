@@ -29,7 +29,7 @@ import static org.apache.maven.surefire.booter.BooterConstants.PROCESS_CHECKER;
 import static org.apache.maven.surefire.booter.BooterConstants.PROVIDER_CONFIGURATION;
 import static org.apache.maven.surefire.booter.BooterConstants.USESYSTEMCLASSLOADER;
 import static org.apache.maven.surefire.booter.ProcessCheckerType.ALL;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *

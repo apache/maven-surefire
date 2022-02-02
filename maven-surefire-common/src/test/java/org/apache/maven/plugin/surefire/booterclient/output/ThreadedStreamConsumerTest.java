@@ -32,7 +32,7 @@ import java.util.concurrent.FutureTask;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *

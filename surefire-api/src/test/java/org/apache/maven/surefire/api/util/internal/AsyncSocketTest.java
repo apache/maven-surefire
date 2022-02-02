@@ -49,7 +49,7 @@ import static java.net.StandardSocketOptions.SO_REUSEADDR;
 import static java.net.StandardSocketOptions.TCP_NODELAY;
 import static org.apache.maven.surefire.api.util.internal.Channels.newInputStream;
 import static org.apache.maven.surefire.api.util.internal.Channels.newOutputStream;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Low level Java benchmark test.

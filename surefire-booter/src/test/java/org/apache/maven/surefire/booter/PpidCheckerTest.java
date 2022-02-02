@@ -32,7 +32,7 @@ import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_UNIX;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.surefire.booter.ProcessInfo.unixProcessInfo;
 import static org.apache.maven.surefire.booter.ProcessInfo.windowsProcessInfo;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;

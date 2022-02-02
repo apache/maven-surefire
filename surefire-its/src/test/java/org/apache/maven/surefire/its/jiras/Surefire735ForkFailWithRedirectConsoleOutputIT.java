@@ -29,7 +29,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Collection;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 
 /**

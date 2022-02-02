@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
@@ -164,11 +164,11 @@ public class CommandReaderTest
         assertThat( it2.next(), is( getClass().getName() ) );
         assertThat( it2.hasNext(), is( true ) );
         assertThat( it2.next(), is( A.class.getName() ) );
-        assertThat( it2 ).isEmpty();
+        assertThat( it2.hasNext() ).isFalse();
 
         assertThat( it1.next(), is( C.class.getName() ) );
         addEndOfPipeline();
-        assertThat( it1 ).isEmpty();
+        assertThat( it1.hasNext() ).isFalse();
     }
 
     @Test( expected = NoSuchElementException.class )

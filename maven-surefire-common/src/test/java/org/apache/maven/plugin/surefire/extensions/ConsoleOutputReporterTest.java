@@ -27,10 +27,9 @@ import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
 import org.apache.maven.plugin.surefire.report.DirectConsoleOutput;
 import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
 import org.apache.maven.surefire.extensions.ConsoleOutputReporter;
-import org.fest.assertions.Assertions;
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.powermock.reflect.Whitebox.getInternalState;
 
 /**
@@ -52,7 +51,7 @@ public class ConsoleOutputReporterTest
                 .isInstanceOf( SurefireConsoleOutputReporter.class );
         assertThat( clone.toString() )
                 .isEqualTo( "SurefireConsoleOutputReporter{disable=true, encoding=ISO-8859-1}" );
-        Assertions.assertThat( ( (SurefireConsoleOutputReporter) clone ).isDisable() )
+        assertThat( ( (SurefireConsoleOutputReporter) clone ).isDisable() )
                 .isTrue();
         assertThat( ( (SurefireConsoleOutputReporter) clone ).getEncoding() )
                 .isEqualTo( "ISO-8859-1" );

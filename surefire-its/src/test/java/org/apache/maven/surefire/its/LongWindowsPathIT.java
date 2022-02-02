@@ -28,7 +28,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assume.assumeTrue;

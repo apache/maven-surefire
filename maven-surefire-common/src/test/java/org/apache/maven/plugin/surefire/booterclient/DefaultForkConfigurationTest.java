@@ -43,7 +43,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import static java.util.Collections.singleton;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;

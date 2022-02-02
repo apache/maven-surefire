@@ -96,8 +96,7 @@ import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_9;
 import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_RECENT;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.codehaus.plexus.languages.java.jpms.ModuleNameSource.MODULEDESCRIPTOR;
-import static org.fest.assertions.Assertions.assertThat;
-import static org.fest.assertions.MapAssert.entry;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -975,8 +974,8 @@ public class AbstractSurefireMojoTest
 
         assertThat( testClasspathWrapper.getTestDependencies() )
             .hasSize( 2 )
-            .includes( entry( "junit:junit", testClasspathJUnit ),
-                entry( "org.hamcrest:hamcrest-core", testClasspathHamcrest ) );
+            .containsEntry( "junit:junit", testClasspathJUnit )
+            .containsEntry( "org.hamcrest:hamcrest-core", testClasspathHamcrest );
     }
 
     @Test
@@ -1128,14 +1127,14 @@ public class AbstractSurefireMojoTest
 
         assertThat( testClasspathWrapper.getTestDependencies() )
             .hasSize( 8 )
-            .includes( entry( "third.party:artifact", testClasspathSomeTestArtifact ),
-                entry( "org.junit.vintage:junit-vintage-engine", testClasspathVintage ),
-                entry( "org.apiguardian:apiguardian-api", testClasspathApiguardian ),
-                entry( "org.junit.platform:junit-platform-engine", testClasspathPlatformEng ),
-                entry( "junit:junit", testClasspathJUnit4 ),
-                entry( "org.hamcrest:hamcrest-core", testClasspathHamcrest ),
-                entry( "org.opentest4j:opentest4j", testClasspathOpentest4j ),
-                entry( "org.junit.platform:junit-platform-commons", testClasspathCommons ) );
+            .containsEntry( "third.party:artifact", testClasspathSomeTestArtifact )
+            .containsEntry( "org.junit.vintage:junit-vintage-engine", testClasspathVintage )
+            .containsEntry( "org.apiguardian:apiguardian-api", testClasspathApiguardian )
+            .containsEntry( "org.junit.platform:junit-platform-engine", testClasspathPlatformEng )
+            .containsEntry( "junit:junit", testClasspathJUnit4 )
+            .containsEntry( "org.hamcrest:hamcrest-core", testClasspathHamcrest )
+            .containsEntry( "org.opentest4j:opentest4j", testClasspathOpentest4j )
+            .containsEntry( "org.junit.platform:junit-platform-commons", testClasspathCommons );
     }
 
     @Test
@@ -1257,9 +1256,9 @@ public class AbstractSurefireMojoTest
 
         assertThat( testClasspathWrapper.getTestDependencies() )
             .hasSize( 3 )
-            .includes( entry( "third.party:artifact", testClasspathSomeTestArtifact ),
-                entry( "org.junit.platform:junit-platform-commons", testClasspathCommons ),
-                entry( "org.apiguardian:apiguardian-api", testClasspathApiguardian ) );
+            .containsEntry( "third.party:artifact", testClasspathSomeTestArtifact )
+            .containsEntry( "org.junit.platform:junit-platform-commons", testClasspathCommons )
+            .containsEntry( "org.apiguardian:apiguardian-api", testClasspathApiguardian );
     }
 
     @Test
@@ -1370,11 +1369,11 @@ public class AbstractSurefireMojoTest
 
         assertThat( testClasspathWrapper.getTestDependencies() )
             .hasSize( 5 )
-            .includes( entry( "third.party:artifact", testClasspathSomeTestArtifact ),
-                entry( "org.junit.platform:junit-platform-engine", testClasspathJUnit5 ),
-                entry( "org.apiguardian:apiguardian-api", testClasspathApiguardian ),
-                entry( "org.junit.platform:junit-platform-commons", testClasspathCommons ),
-                entry( "org.opentest4j:opentest4j", testClasspathOpentest4j ) );
+            .containsEntry( "third.party:artifact", testClasspathSomeTestArtifact )
+            .containsEntry( "org.junit.platform:junit-platform-engine", testClasspathJUnit5 )
+            .containsEntry( "org.apiguardian:apiguardian-api", testClasspathApiguardian )
+            .containsEntry( "org.junit.platform:junit-platform-commons", testClasspathCommons )
+            .containsEntry( "org.opentest4j:opentest4j", testClasspathOpentest4j );
     }
 
     @Test
@@ -1506,11 +1505,11 @@ public class AbstractSurefireMojoTest
 
         assertThat( testClasspathWrapper.getTestDependencies() )
             .hasSize( 5 )
-            .includes( entry( "third.party:artifact", testClasspathSomeTestArtifact ),
-                entry( "org.junit.jupiter:junit-jupiter-api", testClasspathJupiterApi ),
-                entry( "org.apiguardian:apiguardian-api", testClasspathApiguardian ),
-                entry( "org.junit.platform:junit-platform-commons", testClasspathCommons ),
-                entry( "org.opentest4j:opentest4j", testClasspathOpentest4j ) );
+            .containsEntry( "third.party:artifact", testClasspathSomeTestArtifact )
+            .containsEntry( "org.junit.jupiter:junit-jupiter-api", testClasspathJupiterApi )
+            .containsEntry( "org.apiguardian:apiguardian-api", testClasspathApiguardian )
+            .containsEntry( "org.junit.platform:junit-platform-commons", testClasspathCommons )
+            .containsEntry( "org.opentest4j:opentest4j", testClasspathOpentest4j );
     }
 
     @Test
@@ -1628,13 +1627,13 @@ public class AbstractSurefireMojoTest
 
         assertThat( testClasspathWrapper.getTestDependencies() )
             .hasSize( 7 )
-            .includes( entry( "third.party:artifact", testClasspathSomeTestArtifact ),
-                entry( "org.junit.jupiter:junit-jupiter-engine", testClasspathJupiterEngine ),
-                entry( "org.junit.platform:junit-platform-engine", testClasspathPlatformEngine ),
-                entry( "org.junit.jupiter:junit-jupiter-api", testClasspathJupiterApi ),
-                entry( "org.apiguardian:apiguardian-api", testClasspathApiguardian ),
-                entry( "org.junit.platform:junit-platform-commons", testClasspathCommons ),
-                entry( "org.opentest4j:opentest4j", testClasspathOpentest4j ) );
+            .containsEntry( "third.party:artifact", testClasspathSomeTestArtifact )
+            .containsEntry( "org.junit.jupiter:junit-jupiter-engine", testClasspathJupiterEngine )
+            .containsEntry( "org.junit.platform:junit-platform-engine", testClasspathPlatformEngine )
+            .containsEntry( "org.junit.jupiter:junit-jupiter-api", testClasspathJupiterApi )
+            .containsEntry( "org.apiguardian:apiguardian-api", testClasspathApiguardian )
+            .containsEntry( "org.junit.platform:junit-platform-commons", testClasspathCommons )
+            .containsEntry( "org.opentest4j:opentest4j", testClasspathOpentest4j );
     }
 
     @Test
@@ -1821,11 +1820,11 @@ public class AbstractSurefireMojoTest
 
         assertThat( testClasspathWrapper.getTestDependencies() )
             .hasSize( 5 )
-            .includes( entry( "third.party:artifact", testClasspathSomeTestArtifact ),
-                entry( "org.junit.jupiter:junit-jupiter-api", testClasspathJupiterApi ),
-                entry( "org.apiguardian:apiguardian-api", testClasspathApiguardian ),
-                entry( "org.junit.platform:junit-platform-commons", testClasspathCommons ),
-                entry( "org.opentest4j:opentest4j", testClasspathOpentest4j ) );
+            .containsEntry( "third.party:artifact", testClasspathSomeTestArtifact )
+            .containsEntry( "org.junit.jupiter:junit-jupiter-api", testClasspathJupiterApi )
+            .containsEntry( "org.apiguardian:apiguardian-api", testClasspathApiguardian )
+            .containsEntry( "org.junit.platform:junit-platform-commons", testClasspathCommons )
+            .containsEntry( "org.opentest4j:opentest4j", testClasspathOpentest4j );
     }
 
     @Test
@@ -1845,12 +1844,12 @@ public class AbstractSurefireMojoTest
         mojo.setIncludeJUnit5Engines( new String[] {"e1", "e2"} );
         invokeMethod( mojo, "convertJunitEngineParameters" );
         assertThat( properties )
-            .includes( entry( "includejunit5engines", "e1,e2" ) );
+            .containsEntry( "includejunit5engines", "e1,e2" );
 
         mojo.setExcludeJUnit5Engines( new String[] {"e1", "e2"} );
         invokeMethod( mojo, "convertJunitEngineParameters" );
         assertThat( properties )
-            .includes( entry( "excludejunit5engines", "e1,e2" ) );
+            .containsEntry( "excludejunit5engines", "e1,e2" );
     }
 
     private static ArtifactResolutionResult createJUnitPlatformLauncherResolutionResult(

@@ -30,12 +30,13 @@ import javax.xml.transform.stream.StreamSource;
 
 import junit.framework.TestCase;
 import org.apache.maven.shared.utils.io.DirectoryScanner;
-import org.fest.assertions.Assertions;
 import org.junit.Assert;
 import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationProblem;
 import org.xmlunit.validation.ValidationResult;
 import org.xmlunit.validation.Validator;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
@@ -59,7 +60,7 @@ public class SurefireSchemaValidationTest
         ds.scan();
 
         String[] xmlFiles = ds.getIncludedFiles();
-        Assertions.assertThat( xmlFiles ).describedAs( "No XML surefire reports found to validate" ).isNotEmpty();
+        assertThat( xmlFiles ).describedAs( "No XML surefire reports found to validate" ).isNotEmpty();
 
         Validator v = Validator.forLanguage( Languages.W3C_XML_SCHEMA_NS_URI );
         v.setSchemaSource( new StreamSource( xsd ) );
