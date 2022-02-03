@@ -86,7 +86,10 @@ public class SurefireMasterProcessChannelProcessorFactory
             if ( sessionId != null )
             {
                 ByteBuffer buff = ByteBuffer.wrap( sessionId.getBytes( US_ASCII ) );
-                clientSocketChannel.write( buff );
+                while ( buff.hasRemaining() )
+                {
+                    clientSocketChannel.write( buff ).get();
+                }
             }
         }
         catch ( URISyntaxException | InterruptedException e )
