@@ -25,6 +25,7 @@ import org.apache.maven.surefire.api.booter.DumpErrorSingleton;
 import org.apache.maven.surefire.api.booter.Shutdown;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.booter.ForkedNodeArg;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,6 +37,7 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static java.nio.channels.Channels.newChannel;
@@ -60,18 +62,23 @@ import static org.junit.Assert.fail;
 @SuppressWarnings( "checkstyle:magicnumber" )
 public class CommandChannelDecoderTest
 {
+    private static final Random RND = new Random();
+
     @Rule
     public final TemporaryFolder tempFolder = new TemporaryFolder();
 
-    private File reportsDir;
-    private String dumpFileName;
-
     @Before
-    public void initTmpFile() throws IOException
+    public void initTmpFile()
     {
-        File tmp = tempFolder.newFile();
-        reportsDir = tmp.getParentFile();
-        dumpFileName = tmp.getName();
+        File reportsDir = tempFolder.getRoot();
+        String dumpFileName = "surefire-" + RND.nextLong();
+        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
+    }
+
+    @After
+    public void deleteTmpFiles()
+    {
+        tempFolder.delete();
     }
 
     @Test
@@ -96,7 +103,6 @@ public class CommandChannelDecoderTest
             .toString()
             .getBytes( UTF_8 );
         InputStream is = new ByteArrayInputStream( encoded );
-        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
         ForkNodeArguments args = new ForkedNodeArg( 1, false );
         CommandChannelDecoder decoder = new CommandChannelDecoder( newChannel( is ), args );
         Command command = decoder.decode();
@@ -112,7 +118,6 @@ public class CommandChannelDecoderTest
         assertEquals( Void.class, TEST_SET_FINISHED.getDataType() );
         byte[] encoded = ":maven-surefire-command:\u0010:testset-finished:".getBytes();
         ByteArrayInputStream is = new ByteArrayInputStream( encoded );
-        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
         ForkNodeArguments args = new ForkedNodeArg( 1, false );
         CommandChannelDecoder decoder = new CommandChannelDecoder( newChannel( is ), args );
         command = decoder.decode();
@@ -128,7 +133,6 @@ public class CommandChannelDecoderTest
         assertEquals( Void.class, SKIP_SINCE_NEXT_TEST.getDataType() );
         byte[] encoded = ":maven-surefire-command:\u0014:skip-since-next-test:".getBytes();
         ByteArrayInputStream is = new ByteArrayInputStream( encoded );
-        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
         ForkNodeArguments args = new ForkedNodeArg( 1, false );
         CommandChannelDecoder decoder = new CommandChannelDecoder( newChannel( is ), args );
         command = decoder.decode();
@@ -144,7 +148,6 @@ public class CommandChannelDecoderTest
         byte[] encoded = ( ":maven-surefire-command:\u0008:shutdown:\u0005:UTF-8:\u0000\u0000\u0000\u0004:"
             + shutdownType.getParam() + ":" ).getBytes();
         ByteArrayInputStream is = new ByteArrayInputStream( encoded );
-        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
         ForkNodeArguments args = new ForkedNodeArg( 1, false );
         CommandChannelDecoder decoder = new CommandChannelDecoder( newChannel( is ), args );
         Command command = decoder.decode();
@@ -160,7 +163,6 @@ public class CommandChannelDecoderTest
         byte[] encoded = ( ":maven-surefire-command:\u0008:shutdown:\u0005:UTF-8:\u0000\u0000\u0000\u0004:"
             + shutdownType.getParam() + ":" ).getBytes();
         ByteArrayInputStream is = new ByteArrayInputStream( encoded );
-        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
         ForkNodeArguments args = new ForkedNodeArg( 1, false );
         CommandChannelDecoder decoder = new CommandChannelDecoder( newChannel( is ), args );
         Command command = decoder.decode();
@@ -176,7 +178,6 @@ public class CommandChannelDecoderTest
         byte[] encoded = ( ":maven-surefire-command:\u0008:shutdown:\u0005:UTF-8:\u0000\u0000\u0000\u0007:"
             + shutdownType.getParam() + ":" ).getBytes();
         ByteArrayInputStream is = new ByteArrayInputStream( encoded );
-        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
         ForkNodeArguments args = new ForkedNodeArg( 1, false );
         CommandChannelDecoder decoder = new CommandChannelDecoder( newChannel( is ), args );
         Command command = decoder.decode();
@@ -191,7 +192,6 @@ public class CommandChannelDecoderTest
         assertEquals( Void.class, NOOP.getDataType() );
         byte[] encoded = ":maven-surefire-command:\u0004:noop:".getBytes();
         ByteArrayInputStream is = new ByteArrayInputStream( encoded );
-        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
         ForkNodeArguments args = new ForkedNodeArg( 1, false );
         CommandChannelDecoder decoder = new CommandChannelDecoder( newChannel( is ), args );
         Command command = decoder.decode();
@@ -207,7 +207,6 @@ public class CommandChannelDecoderTest
         byte[] encoded = ":maven-surefire-command:\u0007:bye-ack:".getBytes();
         byte[] streamContent = ( "<something>" + new String( encoded ) + "<damaged>" ).getBytes();
         ByteArrayInputStream is = new ByteArrayInputStream( streamContent );
-        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
         ForkNodeArguments args = new ForkedNodeArg( 1, false );
         CommandChannelDecoder decoder = new CommandChannelDecoder( newChannel( is ), args );
         Command command = decoder.decode();
@@ -223,7 +222,6 @@ public class CommandChannelDecoderTest
         byte[] encoded = ":maven-surefire-command:\u0007:bye-ack:".getBytes();
         byte[] streamContent = ( ":<damaged>:" + new String( encoded ) ).getBytes();
         ByteArrayInputStream is = new ByteArrayInputStream( streamContent );
-        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
         ForkNodeArguments args = new ForkedNodeArg( 1, false );
         CommandChannelDecoder decoder = new CommandChannelDecoder( newChannel( is ), args );
         Command command = decoder.decode();
@@ -238,7 +236,6 @@ public class CommandChannelDecoderTest
         assertEquals( Void.class, BYE_ACK.getDataType() );
         byte[] encoded = ":maven-surefire-command:\u0007:bye-ack:".getBytes();
         ByteArrayInputStream is = new ByteArrayInputStream( encoded );
-        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
         ForkNodeArguments args = new ForkedNodeArg( 1, false );
         CommandChannelDecoder decoder = new CommandChannelDecoder( newChannel( is ), args );
         Command command = decoder.decode();
@@ -251,7 +248,6 @@ public class CommandChannelDecoderTest
     {
         String cmd = ":maven-surefire-command:\u0007:bye-ack:\r\n:maven-surefire-command:\u0007:bye-ack:";
         InputStream is = new ByteArrayInputStream( cmd.getBytes() );
-        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
         ForkNodeArguments args = new ForkedNodeArg( 1, false );
         CommandChannelDecoder decoder = new CommandChannelDecoder( newChannel( is ), args );
 
@@ -271,7 +267,6 @@ public class CommandChannelDecoderTest
     {
 
         ByteArrayInputStream is = new ByteArrayInputStream( ":maven-surefire-command:".getBytes() );
-        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
         ForkNodeArguments args = new ForkedNodeArg( 1, false );
         CommandChannelDecoder decoder = new CommandChannelDecoder( newChannel( is ), args );
         decoder.decode();
@@ -283,7 +278,6 @@ public class CommandChannelDecoderTest
     {
 
         ByteArrayInputStream is = new ByteArrayInputStream( new byte[] {':', '\r'} );
-        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
         ForkNodeArguments args = new ForkedNodeArg( 1, false );
         CommandChannelDecoder decoder = new CommandChannelDecoder( newChannel( is ), args );
         decoder.decode();
@@ -295,7 +289,6 @@ public class CommandChannelDecoderTest
     {
         String cmd = ":maven-surefire-command:\u0007:bye-ack ::maven-surefire-command:";
         InputStream is = new ByteArrayInputStream( cmd.getBytes() );
-        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
         ForkNodeArguments args = new ForkedNodeArg( 1, false );
         CommandChannelDecoder decoder = new CommandChannelDecoder( newChannel( is ), args );
 
@@ -307,7 +300,6 @@ public class CommandChannelDecoderTest
     {
         String cmd = ":maven-surefire-command:\0007:bye-ack\r\n::maven-surefire-command:\u0004:noop:";
         InputStream is = new ByteArrayInputStream( cmd.getBytes() );
-        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
         ForkNodeArguments args = new ForkedNodeArg( 1, false );
         CommandChannelDecoder decoder = new CommandChannelDecoder( newChannel( is ), args );
 

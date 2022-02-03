@@ -19,14 +19,24 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.api.booter.DumpErrorSingleton;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.rules.TemporaryFolder;
 
+import javax.annotation.Nonnull;
 import java.io.File;
+import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.lang.management.ManagementFactory;
+import java.util.Random;
 import java.util.regex.Matcher;
 
+import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.file.Files.readAllBytes;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_UNIX;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
@@ -51,8 +61,29 @@ import static org.powermock.reflect.Whitebox.setInternalState;
 @SuppressWarnings( "checkstyle:magicnumber" )
 public class PpidCheckerTest
 {
+    private static final Random RND = new Random();
+
     @Rule
     public final ExpectedException exceptions = ExpectedException.none();
+
+    @Rule
+    public final TemporaryFolder tempFolder = new TemporaryFolder();
+
+    private File reportsDir;
+    private String dumpFileName;
+
+    @Before
+    public void initTmpFile()
+    {
+        reportsDir = tempFolder.getRoot();
+        dumpFileName = "surefire-" + RND.nextLong();
+    }
+
+    @After
+    public void deleteTmpFiles()
+    {
+        tempFolder.delete();
+    }
 
     @Test
     public void canExecuteUnixPs()
@@ -147,6 +178,150 @@ public class PpidCheckerTest
         checker.isProcessAlive();
 
         fail( "this test should throw exception" );
+    }
+
+    @Test
+    public void shouldBeStoppedCheckerWithError() throws Exception
+    {
+        String expectedPid = ManagementFactory.getRuntimeMXBean().getName().split( "@" )[0].trim();
+        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
+
+        PpidChecker checker = new PpidChecker( expectedPid );
+        checker.stop();
+
+        ProcessInfo processInfo = IS_OS_UNIX ? checker.unix() : checker.windows();
+        assertThat( processInfo.isError() ).isTrue();
+
+        String error = new String( readAllBytes( new File( reportsDir, dumpFileName + ".dump" ).toPath() ) );
+
+        assertThat( error )
+            .contains( "<<exit>> <<0>>" )
+            .contains( "<<stopped>> <<true>>" );
+    }
+
+    @Test
+    public void shouldBeEmptyDump() throws Exception
+    {
+        String expectedPid = ManagementFactory.getRuntimeMXBean().getName().split( "@" )[0].trim();
+        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
+
+        PpidChecker checker = new PpidChecker( expectedPid );
+
+        try
+        {
+            Thread.currentThread().interrupt();
+
+            ProcessInfo processInfo = IS_OS_UNIX ? checker.unix() : checker.windows();
+            //noinspection ResultOfMethodCallIgnored
+            Thread.interrupted();
+            assertThat( processInfo.isError() ).isTrue();
+
+            File dumpFile = new File( reportsDir, dumpFileName + ".dump" );
+            if ( dumpFile.exists() )
+            {
+                String error = new String( readAllBytes( dumpFile.toPath() ) );
+
+                assertThat( error )
+                    .contains( "<<exit>>" )
+                    .contains( "<<stopped>> <<false>>" );
+            }
+        }
+        finally
+        {
+            //noinspection ResultOfMethodCallIgnored
+            Thread.interrupted();
+        }
+    }
+
+    @Test
+    public void shouldStartedProcessThrowInterruptedException() throws Exception
+    {
+        String expectedPid = ManagementFactory.getRuntimeMXBean().getName().split( "@" )[0].trim();
+        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
+
+        PpidChecker checker = new PpidChecker( expectedPid );
+
+        PpidChecker.ProcessInfoConsumer consumer = checker.new ProcessInfoConsumer( US_ASCII.name() )
+        {
+            @Nonnull
+            @Override
+            ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo )
+                throws Exception
+            {
+                throw new InterruptedException();
+            }
+        };
+
+        String[] cmd =
+            IS_OS_WINDOWS
+                ? new String[]{"CMD", "/A", "/X", "/C", "dir"}
+                : new String[]{"/bin/sh", "-c", "ls"};
+
+        assertThat( consumer.execute( cmd ).isError() ).isTrue();
+        assertThat( new File( reportsDir, dumpFileName + ".dump" ) ).doesNotExist();
+    }
+
+    @Test
+    public void shouldStartedProcessThrowInterruptedIOException() throws Exception
+    {
+        String expectedPid = ManagementFactory.getRuntimeMXBean().getName().split( "@" )[0].trim();
+        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
+
+        PpidChecker checker = new PpidChecker( expectedPid );
+
+        PpidChecker.ProcessInfoConsumer consumer = checker.new ProcessInfoConsumer( US_ASCII.name() )
+        {
+            @Nonnull
+            @Override
+            ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo )
+                throws Exception
+            {
+                throw new InterruptedIOException();
+            }
+        };
+
+        String[] cmd =
+            IS_OS_WINDOWS
+                ? new String[]{"CMD", "/A", "/X", "/C", "dir"}
+                : new String[]{"/bin/sh", "-c", "ls"};
+
+        assertThat( consumer.execute( cmd ).isError() ).isTrue();
+        assertThat( new File( reportsDir, dumpFileName + ".dump" ) ).doesNotExist();
+    }
+
+    @Test
+    public void shouldStartedProcessThrowIOException() throws Exception
+    {
+        String expectedPid = ManagementFactory.getRuntimeMXBean().getName().split( "@" )[0].trim();
+        DumpErrorSingleton.getSingleton().init( reportsDir, dumpFileName );
+
+        PpidChecker checker = new PpidChecker( expectedPid );
+
+        PpidChecker.ProcessInfoConsumer consumer = checker.new ProcessInfoConsumer( US_ASCII.name() )
+        {
+            @Nonnull
+            @Override
+            ProcessInfo consumeLine( String line, ProcessInfo previousProcessInfo )
+                throws Exception
+            {
+                throw new IOException( "wrong command" );
+            }
+        };
+
+        String[] cmd =
+            IS_OS_WINDOWS
+                ? new String[]{"CMD", "/A", "/X", "/C", "dir"}
+                : new String[]{"/bin/sh", "-c", "ls"};
+
+        assertThat( consumer.execute( cmd ).isError() ).isTrue();
+
+        File dumpFile = new File( reportsDir, dumpFileName + ".dump" );
+
+        String error = new String( readAllBytes( dumpFile.toPath() ) );
+
+        assertThat( error )
+            .contains( IOException.class.getName() )
+            .contains( "wrong command" );
     }
 
     @Test

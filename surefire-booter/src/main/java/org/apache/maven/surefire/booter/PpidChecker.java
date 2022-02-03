@@ -24,7 +24,9 @@ import org.apache.maven.surefire.api.booter.DumpErrorSingleton;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Queue;
 import java.util.Scanner;
@@ -36,6 +38,9 @@ import java.util.regex.Pattern;
 import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
 import static java.lang.String.join;
+import static java.nio.file.Files.createTempFile;
+import static java.nio.file.Files.delete;
+import static java.nio.file.Files.readAllBytes;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -378,7 +383,7 @@ final class PpidChecker
      * This implementation is taylor made without using any Thread.
      * It's easy to destroy Process from other Thread.
      */
-    private abstract class ProcessInfoConsumer
+    abstract class ProcessInfoConsumer
     {
         private final String charset;
 
@@ -394,14 +399,16 @@ final class PpidChecker
         ProcessInfo execute( String... command )
         {
             ProcessBuilder processBuilder = new ProcessBuilder( command );
-            processBuilder.redirectErrorStream( true );
             Process process = null;
             ProcessInfo processInfo = INVALID_PROCESS_INFO;
             StringBuilder out = new StringBuilder( 64 );
             out.append( join( " ", command ) )
                 .append( NL );
+            Path stdErr = null;
             try
             {
+                stdErr = createTempFile( "surefire", null );
+                processBuilder.redirectError( stdErr.toFile() );
                 if ( IS_OS_HP_UX ) // force to run shell commands in UNIX Standard mode on HP-UX
                 {
                     processBuilder.environment().put( "UNIX95", "1" );
@@ -431,7 +438,8 @@ final class PpidChecker
             }
             catch ( Exception e )
             {
-                if ( !( e instanceof InterruptedException ) && !( e.getCause() instanceof InterruptedException ) )
+                if ( !( e instanceof InterruptedException || e instanceof InterruptedIOException
+                    || e.getCause() instanceof InterruptedException ) )
                 {
                     DumpErrorSingleton.getSingleton()
                             .dumpText( out.toString() );
@@ -440,6 +448,9 @@ final class PpidChecker
                             .dumpException( e );
                 }
 
+                //noinspection ResultOfMethodCallIgnored
+                Thread.interrupted();
+
                 return ERR_PROCESS_INFO;
             }
             finally
@@ -447,10 +458,27 @@ final class PpidChecker
                 if ( process != null )
                 {
                     destroyableCommands.remove( process );
-                    process.destroy();
                     closeQuietly( process.getInputStream() );
                     closeQuietly( process.getErrorStream() );
                     closeQuietly( process.getOutputStream() );
+                }
+
+                if ( stdErr != null )
+                {
+                    try
+                    {
+                        String error = new String( readAllBytes( stdErr ) ).trim();
+                        if ( !error.isEmpty() )
+                        {
+                            DumpErrorSingleton.getSingleton()
+                                .dumpText( error );
+                        }
+                        delete( stdErr );
+                    }
+                    catch ( IOException e )
+                    {
+                        // cannot do anything about it, the dump file writes would fail as well
+                    }
                 }
             }
         }
