@@ -106,7 +106,7 @@ public class Surefire1367AssumptionLogsIT
         String outputCData = "<system-out><![CDATA[Hi" + NL +
                                      NL +
                                      "There!" + NL +
-                                     "]]></system-out>" + NL +
+                                     "]]></system-out>\n" +
                                      "    <system-err><![CDATA[Hello" + NL +
                                      NL +
                                      "What's up!" + NL +
