@@ -77,7 +77,7 @@
   </issueManagement>
   <ciManagement>
     <system>Jenkins</system>
-    <url>https://ci-maven.apache.org/job/Maven/job/maven-box/job/maven-surefire/</url>
+    <url>https://ci-maven.apache.org/job/Maven/job/maven-github/job/maven-surefire/</url>
   </ciManagement>
   <distributionManagement>
     <site>
