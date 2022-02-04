@@ -60,8 +60,14 @@ public class ATestClass
 
     public void aLongTestErrorMessage()
     {
-        throw new RuntimeException( "This message will be truncated, somewhere over the rainbow. "
+        throw new RuntimeException( "This message won't be truncated, somewhere over the rainbow. "
                                     + "Gangnam style, Gangnam style, Gangnam style, , Gangnam style, Gangnam style" );
+    }
+
+    public void aMultiLineTestErrorMessage()
+    {
+        throw new RuntimeException( "Only line 1 survives." + System.lineSeparator()
+                                    + "Hi, I'm line 2 - will I survive?" );
     }
 
     public void aMockedException()
