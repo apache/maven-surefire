@@ -21,6 +21,7 @@ package org.apache.maven.surefire.api.report;
 
 
 import org.apache.maven.surefire.api.util.internal.StringUtils;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isNotEmpty;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -33,8 +34,6 @@ import java.io.StringWriter;
 public class LegacyPojoStackTraceWriter
     implements StackTraceWriter
 {
-    private static final int MAX_LINE_LENGTH = 77;
-
     private final Throwable t;
 
     private final String testClass;
@@ -81,19 +80,19 @@ public class LegacyPojoStackTraceWriter
         result.append( "#" );
         result.append( testMethod );
         SafeThrowable throwable = getThrowable();
-        if ( throwable.getTarget() instanceof AssertionError )
+        Throwable target = throwable.getTarget();
+        if ( target != null )
         {
-            result.append( " " );
-            result.append( getTruncatedMessage( throwable.getMessage(), MAX_LINE_LENGTH - result.length() ) );
-        }
-        else
-        {
-            Throwable target = throwable.getTarget();
-            if ( target != null )
+            if ( ! ( target instanceof AssertionError ) )
             {
-                result.append( " " );
-                result.append( target.getClass().getSimpleName() );
-                result.append( getTruncatedMessage( throwable.getMessage(), MAX_LINE_LENGTH - result.length() ) );
+                result.append( ' ' )
+                      .append( target.getClass().getSimpleName() );
+            }
+            final String msg = throwable.getMessage();
+            if ( isNotEmpty( msg ) )
+            {
+                result.append( ' ' )
+                      .append( msg );
             }
         }
         return result.toString();
@@ -119,28 +118,6 @@ public class LegacyPojoStackTraceWriter
         }
         return false;
     }
-
-    private static String getTruncatedMessage( String msg, int i )
-    {
-        if ( i < 0 )
-        {
-            return "";
-        }
-        if ( msg == null )
-        {
-            return "";
-        }
-        String substring = msg.substring( 0, Math.min( i, msg.length() ) );
-        if ( i < msg.length() )
-        {
-            return " " + substring + "...";
-        }
-        else
-        {
-            return " " + substring;
-        }
-    }
-
 
     @Override
     public String writeTrimmedTraceToString()

@@ -136,7 +136,7 @@ public class SmartStackTraceParserTest
         }
     }
 
-    public void testLongMessageTruncation()
+    public void testLongMessageHandling()
     {
         ATestClass aTestClass = new ATestClass();
         try
@@ -148,7 +148,7 @@ public class SmartStackTraceParserTest
             SmartStackTraceParser smartStackTraceParser =
                     new SmartStackTraceParser( ATestClass.class.getName(), e, null );
             String res = smartStackTraceParser.getString();
-            assertEquals( "ATestClass.aLongTestErrorMessage:63 Runtime This message will be truncated, so...",
+            assertEquals( "ATestClass.aLongTestErrorMessage:63 Runtime " + e.getMessage(),
                     res );
         }
     }
