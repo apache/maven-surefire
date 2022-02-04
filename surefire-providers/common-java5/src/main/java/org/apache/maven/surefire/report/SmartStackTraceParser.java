@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static java.util.Collections.reverse;
 import static org.apache.maven.surefire.shared.utils.StringUtils.chompLast;
@@ -37,8 +36,6 @@ import static org.apache.maven.surefire.shared.utils.StringUtils.isNotEmpty;
 @SuppressWarnings( "ThrowableResultOfMethodCallIgnored" )
 public class SmartStackTraceParser
 {
-    private static final int MAX_LINE_LENGTH = 77;
-
     private final SafeThrowable throwable;
 
     private final StackTraceElement[] stackTrace;
@@ -133,23 +130,19 @@ public class SmartStackTraceParser
         final String excClassName = excType.getName();
         final String msg = throwable.getMessage();
 
-        if ( target instanceof AssertionError
+        if ( ! ( target instanceof AssertionError
                 || "junit.framework.AssertionFailedError".equals( excClassName )
                 || "junit.framework.ComparisonFailure".equals( excClassName )
-                || excClassName.startsWith( "org.opentest4j." ) )
-        {
-            if ( isNotEmpty( msg ) )
-            {
-                result.append( ' ' )
-                    .append( msg );
-            }
-        }
-        else
+                || excClassName.startsWith( "org.opentest4j." ) ) )
         {
             result.append( rootIsInclass() ? " " : " » " )
-                    .append( toMinimalThrowableMiniMessage( excType ) );
+                  .append( toMinimalThrowableMiniMessage( excType ) );
+        }
 
-            result.append( truncateMessage( msg, MAX_LINE_LENGTH - result.length() ) );
+        if ( isNotEmpty( msg ) )
+        {
+            result.append( ' ' )
+                  .append( msg );
         }
         return result.toString();
     }
@@ -166,22 +159,6 @@ public class SmartStackTraceParser
             return chompLast( name, "Error" );
         }
         return name;
-    }
-
-    private static String truncateMessage( String msg, int i )
-    {
-        StringBuilder truncatedMessage = new StringBuilder();
-        if ( i >= 0 && msg != null )
-        {
-            truncatedMessage.append( ' ' )
-                    .append( msg, 0, min( i, msg.length() ) );
-
-            if ( i < msg.length() )
-            {
-                truncatedMessage.append( "..." );
-            }
-        }
-        return truncatedMessage.toString();
     }
 
     private boolean rootIsInclass()
