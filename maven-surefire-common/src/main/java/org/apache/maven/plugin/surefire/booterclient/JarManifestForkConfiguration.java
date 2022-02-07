@@ -54,6 +54,7 @@ import static java.nio.file.Files.isDirectory;
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
 import static org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.ClasspathElementUri.absolute;
 import static org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.ClasspathElementUri.relative;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 
 /**
@@ -198,6 +199,13 @@ public final class JarManifestForkConfiguration
                         + "'"
                         + NL
                         + "Hint: <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>";
+
+                if ( isNotBlank( e.getLocalizedMessage() ) )
+                {
+                    error += NL;
+                    error += e.getLocalizedMessage();
+                }
+
                 InPluginProcessDumpSingleton.getSingleton()
                         .dumpStreamText( error, dumpLogDirectory );
             }

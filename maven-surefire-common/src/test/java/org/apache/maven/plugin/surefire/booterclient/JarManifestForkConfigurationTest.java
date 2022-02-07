@@ -182,7 +182,7 @@ public class JarManifestForkConfigurationTest
                     }
                 } );
         when( relativize( same( parent ), same( classPathElement ) ) )
-                .thenThrow( new IllegalArgumentException() );
+                .thenThrow( new IllegalArgumentException( "'other' has different root" ) );
         when( toClasspathElementUri( same( parent ), same( classPathElement ), same( dumpDirectory ), anyBoolean() ) )
                 .thenCallRealMethod();
         when( escapeUri( anyString(), any( Charset.class ) ) )
