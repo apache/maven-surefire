@@ -61,6 +61,7 @@ import static java.util.Collections.singletonMap;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.Index.atIndex;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -151,6 +152,7 @@ public class AbstractSurefireMojoJava7PlusTest
         mockStatic( ResolvePathsRequest.class );
         when( ResolvePathsRequest.ofStrings( eq( testClasspath.toClasspath().getClassPath() ) ) ).thenReturn( req );
         when( req.setJdkHome( anyString() ) ).thenReturn( req );
+        when( req.setIncludeAllProviders( anyBoolean() ) ).thenReturn( req );
         when( req.setModuleDescriptor( eq( descriptor ) ) ).thenReturn( req );
 
         when( descriptor.name() ).thenReturn( "abc" );
