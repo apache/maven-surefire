@@ -55,10 +55,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static java.lang.Math.max;
 import static java.lang.Thread.currentThread;
 import static java.util.ServiceLoader.load;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.surefire.api.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.instantiateOneArg;
@@ -83,7 +81,6 @@ public final class ForkedBooter
 {
     private static final long DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS = 30L;
     private static final long PING_TIMEOUT_IN_SECONDS = 30L;
-    private static final long ONE_SECOND_IN_MILLIS = 1_000L;
     private static final String LAST_DITCH_SHUTDOWN_THREAD = "surefire-forkedjvm-last-ditch-daemon-shutdown-thread-";
     private static final String PING_THREAD = "surefire-forkedjvm-ping-";
     private static final String PROCESS_CHECKER_THREAD = "surefire-process-checker";
@@ -442,9 +439,8 @@ public final class ForkedBooter
         );
         eventChannel.bye();
         launchLastDitchDaemonShutdownThread( 0 );
-        long timeoutMillis = max( systemExitTimeoutInSeconds * ONE_SECOND_IN_MILLIS, ONE_SECOND_IN_MILLIS );
-        boolean timeoutElapsed = !acquireOnePermit( exitBarrier, timeoutMillis );
-        if ( timeoutElapsed && !eventChannel.checkError() )
+        boolean byeAckReceived = acquireOnePermit( exitBarrier );
+        if ( !byeAckReceived && !eventChannel.checkError() )
         {
             eventChannel.sendExitError( null, false );
         }
@@ -616,16 +612,16 @@ public final class ForkedBooter
         return pluginProcessChecker != null && pluginProcessChecker.canUse();
     }
 
-    private static boolean acquireOnePermit( Semaphore barrier, long timeoutMillis )
+    private static boolean acquireOnePermit( Semaphore barrier )
     {
         try
         {
-            return barrier.tryAcquire( timeoutMillis, MILLISECONDS );
+            return barrier.tryAcquire( Integer.MAX_VALUE, SECONDS );
         }
         catch ( InterruptedException e )
         {
             // cancel schedulers, stop the command reader and exit 0
-            return true;
+            return false;
         }
     }
 

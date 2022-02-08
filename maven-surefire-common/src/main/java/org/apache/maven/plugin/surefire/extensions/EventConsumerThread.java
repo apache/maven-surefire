@@ -30,6 +30,7 @@ import org.apache.maven.surefire.stream.EventDecoder;
 import javax.annotation.Nonnull;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ReadableByteChannel;
 
@@ -83,7 +84,11 @@ public class EventConsumerThread extends CloseableDaemonThread
         }
         catch ( IOException e )
         {
-            if ( !( e.getCause() instanceof InterruptedException ) )
+            if ( e instanceof InterruptedIOException || e.getCause() instanceof InterruptedException )
+            {
+                Thread.currentThread().interrupt();
+            }
+            else
             {
                 arguments.dumpStreamException( e );
             }

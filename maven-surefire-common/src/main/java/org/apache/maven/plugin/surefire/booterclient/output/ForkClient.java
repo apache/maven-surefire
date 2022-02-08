@@ -310,7 +310,7 @@ public class ForkClient
         public void handle( StackTraceWriter stackTrace )
         {
             getOrCreateConsoleLogger()
-                .error( "System Exit has timed out in the forked process " + forkNumber );
+                .error( "The surefire booter JVM" + forkNumber + " was interrupted and exits." );
         }
     }
 

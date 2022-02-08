@@ -24,6 +24,7 @@ import org.apache.maven.surefire.extensions.EventHandler;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.util.Scanner;
@@ -81,7 +82,14 @@ public final class LineConsumerThread extends CloseableDaemonThread
                 }
             }
         }
-        catch ( IllegalStateException | IOException e )
+        catch ( IOException e )
+        {
+            if ( e instanceof InterruptedIOException || e.getCause() instanceof InterruptedException )
+            {
+                Thread.currentThread().interrupt();
+            }
+        }
+        catch ( IllegalStateException e )
         {
             // not needed
         }

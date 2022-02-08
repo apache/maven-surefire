@@ -26,6 +26,7 @@ import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
@@ -50,8 +51,9 @@ public final class ThreadedStreamConsumer
 
     private final QueueSynchronizer<Event> synchronizer = new QueueSynchronizer<>( QUEUE_MAX_ITEMS, END_ITEM );
     private final AtomicBoolean stop = new AtomicBoolean();
-    private final AtomicBoolean isAlive = new AtomicBoolean( true );
+    private final CountDownLatch threadJoiner = new CountDownLatch( 1 );
     private final Pumper pumper;
+    private volatile boolean isAlive = true;
 
     final class Pumper
         implements Runnable
@@ -100,7 +102,8 @@ public final class ThreadedStreamConsumer
                 }
             }
 
-            isAlive.set( false );
+            threadJoiner.countDown();
+            isAlive = false;
         }
 
         boolean hasErrors()
@@ -124,28 +127,32 @@ public final class ThreadedStreamConsumer
     @Override
     public void handleEvent( @Nonnull Event event )
     {
-        if ( stop.get() )
-        {
-            return;
-        }
         // Do NOT call Thread.isAlive() - slow.
         // It makes worse performance from 790 millis to 1250 millis for 5 million messages.
-        else if ( !isAlive.get() )
+        if ( !stop.get() && isAlive )
         {
-            synchronizer.clearQueue();
-            return;
+            synchronizer.pushNext( event );
         }
-
-        synchronizer.pushNext( event );
     }
 
     @Override
     public void close()
         throws IOException
     {
-        if ( stop.compareAndSet( false, true ) )
+        if ( stop.compareAndSet( false, true ) && isAlive )
         {
             synchronizer.markStopped();
+
+            try
+            {
+                threadJoiner.await();
+            }
+            catch ( InterruptedException e )
+            {
+                Thread.currentThread().interrupt();
+            }
+
+            synchronizer.clearQueue();
         }
 
         if ( pumper.hasErrors() )

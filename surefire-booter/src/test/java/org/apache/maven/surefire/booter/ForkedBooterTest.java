@@ -150,7 +150,7 @@ public class ForkedBooterTest
     public void testBarrier1() throws Exception
     {
         Semaphore semaphore = new Semaphore( 2 );
-        boolean acquiredOnePermit = invokeMethod( ForkedBooter.class, "acquireOnePermit", semaphore, 30_000L );
+        boolean acquiredOnePermit = invokeMethod( ForkedBooter.class, "acquireOnePermit", semaphore );
 
         assertThat( acquiredOnePermit ).isTrue();
         assertThat( semaphore.availablePermits() ).isEqualTo( 1 );
@@ -163,9 +163,9 @@ public class ForkedBooterTest
         Thread.currentThread().interrupt();
         try
         {
-            boolean acquiredOnePermit = invokeMethod( ForkedBooter.class, "acquireOnePermit", semaphore, 30_000L );
+            boolean acquiredOnePermit = invokeMethod( ForkedBooter.class, "acquireOnePermit", semaphore );
 
-            assertThat( acquiredOnePermit ).isTrue();
+            assertThat( acquiredOnePermit ).isFalse();
             assertThat( semaphore.availablePermits() ).isEqualTo( 0 );
         }
         finally
