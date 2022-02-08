@@ -183,7 +183,7 @@ public class ModularClasspathForkConfiguration
 
                 for ( String pkg : packages )
                 {
-                    args.append( "--add-exports" )
+                    args.append( "--add-opens" )
                             .append( NL )
                             .append( moduleName )
                             .append( '/' )

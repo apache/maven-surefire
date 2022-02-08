@@ -116,7 +116,7 @@ public class ModularClasspathForkConfigurationTest
                 .isEqualTo( "abc=\"" + replace( patchFile.getPath(), "\\", "\\\\" ) + "\"" );
 
         assertThat( argsFileLines.get( 6 ) )
-                .isEqualTo( "--add-exports" );
+                .isEqualTo( "--add-opens" );
 
         assertThat( argsFileLines.get( 7 ) )
                 .isEqualTo( "abc/org.apache.abc=ALL-UNNAMED" );
