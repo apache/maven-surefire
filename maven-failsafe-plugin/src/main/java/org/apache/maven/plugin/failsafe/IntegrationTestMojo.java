@@ -364,6 +364,11 @@ public class IntegrationTestMojo
      * **{@literal /}NotIncludedByDefault.java
      * %regex[.*IT.*|.*Not.*]
      * </code></pre>
+     * <br>
+     * Since 3.0.0-M6, method filtering support is provided in the inclusions file as well, example:
+     * <pre><code>
+     * pkg.SomeIT#testMethod
+     * </code></pre>
      *
      * @since 2.13
      */
@@ -378,6 +383,11 @@ public class IntegrationTestMojo
      * *{@literal /}it{@literal /}*
      * **{@literal /}DontRunIT.*
      * %regex[.*IT.*|.*Not.*]
+     * </code></pre>
+     * <br>
+     * Since 3.0.0-M6, method filtering support is provided in the exclusions file as well, example:
+     * <pre><code>
+     * pkg.SomeIT#testMethod
      * </code></pre>
      *
      * @since 2.13

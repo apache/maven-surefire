@@ -355,6 +355,11 @@ public class SurefirePlugin
      * **{@literal /}NotIncludedByDefault.java
      * %regex[.*Test.*|.*Not.*]
      * </code></pre>
+     * <br>
+     * Since 3.0.0-M6, method filtering support is provided in the inclusions file as well, example:
+     * <pre><code>
+     * pkg.SomeTest#testMethod
+     * </code></pre>
      *
      * @since 2.13
      */
@@ -368,6 +373,11 @@ public class SurefirePlugin
      * *{@literal /}test{@literal /}*
      * **{@literal /}DontRunTest.*
      * %regex[.*Test.*|.*Not.*]
+     * </code></pre>
+     *
+     * Since 3.0.0-M6, method filtering support is provided in the exclusions file as well, example:
+     * <pre><code>
+     * pkg.SomeTest#testMethod
      * </code></pre>
      *
      * @since 2.13
