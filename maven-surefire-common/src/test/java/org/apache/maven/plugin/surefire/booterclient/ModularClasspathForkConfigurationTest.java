@@ -104,7 +104,7 @@ public class ModularClasspathForkConfigurationTest
                 .isEqualTo( "booter.jar" + pathSeparator + "non-modular.jar" + pathSeparator + patchFile.getPath() );
         assertThat( argsFileLines.get( 4 ) ).isEqualTo( "--patch-module" );
         assertThat( argsFileLines.get( 5 ) ).isEqualTo( "abc=" + patchFile.getPath() );
-        assertThat( argsFileLines.get( 6 ) ).isEqualTo( "--add-exports" );
+        assertThat( argsFileLines.get( 6 ) ).isEqualTo( "--add-opens" );
         assertThat( argsFileLines.get( 7 ) ).isEqualTo( "abc/org.apache.abc=ALL-UNNAMED" );
         assertThat( argsFileLines.get( 8 ) ).isEqualTo( "--add-modules" );
         assertThat( argsFileLines.get( 9 ) ).isEqualTo( "abc" );

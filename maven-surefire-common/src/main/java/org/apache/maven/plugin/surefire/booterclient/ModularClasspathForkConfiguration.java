@@ -167,7 +167,7 @@ public class ModularClasspathForkConfiguration
 
             for ( String pkg : packages )
             {
-                writer.write( "--add-exports" );
+                writer.write( "--add-opens" );
                 writer.newLine();
                 writer.append( moduleName )
                         .append( '/' )
