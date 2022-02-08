@@ -2055,6 +2055,7 @@ public abstract class AbstractSurefireMojo
         {
             providerRequirements = new ProviderRequirements( true, true, false );
             ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings( testClasspath.getClassPath() )
+                    .setIncludeAllProviders( true )
                     .setJdkHome( javaHome )
                     .setModuleDescriptor( javaModuleDescriptor );
 
