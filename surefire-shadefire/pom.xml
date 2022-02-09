@@ -88,9 +88,30 @@
                   <shadedPattern>org.apache.maven.shadefire</shadedPattern>
                 </relocation>
               </relocations>
-                <transformers>
-                    <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-                </transformers>
+              <filters>
+                <filter>
+                  <!-- exclude all services to be sure that everything is manually taken -->
+                  <artifact>org.apache.maven.surefire:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/services/**</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                  <resource>META-INF/services/org.apache.maven.shadefire.surefire.spi.MasterProcessChannelProcessorFactory</resource>
+                  <file>src/main/resources/META-INF/services/org.apache.maven.shadefire.surefire.spi.MasterProcessChannelProcessorFactory</file>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                  <resource>META-INF/services/org.apache.maven.surefire.api.provider.SurefireProvider</resource>
+                  <file>src/main/resources/META-INF/services/org.apache.maven.surefire.api.provider.SurefireProvider</file>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"/>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer"/>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/DEPENDENCIES</resource>
+                </transformer>
+              </transformers>
             </configuration>
           </execution>
         </executions>
