@@ -884,6 +884,10 @@ public abstract class AbstractSurefireMojo
 
     protected abstract void setUseModulePath( boolean useModulePath );
 
+    protected abstract boolean useJpmsAddOpens();
+
+    protected abstract void setUseJpmsAddOpens( boolean useJpmsAddOpens );
+
     protected abstract String getEnableProcessChecker();
 
     protected abstract ForkNodeFactory getForkNode();
@@ -2472,19 +2476,21 @@ public abstract class AbstractSurefireMojo
         if ( canExecuteProviderWithModularPath( platform, resolvedJavaModularityResult ) )
         {
             return new ModularClasspathForkConfiguration( bootClasspath,
-                    tmpDir,
-                    getEffectiveDebugForkedProcess(),
-                    getWorkingDirectory() != null ? getWorkingDirectory() : getBasedir(),
-                    getProject().getModel().getProperties(),
-                    getArgLine(),
-                    getEnvironmentVariables(),
-                    getExcludedEnvironmentVariables(),
-                    getConsoleLogger().isDebugEnabled(),
-                    getEffectiveForkCount(),
-                    reuseForks,
-                    platform,
-                    getConsoleLogger(),
-                    forkNode );
+                                                          tmpDir,
+                                                          getEffectiveDebugForkedProcess(),
+                                                          getWorkingDirectory() != null
+                                                              ? getWorkingDirectory() : getBasedir(),
+                                                          getProject().getModel().getProperties(),
+                                                          getArgLine(),
+                                                          getEnvironmentVariables(),
+                                                          getExcludedEnvironmentVariables(),
+                                                          getConsoleLogger().isDebugEnabled(),
+                                                          getEffectiveForkCount(),
+                                                          reuseForks,
+                                                          platform,
+                                                          getConsoleLogger(),
+                                                          forkNode,
+                                                          useJpmsAddOpens() );
         }
         else if ( getClassLoaderConfiguration().isManifestOnlyJarRequestedAndUsable() )
         {

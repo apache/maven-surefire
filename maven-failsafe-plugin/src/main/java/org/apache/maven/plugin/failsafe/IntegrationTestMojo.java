@@ -402,6 +402,15 @@ public class IntegrationTestMojo
     private boolean useModulePath;
 
     /**
+     * When {@code true}, Surefire {@code --add-opens} the test packages at runtime, this enables deep reflection on
+     * test classes and may be required by test runners. By default, Failsafe {@code --add-exports} these packages.
+     *
+     * @since 3.0.0-M6
+     */
+    @Parameter( property = "failsafe.useJpmsAddOpens", defaultValue = "false" )
+    private boolean useJpmsAddOpens;
+
+    /**
      * This parameter configures the forked node. Currently, you can select the communication protocol, i.e. process
      * pipes or TCP/IP sockets.
      * The plugin uses process pipes by default which will be turned to TCP/IP in the version 3.0.0.
@@ -957,6 +966,18 @@ public class IntegrationTestMojo
     protected void setUseModulePath( boolean useModulePath )
     {
         this.useModulePath = useModulePath;
+    }
+
+    @Override
+    protected boolean useJpmsAddOpens()
+    {
+        return useJpmsAddOpens;
+    }
+
+    @Override
+    protected void setUseJpmsAddOpens( boolean useJpmsAddOpens )
+    {
+        this.useJpmsAddOpens = useJpmsAddOpens;
     }
 
     @Override

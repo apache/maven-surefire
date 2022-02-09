@@ -55,6 +55,8 @@ import static org.apache.maven.surefire.shared.utils.StringUtils.replace;
 public class ModularClasspathForkConfiguration
         extends DefaultForkConfiguration
 {
+    private final boolean useJpmsAddOpens;
+
     @SuppressWarnings( "checkstyle:parameternumber" )
     public ModularClasspathForkConfiguration( @Nonnull Classpath bootClasspath,
                                               @Nonnull File tempDirectory,
@@ -69,11 +71,13 @@ public class ModularClasspathForkConfiguration
                                               boolean reuseForks,
                                               @Nonnull Platform pluginPlatform,
                                               @Nonnull ConsoleLogger log,
-                                              @Nonnull ForkNodeFactory forkNodeFactory )
+                                              @Nonnull ForkNodeFactory forkNodeFactory,
+                                              boolean useJpmsAddOpens )
     {
         super( bootClasspath, tempDirectory, debugLine, workingDirectory, modelProperties, argLine,
             environmentVariables, excludedEnvironmentVariables, debug, forkCount, reuseForks, pluginPlatform, log,
             forkNodeFactory );
+        this.useJpmsAddOpens = useJpmsAddOpens;
     }
 
     @Override
@@ -183,7 +187,7 @@ public class ModularClasspathForkConfiguration
 
                 for ( String pkg : packages )
                 {
-                    args.append( "--add-opens" )
+                    args.append( useJpmsAddOpens ? "--add-opens" : "--add-exports" )
                             .append( NL )
                             .append( moduleName )
                             .append( '/' )

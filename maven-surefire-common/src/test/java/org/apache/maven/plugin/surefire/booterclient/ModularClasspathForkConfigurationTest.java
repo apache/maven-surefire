@@ -68,7 +68,7 @@ public class ModularClasspathForkConfigurationTest
         ModularClasspathForkConfiguration config = new ModularClasspathForkConfiguration( booter, tmp, "", pwd,
                 new Properties(), "",
                 Collections.<String, String>emptyMap(), new String[0], true, 1, true,
-                new Platform(), new NullConsoleLogger(), mock( ForkNodeFactory.class ) );
+                new Platform(), new NullConsoleLogger(), mock( ForkNodeFactory.class ), false );
 
         File patchFile = new File( "target" + separatorChar + "test-classes" );
         File descriptor = new File( tmp, "module-info.class" );
@@ -116,7 +116,7 @@ public class ModularClasspathForkConfigurationTest
                 .isEqualTo( "abc=\"" + replace( patchFile.getPath(), "\\", "\\\\" ) + "\"" );
 
         assertThat( argsFileLines.get( 6 ) )
-                .isEqualTo( "--add-opens" );
+                .isEqualTo( "--add-exports" );
 
         assertThat( argsFileLines.get( 7 ) )
                 .isEqualTo( "abc/org.apache.abc=ALL-UNNAMED" );
@@ -161,5 +161,48 @@ public class ModularClasspathForkConfigurationTest
             String line = argsFileLines2.get( i );
             assertThat( line ).isEqualTo( argsFileLines.get( i ) );
         }
+    }
+
+    @Test
+    @SuppressWarnings( "ResultOfMethodCallIgnored" )
+    public void shouldCreateModularArgsFileWithAddOpens() throws Exception
+    {
+        Classpath booter = new Classpath( asList( "booter.jar", "non-modular.jar" ) );
+        File target = new File( "target" ).getCanonicalFile();
+        File tmp = new File( target, "surefire" );
+        tmp.mkdirs();
+        File pwd = new File( "." ).getCanonicalFile();
+
+        ModularClasspathForkConfiguration config = new ModularClasspathForkConfiguration( booter, tmp, "", pwd,
+                                                                                          new Properties(), "",
+                                                                                          Collections.emptyMap(),
+                                                                                          new String[0], true, 1,
+                                                                                          true, new Platform(),
+                                                                                          new NullConsoleLogger(),
+                                                                                          mock( ForkNodeFactory.class ),
+                                                                                          true );
+
+        File patchFile = new File( "target" + separatorChar + "test-classes" );
+        File descriptor = new File( tmp, "module-info.class" );
+        descriptor.createNewFile();
+        List<String> modulePath =
+            asList( "modular.jar", "target" + separatorChar + "classes" );
+        List<String> classPath = asList( "booter.jar", "non-modular.jar", patchFile.getPath() );
+        Collection<String> packages = singleton( "org.apache.abc" );
+        String startClassName = ForkedBooter.class.getName();
+
+        File jigsawArgsFile = config.createArgsFile( "abc", modulePath, classPath, packages, patchFile,
+                                                     startClassName, true, Collections.<String[]>emptyList() );
+
+        assertThat( jigsawArgsFile )
+            .isNotNull();
+
+        List<String> argsFileLines = readAllLines( jigsawArgsFile.toPath(), UTF_8 );
+
+        assertThat( argsFileLines )
+            .hasSize( 13 );
+
+        assertThat( argsFileLines.get( 6 ) )
+            .isEqualTo( "--add-opens" );
     }
 }

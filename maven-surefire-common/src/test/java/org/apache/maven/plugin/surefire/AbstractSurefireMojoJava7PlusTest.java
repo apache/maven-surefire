@@ -911,6 +911,18 @@ public class AbstractSurefireMojoJava7PlusTest
         }
 
         @Override
+        protected boolean useJpmsAddOpens()
+        {
+            return false;
+        }
+
+        @Override
+        protected void setUseJpmsAddOpens( boolean useJpmsAddOpens )
+        {
+
+        }
+
+        @Override
         protected String getEnableProcessChecker()
         {
             return null;

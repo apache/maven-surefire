@@ -145,7 +145,7 @@ public class ForkConfigurationTest
 
         ModularClasspathForkConfiguration config = new ModularClasspathForkConfiguration( emptyClasspath(), basedir,
             "", basedir, new Properties(), "arg1", Collections.<String, String>emptyMap(), new String[0], false, 1,
-            true, platform, new NullConsoleLogger(), mock( ForkNodeFactory.class ) );
+            true, platform, new NullConsoleLogger(), mock( ForkNodeFactory.class ), false );
 
         assertThat( config.isDebug() ).isFalse();
 
