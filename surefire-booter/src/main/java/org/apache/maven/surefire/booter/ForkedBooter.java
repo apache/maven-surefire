@@ -43,9 +43,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static java.lang.Math.max;
 import static java.lang.Thread.currentThread;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_BYE;
 import static org.apache.maven.surefire.booter.ForkingRunListener.BOOTERCODE_ERROR;
@@ -69,7 +68,6 @@ public final class ForkedBooter
 {
     private static final long DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS = 30L;
     private static final long PING_TIMEOUT_IN_SECONDS = 30L;
-    private static final long ONE_SECOND_IN_MILLIS = 1000L;
     private static final String LAST_DITCH_SHUTDOWN_THREAD = "surefire-forkedjvm-last-ditch-daemon-shutdown-thread-";
     private static final String PING_THREAD = "surefire-forkedjvm-ping-";
 
@@ -331,8 +329,7 @@ public final class ForkedBooter
         );
         encodeAndWriteToOutput( ( (char) BOOTERCODE_BYE ) + ",0,BYE!\n" );
         launchLastDitchDaemonShutdownThread( 0 );
-        long timeoutMillis = max( systemExitTimeoutInSeconds * ONE_SECOND_IN_MILLIS, ONE_SECOND_IN_MILLIS );
-        acquireOnePermit( barrier, timeoutMillis );
+        acquireOnePermit( barrier );
         cancelPingScheduler();
         commandReader.stop();
         System.exit( 0 );
@@ -431,11 +428,11 @@ public final class ForkedBooter
         return pluginProcessChecker != null && pluginProcessChecker.canUse();
     }
 
-    private static boolean acquireOnePermit( Semaphore barrier, long timeoutMillis )
+    private static boolean acquireOnePermit( Semaphore barrier )
     {
         try
         {
-            return barrier.tryAcquire( timeoutMillis, MILLISECONDS );
+            return barrier.tryAcquire( Long.MAX_VALUE, NANOSECONDS );
         }
         catch ( InterruptedException e )
         {

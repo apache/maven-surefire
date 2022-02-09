@@ -136,16 +136,20 @@ public final class ThreadedStreamConsumer
     public void close()
             throws IOException
     {
-        if ( stop.compareAndSet( false, true ) )
+        if ( !stop.get() )
         {
-            items.clear();
             try
             {
                 items.put( END_ITEM );
+                thread.join();
             }
             catch ( InterruptedException e )
             {
                 currentThread().interrupt();
+            }
+            finally
+            {
+                stop.set( true );
             }
         }
 
