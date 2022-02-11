@@ -21,7 +21,6 @@ package org.apache.maven.plugin.surefire.extensions.junit5;
 
 import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter;
 import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
-import org.apache.maven.plugin.surefire.report.StatelessXmlReporter;
 import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
 
 import java.io.File;
