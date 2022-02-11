@@ -452,11 +452,10 @@
             <proc>none</proc>
           </configuration>
         </plugin>
-        <!-- NOTE: animal sniffer does not check test classes: https://jira.codehaus.org/browse/MANIMALSNIFFER-40 -->
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>animal-sniffer-maven-plugin</artifactId>
-          <version>1.17</version>
+          <version>1.21</version>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
@@ -632,10 +631,13 @@
         <executions>
           <execution>
             <id>signature-check</id>
+            <!-- we use offline jacoco instrumentation so check must be done after restoring original classes -->
+            <phase>verify</phase>
             <goals>
               <goal>check</goal>
             </goals>
             <configuration>
+              <checkTestClasses>true</checkTestClasses>
               <signature>
                 <groupId>org.codehaus.mojo.signature</groupId>
                 <artifactId>java18</artifactId>

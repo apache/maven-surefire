@@ -318,7 +318,7 @@ public class AbstractStreamDecoderTest
 
         Memento memento = thread.new Memento();
         // whatever position will be compacted to 0
-        ( (Buffer) ( (Buffer) memento.getByteBuffer().limit( 974 ) ) ).position( 974 );
+        ( (Buffer) memento.getByteBuffer() ).limit( 974 ).position( 974 );
 
         StringBuilder expected = new StringBuilder( "789" );
         for ( int i = 0; i < 11; i++ )
