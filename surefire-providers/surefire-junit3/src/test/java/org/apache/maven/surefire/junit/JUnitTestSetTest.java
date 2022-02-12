@@ -50,9 +50,9 @@ public class JUnitTestSetTest
     {
         ClassLoader testClassLoader = this.getClass().getClassLoader();
         JUnit3Reflector reflector = new JUnit3Reflector( testClassLoader );
-        JUnitTestSet testSet = new JUnitTestSet( Suite.class, reflector );
+        JUnitTestSetExecutor testSet = new JUnitTestSetExecutor( reflector );
         SuccessListener listener = new SuccessListener();
-        testSet.execute( listener, testClassLoader );
+        testSet.execute( Suite.class, listener, testClassLoader );
         List<ReportEntry> succeededTests = listener.getSucceededTests();
         assertEquals( 1, succeededTests.size() );
         assertEquals( "org.apache.maven.surefire.junit.JUnitTestSetTest$AlwaysSucceeds",

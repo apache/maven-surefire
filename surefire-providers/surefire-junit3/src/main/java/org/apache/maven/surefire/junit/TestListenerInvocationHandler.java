@@ -30,6 +30,7 @@ import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 
+import static java.util.Objects.requireNonNull;
 import static org.apache.maven.surefire.api.report.SimpleReportEntry.withException;
 import static org.apache.maven.surefire.api.util.internal.TestClassMethodNameUtils.extractClassName;
 import static org.apache.maven.surefire.api.util.internal.TestClassMethodNameUtils.extractMethodName;
@@ -52,33 +53,24 @@ public class TestListenerInvocationHandler
 
     private final Set<FailedTest> failedTestsSet = new HashSet<>();
 
-    private RunListener reporter;
+    private final RunListener reporter;
 
-    private static final Class[] EMPTY_CLASS_ARRAY = { };
+    private static final Class<?>[] EMPTY_CLASS_ARRAY = { };
 
     private static final Object[] EMPTY_STRING_ARRAY = { };
 
     private static class FailedTest
     {
-        private Object testThatFailed;
-
-        private Thread threadOnWhichTestFailed;
+        private final Object testThatFailed;
+        private final Thread threadOnWhichTestFailed;
 
         FailedTest( Object testThatFailed, Thread threadOnWhichTestFailed )
         {
-            if ( testThatFailed == null )
-            {
-                throw new NullPointerException( "testThatFailed is null" );
-            }
+            this.testThatFailed =
+                requireNonNull( testThatFailed, "testThatFailed is null" );
 
-            if ( threadOnWhichTestFailed == null )
-            {
-                throw new NullPointerException( "threadOnWhichTestFailed is null" );
-            }
-
-            this.testThatFailed = testThatFailed;
-
-            this.threadOnWhichTestFailed = threadOnWhichTestFailed;
+            this.threadOnWhichTestFailed =
+                requireNonNull( threadOnWhichTestFailed, "threadOnWhichTestFailed is null" );
         }
 
         @Override
@@ -116,12 +108,7 @@ public class TestListenerInvocationHandler
 
     public TestListenerInvocationHandler( RunListener reporter )
     {
-        if ( reporter == null )
-        {
-            throw new NullPointerException( "reporter is null" );
-        }
-
-        this.reporter = reporter;
+        this.reporter = requireNonNull( reporter, "reporter is null" );
     }
 
     @Override

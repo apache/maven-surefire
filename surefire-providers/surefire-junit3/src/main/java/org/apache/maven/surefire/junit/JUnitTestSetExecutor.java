@@ -30,21 +30,13 @@ import org.apache.maven.surefire.api.testset.TestSetFailedException;
  * JUnit3 test set
  *
  */
-public final class JUnitTestSet
-    implements SurefireTestSet
+public final class JUnitTestSetExecutor
+    implements SurefireTestSetExecutor
 {
-    private final Class testClass;
-
     private final JUnit3Reflector reflector;
 
-    public JUnitTestSet( Class testClass, JUnit3Reflector reflector )
+    public JUnitTestSetExecutor( JUnit3Reflector reflector )
     {
-        if ( testClass == null )
-        {
-            throw new NullPointerException( "testClass is null" );
-        }
-
-        this.testClass = testClass;
         this.reflector = reflector;
 
         // ----------------------------------------------------------------------
@@ -62,13 +54,10 @@ public final class JUnitTestSet
         // the same as the param types of TestResult.addTestListener
     }
 
-
     @Override
-    public void execute( RunListener reporter, ClassLoader loader )
+    public void execute( Class<?> testClass, RunListener reporter, ClassLoader loader )
         throws TestSetFailedException
     {
-        Class testClass = getTestClass();
-
         try
         {
             Object testObject = reflector.constructTestObject( testClass );
@@ -110,16 +99,5 @@ public final class JUnitTestSet
         {
             throw new TestSetFailedException( testClass.getName(), e );
         }
-    }
-
-    @Override
-    public String getName()
-    {
-        return testClass.getName();
-    }
-
-    private Class getTestClass()
-    {
-        return testClass;
     }
 }
