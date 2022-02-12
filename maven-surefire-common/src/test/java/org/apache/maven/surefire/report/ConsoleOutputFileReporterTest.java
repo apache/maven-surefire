@@ -34,6 +34,8 @@ import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.shared.utils.io.FileUtils;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdOut;
+import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdOutln;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -54,7 +56,7 @@ public class ConsoleOutputFileReporterTest
                 new SimpleReportEntry( getClass().getName(), null, getClass().getName(), null );
         ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, null, false, null, "UTF-8" );
         reporter.testSetStarting( reportEntry );
-        reporter.writeTestOutput( "some ", false, true );
+        reporter.writeTestOutput( stdOut( "some " ) );
         reporter.testSetCompleted( reportEntry );
         reporter.close();
 
@@ -82,8 +84,8 @@ public class ConsoleOutputFileReporterTest
         ConsoleOutputFileReporter reporter =
                 new ConsoleOutputFileReporter( reportDir, suffixText, false, null, "UTF-8" );
         reporter.testSetStarting( reportEntry );
-        reporter.writeTestOutput( null, true, true );
-        reporter.writeTestOutput( "some ", true, true );
+        reporter.writeTestOutput( stdOutln( null ) );
+        reporter.writeTestOutput( stdOutln( "some " ) );
         reporter.testSetCompleted( reportEntry );
         reporter.close();
 
@@ -106,7 +108,7 @@ public class ConsoleOutputFileReporterTest
     {
         File reportDir = new File( new File( System.getProperty( "user.dir" ), "target" ), "tmp3" );
         ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, null, false, null, "UTF-8" );
-        reporter.writeTestOutput( "some text", false, true );
+        reporter.writeTestOutput( stdOut( "some text" ) );
         reporter.testSetCompleted( new SimpleReportEntry( getClass().getName(), null, getClass().getName(), null ) );
         reporter.close();
 
@@ -137,7 +139,7 @@ public class ConsoleOutputFileReporterTest
                 @Override
                 public Void call()
                 {
-                    reporter.writeTestOutput( "some text\n", false, true );
+                    reporter.writeTestOutput( stdOut( "some text\n" ) );
                     return null;
                 }
             } );

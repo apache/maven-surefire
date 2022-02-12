@@ -19,15 +19,19 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.report.ReportEntry;
-import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.TestOutputReceiver;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.internal.ClassMethod;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
+import org.junit.runner.notification.RunListener;
 
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.isFailureInsideJUnitItself;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClassMethod;
@@ -41,12 +45,14 @@ import static org.apache.maven.surefire.api.report.SimpleReportEntry.withExcepti
  *
  */
 public class JUnit4RunListener
-    extends org.junit.runner.notification.RunListener
+    extends RunListener
+    implements TestOutputReceiver
 {
-    protected final RunListener reporter;
+    protected final TestReportListener reporter;
 
     /**
-     * This flag is set after a failure has occurred so that a {@link RunListener#testSucceeded} event is not fired.
+     * This flag is set after a failure has occurred so that a
+     * {@link org.apache.maven.surefire.api.report.RunListener#testSucceeded} event is not fired.
      * This is necessary because JUnit4 always fires a
      * {@link org.junit.runner.notification.RunListener#testRunFinished(Result)}
      * event-- even if there was a failure.
@@ -58,9 +64,14 @@ public class JUnit4RunListener
      *
      * @param reporter the reporter to log testing events to
      */
-    public JUnit4RunListener( RunListener reporter )
+    public JUnit4RunListener( TestReportListener reporter )
     {
         this.reporter = reporter;
+    }
+
+    public final ConsoleLogger getConsoleLogger()
+    {
+        return reporter;
     }
 
     // Testrun methods are not invoked when using the runner
@@ -163,7 +174,7 @@ public class JUnit4RunListener
     }
 
     /**
-     * Delegates to {@link RunListener#testExecutionSkippedByUser()}.
+     * Delegates to {@link org.apache.maven.surefire.api.report.RunListener#testExecutionSkippedByUser()}.
      */
     public void testExecutionSkippedByUser()
     {
@@ -192,5 +203,11 @@ public class JUnit4RunListener
                                                         failure.getException() );
             }
         }
+    }
+
+    @Override
+    public void writeTestOutput( TestOutputReportEntry reportEntry )
+    {
+        reporter.writeTestOutput( new TestOutputReportEntry( reportEntry, /*todo*/ null, 0L ) );
     }
 }

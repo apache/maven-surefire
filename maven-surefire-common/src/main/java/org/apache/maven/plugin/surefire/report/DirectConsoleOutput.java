@@ -19,6 +19,7 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 import java.io.PrintStream;
@@ -47,16 +48,16 @@ public class DirectConsoleOutput
     }
 
     @Override
-    public void writeTestOutput( String output, boolean newLine, boolean stdout )
+    public void writeTestOutput( TestOutputReportEntry reportEntry )
     {
-        PrintStream stream = stdout ? out : err;
-        if ( newLine )
+        PrintStream stream = reportEntry.isStdOut() ? out : err;
+        if ( reportEntry.isNewLine() )
         {
-            stream.println( output );
+            stream.println( reportEntry.getLog() );
         }
         else
         {
-            stream.print( output );
+            stream.print( reportEntry.getLog() );
         }
     }
 

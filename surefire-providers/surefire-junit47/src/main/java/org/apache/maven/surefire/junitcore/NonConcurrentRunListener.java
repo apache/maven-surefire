@@ -19,13 +19,12 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.util.internal.ClassMethod;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
-import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
-import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
@@ -41,24 +40,22 @@ import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProp
  * limitation a la Junit4 provider. Specifically, we can redirect properly the output even if we don't have class
  * demarcation in JUnit. It works when if there is a JVM instance per test run, i.e. with forkMode=always or perthread.
  */
-public class NonConcurrentRunListener
+class NonConcurrentRunListener
     extends JUnit4RunListener
-    implements ConsoleOutputReceiver
 {
     private Description currentTestSetDescription;
 
     private Description lastFinishedDescription;
 
-    public NonConcurrentRunListener( RunListener reporter )
-        throws TestSetFailedException
+    NonConcurrentRunListener( TestReportListener reporter )
     {
         super( reporter );
     }
 
-    public synchronized void writeTestOutput( String output, boolean newLine, boolean stdout )
+    public synchronized void writeTestOutput( TestOutputReportEntry reportEntry )
     {
         // We can write immediately: no parallelism and a single class.
-        ( (ConsoleOutputReceiver) reporter ).writeTestOutput( output, newLine, stdout );
+        reporter.writeTestOutput( new TestOutputReportEntry( reportEntry, /*todo*/ null, 0L ) );
     }
 
     @Override

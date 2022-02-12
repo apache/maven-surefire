@@ -31,14 +31,15 @@ import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 import org.apache.maven.surefire.api.report.CategorizedReportEntry;
-import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.api.report.LegacyPojoStackTraceWriter;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.ReporterException;
 import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.TestOutputReceiver;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 
 import javax.annotation.Nonnull;
@@ -57,6 +58,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdOut;
 import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -172,7 +174,7 @@ public class ForkingRunListenerTest
     public void testConsole() throws Exception
     {
         final StandardTestRun standardTestRun = new StandardTestRun();
-        ConsoleLogger directConsoleReporter = (ConsoleLogger) standardTestRun.run();
+        ConsoleLogger directConsoleReporter = standardTestRun.run();
         directConsoleReporter.info( "HeyYou" );
         standardTestRun.assertExpected( MockReporter.CONSOLE_INFO, "HeyYou" );
     }
@@ -180,8 +182,8 @@ public class ForkingRunListenerTest
     public void testConsoleOutput() throws Exception
     {
         final StandardTestRun standardTestRun = new StandardTestRun();
-        ConsoleOutputReceiver directConsoleReporter = (ConsoleOutputReceiver) standardTestRun.run();
-        directConsoleReporter.writeTestOutput( "HeyYou", false, true );
+        TestOutputReceiver directConsoleReporter = standardTestRun.run();
+        directConsoleReporter.writeTestOutput( stdOut( "HeyYou" ) );
         standardTestRun.assertExpected( MockReporter.STDOUT, "HeyYou" );
     }
 
@@ -461,7 +463,7 @@ public class ForkingRunListenerTest
         }
     }
 
-    private RunListener createForkingRunListener()
+    private TestReportListener createForkingRunListener()
     {
         WritableBufferedByteChannel channel = (WritableBufferedByteChannel) newChannel( printStream );
         return new ForkingRunListener( new EventChannelEncoder( channel ), false );
@@ -471,7 +473,7 @@ public class ForkingRunListenerTest
     {
         private MockReporter reporter;
 
-        public RunListener run()
+        public TestReportListener run()
             throws ReporterException
         {
             reset();

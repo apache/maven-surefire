@@ -25,10 +25,9 @@ import org.apache.maven.surefire.api.provider.CommandListener;
 import org.apache.maven.surefire.api.cli.CommandLineOption;
 import org.apache.maven.surefire.api.provider.AbstractProvider;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
-import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.api.report.ReporterConfiguration;
 import org.apache.maven.surefire.api.report.ReporterFactory;
-import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.testng.utils.FailFastEventsSingleton;
 import org.apache.maven.surefire.api.testset.TestListResolver;
@@ -98,12 +97,12 @@ public class TestNGProvider
         }
 
         final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
-        final RunListener reporter = reporterFactory.createReporter();
+        final TestReportListener reporter = reporterFactory.createTestReportListener();
         /*
          * {@link org.apache.maven.surefire.api.report.ConsoleOutputCapture#startCapture(ConsoleOutputReceiver)}
          * called in prior to initializing variable {@link #testsToRun}
          */
-        startCapture( (ConsoleOutputReceiver) reporter );
+        startCapture( reporter );
 
         RunResult runResult;
         try

@@ -29,7 +29,7 @@ import org.apache.maven.surefire.extensions.StatelessReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
 import org.apache.maven.surefire.api.report.ReporterFactory;
-import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.suite.RunResult;
@@ -97,7 +97,7 @@ public class DefaultReporterFactory
     }
 
     @Override
-    public RunListener createReporter()
+    public TestReportListener createTestReportListener()
     {
         TestSetRunListener testSetRunListener =
             new TestSetRunListener( createConsoleReporter(),

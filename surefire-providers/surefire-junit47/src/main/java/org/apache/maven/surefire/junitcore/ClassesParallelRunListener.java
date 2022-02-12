@@ -19,25 +19,19 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import java.util.Map;
-
-import org.apache.maven.surefire.api.report.ConsoleStream;
 import org.apache.maven.surefire.api.report.ReporterFactory;
-import org.apache.maven.surefire.api.testset.TestSetFailedException;
-import org.junit.runner.notification.RunListener.ThreadSafe;
+
+import java.util.Map;
 
 /**
  * @author Kristian Rosenvold
  */
-@ThreadSafe
-public class ClassesParallelRunListener
+final class ClassesParallelRunListener
     extends ConcurrentRunListener
 {
-    public ClassesParallelRunListener( Map<String, TestSet> classMethodCounts, ReporterFactory reporterFactory,
-                                       ConsoleStream consoleStream )
-        throws TestSetFailedException
+    ClassesParallelRunListener( Map<String, TestSet> classMethodCounts, ReporterFactory reporterFactory )
     {
-        super( reporterFactory, consoleStream, false, classMethodCounts );
+        super( reporterFactory, false, classMethodCounts );
     }
 
     @Override

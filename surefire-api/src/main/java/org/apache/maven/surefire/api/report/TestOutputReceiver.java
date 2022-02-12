@@ -20,9 +20,17 @@ package org.apache.maven.surefire.api.report;
  */
 
 /**
- * Delegates to {@link System#out}.
+ * A receiver of stdout/sterr output from running tests. This receiver knows how to associate
+ * the output with a given testset.
  */
-public interface ConsoleStream
+public interface TestOutputReceiver
 {
-    void println( String message );
+
+    /**
+     * Forwards process output from the running test-case into the reporting system
+     *
+     * @param reportEntry wraps test output with descriptive information of the output
+     */
+    void writeTestOutput( TestOutputReportEntry reportEntry );
+
 }

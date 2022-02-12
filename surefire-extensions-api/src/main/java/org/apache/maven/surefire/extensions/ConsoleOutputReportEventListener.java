@@ -19,6 +19,7 @@ package org.apache.maven.surefire.extensions;
  * under the License.
  */
 
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 /**
@@ -33,5 +34,5 @@ public interface ConsoleOutputReportEventListener
     void testSetStarting( TestSetReportEntry report );
     void testSetCompleted( TestSetReportEntry report );
     void close();
-    void writeTestOutput( String output, boolean newLine, boolean stdout );
+    void writeTestOutput( TestOutputReportEntry reportEntry );
 }

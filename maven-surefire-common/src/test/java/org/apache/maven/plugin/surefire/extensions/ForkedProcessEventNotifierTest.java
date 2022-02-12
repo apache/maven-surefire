@@ -74,6 +74,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
+import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdErr;
+import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdOut;
+import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdOutln;
 import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -568,7 +571,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.stdOut( "msg", false );
+            encoder.testOutput( stdOut( "msg" ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
@@ -607,7 +610,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.stdOut( "", false );
+            encoder.testOutput( stdOut( "" ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
@@ -646,7 +649,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.stdOut( null, false );
+            encoder.testOutput( stdOut( null ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
@@ -685,7 +688,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.stdOut( "", true );
+            encoder.testOutput( stdOutln( "" ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
@@ -724,7 +727,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.stdOut( null, true );
+            encoder.testOutput( stdOutln( null ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
@@ -763,7 +766,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.stdErr( "msg", false );
+            encoder.testOutput( stdErr( "msg" ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );

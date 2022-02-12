@@ -21,6 +21,7 @@ package org.apache.maven.surefire.api.booter;
 
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 
 import java.util.Map;
 
@@ -54,9 +55,7 @@ public interface MasterProcessChannelEncoder
 
     void testAssumptionFailure( ReportEntry reportEntry, boolean trimStackTraces );
 
-    void stdOut( String msg, boolean newLine );
-
-    void stdErr( String msg, boolean newLine );
+    void testOutput( TestOutputReportEntry reportEntry );
 
     void consoleInfoLog( String msg );
 
