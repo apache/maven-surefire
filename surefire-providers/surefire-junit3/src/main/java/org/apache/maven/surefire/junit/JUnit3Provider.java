@@ -23,7 +23,6 @@ import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 import org.apache.maven.surefire.common.junit3.JUnit3TestChecker;
 import org.apache.maven.surefire.api.provider.AbstractProvider;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
-import org.apache.maven.surefire.api.report.ConsoleOutputCapture;
 import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.api.report.ReporterFactory;
 import org.apache.maven.surefire.api.report.RunListener;
@@ -37,6 +36,7 @@ import org.apache.maven.surefire.api.util.TestsToRun;
 
 import java.util.Map;
 
+import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.instantiate;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.isSecurityManagerSupported;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
@@ -61,8 +61,6 @@ public class JUnit3Provider
 
     private final ScanResult scanResult;
 
-    private TestsToRun testsToRun;
-
     public JUnit3Provider( ProviderParameters booterParameters )
     {
         this.providerParameters = booterParameters;
@@ -78,35 +76,34 @@ public class JUnit3Provider
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException
     {
-        if ( testsToRun == null )
+
+        final TestsToRun testsToRun;
+        if ( forkTestSet instanceof TestsToRun )
         {
-            if ( forkTestSet instanceof TestsToRun )
-            {
-                testsToRun = (TestsToRun) forkTestSet;
-            }
-            else if ( forkTestSet instanceof Class )
-            {
-                testsToRun = TestsToRun.fromClass( (Class<?>) forkTestSet );
-            }
-            else
-            {
-                testsToRun = scanClassPath();
-            }
+            testsToRun = (TestsToRun) forkTestSet;
+        }
+        else if ( forkTestSet instanceof Class )
+        {
+            testsToRun = TestsToRun.fromClass( (Class<?>) forkTestSet );
+        }
+        else
+        {
+            testsToRun = scanClassPath();
         }
 
         ReporterFactory reporterFactory = providerParameters.getReporterFactory();
         RunResult runResult;
         try
         {
-            final RunListener reporter = reporterFactory.createReporter();
-            ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
+            RunListener reporter = reporterFactory.createReporter();
+            startCapture( (ConsoleOutputReceiver) reporter );
             Map<String, String> systemProperties = systemProps();
             setSystemManager( System.getProperty( "surefire.security.manager" ) );
 
             for ( Class<?> clazz : testsToRun )
             {
-                SurefireTestSet surefireTestSet = createTestSet( clazz );
-                executeTestSet( surefireTestSet, reporter, testClassLoader, systemProperties );
+                SurefireTestSetExecutor surefireTestSetExecutor = createTestSet( clazz );
+                executeTestSet( clazz, surefireTestSetExecutor, reporter, systemProperties );
             }
         }
         finally
@@ -131,14 +128,14 @@ public class JUnit3Provider
         }
     }
 
-    private SurefireTestSet createTestSet( Class<?> clazz )
+    private SurefireTestSetExecutor createTestSet( Class<?> clazz )
     {
         return reflector.isJUnit3Available() && jUnit3TestChecker.accept( clazz )
-            ? new JUnitTestSet( clazz, reflector )
-            : new PojoTestSet( clazz );
+            ? new JUnitTestSetExecutor( reflector )
+            : new PojoTestSetExecutor();
     }
 
-    private void executeTestSet( SurefireTestSet testSet, RunListener reporter, ClassLoader classLoader,
+    private void executeTestSet( Class<?> testSet, SurefireTestSetExecutor testSetExecutor, RunListener reporter,
                                  Map<String, String> systemProperties )
         throws TestSetFailedException
     {
@@ -148,7 +145,7 @@ public class JUnit3Provider
         {
             TestSetReportEntry started = new SimpleReportEntry( clazz, null, null, null );
             reporter.testSetStarting( started );
-            testSet.execute( reporter, classLoader );
+            testSetExecutor.execute( testSet, reporter, testClassLoader );
         }
         finally
         {
@@ -159,14 +156,13 @@ public class JUnit3Provider
 
     private TestsToRun scanClassPath()
     {
-        final TestsToRun testsToRun = scanResult.applyFilter( testChecker, testClassLoader );
+        TestsToRun testsToRun = scanResult.applyFilter( testChecker, testClassLoader );
         return runOrderCalculator.orderTestClasses( testsToRun );
     }
 
     @Override
     public Iterable<Class<?>> getSuites()
     {
-        testsToRun = scanClassPath();
-        return testsToRun;
+        return scanClassPath();
     }
 }

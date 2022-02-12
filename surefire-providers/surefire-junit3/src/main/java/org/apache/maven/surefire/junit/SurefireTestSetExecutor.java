@@ -26,10 +26,8 @@ import org.apache.maven.surefire.api.testset.TestSetFailedException;
  * Describes a single test set
  *
  */
-public interface SurefireTestSet
+public interface SurefireTestSetExecutor
 {
-    void execute( RunListener reportManager, ClassLoader loader )
+    void execute( Class<?> testClass, RunListener reportManager, ClassLoader loader )
         throws TestSetFailedException;
-
-    String getName();
 }
