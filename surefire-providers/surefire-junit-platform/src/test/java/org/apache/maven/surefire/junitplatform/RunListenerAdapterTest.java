@@ -45,9 +45,9 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.api.report.ReportEntry;
-import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.junit.Before;
@@ -79,14 +79,14 @@ public class RunListenerAdapterTest
 {
     private static final ConfigurationParameters CONFIG_PARAMS = mock( ConfigurationParameters.class );
 
-    private RunListener listener;
+    private TestReportListener listener;
 
     private RunListenerAdapter adapter;
 
     @Before
     public void setUp()
     {
-        listener = mock( RunListener.class );
+        listener = mock( TestReportListener.class );
         adapter = new RunListenerAdapter( listener );
         adapter.testPlanExecutionStarted( TestPlan.from( emptyList() ) );
     }

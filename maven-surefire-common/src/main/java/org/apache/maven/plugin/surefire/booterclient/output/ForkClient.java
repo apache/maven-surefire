@@ -23,9 +23,11 @@ import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Notifiable
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.api.event.Event;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
-import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.api.report.TestOutputReceiver;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.RunMode;
@@ -78,7 +80,7 @@ public class ForkClient
 
     private final int forkNumber;
 
-    private volatile RunListener testSetReporter;
+    private volatile TestReportListener testSetReporter;
 
     /**
      * Written by one Thread and read by another: Main Thread and ForkStarter's Thread.
@@ -379,7 +381,7 @@ public class ForkClient
     /**
      * Only {@link #getConsoleOutputReceiver()} may call this method in another Thread.
      */
-    private RunListener getTestSetReporter()
+    private TestReportListener getTestSetReporter()
     {
         if ( testSetReporter == null )
         {
@@ -387,7 +389,7 @@ public class ForkClient
             {
                 if ( testSetReporter == null )
                 {
-                    testSetReporter = defaultReporterFactory.createReporter();
+                    testSetReporter = defaultReporterFactory.createTestReportListener();
                 }
             }
         }
@@ -404,7 +406,7 @@ public class ForkClient
     private void writeTestOutput( String output, boolean newLine, boolean isStdout )
     {
         getConsoleOutputReceiver()
-                .writeTestOutput( output, newLine, isStdout );
+                .writeTestOutput( new TestOutputReportEntry( output, isStdout, newLine, /*todo*/ null, null ) );
     }
 
     public final Map<String, String> getTestVmSystemProperties()
@@ -423,14 +425,14 @@ public class ForkClient
         return getTestSetReporter();
     }
 
-    public ConsoleOutputReceiver getConsoleOutputReceiver()
+    public TestOutputReceiver getConsoleOutputReceiver()
     {
-        return (ConsoleOutputReceiver) getTestSetReporter();
+        return getTestSetReporter();
     }
 
     private ConsoleLogger getOrCreateConsoleLogger()
     {
-        return (ConsoleLogger) getTestSetReporter();
+        return getTestSetReporter();
     }
 
     public void close( boolean hadTimeout )

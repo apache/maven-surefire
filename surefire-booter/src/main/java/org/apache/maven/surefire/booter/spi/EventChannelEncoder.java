@@ -27,6 +27,7 @@ import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 import org.apache.maven.surefire.booter.stream.EventEncoder;
 
@@ -197,17 +198,15 @@ public class EventChannelEncoder extends EventEncoder implements MasterProcessCh
     }
 
     @Override
-    public void stdOut( String msg, boolean newLine )
+    public void testOutput( TestOutputReportEntry reportEntry )
     {
-        ForkedProcessEventType event = newLine ? BOOTERCODE_STDOUT_NEW_LINE : BOOTERCODE_STDOUT;
-        setOutErr( event, msg );
-    }
-
-    @Override
-    public void stdErr( String msg, boolean newLine )
-    {
-        ForkedProcessEventType event = newLine ? BOOTERCODE_STDERR_NEW_LINE : BOOTERCODE_STDERR;
-        setOutErr( event, msg );
+        boolean stdout = reportEntry.isStdOut();
+        boolean newLine = reportEntry.isNewLine();
+        String msg = reportEntry.getLog();
+        ForkedProcessEventType event =
+            stdout ? ( newLine ? BOOTERCODE_STDOUT_NEW_LINE : BOOTERCODE_STDOUT )
+                : ( newLine ? BOOTERCODE_STDERR_NEW_LINE : BOOTERCODE_STDERR );
+        setOutErr( event, msg ); /*todo*/
     }
 
     private void setOutErr( ForkedProcessEventType eventType, String message )

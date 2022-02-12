@@ -23,7 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.maven.surefire.api.report.ReportEntry;
-import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.api.report.RunMode;
 
@@ -31,7 +32,7 @@ import org.apache.maven.surefire.api.report.RunMode;
  * Internal tests use only.
  */
 final class MockReporter
-    implements RunListener
+        implements TestReportListener
 {
     private final List<String> events = new ArrayList<>();
 
@@ -135,5 +136,71 @@ final class MockReporter
     public boolean containsNotification( String event )
     {
         return events.contains( event );
+    }
+
+    @Override
+    public void writeTestOutput( TestOutputReportEntry reportEntry )
+    {
+
+    }
+
+    @Override
+    public boolean isDebugEnabled()
+    {
+        return false;
+    }
+
+    @Override
+    public void debug( String message )
+    {
+
+    }
+
+    @Override
+    public boolean isInfoEnabled()
+    {
+        return false;
+    }
+
+    @Override
+    public void info( String message )
+    {
+
+    }
+
+    @Override
+    public boolean isWarnEnabled()
+    {
+        return false;
+    }
+
+    @Override
+    public void warning( String message )
+    {
+
+    }
+
+    @Override
+    public boolean isErrorEnabled()
+    {
+        return false;
+    }
+
+    @Override
+    public void error( String message )
+    {
+
+    }
+
+    @Override
+    public void error( String message, Throwable t )
+    {
+
+    }
+
+    @Override
+    public void error( Throwable t )
+    {
+
     }
 }

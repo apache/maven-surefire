@@ -477,14 +477,14 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         MockReporter receiver = new MockReporter();
-        when( factory.createReporter() )
+        when( factory.createTestReportListener() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
         client.handleEvent( new StandardStreamOutEvent( NORMAL_RUN, "msg" ) );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
-                .createReporter();
+                .createTestReportListener();
         verifyNoMoreInteractions( factory );
         assertThat( client.getReporter() )
                 .isNotNull();
@@ -519,14 +519,14 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         MockReporter receiver = new MockReporter();
-        when( factory.createReporter() )
+        when( factory.createTestReportListener() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
         client.handleEvent( new StandardStreamOutWithNewLineEvent( NORMAL_RUN, "msg" ) );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
-                .createReporter();
+                .createTestReportListener();
         verifyNoMoreInteractions( factory );
         assertThat( client.getReporter() )
                 .isNotNull();
@@ -561,14 +561,14 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         MockReporter receiver = new MockReporter();
-        when( factory.createReporter() )
+        when( factory.createTestReportListener() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
         client.handleEvent( new StandardStreamErrEvent( NORMAL_RUN, "msg" ) );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
-                .createReporter();
+                .createTestReportListener();
         verifyNoMoreInteractions( factory );
         assertThat( client.getReporter() )
                 .isNotNull();
@@ -603,14 +603,14 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         MockReporter receiver = new MockReporter();
-        when( factory.createReporter() )
+        when( factory.createTestReportListener() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
         client.handleEvent( new StandardStreamErrWithNewLineEvent( NORMAL_RUN, "msg" ) );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
-                .createReporter();
+                .createTestReportListener();
         verifyNoMoreInteractions( factory );
         assertThat( client.getReporter() )
                 .isNotNull();
@@ -641,7 +641,7 @@ public class ForkClientTest
     {
         DefaultReporterFactory factory = mock( DefaultReporterFactory.class );
         MockReporter receiver = new MockReporter();
-        when( factory.createReporter() )
+        when( factory.createTestReportListener() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
@@ -651,7 +651,7 @@ public class ForkClientTest
         client.handleEvent( event );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
-                .createReporter();
+                .createTestReportListener();
         verify( factory, times( 1 ) )
             .getReportsDirectory();
         verifyNoMoreInteractions( factory );
@@ -733,14 +733,14 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         MockReporter receiver = new MockReporter();
-        when( factory.createReporter() )
+        when( factory.createTestReportListener() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
         client.handleEvent( new ConsoleWarningEvent( "s1" ) );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
-                .createReporter();
+                .createTestReportListener();
         verifyNoMoreInteractions( factory );
         assertThat( client.getReporter() )
                 .isNotNull();
@@ -775,14 +775,14 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         MockReporter receiver = new MockReporter();
-        when( factory.createReporter() )
+        when( factory.createTestReportListener() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
         client.handleEvent( new ConsoleDebugEvent( "s1" ) );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
-                .createReporter();
+                .createTestReportListener();
         verifyNoMoreInteractions( factory );
         assertThat( client.getReporter() )
                 .isNotNull();
@@ -817,14 +817,14 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         MockReporter receiver = new MockReporter();
-        when( factory.createReporter() )
+        when( factory.createTestReportListener() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
         client.handleEvent( new ConsoleInfoEvent( "s1" ) );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
-                .createReporter();
+                .createTestReportListener();
         verifyNoMoreInteractions( factory );
         assertThat( client.getReporter() )
                 .isNotNull();
@@ -859,7 +859,7 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         MockReporter receiver = new MockReporter();
-        when( factory.createReporter() )
+        when( factory.createTestReportListener() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
@@ -899,7 +899,7 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         MockReporter receiver = new MockReporter();
-        when( factory.createReporter() )
+        when( factory.createTestReportListener() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
 
@@ -932,7 +932,7 @@ public class ForkClientTest
         verify( notifiableTestStream )
                 .shutdown( Shutdown.KILL );
         verifyNoMoreInteractions( notifiableTestStream );
-        verify( factory ).createReporter();
+        verify( factory ).createTestReportListener();
         verifyNoMoreInteractions( factory );
         assertThat( client.getReporter() )
                 .isNotNull();
@@ -994,7 +994,7 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         MockReporter receiver = new MockReporter();
-        when( factory.createReporter() )
+        when( factory.createTestReportListener() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
 
@@ -1026,7 +1026,7 @@ public class ForkClientTest
         client.tryToTimeout( System.currentTimeMillis(), 1 );
 
         verifyZeroInteractions( notifiableTestStream );
-        verify( factory ).createReporter();
+        verify( factory ).createTestReportListener();
         verifyNoMoreInteractions( factory );
         assertThat( client.getReporter() )
                 .isNotNull();
@@ -1090,7 +1090,7 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         MockReporter receiver = new MockReporter();
-        when( factory.createReporter() )
+        when( factory.createTestReportListener() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
 
@@ -1119,7 +1119,7 @@ public class ForkClientTest
         client.handleEvent( new TestsetCompletedEvent( NORMAL_RUN, reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
-        verify( factory ).createReporter();
+        verify( factory ).createTestReportListener();
         verifyNoMoreInteractions( factory );
         assertThat( client.getReporter() )
                 .isNotNull();
@@ -1183,7 +1183,7 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         MockReporter receiver = new MockReporter();
-        when( factory.createReporter() )
+        when( factory.createTestReportListener() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
 
@@ -1212,7 +1212,7 @@ public class ForkClientTest
         client.handleEvent( new TestStartingEvent( NORMAL_RUN, reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
-        verify( factory ).createReporter();
+        verify( factory ).createTestReportListener();
         verifyNoMoreInteractions( factory );
         assertThat( client.hasTestsInProgress() )
                 .isTrue();
@@ -1277,7 +1277,7 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         MockReporter receiver = new MockReporter();
-        when( factory.createReporter() )
+        when( factory.createTestReportListener() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
 
@@ -1313,7 +1313,7 @@ public class ForkClientTest
         client.handleEvent( new TestSucceededEvent( NORMAL_RUN, reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
-        verify( factory ).createReporter();
+        verify( factory ).createTestReportListener();
         verifyNoMoreInteractions( factory );
         assertThat( client.getReporter() )
                 .isNotNull();
@@ -1381,7 +1381,7 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         MockReporter receiver = new MockReporter();
-        when( factory.createReporter() )
+        when( factory.createTestReportListener() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
 
@@ -1417,7 +1417,7 @@ public class ForkClientTest
         client.handleEvent( new TestFailedEvent( NORMAL_RUN, reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
-        verify( factory ).createReporter();
+        verify( factory ).createTestReportListener();
         verifyNoMoreInteractions( factory );
         assertThat( client.getReporter() )
                 .isNotNull();
@@ -1491,7 +1491,7 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         MockReporter receiver = new MockReporter();
-        when( factory.createReporter() )
+        when( factory.createTestReportListener() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
 
@@ -1527,7 +1527,7 @@ public class ForkClientTest
         client.handleEvent( new TestSkippedEvent( NORMAL_RUN, reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
-        verify( factory ).createReporter();
+        verify( factory ).createTestReportListener();
         verifyNoMoreInteractions( factory );
         assertThat( client.getReporter() )
                 .isNotNull();
@@ -1599,7 +1599,7 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         MockReporter receiver = new MockReporter();
-        when( factory.createReporter() )
+        when( factory.createTestReportListener() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
 
@@ -1637,7 +1637,7 @@ public class ForkClientTest
         client.handleEvent( new TestErrorEvent( NORMAL_RUN, reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
-        verify( factory ).createReporter();
+        verify( factory ).createTestReportListener();
         verifyNoMoreInteractions( factory );
         assertThat( client.getReporter() )
                 .isNotNull();
@@ -1705,7 +1705,7 @@ public class ForkClientTest
         when( factory.getReportsDirectory() )
                 .thenReturn( new File( target, "surefire-reports" ) );
         MockReporter receiver = new MockReporter();
-        when( factory.createReporter() )
+        when( factory.createTestReportListener() )
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
 
@@ -1742,7 +1742,7 @@ public class ForkClientTest
         client.handleEvent( new TestAssumptionFailureEvent( NORMAL_RUN, reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
-        verify( factory ).createReporter();
+        verify( factory ).createTestReportListener();
         verifyNoMoreInteractions( factory );
         assertThat( client.getReporter() )
                 .isNotNull();

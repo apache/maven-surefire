@@ -19,6 +19,7 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 /**
@@ -56,7 +57,7 @@ public class NullConsoleOutputReceiver
     }
 
     @Override
-    public void writeTestOutput( String output, boolean newLine, boolean stdout )
+    public void writeTestOutput( TestOutputReportEntry reportEntry )
     {
 
     }

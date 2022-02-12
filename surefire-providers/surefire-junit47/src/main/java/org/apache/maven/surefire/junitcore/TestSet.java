@@ -20,8 +20,8 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import org.apache.maven.surefire.api.report.ReportEntry;
-import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 import java.util.Collection;
@@ -60,7 +60,7 @@ public class TestSet
         this.testClassName = testClassName;
     }
 
-    public void replay( RunListener target )
+    public void replay( TestReportListener target )
     {
         if ( played.compareAndSet( false, true ) )
         {
@@ -133,7 +133,7 @@ public class TestSet
         testMethods.add( testMethod );
     }
 
-    public void incrementFinishedTests( RunListener reporterManager, boolean reportImmediately )
+    public void incrementFinishedTests( TestReportListener reporterManager, boolean reportImmediately )
     {
         numberOfCompletedChildren.incrementAndGet();
         if ( allScheduled && isAllTestsDone() && reportImmediately )
@@ -142,7 +142,7 @@ public class TestSet
         }
     }
 
-    public void setAllScheduled( RunListener reporterManager )
+    public void setAllScheduled( TestReportListener reporterManager )
     {
         allScheduled = true;
         if ( isAllTestsDone() )

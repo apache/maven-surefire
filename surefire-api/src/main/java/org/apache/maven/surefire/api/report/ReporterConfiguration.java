@@ -20,7 +20,6 @@ package org.apache.maven.surefire.api.report;
  */
 
 import java.io.File;
-import java.io.PrintStream;
 
 /**
  * Bits and pieces of reporting configuration that seem to be necessary on the provider side.
@@ -32,25 +31,12 @@ import java.io.PrintStream;
 public class ReporterConfiguration
 {
     private final File reportsDirectory;
-
-    private final PrintStream originalSystemOut;
-
-    /**
-     * A non-null Boolean value
-     */
     private final boolean trimStackTrace;
 
     public ReporterConfiguration( File reportsDirectory, boolean trimStackTrace )
     {
         this.reportsDirectory = reportsDirectory;
         this.trimStackTrace = trimStackTrace;
-
-        /*
-        * While this may seem slightly odd, when this object is constructed no user code has been run
-        * (including classloading), and we can be guaranteed that no-one has modified System.out/System.err.
-        * As soon as we start loading user code, all h*ll breaks loose in this respect.
-         */
-        this.originalSystemOut = System.out;
     }
 
     /**
@@ -71,16 +57,5 @@ public class ReporterConfiguration
     public boolean isTrimStackTrace()
     {
         return trimStackTrace;
-    }
-
-    /**
-     * The original system out belonging to the (possibly forked) surefire process.
-     * Note that users of Reporter/ReporterFactory should normally not be using this.
-     *
-     * @return A printstream.
-     */
-    public PrintStream getOriginalSystemOut()
-    {
-        return originalSystemOut;
     }
 }

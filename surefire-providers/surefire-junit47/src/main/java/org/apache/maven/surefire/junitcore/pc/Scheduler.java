@@ -19,12 +19,10 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.apache.maven.surefire.api.report.ConsoleStream;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.junit.runner.Description;
 import org.junit.runners.model.RunnerScheduler;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -56,7 +54,7 @@ public class Scheduler
 
     private final Description description;
 
-    private final ConsoleStream logger;
+    private final ConsoleLogger logger;
 
     private volatile boolean shutdown = false;
 
@@ -76,7 +74,7 @@ public class Scheduler
      * @param description     JUnit description of class
      * @param strategy        scheduling strategy
      */
-    public Scheduler( ConsoleStream logger, Description description, SchedulingStrategy strategy )
+    public Scheduler( ConsoleLogger logger, Description description, SchedulingStrategy strategy )
     {
         this( logger, description, strategy, -1 );
     }
@@ -85,8 +83,8 @@ public class Scheduler
      * Should be used if schedulers in parallel children and parent use one instance of bounded thread pool.
      * <br>
      * Set this scheduler in a e.g. one suite of classes, then every individual class runner should reference
-     * {@link #Scheduler(ConsoleStream, org.junit.runner.Description, Scheduler, SchedulingStrategy)}
-     * or {@link #Scheduler(ConsoleStream, org.junit.runner.Description, Scheduler, SchedulingStrategy, int)}.
+     * {@link #Scheduler(ConsoleLogger, org.junit.runner.Description, Scheduler, SchedulingStrategy)}
+     * or {@link #Scheduler(ConsoleLogger, org.junit.runner.Description, Scheduler, SchedulingStrategy, int)}.
      *
      * @param logger current logger implementation
      * @param description description of current runner
@@ -94,7 +92,7 @@ public class Scheduler
      * @param concurrency determines maximum concurrent children scheduled a time via {@link #schedule(Runnable)}
      * @throws NullPointerException if null <code>strategy</code>
      */
-    public Scheduler( ConsoleStream logger, Description description, SchedulingStrategy strategy, int concurrency )
+    public Scheduler( ConsoleLogger logger, Description description, SchedulingStrategy strategy, int concurrency )
     {
         this( logger, description, strategy, BalancerFactory.createBalancer( concurrency ) );
     }
@@ -103,7 +101,7 @@ public class Scheduler
      * New instances should be used by schedulers with limited concurrency by <code>balancer</code>
      * against other groups of schedulers. The schedulers share one pool.
      * <br>
-     * Unlike in {@link #Scheduler(ConsoleStream, org.junit.runner.Description, SchedulingStrategy, int)} which was
+     * Unlike in {@link #Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy, int)} which was
      * limiting the <code>concurrency</code> of children of a runner where this scheduler was set, {@code this}
      * <code>balancer</code> is limiting the concurrency of all children in runners having schedulers created by this
      * constructor.
@@ -114,7 +112,7 @@ public class Scheduler
      * @param balancer    determines maximum concurrent children scheduled a time via {@link #schedule(Runnable)}
      * @throws NullPointerException if null <code>strategy</code> or <code>balancer</code>
      */
-    public Scheduler( ConsoleStream logger, Description description, SchedulingStrategy strategy, Balancer balancer )
+    public Scheduler( ConsoleLogger logger, Description description, SchedulingStrategy strategy, Balancer balancer )
     {
         strategy.setDefaultShutdownHandler( newShutdownHandler() );
         this.logger = logger;
@@ -135,7 +133,7 @@ public class Scheduler
      * @param balancer        determines maximum concurrent children scheduled a time via {@link #schedule(Runnable)}
      * @throws NullPointerException if null <code>masterScheduler</code>, <code>strategy</code> or <code>balancer</code>
      */
-    public Scheduler( ConsoleStream logger, Description description, Scheduler masterScheduler,
+    public Scheduler( ConsoleLogger logger, Description description, Scheduler masterScheduler,
                       SchedulingStrategy strategy, Balancer balancer )
     {
         this( logger, description, strategy, balancer );
@@ -147,15 +145,15 @@ public class Scheduler
      * @param logger          console logger
      * @param description     JUnit description of class
      * @param masterScheduler a reference to
-     * {@link #Scheduler(ConsoleStream, org.junit.runner.Description, SchedulingStrategy, int)}
-     *                        or {@link #Scheduler(ConsoleStream, org.junit.runner.Description, SchedulingStrategy)}
+     * {@link #Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy, int)}
+     *                        or {@link #Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy)}
      * @param strategy        scheduling strategy
      * @param concurrency     determines maximum concurrent children scheduled a time via {@link #schedule(Runnable)}
      *
-     * @see #Scheduler(ConsoleStream, org.junit.runner.Description, SchedulingStrategy)
-     * @see #Scheduler(ConsoleStream, org.junit.runner.Description, SchedulingStrategy, int)
+     * @see #Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy)
+     * @see #Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy, int)
      */
-    public Scheduler( ConsoleStream logger, Description description, Scheduler masterScheduler,
+    public Scheduler( ConsoleLogger logger, Description description, Scheduler masterScheduler,
                       SchedulingStrategy strategy, int concurrency )
     {
         this( logger, description, strategy, concurrency );
@@ -174,7 +172,7 @@ public class Scheduler
      * @param masterScheduler parent scheduler
      * @param strategy        scheduling strategy
      */
-    public Scheduler( ConsoleStream logger, Description description, Scheduler masterScheduler,
+    public Scheduler( ConsoleLogger logger, Description description, Scheduler masterScheduler,
                       SchedulingStrategy strategy )
     {
         this( logger, description, masterScheduler, strategy, 0 );
@@ -219,17 +217,12 @@ public class Scheduler
 
     protected void logQuietly( Throwable t )
     {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try ( PrintStream stream = new PrintStream( out ) )
-        {
-            t.printStackTrace( stream );
-        }
-        logger.println( out.toString() );
+        logger.error( t );
     }
 
     protected void logQuietly( String msg )
     {
-        logger.println( msg );
+        logger.warning( msg );
     }
 
     /**

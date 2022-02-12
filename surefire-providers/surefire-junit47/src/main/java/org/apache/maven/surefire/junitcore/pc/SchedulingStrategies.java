@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.apache.maven.surefire.api.report.ConsoleStream;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.util.internal.DaemonThreadFactory;
 
 import java.util.concurrent.ExecutorService;
@@ -40,7 +40,7 @@ public class SchedulingStrategies
      * @param logger current error logger
      * @return sequentially executing strategy
      */
-    public static SchedulingStrategy createInvokerStrategy( ConsoleStream logger )
+    public static SchedulingStrategy createInvokerStrategy( ConsoleLogger logger )
     {
         return new InvokerStrategy( logger );
     }
@@ -50,7 +50,7 @@ public class SchedulingStrategies
      * @param nThreads fixed pool capacity
      * @return parallel scheduling strategy
      */
-    public static SchedulingStrategy createParallelStrategy( ConsoleStream logger, int nThreads )
+    public static SchedulingStrategy createParallelStrategy( ConsoleLogger logger, int nThreads )
     {
         return new NonSharedThreadPoolStrategy( logger,
                                                 Executors.newFixedThreadPool( nThreads, DAEMON_THREAD_FACTORY ) );
@@ -60,7 +60,7 @@ public class SchedulingStrategies
      * @param logger current error logger
      * @return parallel scheduling strategy with unbounded capacity
      */
-    public static SchedulingStrategy createParallelStrategyUnbounded( ConsoleStream logger )
+    public static SchedulingStrategy createParallelStrategyUnbounded( ConsoleLogger logger )
     {
         return new NonSharedThreadPoolStrategy( logger, Executors.newCachedThreadPool( DAEMON_THREAD_FACTORY ) );
     }
@@ -78,7 +78,7 @@ public class SchedulingStrategies
      * @return parallel strategy with shared thread pool
      * @throws NullPointerException if <code>threadPool</code> is null
      */
-    public static SchedulingStrategy createParallelSharedStrategy( ConsoleStream logger, ExecutorService threadPool )
+    public static SchedulingStrategy createParallelSharedStrategy( ConsoleLogger logger, ExecutorService threadPool )
     {
         if ( threadPool == null )
         {

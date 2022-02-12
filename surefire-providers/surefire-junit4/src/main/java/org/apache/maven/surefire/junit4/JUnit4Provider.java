@@ -22,13 +22,13 @@ package org.apache.maven.surefire.junit4;
 import org.apache.maven.surefire.api.booter.Command;
 import org.apache.maven.surefire.api.provider.CommandChainReader;
 import org.apache.maven.surefire.api.provider.CommandListener;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.common.junit4.JUnitTestFailureListener;
 import org.apache.maven.surefire.common.junit4.Notifier;
 import org.apache.maven.surefire.api.provider.AbstractProvider;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
-import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.api.report.ReporterFactory;
 import org.apache.maven.surefire.api.report.RunListener;
@@ -121,9 +121,10 @@ public class JUnit4Provider
         RunResult runResult;
         try
         {
-            RunListener reporter = reporterFactory.createReporter();
+            TestReportListener reporter = reporterFactory.createTestReportListener();
+            JUnit4RunListener listener = new JUnit4RunListener( reporter );
 
-            startCapture( (ConsoleOutputReceiver) reporter );
+            startCapture( listener );
             // startCapture() called in prior to setTestsToRun()
 
             if ( testsToRun == null )
@@ -131,7 +132,7 @@ public class JUnit4Provider
                 setTestsToRun( forkTestSet );
             }
 
-            Notifier notifier = new Notifier( new JUnit4RunListener( reporter ), getSkipAfterFailureCount() );
+            Notifier notifier = new Notifier( listener, getSkipAfterFailureCount() );
             Result result = new Result();
             notifier.addListeners( createCustomListeners( customRunListeners ) )
                 .addListener( result.createListener() );

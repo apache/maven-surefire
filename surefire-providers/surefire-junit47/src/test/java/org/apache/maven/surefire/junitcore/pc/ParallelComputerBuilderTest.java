@@ -20,8 +20,7 @@ package org.apache.maven.surefire.junitcore.pc;
  */
 
 import net.jcip.annotations.NotThreadSafe;
-import org.apache.maven.surefire.api.report.ConsoleStream;
-import org.apache.maven.surefire.api.report.DefaultDirectConsoleReporter;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -47,17 +46,18 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.maven.surefire.junitcore.pc.RangeMatcher.between;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
-import static org.apache.maven.surefire.junitcore.pc.RangeMatcher.between;
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 /**
  * @author Tibor Digana (tibor17)
@@ -74,7 +74,7 @@ public class ParallelComputerBuilderTest
 
     private static volatile Runnable shutdownTask;
 
-    private static final ConsoleStream LOGGER = new DefaultDirectConsoleReporter( System.out );
+    private static final ConsoleLogger LOGGER = mock( ConsoleLogger.class );
 
     private static void testKeepBeforeAfter( ParallelComputerBuilder builder, Class<?>... classes )
     {

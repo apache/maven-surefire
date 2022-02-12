@@ -34,11 +34,13 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
-import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.TestOutputReceiver;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.ClassSource;
@@ -51,17 +53,17 @@ import org.junit.platform.launcher.TestPlan;
  * @since 2.22.0
  */
 final class RunListenerAdapter
-    implements TestExecutionListener
+    implements TestExecutionListener, TestOutputReceiver
 {
     private static final Pattern COMMA_PATTERN = Pattern.compile( "," );
 
     private final ConcurrentMap<TestIdentifier, Long> testStartTime = new ConcurrentHashMap<>();
     private final ConcurrentMap<TestIdentifier, TestExecutionResult> failures = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, TestIdentifier> runningTestIdentifiersByUniqueId = new ConcurrentHashMap<>();
-    private final RunListener runListener;
+    private final TestReportListener runListener;
     private volatile TestPlan testPlan;
 
-    RunListenerAdapter( RunListener runListener )
+    RunListenerAdapter( TestReportListener runListener )
     {
         this.runListener = runListener;
     }
@@ -357,5 +359,11 @@ final class RunListenerAdapter
     {
         getFailures().clear();
         testPlan = null;
+    }
+
+    @Override
+    public void writeTestOutput( TestOutputReportEntry reportEntry )
+    {
+        runListener.writeTestOutput( new TestOutputReportEntry( reportEntry, /*todo*/ null, 0L ) );
     }
 }

@@ -19,11 +19,11 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 import org.apache.maven.surefire.common.junit3.JUnit3TestChecker;
 import org.apache.maven.surefire.api.provider.AbstractProvider;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
-import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.api.report.ReporterFactory;
 import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
@@ -95,8 +95,8 @@ public class JUnit3Provider
         RunResult runResult;
         try
         {
-            RunListener reporter = reporterFactory.createReporter();
-            startCapture( (ConsoleOutputReceiver) reporter );
+            TestReportListener reporter = reporterFactory.createTestReportListener();
+            startCapture( reporter );
             Map<String, String> systemProperties = systemProps();
             setSystemManager( System.getProperty( "surefire.security.manager" ) );
 

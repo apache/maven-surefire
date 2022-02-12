@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.apache.maven.surefire.api.report.ConsoleStream;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 final class NonSharedThreadPoolStrategy
     extends AbstractThreadPoolStrategy
 {
-    NonSharedThreadPoolStrategy( ConsoleStream logger, ExecutorService threadPool )
+    NonSharedThreadPoolStrategy( ConsoleLogger logger, ExecutorService threadPool )
     {
         super( logger, threadPool );
     }
