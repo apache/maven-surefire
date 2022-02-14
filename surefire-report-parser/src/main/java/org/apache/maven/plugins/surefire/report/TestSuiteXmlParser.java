@@ -35,7 +35,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.shared.utils.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -43,6 +42,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Locale.ENGLISH;
+import static org.apache.maven.shared.utils.StringUtils.isBlank;
 
 /**
  *
@@ -138,7 +138,7 @@ public final class TestSuiteXmlParser
 
                         final String name = attributes.getValue( "name" );
                         final String group = attributes.getValue( "group" );
-                        defaultSuite.setFullClassName( StringUtils.isBlank( group )
+                        defaultSuite.setFullClassName( isBlank( group )
                                 ? /*name is full class name*/ name
                                 : /*group is package name*/ group + "." + name );
 
@@ -171,7 +171,7 @@ public final class TestSuiteXmlParser
                         }
 
                         String timeAsString = attributes.getValue( "time" );
-                        Number time = StringUtils.isBlank( timeAsString ) ? 0 : numberFormat.parse( timeAsString );
+                        Number time = isBlank( timeAsString ) ? 0 : numberFormat.parse( timeAsString );
 
                         testCase.setFullClassName( currentSuite.getFullClassName() )
                                 .setClassName( currentSuite.getName() )
