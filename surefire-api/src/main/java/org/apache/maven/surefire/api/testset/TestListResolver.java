@@ -22,7 +22,9 @@ package org.apache.maven.surefire.api.testset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static java.util.Collections.unmodifiableSet;
@@ -60,6 +62,8 @@ public class TestListResolver
     private final boolean hasIncludedMethodPatterns;
 
     private final boolean hasExcludedMethodPatterns;
+
+    private final Map<String, Integer> patternMapper = new HashMap<String, Integer>();
 
     public TestListResolver( Collection<String> tests )
     {
@@ -208,6 +212,7 @@ public class TestListResolver
         else
         {
             boolean shouldRun = false;
+            ResolvedTest matchedFilter = null;
 
             if ( getIncludedPatterns().isEmpty() )
             {
@@ -220,6 +225,7 @@ public class TestListResolver
                     if ( filter.matchAsInclusive( testClassFile, methodName ) )
                     {
                         shouldRun = true;
+                        matchedFilter = filter;
                         break;
                     }
                 }
@@ -234,6 +240,15 @@ public class TestListResolver
                         shouldRun = false;
                         break;
                     }
+                }
+            }
+
+            if ( shouldRun )
+            {
+                String test = testClassFile + "#" + methodName;
+                if ( ! this.patternMapper.containsKey( test ) )
+                {
+                    this.patternMapper.put( test, new ArrayList<>( this.includedPatterns ).indexOf( matchedFilter ) );
                 }
             }
             return shouldRun;
@@ -513,5 +528,25 @@ public class TestListResolver
             }
         }
         return false;
+    }
+
+    public Integer testOrderComparator( String className1, String className2, String methodName1, String methodName2 )
+    {
+        String classFileName1 = toClassFileName( className1 );
+        String classFileName2 = toClassFileName( className2 );
+        boolean shouldRunMethodName1 = shouldRun( classFileName1 , methodName1 );
+        boolean shouldRunMethodName2 = shouldRun( classFileName2 , methodName2 );
+        if ( ! shouldRunMethodName1 )
+        {
+            return -1;
+        }
+        if ( ! shouldRunMethodName2 )
+        {
+            return 1;
+        }
+
+        String test1 = classFileName1 + "#" + methodName1;
+        String test2 = classFileName2 + "#" + methodName2;
+        return patternMapper.get( test1 ) - patternMapper.get( test2 );
     }
 }
