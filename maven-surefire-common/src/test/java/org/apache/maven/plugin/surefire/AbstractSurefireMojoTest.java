@@ -1987,6 +1987,7 @@ public class AbstractSurefireMojoTest
         private File mainBuildPath;
         private File testClassesDirectory;
         private boolean useModulePath;
+        private boolean useJpmsAddOpens;
         private int failOnFlakeCount;
         private String[] includeJUnit5Engines;
         private String[] excludeJUnit5Engines;
@@ -2391,6 +2392,18 @@ public class AbstractSurefireMojoTest
         protected void setUseModulePath( boolean useModulePath )
         {
             this.useModulePath = useModulePath;
+        }
+
+        @Override
+        protected boolean useJpmsAddOpens()
+        {
+            return useJpmsAddOpens;
+        }
+
+        @Override
+        protected void setUseJpmsAddOpens( boolean useJpmsAddOpens )
+        {
+            this.useJpmsAddOpens = useJpmsAddOpens;
         }
 
         @Override

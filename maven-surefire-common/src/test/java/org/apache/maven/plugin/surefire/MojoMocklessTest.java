@@ -764,6 +764,18 @@ public class MojoMocklessTest
         }
 
         @Override
+        protected boolean useJpmsAddOpens()
+        {
+            return false;
+        }
+
+        @Override
+        protected void setUseJpmsAddOpens( boolean useJpmsAddOpens )
+        {
+
+        }
+
+        @Override
         protected ForkNodeFactory getForkNode()
         {
             return null;
