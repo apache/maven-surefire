@@ -211,10 +211,10 @@ Inclusions and Exclusions of Tests
 
 * Tests from dependencies
 
-  By default, ${thisPlugin} will only scan for test classes to execute in the configured <<<testSourceDirectory>>>. To
-  have the plugin scan dependencies to find test classes to execute, use the <<<dependenciesToScan>>> configuration.
-  Dependencies can be specified using the <<<groupId[:artifactId[:type[:classifier][:version]]]>>> format, and must already
-  be <<<dependency>>> elements in scope.
+  In order to scan dependencies by the ${thisPlugin} plugin and find the test classes to execute in the dependencies,
+  use the MOJO parameter <<<dependenciesToScan>>> and configure it as necessary.
+  Dependencies can be specified using the <<<groupId[:artifactId[:type[:classifier][:version]]]>>> format, and must
+  already be <<<dependency>>> elements in scope.
   
   <Note:> Support for version, type and classifier was introduced in version <<<3.0.0-M4>>>. When using earlier versions,
   ${thisPlugin} will fail with an <<<IllegalArgumentException>>> if more than groupId and artifactId are specified.
