@@ -281,10 +281,11 @@ public abstract class AbstractSurefireMojo
 
     /**
      * The test source directory containing test class sources.
+     * Important <b>only</b> for TestNG HTML reports.
      *
      * @since 2.2
      */
-    @Parameter( defaultValue = "${project.build.testSourceDirectory}", required = true )
+    @Parameter( defaultValue = "${project.build.testSourceDirectory}" )
     private File testSourceDirectory;
 
     /**
