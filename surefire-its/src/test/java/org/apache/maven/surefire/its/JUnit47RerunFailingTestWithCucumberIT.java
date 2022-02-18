@@ -19,16 +19,16 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import com.googlecode.junittoolbox.ParallelParameterized;
+import java.util.ArrayList;
+
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-
-import java.util.ArrayList;
 
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.hamcrest.Matchers.containsString;
@@ -41,7 +41,7 @@ import static org.hamcrest.Matchers.equalTo;
  *
  * @author mpkorstanje
  */
-@RunWith( ParallelParameterized.class )
+@RunWith( Parameterized.class )
 @SuppressWarnings( "checkstyle:magicnumber" )
 public class JUnit47RerunFailingTestWithCucumberIT extends SurefireJUnit4IntegrationTestCase
 {

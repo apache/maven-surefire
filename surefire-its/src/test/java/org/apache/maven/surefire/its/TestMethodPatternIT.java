@@ -19,20 +19,20 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import com.googlecode.junittoolbox.ParallelParameterized;
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -42,7 +42,7 @@ import static org.hamcrest.Matchers.equalTo;
  *
  * @author Olivier Lamy
  */
-@RunWith( ParallelParameterized.class )
+@RunWith( Parameterized.class )
 public class TestMethodPatternIT
     extends SurefireJUnit4IntegrationTestCase
 {

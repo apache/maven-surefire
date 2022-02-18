@@ -19,17 +19,17 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import com.googlecode.junittoolbox.ParallelParameterized;
+import java.util.ArrayList;
+
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-
-import java.util.ArrayList;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.containsString;
@@ -40,7 +40,7 @@ import static org.hamcrest.Matchers.equalTo;
  *
  * @author Kristian Rosenvold
  */
-@RunWith( ParallelParameterized.class )
+@RunWith( Parameterized.class )
 public class ConsoleOutputIT
     extends SurefireJUnit4IntegrationTestCase
 {

@@ -19,14 +19,14 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import com.googlecode.junittoolbox.ParallelParameterized;
+import java.util.Collection;
+
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
-
-import java.util.Collection;
 
 import static java.util.Arrays.asList;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_0;
@@ -53,7 +53,7 @@ import static org.junit.runners.Parameterized.Parameters;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-@RunWith( ParallelParameterized.class )
+@RunWith( Parameterized.class )
 public class JUnit4VersionsIT
     extends SurefireJUnit4IntegrationTestCase
 {

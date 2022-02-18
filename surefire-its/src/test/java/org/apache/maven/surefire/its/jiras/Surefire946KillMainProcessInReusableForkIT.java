@@ -19,35 +19,33 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import com.googlecode.junittoolbox.ParallelParameterized;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
+
+import java.io.File;
+import java.util.ArrayList;
+
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.w3c.dom.Document;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
-import java.io.File;
-import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
  */
-@RunWith( ParallelParameterized.class )
+@RunWith( Parameterized.class )
 @SuppressWarnings( "checkstyle:magicnumber" )
 public class Surefire946KillMainProcessInReusableForkIT
     extends SurefireJUnit4IntegrationTestCase
 {
-    private static final Object LOCK_DEPENDENCY = new Object();
-    private static final Object LOCK_PLUGIN = new Object();
-
     // there are 10 test classes that each would wait 3.5 seconds.
     private static final int TEST_SLEEP_TIME = 3_500;
 
@@ -77,23 +75,17 @@ public class Surefire946KillMainProcessInReusableForkIT
     @BeforeClass
     public static void installSelfdestructPlugin()
     {
-        synchronized ( LOCK_PLUGIN )
-        {
-            unpack( Surefire946KillMainProcessInReusableForkIT.class, "surefire-946-self-destruct-plugin", "plugin" )
-                    .executeInstall();
-        }
+        unpack( Surefire946KillMainProcessInReusableForkIT.class, "surefire-946-self-destruct-plugin", "plugin" )
+            .executeInstall();
     }
 
     @Before
     public void dummyDep()
     {
-        synchronized ( LOCK_DEPENDENCY )
-        {
-            classifierOfDummyDependency = shutdownMavenMethod + shutdownSurefireMethod;
-            unpack( "surefire-946-dummy-dependency", classifierOfDummyDependency )
-                    .sysProp( "distinct.classifier", classifierOfDummyDependency )
-                    .executeInstall();
-        }
+        classifierOfDummyDependency = shutdownMavenMethod + shutdownSurefireMethod;
+        unpack( "surefire-946-dummy-dependency", classifierOfDummyDependency )
+            .sysProp( "distinct.classifier", classifierOfDummyDependency )
+            .executeInstall();
     }
 
     @Test( timeout = 60_000 )
