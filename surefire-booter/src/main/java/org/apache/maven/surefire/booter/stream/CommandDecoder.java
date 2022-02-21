@@ -36,7 +36,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.ReadableByteChannel;
-import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 import static org.apache.maven.surefire.api.booter.Command.BYE_ACK;
@@ -52,6 +51,7 @@ import static org.apache.maven.surefire.api.stream.SegmentType.DATA_STRING;
 import static org.apache.maven.surefire.api.stream.SegmentType.END_OF_FRAME;
 import static org.apache.maven.surefire.api.stream.SegmentType.RUN_MODE;
 import static org.apache.maven.surefire.api.stream.SegmentType.STRING_ENCODING;
+import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
 
 /**
  *
@@ -248,14 +248,10 @@ public class CommandDecoder extends AbstractStreamDecoder<Command, MasterProcess
         {
             OutputStream fos = new FileOutputStream( sink, true );
             final OutputStream os = new BufferedOutputStream( fos, DEBUG_SINK_BUFFER_SIZE );
-            Runtime.getRuntime().addShutdownHook( new Thread( new FutureTask<>( new Callable<Void>()
+            addShutDownHook( new Thread( new FutureTask<>( () ->
             {
-                @Override
-                public Void call() throws Exception
-                {
-                    os.close();
-                    return null;
-                }
+                os.close();
+                return null;
             } ) ) );
             return os;
         }

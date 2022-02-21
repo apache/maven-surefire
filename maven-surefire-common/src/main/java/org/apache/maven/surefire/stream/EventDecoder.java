@@ -62,7 +62,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 import static org.apache.maven.surefire.api.booter.Constants.MAGIC_NUMBER_FOR_EVENTS_BYTES;
@@ -72,6 +71,7 @@ import static org.apache.maven.surefire.api.stream.SegmentType.DATA_STRING;
 import static org.apache.maven.surefire.api.stream.SegmentType.END_OF_FRAME;
 import static org.apache.maven.surefire.api.stream.SegmentType.RUN_MODE;
 import static org.apache.maven.surefire.api.stream.SegmentType.STRING_ENCODING;
+import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
 
 /**
  *
@@ -439,14 +439,10 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
         {
             OutputStream fos = new FileOutputStream( sink, true );
             final OutputStream os = new BufferedOutputStream( fos, DEBUG_SINK_BUFFER_SIZE );
-            Runtime.getRuntime().addShutdownHook( new Thread( new FutureTask<>( new Callable<Void>()
+            addShutDownHook( new Thread( new FutureTask<>( () ->
             {
-                @Override
-                public Void call() throws Exception
-                {
-                    os.close();
-                    return null;
-                }
+                os.close();
+                return null;
             } ) ) );
             return os;
         }
