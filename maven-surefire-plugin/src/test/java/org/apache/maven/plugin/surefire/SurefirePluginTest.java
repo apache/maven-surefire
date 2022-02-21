@@ -20,14 +20,28 @@ package org.apache.maven.plugin.surefire;
  */
 
 import junit.framework.TestCase;
+import org.apache.commons.io.FileUtils;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.ArtifactHandler;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
+import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.surefire.api.suite.RunResult;
+import org.apache.maven.surefire.api.util.DefaultScanResult;
+import org.codehaus.plexus.logging.Logger;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
+import java.util.List;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  *
@@ -146,4 +160,113 @@ public class SurefirePluginTest extends TestCase
         plugin.setExcludeJUnit5Engines( new String[] { "e1", "e2" } );
         assertThat( plugin.getExcludeJUnit5Engines() ).isEqualTo( new String[] { "e1", "e2" } );
     }
+    
+    public void testShouldNotPerformMethodFilteringOnIncludes() throws IOException 
+    {
+        MockSurefirePlugin plugin = mockSurefirePluginWithMethodFiltering( false );
+
+        List<String> includes = new LinkedList<>();
+        includes.add( "AnotherTest#method " );
+        plugin.setIncludes( includes );
+        
+        try
+        {
+            plugin.scanDependencies();
+        }
+        catch ( MojoFailureException e ) 
+        {
+            assertThat( e.getLocalizedMessage() )
+            .isEqualTo( "Method filter prohibited in includes|excludes parameter: AnotherTest#method " );
+        }
+    }
+    
+    public void testShouldPerformMethodFilteringOnIncludesExcludesFile() throws IOException, MojoFailureException
+    {
+        MockSurefirePlugin plugin = mockSurefirePluginWithMethodFiltering( true );
+        DefaultScanResult result = plugin.scanDependencies();
+        assertThat ( result.getClasses().size() ).isEqualTo( 1 );
+        assertThat ( result.getClasses().iterator().next() ).isEqualTo( "AnotherTest" );
+    }
+    
+    private static MockSurefirePlugin mockSurefirePluginWithMethodFiltering( boolean file ) throws IOException 
+    {
+        VersionRange version = VersionRange.createFromVersion( "1.0" );
+        ArtifactHandler handler = new DefaultArtifactHandler();
+        Artifact testDeps = new DefaultArtifact( "g", "a", version, "compile", "test-jar", null, handler );
+
+        File artifactFile = File.createTempFile( "surefire", "-classes" );
+        String classDir = artifactFile.getCanonicalPath();
+        assertThat( artifactFile.delete() ).isTrue();
+        File classes = new File( classDir );
+        assertThat( classes.mkdir() ).isTrue();
+
+        testDeps.setFile( classes );
+
+        assertThat( new File( classes, "AnotherTest.class" ).createNewFile() )
+                .isTrue();
+
+        List<Artifact> projectTestArtifacts = singletonList( testDeps );
+        String[] dependenciesToScan = { "g:a" };
+        MockSurefirePlugin plugin = new MockSurefirePlugin( projectTestArtifacts, dependenciesToScan, file );
+        plugin.setLogger( mock( Logger.class ) );
+        return plugin;
+    }
+    
+    private static final class MockSurefirePlugin
+        extends SurefirePlugin 
+    {
+        private final List<Artifact> projectTestArtifacts;
+        
+        private final String[] dependenciesToScan;
+        
+        private final boolean file;
+
+        MockSurefirePlugin( List<Artifact> projectTestArtifacts, String[] dependenciesToScan, boolean file )
+        {
+            this.projectTestArtifacts = projectTestArtifacts;
+            this.dependenciesToScan = dependenciesToScan;
+            this.file = file;
+        }
+        
+        @Override
+        public String[] getDependenciesToScan()
+        {
+            return dependenciesToScan;
+        }
+        
+        @Override
+        List<Artifact> getProjectTestArtifacts()
+        {
+            return projectTestArtifacts;
+        }
+        
+        @Override
+        public File getIncludesFile()
+        {
+            return this.file ? getFile() : null;
+        }
+        
+        @Override
+        public File getExcludesFile()
+        {
+            return getIncludesFile();
+        }
+        
+        private File getFile() 
+        {
+            File file = null;
+            try 
+            {
+                file = File.createTempFile( "surefire", "-includes" );
+                FileUtils.write( file, "AnotherTest#method" , StandardCharsets.UTF_8 );
+            } 
+            catch ( IOException e ) 
+            {
+                // do nothing
+            }
+            return file;
+        }
+
+    }
+    
 }
