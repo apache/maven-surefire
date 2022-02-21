@@ -23,26 +23,18 @@ import org.apache.maven.surefire.shared.utils.cli.CommandLineException;
 import org.assertj.core.api.Condition;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.verifyZeroInteractions;
 
 /**
  *
  */
-public class OutputStreamFlushableCommandlineTest
+public class CommandlineTest
 {
-
     @Test
     public void shouldGetEnvironmentVariables()
     {
-        OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
+        Commandline cli = new Commandline();
         String[] env = cli.getEnvironmentVariables();
 
         assertThat( env )
@@ -50,7 +42,7 @@ public class OutputStreamFlushableCommandlineTest
                 .satisfies( new ContainsAnyStartsWith( "JAVA_HOME=" ) );
 
         String[] excluded = { "JAVA_HOME" };
-        cli = new OutputStreamFlushableCommandline( excluded );
+        cli = new Commandline( excluded );
         env = cli.getEnvironmentVariables();
 
         assertThat( env )
@@ -61,29 +53,10 @@ public class OutputStreamFlushableCommandlineTest
     @Test
     public void shouldExecute() throws CommandLineException
     {
-        OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
+        Commandline cli = new Commandline();
         cli.getShell().setWorkingDirectory( System.getProperty( "user.dir" ) );
         cli.getShell().setExecutable( IS_OS_WINDOWS ? "dir" : "ls" );
-        assertThat( cli.getFlushReceiver() ).isNull();
         cli.execute();
-        assertThat( cli.getFlushReceiver() ).isNotNull();
-    }
-
-    @Test
-    public void shouldGetFlushReceiver()
-    {
-        OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
-        assertThat( cli.getFlushReceiver() ).isNull();
-    }
-
-    @Test
-    public void shouldFlush() throws IOException
-    {
-        ByteArrayOutputStream os = mock( ByteArrayOutputStream.class );
-        OutputStreamFlushReceiver flushReceiver = new OutputStreamFlushReceiver( os );
-        verifyZeroInteractions( os );
-        flushReceiver.flush();
-        verify( os, times( 1 ) ).flush();
     }
 
     private static final class ContainsAnyStartsWith extends Condition<Object[]>

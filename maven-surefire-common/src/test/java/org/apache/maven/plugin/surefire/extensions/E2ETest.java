@@ -366,11 +366,6 @@ public class E2ETest
         {
             return false;
         }
-
-        @Override
-        public void tryFlush()
-        {
-        }
     }
 
     private static class DummyCloseable implements Closeable

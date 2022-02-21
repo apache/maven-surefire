@@ -40,10 +40,6 @@ import static org.apache.maven.surefire.api.booter.Command.toShutdown;
  * <br>
  * The Stream provides only one test at a time, but only after {@link #provideNewTest()} has been invoked.
  * <br>
- * After providing each test class name, followed by a newline character, a flush is performed on the
- * {@link FlushReceiver} provided by the {@link FlushReceiverProvider} that can be set using
- * {@link #setFlushReceiverProvider(FlushReceiverProvider)}.
- * <br>
  * The instance is used only in reusable forks in {@link org.apache.maven.plugin.surefire.booterclient.ForkStarter}
  * by one Thread.
  *

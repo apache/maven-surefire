@@ -20,7 +20,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import org.apache.maven.plugin.surefire.JdkAttributes;
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Commandline;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.booter.AbstractPathConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
@@ -101,7 +101,7 @@ public abstract class DefaultForkConfiguration
         this.forkNodeFactory = forkNodeFactory;
     }
 
-    protected abstract void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+    protected abstract void resolveClasspath( @Nonnull Commandline cli,
                                               @Nonnull String booterThatHasMainMethod,
                                               @Nonnull StartupConfiguration config,
                                               @Nonnull File dumpLogDirectory )
@@ -129,15 +129,15 @@ public abstract class DefaultForkConfiguration
      */
     @Nonnull
     @Override
-    public OutputStreamFlushableCommandline createCommandLine( @Nonnull StartupConfiguration config,
-                                                               int forkNumber,
-                                                               @Nonnull File dumpLogDirectory )
+    public Commandline createCommandLine( @Nonnull StartupConfiguration config,
+                                          int forkNumber,
+                                          @Nonnull File dumpLogDirectory )
             throws SurefireBooterForkException
     {
         try
         {
-            OutputStreamFlushableCommandline cli =
-                    new OutputStreamFlushableCommandline( getExcludedEnvironmentVariables() );
+            Commandline cli =
+                    new Commandline( getExcludedEnvironmentVariables() );
 
             cli.setWorkingDirectory( getWorkingDirectory( forkNumber ).getAbsolutePath() );
 

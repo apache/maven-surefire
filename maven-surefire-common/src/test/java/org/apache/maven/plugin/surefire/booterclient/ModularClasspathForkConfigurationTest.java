@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Commandline;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
@@ -145,7 +145,7 @@ public class ModularClasspathForkConfigurationTest
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
         StartupConfiguration startupConfiguration = new StartupConfiguration( "JUnitCoreProvider",
             modularClasspathConfiguration, clc, null, Collections.<String[]>emptyList() );
-        OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
+        Commandline cli = new Commandline();
         config.resolveClasspath( cli, ForkedBooter.class.getName(), startupConfiguration,
                 createTempFile( "surefire", "surefire-reports" ) );
 

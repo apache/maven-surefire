@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Commandline;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.util.Relocator;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
@@ -111,7 +111,7 @@ public class DefaultForkConfigurationTest
         {
 
             @Override
-            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+            protected void resolveClasspath( @Nonnull Commandline cli,
                                              @Nonnull String booterThatHasMainMethod,
                                              @Nonnull StartupConfiguration config,
                                              @Nonnull File dumpLogDirectory )
@@ -136,7 +136,7 @@ public class DefaultForkConfigurationTest
         {
 
             @Override
-            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+            protected void resolveClasspath( @Nonnull Commandline cli,
                                              @Nonnull String booterThatHasMainMethod,
                                              @Nonnull StartupConfiguration config,
                                              @Nonnull File dumpLogDirectory )
@@ -161,7 +161,7 @@ public class DefaultForkConfigurationTest
         {
 
             @Override
-            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+            protected void resolveClasspath( @Nonnull Commandline cli,
                                              @Nonnull String booterThatHasMainMethod,
                                              @Nonnull StartupConfiguration config,
                                              @Nonnull File dumpLogDirectory )
@@ -186,7 +186,7 @@ public class DefaultForkConfigurationTest
         {
 
             @Override
-            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+            protected void resolveClasspath( @Nonnull Commandline cli,
                                              @Nonnull String booterThatHasMainMethod,
                                              @Nonnull StartupConfiguration config,
                                              @Nonnull File dumpLogDirectory )
@@ -212,7 +212,7 @@ public class DefaultForkConfigurationTest
         {
 
             @Override
-            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+            protected void resolveClasspath( @Nonnull Commandline cli,
                                              @Nonnull String booterThatHasMainMethod,
                                              @Nonnull StartupConfiguration config,
                                              @Nonnull File dumpLogDirectory )
@@ -237,7 +237,7 @@ public class DefaultForkConfigurationTest
         {
 
             @Override
-            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+            protected void resolveClasspath( @Nonnull Commandline cli,
                                              @Nonnull String booterThatHasMainMethod,
                                              @Nonnull StartupConfiguration config,
                                              @Nonnull File dumpLogDirectory )
@@ -262,7 +262,7 @@ public class DefaultForkConfigurationTest
         {
 
             @Override
-            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+            protected void resolveClasspath( @Nonnull Commandline cli,
                                              @Nonnull String booterThatHasMainMethod,
                                              @Nonnull StartupConfiguration config,
                                              @Nonnull File dumpLogDirectory )
@@ -287,7 +287,7 @@ public class DefaultForkConfigurationTest
         {
 
             @Override
-            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+            protected void resolveClasspath( @Nonnull Commandline cli,
                                              @Nonnull String booterThatHasMainMethod,
                                              @Nonnull StartupConfiguration config,
                                              @Nonnull File dumpLogDirectory )

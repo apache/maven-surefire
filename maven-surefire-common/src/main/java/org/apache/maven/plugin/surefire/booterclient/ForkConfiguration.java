@@ -20,7 +20,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import org.apache.maven.plugin.surefire.JdkAttributes;
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Commandline;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ForkedBooter;
 import org.apache.maven.surefire.booter.StartupConfiguration;
@@ -64,8 +64,8 @@ public abstract class ForkConfiguration
      *          when unable to perform the fork
      */
     @Nonnull
-    public abstract OutputStreamFlushableCommandline createCommandLine( @Nonnull StartupConfiguration config,
-                                                                        int forkNumber,
-                                                                        @Nonnull File dumpLogDirectory )
+    public abstract Commandline createCommandLine( @Nonnull StartupConfiguration config,
+                                                   int forkNumber,
+                                                   @Nonnull File dumpLogDirectory )
             throws SurefireBooterForkException;
 }

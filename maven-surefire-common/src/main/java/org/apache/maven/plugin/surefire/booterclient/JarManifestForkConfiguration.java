@@ -22,7 +22,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 import org.apache.maven.surefire.shared.compress.archivers.zip.Zip64Mode;
 import org.apache.maven.surefire.shared.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.maven.surefire.shared.compress.archivers.zip.ZipArchiveOutputStream;
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Commandline;
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.booter.Classpath;
@@ -81,7 +81,7 @@ public final class JarManifestForkConfiguration
     }
 
     @Override
-    protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+    protected void resolveClasspath( @Nonnull Commandline cli,
                                      @Nonnull String booterThatHasMainMethod,
                                      @Nonnull StartupConfiguration config,
                                      @Nonnull File dumpLogDirectory )

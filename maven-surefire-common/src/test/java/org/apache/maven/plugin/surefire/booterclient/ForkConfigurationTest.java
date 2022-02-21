@@ -20,7 +20,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  */
 
 import org.apache.maven.plugin.surefire.JdkAttributes;
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Commandline;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
@@ -32,7 +32,6 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.shared.io.FileUtils;
-import org.apache.maven.surefire.shared.utils.cli.Commandline;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -109,7 +108,7 @@ public class ForkConfigurationTest
         {
 
             @Override
-            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+            protected void resolveClasspath( @Nonnull Commandline cli,
                                              @Nonnull String booterThatHasMainMethod,
                                              @Nonnull StartupConfiguration config,
                                              @Nonnull File dumpLogDirectory )
@@ -129,7 +128,8 @@ public class ForkConfigurationTest
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
         StartupConfiguration startup = new StartupConfiguration( "cls", cpConfig, clc, ALL, providerJpmsArgs );
 
-        Commandline cli = config.createCommandLine( startup, 1, getTempDirectory() );
+        org.apache.maven.surefire.shared.utils.cli.Commandline
+                cli = config.createCommandLine( startup, 1, getTempDirectory() );
 
         assertThat( cli.getEnvironmentVariables() )
             .contains( "key1=val1", "key2=val2", "key3=val3" )
@@ -159,7 +159,8 @@ public class ForkConfigurationTest
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration( true, true );
         StartupConfiguration startup = new StartupConfiguration( "cls", cpConfig, clc, ALL, providerJpmsArgs );
 
-        Commandline cli = config.createCommandLine( startup, 1, getTempDirectory() );
+        org.apache.maven.surefire.shared.utils.cli.Commandline
+                cli = config.createCommandLine( startup, 1, getTempDirectory() );
         String cliAsString = cli.toString();
 
         assertThat( cliAsString )
@@ -194,7 +195,7 @@ public class ForkConfigurationTest
         {
 
             @Override
-            protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli,
+            protected void resolveClasspath( @Nonnull Commandline cli,
                                              @Nonnull String booterThatHasMainMethod,
                                              @Nonnull StartupConfiguration config,
                                              @Nonnull File dumpLogDirectory )
@@ -236,7 +237,8 @@ public class ForkConfigurationTest
         assertThat( startup.isShadefire() )
             .isFalse();
 
-        Commandline cli = config.createCommandLine( startup, 1, getTempDirectory() );
+        org.apache.maven.surefire.shared.utils.cli.Commandline
+                cli = config.createCommandLine( startup, 1, getTempDirectory() );
 
         assertThat( cli.toString() )
             .contains( "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005" );
@@ -257,7 +259,8 @@ public class ForkConfigurationTest
         StartupConfiguration startup =
             new StartupConfiguration( "", cpConfig, clc, ALL, Collections.<String[]>emptyList() );
 
-        Commandline cli = config.createCommandLine( startup, 1, getTempDirectory() );
+        org.apache.maven.surefire.shared.utils.cli.Commandline
+                cli = config.createCommandLine( startup, 1, getTempDirectory() );
 
         String line = join( " ", cli.getCommandline() );
         assertTrue( line.contains( "-jar" ) );
@@ -278,7 +281,8 @@ public class ForkConfigurationTest
         StartupConfiguration startup =
             new StartupConfiguration( "", cpConfig, clc, ALL, Collections.<String[]>emptyList() );
 
-        Commandline commandLine = config.createCommandLine( startup, 1, getTempDirectory() );
+        org.apache.maven.surefire.shared.utils.cli.Commandline
+                commandLine = config.createCommandLine( startup, 1, getTempDirectory() );
         assertThat( commandLine.toString() ).contains( IS_OS_WINDOWS ? "abc def" : "'abc' 'def'" );
     }
 
@@ -294,7 +298,8 @@ public class ForkConfigurationTest
         StartupConfiguration startup =
             new StartupConfiguration( "", cpConfig, clc, ALL, Collections.<String[]>emptyList() );
         ForkConfiguration config = getForkConfiguration( cwd.getCanonicalFile() );
-        Commandline commandLine = config.createCommandLine( startup, 1, getTempDirectory() );
+        org.apache.maven.surefire.shared.utils.cli.Commandline
+                commandLine = config.createCommandLine( startup, 1, getTempDirectory() );
 
         File forkDirectory = new File( basedir, "fork_1" );
 

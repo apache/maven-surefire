@@ -24,7 +24,7 @@ import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.SurefireProperties;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.AbstractCommandReader;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Commandline;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStream;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
@@ -608,10 +608,7 @@ public class ForkStarter
             throw new SurefireBooterForkException( "Error creating properties files for forking", e );
         }
 
-        OutputStreamFlushableCommandline cli =
-                forkConfiguration.createCommandLine( startupConfiguration, forkNumber, dumpLogDir );
-
-        commandReader.setFlushReceiverProvider( cli );
+        Commandline cli = forkConfiguration.createCommandLine( startupConfiguration, forkNumber, dumpLogDir );
 
         cli.createArg().setValue( tempDir );
         cli.createArg().setValue( DUMP_FILE_PREFIX + forkNumber );
