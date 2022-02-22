@@ -154,6 +154,8 @@ import static org.apache.maven.surefire.shared.utils.StringUtils.isEmpty;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isNotEmpty;
 import static org.apache.maven.surefire.shared.utils.StringUtils.split;
+import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
+import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
 
 /**
  * Abstract base class for running tests using Surefire.
@@ -922,29 +924,39 @@ public abstract class AbstractSurefireMojo
         // Stuff that should have been final
         setupStuff();
         Platform platform = PLATFORM.withJdkExecAttributesForTests( getEffectiveJvm() );
-
-        if ( verifyParameters() && !hasExecutedBefore() )
+        Thread shutdownThread = new Thread( platform::setShutdownState );
+        addShutDownHook( shutdownThread );
+        try
         {
-            DefaultScanResult scan = scanForTestClasses();
-            if ( !hasSuiteXmlFiles() && scan.isEmpty() )
+            if ( verifyParameters() && !hasExecutedBefore() )
             {
-                switch ( getEffectiveFailIfNoTests() )
+                DefaultScanResult scan = scanForTestClasses();
+                if ( !hasSuiteXmlFiles() && scan.isEmpty() )
                 {
-                    case COULD_NOT_RUN_DEFAULT_TESTS:
-                        throw new MojoFailureException(
-                            "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
-                    case COULD_NOT_RUN_SPECIFIED_TESTS:
-                        throw new MojoFailureException( "No tests matching pattern \""
-                            + getSpecificTests().toString()
-                            + "\" were executed! (Set "
-                            + "-D" + getPluginName() + ".failIfNoSpecifiedTests=false to ignore this error.)" );
-                    default:
-                        handleSummary( noTestsRun(), null );
-                        return;
+                    switch ( getEffectiveFailIfNoTests() )
+                    {
+                        case COULD_NOT_RUN_DEFAULT_TESTS:
+                            throw new MojoFailureException(
+                                "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
+                        case COULD_NOT_RUN_SPECIFIED_TESTS:
+                            throw new MojoFailureException( "No tests matching pattern \""
+                                + getSpecificTests().toString()
+                                + "\" were executed! (Set "
+                                + "-D" + getPluginName()
+                                + ".failIfNoSpecifiedTests=false to ignore this error.)" );
+                        default:
+                            handleSummary( noTestsRun(), null );
+                            return;
+                    }
                 }
+                logReportsDirectory();
+                executeAfterPreconditionsChecked( scan, platform );
             }
-            logReportsDirectory();
-            executeAfterPreconditionsChecked( scan, platform );
+        }
+        finally
+        {
+            platform.clearShutdownState();
+            removeShutdownHook( shutdownThread );
         }
     }
 
@@ -2446,7 +2458,7 @@ public abstract class AbstractSurefireMojo
         StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum, false );
         ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );
         return new InPluginVMSurefireStarter( startupConfiguration, providerConfiguration, startupReportConfiguration,
-                                              getConsoleLogger() );
+                                              getConsoleLogger(), platform );
     }
 
     // todo this is in separate method and can be better tested than whole method createForkConfiguration()

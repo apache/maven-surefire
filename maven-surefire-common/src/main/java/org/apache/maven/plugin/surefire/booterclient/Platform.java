@@ -40,6 +40,8 @@ public final class Platform
 
     private final JdkAttributes jdk;
 
+    private volatile boolean shutdown;
+
     public Platform()
     {
         // the job may take 50 or 80 ms
@@ -51,6 +53,21 @@ public final class Platform
     {
         this.pluginPidJob = pluginPidJob;
         this.jdk = jdk;
+    }
+
+    public boolean isShutdown()
+    {
+        return shutdown;
+    }
+
+    public void setShutdownState()
+    {
+        this.shutdown = true;
+    }
+
+    public void clearShutdownState()
+    {
+        this.shutdown = false;
     }
 
     public Long getPluginPid()

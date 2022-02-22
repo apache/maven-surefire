@@ -38,11 +38,11 @@ public final class ConcurrencyUtils
      * Decreases {@code counter} to zero, or does not change the counter if negative.
      * This method pretends been atomic. Only one thread can succeed setting the counter to zero.
      *
+     * @param runner run if this Thread has concurrently decremented the counter down to zero
      * @param counter atomic counter
-     * @return {@code true} if this Thread modified concurrent counter from any positive number down to zero.
      */
     @SuppressWarnings( "checkstyle:emptyforiteratorpad" )
-    public static boolean countDownToZero( AtomicInteger counter )
+    public static void runIfZeroCountDown( Runnable runner, AtomicInteger counter )
     {
         for (;;)
         {
@@ -52,12 +52,17 @@ public final class ConcurrencyUtils
                 int newCounter = c - 1;
                 if ( counter.compareAndSet( c, newCounter ) )
                 {
-                    return newCounter == 0;
+                    boolean isZero = newCounter == 0;
+                    if ( isZero )
+                    {
+                        runner.run();
+                    }
+                    break;
                 }
             }
             else
             {
-                return false;
+                break;
             }
         }
     }

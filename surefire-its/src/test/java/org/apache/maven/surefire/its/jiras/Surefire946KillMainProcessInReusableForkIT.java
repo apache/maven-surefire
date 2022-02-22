@@ -95,7 +95,7 @@ public class Surefire946KillMainProcessInReusableForkIT
                 "-" + shutdownMavenMethod + "-" + shutdownSurefireMethod )
                 .sysProp( "distinct.classifier", classifierOfDummyDependency )
                 .sysProp( "surefire.shutdown", shutdownSurefireMethod )
-                .sysProp( "selfdestruct.timeoutInMillis", "10000" )
+                .sysProp( "selfdestruct.timeoutInMillis", "20000" )
                 .sysProp( "selfdestruct.method", shutdownMavenMethod )
                 .sysProp( "testSleepTime", String.valueOf( TEST_SLEEP_TIME ) )
                 .addGoal( "org.apache.maven.plugins.surefire:maven-selfdestruct-plugin:selfdestruct" )

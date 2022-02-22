@@ -57,7 +57,7 @@ import static org.apache.maven.surefire.api.util.ReflectionUtils.newInstance;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.tryGetConstructor;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.tryGetMethod;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.tryLoadClass;
-import static org.apache.maven.surefire.api.util.internal.ConcurrencyUtils.countDownToZero;
+import static org.apache.maven.surefire.api.util.internal.ConcurrencyUtils.runIfZeroCountDown;
 
 /**
  * Contains utility methods for executing TestNG.
@@ -137,7 +137,7 @@ final class TestNGExecutor
                 xmlTest.setName( metadata.testName );
                 addSelector( xmlTest, groupMatchingSelector );
                 addSelector( xmlTest, methodNameFilteringSelector );
-                xmlTest.setXmlClasses( new ArrayList<XmlClass>() );
+                xmlTest.setXmlClasses( new ArrayList<>() );
 
                 suiteAndNamedTests.testNameToTest.put( metadata.testName, xmlTest );
             }
@@ -366,18 +366,10 @@ final class TestNGExecutor
     {
         final AtomicInteger currentFaultCount = new AtomicInteger( skipAfterFailureCount );
 
-        return new Stoppable()
+        return () ->
         {
-            @Override
-            public void fireStopEvent()
-            {
-                if ( countDownToZero( currentFaultCount ) )
-                {
-                    FailFastEventsSingleton.getInstance().setSkipOnNextTest();
-                }
-
-                reportManager.testExecutionSkippedByUser();
-            }
+            runIfZeroCountDown( () -> FailFastEventsSingleton.getInstance().setSkipOnNextTest(), currentFaultCount );
+            reportManager.testExecutionSkippedByUser();
         };
     }
 

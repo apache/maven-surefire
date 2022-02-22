@@ -56,7 +56,7 @@ import static org.apache.maven.surefire.api.report.CategorizedReportEntry.report
  *
  * @author Kristian Rosenvold
  */
-public class ForkClient
+public final class ForkClient
     implements EventHandler<Event>
 {
     private static final long START_TIME_ZERO = 0L;
@@ -89,7 +89,8 @@ public class ForkClient
 
     private volatile StackTraceWriter errorInFork;
 
-    public ForkClient( DefaultReporterFactory defaultReporterFactory, NotifiableTestStream notifiableTestStream,
+    public ForkClient( DefaultReporterFactory defaultReporterFactory,
+                       NotifiableTestStream notifiableTestStream,
                        int forkNumber )
     {
         this.defaultReporterFactory = defaultReporterFactory;
@@ -110,10 +111,14 @@ public class ForkClient
         notifier.setAcquireNextTestListener( new AcquireNextTestListener() );
         notifier.setConsoleErrorListener( new ErrorListener() );
         notifier.setByeListener( new ByeListener() );
-        notifier.setStopOnNextTestListener( new StopOnNextTestListener() );
         notifier.setConsoleDebugListener( new DebugListener() );
         notifier.setConsoleWarningListener( new WarningListener() );
         notifier.setExitErrorEventListener( new ExitErrorEventListener() );
+    }
+
+    public void setStopOnNextTestListener( ForkedProcessEventListener listener )
+    {
+        notifier.setStopOnNextTestListener( listener );
     }
 
     private final class TestSetStartingListener
@@ -277,15 +282,6 @@ public class ForkClient
         }
     }
 
-    private final class StopOnNextTestListener implements ForkedProcessEventListener
-    {
-        @Override
-        public void handle()
-        {
-            stopOnNextTest();
-        }
-    }
-
     private final class DebugListener implements ForkedProcessStringEventListener
     {
         @Override
@@ -316,13 +312,6 @@ public class ForkClient
         }
     }
 
-    /**
-     * Overridden by a subclass, see {@link org.apache.maven.plugin.surefire.booterclient.ForkStarter}.
-     */
-    protected void stopOnNextTest()
-    {
-    }
-
     public void kill()
     {
         if ( !saidGoodBye )
@@ -338,7 +327,7 @@ public class ForkClient
      * @param currentTimeMillis    current time in millis seconds
      * @param forkedProcessTimeoutInSeconds timeout in seconds given by MOJO
      */
-    public final void tryToTimeout( long currentTimeMillis, int forkedProcessTimeoutInSeconds )
+    public void tryToTimeout( long currentTimeMillis, int forkedProcessTimeoutInSeconds )
     {
         if ( forkedProcessTimeoutInSeconds > 0 )
         {
@@ -352,13 +341,13 @@ public class ForkClient
         }
     }
 
-    public final DefaultReporterFactory getDefaultReporterFactory()
+    public DefaultReporterFactory getDefaultReporterFactory()
     {
         return defaultReporterFactory;
     }
 
     @Override
-    public final void handleEvent( @Nonnull Event event )
+    public void handleEvent( @Nonnull Event event )
     {
         notifier.notifyEvent( event );
     }
@@ -373,7 +362,7 @@ public class ForkClient
         }
     }
 
-    public final boolean hadTimeout()
+    public boolean hadTimeout()
     {
         return testSetStartedAt.get() == START_TIME_NEGATIVE_TIMEOUT;
     }
@@ -409,7 +398,7 @@ public class ForkClient
                 .writeTestOutput( new TestOutputReportEntry( output, isStdout, newLine, /*todo*/ null, null ) );
     }
 
-    public final Map<String, String> getTestVmSystemProperties()
+    public Map<String, String> getTestVmSystemProperties()
     {
         return unmodifiableMap( testVmSystemProperties );
     }
@@ -420,7 +409,7 @@ public class ForkClient
      *
      * @return A mock provider reporter
      */
-    public final RunListener getReporter()
+    public RunListener getReporter()
     {
         return getTestSetReporter();
     }
@@ -440,17 +429,17 @@ public class ForkClient
         // no op
     }
 
-    public final boolean isSaidGoodBye()
+    public boolean isSaidGoodBye()
     {
         return saidGoodBye;
     }
 
-    public final StackTraceWriter getErrorInFork()
+    public StackTraceWriter getErrorInFork()
     {
         return errorInFork;
     }
 
-    public final boolean isErrorInFork()
+    public boolean isErrorInFork()
     {
         return errorInFork != null;
     }

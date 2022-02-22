@@ -19,6 +19,7 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.booterclient.Platform;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
@@ -52,16 +53,18 @@ public class InPluginVMSurefireStarter
     private final StartupReportConfiguration startupReportConfig;
     private final ProviderConfiguration providerConfig;
     private final ConsoleLogger consoleLogger;
+    private final Platform platform;
 
     public InPluginVMSurefireStarter( @Nonnull StartupConfiguration startupConfig,
                                       @Nonnull ProviderConfiguration providerConfig,
                                       @Nonnull StartupReportConfiguration startupReportConfig,
-                                      @Nonnull ConsoleLogger consoleLogger )
+                                      @Nonnull ConsoleLogger consoleLogger, @Nonnull Platform platform )
     {
         this.startupConfig = startupConfig;
         this.startupReportConfig = startupReportConfig;
         this.providerConfig = providerConfig;
         this.consoleLogger = consoleLogger;
+        this.platform = platform;
     }
 
     public RunResult runSuitesInProcess( @Nonnull DefaultScanResult scanResult )
@@ -84,7 +87,9 @@ public class InPluginVMSurefireStarter
 
         try
         {
-            return invokeProvider( null, testClassLoader, factory, providerConfig, false, startupConfig, true );
+            return platform.isShutdown()
+                ? new RunResult( 0, 0, 0, 0 )
+                : invokeProvider( null, testClassLoader, factory, providerConfig, false, startupConfig, true );
         }
         catch ( InvocationTargetException e )
         {

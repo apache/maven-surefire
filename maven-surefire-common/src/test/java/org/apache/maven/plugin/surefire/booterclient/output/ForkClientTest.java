@@ -438,15 +438,8 @@ public class ForkClientTest
                 .thenReturn( new File( target, "surefire-reports" ) );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
         final boolean[] verified = {false};
-        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 )
-        {
-            @Override
-            protected void stopOnNextTest()
-            {
-                super.stopOnNextTest();
-                verified[0] = true;
-            }
-        };
+        ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
+        client.setStopOnNextTestListener( () -> verified[0] = true );
         client.handleEvent( new ControlStopOnNextTestEvent() );
         verifyZeroInteractions( notifiableTestStream );
         verifyZeroInteractions( factory );
