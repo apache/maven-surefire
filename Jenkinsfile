@@ -29,7 +29,7 @@ properties(
         disableConcurrentBuilds()
     ]
 )
-final def oses = ['linux':'ubuntu', 'windows':'windows-he']
+final def oses = ['linux':'ubuntu && maven', 'windows':'windows-he']
 final def mavens = env.BRANCH_NAME == 'master' ? ['3.6.x', '3.2.x'] : ['3.2.x']
 // all non-EOL versions and the first EA
 final def jdks = [18, 17, 11, 8]
