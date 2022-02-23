@@ -2,9 +2,13 @@ package examples;
 
 import org.junit.Test;
 
-class RootTest {
-    @Test
-    public void test() {
+import static org.junit.Assert.fail;
 
+class RootTest
+{
+    @Test
+    public void test()
+    {
+        fail();
     }
 }
