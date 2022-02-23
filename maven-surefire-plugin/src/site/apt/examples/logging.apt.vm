@@ -47,7 +47,7 @@ Using Console Logs
 
 
 +---+
-[INFO] Surefire report directory: D:\vcs\project\target\surefire-reports
+[INFO] Surefire report directory: /path/to/project/target/surefire-reports
 [INFO] Using configured provider org.apache.maven.surefire.junitcore.JUnitCoreProvider
 [INFO] parallel='none', perCoreThreadCount=true, threadCount=0, useUnlimitedThreads=false, threadCountSuites=0, threadCountClasses=0, threadCountMethods=0, parallelOptimized=true
 Configuring TestNG with: TestNGMapConfigurator
