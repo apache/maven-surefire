@@ -28,6 +28,7 @@ import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 import org.apache.maven.surefire.booter.stream.EventEncoder;
 
@@ -127,8 +128,7 @@ public class EventChannelEncoder extends EventEncoder implements MasterProcessCh
         write( ByteBuffer.wrap( new byte[] {'\n'} ), true );
     }
 
-    @Override
-    public void systemProperties( Map<String, String> sysProps )
+    private void encodeSystemProperties( Map<String, String> sysProps, RunMode rm, Long testRunId )
     {
         CharsetEncoder encoder = newCharsetEncoder();
         ByteBuffer result = null;
@@ -150,14 +150,15 @@ public class EventChannelEncoder extends EventEncoder implements MasterProcessCh
     }
 
     @Override
-    public void testSetStarting( ReportEntry reportEntry, boolean trimStackTraces )
+    public void testSetStarting( TestSetReportEntry reportEntry, boolean trimStackTraces )
     {
         encode( BOOTERCODE_TESTSET_STARTING, runMode, reportEntry, trimStackTraces, true );
     }
 
     @Override
-    public void testSetCompleted( ReportEntry reportEntry, boolean trimStackTraces )
+    public void testSetCompleted( TestSetReportEntry reportEntry, boolean trimStackTraces )
     {
+        encodeSystemProperties( reportEntry.getSystemProperties(), null, null ); // todo in next commit
         encode( BOOTERCODE_TESTSET_COMPLETED, runMode, reportEntry, trimStackTraces, true );
     }
 
