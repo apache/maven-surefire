@@ -44,11 +44,11 @@ Developer Center
   When reporting an issue, it is immensely useful to create a small sample project
   that demonstrates the problem. Surefire already contains a large number of such
   projects, and they can be found at
-  {{surefire-integration-tests/src/test/resources/}}.
+  {{surefire-its/src/test/resources/}}.
   Typically you can check out one of the pre-existing projects and run it like this:
 
 +---+
-  cd surefire-integration-tests/src/test/resources/failsafe-buildfail
+  cd surefire-its/src/test/resources/failsafe-buildfail
   mvn -Dsurefire.version=2.12 verify
 +---+
 
@@ -96,10 +96,10 @@ mvn -e -X install | grep Forking
 
   There are
   numerous other integration tests that all operate on small sample projects in
-  <<<surefire-integration-tests/src/test/resources>>>.
+  <<<surefire-its/src/test/resources>>>.
 
   Example integration tests are <<<Surefire141PluggableProvidersIT>>> and the corresponding
-  <<<surefire-integration-tests/src/test/resources/surefire-141-pluggableproviders>>>.
+  <<<surefire-its/src/test/resources/surefire-141-pluggableproviders>>>.
 
 * Essential Source Code Reading List
 
