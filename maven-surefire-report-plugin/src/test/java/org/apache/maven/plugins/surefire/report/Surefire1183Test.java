@@ -49,7 +49,7 @@ public class Surefire1183Test extends AbstractMojoTestCase
             throws Exception
     {
         super.setUp();
-        renderer = (Renderer) lookup( Renderer.ROLE );
+        renderer = lookup( Renderer.class );
     }
 
     private File getTestBaseDir()
@@ -82,7 +82,7 @@ public class Surefire1183Test extends AbstractMojoTestCase
             outputHtml.getParentFile().mkdirs();
             writer = WriterFactory.newXmlWriter ( outputHtml );
 
-            renderer.generateDocument( writer, (SiteRendererSink ) mojo.getSink(), context );
+            renderer.mergeDocumentIntoSite( writer, (SiteRendererSink ) mojo.getSink(), context );
         }
         finally
         {

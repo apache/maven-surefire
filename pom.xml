@@ -93,12 +93,12 @@
     <commonsCompress>1.21</commonsCompress>
     <commonsIoVersion>2.11.0</commonsIoVersion>
     <doxiaVersion>2.0.0-M2-SNAPSHOT</doxiaVersion>
-    <doxiaSitetoolsVersion>2.0.0-M1-SNAPSHOT</doxiaSitetoolsVersion>
+    <doxiaSitetoolsVersion>2.0.0-M3-SNAPSHOT</doxiaSitetoolsVersion>
     <plexus-java-version>1.1.0</plexus-java-version>
     <!-- maven-shared-utils:3.3.4 uses org.fusesource.jansi:jansi:2.2.0 -->
     <mavenSharedUtilsVersion>4.0.0-SNAPSHOT</mavenSharedUtilsVersion>
     <powermockVersion>2.0.9</powermockVersion>
-    <mavenPluginToolsVersion>3.6.2</mavenPluginToolsVersion>
+    <mavenPluginToolsVersion>3.6.5-SNAPSHOT</mavenPluginToolsVersion>
     <jacocoVersion>0.8.7</jacocoVersion>
     <surefire-shared-utils.version>${project.version}</surefire-shared-utils.version>
     <maven.surefire.scm.devConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
@@ -131,6 +131,12 @@
         <groupId>org.apache.maven.reporting</groupId>
         <artifactId>maven-reporting-api</artifactId>
         <version>3.1.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-core-api</artifactId>
+        <version>${mavenVersion}</version>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
@@ -462,7 +468,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>animal-sniffer-maven-plugin</artifactId>
-          <version>1.20</version>
+          <version>1.21</version>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>

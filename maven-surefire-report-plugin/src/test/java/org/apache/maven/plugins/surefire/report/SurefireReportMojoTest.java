@@ -55,7 +55,7 @@ public class SurefireReportMojoTest
         throws Exception
     {
         super.setUp();
-        renderer = (Renderer) lookup( Renderer.ROLE );
+        renderer = lookup( Renderer.class );
     }
 
     public void testBasicSurefireReport()
@@ -642,7 +642,7 @@ public class SurefireReportMojoTest
             outputHtml.getParentFile().mkdirs();
             writer = WriterFactory.newXmlWriter( outputHtml );
 
-            renderer.generateDocument( writer, (SiteRendererSink) mojo.getSink(), context );
+            renderer.mergeDocumentIntoSite( writer, (SiteRendererSink) mojo.getSink(), context );
         }
         finally
         {
