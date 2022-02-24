@@ -72,7 +72,7 @@ public final class ForkClient
 
     /**
      * <em>testSetStartedAt</em> is set to non-zero after received
-     * {@link MasterProcessChannelEncoder#testSetStarting(ReportEntry, boolean)}.
+     * {@link MasterProcessChannelEncoder#testSetStarting(TestSetReportEntry, boolean)}.
      */
     private final AtomicLong testSetStartedAt = new AtomicLong( START_TIME_ZERO );
 
