@@ -2000,6 +2000,7 @@ public class AbstractSurefireMojoTest
         private List<String> includes;
         private List<String> excludes;
         private String test;
+        private boolean testFailureIgnore;
 
         private JUnitPlatformProviderInfo createJUnitPlatformProviderInfo( Artifact junitPlatformArtifact,
                                                                            TestClassPath testClasspathWrapper )
@@ -2075,13 +2076,13 @@ public class AbstractSurefireMojoTest
         @Override
         public boolean isTestFailureIgnore()
         {
-            return false;
+            return testFailureIgnore;
         }
 
         @Override
         public void setTestFailureIgnore( boolean testFailureIgnore )
         {
-
+            this.testFailureIgnore = testFailureIgnore;
         }
 
         @Override

@@ -27,6 +27,7 @@ import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.surefire.api.cli.CommandLineOption;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.booter.SurefireBooterForkException;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -156,7 +157,14 @@ public final class SurefireHelper
 
         if ( reportParameters.isTestFailureIgnore() )
         {
-            log.error( createErrorMessage( reportParameters, result, firstForkException ) );
+            String errorMessage = createErrorMessage( reportParameters, result, firstForkException );
+
+            if ( firstForkException instanceof SurefireBooterForkException )
+            {
+                throw new MojoExecutionException( errorMessage, firstForkException );
+            }
+
+            log.error( errorMessage );
         }
         else
         {
