@@ -78,6 +78,21 @@
             <artifactId>commons-lang3</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- those dependencies are here to fake the build plan calculation
+        and being able to use -Txx or mvnd and have a faster multithread build
+        -->
+        <dependency>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>${project.version}</version>
+          <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
