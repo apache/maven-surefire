@@ -19,12 +19,18 @@ package org.apache.maven.plugin.surefire;
  * under the License.
  */
 
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojoTest.Mojo;
+import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.surefire.api.suite.RunResult;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.booter.SurefireBooterForkException;
+import org.codehaus.plexus.logging.Logger;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -36,7 +42,13 @@ import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPa
 import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assume.assumeTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.doNothing;
+import static org.powermock.api.mockito.PowerMockito.mock;
 
 /**
  * Test of {@link SurefireHelper}.
@@ -118,6 +130,36 @@ public class SurefireHelperTest
         path = root + "\\" + pathToJar;
         escaped = escapeToPlatformPath( path );
         assertThat( escaped ).isEqualTo( root + "\\" + pathToJar );
+    }
+
+    @Test
+    public void shouldHandleFailWithoutExitCode() throws Exception
+    {
+        RunResult summary = new RunResult( 0, 0, 0, 0 );
+        Mojo plugin = new Mojo();
+        plugin.setTestFailureIgnore( true );
+
+        Logger logger = mock( Logger.class );
+        when( logger.isErrorEnabled() ).thenReturn( true );
+        doNothing().when( logger ).error( anyString() );
+        TestSetFailedException exc = new TestSetFailedException( "failure" );
+        reportExecution( plugin, summary, new PluginConsoleLogger( logger ), exc );
+        ArgumentCaptor<String> errorMessage = ArgumentCaptor.forClass( String.class );
+        verify( logger ).error( errorMessage.capture() );
+        assertThat( errorMessage.getValue() ).contains( "failure" );
+    }
+
+    @Test
+    public void shouldHandleFailIfJvmNonZeroExitCode() throws Exception
+    {
+        RunResult summary = new RunResult( 0, 0, 0, 0 );
+        Mojo plugin = new Mojo();
+        plugin.setTestFailureIgnore( true );
+
+        SurefireBooterForkException exc = new SurefireBooterForkException( "Unrecognized option: -Xxxx" );
+        e.expect( MojoExecutionException.class );
+        e.expectMessage( containsString( "Unrecognized option: -Xxxx" ) );
+        reportExecution( plugin, summary, new PluginConsoleLogger( mock( Logger.class ) ), exc );
     }
 
     @Test
