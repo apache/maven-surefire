@@ -2004,7 +2004,7 @@ public class AbstractSurefireMojoTest
         private JUnitPlatformProviderInfo createJUnitPlatformProviderInfo( Artifact junitPlatformArtifact,
                                                                            TestClassPath testClasspathWrapper )
         {
-            return new JUnitPlatformProviderInfo( junitPlatformArtifact, testClasspathWrapper );
+            return new JUnitPlatformProviderInfo( null, junitPlatformArtifact, testClasspathWrapper );
         }
 
         void setProjectTestArtifacts( List<Artifact> projectTestArtifacts )
