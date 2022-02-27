@@ -1181,7 +1181,7 @@ public abstract class AbstractSurefireMojo
     {
         Artifact junitDepArtifact = getJunitDepArtifact();
         return providerDetector.resolve( new DynamicProviderInfo( null ),
-            new JUnitPlatformProviderInfo( getJUnit5Artifact(), testClasspath ),
+            new JUnitPlatformProviderInfo( getJUnitPlatformRunnerArtifact(), getJUnit5Artifact(), testClasspath ),
             new TestNgProviderInfo( getTestNgArtifact() ),
             new JUnitCoreProviderInfo( getJunitArtifact(), junitDepArtifact ),
             new JUnit4ProviderInfo( getJunitArtifact(), junitDepArtifact ),
@@ -2413,13 +2413,13 @@ public abstract class AbstractSurefireMojo
         return getProjectArtifactMap().get( "junit:junit-dep" );
     }
 
+    private Artifact getJUnitPlatformRunnerArtifact()
+    {
+        return getProjectArtifactMap().get( "org.junit.platform:junit-platform-runner" );
+    }
+
     private Artifact getJUnit5Artifact()
     {
-        if ( getProjectArtifactMap().get( "org.junit.platform:junit-platform-runner" ) != null )
-        {
-            return null;
-        }
-
         Artifact artifact = getPluginArtifactMap().get( "org.junit.platform:junit-platform-engine" );
         if ( artifact == null )
         {
@@ -3252,11 +3252,14 @@ public abstract class AbstractSurefireMojo
         private static final String PROVIDER_DEP_GID = "org.junit.platform";
         private static final String PROVIDER_DEP_AID = "junit-platform-launcher";
 
+        private final Artifact junitPlatformRunnerArtifact;
         private final Artifact junitPlatformArtifact;
         private final TestClassPath testClasspath;
 
-        JUnitPlatformProviderInfo( Artifact junitPlatformArtifact, @Nonnull TestClassPath testClasspath )
+        JUnitPlatformProviderInfo( Artifact junitPlatformRunnerArtifact, Artifact junitPlatformArtifact,
+                                   @Nonnull TestClassPath testClasspath )
         {
+            this.junitPlatformRunnerArtifact = junitPlatformRunnerArtifact;
             this.junitPlatformArtifact = junitPlatformArtifact;
             this.testClasspath = testClasspath;
         }
@@ -3271,7 +3274,7 @@ public abstract class AbstractSurefireMojo
         @Override
         public boolean isApplicable()
         {
-            return junitPlatformArtifact != null;
+            return junitPlatformRunnerArtifact == null && junitPlatformArtifact != null;
         }
 
         @Override
