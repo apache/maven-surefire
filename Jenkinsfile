@@ -174,7 +174,7 @@ def buildProcess(String stageKey, String jdkName, String mvnName, goals, options
         try {
             if (makeReports) {
                 jacoco(changeBuildStatus: false,
-                        execPattern: '**/*.exec',
+                        execPattern: '**/target/jacoco*.exec',
                         sourcePattern: sourcesPatternCsv(),
                         classPattern: classPatternCsv())
 
