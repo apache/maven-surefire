@@ -20,9 +20,11 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Map;
 
@@ -222,6 +224,19 @@ public class WrappedReportEntry
     public String getReportNameWithGroup()
     {
         return original.getReportNameWithGroup();
+    }
+
+    @Nonnull
+    @Override
+    public RunMode getRunMode()
+    {
+        return original.getRunMode();
+    }
+
+    @Override
+    public Long getTestRunId()
+    {
+        return original.getTestRunId();
     }
 
     @Override

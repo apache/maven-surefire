@@ -1296,7 +1296,8 @@ public class ForkClientTest
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
         ForkClient client = new ForkClient( factory, notifiableTestStream,  0 );
-        SimpleReportEntry testStarted = new SimpleReportEntry( reportEntry.getSourceName(), null, null, null );
+        SimpleReportEntry testStarted =
+            new SimpleReportEntry( NORMAL_RUN, 1L, reportEntry.getSourceName(), null, null, null );
         client.handleEvent( new TestStartingEvent( NORMAL_RUN, testStarted ) );
 
         assertThat( client.testsInProgress() )
@@ -1400,7 +1401,8 @@ public class ForkClientTest
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
-        SimpleReportEntry testClass = new SimpleReportEntry( reportEntry.getSourceName(), null, null, null );
+        SimpleReportEntry testClass =
+            new SimpleReportEntry( NORMAL_RUN, 1L, reportEntry.getSourceName(), null, null, null );
         client.handleEvent( new TestStartingEvent( NORMAL_RUN, testClass ) );
 
         assertThat( client.testsInProgress() )
@@ -1510,7 +1512,8 @@ public class ForkClientTest
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
-        SimpleReportEntry testStarted = new SimpleReportEntry( reportEntry.getSourceName(), null, null, null );
+        SimpleReportEntry testStarted =
+            new SimpleReportEntry( NORMAL_RUN, 1L, reportEntry.getSourceName(), null, null, null );
         client.handleEvent( new TestStartingEvent( NORMAL_RUN, testStarted ) );
 
         assertThat( client.testsInProgress() )
@@ -1619,8 +1622,8 @@ public class ForkClientTest
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
-        SimpleReportEntry testStarted =
-            new SimpleReportEntry( reportEntry.getSourceName(), reportEntry.getSourceText(), null, null );
+        SimpleReportEntry testStarted = new SimpleReportEntry( NORMAL_RUN, 1L, reportEntry.getSourceName(),
+            reportEntry.getSourceText(), null, null );
         client.handleEvent( new TestStartingEvent( NORMAL_RUN, testStarted ) );
 
         assertThat( client.testsInProgress() )
@@ -1725,7 +1728,8 @@ public class ForkClientTest
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
-        SimpleReportEntry testStarted = new SimpleReportEntry( reportEntry.getSourceName(), null, null, null );
+        SimpleReportEntry testStarted =
+            new SimpleReportEntry( NORMAL_RUN, 1L, reportEntry.getSourceName(), null, null, null );
         client.handleEvent( new TestStartingEvent( NORMAL_RUN, testStarted ) );
 
         assertThat( client.testsInProgress() )

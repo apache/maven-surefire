@@ -21,8 +21,9 @@ package org.apache.maven.surefire.testng;
 
 import junit.framework.TestCase;
 import org.apache.maven.surefire.api.report.CategorizedReportEntry;
-import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.mockito.ArgumentCaptor;
 import org.testng.ITestClass;
 import org.testng.ITestNGMethod;
@@ -38,6 +39,7 @@ import static org.powermock.reflect.Whitebox.invokeMethod;
 /**
  * Tests for {@link TestNGReporter}.
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class TestNGReporterTest extends TestCase
 {
     public void testParameterizedTestName() throws Exception
@@ -79,13 +81,16 @@ public class TestNGReporterTest extends TestCase
         when( testResult.getName() ).thenReturn( "myTest" );
         when( testResult.getParameters() ).thenReturn( new String[] { "val1", "val2" } );
 
-        RunListener listener = mock( RunListener.class );
+        TestReportListener<TestOutputReportEntry> listener = mock( TestReportListener.class );
         TestNGReporter reporter = new TestNGReporter( listener );
         reporter.onTestStart( testResult );
 
         ArgumentCaptor<CategorizedReportEntry> reportEntry = ArgumentCaptor.forClass( CategorizedReportEntry.class );
         verify( listener ).testStarting( reportEntry.capture() );
         verifyNoMoreInteractions( listener );
+
+        assertThat( reportEntry.getValue().getTestRunId() )
+            .isEqualTo( 0x0000000100000001L );
 
         assertThat( reportEntry.getValue().getSourceName() )
             .isEqualTo( "pkg.MyClass" );
@@ -108,13 +113,16 @@ public class TestNGReporterTest extends TestCase
         when( testResult.getName() ).thenReturn( "myTest" );
         when( testResult.getParameters() ).thenReturn( new String[] { "val1", "val2" } );
 
-        RunListener listener = mock( RunListener.class );
+        TestReportListener<TestOutputReportEntry> listener = mock( TestReportListener.class );
         TestNGReporter reporter = new TestNGReporter( listener );
         reporter.onTestSuccess( testResult );
 
         ArgumentCaptor<SimpleReportEntry> reportEntry = ArgumentCaptor.forClass( SimpleReportEntry.class );
         verify( listener ).testSucceeded( reportEntry.capture() );
         verifyNoMoreInteractions( listener );
+
+        assertThat( reportEntry.getValue().getTestRunId() )
+            .isEqualTo( 0x0000000100000001L );
 
         assertThat( reportEntry.getValue().getSourceName() )
             .isEqualTo( "pkg.MyClass" );
@@ -142,13 +150,16 @@ public class TestNGReporterTest extends TestCase
         when( testResult.getName() ).thenReturn( "myTest" );
         when( testResult.getParameters() ).thenReturn( new String[] { "val1", "val2" } );
 
-        RunListener listener = mock( RunListener.class );
+        TestReportListener<TestOutputReportEntry> listener = mock( TestReportListener.class );
         TestNGReporter reporter = new TestNGReporter( listener );
         reporter.onTestFailure( testResult );
 
         ArgumentCaptor<SimpleReportEntry> reportEntry = ArgumentCaptor.forClass( SimpleReportEntry.class );
         verify( listener ).testFailed( reportEntry.capture() );
         verifyNoMoreInteractions( listener );
+
+        assertThat( reportEntry.getValue().getTestRunId() )
+            .isEqualTo( 0x0000000100000001L );
 
         assertThat( reportEntry.getValue().getSourceName() )
             .isEqualTo( getClass().getName() );
@@ -180,13 +191,16 @@ public class TestNGReporterTest extends TestCase
         when( testResult.getName() ).thenReturn( "myTest" );
         when( testResult.getParameters() ).thenReturn( new String[] { "val1", "val2" } );
 
-        RunListener listener = mock( RunListener.class );
+        TestReportListener<TestOutputReportEntry> listener = mock( TestReportListener.class );
         TestNGReporter reporter = new TestNGReporter( listener );
         reporter.onTestSkipped( testResult );
 
         ArgumentCaptor<SimpleReportEntry> reportEntry = ArgumentCaptor.forClass( SimpleReportEntry.class );
         verify( listener ).testSkipped( reportEntry.capture() );
         verifyNoMoreInteractions( listener );
+
+        assertThat( reportEntry.getValue().getTestRunId() )
+            .isEqualTo( 0x0000000100000001L );
 
         assertThat( reportEntry.getValue().getSourceName() )
             .isEqualTo( getClass().getName() );
@@ -217,13 +231,16 @@ public class TestNGReporterTest extends TestCase
         when( testResult.getName() ).thenReturn( "myTest" );
         when( testResult.getParameters() ).thenReturn( new String[] { "val1", "val2" } );
 
-        RunListener listener = mock( RunListener.class );
+        TestReportListener<TestOutputReportEntry> listener = mock( TestReportListener.class );
         TestNGReporter reporter = new TestNGReporter( listener );
         reporter.onTestFailedButWithinSuccessPercentage( testResult );
 
         ArgumentCaptor<SimpleReportEntry> reportEntry = ArgumentCaptor.forClass( SimpleReportEntry.class );
         verify( listener ).testSucceeded( reportEntry.capture() );
         verifyNoMoreInteractions( listener );
+
+        assertThat( reportEntry.getValue().getTestRunId() )
+            .isEqualTo( 0x0000000100000001L );
 
         assertThat( reportEntry.getValue().getSourceName() )
             .isEqualTo( getClass().getName() );

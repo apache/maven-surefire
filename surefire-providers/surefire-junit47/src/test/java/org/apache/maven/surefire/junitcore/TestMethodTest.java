@@ -24,6 +24,8 @@ import org.apache.maven.surefire.api.report.SimpleReportEntry;
 
 import junit.framework.TestCase;
 
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
+
 /**
  * @author Kristian Rosenvold
  */
@@ -35,8 +37,9 @@ public class TestMethodTest
 
     public void testTestFailure()
     {
-        ReportEntry reportEntry = new SimpleReportEntry( "a", null, "b", null );
-        TestMethod testMethod = new TestMethod( reportEntry, new TestSet( TestMethodTest.class.getName() ) );
+        ReportEntry reportEntry = new SimpleReportEntry( NORMAL_RUN, 0L, "a", null, "b", null );
+        TestSet testSet = new TestSet( TestMethodTest.class.getName(), NORMAL_RUN, null );
+        TestMethod testMethod = new TestMethod( reportEntry, testSet );
         testMethod.testFailure( reportEntry );
         final int elapsed = testMethod.getElapsed();
         assertTrue( elapsed >= 0 );

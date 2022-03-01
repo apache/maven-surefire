@@ -29,7 +29,6 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.api.report.ReporterFactory;
-import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.junit.Ignore;
@@ -146,7 +145,8 @@ public class ConcurrentRunListenerTest
     {
         DefaultReporterFactory reporterFactory = createReporterFactory();
         HashMap<String, TestSet> classMethodCounts = new HashMap<>();
-        TestReportListener reporter = new ClassesParallelRunListener( classMethodCounts, reporterFactory );
+        ConcurrentRunListener reporter =
+            new ClassesParallelRunListener( classMethodCounts, reporterFactory );
         JUnitCoreRunListener runListener = new JUnitCoreRunListener( reporter, classMethodCounts );
         RunStatistics result = runClasses( reporterFactory, runListener, classes );
         assertReporter( result, success, ignored, failure, "classes" );
@@ -195,7 +195,7 @@ public class ConcurrentRunListenerTest
     private org.junit.runner.notification.RunListener createRunListener( ReporterFactory reporterFactory,
                                                                          Map<String, TestSet> testSetMap )
     {
-        TestReportListener handler = new ClassesParallelRunListener( testSetMap, reporterFactory );
+        ConcurrentRunListener handler = new ClassesParallelRunListener( testSetMap, reporterFactory );
         return new JUnitCoreRunListener( handler, testSetMap );
     }
 

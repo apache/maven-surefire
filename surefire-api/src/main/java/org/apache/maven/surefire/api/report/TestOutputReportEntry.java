@@ -20,9 +20,11 @@ package org.apache.maven.surefire.api.report;
  */
 
 /**
- * This report entry should be used in {@link TestOutputReceiver#writeTestOutput(TestOutputReportEntry)}.
+ * This report entry should be used in {@link TestOutputReceiver#writeTestOutput(OutputReportEntry)}.
+ *
+ * {@inheritDoc}
  */
-public final class TestOutputReportEntry
+public final class TestOutputReportEntry implements OutputReportEntry
 {
     private final String log;
     private final boolean isStdOut;
@@ -60,7 +62,7 @@ public final class TestOutputReportEntry
         this( log, isStdOut, newLine, null, null );
     }
 
-    public TestOutputReportEntry( TestOutputReportEntry reportEntry, RunMode runMode, long testRunId )
+    public TestOutputReportEntry( OutputReportEntry reportEntry, RunMode runMode, Long testRunId )
     {
         log = reportEntry.getLog();
         isStdOut = reportEntry.isStdOut();
@@ -69,16 +71,19 @@ public final class TestOutputReportEntry
         this.testRunId = testRunId;
     }
 
+    @Override
     public String getLog()
     {
         return log;
     }
 
+    @Override
     public boolean isStdOut()
     {
         return isStdOut;
     }
 
+    @Override
     public boolean isNewLine()
     {
         return newLine;
@@ -94,7 +99,7 @@ public final class TestOutputReportEntry
         return testRunId;
     }
 
-    public static TestOutputReportEntry stdOut( String log )
+    public static OutputReportEntry stdOut( String log )
     {
         return new TestOutputReportEntry( log, true, false );
     }

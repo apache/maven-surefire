@@ -26,13 +26,13 @@ import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoR
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.api.report.ReporterFactory;
-import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
@@ -60,15 +60,15 @@ public class JUnitCoreTester
         throws TestSetFailedException, ExecutionException
     {
         ReporterFactory reporterManagerFactory = defaultNoXml();
-
+        PrintStream out = System.out;
+        PrintStream err = System.err;
         try
         {
-            final HashMap<String, TestSet> classMethodCounts = new HashMap<>();
-            TestReportListener reporter =
+            HashMap<String, TestSet> classMethodCounts = new HashMap<>();
+            ConcurrentRunListener reporter =
                 createInstance( classMethodCounts, reporterManagerFactory, parallelClasses, false );
-            startCapture( reporter );
-
             JUnitCoreRunListener runListener = new JUnitCoreRunListener( reporter, classMethodCounts );
+            startCapture( runListener );
             JUnitCore junitCore = new JUnitCore();
 
             junitCore.addListener( runListener );
@@ -78,6 +78,8 @@ public class JUnitCoreTester
         }
         finally
         {
+            System.setOut( out );
+            System.setErr( err );
             reporterManagerFactory.close();
             if ( computer instanceof ConfigurableParallelComputer )
             {

@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 import static org.apache.maven.surefire.testng.TestNGExecutor.run;
@@ -64,16 +63,16 @@ final class TestNGXmlTestSuite
         this.skipAfterFailureCount = skipAfterFailureCount;
     }
 
-    void execute( RunListener reporter )
+    void execute( TestNGReporter testNGReporter )
         throws TestSetFailedException
     {
         if ( suiteFilePaths == null )
         {
             throw new IllegalStateException( "You must call locateTestSets before calling execute" );
         }
-        startTestSuite( reporter );
-        run( suiteFilePaths, testSourceDirectory, options, reporter, reportsDirectory, skipAfterFailureCount );
-        finishTestSuite( reporter );
+        startTestSuite( testNGReporter.getRunListener() );
+        run( suiteFilePaths, testSourceDirectory, options, testNGReporter, reportsDirectory, skipAfterFailureCount );
+        finishTestSuite( testNGReporter.getRunListener() );
     }
 
     Iterable locateTestSets()

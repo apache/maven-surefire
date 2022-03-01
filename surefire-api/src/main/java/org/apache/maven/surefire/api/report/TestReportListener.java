@@ -38,8 +38,10 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
  * <br>
  * Note: The adapters in the module <i>surefire-junit47</i> are temporal and will be removed after we have fixed
  * the SUREFIRE-1860 and XML reporter in SUREFIRE-1643. The adapters are a workaround of a real fix in both Jira issues.
+ *
+ * @param <T> usually {@link TestOutputReportEntry} or {@link OutputReportEntry}
  */
-public interface TestReportListener
-    extends RunListener, TestOutputReceiver, ConsoleLogger
+public interface TestReportListener<T extends OutputReportEntry>
+    extends RunListener, TestOutputReceiver<T>, ConsoleLogger
 {
 }

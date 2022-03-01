@@ -26,6 +26,7 @@ import java.util.Map;
 /**
  * @author Kristian Rosenvold
  */
+@Deprecated // remove this class after StatelessXmlReporter is capable of parallel test sets processing
 final class MethodsParallelRunListener
     extends ConcurrentRunListener
 {

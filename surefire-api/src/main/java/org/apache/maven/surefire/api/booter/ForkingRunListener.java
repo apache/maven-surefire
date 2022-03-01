@@ -22,11 +22,7 @@ package org.apache.maven.surefire.api.booter;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.report.ReportEntry;
-import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
-
-import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
-import static java.util.Objects.requireNonNull;
 
 /**
  * Encodes the full output of the test run to the "target".
@@ -46,12 +42,10 @@ import static java.util.Objects.requireNonNull;
  * @author Kristian Rosenvold
  */
 public class ForkingRunListener
-    implements TestReportListener
+    implements TestReportListener<TestOutputReportEntry>
 {
     private final MasterProcessChannelEncoder target;
     private final boolean trim;
-
-    private volatile RunMode runMode = NORMAL_RUN;
 
     public ForkingRunListener( MasterProcessChannelEncoder target, boolean trim )
     {
@@ -111,14 +105,6 @@ public class ForkingRunListener
     public void testExecutionSkippedByUser()
     {
         target.stopOnNextTest();
-    }
-
-    @Override
-    public RunMode markAs( RunMode currentRunMode )
-    {
-        RunMode runMode = this.runMode;
-        this.runMode = requireNonNull( currentRunMode );
-        return runMode;
     }
 
     @Override

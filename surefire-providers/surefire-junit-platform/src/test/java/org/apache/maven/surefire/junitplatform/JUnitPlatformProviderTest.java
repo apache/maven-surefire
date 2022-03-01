@@ -26,6 +26,7 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -96,12 +97,13 @@ public class JUnitPlatformProviderTest
     {
         Launcher launcher = LauncherFactory.create();
         JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParametersMock(), launcher );
-        TestReportListener listener = mock( TestReportListener.class );
+        TestReportListener<TestOutputReportEntry> listener = mock( TestReportListener.class );
 
         ArgumentCaptor<ReportEntry> testCaptor = ArgumentCaptor.forClass( ReportEntry.class );
         ArgumentCaptor<TestSetReportEntry> testSetCaptor = ArgumentCaptor.forClass( TestSetReportEntry.class );
 
         RunListenerAdapter adapter = new RunListenerAdapter( listener );
+        adapter.setRunMode( NORMAL_RUN );
         launcher.registerTestExecutionListeners( adapter );
 
         TestsToRun testsToRun = newTestsToRun( FailingBeforeAllJupiterTest.class );
@@ -143,12 +145,13 @@ public class JUnitPlatformProviderTest
     {
         Launcher launcher = LauncherFactory.create();
         JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParametersMock(), launcher );
-        TestReportListener listener = mock( TestReportListener.class );
+        TestReportListener<TestOutputReportEntry> listener = mock( TestReportListener.class );
 
         ArgumentCaptor<ReportEntry> testCaptor = ArgumentCaptor.forClass( ReportEntry.class );
         ArgumentCaptor<TestSetReportEntry> testSetCaptor = ArgumentCaptor.forClass( TestSetReportEntry.class );
 
         RunListenerAdapter adapter = new RunListenerAdapter( listener );
+        adapter.setRunMode( NORMAL_RUN );
         launcher.registerTestExecutionListeners( adapter );
 
         TestsToRun testsToRun = newTestsToRun( FailingWithErrorBeforeAllJupiterTest.class );
@@ -427,9 +430,10 @@ public class JUnitPlatformProviderTest
         ProviderParameters parameters = providerParametersMock();
         JUnitPlatformProvider provider = new JUnitPlatformProvider( parameters, launcher );
 
-        TestReportListener listener = mock( TestReportListener.class );
+        TestReportListener<TestOutputReportEntry> listener = mock( TestReportListener.class );
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
         RunListenerAdapter adapter = new RunListenerAdapter( listener );
+        adapter.setRunMode( NORMAL_RUN );
 
         launcher.registerTestExecutionListeners( adapter );
 
@@ -457,9 +461,10 @@ public class JUnitPlatformProviderTest
 
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
 
-        TestReportListener listener = mock( TestReportListener.class );
+        TestReportListener<TestOutputReportEntry> listener = mock( TestReportListener.class );
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
         RunListenerAdapter adapter = new RunListenerAdapter( listener );
+        adapter.setRunMode( NORMAL_RUN );
 
         launcher.registerTestExecutionListeners( executionListener, adapter );
 
@@ -495,9 +500,10 @@ public class JUnitPlatformProviderTest
 
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
 
-        TestReportListener listener = mock( TestReportListener.class );
+        TestReportListener<TestOutputReportEntry> listener = mock( TestReportListener.class );
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
         RunListenerAdapter adapter = new RunListenerAdapter( listener );
+        adapter.setRunMode( NORMAL_RUN );
 
         launcher.registerTestExecutionListeners( executionListener, adapter );
 
@@ -538,9 +544,10 @@ public class JUnitPlatformProviderTest
 
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
 
-        TestReportListener listener = mock( TestReportListener.class );
+        TestReportListener<TestOutputReportEntry> listener = mock( TestReportListener.class );
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
         RunListenerAdapter adapter = new RunListenerAdapter( listener );
+        adapter.setRunMode( NORMAL_RUN );
 
         launcher.registerTestExecutionListeners( executionListener, adapter );
 
@@ -598,7 +605,7 @@ public class JUnitPlatformProviderTest
     public void allDiscoveredTestsAreInvokedForNullArgument()
                     throws Exception
     {
-        TestReportListener runListener = runListenerMock();
+        TestReportListener<TestOutputReportEntry> runListener = runListenerMock();
         ProviderParameters providerParameters =
                         providerParametersMock( runListener, TestClass1.class, TestClass2.class );
         Launcher launcher = LauncherFactory.create();
@@ -662,7 +669,7 @@ public class JUnitPlatformProviderTest
                     throws Exception
     {
         Launcher launcher = LauncherFactory.create();
-        TestReportListener runListener = runListenerMock();
+        TestReportListener<TestOutputReportEntry> runListener = runListenerMock();
         JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParametersMock( runListener ), launcher );
 
         invokeProvider( provider, VerboseTestClass.class );
@@ -985,7 +992,7 @@ public class JUnitPlatformProviderTest
     }
 
     private static ProviderParameters providerParametersMock(
-            TestReportListener runListener, Class<?>... testClasses )
+            TestReportListener<TestOutputReportEntry> runListener, Class<?>... testClasses )
     {
         TestListResolver testListResolver = new TestListResolver( "" );
         return providerParametersMock( runListener, testListResolver, testClasses );
@@ -997,8 +1004,9 @@ public class JUnitPlatformProviderTest
         return providerParametersMock( runListenerMock(), testListResolver, testClasses );
     }
 
-    private static ProviderParameters providerParametersMock(
-            TestReportListener runListener, TestListResolver testListResolver, Class<?>... testClasses )
+    private static ProviderParameters providerParametersMock( TestReportListener<TestOutputReportEntry> runListener,
+                                                              TestListResolver testListResolver,
+                                                              Class<?>... testClasses )
     {
         TestsToRun testsToRun = newTestsToRun( testClasses );
 
@@ -1023,7 +1031,7 @@ public class JUnitPlatformProviderTest
         return providerParameters;
     }
 
-    private static TestReportListener runListenerMock()
+    private static TestReportListener<TestOutputReportEntry> runListenerMock()
     {
         return mock( TestReportListener.class, withSettings().extraInterfaces( TestOutputReceiver.class ) );
     }

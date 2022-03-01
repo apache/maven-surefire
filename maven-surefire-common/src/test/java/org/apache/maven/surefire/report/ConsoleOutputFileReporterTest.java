@@ -26,14 +26,15 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
-
 import junit.framework.TestCase;
+import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.shared.utils.io.FileUtils;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdOut;
 import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdOutln;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,10 +54,10 @@ public class ConsoleOutputFileReporterTest
         //noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
         TestSetReportEntry reportEntry =
-                new SimpleReportEntry( getClass().getName(), null, getClass().getName(), null );
+                new SimpleReportEntry( NORMAL_RUN, 1L, getClass().getName(), null, getClass().getName(), null );
         ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, null, false, null, "UTF-8" );
         reporter.testSetStarting( reportEntry );
-        reporter.writeTestOutput( stdOut( "some " ) );
+        reporter.writeTestOutput( (TestOutputReportEntry) stdOut( "some " ) );
         reporter.testSetCompleted( reportEntry );
         reporter.close();
 
@@ -80,7 +81,7 @@ public class ConsoleOutputFileReporterTest
         File reportDir = new File( new File( System.getProperty( "user.dir" ), "target" ), "tmp2" );
         String suffixText = "sampleSuffixText";
         TestSetReportEntry reportEntry =
-                new SimpleReportEntry( getClass().getName(), null, getClass().getName(), null );
+                new SimpleReportEntry( NORMAL_RUN, 1L, getClass().getName(), null, getClass().getName(), null );
         ConsoleOutputFileReporter reporter =
                 new ConsoleOutputFileReporter( reportDir, suffixText, false, null, "UTF-8" );
         reporter.testSetStarting( reportEntry );
@@ -108,8 +109,9 @@ public class ConsoleOutputFileReporterTest
     {
         File reportDir = new File( new File( System.getProperty( "user.dir" ), "target" ), "tmp3" );
         ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, null, false, null, "UTF-8" );
-        reporter.writeTestOutput( stdOut( "some text" ) );
-        reporter.testSetCompleted( new SimpleReportEntry( getClass().getName(), null, getClass().getName(), null ) );
+        reporter.writeTestOutput( (TestOutputReportEntry) stdOut( "some text" ) );
+        reporter.testSetCompleted(
+            new SimpleReportEntry( NORMAL_RUN, 1L, getClass().getName(), null, getClass().getName(), null ) );
         reporter.close();
 
         File expectedReportFile = new File( reportDir, "null-output.txt" );
@@ -129,7 +131,8 @@ public class ConsoleOutputFileReporterTest
         File reportDir = new File( new File( System.getProperty( "user.dir" ), "target" ), "tmp4" );
         final ConsoleOutputFileReporter reporter =
                 new ConsoleOutputFileReporter( reportDir, null, false, null, "UTF-8" );
-        reporter.testSetStarting( new SimpleReportEntry( getClass().getName(), null, getClass().getName(), null ) );
+        reporter.testSetStarting(
+            new SimpleReportEntry( NORMAL_RUN, 1L, getClass().getName(), null, getClass().getName(), null ) );
         ExecutorService scheduler = Executors.newFixedThreadPool( 10 );
         final ArrayList<Callable<Void>> jobs = new ArrayList<>();
         for ( int i = 0; i < 10; i++ )
@@ -139,7 +142,7 @@ public class ConsoleOutputFileReporterTest
                 @Override
                 public Void call()
                 {
-                    reporter.writeTestOutput( stdOut( "some text\n" ) );
+                    reporter.writeTestOutput( (TestOutputReportEntry) stdOut( "some text\n" ) );
                     return null;
                 }
             } );

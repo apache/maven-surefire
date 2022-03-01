@@ -19,9 +19,8 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
-
-import org.apache.maven.surefire.api.report.RunListener;
-
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.testng.internal.IResultListener;
 
 /**
@@ -34,7 +33,7 @@ public class ConfigurationAwareTestNGReporter
     implements IResultListener
 {
 
-    public ConfigurationAwareTestNGReporter( RunListener reportManager )
+    public ConfigurationAwareTestNGReporter( TestReportListener<TestOutputReportEntry> reportManager )
     {
         super( reportManager );
     }

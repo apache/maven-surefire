@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junit;
+package org.apache.maven.surefire.report;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,14 +19,14 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.report.RunMode;
 
 /**
- * Describes a single test set
+ * Sets the run mode in a listener, reflects the run mode of testset execution.
  *
+ * @since 3.0.0-M6
  */
-public interface SurefireTestSetExecutor
+public interface RunModeSetter
 {
-    void execute( Class<?> testClass, ClassLoader loader )
-        throws TestSetFailedException;
+    void setRunMode( RunMode runMode );
 }

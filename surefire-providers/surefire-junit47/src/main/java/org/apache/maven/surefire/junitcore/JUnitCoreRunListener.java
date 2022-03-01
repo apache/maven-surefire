@@ -19,15 +19,14 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.api.report.TestReportListener;
+import java.util.Map;
+
+import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4StackTraceWriter;
-import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
-
-import java.util.Map;
 
 import static org.apache.maven.surefire.api.util.internal.TestClassMethodNameUtils.extractClassName;
 
@@ -49,7 +48,7 @@ final class JUnitCoreRunListener
      * @param reporter          the report manager to log testing events to
      * @param classMethodCounts A map of methods
      */
-    JUnitCoreRunListener( TestReportListener reporter, Map<String, TestSet> classMethodCounts )
+    JUnitCoreRunListener( ConcurrentRunListener reporter, Map<String, TestSet> classMethodCounts )
     {
         super( reporter );
         this.classMethodCounts = classMethodCounts;
@@ -107,7 +106,7 @@ final class JUnitCoreRunListener
                 }
                 else
                 {
-                    testSet = new TestSet( testClassName );
+                    testSet = new TestSet( testClassName, getRunMode(), classMethodIndexer );
                     classMethodCounts.put( testClassName, testSet );
                 }
                 testSet.incrementTestMethodCount();

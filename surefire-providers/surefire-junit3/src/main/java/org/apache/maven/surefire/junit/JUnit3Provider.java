@@ -19,13 +19,11 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import org.apache.maven.surefire.api.report.TestReportListener;
-import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
-import org.apache.maven.surefire.common.junit3.JUnit3TestChecker;
+import java.util.Map;
+
 import org.apache.maven.surefire.api.provider.AbstractProvider;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
 import org.apache.maven.surefire.api.report.ReporterFactory;
-import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.api.suite.RunResult;
@@ -33,10 +31,11 @@ import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.RunOrderCalculator;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.TestsToRun;
-
-import java.util.Map;
+import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
+import org.apache.maven.surefire.common.junit3.JUnit3TestChecker;
 
 import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.instantiate;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.isSecurityManagerSupported;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
@@ -76,6 +75,10 @@ public class JUnit3Provider
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException
     {
+        ReporterFactory reporterFactory = providerParameters.getReporterFactory();
+        JUnit3Reporter reporter = new JUnit3Reporter( reporterFactory.createTestReportListener() );
+        reporter.setRunMode( NORMAL_RUN );
+        startCapture( reporter );
 
         final TestsToRun testsToRun;
         if ( forkTestSet instanceof TestsToRun )
@@ -91,18 +94,15 @@ public class JUnit3Provider
             testsToRun = scanClassPath();
         }
 
-        ReporterFactory reporterFactory = providerParameters.getReporterFactory();
         RunResult runResult;
         try
         {
-            TestReportListener reporter = reporterFactory.createTestReportListener();
-            startCapture( reporter );
             Map<String, String> systemProperties = systemProps();
             setSystemManager( System.getProperty( "surefire.security.manager" ) );
 
             for ( Class<?> clazz : testsToRun )
             {
-                SurefireTestSetExecutor surefireTestSetExecutor = createTestSet( clazz );
+                SurefireTestSetExecutor surefireTestSetExecutor = createTestSet( clazz, reporter );
                 executeTestSet( clazz, surefireTestSetExecutor, reporter, systemProperties );
             }
         }
@@ -128,28 +128,30 @@ public class JUnit3Provider
         }
     }
 
-    private SurefireTestSetExecutor createTestSet( Class<?> clazz )
+    private SurefireTestSetExecutor createTestSet( Class<?> clazz, JUnit3Reporter reporter )
     {
         return reflector.isJUnit3Available() && jUnit3TestChecker.accept( clazz )
-            ? new JUnitTestSetExecutor( reflector )
-            : new PojoTestSetExecutor();
+            ? new JUnitTestSetExecutor( reflector, reporter )
+            : new PojoTestSetExecutor( reporter );
     }
 
-    private void executeTestSet( Class<?> testSet, SurefireTestSetExecutor testSetExecutor, RunListener reporter,
+    private void executeTestSet( Class<?> testSet, SurefireTestSetExecutor testSetExecutor, JUnit3Reporter reporter,
                                  Map<String, String> systemProperties )
         throws TestSetFailedException
     {
         String clazz = testSet.getName();
+        long testId = reporter.getClassMethodIndexer().indexClass( clazz );
 
         try
         {
-            TestSetReportEntry started = new SimpleReportEntry( clazz, null, null, null );
+            TestSetReportEntry started = new SimpleReportEntry( NORMAL_RUN, testId, clazz, null, null, null );
             reporter.testSetStarting( started );
-            testSetExecutor.execute( testSet, reporter, testClassLoader );
+            testSetExecutor.execute( testSet, testClassLoader );
         }
         finally
         {
-            TestSetReportEntry completed = new SimpleReportEntry( clazz, null, null, null, systemProperties );
+            TestSetReportEntry completed =
+                new SimpleReportEntry( NORMAL_RUN, testId, clazz, null, null, null, systemProperties );
             reporter.testSetCompleted( completed );
         }
     }

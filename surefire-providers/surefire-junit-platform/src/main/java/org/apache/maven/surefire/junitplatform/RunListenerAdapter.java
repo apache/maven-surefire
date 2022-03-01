@@ -24,7 +24,6 @@ import static java.util.stream.Collectors.joining;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
 import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
-import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
 
 import java.util.Map;
 import java.util.Objects;
@@ -34,13 +33,17 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.apache.maven.surefire.api.report.OutputReportEntry;
+import org.apache.maven.surefire.api.report.RunMode;
+import org.apache.maven.surefire.api.report.TestOutputReceiver;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.report.ClassMethodIndexer;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
+import org.apache.maven.surefire.report.RunModeSetter;
 import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
-import org.apache.maven.surefire.api.report.TestOutputReceiver;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.ClassSource;
@@ -53,19 +56,27 @@ import org.junit.platform.launcher.TestPlan;
  * @since 2.22.0
  */
 final class RunListenerAdapter
-    implements TestExecutionListener, TestOutputReceiver
+    implements TestExecutionListener, TestOutputReceiver<OutputReportEntry>, RunModeSetter
 {
     private static final Pattern COMMA_PATTERN = Pattern.compile( "," );
 
+    private final ClassMethodIndexer classMethodIndexer = new ClassMethodIndexer();
     private final ConcurrentMap<TestIdentifier, Long> testStartTime = new ConcurrentHashMap<>();
     private final ConcurrentMap<TestIdentifier, TestExecutionResult> failures = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, TestIdentifier> runningTestIdentifiersByUniqueId = new ConcurrentHashMap<>();
-    private final TestReportListener runListener;
+    private final TestReportListener<TestOutputReportEntry> runListener;
     private volatile TestPlan testPlan;
+    private volatile RunMode runMode;
 
-    RunListenerAdapter( TestReportListener runListener )
+    RunListenerAdapter( TestReportListener<TestOutputReportEntry> runListener )
     {
         this.runListener = runListener;
+    }
+
+    @Override
+    public void setRunMode( RunMode runMode )
+    {
+        this.runMode = runMode;
     }
 
     @Override
@@ -225,8 +236,8 @@ final class RunListenerAdapter
         }
         StackTraceWriter stw =
                 testExecutionResult == null ? null : toStackTraceWriter( className, methodName, testExecutionResult );
-        return new SimpleReportEntry( className, classText, methodName, methodText,
-                stw, elapsedTime, reason, systemProperties );
+        return new SimpleReportEntry( runMode, classMethodIndexer.indexClassMethod( className, methodName ), className,
+            classText, methodName, methodText, stw, elapsedTime, reason, systemProperties );
     }
 
     private SimpleReportEntry createReportEntry( TestIdentifier testIdentifier )
@@ -300,7 +311,7 @@ final class RunListenerAdapter
                     .map( TestIdentifier::getDisplayName )
                     .collect( joining( " " ) );
 
-            boolean needsSpaceSeparator = !isBlank( parentDisplay ) && !display.startsWith( "[" );
+            boolean needsSpaceSeparator = isNotBlank( parentDisplay ) && !display.startsWith( "[" );
             String methodDisplay = parentDisplay + ( needsSpaceSeparator ? " " : "" ) + display;
 
             String simpleClassNames = COMMA_PATTERN.splitAsStream( methodSource.getMethodParameterTypes() )
@@ -362,8 +373,9 @@ final class RunListenerAdapter
     }
 
     @Override
-    public void writeTestOutput( TestOutputReportEntry reportEntry )
+    public void writeTestOutput( OutputReportEntry reportEntry )
     {
-        runListener.writeTestOutput( new TestOutputReportEntry( reportEntry, /*todo*/ null, 0L ) );
+        Long testRunId = classMethodIndexer.getLocalIndex();
+        runListener.writeTestOutput( new TestOutputReportEntry( reportEntry, runMode, testRunId ) );
     }
 }

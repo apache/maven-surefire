@@ -22,9 +22,9 @@ package org.apache.maven.surefire.junit;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
-import org.apache.maven.surefire.api.report.RunListener;
+
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 
 /**
  * JUnit3 test set
@@ -35,9 +35,12 @@ public final class JUnitTestSetExecutor
 {
     private final JUnit3Reflector reflector;
 
-    public JUnitTestSetExecutor( JUnit3Reflector reflector )
+    private final JUnit3Reporter reporter;
+
+    public JUnitTestSetExecutor( JUnit3Reflector reflector, JUnit3Reporter reporter )
     {
         this.reflector = reflector;
+        this.reporter = reporter;
 
         // ----------------------------------------------------------------------
         // Strategy for executing JUnit tests
@@ -55,7 +58,7 @@ public final class JUnitTestSetExecutor
     }
 
     @Override
-    public void execute( Class<?> testClass, RunListener reporter, ClassLoader loader )
+    public void execute( Class<?> testClass, ClassLoader loader )
         throws TestSetFailedException
     {
         try

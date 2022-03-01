@@ -19,21 +19,20 @@ package org.apache.maven.surefire.common.junit4;
  * under the License.
  */
 
-import org.apache.maven.surefire.api.report.ReportEntry;
-import org.apache.maven.surefire.api.report.RunMode;
-import org.apache.maven.surefire.api.report.TestOutputReportEntry;
-import org.apache.maven.surefire.api.report.TestReportListener;
-import org.apache.maven.surefire.api.report.TestSetReportEntry;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 /**
  * Internal tests use only.
  */
 final class MockReporter
-        implements TestReportListener
+        implements TestReportListener<TestOutputReportEntry>
 {
     private final List<String> events = new ArrayList<>();
 
@@ -94,12 +93,6 @@ final class MockReporter
     @Override
     public void testExecutionSkippedByUser()
     {
-    }
-
-    @Override
-    public RunMode markAs( RunMode currentRunMode )
-    {
-        return null;
     }
 
     public int getTestSucceeded()

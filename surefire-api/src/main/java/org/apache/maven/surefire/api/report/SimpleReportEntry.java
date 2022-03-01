@@ -21,6 +21,7 @@ package org.apache.maven.surefire.api.report;
 
 import org.apache.maven.surefire.api.util.internal.ImmutableMap;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -33,6 +34,10 @@ import java.util.Objects;
 public class SimpleReportEntry
     implements TestSetReportEntry
 {
+    private final RunMode runMode;
+
+    private final Long testRunId;
+
     private final Map<String, String> systemProperties;
 
     private final String source;
@@ -49,37 +54,46 @@ public class SimpleReportEntry
 
     private final String message;
 
-    public SimpleReportEntry( String source, String sourceText, String name, String nameText )
+    public SimpleReportEntry( @Nonnull RunMode runMode, Long testRunId,
+                              String source, String sourceText, String name, String nameText )
     {
-        this( source, sourceText, name, nameText, null, null );
+        this( runMode, testRunId, source, sourceText, name, nameText, null, null );
     }
 
-    public SimpleReportEntry( String source, String sourceText, String name, String nameText,
+    public SimpleReportEntry( @Nonnull RunMode runMode, Long testRunId,
+                              String source, String sourceText, String name, String nameText,
                               Map<String, String> systemProperties )
     {
-        this( source, sourceText, name, nameText, null, null, systemProperties );
+        this( runMode, testRunId, source, sourceText, name, nameText, null, null, systemProperties );
     }
 
-    private SimpleReportEntry( String source, String sourceText, String name, String nameText,
+    private SimpleReportEntry( @Nonnull RunMode runMode, Long testRunId,
+                               String source, String sourceText, String name, String nameText,
                                StackTraceWriter stackTraceWriter )
     {
-        this( source, sourceText, name, nameText, stackTraceWriter, null );
+        this( runMode, testRunId, source, sourceText, name, nameText, stackTraceWriter, null );
     }
 
-    public SimpleReportEntry( String source, String sourceText, String name, String nameText, Integer elapsed )
+    public SimpleReportEntry( @Nonnull RunMode runMode, Long testRunId,
+                              String source, String sourceText, String name, String nameText, Integer elapsed )
     {
-        this( source, sourceText, name, nameText, null, elapsed );
+        this( runMode, testRunId, source, sourceText, name, nameText, null, elapsed );
     }
 
-    public SimpleReportEntry( String source, String sourceText, String name, String nameText, String message )
+    public SimpleReportEntry( @Nonnull RunMode runMode, Long testRunId,
+                              String source, String sourceText, String name, String nameText, String message )
     {
-        this( source, sourceText, name, nameText, null, null, message, Collections.<String, String>emptyMap() );
+        this( runMode, testRunId,
+            source, sourceText, name, nameText, null, null, message, Collections.<String, String>emptyMap() );
     }
 
-    public SimpleReportEntry( String source, String sourceText, String name, String nameText,
-                                 StackTraceWriter stackTraceWriter, Integer elapsed, String message,
-                                 Map<String, String> systemProperties )
+    public SimpleReportEntry( @Nonnull RunMode runMode, Long testRunId,
+                              String source, String sourceText, String name, String nameText,
+                              StackTraceWriter stackTraceWriter, Integer elapsed, String message,
+                              Map<String, String> systemProperties )
     {
+        this.runMode = runMode;
+        this.testRunId = testRunId;
         this.source = source;
         this.sourceText = sourceText;
         this.name = name;
@@ -90,35 +104,39 @@ public class SimpleReportEntry
         this.systemProperties = new ImmutableMap<>( systemProperties );
     }
 
-    public SimpleReportEntry( String source, String sourceText, String name, String nameText,
-                              StackTraceWriter stackTraceWriter, Integer elapsed )
+    public SimpleReportEntry( @Nonnull RunMode runMode, Long testRunId,
+                               String source, String sourceText, String name, String nameText,
+                               StackTraceWriter stackTraceWriter, Integer elapsed )
     {
-        this( source, sourceText, name, nameText, stackTraceWriter, elapsed, Collections.<String, String>emptyMap() );
+        this( runMode, testRunId,
+            source, sourceText, name, nameText, stackTraceWriter, elapsed, Collections.<String, String>emptyMap() );
     }
 
-    public SimpleReportEntry( String source, String sourceText, String name, String nameText,
+    public SimpleReportEntry( @Nonnull RunMode runMode, Long testRunId,
+                              String source, String sourceText, String name, String nameText,
                               StackTraceWriter stackTraceWriter, Integer elapsed, Map<String, String> systemProperties )
     {
-        this( source, sourceText, name, nameText,
-                stackTraceWriter, elapsed, safeGetMessage( stackTraceWriter ), systemProperties );
+        this( runMode, testRunId, source, sourceText, name, nameText,
+            stackTraceWriter, elapsed, safeGetMessage( stackTraceWriter ), systemProperties );
     }
 
-    public static SimpleReportEntry assumption( String source, String sourceText, String name, String nameText,
-                                                String message )
+    public static SimpleReportEntry assumption( RunMode runMode, Long testRunId, String source,
+                                                String sourceText, String name, String nameText, String message )
     {
-        return new SimpleReportEntry( source, sourceText, name, nameText, message );
+        return new SimpleReportEntry( runMode, testRunId, source, sourceText, name, nameText, message );
     }
 
-    public static SimpleReportEntry ignored( String source, String sourceText, String name, String nameText,
-                                             String message )
+    public static SimpleReportEntry ignored( RunMode runMode, Long testRunId, String source,
+                                             String sourceText, String name, String nameText, String message )
     {
-        return new SimpleReportEntry( source, sourceText, name, nameText, message );
+        return new SimpleReportEntry( runMode, testRunId, source, sourceText, name, nameText, message );
     }
 
-    public static SimpleReportEntry withException( String source, String sourceText, String name, String nameText,
+    public static SimpleReportEntry withException( RunMode runMode, Long testRunId, String source,
+                                                   String sourceText, String name, String nameText,
                                                    StackTraceWriter stackTraceWriter )
     {
-        return new SimpleReportEntry( source, sourceText, name, nameText, stackTraceWriter );
+        return new SimpleReportEntry( runMode, testRunId, source, sourceText, name, nameText, stackTraceWriter );
     }
 
     private static String safeGetMessage( StackTraceWriter stackTraceWriter )
@@ -185,9 +203,10 @@ public class SimpleReportEntry
     @Override
     public String toString()
     {
-        return "ReportEntry{" + "source='" + source + "', sourceText='" + sourceText
-                + "', name='" + name + "', nameText='" + nameText + "', stackTraceWriter='"
-                + stackTraceWriter + "', elapsed='" + elapsed + "', message='" + message + "'}";
+        return "ReportEntry{" + "runMode='" + runMode + "', testRunId='" + testRunId
+            + "', source='" + source + "', sourceText='" + sourceText
+            + "', name='" + name + "', nameText='" + nameText + "', stackTraceWriter='" + stackTraceWriter
+            + "', elapsed='" + elapsed + "', message='" + message + "'}";
     }
 
     @Override
@@ -209,7 +228,8 @@ public class SimpleReportEntry
         }
 
         SimpleReportEntry that = (SimpleReportEntry) o;
-        return isSourceEqual( that ) && isSourceTextEqual( that )
+        return isRunModeEqual( that ) && isTestRunIdEqual( that )
+                && isSourceEqual( that ) && isSourceTextEqual( that )
                 && isNameEqual( that ) && isNameTextEqual( that )
                 && isStackEqual( that )
                 && isElapsedTimeEqual( that )
@@ -221,6 +241,8 @@ public class SimpleReportEntry
     public int hashCode()
     {
         int result = Objects.hashCode( getSourceName() );
+        result = 31 * result + Objects.hashCode( getRunMode() );
+        result = 31 * result + Objects.hashCode( getTestRunId() );
         result = 31 * result + Objects.hashCode( getSourceText() );
         result = 31 * result + Objects.hashCode( getName() );
         result = 31 * result + Objects.hashCode( getNameText() );
@@ -244,9 +266,32 @@ public class SimpleReportEntry
     }
 
     @Override
+    @Nonnull
+    public final RunMode getRunMode()
+    {
+        return runMode;
+    }
+
+    @Override
+    public final Long getTestRunId()
+    {
+        return testRunId;
+    }
+
+    @Override
     public Map<String, String> getSystemProperties()
     {
         return systemProperties;
+    }
+
+    private boolean isRunModeEqual( SimpleReportEntry en )
+    {
+        return Objects.equals( getRunMode(), en.getRunMode() );
+    }
+
+    private boolean isTestRunIdEqual( SimpleReportEntry en )
+    {
+        return Objects.equals( getTestRunId(), en.getTestRunId() );
     }
 
     private boolean isElapsedTimeEqual( SimpleReportEntry en )

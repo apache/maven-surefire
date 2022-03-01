@@ -36,6 +36,7 @@ import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 import org.apache.maven.surefire.booter.spi.EventChannelEncoder;
@@ -530,7 +531,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.testOutput( stdOut( "msg" ) );
+            encoder.testOutput( (TestOutputReportEntry) stdOut( "msg" ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
@@ -569,7 +570,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.testOutput( stdOut( "" ) );
+            encoder.testOutput( (TestOutputReportEntry) stdOut( "" ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
@@ -608,7 +609,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.testOutput( stdOut( null ) );
+            encoder.testOutput( (TestOutputReportEntry) stdOut( null ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );

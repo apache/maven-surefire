@@ -34,8 +34,9 @@ import java.util.concurrent.atomic.AtomicReference;
  * Notes about thread safety: This instance is serially confined to 1-3 threads (construction, test-run, reporting),
  * without any actual parallel access
  */
+@Deprecated // remove this class after StatelessXmlReporter is capable of parallel test sets processing
 class TestMethod
-    implements TestOutputReceiver
+    implements TestOutputReceiver<TestOutputReportEntry>
 {
     private static final InheritableThreadLocal<TestMethod> TEST_METHOD = new InheritableThreadLocal<>();
 
@@ -113,7 +114,7 @@ class TestMethod
         return endTime;
     }
 
-    void replay( TestReportListener reporter )
+    void replay( TestReportListener<TestOutputReportEntry> reporter )
     {
         if ( testIgnored != null )
         {
@@ -150,8 +151,9 @@ class TestMethod
 
     private ReportEntry createReportEntry( ReportEntry reportEntry )
     {
-        return new CategorizedReportEntry( reportEntry.getSourceName(), reportEntry.getName(), reportEntry.getGroup(),
-                                           reportEntry.getStackTraceWriter(), getElapsed(), reportEntry.getMessage() );
+        return new CategorizedReportEntry( reportEntry.getRunMode(), reportEntry.getTestRunId(),
+            reportEntry.getSourceName(), reportEntry.getName(), reportEntry.getGroup(),
+            reportEntry.getStackTraceWriter(), getElapsed(), reportEntry.getMessage() );
     }
 
     void attachToThread()

@@ -22,8 +22,10 @@ package org.apache.maven.surefire.api.report;
 /**
  * A receiver of stdout/sterr output from running tests. This receiver knows how to associate
  * the output with a given testset.
+ *
+ * @param <T> usually {@link TestOutputReportEntry} or {@link OutputReportEntry}
  */
-public interface TestOutputReceiver
+public interface TestOutputReceiver<T extends OutputReportEntry>
 {
 
     /**
@@ -31,6 +33,6 @@ public interface TestOutputReceiver
      *
      * @param reportEntry wraps test output with descriptive information of the output
      */
-    void writeTestOutput( TestOutputReportEntry reportEntry );
+    void writeTestOutput( T reportEntry );
 
 }

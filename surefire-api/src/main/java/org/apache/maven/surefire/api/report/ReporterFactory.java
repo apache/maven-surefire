@@ -33,7 +33,7 @@ public interface ReporterFactory
      *
      * @return new reporter listener instance
      */
-    TestReportListener createTestReportListener();
+    TestReportListener<TestOutputReportEntry> createTestReportListener();
 
     /**
      * Closes the factory, freeing resources allocated in the factory.
