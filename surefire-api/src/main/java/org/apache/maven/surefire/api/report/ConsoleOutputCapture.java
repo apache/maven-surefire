@@ -38,7 +38,7 @@ import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdOutl
  */
 public final class ConsoleOutputCapture
 {
-    public static void startCapture( TestOutputReceiver target )
+    public static void startCapture( TestOutputReceiver<OutputReportEntry> target )
     {
         setOut( new ForwardingPrintStream( true, target ) );
         setErr( new ForwardingPrintStream( false, target ) );
@@ -48,9 +48,9 @@ public final class ConsoleOutputCapture
         extends PrintStream
     {
         private final boolean isStdout;
-        private final TestOutputReceiver target;
+        private final TestOutputReceiver<OutputReportEntry> target;
 
-        ForwardingPrintStream( boolean stdout, TestOutputReceiver target )
+        ForwardingPrintStream( boolean stdout, TestOutputReceiver<OutputReportEntry> target )
         {
             super( new NullOutputStream() );
             isStdout = stdout;
@@ -64,7 +64,6 @@ public final class ConsoleOutputCapture
             target.writeTestOutput( isStdout ? stdOut( log ) : stdErr( log ) );
         }
 
-        @Override
         public void write( @Nonnull byte[] b )
             throws IOException
         {

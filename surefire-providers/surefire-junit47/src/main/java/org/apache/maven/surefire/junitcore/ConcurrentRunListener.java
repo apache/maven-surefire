@@ -24,12 +24,12 @@ import java.util.Map;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.ReporterFactory;
-import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
+import static java.lang.ThreadLocal.withInitial;
 import static org.apache.maven.surefire.junitcore.TestMethod.getThreadTestMethod;
 
 /**
@@ -43,12 +43,13 @@ import static org.apache.maven.surefire.junitcore.TestMethod.getThreadTestMethod
  * @see org.apache.maven.surefire.junitcore.JUnitCoreRunListener for details about regular junit run listening
  * @author Kristian Rosenvold
  */
+@Deprecated // remove this class after StatelessXmlReporter is capable of parallel test sets processing
 abstract class ConcurrentRunListener
-    implements TestReportListener
+    implements TestReportListener<TestOutputReportEntry>
 {
     private final Map<String, TestSet> classMethodCounts;
 
-    private final ThreadLocal<TestReportListener> reporterManagerThreadLocal;
+    private final ThreadLocal<TestReportListener<TestOutputReportEntry>> reporterManagerThreadLocal;
 
     private final boolean reportImmediately;
 
@@ -60,20 +61,20 @@ abstract class ConcurrentRunListener
         this.reportImmediately = reportImmediately;
         this.classMethodCounts = classMethodCounts;
         logger = reporterFactory.createTestReportListener();
-        reporterManagerThreadLocal = ThreadLocal.withInitial( reporterFactory::createTestReportListener );
+        reporterManagerThreadLocal = withInitial( reporterFactory::createTestReportListener );
     }
 
     @Override
-    public final void testSetStarting( TestSetReportEntry description )
+    public void testSetStarting( TestSetReportEntry description )
     {
     }
 
     @Override
-    public final void testSetCompleted( TestSetReportEntry result )
+    public void testSetCompleted( TestSetReportEntry result )
     {
         try
         {
-            final TestReportListener reporterManager = getRunListener();
+            TestReportListener<TestOutputReportEntry> reporterManager = getRunListener();
             for ( TestSet testSet : classMethodCounts.values() )
             {
                 testSet.replay( reporterManager );
@@ -86,7 +87,7 @@ abstract class ConcurrentRunListener
     }
 
     @Override
-    public final void testFailed( ReportEntry failure )
+    public void testFailed( ReportEntry failure )
     {
         final TestMethod testMethod = getOrCreateThreadAttachedTestMethod( failure );
         if ( testMethod != null )
@@ -97,7 +98,7 @@ abstract class ConcurrentRunListener
     }
 
     @Override
-    public final void testError( ReportEntry failure )
+    public void testError( ReportEntry failure )
     {
         final TestMethod testMethod = getOrCreateThreadAttachedTestMethod( failure );
         if ( testMethod != null )
@@ -108,7 +109,7 @@ abstract class ConcurrentRunListener
     }
 
     @Override
-    public final void testSkipped( ReportEntry description )
+    public void testSkipped( ReportEntry description )
     {
         TestSet testSet = getTestSet( description );
         TestMethod testMethod = testSet.createThreadAttachedTestMethod( description );
@@ -118,19 +119,14 @@ abstract class ConcurrentRunListener
     }
 
     @Override
-    public final void testExecutionSkippedByUser()
+    public void testExecutionSkippedByUser()
     {
         // cannot guarantee proper call to all listeners
         getRunListener().testExecutionSkippedByUser();
     }
 
-    public final RunMode markAs( RunMode currentRunMode )
-    {
-        return reporterManagerThreadLocal.get().markAs( currentRunMode );
-    }
-
     @Override
-    public final void testAssumptionFailure( ReportEntry failure )
+    public void testAssumptionFailure( ReportEntry failure )
     {
         final TestMethod testMethod = getOrCreateThreadAttachedTestMethod( failure );
         if ( testMethod != null )
@@ -141,7 +137,7 @@ abstract class ConcurrentRunListener
     }
 
     @Override
-    public final void testStarting( ReportEntry description )
+    public void testStarting( ReportEntry description )
     {
         TestSet testSet = getTestSet( description );
         testSet.createThreadAttachedTestMethod( description );
@@ -151,7 +147,7 @@ abstract class ConcurrentRunListener
     }
 
     @Override
-    public final void testSucceeded( ReportEntry report )
+    public void testSucceeded( ReportEntry report )
     {
         TestMethod testMethod = getThreadTestMethod();
         if ( testMethod != null )
@@ -193,14 +189,14 @@ abstract class ConcurrentRunListener
         return classMethodCounts.get( description.getSourceName() );
     }
 
-    final TestReportListener getRunListener()
+    final TestReportListener<TestOutputReportEntry> getRunListener()
     {
         return reporterManagerThreadLocal.get();
     }
 
-    public static TestReportListener createInstance( Map<String, TestSet> classMethodCounts,
-                                                     ReporterFactory reporterFactory,
-                                                     boolean parallelClasses, boolean parallelBoth )
+    public static ConcurrentRunListener createInstance( Map<String, TestSet> classMethodCounts,
+                                                        ReporterFactory reporterFactory,
+                                                        boolean parallelClasses, boolean parallelBoth )
     {
         return parallelClasses
             ? new ClassesParallelRunListener( classMethodCounts, reporterFactory )
@@ -209,7 +205,7 @@ abstract class ConcurrentRunListener
 
 
     @Override
-    public final void writeTestOutput( TestOutputReportEntry reportEntry )
+    public void writeTestOutput( TestOutputReportEntry reportEntry )
     {
         TestMethod threadTestMethod = getThreadTestMethod();
         if ( threadTestMethod != null )
@@ -225,61 +221,61 @@ abstract class ConcurrentRunListener
     }
 
     @Override
-    public final boolean isDebugEnabled()
+    public boolean isDebugEnabled()
     {
         return logger.isDebugEnabled();
     }
 
     @Override
-    public final void debug( String message )
+    public void debug( String message )
     {
         logger.debug( message );
     }
 
     @Override
-    public final boolean isInfoEnabled()
+    public boolean isInfoEnabled()
     {
         return logger.isInfoEnabled();
     }
 
     @Override
-    public final void info( String message )
+    public void info( String message )
     {
         logger.info( message );
     }
 
     @Override
-    public final boolean isWarnEnabled()
+    public boolean isWarnEnabled()
     {
         return logger.isWarnEnabled();
     }
 
     @Override
-    public final void warning( String message )
+    public void warning( String message )
     {
         logger.warning( message );
     }
 
     @Override
-    public final boolean isErrorEnabled()
+    public boolean isErrorEnabled()
     {
         return logger.isErrorEnabled();
     }
 
     @Override
-    public final void error( String message )
+    public void error( String message )
     {
         logger.error( message );
     }
 
     @Override
-    public final void error( String message, Throwable t )
+    public void error( String message, Throwable t )
     {
         logger.error( message, t );
     }
 
     @Override
-    public final void error( Throwable t )
+    public void error( Throwable t )
     {
         logger.error( t );
     }

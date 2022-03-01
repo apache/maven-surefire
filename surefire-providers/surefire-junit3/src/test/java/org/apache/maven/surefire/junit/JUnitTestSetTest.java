@@ -22,11 +22,12 @@ package org.apache.maven.surefire.junit;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.RunListener;
-import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 import java.security.AccessControlException;
@@ -50,9 +51,10 @@ public class JUnitTestSetTest
     {
         ClassLoader testClassLoader = this.getClass().getClassLoader();
         JUnit3Reflector reflector = new JUnit3Reflector( testClassLoader );
-        JUnitTestSetExecutor testSet = new JUnitTestSetExecutor( reflector );
         SuccessListener listener = new SuccessListener();
-        testSet.execute( Suite.class, listener, testClassLoader );
+        JUnit3Reporter reporter = new JUnit3Reporter( listener );
+        JUnitTestSetExecutor testSet = new JUnitTestSetExecutor( reflector, reporter );
+        testSet.execute( Suite.class, testClassLoader );
         List<ReportEntry> succeededTests = listener.getSucceededTests();
         assertEquals( 1, succeededTests.size() );
         assertEquals( "org.apache.maven.surefire.junit.JUnitTestSetTest$AlwaysSucceeds",
@@ -128,7 +130,7 @@ public class JUnitTestSetTest
      *
      */
     public static class SuccessListener
-        implements RunListener
+        implements RunListener, TestReportListener<TestOutputReportEntry>
     {
 
         private List<ReportEntry> succeededTests = new ArrayList<>();
@@ -183,21 +185,76 @@ public class JUnitTestSetTest
         {
         }
 
-        public RunMode markAs( RunMode currentRunMode )
-        {
-            return RunMode.NORMAL_RUN;
-        }
-
-        public void testSkippedByUser( ReportEntry report )
-        {
-            testSkipped( report );
-        }
-
         List<ReportEntry> getSucceededTests()
         {
             return succeededTests;
         }
 
+        @Override
+        public void writeTestOutput( TestOutputReportEntry reportEntry )
+        {
+
+        }
+
+        @Override
+        public boolean isDebugEnabled()
+        {
+            return false;
+        }
+
+        @Override
+        public void debug( String message )
+        {
+
+        }
+
+        @Override
+        public boolean isInfoEnabled()
+        {
+            return false;
+        }
+
+        @Override
+        public void info( String message )
+        {
+
+        }
+
+        @Override
+        public boolean isWarnEnabled()
+        {
+            return false;
+        }
+
+        @Override
+        public void warning( String message )
+        {
+
+        }
+
+        @Override
+        public boolean isErrorEnabled()
+        {
+            return false;
+        }
+
+        @Override
+        public void error( String message )
+        {
+
+        }
+
+        @Override
+        public void error( String message, Throwable t )
+        {
+
+        }
+
+        @Override
+        public void error( Throwable t )
+        {
+
+        }
     }
 
     /**

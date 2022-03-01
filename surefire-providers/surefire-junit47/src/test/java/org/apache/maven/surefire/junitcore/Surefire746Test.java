@@ -49,7 +49,6 @@ import org.apache.maven.surefire.api.booter.BaseProviderFactory;
 import org.apache.maven.surefire.api.booter.ProviderParameterNames;
 import org.apache.maven.surefire.api.report.ReporterConfiguration;
 import org.apache.maven.surefire.api.report.ReporterFactory;
-import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.TestsToRun;
@@ -121,7 +120,7 @@ public class Surefire746Test
 
         final Map<String, TestSet> testSetMap = new ConcurrentHashMap<>();
 
-        TestReportListener listener = createInstance( testSetMap, reporterFactory, false, false );
+        ConcurrentRunListener listener = createInstance( testSetMap, reporterFactory, false, false );
 
         TestsToRun testsToRun = new TestsToRun( Collections.<Class<?>>singleton( TestClassTest.class ) );
 

@@ -19,15 +19,16 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.api.report.TestOutputReceiver;
-import org.apache.maven.surefire.api.report.TestOutputReportEntry;
-
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.apache.maven.surefire.api.report.TestOutputReceiver;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 
 /**
  * A stream-like object that preserves ordering between stdout/stderr
  */
+@Deprecated // remove this class after StatelessXmlReporter is capable of parallel test sets processing
 final class LogicalStream
 {
     private final Queue<TestOutputReportEntry> output = new ConcurrentLinkedQueue<>();
@@ -37,7 +38,7 @@ final class LogicalStream
         output.add( reportEntry );
     }
 
-    void writeDetails( TestOutputReceiver outputReceiver )
+    void writeDetails( TestOutputReceiver<TestOutputReportEntry> outputReceiver )
     {
         for ( TestOutputReportEntry entry = output.poll(); entry != null; entry = output.poll() )
         {

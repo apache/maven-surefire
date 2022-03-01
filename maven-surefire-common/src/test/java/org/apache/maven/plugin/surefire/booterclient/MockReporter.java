@@ -23,7 +23,6 @@ import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
-import org.apache.maven.surefire.api.report.RunMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Internal tests use only.
  */
 public class MockReporter
-        implements TestReportListener
+        implements TestReportListener<TestOutputReportEntry>
 {
     private final List<String> events = new ArrayList<>();
 
@@ -129,17 +128,6 @@ public class MockReporter
     @Override
     public void testExecutionSkippedByUser()
     {
-    }
-
-    @Override
-    public RunMode markAs( RunMode currentRunMode )
-    {
-        return null;
-    }
-
-    public void testSkippedByUser( ReportEntry report )
-    {
-        testSkipped( report );
     }
 
     public List<String> getEvents()

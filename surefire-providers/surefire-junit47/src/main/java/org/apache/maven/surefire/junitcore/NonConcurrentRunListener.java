@@ -40,6 +40,7 @@ import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProp
  * limitation a la Junit4 provider. Specifically, we can redirect properly the output even if we don't have class
  * demarcation in JUnit. It works when if there is a JVM instance per test run, i.e. with forkMode=always or perthread.
  */
+@Deprecated // remove this class after StatelessXmlReporter is capable of parallel test sets processing
 class NonConcurrentRunListener
     extends JUnit4RunListener
 {
@@ -47,28 +48,18 @@ class NonConcurrentRunListener
 
     private Description lastFinishedDescription;
 
-    NonConcurrentRunListener( TestReportListener reporter )
+    NonConcurrentRunListener( TestReportListener<TestOutputReportEntry> reporter )
     {
         super( reporter );
-    }
-
-    public synchronized void writeTestOutput( TestOutputReportEntry reportEntry )
-    {
-        // We can write immediately: no parallelism and a single class.
-        reporter.writeTestOutput( new TestOutputReportEntry( reportEntry, /*todo*/ null, 0L ) );
-    }
-
-    @Override
-    protected SimpleReportEntry createReportEntry( Description description )
-    {
-        ClassMethod classMethod = toClassMethod( description );
-        return new SimpleReportEntry( classMethod.getClazz(), null, classMethod.getMethod(), null );
     }
 
     private TestSetReportEntry createReportEntryForTestSet( Description description, Map<String, String> systemProps )
     {
         ClassMethod classMethod = toClassMethod( description );
-        return new SimpleReportEntry( classMethod.getClazz(), null, null, null, systemProps );
+        String className = classMethod.getClazz();
+        String methodName = classMethod.getMethod();
+        long testRunId = classMethodIndexer.indexClassMethod( className, methodName );
+        return new SimpleReportEntry( getRunMode(), testRunId, className, null, null, null, systemProps );
     }
 
     private TestSetReportEntry createTestSetReportEntryStarted( Description description )
@@ -96,8 +87,7 @@ class NonConcurrentRunListener
             currentTestSetDescription = description;
             if ( lastFinishedDescription != null )
             {
-                TestSetReportEntry reportEntry = createTestSetReportEntryFinished( lastFinishedDescription );
-                reporter.testSetCompleted( reportEntry );
+                reporter.testSetCompleted( createTestSetReportEntryFinished( lastFinishedDescription ) );
                 lastFinishedDescription = null;
             }
             reporter.testSetStarting( createTestSetReportEntryStarted( description ) );
@@ -154,6 +144,8 @@ class NonConcurrentRunListener
     @Override
     public void testAssumptionFailure( Failure failure )
     {
+        finishLastTestSetIfNecessary( failure.getDescription() );
+
         super.testAssumptionFailure( failure );
         lastFinishedDescription = failure.getDescription();
     }

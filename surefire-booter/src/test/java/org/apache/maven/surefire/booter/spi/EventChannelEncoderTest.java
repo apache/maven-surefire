@@ -23,6 +23,7 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLoggerUtils;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 import org.junit.Test;
@@ -928,7 +929,7 @@ public class EventChannelEncoderTest
     public void testSendOpcode()
     {
         Channel channel = new Channel();
-        new EventChannelEncoder( channel ).testOutput( stdOut( "msg" ) );
+        new EventChannelEncoder( channel ).testOutput( (TestOutputReportEntry) stdOut( "msg" ) );
         assertThat( toString( channel.src ) )
                 .isEqualTo( ":maven-surefire-event:" + (char) 14 + ":std-out-stream:" + (char) 10 + ":normal-run:"
                     + (char) 5 + ":UTF-8:\u0000\u0000\u0000\u0003:msg:" );
@@ -1114,7 +1115,7 @@ public class EventChannelEncoderTest
         WritableBufferedByteChannel channel = newBufferedChannel( out );
         EventChannelEncoder encoder = new EventChannelEncoder( channel );
 
-        encoder.testOutput( stdOut( "msg" ) );
+        encoder.testOutput( (TestOutputReportEntry) stdOut( "msg" ) );
         channel.close();
 
         String expected = ":maven-surefire-event:\u000e:std-out-stream:"
@@ -1219,7 +1220,7 @@ public class EventChannelEncoderTest
         Thread.currentThread().interrupt();
         try
         {
-            encoder.testOutput( stdOut( "msg" ) );
+            encoder.testOutput( (TestOutputReportEntry) stdOut( "msg" ) );
             channel.close();
         }
         finally

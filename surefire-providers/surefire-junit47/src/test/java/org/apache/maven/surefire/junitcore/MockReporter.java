@@ -22,17 +22,20 @@ package org.apache.maven.surefire.junitcore;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.ReporterFactory;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
-import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
-import org.apache.maven.surefire.api.report.RunMode;
+
+import static java.util.Collections.emptyMap;
+import static org.mockito.Mockito.mock;
 
 /**
  * Internal tests use only.
  */
 final class MockReporter
-        implements TestReportListener
+        extends ConcurrentRunListener
 {
     private final List<String> events = new ArrayList<>();
 
@@ -56,6 +59,7 @@ final class MockReporter
 
     MockReporter()
     {
+        super( mock( ReporterFactory.class ), false, emptyMap() );
     }
 
     @Override
@@ -84,6 +88,12 @@ final class MockReporter
     }
 
     @Override
+    protected void checkIfTestSetCanBeReported( TestSet testSetForTest )
+    {
+
+    }
+
+    @Override
     public void testSkipped( ReportEntry report )
     {
         events.add( TEST_SKIPPED );
@@ -93,17 +103,6 @@ final class MockReporter
     @Override
     public void testExecutionSkippedByUser()
     {
-    }
-
-    @Override
-    public RunMode markAs( RunMode currentRunMode )
-    {
-        return null;
-    }
-
-    public void testSkippedByUser( ReportEntry report )
-    {
-        testSkipped( report );
     }
 
     public int getTestSucceeded()

@@ -31,6 +31,7 @@ import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 
 import static java.util.Objects.requireNonNull;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.report.SimpleReportEntry.withException;
 import static org.apache.maven.surefire.api.util.internal.TestClassMethodNameUtils.extractClassName;
 import static org.apache.maven.surefire.api.util.internal.TestClassMethodNameUtils.extractMethodName;
@@ -53,7 +54,7 @@ public class TestListenerInvocationHandler
 
     private final Set<FailedTest> failedTestsSet = new HashSet<>();
 
-    private final RunListener reporter;
+    private final JUnit3Reporter reporter;
 
     private static final Class<?>[] EMPTY_CLASS_ARRAY = { };
 
@@ -106,7 +107,7 @@ public class TestListenerInvocationHandler
         }
     }
 
-    public TestListenerInvocationHandler( RunListener reporter )
+    public TestListenerInvocationHandler( JUnit3Reporter reporter )
     {
         this.reporter = requireNonNull( reporter, "reporter is null" );
     }
@@ -197,19 +198,23 @@ public class TestListenerInvocationHandler
         }
     }
 
-    private static ReportEntry toReportEntryWithException( Object[] args )
+    private ReportEntry toReportEntryWithException( Object[] args )
             throws ReflectiveOperationException
     {
         String description = args[0].toString();
         String className = extractClassName( description );
         String methodName = extractMethodName( description );
         StackTraceWriter stackTraceWriter = toStackTraceWriter( args );
-        return withException( className, null, methodName, null, stackTraceWriter );
+        long testRunId = reporter.getClassMethodIndexer().indexClassMethod( className, methodName );
+        return withException( NORMAL_RUN, testRunId, className, null, methodName, null, stackTraceWriter );
     }
 
-    private static SimpleReportEntry createStartEndReportEntry( Object[] args )
+    private SimpleReportEntry createStartEndReportEntry( Object[] args )
     {
         String description = args[0].toString();
-        return new SimpleReportEntry( extractClassName( description ), null, extractMethodName( description ), null );
+        String className = extractClassName( description );
+        String methodName = extractMethodName( description );
+        long testRunId = reporter.getClassMethodIndexer().indexClassMethod( className, methodName );
+        return new SimpleReportEntry( NORMAL_RUN, testRunId, className, null, methodName, null );
     }
 }

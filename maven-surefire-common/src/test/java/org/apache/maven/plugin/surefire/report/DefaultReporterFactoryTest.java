@@ -33,6 +33,7 @@ import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.shared.utils.logging.MessageUtils;
 import org.apache.maven.surefire.report.RunStatistics;
@@ -287,7 +288,7 @@ public class DefaultReporterFactoryTest
 
         DefaultReporterFactory factory = new DefaultReporterFactory( reportConfig, reporter );
 
-        TestReportListener runListener = factory.createTestReportListener();
+        TestReportListener<TestOutputReportEntry> runListener = factory.createTestReportListener();
 
         assertTrue( runListener.isDebugEnabled() );
         assertTrue( runListener.isInfoEnabled() );

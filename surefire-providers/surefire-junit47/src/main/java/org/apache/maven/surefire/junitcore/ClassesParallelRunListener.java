@@ -19,13 +19,14 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.api.report.ReporterFactory;
-
 import java.util.Map;
+
+import org.apache.maven.surefire.api.report.ReporterFactory;
 
 /**
  * @author Kristian Rosenvold
  */
+@Deprecated // remove this class after StatelessXmlReporter is capable of parallel test sets processing
 final class ClassesParallelRunListener
     extends ConcurrentRunListener
 {

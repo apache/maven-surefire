@@ -28,6 +28,7 @@ import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SKIPPED;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 
 /**
  * @author Kristian Rosenvold
@@ -39,7 +40,8 @@ public class WrappedReportEntryTest
     {
         String className = "surefire.testcase.JunitParamsTest";
         WrappedReportEntry wr =
-            new WrappedReportEntry( new SimpleReportEntry( className, null, null, null ), SUCCESS, 12, null, null );
+            new WrappedReportEntry( new SimpleReportEntry( NORMAL_RUN, 1L, className, null, null, null ),
+                SUCCESS, 12, null, null );
         final String reportName = wr.getReportSourceName();
         assertEquals( "surefire.testcase.JunitParamsTest.null", wr.getClassMethodName() );
         assertEquals( "surefire.testcase.JunitParamsTest", reportName );
@@ -50,7 +52,8 @@ public class WrappedReportEntryTest
 
     public void testRegular()
     {
-        ReportEntry reportEntry = new SimpleReportEntry( "surefire.testcase.JunitParamsTest", null, "testSum", null );
+        ReportEntry reportEntry =
+            new SimpleReportEntry( NORMAL_RUN, 1L, "surefire.testcase.JunitParamsTest", null, "testSum", null );
         WrappedReportEntry wr = new WrappedReportEntry( reportEntry, null, 12, null, null );
         assertEquals( "surefire.testcase.JunitParamsTest.testSum", wr.getClassMethodName() );
         assertEquals( "surefire.testcase.JunitParamsTest", wr.getReportSourceName() );
@@ -69,8 +72,8 @@ public class WrappedReportEntryTest
 
     public void testDisplayNames()
     {
-        ReportEntry reportEntry =
-                new SimpleReportEntry( "surefire.testcase.JunitParamsTest", "dn1", "testSum", "dn2", "exception" );
+        ReportEntry reportEntry = new SimpleReportEntry( NORMAL_RUN, 0L,
+            "surefire.testcase.JunitParamsTest", "dn1", "testSum", "dn2", "exception" );
         WrappedReportEntry wr = new WrappedReportEntry( reportEntry, ERROR, 12, null, null );
         assertEquals( "surefire.testcase.JunitParamsTest.testSum", wr.getClassMethodName() );
         assertEquals( "dn1", wr.getReportSourceName() );
@@ -90,7 +93,7 @@ public class WrappedReportEntryTest
 
     public void testEqualDisplayNames()
     {
-        ReportEntry reportEntry = new SimpleReportEntry( "surefire.testcase.JunitParamsTest",
+        ReportEntry reportEntry = new SimpleReportEntry( NORMAL_RUN, 1L, "surefire.testcase.JunitParamsTest",
                 "surefire.testcase.JunitParamsTest", "testSum", "testSum" );
         WrappedReportEntry wr = new WrappedReportEntry( reportEntry, FAILURE, 12, null, null );
         assertEquals( "surefire.testcase.JunitParamsTest", wr.getReportSourceName() );
@@ -104,7 +107,7 @@ public class WrappedReportEntryTest
     public void testGetReportNameWithParams()
     {
         String className = "[0] 1\u002C 2\u002C 3 (testSum)";
-        ReportEntry reportEntry = new SimpleReportEntry( className, null, null, null );
+        ReportEntry reportEntry = new SimpleReportEntry( NORMAL_RUN, 1L, className, null, null, null );
         WrappedReportEntry wr = new WrappedReportEntry( reportEntry, SKIPPED, 12, null, null );
         final String reportName = wr.getReportSourceName();
         assertEquals( "[0] 1, 2, 3 (testSum)", reportName );
@@ -116,7 +119,7 @@ public class WrappedReportEntryTest
     public void testElapsed()
     {
         String className = "[0] 1\u002C 2\u002C 3 (testSum)";
-        ReportEntry reportEntry = new SimpleReportEntry( className, null, null, null );
+        ReportEntry reportEntry = new SimpleReportEntry( NORMAL_RUN, 1L, className, null, null, null );
         WrappedReportEntry wr = new WrappedReportEntry( reportEntry, null, 12, null, null );
         String elapsedTimeSummary = wr.getElapsedTimeSummary();
         assertEquals( "[0] 1, 2, 3 (testSum)  Time elapsed: 0.012 s",

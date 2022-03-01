@@ -26,12 +26,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.apache.maven.surefire.api.report.LegacyPojoStackTraceWriter;
-import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.report.ClassMethodIndexer;
 
 import static java.util.Objects.requireNonNull;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.report.SimpleReportEntry.withException;
 
 /**
@@ -49,17 +50,24 @@ public class PojoTestSetExecutor
 
     private static final Object[] EMPTY_OBJECT_ARRAY = {};
 
+    private final JUnit3Reporter reporter;
+
+    public PojoTestSetExecutor( JUnit3Reporter reporter )
+    {
+        this.reporter = requireNonNull( reporter, "reportManager is null" );
+    }
+
     @Override
-    public void execute( Class<?> testClass, RunListener reportManager, ClassLoader loader )
+    public void execute( Class<?> testClass, ClassLoader loader )
             throws TestSetFailedException
     {
-        requireNonNull( reportManager, "reportManager is null" );
-
-        DiscoveredTestMethods discoveredTestMethods = discoverTestMethods( testClass );
+        DiscoveredTestMethods discoveredTestMethods = discoverTestMethods( requireNonNull( testClass ) );
 
         for ( Method testMethod : discoveredTestMethods.testMethods )
         {
-            boolean abort = executeTestMethod( testClass, testMethod, discoveredTestMethods, reportManager );
+            ClassMethodIndexer indexer = reporter.getClassMethodIndexer();
+            long testRunId = indexer.indexClassMethod( testClass.getName(), testMethod.getName() );
+            boolean abort = executeTestMethod( testClass, testMethod, testRunId, discoveredTestMethods );
             if ( abort )
             {
                 break;
@@ -67,20 +75,15 @@ public class PojoTestSetExecutor
         }
     }
 
-    private boolean executeTestMethod( Class<?> testClass, Method method, DiscoveredTestMethods methods,
-                                       RunListener reportManager )
+    private boolean executeTestMethod( Class<?> testClass, Method method, long testRunId,
+                                       DiscoveredTestMethods methods )
             throws TestSetFailedException
     {
-        if ( method == null || reportManager == null )
-        {
-            throw new NullPointerException();
-        }
-
         final Object testObject;
 
         try
         {
-            testObject = testClass.newInstance();
+            testObject = testClass.getDeclaredConstructor().newInstance();
         }
         catch ( ReflectiveOperationException e )
         {
@@ -92,7 +95,7 @@ public class PojoTestSetExecutor
         final String userFriendlyMethodName = methodName + "()";
         final String testName = getTestName( testClassName, userFriendlyMethodName );
 
-        reportManager.testStarting( new SimpleReportEntry( testClassName, null, testName, null ) );
+        reporter.testStarting( new SimpleReportEntry( NORMAL_RUN, testRunId, testClassName, null, testName, null ) );
 
         try
         {
@@ -101,7 +104,8 @@ public class PojoTestSetExecutor
         catch ( Throwable e )
         {
             StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( testClassName, methodName, e );
-            reportManager.testFailed( withException( testClassName, null, testName, null, stackTraceWriter ) );
+            reporter.testFailed(
+                withException( NORMAL_RUN, testRunId, testClassName, null, testName, null, stackTraceWriter ) );
 
             // A return value of true indicates to this class's executeTestMethods
             // method that it should abort and not attempt to execute
@@ -115,20 +119,23 @@ public class PojoTestSetExecutor
         try
         {
             method.invoke( testObject, EMPTY_OBJECT_ARRAY );
-            reportManager.testSucceeded( new SimpleReportEntry( testClassName, null, testName, null ) );
+            reporter.testSucceeded(
+                new SimpleReportEntry( NORMAL_RUN, testRunId, testClassName, null, testName, null ) );
         }
         catch ( InvocationTargetException e )
         {
             Throwable t = e.getTargetException();
             StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( testClassName, methodName, t );
-            reportManager.testFailed( withException( testClassName, null, testName, null, stackTraceWriter ) );
+            reporter.testFailed(
+                withException( NORMAL_RUN, testRunId, testClassName, null, testName, null, stackTraceWriter ) );
             // Don't return  here, because tearDownFixture should be called even
             // if the test method throws an exception.
         }
         catch ( Throwable t )
         {
             StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( testClassName, methodName, t );
-            reportManager.testFailed( withException( testClassName, null, testName, null, stackTraceWriter ) );
+            reporter.testFailed(
+                withException( NORMAL_RUN, testRunId, testClassName, null, testName, null, stackTraceWriter ) );
             // Don't return  here, because tearDownFixture should be called even
             // if the test method throws an exception.
         }
@@ -141,7 +148,8 @@ public class PojoTestSetExecutor
         {
             StackTraceWriter stackTraceWriter = new LegacyPojoStackTraceWriter( testClassName, methodName, t );
             // Treat any exception from tearDownFixture as a failure of the test.
-            reportManager.testFailed( withException( testClassName, null, testName, null, stackTraceWriter ) );
+            reporter.testFailed(
+                withException( NORMAL_RUN, testRunId, testClassName, null, testName, null, stackTraceWriter ) );
 
             // A return value of true indicates to this class's executeTestMethods
             // method that it should abort and not attempt to execute

@@ -30,6 +30,8 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUD
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
 import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
+import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
 import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
@@ -167,6 +169,7 @@ public class JUnitPlatformProvider
 
     private void invokeAllTests( TestsToRun testsToRun, RunListenerAdapter adapter )
     {
+        adapter.setRunMode( NORMAL_RUN );
         try
         {
             execute( testsToRun, adapter );
@@ -179,6 +182,7 @@ public class JUnitPlatformProvider
         int count = parameters.getTestRequest().getRerunFailingTestsCount();
         if ( count > 0 && adapter.hasFailingTests() )
         {
+            adapter.setRunMode( RERUN_TEST_AFTER_FAILURE );
             for ( int i = 0; i < count; i++ )
             {
                 try

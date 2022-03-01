@@ -22,6 +22,7 @@ package org.apache.maven.surefire.junitplatform;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -45,6 +46,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.api.report.ReportEntry;
@@ -75,11 +77,12 @@ import org.opentest4j.TestSkippedException;
  *
  * @since 2.22.0
  */
+@SuppressWarnings( "checkstyle:magicnumber" )
 public class RunListenerAdapterTest
 {
     private static final ConfigurationParameters CONFIG_PARAMS = mock( ConfigurationParameters.class );
 
-    private TestReportListener listener;
+    private TestReportListener<TestOutputReportEntry> listener;
 
     private RunListenerAdapter adapter;
 
@@ -89,6 +92,7 @@ public class RunListenerAdapterTest
         listener = mock( TestReportListener.class );
         adapter = new RunListenerAdapter( listener );
         adapter.testPlanExecutionStarted( TestPlan.from( emptyList() ) );
+        adapter.setRunMode( NORMAL_RUN );
     }
 
     @Test
@@ -151,18 +155,22 @@ public class RunListenerAdapterTest
         adapter.testPlanExecutionStarted( plan );
         adapter.executionStarted( TestIdentifier.from( engine ) );
         adapter.executionStarted( TestIdentifier.from( parent ) );
-        verify( listener )
-                .testSetStarting( new SimpleReportEntry( className, null, null, null ) );
+        verify( listener ).testSetStarting( new SimpleReportEntry( NORMAL_RUN, 0x0000000100000000L, className,
+            null, null, null ) );
         verifyNoMoreInteractions( listener );
 
         adapter.executionStarted( TestIdentifier.from( child ) );
-        verify( listener )
-                .testStarting( new SimpleReportEntry( className, null, MY_TEST_METHOD_NAME, null ) );
+        verify( listener ).testStarting( new SimpleReportEntry( NORMAL_RUN, 0x0000000100000001L, className, null,
+            MY_TEST_METHOD_NAME, null ) );
         verifyNoMoreInteractions( listener );
 
         adapter.executionFinished( TestIdentifier.from( child ), successful() );
         ArgumentCaptor<SimpleReportEntry> report = ArgumentCaptor.forClass( SimpleReportEntry.class );
         verify( listener ).testSucceeded( report.capture() );
+        assertThat( report.getValue().getRunMode() )
+            .isEqualTo( NORMAL_RUN );
+        assertThat( report.getValue().getTestRunId() )
+            .isEqualTo( 0x0000000100000001L );
         assertThat( report.getValue().getSourceName() )
                 .isEqualTo( className );
         assertThat( report.getValue().getSourceText() )
@@ -222,6 +230,8 @@ public class RunListenerAdapterTest
         adapter.executionStarted( TestIdentifier.from( parent ) );
         ArgumentCaptor<SimpleReportEntry> report = ArgumentCaptor.forClass( SimpleReportEntry.class );
         inOrder.verify( listener ).testSetStarting( report.capture() );
+        assertThat( report.getValue().getTestRunId() )
+            .isEqualTo( 0x0000000100000000L );
         assertThat( report.getValue().getSourceName() )
                 .isEqualTo( MyTestClass.class.getName() );
         assertThat( report.getValue().getSourceText() )
@@ -233,14 +243,17 @@ public class RunListenerAdapterTest
         verifyZeroInteractions( listener );
 
         adapter.executionStarted( TestIdentifier.from( child1 ) );
-        inOrder.verify( listener )
-                .testStarting( new SimpleReportEntry( MyTestClass.class.getName(), "parent",
-                        MY_NAMED_TEST_METHOD_NAME, "dn1" ) );
+        inOrder.verify( listener ).testStarting( new SimpleReportEntry( NORMAL_RUN, 0x0000000100000001L,
+            MyTestClass.class.getName(), "parent", MY_NAMED_TEST_METHOD_NAME, "dn1" ) );
         inOrder.verifyNoMoreInteractions();
 
         adapter.executionFinished( TestIdentifier.from( child1 ), successful() );
         report = ArgumentCaptor.forClass( SimpleReportEntry.class );
         inOrder.verify( listener ).testSucceeded( report.capture() );
+        assertThat( report.getValue().getRunMode() )
+            .isEqualTo( NORMAL_RUN );
+        assertThat( report.getValue().getTestRunId() )
+            .isEqualTo( 0x0000000100000001L );
         assertThat( report.getValue().getSourceName() )
                 .isEqualTo( MyTestClass.class.getName() );
         assertThat( report.getValue().getSourceText() )
@@ -257,14 +270,18 @@ public class RunListenerAdapterTest
 
         adapter.executionStarted( TestIdentifier.from( child2 ) );
         inOrder.verify( listener )
-                .testStarting( new SimpleReportEntry( MyTestClass.class.getName(), "parent",
-                        MY_TEST_METHOD_NAME + "(String)", null ) );
+                .testStarting( new SimpleReportEntry( NORMAL_RUN, 0x0000000100000002L, MyTestClass.class.getName(),
+                    "parent", MY_TEST_METHOD_NAME + "(String)", null ) );
         inOrder.verifyNoMoreInteractions();
 
         Exception assumptionFailure = new Exception();
         adapter.executionFinished( TestIdentifier.from( child2 ), aborted( assumptionFailure ) );
         report = ArgumentCaptor.forClass( SimpleReportEntry.class );
         inOrder.verify( listener ).testAssumptionFailure( report.capture() );
+        assertThat( report.getValue().getRunMode() )
+            .isEqualTo( NORMAL_RUN );
+        assertThat( report.getValue().getTestRunId() )
+            .isEqualTo( 0x0000000100000002L );
         assertThat( report.getValue().getSourceName() )
                 .isEqualTo( MyTestClass.class.getName() );
         assertThat( report.getValue().getSourceText() )
@@ -326,13 +343,17 @@ public class RunListenerAdapterTest
 
 
         adapter.executionStarted( TestIdentifier.from( engine ) );
-        verify( listener )
-                .testStarting( new SimpleReportEntry( "engine", null, "engine", null ) );
+        verify( listener ).testStarting( new SimpleReportEntry( NORMAL_RUN, 0x0000000100000001L, "engine", null,
+            "engine", null ) );
         verifyNoMoreInteractions( listener );
 
         adapter.executionFinished( TestIdentifier.from( engine ), successful() );
         ArgumentCaptor<SimpleReportEntry> report = ArgumentCaptor.forClass( SimpleReportEntry.class );
         verify( listener ).testSucceeded( report.capture() );
+        assertThat( report.getValue().getRunMode() )
+            .isEqualTo( NORMAL_RUN );
+        assertThat( report.getValue().getTestRunId() )
+            .isEqualTo( 0x0000000100000001L );
         assertThat( report.getValue().getSourceName() )
                 .isEqualTo( "engine" );
         assertThat( report.getValue().getSourceText() )
@@ -533,13 +554,16 @@ public class RunListenerAdapterTest
 
         String className = MyTestClass.class.getName();
 
-        verify( listener )
-                .testSetStarting( new SimpleReportEntry( className, null, null, null ) );
+        verify( listener ).testSetStarting( new SimpleReportEntry( NORMAL_RUN, 0x0000000100000000L, className, null,
+            null, null ) );
 
         ArgumentCaptor<SimpleReportEntry> report = ArgumentCaptor.forClass( SimpleReportEntry.class );
         verify( listener )
                 .testSetCompleted( report.capture() );
-
+        assertThat( report.getValue().getRunMode() )
+            .isEqualTo( NORMAL_RUN );
+        assertThat( report.getValue().getTestRunId() )
+            .isEqualTo( 0x0000000100000000L );
         assertThat( report.getValue().getSourceName() )
                 .isEqualTo( className );
         assertThat( report.getValue().getSourceText() )

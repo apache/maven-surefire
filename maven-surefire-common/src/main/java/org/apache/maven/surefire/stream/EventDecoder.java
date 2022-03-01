@@ -58,14 +58,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.ReadableByteChannel;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.FutureTask;
 
+import static java.util.Collections.emptyMap;
 import static org.apache.maven.surefire.api.booter.Constants.MAGIC_NUMBER_FOR_EVENTS_BYTES;
 import static org.apache.maven.surefire.api.report.CategorizedReportEntry.reportEntry;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.stream.SegmentType.DATA_INTEGER;
 import static org.apache.maven.surefire.api.stream.SegmentType.DATA_STRING;
 import static org.apache.maven.surefire.api.stream.SegmentType.END_OF_FRAME;
@@ -382,8 +383,8 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
         throws NumberFormatException
     {
         StackTraceWriter stackTraceWriter = toTrace( traceMessage, smartTrimmedStackTrace, stackTrace );
-        return reportEntry( source, sourceText, name, nameText, group, stackTraceWriter, timeElapsed, message,
-            Collections.<String, String>emptyMap() );
+        return reportEntry( NORMAL_RUN /*todo*/, 0L /*todo*/, source, sourceText, name, nameText, group,
+            stackTraceWriter, timeElapsed, message, emptyMap() );
     }
 
     private static Map<Segment, ForkedProcessEventType> segmentsToEvents()

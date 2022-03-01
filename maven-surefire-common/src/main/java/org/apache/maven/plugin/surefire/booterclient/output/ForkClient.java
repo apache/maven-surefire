@@ -80,7 +80,7 @@ public final class ForkClient
 
     private final int forkNumber;
 
-    private volatile TestReportListener testSetReporter;
+    private volatile TestReportListener<TestOutputReportEntry> testSetReporter;
 
     /**
      * Written by one Thread and read by another: Main Thread and ForkStarter's Thread.
@@ -139,10 +139,11 @@ public final class ForkClient
         public void handle( RunMode runMode, TestSetReportEntry reportEntry )
         {
             testsInProgress.clear();
-            TestSetReportEntry entry = reportEntry( reportEntry.getSourceName(), reportEntry.getSourceText(),
-                    reportEntry.getName(), reportEntry.getNameText(),
-                    reportEntry.getGroup(), reportEntry.getStackTraceWriter(), reportEntry.getElapsed(),
-                    reportEntry.getMessage(), getTestVmSystemProperties() );
+            TestSetReportEntry entry = reportEntry( reportEntry.getRunMode(), reportEntry.getTestRunId(),
+                reportEntry.getSourceName(), reportEntry.getSourceText(),
+                reportEntry.getName(), reportEntry.getNameText(),
+                reportEntry.getGroup(), reportEntry.getStackTraceWriter(), reportEntry.getElapsed(),
+                reportEntry.getMessage(), getTestVmSystemProperties() );
             getTestSetReporter().testSetCompleted( entry );
         }
     }
@@ -370,7 +371,7 @@ public final class ForkClient
     /**
      * Only {@link #getConsoleOutputReceiver()} may call this method in another Thread.
      */
-    private TestReportListener getTestSetReporter()
+    private TestReportListener<TestOutputReportEntry> getTestSetReporter()
     {
         if ( testSetReporter == null )
         {
@@ -414,7 +415,7 @@ public final class ForkClient
         return getTestSetReporter();
     }
 
-    public TestOutputReceiver getConsoleOutputReceiver()
+    public TestOutputReceiver<TestOutputReportEntry> getConsoleOutputReceiver()
     {
         return getTestSetReporter();
     }
