@@ -238,6 +238,27 @@
                             </execution>
                         </executions>
                     </plugin>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-invoker-plugin</artifactId>
+                    <configuration>
+                      <localRepositoryPath>${settings.localRepository}</localRepositoryPath>
+                      <extraArtifacts>
+                        <extraArtifact>org.apache.maven.plugins:maven-surefire-report-plugin:${project.version}</extraArtifact>
+                        <extraArtifact>org.apache.maven.plugins:maven-surefire-plugin:${project.version}</extraArtifact>
+                        <extraArtifact>org.apache.maven.plugins:maven-failsafe-plugin:${project.version}</extraArtifact>
+                      </extraArtifacts>
+                    </configuration>
+                    <executions>
+                      <execution>
+                        <id>install-dependencies</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                          <goal>install</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                  </plugin>
                 </plugins>
             </build>
         </profile>
