@@ -2142,6 +2142,18 @@ public class AbstractSurefireMojoTest
         }
 
         @Override
+        public List<String> getExcludes()
+        {
+            return null;
+        }
+
+        @Override
+        public void setExcludes( List<String> excludes )
+        {
+
+        }
+
+        @Override
         public boolean isPrintSummary()
         {
             return false;

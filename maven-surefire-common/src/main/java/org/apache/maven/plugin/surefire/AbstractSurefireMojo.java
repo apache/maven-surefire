@@ -291,34 +291,6 @@ public abstract class AbstractSurefireMojo
     private File testSourceDirectory;
 
     /**
-     * A list of &lt;exclude&gt; elements specifying the tests (by pattern) that should be excluded in testing. When not
-     * specified and when the {@code test} parameter is not specified, the default excludes will be <br>
-     * <pre><code>
-     * {@literal <excludes>}
-     *     {@literal <exclude>}**{@literal /}*$*{@literal </exclude>}
-     * {@literal </excludes>}
-     * </code></pre>
-     * (which excludes all inner classes).
-     * <br>
-     * This parameter is ignored if the TestNG {@code suiteXmlFiles} parameter is specified.
-     * <br>
-     * Each exclude item may also contain a comma-separated sub-list of items, which will be treated as multiple
-     * &nbsp;&lt;exclude&gt; entries.<br>
-     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):
-     * <pre><code>
-     * {@literal <exclude>}%regex[pkg.*Slow.*.class], Unstable*{@literal </exclude>}
-     * </code></pre>
-     * <br>
-     * <b>Notice that</b> these values are relative to the directory containing generated test classes of the project
-     * being tested. This directory is declared by the parameter {@code testClassesDirectory} which defaults
-     * to the POM property <code>${project.build.testOutputDirectory}</code>, typically
-     * <code>{@literal src/test/java}</code> unless overridden.
-     */
-    @Parameter
-    // TODO use regex for fully qualified class names in 3.0 and change the filtering abilities
-    private List<String> excludes;
-
-    /**
      * ArtifactRepository of the localRepository. To obtain the directory of localRepository in unit tests use
      * System.getProperty("localRepository").
      */
@@ -3549,18 +3521,6 @@ public abstract class AbstractSurefireMojo
         {
             return createSurefireBootDirectoryInBuild();
         }
-    }
-
-    @Override
-    public List<String> getExcludes()
-    {
-        return excludes;
-    }
-
-    @Override
-    public void setExcludes( List<String> excludes )
-    {
-        this.excludes = excludes;
     }
 
     @Override
