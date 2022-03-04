@@ -66,12 +66,12 @@ import java.util.concurrent.FutureTask;
 import static java.util.Collections.emptyMap;
 import static org.apache.maven.surefire.api.booter.Constants.MAGIC_NUMBER_FOR_EVENTS_BYTES;
 import static org.apache.maven.surefire.api.report.CategorizedReportEntry.reportEntry;
-import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.stream.SegmentType.DATA_INTEGER;
 import static org.apache.maven.surefire.api.stream.SegmentType.DATA_STRING;
 import static org.apache.maven.surefire.api.stream.SegmentType.END_OF_FRAME;
 import static org.apache.maven.surefire.api.stream.SegmentType.RUN_MODE;
 import static org.apache.maven.surefire.api.stream.SegmentType.STRING_ENCODING;
+import static org.apache.maven.surefire.api.stream.SegmentType.TEST_RUN_ID;
 import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
 
 /**
@@ -102,15 +102,17 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
         END_OF_FRAME
     };
 
-    private static final SegmentType[] EVENT_WITH_RUNMODE_AND_ONE_STRING = new SegmentType[] {
+    private static final SegmentType[] EVENT_WITH_RUNMODE_TID_AND_ONE_STRING = new SegmentType[] {
         RUN_MODE,
+        TEST_RUN_ID,
         STRING_ENCODING,
         DATA_STRING,
         END_OF_FRAME
     };
 
-    private static final SegmentType[] EVENT_WITH_RUNMODE_AND_TWO_STRINGS = new SegmentType[] {
+    private static final SegmentType[] EVENT_WITH_RUNMODE_TID_AND_TWO_STRINGS = new SegmentType[] {
         RUN_MODE,
+        TEST_RUN_ID,
         STRING_ENCODING,
         DATA_STRING,
         DATA_STRING,
@@ -119,6 +121,7 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
 
     private static final SegmentType[] EVENT_TEST_CONTROL = new SegmentType[] {
         RUN_MODE,
+        TEST_RUN_ID,
         STRING_ENCODING,
         DATA_STRING,
         DATA_STRING,
@@ -155,13 +158,16 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
                 throw new MalformedFrameException( memento.getLine().getPositionByteBuffer(),
                     memento.getByteBuffer().position() );
             }
-            RunMode runMode = null;
+
             for ( SegmentType segmentType : nextSegmentType( eventType ) )
             {
                 switch ( segmentType )
                 {
                     case RUN_MODE:
-                        runMode = RUN_MODES.get( readSegment( memento ) );
+                        memento.getData().add( RUN_MODES.get( readSegment( memento ) ) );
+                        break;
+                    case TEST_RUN_ID:
+                        memento.getData().add( readLong( memento ) );
                         break;
                     case STRING_ENCODING:
                         memento.setCharset( readCharset( memento ) );
@@ -175,7 +181,7 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
                     case END_OF_FRAME:
                         memento.getLine().setPositionByteBuffer( memento.getByteBuffer().position() );
                         memento.getLine().clear();
-                        return toMessage( eventType, runMode, memento );
+                        return toMessage( eventType, memento );
                     default:
                         memento.getLine().setPositionByteBuffer( NO_POSITION );
                         getArguments()
@@ -244,9 +250,9 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
             case BOOTERCODE_STDOUT_NEW_LINE:
             case BOOTERCODE_STDERR:
             case BOOTERCODE_STDERR_NEW_LINE:
-                return EVENT_WITH_RUNMODE_AND_ONE_STRING;
+                return EVENT_WITH_RUNMODE_TID_AND_ONE_STRING;
             case BOOTERCODE_SYSPROPS:
-                return EVENT_WITH_RUNMODE_AND_TWO_STRINGS;
+                return EVENT_WITH_RUNMODE_TID_AND_TWO_STRINGS;
             case BOOTERCODE_TESTSET_STARTING:
             case BOOTERCODE_TESTSET_COMPLETED:
             case BOOTERCODE_TEST_STARTING:
@@ -263,9 +269,7 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
 
     @Override
     @Nonnull
-    protected final Event toMessage( @Nonnull ForkedProcessEventType eventType,
-                                     RunMode runMode,
-                                     @Nonnull Memento memento )
+    protected final Event toMessage( @Nonnull ForkedProcessEventType eventType, @Nonnull Memento memento )
         throws MalformedFrameException
     {
         switch ( eventType )
@@ -279,12 +283,12 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
             case BOOTERCODE_NEXT_TEST:
                 checkArguments( memento, 0 );
                 return new ControlNextTestEvent();
-            case BOOTERCODE_CONSOLE_ERROR:
-                checkArguments( memento, 3 );
-                return new ConsoleErrorEvent( toStackTraceWriter( memento.getData() ) );
             case BOOTERCODE_JVM_EXIT_ERROR:
                 checkArguments( memento, 3 );
                 return new JvmExitErrorEvent( toStackTraceWriter( memento.getData() ) );
+            case BOOTERCODE_CONSOLE_ERROR:
+                checkArguments( memento, 3 );
+                return new ConsoleErrorEvent( toStackTraceWriter( memento.getData() ) );
             case BOOTERCODE_CONSOLE_INFO:
                 checkArguments( memento, 1 );
                 return new ConsoleInfoEvent( (String) memento.getData().get( 0 ) );
@@ -295,46 +299,49 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
                 checkArguments( memento, 1 );
                 return new ConsoleWarningEvent( (String) memento.getData().get( 0 ) );
             case BOOTERCODE_STDOUT:
-                checkArguments( runMode, memento, 1 );
-                return new StandardStreamOutEvent( runMode, (String) memento.getData().get( 0 ) );
+                checkArguments( memento, 3 );
+                return new StandardStreamOutEvent( memento.ofDataAt( 0 ), memento.ofDataAt( 1 ),
+                    memento.ofDataAt( 2 ) );
             case BOOTERCODE_STDOUT_NEW_LINE:
-                checkArguments( runMode, memento, 1 );
-                return new StandardStreamOutWithNewLineEvent( runMode, (String) memento.getData().get( 0 ) );
+                checkArguments( memento, 3 );
+                return new StandardStreamOutWithNewLineEvent( memento.ofDataAt( 0 ), memento.ofDataAt( 1 ),
+                    memento.ofDataAt( 2 ) );
             case BOOTERCODE_STDERR:
-                checkArguments( runMode, memento, 1 );
-                return new StandardStreamErrEvent( runMode, (String) memento.getData().get( 0 ) );
+                checkArguments( memento, 3 );
+                return new StandardStreamErrEvent( memento.ofDataAt( 0 ), memento.ofDataAt( 1 ),
+                    memento.ofDataAt( 2 ) );
             case BOOTERCODE_STDERR_NEW_LINE:
-                checkArguments( runMode, memento, 1 );
-                return new StandardStreamErrWithNewLineEvent( runMode, (String) memento.getData().get( 0 ) );
+                checkArguments( memento, 3 );
+                return new StandardStreamErrWithNewLineEvent( memento.ofDataAt( 0 ), memento.ofDataAt( 1 ),
+                    memento.ofDataAt( 2 ) );
             case BOOTERCODE_SYSPROPS:
-                checkArguments( runMode, memento, 2 );
-                String key = (String) memento.getData().get( 0 );
-                String value = (String) memento.getData().get( 1 );
-                return new SystemPropertyEvent( runMode, key, value );
+                checkArguments( memento, 4 );
+                return new SystemPropertyEvent( memento.ofDataAt( 0 ), memento.ofDataAt( 1 ),
+                    memento.ofDataAt( 2 ), memento.ofDataAt( 3 ) );
             case BOOTERCODE_TESTSET_STARTING:
-                checkArguments( runMode, memento, 10 );
-                return new TestsetStartingEvent( runMode, toReportEntry( memento.getData() ) );
+                checkArguments( memento, 12 );
+                return new TestsetStartingEvent( toReportEntry( memento.getData() ) );
             case BOOTERCODE_TESTSET_COMPLETED:
-                checkArguments( runMode, memento, 10 );
-                return new TestsetCompletedEvent( runMode, toReportEntry( memento.getData() ) );
+                checkArguments( memento, 12 );
+                return new TestsetCompletedEvent( toReportEntry( memento.getData() ) );
             case BOOTERCODE_TEST_STARTING:
-                checkArguments( runMode, memento, 10 );
-                return new TestStartingEvent( runMode, toReportEntry( memento.getData() ) );
+                checkArguments( memento, 12 );
+                return new TestStartingEvent( toReportEntry( memento.getData() ) );
             case BOOTERCODE_TEST_SUCCEEDED:
-                checkArguments( runMode, memento, 10 );
-                return new TestSucceededEvent( runMode, toReportEntry( memento.getData() ) );
+                checkArguments( memento, 12 );
+                return new TestSucceededEvent( toReportEntry( memento.getData() ) );
             case BOOTERCODE_TEST_FAILED:
-                checkArguments( runMode, memento, 10 );
-                return new TestFailedEvent( runMode, toReportEntry( memento.getData() ) );
+                checkArguments( memento, 12 );
+                return new TestFailedEvent( toReportEntry( memento.getData() ) );
             case BOOTERCODE_TEST_SKIPPED:
-                checkArguments( runMode, memento, 10 );
-                return new TestSkippedEvent( runMode, toReportEntry( memento.getData() ) );
+                checkArguments( memento, 12 );
+                return new TestSkippedEvent( toReportEntry( memento.getData() ) );
             case BOOTERCODE_TEST_ERROR:
-                checkArguments( runMode, memento, 10 );
-                return new TestErrorEvent( runMode, toReportEntry( memento.getData() ) );
+                checkArguments( memento, 12 );
+                return new TestErrorEvent( toReportEntry( memento.getData() ) );
             case BOOTERCODE_TEST_ASSUMPTIONFAILURE:
-                checkArguments( runMode, memento, 10 );
-                return new TestAssumptionFailureEvent( runMode, toReportEntry( memento.getData() ) );
+                checkArguments( memento, 12 );
+                return new TestAssumptionFailureEvent( toReportEntry( memento.getData() ) );
             default:
                 throw new IllegalArgumentException( "Missing a branch for the event type " + eventType );
         }
@@ -343,19 +350,21 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
     @Nonnull
     private static TestSetReportEntry toReportEntry( List<Object> args )
     {
+        RunMode runMode = (RunMode) args.get( 0 );
+        long testRunId = (long) args.get( 1 );
         // ReportEntry:
-        String source = (String) args.get( 0 );
-        String sourceText = (String) args.get( 1 );
-        String name = (String) args.get( 2 );
-        String nameText = (String) args.get( 3 );
-        String group = (String) args.get( 4 );
-        String message = (String) args.get( 5 );
-        Integer timeElapsed = (Integer) args.get( 6 );
+        String source = (String) args.get( 2 );
+        String sourceText = (String) args.get( 3 );
+        String name = (String) args.get( 4 );
+        String nameText = (String) args.get( 5 );
+        String group = (String) args.get( 6 );
+        String message = (String) args.get( 7 );
+        Integer timeElapsed = (Integer) args.get( 8 );
         // StackTraceWriter:
-        String traceMessage = (String) args.get( 7 );
-        String smartTrimmedStackTrace = (String) args.get( 8 );
-        String stackTrace = (String) args.get( 9 );
-        return newReportEntry( source, sourceText, name, nameText, group, message, timeElapsed,
+        String traceMessage = (String) args.get( 9 );
+        String smartTrimmedStackTrace = (String) args.get( 10 );
+        String stackTrace = (String) args.get( 11 );
+        return newReportEntry( runMode, testRunId, source, sourceText, name, nameText, group, message, timeElapsed,
             traceMessage, smartTrimmedStackTrace, stackTrace );
     }
 
@@ -374,8 +383,8 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
     }
 
     static TestSetReportEntry newReportEntry( // ReportEntry:
-                                              String source, String sourceText, String name,
-                                              String nameText, String group, String message,
+                                              RunMode runMode, long testRunId, String source, String sourceText,
+                                              String name, String nameText, String group, String message,
                                               Integer timeElapsed,
                                               // StackTraceWriter:
                                               String traceMessage,
@@ -383,8 +392,8 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
         throws NumberFormatException
     {
         StackTraceWriter stackTraceWriter = toTrace( traceMessage, smartTrimmedStackTrace, stackTrace );
-        return reportEntry( NORMAL_RUN /*todo*/, 0L /*todo*/, source, sourceText, name, nameText, group,
-            stackTraceWriter, timeElapsed, message, emptyMap() );
+        return reportEntry( runMode, testRunId, source, sourceText, name, nameText, group, stackTraceWriter,
+            timeElapsed, message, emptyMap() );
     }
 
     private static Map<Segment, ForkedProcessEventType> segmentsToEvents()

@@ -30,18 +30,26 @@ import org.apache.maven.surefire.api.report.RunMode;
 public abstract class AbstractStandardStreamEvent extends Event
 {
     private final RunMode runMode;
+    private final Long testRunId;
     private final String message;
 
-    protected AbstractStandardStreamEvent( ForkedProcessEventType eventType, RunMode runMode, String message )
+    protected AbstractStandardStreamEvent( ForkedProcessEventType eventType, RunMode runMode, Long testRunId,
+                                           String message )
     {
         super( eventType );
         this.runMode = runMode;
+        this.testRunId = testRunId;
         this.message = message;
     }
 
     public RunMode getRunMode()
     {
         return runMode;
+    }
+
+    public Long getTestRunId()
+    {
+        return testRunId;
     }
 
     public String getMessage()

@@ -20,7 +20,6 @@ package org.apache.maven.surefire.api.event;
  */
 
 import org.apache.maven.surefire.api.report.ReportEntry;
-import org.apache.maven.surefire.api.report.RunMode;
 
 import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TEST_SUCCEEDED;
 
@@ -31,8 +30,8 @@ import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTER
  */
 public final class TestSucceededEvent extends AbstractTestControlEvent<ReportEntry>
 {
-    public TestSucceededEvent( RunMode runMode, ReportEntry reportEntry )
+    public TestSucceededEvent( ReportEntry reportEntry )
     {
-        super( BOOTERCODE_TEST_SUCCEEDED, runMode, reportEntry );
+        super( BOOTERCODE_TEST_SUCCEEDED, reportEntry );
     }
 }

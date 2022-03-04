@@ -474,7 +474,7 @@ public class ForkClientTest
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
-        client.handleEvent( new StandardStreamOutEvent( NORMAL_RUN, "msg" ) );
+        client.handleEvent( new StandardStreamOutEvent( NORMAL_RUN, 1L, "msg" ) );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
                 .createTestReportListener();
@@ -516,7 +516,7 @@ public class ForkClientTest
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
-        client.handleEvent( new StandardStreamOutWithNewLineEvent( NORMAL_RUN, "msg" ) );
+        client.handleEvent( new StandardStreamOutWithNewLineEvent( NORMAL_RUN, 1L, "msg" ) );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
                 .createTestReportListener();
@@ -558,7 +558,7 @@ public class ForkClientTest
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
-        client.handleEvent( new StandardStreamErrEvent( NORMAL_RUN, "msg" ) );
+        client.handleEvent( new StandardStreamErrEvent( NORMAL_RUN, 1L, "msg" ) );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
                 .createTestReportListener();
@@ -600,7 +600,7 @@ public class ForkClientTest
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
-        client.handleEvent( new StandardStreamErrWithNewLineEvent( NORMAL_RUN, "msg" ) );
+        client.handleEvent( new StandardStreamErrWithNewLineEvent( NORMAL_RUN, 1L, "msg" ) );
         verifyZeroInteractions( notifiableTestStream );
         verify( factory, times( 1 ) )
                 .createTestReportListener();
@@ -856,7 +856,7 @@ public class ForkClientTest
                 .thenReturn( receiver );
         NotifiableTestStream notifiableTestStream = mock( NotifiableTestStream.class );
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
-        client.handleEvent( new SystemPropertyEvent( NORMAL_RUN, "k1", "v1" ) );
+        client.handleEvent( new SystemPropertyEvent( NORMAL_RUN, 1L, "k1", "v1" ) );
         verifyZeroInteractions( notifiableTestStream );
         verifyZeroInteractions( factory );
         assertThat( client.getReporter() )
@@ -909,6 +909,8 @@ public class ForkClientTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         TestSetReportEntry reportEntry = mock( TestSetReportEntry.class );
+        when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+        when( reportEntry.getTestRunId() ).thenReturn( 1L );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
@@ -918,7 +920,7 @@ public class ForkClientTest
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
-        client.handleEvent( new TestsetStartingEvent( NORMAL_RUN, reportEntry ) );
+        client.handleEvent( new TestsetStartingEvent( reportEntry ) );
 
         client.tryToTimeout( System.currentTimeMillis() + 1000L, 1 );
 
@@ -1004,6 +1006,8 @@ public class ForkClientTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         TestSetReportEntry reportEntry = mock( TestSetReportEntry.class );
+        when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+        when( reportEntry.getTestRunId() ).thenReturn( 1L );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
@@ -1015,7 +1019,7 @@ public class ForkClientTest
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
-        client.handleEvent( new TestsetStartingEvent( NORMAL_RUN, reportEntry ) );
+        client.handleEvent( new TestsetStartingEvent( reportEntry ) );
         client.tryToTimeout( System.currentTimeMillis(), 1 );
 
         verifyZeroInteractions( notifiableTestStream );
@@ -1100,6 +1104,8 @@ public class ForkClientTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         TestSetReportEntry reportEntry = mock( TestSetReportEntry.class );
+        when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+        when( reportEntry.getTestRunId() ).thenReturn( 1L );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
@@ -1109,7 +1115,7 @@ public class ForkClientTest
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
-        client.handleEvent( new TestsetCompletedEvent( NORMAL_RUN, reportEntry ) );
+        client.handleEvent( new TestsetCompletedEvent( reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
         verify( factory ).createTestReportListener();
@@ -1193,6 +1199,8 @@ public class ForkClientTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
+        when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+        when( reportEntry.getTestRunId() ).thenReturn( 1L );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
@@ -1202,7 +1210,7 @@ public class ForkClientTest
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
-        client.handleEvent( new TestStartingEvent( NORMAL_RUN, reportEntry ) );
+        client.handleEvent( new TestStartingEvent( reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
         verify( factory ).createTestReportListener();
@@ -1287,6 +1295,8 @@ public class ForkClientTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
+        when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+        when( reportEntry.getTestRunId() ).thenReturn( 1L );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
@@ -1298,13 +1308,13 @@ public class ForkClientTest
         ForkClient client = new ForkClient( factory, notifiableTestStream,  0 );
         SimpleReportEntry testStarted =
             new SimpleReportEntry( NORMAL_RUN, 1L, reportEntry.getSourceName(), null, null, null );
-        client.handleEvent( new TestStartingEvent( NORMAL_RUN, testStarted ) );
+        client.handleEvent( new TestStartingEvent( testStarted ) );
 
         assertThat( client.testsInProgress() )
                 .hasSize( 1 )
                 .contains( "pkg.MyTest" );
 
-        client.handleEvent( new TestSucceededEvent( NORMAL_RUN, reportEntry ) );
+        client.handleEvent( new TestSucceededEvent( reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
         verify( factory ).createTestReportListener();
@@ -1392,6 +1402,8 @@ public class ForkClientTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
+        when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+        when( reportEntry.getTestRunId() ).thenReturn( 1L );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
@@ -1403,13 +1415,13 @@ public class ForkClientTest
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
         SimpleReportEntry testClass =
             new SimpleReportEntry( NORMAL_RUN, 1L, reportEntry.getSourceName(), null, null, null );
-        client.handleEvent( new TestStartingEvent( NORMAL_RUN, testClass ) );
+        client.handleEvent( new TestStartingEvent( testClass ) );
 
         assertThat( client.testsInProgress() )
                 .hasSize( 1 )
                 .contains( "pkg.MyTest" );
 
-        client.handleEvent( new TestFailedEvent( NORMAL_RUN, reportEntry ) );
+        client.handleEvent( new TestFailedEvent( reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
         verify( factory ).createTestReportListener();
@@ -1503,6 +1515,8 @@ public class ForkClientTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
+        when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+        when( reportEntry.getTestRunId() ).thenReturn( 1L );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
@@ -1514,13 +1528,13 @@ public class ForkClientTest
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
         SimpleReportEntry testStarted =
             new SimpleReportEntry( NORMAL_RUN, 1L, reportEntry.getSourceName(), null, null, null );
-        client.handleEvent( new TestStartingEvent( NORMAL_RUN, testStarted ) );
+        client.handleEvent( new TestStartingEvent( testStarted ) );
 
         assertThat( client.testsInProgress() )
                 .hasSize( 1 )
                 .contains( "pkg.MyTest" );
 
-        client.handleEvent( new TestSkippedEvent( NORMAL_RUN, reportEntry ) );
+        client.handleEvent( new TestSkippedEvent( reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
         verify( factory ).createTestReportListener();
@@ -1612,6 +1626,8 @@ public class ForkClientTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
+        when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+        when( reportEntry.getTestRunId() ).thenReturn( 1L );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
@@ -1624,13 +1640,13 @@ public class ForkClientTest
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
         SimpleReportEntry testStarted = new SimpleReportEntry( NORMAL_RUN, 1L, reportEntry.getSourceName(),
             reportEntry.getSourceText(), null, null );
-        client.handleEvent( new TestStartingEvent( NORMAL_RUN, testStarted ) );
+        client.handleEvent( new TestStartingEvent( testStarted ) );
 
         assertThat( client.testsInProgress() )
                 .hasSize( 1 )
                 .contains( "pkg.MyTest" );
 
-        client.handleEvent( new TestErrorEvent( NORMAL_RUN, reportEntry ) );
+        client.handleEvent( new TestErrorEvent( reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
         verify( factory ).createTestReportListener();
@@ -1718,6 +1734,8 @@ public class ForkClientTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
+        when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+        when( reportEntry.getTestRunId() ).thenReturn( 1L );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "some test" );
@@ -1730,13 +1748,13 @@ public class ForkClientTest
         ForkClient client = new ForkClient( factory, notifiableTestStream, 0 );
         SimpleReportEntry testStarted =
             new SimpleReportEntry( NORMAL_RUN, 1L, reportEntry.getSourceName(), null, null, null );
-        client.handleEvent( new TestStartingEvent( NORMAL_RUN, testStarted ) );
+        client.handleEvent( new TestStartingEvent( testStarted ) );
 
         assertThat( client.testsInProgress() )
                 .hasSize( 1 )
                 .contains( "pkg.MyTest" );
 
-        client.handleEvent( new TestAssumptionFailureEvent( NORMAL_RUN, reportEntry ) );
+        client.handleEvent( new TestAssumptionFailureEvent( reportEntry ) );
 
         verifyZeroInteractions( notifiableTestStream );
         verify( factory ).createTestReportListener();

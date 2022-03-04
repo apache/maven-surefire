@@ -43,6 +43,7 @@ import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.api.report.OutputReportEntry;
 import org.apache.maven.surefire.api.report.TestOutputReceiver;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.booter.spi.EventChannelEncoder;
 import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.extensions.CommandReader;
@@ -54,6 +55,7 @@ import org.junit.rules.ExpectedException;
 
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdOutln;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
@@ -156,7 +158,7 @@ public class E2ETest
                     for ( int i = 0; i < totalCalls; i++ )
                     {
                         //System.out.println( LONG_STRING );
-                        encoder.testOutput( stdOutln( LONG_STRING ) );
+                        encoder.testOutput( new TestOutputReportEntry( stdOutln( LONG_STRING ), NORMAL_RUN, 1L ) );
                     }
                     long t2 = System.currentTimeMillis();
                     long spent = t2 - t1;

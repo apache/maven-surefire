@@ -185,7 +185,7 @@ public class ForkingRunListenerTest
     {
         final StandardTestRun standardTestRun = new StandardTestRun();
         TestOutputReceiver<TestOutputReportEntry> directConsoleReporter = standardTestRun.run();
-        directConsoleReporter.writeTestOutput( (TestOutputReportEntry) stdOut( "HeyYou" ) );
+        directConsoleReporter.writeTestOutput( new TestOutputReportEntry( stdOut( "HeyYou" ), NORMAL_RUN, 1L )  );
         standardTestRun.assertExpected( MockReporter.STDOUT, "HeyYou" );
     }
 
@@ -200,14 +200,18 @@ public class ForkingRunListenerTest
         TestSetMockReporterFactory providerReporterFactory = new TestSetMockReporterFactory();
         ForkClient forkStreamClient = new ForkClient( providerReporterFactory, new MockNotifiableTestStream(), 1 );
 
-        byte[] cmd = ( ":maven-surefire-event:\u0008:sys-prop:" + (char) 10 + ":normal-run:\u0005:UTF-8:"
-            + "\u0000\u0000\u0000\u0002:k1:\u0000\u0000\u0000\u0002:v1:\n" ).getBytes();
+        byte[] cmd = ( ":maven-surefire-event:\u0008:sys-prop:" + (char) 10 + ":normal-run:"
+            + "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001:"
+            + "\u0005:UTF-8:"
+            + "\u0000\u0000\u0000\u0002:k1:\u0000\u0000\u0000\u0002:v1:" ).getBytes();
         for ( Event e : streamToEvent( cmd ) )
         {
             forkStreamClient.handleEvent( e );
         }
-        cmd = ( "\n:maven-surefire-event:\u0008:sys-prop:" + (char) 10 + ":normal-run:\u0005:UTF-8:"
-            + "\u0000\u0000\u0000\u0002:k2:\u0000\u0000\u0000\u0002:v2:\n" ).getBytes();
+        cmd = ( "\n:maven-surefire-event:\u0008:sys-prop:" + (char) 10 + ":normal-run:"
+            + "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001:"
+            + "\u0005:UTF-8:"
+            + "\u0000\u0000\u0000\u0002:k2:\u0000\u0000\u0000\u0002:v2:" ).getBytes();
         for ( Event e : streamToEvent( cmd ) )
         {
             forkStreamClient.handleEvent( e );
@@ -279,7 +283,7 @@ public class ForkingRunListenerTest
 
         MockReporter reporter = (MockReporter) forkStreamClient.getReporter();
         assertThat( reporter.getFirstEvent() ).isEqualTo( MockReporter.TEST_STARTING );
-        //assertThat( reporter.getFirstData() ).isEqualTo( expected ); /*todo uncomment in SUREFIRE-2014*/
+        assertThat( reporter.getFirstData() ).isEqualTo( expected );
         assertThat( reporter.getEvents() ).hasSize( 1 );
 
         forkStreamClient = new ForkClient( providerReporterFactory, notifiableTestStream, 2 );
@@ -289,7 +293,7 @@ public class ForkingRunListenerTest
         }
         MockReporter reporter2 = (MockReporter) forkStreamClient.getReporter();
         assertThat( reporter2.getFirstEvent() ).isEqualTo( MockReporter.TEST_SKIPPED );
-        //assertThat( reporter2.getFirstData() ).isEqualTo( secondExpected ); /*todo uncomment in SUREFIRE-2014*/
+        assertThat( reporter2.getFirstData() ).isEqualTo( secondExpected );
         assertThat( reporter2.getEvents() ).hasSize( 1 );
     }
 
@@ -464,7 +468,7 @@ public class ForkingRunListenerTest
         {
             StackTraceWriter stackTraceWriter =
                 new LegacyPojoStackTraceWriter( "org.apache.tests.TestClass", "testMethod11", e );
-            return new CategorizedReportEntry( NORMAL_RUN, 0L,
+            return new CategorizedReportEntry( NORMAL_RUN, 1L,
                 "com.abc.TestClass", "testMethod", "aGroup", stackTraceWriter, 77 );
         }
     }

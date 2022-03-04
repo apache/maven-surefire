@@ -130,6 +130,7 @@ public class JUnit4Provider
         {
             TestReportListener<TestOutputReportEntry> reporter = reporterFactory.createTestReportListener();
             JUnit4RunListener listener = new JUnit4RunListener( reporter );
+            listener.setRunMode( NORMAL_RUN );
 
             startCapture( listener );
             // startCapture() called in prior to setTestsToRun()
@@ -280,7 +281,6 @@ public class JUnit4Provider
             try
             {
                 notifier.asFailFast( isFailFast() );
-                runMode.setRunMode( NORMAL_RUN );
                 execute( clazz, notifier, hasMethodFilter ? createMethodFilter() : null );
             }
             finally

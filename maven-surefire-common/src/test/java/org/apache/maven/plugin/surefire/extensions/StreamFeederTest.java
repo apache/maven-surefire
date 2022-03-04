@@ -108,8 +108,6 @@ public class StreamFeederTest
             .append( ":maven-surefire-command:" )
             .append( (char) 13 )
             .append( ":run-testclass:" )
-            .append( (char) 10 )
-            .append( ":normal-run:" )
             .append( (char) 5 )
             .append( ":UTF-8:" )
             .append( (char) 0 )
