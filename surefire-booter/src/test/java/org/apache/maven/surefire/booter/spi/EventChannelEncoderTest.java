@@ -25,6 +25,7 @@ import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
+import org.apache.maven.surefire.api.util.internal.ObjectUtils;
 import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 import org.junit.Test;
 
@@ -78,6 +79,8 @@ public class EventChannelEncoderTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         TestSetReportEntry reportEntry = mock( TestSetReportEntry.class );
+        when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+        when( reportEntry.getTestRunId() ).thenReturn( 1L );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "skipped test" );
@@ -88,13 +91,15 @@ public class EventChannelEncoderTest
 
         Stream out = Stream.newStream();
         EventChannelEncoder encoder = new EventChannelEncoder( newBufferedChannel( out ) );
-        ByteBuffer encoded = encoder.encode( BOOTERCODE_TEST_ERROR, NORMAL_RUN, reportEntry, false );
+        ByteBuffer encoded = encoder.encode( BOOTERCODE_TEST_ERROR, reportEntry, false );
         ByteArrayOutputStream expectedFrame = new ByteArrayOutputStream();
         expectedFrame.write( ":maven-surefire-event:".getBytes( UTF_8 ) );
         expectedFrame.write( (byte) 10 );
         expectedFrame.write( ":test-error:".getBytes( UTF_8 ) );
         expectedFrame.write( (byte) 10 );
         expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001".getBytes() );
+        expectedFrame.write( ':' );
         expectedFrame.write( (byte) 5 );
         expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
         expectedFrame.write( new byte[] {0, 0, 0, 10} );
@@ -143,13 +148,15 @@ public class EventChannelEncoderTest
 
         out = Stream.newStream();
         encoder = new EventChannelEncoder( newBufferedChannel( out ) );
-        encoded = encoder.encode( BOOTERCODE_TEST_ERROR, NORMAL_RUN, reportEntry, true );
+        encoded = encoder.encode( BOOTERCODE_TEST_ERROR, reportEntry, true );
         expectedFrame = new ByteArrayOutputStream();
         expectedFrame.write( ":maven-surefire-event:".getBytes( UTF_8 ) );
         expectedFrame.write( (byte) 10 );
         expectedFrame.write( ":test-error:".getBytes( UTF_8 ) );
         expectedFrame.write( (byte) 10 );
         expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001".getBytes() );
+        expectedFrame.write( ':' );
         expectedFrame.write( (byte) 5 );
         expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
         expectedFrame.write( new byte[] {0, 0, 0, 10} );
@@ -205,6 +212,8 @@ public class EventChannelEncoderTest
         expectedFrame.write( ":testset-starting:".getBytes( UTF_8 ) );
         expectedFrame.write( (byte) 10 );
         expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001".getBytes() );
+        expectedFrame.write( ':' );
         expectedFrame.write( (byte) 5 );
         expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
         expectedFrame.write( new byte[] {0, 0, 0, 10} );
@@ -259,6 +268,8 @@ public class EventChannelEncoderTest
         expectedFrame.write( ":testset-starting:".getBytes( UTF_8 ) );
         expectedFrame.write( (byte) 10 );
         expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001".getBytes() );
+        expectedFrame.write( ':' );
         expectedFrame.write( (byte) 5 );
         expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
         expectedFrame.write( new byte[] {0, 0, 0, 10} );
@@ -322,6 +333,8 @@ public class EventChannelEncoderTest
         Map<String, String> props = systemProps();
 
         TestSetReportEntry reportEntry = mock( TestSetReportEntry.class );
+        when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+        when( reportEntry.getTestRunId() ).thenReturn( 1L );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "skipped test" );
@@ -344,6 +357,8 @@ public class EventChannelEncoderTest
             expectedFrame.write( ":sys-prop:".getBytes() );
             expectedFrame.write( 10 );
             expectedFrame.write( ":normal-run:".getBytes() );
+            expectedFrame.write( "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001".getBytes() );
+            expectedFrame.write( ":".getBytes() );
             expectedFrame.write( 5 );
             expectedFrame.write( ":UTF-8:".getBytes() );
             int[] k = toBytes( entry.getKey().length() );
@@ -369,6 +384,8 @@ public class EventChannelEncoderTest
         expectedFrame.write( ":testset-completed:".getBytes( UTF_8 ) );
         expectedFrame.write( (byte) 10 );
         expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001".getBytes() );
+        expectedFrame.write( ':' );
         expectedFrame.write( (byte) 5 );
         expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
         expectedFrame.write( new byte[] {0, 0, 0, 10} );
@@ -431,6 +448,8 @@ public class EventChannelEncoderTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
+        when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+        when( reportEntry.getTestRunId() ).thenReturn( 1L );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "skipped test" );
@@ -450,6 +469,8 @@ public class EventChannelEncoderTest
         expectedFrame.write( ":test-starting:".getBytes( UTF_8 ) );
         expectedFrame.write( (byte) 10 );
         expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001".getBytes() );
+        expectedFrame.write( ':' );
         expectedFrame.write( (byte) 5 );
         expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
         expectedFrame.write( new byte[] {0, 0, 0, 10} );
@@ -511,6 +532,8 @@ public class EventChannelEncoderTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
+        when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+        when( reportEntry.getTestRunId() ).thenReturn( 1L );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "skipped test" );
@@ -529,6 +552,8 @@ public class EventChannelEncoderTest
         expectedFrame.write( ":test-succeeded:".getBytes( UTF_8 ) );
         expectedFrame.write( (byte) 10 );
         expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001".getBytes() );
+        expectedFrame.write( ':' );
         expectedFrame.write( (byte) 5 );
         expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
         expectedFrame.write( new byte[] {0, 0, 0, 10} );
@@ -590,6 +615,8 @@ public class EventChannelEncoderTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
+        when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+        when( reportEntry.getTestRunId() ).thenReturn( 1L );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "skipped test" );
@@ -608,6 +635,8 @@ public class EventChannelEncoderTest
         expectedFrame.write( ":test-failed:".getBytes( UTF_8 ) );
         expectedFrame.write( (byte) 10 );
         expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001".getBytes() );
+        expectedFrame.write( ':' );
         expectedFrame.write( (byte) 5 );
         expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
         expectedFrame.write( new byte[] {0, 0, 0, 10} );
@@ -668,6 +697,8 @@ public class EventChannelEncoderTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
+        when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+        when( reportEntry.getTestRunId() ).thenReturn( 1L );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "skipped test" );
@@ -686,6 +717,8 @@ public class EventChannelEncoderTest
         expectedFrame.write( ":test-skipped:".getBytes( UTF_8 ) );
         expectedFrame.write( (byte) 10 );
         expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001".getBytes() );
+        expectedFrame.write( ':' );
         expectedFrame.write( (byte) 5 );
         expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
         expectedFrame.write( new byte[] {0, 0, 0, 10} );
@@ -746,6 +779,8 @@ public class EventChannelEncoderTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( stackTrace );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
+        when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+        when( reportEntry.getTestRunId() ).thenReturn( 1L );
         when( reportEntry.getElapsed() ).thenReturn( ELAPSED_TIME );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "skipped test" );
@@ -763,6 +798,8 @@ public class EventChannelEncoderTest
         expectedFrame.write( ":test-error:".getBytes( UTF_8 ) );
         expectedFrame.write( (byte) 10 );
         expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001".getBytes() );
+        expectedFrame.write( ':' );
         expectedFrame.write( (byte) 5 );
         expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
         expectedFrame.write( new byte[] {0, 0, 0, 10} );
@@ -823,6 +860,8 @@ public class EventChannelEncoderTest
         when( stackTraceWriter.writeTraceToString() ).thenReturn( null );
 
         ReportEntry reportEntry = mock( ReportEntry.class );
+        when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+        when( reportEntry.getTestRunId() ).thenReturn( 1L );
         when( reportEntry.getElapsed() ).thenReturn( null );
         when( reportEntry.getGroup() ).thenReturn( "this group" );
         when( reportEntry.getMessage() ).thenReturn( "skipped test" );
@@ -841,6 +880,8 @@ public class EventChannelEncoderTest
         expectedFrame.write( ":test-assumption-failure:".getBytes( UTF_8 ) );
         expectedFrame.write( (byte) 10 );
         expectedFrame.write( ":normal-run:".getBytes( UTF_8 ) );
+        expectedFrame.write( "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001".getBytes() );
+        expectedFrame.write( ':' );
         expectedFrame.write( (byte) 5 );
         expectedFrame.write( ":UTF-8:".getBytes( UTF_8 ) );
         expectedFrame.write( new byte[] {0, 0, 0, 10} );
@@ -929,21 +970,26 @@ public class EventChannelEncoderTest
     public void testSendOpcode()
     {
         Channel channel = new Channel();
-        new EventChannelEncoder( channel ).testOutput( (TestOutputReportEntry) stdOut( "msg" ) );
+        new EventChannelEncoder( channel )
+            .testOutput( new TestOutputReportEntry( stdOut( "msg" ), NORMAL_RUN, 1L )  );
         assertThat( toString( channel.src ) )
                 .isEqualTo( ":maven-surefire-event:" + (char) 14 + ":std-out-stream:" + (char) 10 + ":normal-run:"
+                    + "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001:"
                     + (char) 5 + ":UTF-8:\u0000\u0000\u0000\u0003:msg:" );
 
         channel = new Channel();
-        new EventChannelEncoder( channel ).testOutput( stdErr( null ) );
+        new EventChannelEncoder( channel )
+            .testOutput( new TestOutputReportEntry( stdErr( null ), NORMAL_RUN, 1L ) );
         assertThat( toString( channel.src ) )
                 .isEqualTo( ":maven-surefire-event:" + (char) 14 + ":std-err-stream:" + (char) 10 + ":normal-run:"
+                    + "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001:"
                     + (char) 5 + ":UTF-8:\u0000\u0000\u0000\u0001:\u0000:" );
 
         ByteBuffer result = new EventChannelEncoder( new Channel() )
-            .encodeMessage( BOOTERCODE_TEST_ERROR, NORMAL_RUN, "msg" );
+            .encodeMessage( BOOTERCODE_TEST_ERROR, NORMAL_RUN, 1L, "msg" );
         assertThat( toString( result ) )
             .isEqualTo( ":maven-surefire-event:" + (char) 10 + ":test-error:" + (char) 10 + ":normal-run:"
+                + "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001:"
                 + (char) 5 + ":UTF-8:\u0000\u0000\u0000\u0003:msg:" );
     }
 
@@ -1115,11 +1161,12 @@ public class EventChannelEncoderTest
         WritableBufferedByteChannel channel = newBufferedChannel( out );
         EventChannelEncoder encoder = new EventChannelEncoder( channel );
 
-        encoder.testOutput( (TestOutputReportEntry) stdOut( "msg" ) );
+        encoder.testOutput( new TestOutputReportEntry( stdOut( "msg" ), NORMAL_RUN, 1L ) );
         channel.close();
 
         String expected = ":maven-surefire-event:\u000e:std-out-stream:"
-            + (char) 10 + ":normal-run:\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:";
+            + (char) 10 + ":normal-run:\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001:"
+            + "\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:";
 
         assertThat( new String( out.toByteArray(), UTF_8 ) )
                 .isEqualTo( expected );
@@ -1132,11 +1179,12 @@ public class EventChannelEncoderTest
         WritableBufferedByteChannel channel = newBufferedChannel( out );
         EventChannelEncoder encoder = new EventChannelEncoder( channel );
 
-        encoder.testOutput( stdOutln( "msg" ) );
+        encoder.testOutput( new TestOutputReportEntry( stdOutln( "msg" ), NORMAL_RUN, 1L ) );
         channel.close();
 
         String expected = ":maven-surefire-event:\u0017:std-out-stream-new-line:"
-            + (char) 10 + ":normal-run:\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:";
+            + (char) 10 + ":normal-run:\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001:"
+            + "\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:";
 
         assertThat( new String( out.toByteArray(), UTF_8 ) )
                 .isEqualTo( expected );
@@ -1149,11 +1197,12 @@ public class EventChannelEncoderTest
         WritableBufferedByteChannel channel = newBufferedChannel( out );
         EventChannelEncoder encoder = new EventChannelEncoder( channel );
 
-        encoder.testOutput( stdErr( "msg" ) );
+        encoder.testOutput( new TestOutputReportEntry( stdErr( "msg" ), NORMAL_RUN, 1L ) );
         channel.close();
 
         String expected = ":maven-surefire-event:\u000e:std-err-stream:"
-            + (char) 10 + ":normal-run:\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:";
+            + (char) 10 + ":normal-run:\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001:"
+            + "\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:";
 
         assertThat( new String( out.toByteArray(), UTF_8 ) )
                 .isEqualTo( expected );
@@ -1166,14 +1215,50 @@ public class EventChannelEncoderTest
         WritableBufferedByteChannel channel = newBufferedChannel( out );
         EventChannelEncoder encoder = new EventChannelEncoder( channel );
 
-        encoder.testOutput( stdErrln( "msg" ) );
+        encoder.testOutput( new TestOutputReportEntry( stdErrln( "msg" ), NORMAL_RUN, 1L ) );
         channel.close();
 
         String expected = ":maven-surefire-event:\u0017:std-err-stream-new-line:"
-            + (char) 10 + ":normal-run:\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:";
+            + (char) 10 + ":normal-run:\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001:"
+            + "\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:";
 
         assertThat( new String( out.toByteArray(), UTF_8 ) )
                 .isEqualTo( expected );
+    }
+
+    @Test
+    @SuppressWarnings( "checkstyle:innerassignment" )
+    public void shouldCountSameNumberOfSystemProperties() throws IOException
+    {
+        Stream stream = Stream.newStream();
+        WritableBufferedByteChannel channel = newBufferedChannel( stream );
+        EventChannelEncoder encoder = new EventChannelEncoder( channel );
+
+        Map<String, String> sysProps = ObjectUtils.systemProps();
+        encoder.encodeSystemProperties( sysProps, NORMAL_RUN, 1L );
+        channel.close();
+
+        for ( Entry<String, String> entry : sysProps.entrySet() )
+        {
+            int[] k = toBytes( entry.getKey().length() );
+            int[] v = toBytes( entry.getValue() == null ? 1 : entry.getValue().getBytes( UTF_8 ).length );
+            ByteArrayOutputStream expectedFrame = new ByteArrayOutputStream();
+            expectedFrame.write( ":maven-surefire-event:sys-prop:normal-run:UTF-8:".getBytes( UTF_8 ) );
+            expectedFrame.write( k[0] );
+            expectedFrame.write( k[1] );
+            expectedFrame.write( k[2] );
+            expectedFrame.write( k[3] );
+            expectedFrame.write( ':' );
+            expectedFrame.write( v[0] );
+            expectedFrame.write( v[1] );
+            expectedFrame.write( v[2] );
+            expectedFrame.write( v[3] );
+            expectedFrame.write( ':' );
+            expectedFrame.write( ( entry.getValue() == null ? "\u0000" : entry.getValue() ).getBytes( UTF_8 ) );
+            expectedFrame.write( ':' );
+            assertThat( stream.toByteArray() )
+                .contains( expectedFrame.toByteArray() );
+        }
     }
 
     @Test
@@ -1220,7 +1305,7 @@ public class EventChannelEncoderTest
         Thread.currentThread().interrupt();
         try
         {
-            encoder.testOutput( (TestOutputReportEntry) stdOut( "msg" ) );
+            encoder.testOutput( new TestOutputReportEntry( stdOut( "msg" ), NORMAL_RUN, 2L )  );
             channel.close();
         }
         finally
@@ -1232,7 +1317,8 @@ public class EventChannelEncoderTest
 
         assertThat( new String( out.toByteArray(), UTF_8 ) )
                 .isEqualTo( ":maven-surefire-event:\u000e:std-out-stream:"
-                    + (char) 10 + ":normal-run:\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:" );
+                    + (char) 10 + ":normal-run:\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0002"
+                    + ":\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:" );
     }
 
     private static class Stream extends PrintStream

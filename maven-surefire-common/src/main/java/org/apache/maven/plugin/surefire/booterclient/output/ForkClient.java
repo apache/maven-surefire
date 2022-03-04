@@ -125,7 +125,7 @@ public final class ForkClient
             implements ForkedProcessReportEventListener<TestSetReportEntry>
     {
         @Override
-        public void handle( RunMode runMode, TestSetReportEntry reportEntry )
+        public void handle( TestSetReportEntry reportEntry )
         {
             getTestSetReporter().testSetStarting( reportEntry );
             setCurrentStartTime();
@@ -136,7 +136,7 @@ public final class ForkClient
             implements ForkedProcessReportEventListener<TestSetReportEntry>
     {
         @Override
-        public void handle( RunMode runMode, TestSetReportEntry reportEntry )
+        public void handle( TestSetReportEntry reportEntry )
         {
             testsInProgress.clear();
             TestSetReportEntry entry = reportEntry( reportEntry.getRunMode(), reportEntry.getTestRunId(),
@@ -151,7 +151,7 @@ public final class ForkClient
     private final class TestStartingListener implements ForkedProcessReportEventListener<ReportEntry>
     {
         @Override
-        public void handle( RunMode runMode, ReportEntry reportEntry )
+        public void handle( ReportEntry reportEntry )
         {
             testsInProgress.offer( reportEntry.getSourceName() );
             getTestSetReporter().testStarting( reportEntry );
@@ -161,7 +161,7 @@ public final class ForkClient
     private final class TestSucceededListener implements ForkedProcessReportEventListener<ReportEntry>
     {
         @Override
-        public void handle( RunMode runMode, ReportEntry reportEntry )
+        public void handle( ReportEntry reportEntry )
         {
             testsInProgress.remove( reportEntry.getSourceName() );
             getTestSetReporter().testSucceeded( reportEntry );
@@ -171,7 +171,7 @@ public final class ForkClient
     private final class TestFailedListener implements ForkedProcessReportEventListener<ReportEntry>
     {
         @Override
-        public void handle( RunMode runMode, ReportEntry reportEntry )
+        public void handle( ReportEntry reportEntry )
         {
             testsInProgress.remove( reportEntry.getSourceName() );
             getTestSetReporter().testFailed( reportEntry );
@@ -181,7 +181,7 @@ public final class ForkClient
     private final class TestSkippedListener implements ForkedProcessReportEventListener<ReportEntry>
     {
         @Override
-        public void handle( RunMode runMode, ReportEntry reportEntry )
+        public void handle( ReportEntry reportEntry )
         {
             testsInProgress.remove( reportEntry.getSourceName() );
             getTestSetReporter().testSkipped( reportEntry );
@@ -191,7 +191,7 @@ public final class ForkClient
     private final class TestErrorListener implements ForkedProcessReportEventListener<ReportEntry>
     {
         @Override
-        public void handle( RunMode runMode, ReportEntry reportEntry )
+        public void handle( ReportEntry reportEntry )
         {
             testsInProgress.remove( reportEntry.getSourceName() );
             getTestSetReporter().testError( reportEntry );
@@ -201,7 +201,7 @@ public final class ForkClient
     private final class TestAssumptionFailureListener implements ForkedProcessReportEventListener<ReportEntry>
     {
         @Override
-        public void handle( RunMode runMode, ReportEntry reportEntry )
+        public void handle( ReportEntry reportEntry )
         {
             testsInProgress.remove( reportEntry.getSourceName() );
             getTestSetReporter().testAssumptionFailure( reportEntry );

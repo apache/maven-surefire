@@ -91,6 +91,8 @@ import static org.apache.maven.surefire.api.stream.SegmentType.DATA_STRING;
 import static org.apache.maven.surefire.api.stream.SegmentType.END_OF_FRAME;
 import static org.apache.maven.surefire.api.stream.SegmentType.RUN_MODE;
 import static org.apache.maven.surefire.api.stream.SegmentType.STRING_ENCODING;
+import static org.apache.maven.surefire.api.stream.SegmentType.TEST_RUN_ID;
+import static org.apache.maven.surefire.stream.EventDecoder.newReportEntry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
@@ -177,83 +179,84 @@ public class EventDecoderTest
 
         segmentTypes = decoder.nextSegmentType( BOOTERCODE_STDOUT );
         assertThat( segmentTypes )
-            .hasSize( 4 )
-            .isEqualTo( new SegmentType[] { RUN_MODE, STRING_ENCODING, DATA_STRING, END_OF_FRAME } );
+            .hasSize( 5 )
+            .isEqualTo( new SegmentType[] { RUN_MODE, TEST_RUN_ID, STRING_ENCODING, DATA_STRING, END_OF_FRAME } );
 
         segmentTypes = decoder.nextSegmentType( ForkedProcessEventType.BOOTERCODE_STDOUT_NEW_LINE );
         assertThat( segmentTypes )
-            .hasSize( 4 )
-            .isEqualTo( new SegmentType[] { RUN_MODE, STRING_ENCODING, DATA_STRING, END_OF_FRAME } );
+            .hasSize( 5 )
+            .isEqualTo( new SegmentType[] { RUN_MODE, TEST_RUN_ID, STRING_ENCODING, DATA_STRING, END_OF_FRAME } );
 
         segmentTypes = decoder.nextSegmentType( ForkedProcessEventType.BOOTERCODE_STDERR );
         assertThat( segmentTypes )
-            .hasSize( 4 )
-            .isEqualTo( new SegmentType[] { RUN_MODE, STRING_ENCODING, DATA_STRING, END_OF_FRAME } );
+            .hasSize( 5 )
+            .isEqualTo( new SegmentType[] { RUN_MODE, TEST_RUN_ID, STRING_ENCODING, DATA_STRING, END_OF_FRAME } );
 
         segmentTypes = decoder.nextSegmentType( ForkedProcessEventType.BOOTERCODE_STDERR_NEW_LINE );
         assertThat( segmentTypes )
-            .hasSize( 4 )
-            .isEqualTo( new SegmentType[] { RUN_MODE, STRING_ENCODING, DATA_STRING, END_OF_FRAME } );
+            .hasSize( 5 )
+            .isEqualTo( new SegmentType[] { RUN_MODE, TEST_RUN_ID, STRING_ENCODING, DATA_STRING, END_OF_FRAME } );
 
         segmentTypes = decoder.nextSegmentType( BOOTERCODE_SYSPROPS );
         assertThat( segmentTypes )
-            .hasSize( 5 )
-            .isEqualTo( new SegmentType[] { RUN_MODE, STRING_ENCODING, DATA_STRING, DATA_STRING, END_OF_FRAME } );
+            .hasSize( 6 )
+            .isEqualTo( new SegmentType[] { RUN_MODE, TEST_RUN_ID, STRING_ENCODING, DATA_STRING, DATA_STRING,
+                END_OF_FRAME } );
 
         segmentTypes = decoder.nextSegmentType( BOOTERCODE_TESTSET_STARTING );
         assertThat( segmentTypes )
-            .hasSize( 13 )
+            .hasSize( 14 )
             .isEqualTo( new SegmentType[] {
-                RUN_MODE, STRING_ENCODING, DATA_STRING, DATA_STRING, DATA_STRING, DATA_STRING, DATA_STRING,
+                RUN_MODE, TEST_RUN_ID, STRING_ENCODING, DATA_STRING, DATA_STRING, DATA_STRING, DATA_STRING, DATA_STRING,
                 DATA_STRING, DATA_INTEGER, DATA_STRING, DATA_STRING, DATA_STRING, END_OF_FRAME } );
 
         segmentTypes = decoder.nextSegmentType( ForkedProcessEventType.BOOTERCODE_TESTSET_COMPLETED );
         assertThat( segmentTypes )
-            .hasSize( 13 )
-            .isEqualTo( new SegmentType[] { RUN_MODE, STRING_ENCODING, DATA_STRING, DATA_STRING, DATA_STRING,
-                DATA_STRING, DATA_STRING, DATA_STRING, DATA_INTEGER, DATA_STRING, DATA_STRING, DATA_STRING,
+            .hasSize( 14 )
+            .isEqualTo( new SegmentType[] { RUN_MODE, TEST_RUN_ID, STRING_ENCODING, DATA_STRING, DATA_STRING,
+                DATA_STRING, DATA_STRING, DATA_STRING, DATA_STRING, DATA_INTEGER, DATA_STRING, DATA_STRING, DATA_STRING,
                 END_OF_FRAME } );
 
         segmentTypes = decoder.nextSegmentType( ForkedProcessEventType.BOOTERCODE_TEST_STARTING );
         assertThat( segmentTypes )
-            .hasSize( 13 )
-            .isEqualTo( new SegmentType[] { RUN_MODE, STRING_ENCODING, DATA_STRING, DATA_STRING, DATA_STRING,
-                DATA_STRING, DATA_STRING, DATA_STRING, DATA_INTEGER, DATA_STRING, DATA_STRING, DATA_STRING,
+            .hasSize( 14 )
+            .isEqualTo( new SegmentType[] { RUN_MODE, TEST_RUN_ID, STRING_ENCODING, DATA_STRING, DATA_STRING,
+                DATA_STRING, DATA_STRING, DATA_STRING, DATA_STRING, DATA_INTEGER, DATA_STRING, DATA_STRING, DATA_STRING,
                 END_OF_FRAME } );
 
         segmentTypes = decoder.nextSegmentType( BOOTERCODE_TEST_SUCCEEDED );
         assertThat( segmentTypes )
-            .hasSize( 13 )
-            .isEqualTo( new SegmentType[] { RUN_MODE, STRING_ENCODING, DATA_STRING, DATA_STRING, DATA_STRING,
-                DATA_STRING, DATA_STRING, DATA_STRING, DATA_INTEGER, DATA_STRING, DATA_STRING, DATA_STRING,
+            .hasSize( 14 )
+            .isEqualTo( new SegmentType[] { RUN_MODE, TEST_RUN_ID, STRING_ENCODING, DATA_STRING, DATA_STRING,
+                DATA_STRING, DATA_STRING, DATA_STRING, DATA_STRING, DATA_INTEGER, DATA_STRING, DATA_STRING, DATA_STRING,
                 END_OF_FRAME } );
 
         segmentTypes = decoder.nextSegmentType( BOOTERCODE_TEST_FAILED );
         assertThat( segmentTypes )
-            .hasSize( 13 )
-            .isEqualTo( new SegmentType[] { RUN_MODE, STRING_ENCODING, DATA_STRING, DATA_STRING, DATA_STRING,
-                DATA_STRING, DATA_STRING, DATA_STRING, DATA_INTEGER, DATA_STRING, DATA_STRING, DATA_STRING,
+            .hasSize( 14 )
+            .isEqualTo( new SegmentType[] { RUN_MODE, TEST_RUN_ID, STRING_ENCODING, DATA_STRING, DATA_STRING,
+                DATA_STRING, DATA_STRING, DATA_STRING, DATA_STRING, DATA_INTEGER, DATA_STRING, DATA_STRING, DATA_STRING,
                 END_OF_FRAME } );
 
         segmentTypes = decoder.nextSegmentType( ForkedProcessEventType.BOOTERCODE_TEST_SKIPPED );
         assertThat( segmentTypes )
-            .hasSize( 13 )
-            .isEqualTo( new SegmentType[] { RUN_MODE, STRING_ENCODING, DATA_STRING, DATA_STRING, DATA_STRING,
-                DATA_STRING, DATA_STRING, DATA_STRING, DATA_INTEGER, DATA_STRING, DATA_STRING, DATA_STRING,
+            .hasSize( 14 )
+            .isEqualTo( new SegmentType[] { RUN_MODE, TEST_RUN_ID, STRING_ENCODING, DATA_STRING, DATA_STRING,
+                DATA_STRING, DATA_STRING, DATA_STRING, DATA_STRING, DATA_INTEGER, DATA_STRING, DATA_STRING, DATA_STRING,
                 END_OF_FRAME } );
 
         segmentTypes = decoder.nextSegmentType( ForkedProcessEventType.BOOTERCODE_TEST_ERROR );
         assertThat( segmentTypes )
-            .hasSize( 13 )
-            .isEqualTo( new SegmentType[] { RUN_MODE, STRING_ENCODING, DATA_STRING, DATA_STRING, DATA_STRING,
-                DATA_STRING, DATA_STRING, DATA_STRING, DATA_INTEGER, DATA_STRING, DATA_STRING, DATA_STRING,
+            .hasSize( 14 )
+            .isEqualTo( new SegmentType[] { RUN_MODE, TEST_RUN_ID, STRING_ENCODING, DATA_STRING, DATA_STRING,
+                DATA_STRING, DATA_STRING, DATA_STRING, DATA_STRING, DATA_INTEGER, DATA_STRING, DATA_STRING, DATA_STRING,
                 END_OF_FRAME } );
 
         segmentTypes = decoder.nextSegmentType( ForkedProcessEventType.BOOTERCODE_TEST_ASSUMPTIONFAILURE );
         assertThat( segmentTypes )
-            .hasSize( 13 )
-            .isEqualTo( new SegmentType[] { RUN_MODE, STRING_ENCODING, DATA_STRING, DATA_STRING, DATA_STRING,
-                DATA_STRING, DATA_STRING, DATA_STRING, DATA_INTEGER, DATA_STRING, DATA_STRING, DATA_STRING,
+            .hasSize( 14 )
+            .isEqualTo( new SegmentType[] { RUN_MODE, TEST_RUN_ID, STRING_ENCODING, DATA_STRING, DATA_STRING,
+                DATA_STRING, DATA_STRING, DATA_STRING, DATA_STRING, DATA_INTEGER, DATA_STRING, DATA_STRING, DATA_STRING,
                 END_OF_FRAME } );
     }
 
@@ -264,21 +267,21 @@ public class EventDecoderTest
         Channel channel = new Channel( stream, 1 );
         EventDecoder decoder = new EventDecoder( channel, new MockForkNodeArguments() );
 
-        Event event = decoder.toMessage( BOOTERCODE_BYE, NORMAL_RUN, decoder.new Memento() );
+        Event event = decoder.toMessage( BOOTERCODE_BYE, decoder.new Memento() );
         assertThat( event )
             .isInstanceOf( ControlByeEvent.class );
 
-        event = decoder.toMessage( BOOTERCODE_STOP_ON_NEXT_TEST, NORMAL_RUN, decoder.new Memento() );
+        event = decoder.toMessage( BOOTERCODE_STOP_ON_NEXT_TEST, decoder.new Memento() );
         assertThat( event )
             .isInstanceOf( ControlStopOnNextTestEvent.class );
 
-        event = decoder.toMessage( BOOTERCODE_NEXT_TEST, NORMAL_RUN, decoder.new Memento() );
+        event = decoder.toMessage( BOOTERCODE_NEXT_TEST, decoder.new Memento() );
         assertThat( event )
             .isInstanceOf( ControlNextTestEvent.class );
 
         Memento memento = decoder.new Memento();
         memento.getData().addAll( asList( "1", "2", "3" ) );
-        event = decoder.toMessage( BOOTERCODE_CONSOLE_ERROR, NORMAL_RUN, memento );
+        event = decoder.toMessage( BOOTERCODE_CONSOLE_ERROR, memento );
         assertThat( event )
             .isInstanceOf( ConsoleErrorEvent.class );
         ConsoleErrorEvent consoleErrorEvent = (ConsoleErrorEvent) event;
@@ -291,7 +294,7 @@ public class EventDecoderTest
 
         memento = decoder.new Memento();
         memento.getData().addAll( asList( null, null, null ) );
-        event = decoder.toMessage( BOOTERCODE_CONSOLE_ERROR, NORMAL_RUN, memento );
+        event = decoder.toMessage( BOOTERCODE_CONSOLE_ERROR, memento );
         assertThat( event )
             .isInstanceOf( ConsoleErrorEvent.class );
         consoleErrorEvent = (ConsoleErrorEvent) event;
@@ -300,7 +303,7 @@ public class EventDecoderTest
 
         memento = decoder.new Memento();
         memento.getData().addAll( asList( "1", "2", "3" ) );
-        event = decoder.toMessage( BOOTERCODE_JVM_EXIT_ERROR, NORMAL_RUN, memento );
+        event = decoder.toMessage( BOOTERCODE_JVM_EXIT_ERROR, memento );
         assertThat( event )
             .isInstanceOf( JvmExitErrorEvent.class );
         JvmExitErrorEvent jvmExitErrorEvent = (JvmExitErrorEvent) event;
@@ -313,7 +316,7 @@ public class EventDecoderTest
 
         memento = decoder.new Memento();
         memento.getData().addAll( asList( null, null, null ) );
-        event = decoder.toMessage( BOOTERCODE_JVM_EXIT_ERROR, NORMAL_RUN, memento );
+        event = decoder.toMessage( BOOTERCODE_JVM_EXIT_ERROR, memento );
         assertThat( event )
             .isInstanceOf( JvmExitErrorEvent.class );
         jvmExitErrorEvent = (JvmExitErrorEvent) event;
@@ -322,64 +325,70 @@ public class EventDecoderTest
 
         memento = decoder.new Memento();
         memento.getData().addAll( singletonList( "m" ) );
-        event = decoder.toMessage( BOOTERCODE_CONSOLE_INFO, NORMAL_RUN, memento );
+        event = decoder.toMessage( BOOTERCODE_CONSOLE_INFO, memento );
         assertThat( event ).isInstanceOf( ConsoleInfoEvent.class );
         assertThat( ( (ConsoleInfoEvent) event ).getMessage() ).isEqualTo( "m" );
 
         memento = decoder.new Memento();
         memento.getData().addAll( singletonList( "" ) );
-        event = decoder.toMessage( BOOTERCODE_CONSOLE_WARNING, NORMAL_RUN, memento );
+        event = decoder.toMessage( BOOTERCODE_CONSOLE_WARNING, memento );
         assertThat( event ).isInstanceOf( ConsoleWarningEvent.class );
         assertThat( ( (ConsoleWarningEvent) event ).getMessage() ).isEmpty();
 
         memento = decoder.new Memento();
         memento.getData().addAll( singletonList( null ) );
-        event = decoder.toMessage( BOOTERCODE_CONSOLE_DEBUG, NORMAL_RUN, memento );
+        event = decoder.toMessage( BOOTERCODE_CONSOLE_DEBUG, memento );
         assertThat( event ).isInstanceOf( ConsoleDebugEvent.class );
         assertThat( ( (ConsoleDebugEvent) event ).getMessage() ).isNull();
 
         memento = decoder.new Memento();
-        memento.getData().addAll( singletonList( "m" ) );
-        event = decoder.toMessage( BOOTERCODE_STDOUT, NORMAL_RUN, memento );
+        memento.getData().addAll( asList( NORMAL_RUN, 1L, "m" ) );
+        event = decoder.toMessage( BOOTERCODE_STDOUT, memento );
         assertThat( event ).isInstanceOf( StandardStreamOutEvent.class );
         assertThat( ( (StandardStreamOutEvent) event ).getMessage() ).isEqualTo( "m" );
         assertThat( ( (StandardStreamOutEvent) event ).getRunMode() ).isEqualTo( NORMAL_RUN );
+        assertThat( ( (StandardStreamOutEvent) event ).getTestRunId() ).isEqualTo( 1L );
 
         memento = decoder.new Memento();
-        memento.getData().addAll( singletonList( null ) );
-        event = decoder.toMessage( BOOTERCODE_STDOUT_NEW_LINE, RERUN_TEST_AFTER_FAILURE, memento );
+        memento.getData().addAll( asList( RERUN_TEST_AFTER_FAILURE, 1L, null ) );
+        event = decoder.toMessage( BOOTERCODE_STDOUT_NEW_LINE, memento );
         assertThat( event ).isInstanceOf( StandardStreamOutWithNewLineEvent.class );
         assertThat( ( (StandardStreamOutWithNewLineEvent) event ).getMessage() ).isNull();
         assertThat( ( (StandardStreamOutWithNewLineEvent) event ).getRunMode() ).isEqualTo( RERUN_TEST_AFTER_FAILURE );
+        assertThat( ( (StandardStreamOutWithNewLineEvent) event ).getTestRunId() ).isEqualTo( 1L );
 
         memento = decoder.new Memento();
-        memento.getData().addAll( singletonList( null ) );
-        event = decoder.toMessage( BOOTERCODE_STDERR, RERUN_TEST_AFTER_FAILURE, memento );
+        memento.getData().addAll( asList( RERUN_TEST_AFTER_FAILURE, 1L, null ) );
+        event = decoder.toMessage( BOOTERCODE_STDERR, memento );
         assertThat( event ).isInstanceOf( StandardStreamErrEvent.class );
         assertThat( ( (StandardStreamErrEvent) event ).getMessage() ).isNull();
         assertThat( ( (StandardStreamErrEvent) event ).getRunMode() ).isEqualTo( RERUN_TEST_AFTER_FAILURE );
+        assertThat( ( (StandardStreamErrEvent) event ).getTestRunId() ).isEqualTo( 1L );
 
         memento = decoder.new Memento();
-        memento.getData().addAll( singletonList( "abc" ) );
-        event = decoder.toMessage( BOOTERCODE_STDERR_NEW_LINE, NORMAL_RUN, memento );
+        memento.getData().addAll( asList( NORMAL_RUN, 1L, "abc" ) );
+        event = decoder.toMessage( BOOTERCODE_STDERR_NEW_LINE, memento );
         assertThat( event ).isInstanceOf( StandardStreamErrWithNewLineEvent.class );
         assertThat( ( (StandardStreamErrWithNewLineEvent) event ).getMessage() ).isEqualTo( "abc" );
         assertThat( ( (StandardStreamErrWithNewLineEvent) event ).getRunMode() ).isEqualTo( NORMAL_RUN );
+        assertThat( ( (StandardStreamErrWithNewLineEvent) event ).getTestRunId() ).isEqualTo( 1L );
 
         memento = decoder.new Memento();
-        memento.getData().addAll( asList( "key", "value" ) );
-        event = decoder.toMessage( BOOTERCODE_SYSPROPS, NORMAL_RUN, memento );
+        memento.getData().addAll( asList( NORMAL_RUN, 1L, "key", "value" ) );
+        event = decoder.toMessage( BOOTERCODE_SYSPROPS, memento );
         assertThat( event ).isInstanceOf( SystemPropertyEvent.class );
+        assertThat( ( (SystemPropertyEvent) event ).getRunMode() ).isEqualTo( NORMAL_RUN );
+        assertThat( ( (SystemPropertyEvent) event ).getTestRunId() ).isEqualTo( 1L );
         assertThat( ( (SystemPropertyEvent) event ).getKey() ).isEqualTo( "key" );
         assertThat( ( (SystemPropertyEvent) event ).getValue() ).isEqualTo( "value" );
-        assertThat( ( (SystemPropertyEvent) event ).getRunMode() ).isEqualTo( NORMAL_RUN );
 
         memento = decoder.new Memento();
-        memento.getData().addAll( asList( "source", "sourceText", "name", "nameText", "group", "message", 5,
-            "traceMessage", "smartTrimmedStackTrace", "stackTrace" ) );
-        event = decoder.toMessage( BOOTERCODE_TESTSET_STARTING, NORMAL_RUN, memento );
+        memento.getData().addAll( asList( NORMAL_RUN , 1L, "source", "sourceText", "name", "nameText", "group",
+            "message", 5, "traceMessage", "smartTrimmedStackTrace", "stackTrace" ) );
+        event = decoder.toMessage( BOOTERCODE_TESTSET_STARTING, memento );
         assertThat( event ).isInstanceOf( TestsetStartingEvent.class );
-        assertThat( ( (TestsetStartingEvent) event ).getRunMode() ).isEqualTo( NORMAL_RUN );
+        assertThat( ( (TestsetStartingEvent) event ).getReportEntry().getRunMode() ).isEqualTo( NORMAL_RUN );
+        assertThat( ( (TestsetStartingEvent) event ).getReportEntry().getTestRunId() ).isEqualTo( 1L );
         assertThat( ( (TestsetStartingEvent) event ).getReportEntry().getSourceName() ).isEqualTo( "source" );
         assertThat( ( (TestsetStartingEvent) event ).getReportEntry().getSourceText() ).isEqualTo( "sourceText" );
         assertThat( ( (TestsetStartingEvent) event ).getReportEntry().getName() ).isEqualTo( "name" );
@@ -396,11 +405,12 @@ public class EventDecoderTest
             .isEqualTo( "stackTrace" );
 
         memento = decoder.new Memento();
-        memento.getData().addAll( asList( "source", "sourceText", "name", "nameText", "group", null, 5,
+        memento.getData().addAll( asList( NORMAL_RUN, 1L, "source", "sourceText", "name", "nameText", "group", null, 5,
             "traceMessage", "smartTrimmedStackTrace", "stackTrace" ) );
-        event = decoder.toMessage( BOOTERCODE_TESTSET_COMPLETED, NORMAL_RUN, memento );
+        event = decoder.toMessage( BOOTERCODE_TESTSET_COMPLETED, memento );
         assertThat( event ).isInstanceOf( TestsetCompletedEvent.class );
-        assertThat( ( (TestsetCompletedEvent) event ).getRunMode() ).isEqualTo( NORMAL_RUN );
+        assertThat( ( (TestsetCompletedEvent) event ).getReportEntry().getRunMode() ).isEqualTo( NORMAL_RUN );
+        assertThat( ( (TestsetCompletedEvent) event ).getReportEntry().getTestRunId() ).isEqualTo( 1L );
         assertThat( ( (TestsetCompletedEvent) event ).getReportEntry().getSourceName() ).isEqualTo( "source" );
         assertThat( ( (TestsetCompletedEvent) event ).getReportEntry().getSourceText() ).isEqualTo( "sourceText" );
         assertThat( ( (TestsetCompletedEvent) event ).getReportEntry().getName() ).isEqualTo( "name" );
@@ -417,11 +427,12 @@ public class EventDecoderTest
             .isEqualTo( "stackTrace" );
 
         memento = decoder.new Memento();
-        memento.getData().addAll( asList( "source", "sourceText", "name", "nameText", "group", "message", 5,
-            null, "smartTrimmedStackTrace", "stackTrace" ) );
-        event = decoder.toMessage( BOOTERCODE_TEST_STARTING, NORMAL_RUN, memento );
+        memento.getData().addAll( asList( NORMAL_RUN, 1L, "source", "sourceText", "name", "nameText", "group",
+            "message", 5, null, "smartTrimmedStackTrace", "stackTrace" ) );
+        event = decoder.toMessage( BOOTERCODE_TEST_STARTING, memento );
         assertThat( event ).isInstanceOf( TestStartingEvent.class );
-        assertThat( ( (TestStartingEvent) event ).getRunMode() ).isEqualTo( NORMAL_RUN );
+        assertThat( ( (TestStartingEvent) event ).getReportEntry().getRunMode() ).isEqualTo( NORMAL_RUN );
+        assertThat( ( (TestStartingEvent) event ).getReportEntry().getTestRunId() ).isEqualTo( 1L );
         assertThat( ( (TestStartingEvent) event ).getReportEntry().getSourceName() ).isEqualTo( "source" );
         assertThat( ( (TestStartingEvent) event ).getReportEntry().getSourceText() ).isEqualTo( "sourceText" );
         assertThat( ( (TestStartingEvent) event ).getReportEntry().getName() ).isEqualTo( "name" );
@@ -438,11 +449,12 @@ public class EventDecoderTest
             .isEqualTo( "stackTrace" );
 
         memento = decoder.new Memento();
-        memento.getData()
-            .addAll( asList( "source", "sourceText", "name", "nameText", "group", "message", 5, null, null, null ) );
-        event = decoder.toMessage( BOOTERCODE_TEST_SUCCEEDED, NORMAL_RUN, memento );
+        memento.getData().addAll( asList( NORMAL_RUN, 1L, "source", "sourceText", "name", "nameText", "group",
+            "message", 5, null, null, null ) );
+        event = decoder.toMessage( BOOTERCODE_TEST_SUCCEEDED, memento );
         assertThat( event ).isInstanceOf( TestSucceededEvent.class );
-        assertThat( ( (TestSucceededEvent) event ).getRunMode() ).isEqualTo( NORMAL_RUN );
+        assertThat( ( (TestSucceededEvent) event ).getReportEntry().getRunMode() ).isEqualTo( NORMAL_RUN );
+        assertThat( ( (TestSucceededEvent) event ).getReportEntry().getTestRunId() ).isEqualTo( 1L );
         assertThat( ( (TestSucceededEvent) event ).getReportEntry().getSourceName() ).isEqualTo( "source" );
         assertThat( ( (TestSucceededEvent) event ).getReportEntry().getSourceText() ).isEqualTo( "sourceText" );
         assertThat( ( (TestSucceededEvent) event ).getReportEntry().getName() ).isEqualTo( "name" );
@@ -453,11 +465,12 @@ public class EventDecoderTest
         assertThat( ( (TestSucceededEvent) event ).getReportEntry().getStackTraceWriter() ).isNull();
 
         memento = decoder.new Memento();
-        memento.getData().addAll( asList( "source", null, "name", null, "group", null, 5,
+        memento.getData().addAll( asList( RERUN_TEST_AFTER_FAILURE, 1L, "source", null, "name", null, "group", null, 5,
             "traceMessage", "smartTrimmedStackTrace", "stackTrace" ) );
-        event = decoder.toMessage( BOOTERCODE_TEST_FAILED, RERUN_TEST_AFTER_FAILURE, memento );
+        event = decoder.toMessage( BOOTERCODE_TEST_FAILED, memento );
         assertThat( event ).isInstanceOf( TestFailedEvent.class );
-        assertThat( ( (TestFailedEvent) event ).getRunMode() ).isEqualTo( RERUN_TEST_AFTER_FAILURE );
+        assertThat( ( (TestFailedEvent) event ).getReportEntry().getRunMode() ).isEqualTo( RERUN_TEST_AFTER_FAILURE );
+        assertThat( ( (TestFailedEvent) event ).getReportEntry().getTestRunId() ).isEqualTo( 1L );
         assertThat( ( (TestFailedEvent) event ).getReportEntry().getSourceName() ).isEqualTo( "source" );
         assertThat( ( (TestFailedEvent) event ).getReportEntry().getSourceText() ).isNull();
         assertThat( ( (TestFailedEvent) event ).getReportEntry().getName() ).isEqualTo( "name" );
@@ -474,10 +487,12 @@ public class EventDecoderTest
             .isEqualTo( "stackTrace" );
 
         memento = decoder.new Memento();
-        memento.getData().addAll( asList( "source", null, "name", null, null, null, 5, null, null, "stackTrace" ) );
-        event = decoder.toMessage( BOOTERCODE_TEST_SKIPPED, NORMAL_RUN, memento );
+        memento.getData().addAll( asList( NORMAL_RUN, 1L, "source", null, "name", null, null, null, 5, null, null,
+            "stackTrace" ) );
+        event = decoder.toMessage( BOOTERCODE_TEST_SKIPPED, memento );
         assertThat( event ).isInstanceOf( TestSkippedEvent.class );
-        assertThat( ( (TestSkippedEvent) event ).getRunMode() ).isEqualTo( NORMAL_RUN );
+        assertThat( ( (TestSkippedEvent) event ).getReportEntry().getRunMode() ).isEqualTo( NORMAL_RUN );
+        assertThat( ( (TestSkippedEvent) event ).getReportEntry().getTestRunId() ).isEqualTo( 1L );
         assertThat( ( (TestSkippedEvent) event ).getReportEntry().getSourceName() ).isEqualTo( "source" );
         assertThat( ( (TestSkippedEvent) event ).getReportEntry().getSourceText() ).isNull();
         assertThat( ( (TestSkippedEvent) event ).getReportEntry().getName() ).isEqualTo( "name" );
@@ -496,11 +511,12 @@ public class EventDecoderTest
             .isEqualTo( "stackTrace" );
 
         memento = decoder.new Memento();
-        memento.getData()
-            .addAll( asList( "source", null, "name", "nameText", null, null, 0, null, null, "stackTrace" ) );
-        event = decoder.toMessage( BOOTERCODE_TEST_ERROR, NORMAL_RUN, memento );
+        memento.getData().addAll( asList( NORMAL_RUN, 1L, "source", null, "name", "nameText", null, null, 0, null, null,
+            "stackTrace" ) );
+        event = decoder.toMessage( BOOTERCODE_TEST_ERROR, memento );
         assertThat( event ).isInstanceOf( TestErrorEvent.class );
-        assertThat( ( (TestErrorEvent) event ).getRunMode() ).isEqualTo( NORMAL_RUN );
+        assertThat( ( (TestErrorEvent) event ).getReportEntry().getRunMode() ).isEqualTo( NORMAL_RUN );
+        assertThat( ( (TestErrorEvent) event ).getReportEntry().getTestRunId() ).isEqualTo( 1L );
         assertThat( ( (TestErrorEvent) event ).getReportEntry().getSourceName() ).isEqualTo( "source" );
         assertThat( ( (TestErrorEvent) event ).getReportEntry().getSourceText() ).isNull();
         assertThat( ( (TestErrorEvent) event ).getReportEntry().getName() ).isEqualTo( "name" );
@@ -519,10 +535,12 @@ public class EventDecoderTest
             .isEqualTo( "stackTrace" );
 
         memento = decoder.new Memento();
-        memento.getData().addAll( asList( "source", null, "name", null, "group", null, 5, null, null, "stackTrace" ) );
-        event = decoder.toMessage( BOOTERCODE_TEST_ASSUMPTIONFAILURE, NORMAL_RUN, memento );
+        memento.getData().addAll( asList( NORMAL_RUN, 1L, "source", null, "name", null, "group", null, 5, null, null,
+            "stackTrace" ) );
+        event = decoder.toMessage( BOOTERCODE_TEST_ASSUMPTIONFAILURE, memento );
         assertThat( event ).isInstanceOf( TestAssumptionFailureEvent.class );
-        assertThat( ( (TestAssumptionFailureEvent) event ).getRunMode() ).isEqualTo( NORMAL_RUN );
+        assertThat( ( (TestAssumptionFailureEvent) event ).getReportEntry().getRunMode() ).isEqualTo( NORMAL_RUN );
+        assertThat( ( (TestAssumptionFailureEvent) event ).getReportEntry().getTestRunId() ).isEqualTo( 1L );
         assertThat( ( (TestAssumptionFailureEvent) event ).getReportEntry().getSourceName() ).isEqualTo( "source" );
         assertThat( ( (TestAssumptionFailureEvent) event ).getReportEntry().getSourceText() ).isNull();
         assertThat( ( (TestAssumptionFailureEvent) event ).getReportEntry().getName() ).isEqualTo( "name" );
@@ -544,8 +562,10 @@ public class EventDecoderTest
     @Test
     public void shouldRecognizeEmptyStream4ReportEntry()
     {
-        ReportEntry reportEntry = EventDecoder.newReportEntry( "", "", "", "", "", "", null, "", "", "" );
+        ReportEntry reportEntry = newReportEntry( NORMAL_RUN, 1L, "", "", "", "", "", "", null, "", "", "" );
         assertThat( reportEntry ).isNotNull();
+        assertThat( reportEntry.getRunMode() ).isEqualTo( NORMAL_RUN );
+        assertThat( reportEntry.getTestRunId() ).isEqualTo( 1L );
         assertThat( reportEntry.getStackTraceWriter() ).isNotNull();
         assertThat( reportEntry.getStackTraceWriter().smartTrimmedStackTrace() ).isEmpty();
         assertThat( reportEntry.getStackTraceWriter().writeTraceToString() ).isEmpty();
@@ -587,7 +607,7 @@ public class EventDecoderTest
         when( reportEntry.getSourceText() ).thenReturn( "test class display name" );
         when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
 
-        ReportEntry decodedReportEntry = EventDecoder.newReportEntry( reportEntry.getSourceName(),
+        ReportEntry decodedReportEntry = newReportEntry( NORMAL_RUN, 1L, reportEntry.getSourceName(),
             reportEntry.getSourceText(), reportEntry.getName(), reportEntry.getNameText(), reportEntry.getGroup(),
             reportEntry.getMessage(), null, null, null, null );
 
@@ -600,7 +620,7 @@ public class EventDecoderTest
         assertThat( decodedReportEntry.getMessage() ).isEqualTo( reportEntry.getMessage() );
         assertThat( decodedReportEntry.getStackTraceWriter() ).isNull();
 
-        decodedReportEntry = EventDecoder.newReportEntry( reportEntry.getSourceName(),
+        decodedReportEntry = newReportEntry( NORMAL_RUN, 1L, reportEntry.getSourceName(),
             reportEntry.getSourceText(), reportEntry.getName(), reportEntry.getNameText(), reportEntry.getGroup(),
             reportEntry.getMessage(), null, exceptionMessage, smartStackTrace, null );
 
@@ -620,7 +640,7 @@ public class EventDecoderTest
         assertThat( decodedReportEntry.getStackTraceWriter().writeTraceToString() )
             .isNull();
 
-        decodedReportEntry = EventDecoder.newReportEntry( reportEntry.getSourceName(),
+        decodedReportEntry = newReportEntry( NORMAL_RUN, 1L, reportEntry.getSourceName(),
             reportEntry.getSourceText(), reportEntry.getName(), reportEntry.getNameText(), reportEntry.getGroup(),
             reportEntry.getMessage(), 1003, exceptionMessage, smartStackTrace, null );
 
@@ -640,7 +660,7 @@ public class EventDecoderTest
         assertThat( decodedReportEntry.getStackTraceWriter().writeTraceToString() )
             .isNull();
 
-        decodedReportEntry = EventDecoder.newReportEntry( reportEntry.getSourceName(),
+        decodedReportEntry = newReportEntry( NORMAL_RUN, 1L, reportEntry.getSourceName(),
             reportEntry.getSourceText(), reportEntry.getName(), reportEntry.getNameText(), reportEntry.getGroup(),
             reportEntry.getMessage(), 1003, exceptionMessage, smartStackTrace, stackTrace );
 
@@ -661,7 +681,7 @@ public class EventDecoderTest
         assertThat( decodedReportEntry.getStackTraceWriter().writeTraceToString() ).isEqualTo( stackTrace );
         assertThat( decodedReportEntry.getStackTraceWriter().writeTrimmedTraceToString() ).isEqualTo( stackTrace );
 
-        decodedReportEntry = EventDecoder.newReportEntry( reportEntry.getSourceName(),
+        decodedReportEntry = newReportEntry( NORMAL_RUN, 1L, reportEntry.getSourceName(),
             reportEntry.getSourceText(), reportEntry.getName(), reportEntry.getNameText(), reportEntry.getGroup(),
             reportEntry.getMessage(), 1003, exceptionMessage, smartStackTrace, trimmedStackTrace );
 

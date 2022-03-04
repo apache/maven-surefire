@@ -38,7 +38,6 @@ import static org.apache.maven.surefire.api.booter.MasterProcessCommand.RUN_CLAS
 import static org.apache.maven.surefire.api.booter.MasterProcessCommand.SHUTDOWN;
 import static org.apache.maven.surefire.api.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
 import static org.apache.maven.surefire.api.booter.MasterProcessCommand.TEST_SET_FINISHED;
-import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 
 /**
  *
@@ -56,52 +55,50 @@ public class CommandEncoder extends AbstractStreamEncoder<MasterProcessCommand> 
     public void sendRunClass( String testClassName ) throws IOException
     {
         CharsetEncoder encoder = newCharsetEncoder();
-        int bufferMaxLength =
-            estimateBufferLength( RUN_CLASS.getOpcodeLength(), NORMAL_RUN, encoder, 0, testClassName );
+        int bufferMaxLength = estimateBufferLength( RUN_CLASS.getOpcodeLength(), null, encoder, 0, 0, testClassName );
         ByteBuffer result = ByteBuffer.allocate( bufferMaxLength );
-        encode( encoder, result, RUN_CLASS, NORMAL_RUN, testClassName );
+        encode( encoder, result, RUN_CLASS, testClassName );
         write( result, true );
     }
 
     public void sendTestSetFinished() throws IOException
     {
-        int bufferMaxLength = estimateBufferLength( TEST_SET_FINISHED.getOpcodeLength(), null, null, 0 );
+        int bufferMaxLength = estimateBufferLength( TEST_SET_FINISHED.getOpcodeLength(), null, null, 0, 0 );
         ByteBuffer result = ByteBuffer.allocate( bufferMaxLength );
-        encodeHeader( result, TEST_SET_FINISHED, null );
+        encodeHeader( result, TEST_SET_FINISHED );
         write( result, true );
     }
 
     public void sendSkipSinceNextTest() throws IOException
     {
-        int bufferMaxLength = estimateBufferLength( SKIP_SINCE_NEXT_TEST.getOpcodeLength(), null, null, 0 );
+        int bufferMaxLength = estimateBufferLength( SKIP_SINCE_NEXT_TEST.getOpcodeLength(), null, null, 0, 0 );
         ByteBuffer result = ByteBuffer.allocate( bufferMaxLength );
-        encodeHeader( result, SKIP_SINCE_NEXT_TEST, null );
+        encodeHeader( result, SKIP_SINCE_NEXT_TEST );
         write( result, true );
     }
 
     public void sendShutdown( String shutdownData ) throws IOException
     {
         CharsetEncoder encoder = newCharsetEncoder();
-        int bufferMaxLength =
-            estimateBufferLength( SHUTDOWN.getOpcodeLength(), null, encoder, 0, shutdownData );
+        int bufferMaxLength = estimateBufferLength( SHUTDOWN.getOpcodeLength(), null, encoder, 0, 0, shutdownData );
         ByteBuffer result = ByteBuffer.allocate( bufferMaxLength );
-        encode( encoder, result, SHUTDOWN, null, shutdownData );
+        encode( encoder, result, SHUTDOWN, shutdownData );
         write( result, true );
     }
 
     public void sendNoop() throws IOException
     {
-        int bufferMaxLength = estimateBufferLength( NOOP.getOpcodeLength(), null, null, 0 );
+        int bufferMaxLength = estimateBufferLength( NOOP.getOpcodeLength(), null, null, 0, 0 );
         ByteBuffer result = ByteBuffer.allocate( bufferMaxLength );
-        encodeHeader( result, NOOP, null );
+        encodeHeader( result, NOOP );
         write( result, true );
     }
 
     public void sendByeAck() throws IOException
     {
-        int bufferMaxLength = estimateBufferLength( BYE_ACK.getOpcodeLength(), null, null, 0 );
+        int bufferMaxLength = estimateBufferLength( BYE_ACK.getOpcodeLength(), null, null, 0, 0 );
         ByteBuffer result = ByteBuffer.allocate( bufferMaxLength );
-        encodeHeader( result, BYE_ACK, null );
+        encodeHeader( result, BYE_ACK );
         write( result, true );
     }
 

@@ -216,6 +216,8 @@ public class ForkedProcessEventNotifierTest
             when( stackTraceWriter.writeTraceToString() ).thenReturn( exceptionStackTrace );
 
             ReportEntry reportEntry = mock( ReportEntry.class );
+            when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+            when( reportEntry.getTestRunId() ).thenReturn( 1L );
             when( reportEntry.getElapsed() ).thenReturn( 7 );
             when( reportEntry.getGroup() ).thenReturn( null );
             when( reportEntry.getMessage() ).thenReturn( null );
@@ -531,7 +533,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.testOutput( (TestOutputReportEntry) stdOut( "msg" ) );
+            encoder.testOutput( new TestOutputReportEntry( stdOut( "msg" ), NORMAL_RUN, 1L ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
@@ -570,7 +572,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.testOutput( (TestOutputReportEntry) stdOut( "" ) );
+            encoder.testOutput( new TestOutputReportEntry( stdOut( "" ), NORMAL_RUN, 1L ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
@@ -609,7 +611,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.testOutput( (TestOutputReportEntry) stdOut( null ) );
+            encoder.testOutput( new TestOutputReportEntry( stdOut( null ), NORMAL_RUN, 1L ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
@@ -648,7 +650,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.testOutput( stdOutln( "" ) );
+            encoder.testOutput( new TestOutputReportEntry( stdOutln( "" ), NORMAL_RUN, 1L ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
@@ -687,7 +689,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.testOutput( stdOutln( null ) );
+            encoder.testOutput( new TestOutputReportEntry( stdOutln( null ), NORMAL_RUN, 1L ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
@@ -726,7 +728,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.testOutput( stdErr( "msg" ) );
+            encoder.testOutput( new TestOutputReportEntry( stdErr( "msg" ), NORMAL_RUN, 1L ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
@@ -922,6 +924,8 @@ public class ForkedProcessEventNotifierTest
             }
 
             TestSetReportEntry reportEntry = mock( TestSetReportEntry.class );
+            when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+            when( reportEntry.getTestRunId() ).thenReturn( 1L );
             when( reportEntry.getElapsed() ).thenReturn( elapsed );
             when( reportEntry.getGroup() ).thenReturn( "this group" );
             when( reportEntry.getMessage() ).thenReturn( reportedMessage );
@@ -1100,7 +1104,7 @@ public class ForkedProcessEventNotifierTest
             this.hasStackTrace = hasStackTrace;
         }
 
-        public void handle( RunMode runMode, ReportEntry reportEntry )
+        public void handle( ReportEntry reportEntry )
         {
             called.set( true );
             assertThat( reportEntry.getSourceName() ).isEqualTo( this.reportEntry.getSourceName() );

@@ -21,7 +21,6 @@ package org.apache.maven.surefire.api.stream;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
-import org.apache.maven.surefire.api.report.RunMode;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
@@ -73,6 +72,7 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
     private static final int DELIMITER_LENGTH = 1;
     private static final int BYTE_LENGTH = 1;
     private static final int INT_LENGTH = 4;
+    private static final int LONG_LENGTH = 8;
 
     private final ReadableByteChannel channel;
     private final ForkNodeArguments arguments;
@@ -98,7 +98,7 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
     protected abstract ST[] nextSegmentType( @Nonnull MT messageType );
 
     @Nonnull
-    protected abstract M toMessage( @Nonnull MT messageType, RunMode runMode, @Nonnull Memento memento )
+    protected abstract M toMessage( @Nonnull MT messageType, @Nonnull Memento memento )
         throws MalformedFrameException;
 
     @Nonnull
@@ -229,6 +229,27 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
         return i;
     }
 
+    protected Long readLong( @Nonnull Memento memento ) throws IOException, MalformedFrameException
+    {
+        read( memento, BYTE_LENGTH );
+        boolean isNullObject = memento.getByteBuffer().get() == 0;
+        if ( isNullObject )
+        {
+            read( memento, DELIMITER_LENGTH );
+            checkDelimiter( memento );
+            return null;
+        }
+        return readLongPrivate( memento );
+    }
+
+    protected long readLongPrivate( @Nonnull Memento memento ) throws IOException, MalformedFrameException
+    {
+        read( memento, LONG_LENGTH + DELIMITER_LENGTH );
+        long num = memento.getByteBuffer().getLong();
+        checkDelimiter( memento );
+        return num;
+    }
+
     @SuppressWarnings( "checkstyle:magicnumber" )
     protected final void checkDelimiter( Memento memento ) throws MalformedFrameException
     {
@@ -249,10 +270,11 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
         try
         {
             byte[] header = getEncodedMagicNumber();
+            byte[] bbArray = bb.array();
             for ( int start = bb.arrayOffset() + ( (Buffer) bb ).position(), length = header.length;
                   shift < length; shift++ )
             {
-                if ( bb.array()[shift + start] != header[shift] )
+                if ( bbArray[shift + start] != header[shift] )
                 {
                     throw new MalformedFrameException( memento.getLine().getPositionByteBuffer(),
                         ( (Buffer) bb ).position() + shift );
@@ -265,17 +287,6 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
         }
 
         checkDelimiter( memento );
-    }
-
-    protected void checkArguments( RunMode runMode, Memento memento, int expectedDataElements )
-        throws MalformedFrameException
-    {
-        if ( runMode == null )
-        {
-            throw new MalformedFrameException( memento.getLine().getPositionByteBuffer(),
-                ( (Buffer) memento.getByteBuffer() ).position() );
-        }
-        checkArguments( memento, expectedDataElements );
     }
 
     protected void checkArguments( Memento memento, int expectedDataElements )
@@ -553,6 +564,12 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
         public List<Object> getData()
         {
             return data;
+        }
+
+        public <T> T ofDataAt( int indexOfData )
+        {
+            //noinspection unchecked
+            return (T) data.get( indexOfData );
         }
 
         public CharBuffer getCharBuffer()

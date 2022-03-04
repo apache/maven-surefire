@@ -21,7 +21,6 @@ package org.apache.maven.surefire.api.event;
 
 import org.apache.maven.surefire.api.booter.ForkedProcessEventType;
 import org.apache.maven.surefire.api.report.ReportEntry;
-import org.apache.maven.surefire.api.report.RunMode;
 
 /**
  * The base class of an event of test control.
@@ -31,19 +30,12 @@ import org.apache.maven.surefire.api.report.RunMode;
  */
 public abstract class AbstractTestControlEvent<T extends ReportEntry> extends Event
 {
-    private final RunMode runMode;
     private final T reportEntry;
 
-    public AbstractTestControlEvent( ForkedProcessEventType eventType, RunMode runMode, T reportEntry )
+    public AbstractTestControlEvent( ForkedProcessEventType eventType, T reportEntry )
     {
         super( eventType );
-        this.runMode = runMode;
         this.reportEntry = reportEntry;
-    }
-
-    public RunMode getRunMode()
-    {
-        return runMode;
     }
 
     public T getReportEntry()

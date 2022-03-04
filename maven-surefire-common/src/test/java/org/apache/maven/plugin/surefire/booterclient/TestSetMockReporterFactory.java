@@ -25,6 +25,7 @@ import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 
 import java.io.File;
@@ -43,7 +44,7 @@ public class TestSetMockReporterFactory
     }
 
     @Override
-    public TestReportListener createTestReportListener()
+    public TestReportListener<TestOutputReportEntry> createTestReportListener()
     {
         return new MockReporter();
     }

@@ -33,7 +33,7 @@ public enum ForkedProcessEventType
     /**
      * This is the opcode "sys-prop". The frame is composed of segments and the separator characters ':'
      * <pre>
-     * :maven-surefire-event:sys-prop:RunMode:UTF-8:0xFFFFFFFF:key:0xFFFFFFFF:value:
+     * :maven-surefire-event:sys-prop:RunMode:0x0000000100000000:5:UTF-8:0xFFFFFFFF:key:0xFFFFFFFF:value:
      * </pre>
      * The constructor with one argument:
      * <ul>
@@ -45,7 +45,7 @@ public enum ForkedProcessEventType
     /**
      * This is the opcode "testset-starting". The frame is composed of segments and the separator characters ':'
      * <pre>
-     * :maven-surefire-event:testset-starting:RunMode:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
+     * :maven-surefire-event:testset-starting:RunMode:0x0000000100000000:5:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
      * </pre>
      * The constructor with one argument:
      * <ul>
@@ -57,7 +57,7 @@ public enum ForkedProcessEventType
     /**
      * This is the opcode "testset-completed". The frame is composed of segments and the separator characters ':'
      * <pre>
-     * :maven-surefire-event:testset-completed:RunMode:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
+     * :maven-surefire-event:testset-completed:RunMode:0x0000000100000000:5:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
      * </pre>
      * The constructor with one argument:
      * <ul>
@@ -69,7 +69,7 @@ public enum ForkedProcessEventType
     /**
      * This is the opcode "test-starting". The frame is composed of segments and the separator characters ':'
      * <pre>
-     * :maven-surefire-event:test-starting:RunMode:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
+     * :maven-surefire-event:test-starting:RunMode:0x0000000100000001:5:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
      * </pre>
      * The constructor with one argument:
      * <ul>
@@ -81,7 +81,7 @@ public enum ForkedProcessEventType
     /**
      * This is the opcode "test-succeeded". The frame is composed of segments and the separator characters ':'
      * <pre>
-     * :maven-surefire-event:test-succeeded:RunMode:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
+     * :maven-surefire-event:test-succeeded:RunMode:0x0000000100000001:5:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
      * </pre>
      * The constructor with one argument:
      * <ul>
@@ -93,7 +93,7 @@ public enum ForkedProcessEventType
     /**
      * This is the opcode "test-failed". The frame is composed of segments and the separator characters ':'
      * <pre>
-     * :maven-surefire-event:test-failed:RunMode:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
+     * :maven-surefire-event:test-failed:RunMode:0x0000000100000001:5:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
      * </pre>
      * The constructor with one argument:
      * <ul>
@@ -105,7 +105,7 @@ public enum ForkedProcessEventType
     /**
      * This is the opcode "test-skipped". The frame is composed of segments and the separator characters ':'
      * <pre>
-     * :maven-surefire-event:test-skipped:RunMode:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
+     * :maven-surefire-event:test-skipped:RunMode:0x0000000100000001:5:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
      * </pre>
      * The constructor with one argument:
      * <ul>
@@ -117,7 +117,7 @@ public enum ForkedProcessEventType
     /**
      * This is the opcode "test-error". The frame is composed of segments and the separator characters ':'
      * <pre>
-     * :maven-surefire-event:test-error:RunMode:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
+     * :maven-surefire-event:test-error:RunMode:0x0000000100000001:5:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
      * </pre>
      * The constructor with one argument:
      * <ul>
@@ -129,7 +129,7 @@ public enum ForkedProcessEventType
     /**
      * This is the opcode "test-assumption-failure". The frame is composed of segments and the separator characters ':'
      * <pre>
-     * :maven-surefire-event:test-assumption-failure:RunMode:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
+     * :maven-surefire-event:test-assumption-failure:RunMode:0x0000000100000001:5:UTF-8:0xFFFFFFFF:SourceName:0xFFFFFFFF:SourceText:0xFFFFFFFF:Name:0xFFFFFFFF:NameText:0xFFFFFFFF:Group:0xFFFFFFFF:Message:ElapsedTime (binary int):0xFFFFFFFF:LocalizedMessage:0xFFFFFFFF:SmartTrimmedStackTrace:0xFFFFFFFF:toStackTrace( stw, trimStackTraces ):
      * </pre>
      * The constructor with one argument:
      * <ul>
@@ -141,7 +141,7 @@ public enum ForkedProcessEventType
     /**
      * This is the opcode "std-out-stream". The frame is composed of segments and the separator characters ':'
      * <pre>
-     * :maven-surefire-event:std-out-stream:RunMode:UTF-8:0xFFFFFFFF:line:
+     * :maven-surefire-event:std-out-stream:RunMode:0x0000000100000001:5:UTF-8:0xFFFFFFFF:line:
      * </pre>
      * The constructor with one argument:
      * <ul>
@@ -153,7 +153,7 @@ public enum ForkedProcessEventType
     /**
      * This is the opcode "std-out-stream-new-line". The frame is composed of segments and the separator characters ':'
      * <pre>
-     * :maven-surefire-event:std-out-stream-new-line:RunMode:UTF-8:0xFFFFFFFF:line:
+     * :maven-surefire-event:std-out-stream-new-line:RunMode:0x0000000100000001:5:UTF-8:0xFFFFFFFF:line:
      * </pre>
      * The constructor with one argument:
      * <ul>
@@ -165,7 +165,7 @@ public enum ForkedProcessEventType
     /**
      * This is the opcode "std-err-stream". The frame is composed of segments and the separator characters ':'
      * <pre>
-     * :maven-surefire-event:std-err-stream:RunMode:UTF-8:0xFFFFFFFF:line:
+     * :maven-surefire-event:std-err-stream:RunMode:0x0000000100000001:5:UTF-8:0xFFFFFFFF:line:
      * </pre>
      * The constructor with one argument:
      * <ul>
@@ -177,7 +177,7 @@ public enum ForkedProcessEventType
     /**
      * This is the opcode "std-err-stream-new-line". The frame is composed of segments and the separator characters ':'
      * <pre>
-     * :maven-surefire-event:std-err-stream-new-line:RunMode:UTF-8:0xFFFFFFFF:line:
+     * :maven-surefire-event:std-err-stream-new-line:RunMode:0x0000000100000001:5:UTF-8:0xFFFFFFFF:line:
      * </pre>
      * The constructor with one argument:
      * <ul>
@@ -189,7 +189,7 @@ public enum ForkedProcessEventType
     /**
      * This is the opcode "console-info-log". The frame is composed of segments and the separator characters ':'
      * <pre>
-     * :maven-surefire-event:console-info-log:RunMode:UTF-8:0xFFFFFFFF:line:
+     * :maven-surefire-event:console-info-log:RunMode:5:UTF-8:0xFFFFFFFF:line:
      * </pre>
      * The constructor with one argument:
      * <ul>
@@ -201,7 +201,7 @@ public enum ForkedProcessEventType
     /**
      * This is the opcode "console-debug-log". The frame is composed of segments and the separator characters ':'
      * <pre>
-     * :maven-surefire-event:console-debug-log:RunMode:UTF-8:0xFFFFFFFF:line:
+     * :maven-surefire-event:console-debug-log:RunMode:5:UTF-8:0xFFFFFFFF:line:
      * </pre>
      * The constructor with one argument:
      * <ul>
@@ -213,7 +213,7 @@ public enum ForkedProcessEventType
     /**
      * This is the opcode "console-warning-log". The frame is composed of segments and the separator characters ':'
      * <pre>
-     * :maven-surefire-event:console-warning-log:RunMode:UTF-8:0xFFFFFFFF:line:
+     * :maven-surefire-event:console-warning-log:RunMode:5:UTF-8:0xFFFFFFFF:line:
      * </pre>
      * The constructor with one argument:
      * <ul>
@@ -225,7 +225,7 @@ public enum ForkedProcessEventType
     /**
      * This is the opcode "console-error-log". The frame is composed of segments and the separator characters ':'
      * <pre>
-     * :maven-surefire-event:console-error-log:RunMode:UTF-8:0xFFFFFFFF:line:
+     * :maven-surefire-event:console-error-log:RunMode:5:UTF-8:0xFFFFFFFF:line:
      * </pre>
      * The constructor with one argument:
      * <ul>

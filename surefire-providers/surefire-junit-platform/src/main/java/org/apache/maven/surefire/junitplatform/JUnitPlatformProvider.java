@@ -123,6 +123,7 @@ public class JUnitPlatformProvider
         try
         {
             RunListenerAdapter adapter = new RunListenerAdapter( reporterFactory.createTestReportListener() );
+            adapter.setRunMode( NORMAL_RUN );
             startCapture( adapter );
             setupJunitLogger();
             if ( forkTestSet instanceof TestsToRun )
@@ -169,7 +170,6 @@ public class JUnitPlatformProvider
 
     private void invokeAllTests( TestsToRun testsToRun, RunListenerAdapter adapter )
     {
-        adapter.setRunMode( NORMAL_RUN );
         try
         {
             execute( testsToRun, adapter );

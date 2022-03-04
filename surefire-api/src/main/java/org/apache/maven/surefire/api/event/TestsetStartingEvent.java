@@ -19,7 +19,6 @@ package org.apache.maven.surefire.api.event;
  * under the License.
  */
 
-import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TESTSET_STARTING;
@@ -31,8 +30,8 @@ import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTER
  */
 public final class TestsetStartingEvent extends AbstractTestControlEvent<TestSetReportEntry>
 {
-    public TestsetStartingEvent( RunMode runMode, TestSetReportEntry reportEntry )
+    public TestsetStartingEvent( TestSetReportEntry reportEntry )
     {
-        super( BOOTERCODE_TESTSET_STARTING, runMode, reportEntry );
+        super( BOOTERCODE_TESTSET_STARTING, reportEntry );
     }
 }
