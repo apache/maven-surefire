@@ -2385,7 +2385,8 @@ public abstract class AbstractSurefireMojo
 
     private Artifact getJUnit5Artifact()
     {
-        if ( getProjectArtifactMap().get( "org.junit.platform:junit-platform-runner" ) != null )
+        if ( getProjectArtifactMap().containsKey( "org.junit.platform:junit-platform-runner" )
+            || getPluginArtifactMap().containsKey( "org.junit.platform:junit-platform-runner" ) )
         {
             return null;
         }
@@ -2393,7 +2394,7 @@ public abstract class AbstractSurefireMojo
         Artifact artifact = getPluginArtifactMap().get( "org.junit.platform:junit-platform-engine" );
         if ( artifact == null )
         {
-            return getProjectArtifactMap().get( "org.junit.platform:junit-platform-commons" );
+            artifact = getProjectArtifactMap().get( "org.junit.platform:junit-platform-commons" );
         }
 
         return artifact;
