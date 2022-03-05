@@ -414,7 +414,8 @@ Using JUnit 5 Platform
 ** JUnit5 Suite
 
   For more information see this
-  {{{https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit5-suite}example}}.
+  {{{https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit5-suite}example}}
+  and the {{{https://junit.org/junit5/docs/current/user-guide/#junit-platform-suite-engine}tutorial}}.
 
 +---+
 <dependencies>
