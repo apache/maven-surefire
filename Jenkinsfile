@@ -111,7 +111,9 @@ timeout(time: 12, unit: 'HOURS') {
         currentBuild.result = 'FAILURE'
         throw e
     } finally {
-        jenkinsNotify()
+        if (env.BRANCH_NAME == 'master') {
+            jenkinsNotify()            
+        }    
     }
 }
 
