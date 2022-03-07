@@ -46,6 +46,5 @@ public class Surefire1426JvmCrashShouldNotBeIgnoredIT
             .assertThatLogLine( containsString( "BUILD SUCCESS" ), is( 0 ) )
             .verifyTextInLog( "BUILD FAILURE" )
             .loadLogLines();
-        logs.stream().forEach( line -> System.out.println( line ) );
     }
 }
