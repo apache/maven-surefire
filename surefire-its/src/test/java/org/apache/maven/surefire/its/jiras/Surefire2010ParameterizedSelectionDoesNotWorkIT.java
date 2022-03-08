@@ -21,20 +21,25 @@ package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
+
 /**
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-2010">SUREFIRE-2010</a>
  */
-public class Surefire2010ParameterizedSelectionDoesNotWorkIT extends SurefireJUnit4IntegrationTestCase
+public class Surefire2010ParameterizedSelectionDoesNotWorkIT
+    extends SurefireJUnit4IntegrationTestCase
 {
-   @Test
-   public void testJUnit4() 
-   {
-      OutputValidator validator = unpack( "surefire-2010-parameterized-selection-does-not-work" ).executeTest();
-   }
-   
-   public void testJUnit5() 
-   {
-      
-   }
+    @Test
+    public void testJUnit4()
+    {
+        OutputValidator validator = unpack( "surefire-2010-parameterized-selection-does-not-work" ).executeTest();
+        TestFile surefireReportsFile = validator.getSurefireReportsFile( "de.dagere.peass.ExampleTestJUnit4.txt" );
+        surefireReportsFile.assertContainsText( "Tests run: 2" );
+    }
+
+    public void testJUnit5()
+    {
+
+    }
 }

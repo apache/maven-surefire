@@ -59,6 +59,9 @@
     <plugins>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <forkMode>once</forkMode>
+        </configuration>
       </plugin>
     </plugins>
   </build>
