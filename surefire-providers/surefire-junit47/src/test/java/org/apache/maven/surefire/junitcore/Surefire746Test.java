@@ -44,18 +44,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.booter.BaseProviderFactory;
 import org.apache.maven.surefire.api.booter.ProviderParameterNames;
-import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
-import org.apache.maven.surefire.common.junit4.Notifier;
-import org.apache.maven.surefire.api.report.DefaultDirectConsoleReporter;
 import org.apache.maven.surefire.api.report.ReporterConfiguration;
 import org.apache.maven.surefire.api.report.ReporterFactory;
-import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.TestsToRun;
-
+import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
+import org.apache.maven.surefire.common.junit4.Notifier;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -66,6 +64,8 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
 
 import static junit.framework.Assert.assertEquals;
+import static org.apache.maven.surefire.junitcore.ConcurrentRunListener.createInstance;
+import static org.mockito.Mockito.mock;
 
 /**
  * {@code
@@ -120,8 +120,7 @@ public class Surefire746Test
 
         final Map<String, TestSet> testSetMap = new ConcurrentHashMap<>();
 
-        RunListener listener = ConcurrentRunListener.createInstance( testSetMap, reporterFactory, false, false,
-                new DefaultDirectConsoleReporter( System.out ) );
+        ConcurrentRunListener listener = createInstance( testSetMap, reporterFactory, false, false );
 
         TestsToRun testsToRun = new TestsToRun( Collections.<Class<?>>singleton( TestClassTest.class ) );
 
@@ -136,8 +135,8 @@ public class Surefire746Test
             // and rethrows a failure which happened in listener
             exception.expect( TestSetFailedException.class );
             JUnit4RunListener dummy = new JUnit4RunListener( new MockReporter() );
-            new JUnitCoreWrapper( new Notifier( dummy, 0 ), jUnitCoreParameters,
-                    new DefaultDirectConsoleReporter( System.out ) ).execute( testsToRun, customRunListeners, null );
+            new JUnitCoreWrapper( new Notifier( dummy, 0 ), jUnitCoreParameters, mock( ConsoleLogger.class ) )
+                .execute( testsToRun, customRunListeners, null );
         }
         finally
         {
@@ -172,13 +171,13 @@ public class Surefire746Test
         @Override
         public void run( RunNotifier notifier )
         {
-            notifier.addListener( new TestRunListener() );
+            notifier.addListener( new Listener() );
             super.run( notifier );
         }
 
     }
 
-    private static class TestRunListener extends org.junit.runner.notification.RunListener
+    private static class Listener extends org.junit.runner.notification.RunListener
     {
         @Override
         public void testFinished( Description description ) throws Exception

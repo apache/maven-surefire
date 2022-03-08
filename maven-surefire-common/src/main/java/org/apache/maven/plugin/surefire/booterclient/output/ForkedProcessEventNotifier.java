@@ -225,11 +225,10 @@ public final class ForkedProcessEventNotifier
         {
             ForkedProcessReportEventListener listener = reportEventListeners.get( eventType );
             AbstractTestControlEvent testControlEvent = (AbstractTestControlEvent) event;
-            RunMode mode = testControlEvent.getRunMode();
             ReportEntry reportEntry = testControlEvent.getReportEntry();
             if ( listener != null )
             {
-                listener.handle( mode, reportEntry );
+                listener.handle( reportEntry );
             }
         }
         else if ( event.isJvmExitError() )

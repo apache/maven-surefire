@@ -20,7 +20,6 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  */
 
 import org.apache.maven.surefire.api.report.ReportEntry;
-import org.apache.maven.surefire.api.report.RunMode;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -29,5 +28,5 @@ import org.apache.maven.surefire.api.report.RunMode;
  */
 public interface ForkedProcessReportEventListener<T extends ReportEntry>
 {
-    void handle( RunMode runMode, T reportEntry );
+    void handle( T reportEntry );
 }

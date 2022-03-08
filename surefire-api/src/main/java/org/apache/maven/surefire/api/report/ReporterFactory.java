@@ -29,11 +29,11 @@ import org.apache.maven.surefire.api.suite.RunResult;
 public interface ReporterFactory
 {
     /**
-     * Creates a reporter.
+     * Creates a reporter listener.
      *
-     * @return A reporter instance
+     * @return new reporter listener instance
      */
-    RunListener createReporter();
+    TestReportListener<TestOutputReportEntry> createTestReportListener();
 
     /**
      * Closes the factory, freeing resources allocated in the factory.

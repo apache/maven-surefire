@@ -22,14 +22,16 @@ package org.apache.maven.surefire.report;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+
+import junit.framework.TestCase;
 import org.apache.maven.plugin.surefire.report.FileReporter;
 import org.apache.maven.plugin.surefire.report.ReportEntryType;
 import org.apache.maven.plugin.surefire.report.TestSetStats;
 import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
-
-import junit.framework.TestCase;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
+
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 
 /**
  *
@@ -47,7 +49,7 @@ public class FileReporterTest
     public void testFileNameWithoutSuffix()
     {
         File reportDir = new File( "target" );
-        reportEntry = new SimpleReportEntry( getClass().getName(), null, TEST_NAME, null );
+        reportEntry = new SimpleReportEntry( NORMAL_RUN, 1L, getClass().getName(), null, TEST_NAME, null );
         WrappedReportEntry wrappedReportEntry =
             new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null );
         reporter = new FileReporter( reportDir, null, Charset.defaultCharset(), false, false, false );
@@ -69,7 +71,7 @@ public class FileReporterTest
     {
         File reportDir = new File( "target" );
         String suffixText = "sampleSuffixText";
-        reportEntry = new SimpleReportEntry( getClass().getName(), null, TEST_NAME, null );
+        reportEntry = new SimpleReportEntry( NORMAL_RUN, 1L, getClass().getName(), null, TEST_NAME, null );
         WrappedReportEntry wrappedReportEntry =
             new WrappedReportEntry( reportEntry, ReportEntryType.SUCCESS, 12, null, null );
         reporter = new FileReporter( reportDir, suffixText, Charset.defaultCharset(), false, false, false );

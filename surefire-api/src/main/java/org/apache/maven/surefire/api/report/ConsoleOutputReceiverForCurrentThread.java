@@ -24,21 +24,21 @@ package org.apache.maven.surefire.api.report;
  */
 public final class ConsoleOutputReceiverForCurrentThread
 {
-    private static final ThreadLocal<ConsoleOutputReceiver> CURRENT
+    private static final ThreadLocal<TestOutputReceiver> CURRENT
         = new InheritableThreadLocal<>();
 
     private ConsoleOutputReceiverForCurrentThread()
     {
     }
 
-    public static ConsoleOutputReceiver get()
+    public static TestOutputReceiver get()
     {
         return CURRENT.get();
     }
 
-    public static void set( ConsoleOutputReceiver consoleOutputReceiver )
+    public static void set( TestOutputReceiver testOutputReceiver )
     {
-        CURRENT.set( consoleOutputReceiver );
+        CURRENT.set( testOutputReceiver );
     }
 
     public static void remove()

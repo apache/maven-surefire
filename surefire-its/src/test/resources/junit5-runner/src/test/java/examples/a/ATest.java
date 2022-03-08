@@ -2,9 +2,11 @@ package examples.a;
 
 import org.junit.Test;
 
-public class ATest {
+public class ATest
+{
     @Test
-    public void test() {
-
+    public void test()
+    {
+        // ok
     }
 }

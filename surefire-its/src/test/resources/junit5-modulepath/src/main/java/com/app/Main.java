@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junit;
+package com.app;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,17 +19,13 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import org.apache.maven.surefire.api.report.RunListener;
-import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.joda.time.DateTime;
 
-/**
- * Describes a single test set
- *
- */
-public interface SurefireTestSet
+public class Main
 {
-    void execute( RunListener reportManager, ClassLoader loader )
-        throws TestSetFailedException;
-
-    String getName();
+    public static void main( String... args )
+    {
+        DateTime dt = new DateTime();
+        System.out.println( dt );
+    }
 }

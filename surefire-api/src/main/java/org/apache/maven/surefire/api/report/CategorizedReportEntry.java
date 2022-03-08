@@ -19,6 +19,8 @@ package org.apache.maven.surefire.api.report;
  * under the License.
  */
 
+import javax.annotation.Nonnegative;
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -35,42 +37,48 @@ public class CategorizedReportEntry
 
     private final String group;
 
-    public CategorizedReportEntry( String source, String name, String group )
+    public CategorizedReportEntry( @Nonnull RunMode runMode, @Nonnegative Long testRunId,
+                                   String source, String name, String group )
     {
-        this( source, name, group, null, null );
+        this( runMode, testRunId, source, name, group, null, null );
     }
 
-    public CategorizedReportEntry( String source, String name, String group, StackTraceWriter stackTraceWriter,
+    public CategorizedReportEntry( @Nonnull RunMode runMode, @Nonnegative Long testRunId,
+                                   String source, String name, String group, StackTraceWriter stackTraceWriter,
                                    Integer elapsed )
     {
-        super( source, null, name, null, stackTraceWriter, elapsed );
+        super( runMode, testRunId, source, null, name, null, stackTraceWriter, elapsed );
         this.group = group;
     }
 
-    public CategorizedReportEntry( String source, String name, String group, StackTraceWriter stackTraceWriter,
+    public CategorizedReportEntry( @Nonnull RunMode runMode, @Nonnegative Long testRunId,
+                                   String source, String name, String group, StackTraceWriter stackTraceWriter,
                                    Integer elapsed, String message )
     {
-        this( source, null, name, null,
+        this( runMode, testRunId, source, null, name, null,
                 group, stackTraceWriter, elapsed, message, Collections.<String, String>emptyMap() );
     }
 
-    public CategorizedReportEntry( String source, String sourceText, String name, String nameText,
+    public CategorizedReportEntry( @Nonnull RunMode runMode, @Nonnegative Long testRunId,
+                                   String source, String sourceText, String name, String nameText,
                                    String group, StackTraceWriter stackTraceWriter,
                                    Integer elapsed, String message, Map<String, String> systemProperties )
     {
-        super( source, sourceText, name, nameText, stackTraceWriter, elapsed, message, systemProperties );
+        super( runMode, testRunId, source, sourceText, name, nameText, stackTraceWriter, elapsed, message,
+            systemProperties );
         this.group = group;
     }
 
-    public static TestSetReportEntry reportEntry( String source, String sourceText, String name, String nameText,
+    public static TestSetReportEntry reportEntry( @Nonnull RunMode runMode, @Nonnegative Long testRunId,
+                                                  String source, String sourceText, String name, String nameText,
                                                   String group,
                                                   StackTraceWriter stackTraceWriter, Integer elapsed, String message,
                                                   Map<String, String> systemProperties )
     {
         return group != null
-            ? new CategorizedReportEntry( source, sourceText, name, nameText,
+            ? new CategorizedReportEntry( runMode, testRunId, source, sourceText, name, nameText,
                 group, stackTraceWriter, elapsed, message, systemProperties )
-            : new SimpleReportEntry( source, sourceText, name, nameText,
+            : new SimpleReportEntry( runMode, testRunId, source, sourceText, name, nameText,
                 stackTraceWriter, elapsed, message, systemProperties );
     }
 

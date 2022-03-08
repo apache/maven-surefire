@@ -39,7 +39,6 @@ import org.apache.maven.surefire.api.booter.Constants;
 import org.apache.maven.surefire.api.booter.ForkedProcessEventType;
 import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
-import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.stream.AbstractStreamDecoder.MalformedFrameException;
 import org.apache.maven.surefire.api.stream.AbstractStreamDecoder.Memento;
 import org.apache.maven.surefire.api.stream.AbstractStreamDecoder.Segment;
@@ -318,7 +317,7 @@ public class AbstractStreamDecoderTest
 
         Memento memento = thread.new Memento();
         // whatever position will be compacted to 0
-        ( (Buffer) ( (Buffer) memento.getByteBuffer().limit( 974 ) ) ).position( 974 );
+        ( (Buffer) memento.getByteBuffer() ).limit( 974 ).position( 974 );
 
         StringBuilder expected = new StringBuilder( "789" );
         for ( int i = 0; i < 11; i++ )
@@ -686,9 +685,7 @@ public class AbstractStreamDecoderTest
 
         @Nonnull
         @Override
-        protected Event toMessage(
-            @Nonnull ForkedProcessEventType messageType, RunMode runMode,
-            @Nonnull Memento memento ) throws MalformedFrameException
+        protected Event toMessage( @Nonnull ForkedProcessEventType messageType, @Nonnull Memento memento )
         {
             return null;
         }

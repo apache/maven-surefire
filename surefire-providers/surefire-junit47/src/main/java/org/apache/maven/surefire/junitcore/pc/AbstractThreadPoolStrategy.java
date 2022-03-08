@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.apache.maven.surefire.api.report.ConsoleStream;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 
 import java.util.Collection;
 import java.util.concurrent.ExecutorService;
@@ -47,12 +47,12 @@ abstract class AbstractThreadPoolStrategy
 
     private volatile boolean isDestroyed;
 
-    AbstractThreadPoolStrategy( ConsoleStream logger, ExecutorService threadPool )
+    AbstractThreadPoolStrategy( ConsoleLogger logger, ExecutorService threadPool )
     {
         this( logger, threadPool, null );
     }
 
-    AbstractThreadPoolStrategy( ConsoleStream logger, ExecutorService threadPool, Collection<Future<?>> futureResults )
+    AbstractThreadPoolStrategy( ConsoleLogger logger, ExecutorService threadPool, Collection<Future<?>> futureResults )
     {
         super( logger );
         this.threadPool = threadPool;

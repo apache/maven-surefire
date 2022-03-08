@@ -22,10 +22,10 @@ package org.apache.maven.surefire.testng;
 import org.apache.maven.surefire.api.report.ReporterException;
 import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
-import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 import java.util.Map;
 
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
 
 /**
@@ -43,11 +43,10 @@ abstract class TestSuite
 
     final void startTestSuite( RunListener reporterManager )
     {
-        TestSetReportEntry report = new SimpleReportEntry( getSuiteName(), null, null, null );
-
         try
         {
-            reporterManager.testSetStarting( report );
+            reporterManager.testSetStarting(
+                new SimpleReportEntry( NORMAL_RUN, 0L, getSuiteName(), null, null, null ) );
         }
         catch ( ReporterException e )
         {
@@ -57,7 +56,7 @@ abstract class TestSuite
 
     final void finishTestSuite( RunListener reporterManager )
     {
-        SimpleReportEntry report = new SimpleReportEntry( getSuiteName(), null, null, null, systemProps() );
-        reporterManager.testSetCompleted( report );
+        reporterManager.testSetCompleted(
+            new SimpleReportEntry( NORMAL_RUN, 0L, getSuiteName(), null, null, null, systemProps() ) );
     }
 }

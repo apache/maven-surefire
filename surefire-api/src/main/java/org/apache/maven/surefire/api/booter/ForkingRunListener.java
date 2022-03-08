@@ -19,42 +19,33 @@ package org.apache.maven.surefire.api.booter;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.api.report.ConsoleStream;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.report.ReportEntry;
-import org.apache.maven.surefire.api.report.RunListener;
-import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
-import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
-import static java.util.Objects.requireNonNull;
-
 /**
- * Encodes the full output of the test run to the stdout stream.
+ * Encodes the full output of the test run to the "target".
  * <br>
  * This class and the ForkClient contain the full definition of the
  * "wire-level" protocol used by the forked process. The protocol
  * is *not* part of any public api and may change without further
  * notice.
  * <br>
- * This class is threadsafe.
+ * This class is thread-safe.
  * <br>
- * The synchronization in the underlying PrintStream (target instance)
- * is used to preserve thread safety of the output stream. To perform
- * multiple writes/prints for a single request, they must
- * synchronize on "target.out" variable in this class.
+ * The synchronization in the underlying (target instance)
+ * is used to preserve thread safety of the target stream.
+ * To perform multiple writes/prints for a single request,
+ * they must synchronize on "target" variable in this class.
  *
  * @author Kristian Rosenvold
  */
 public class ForkingRunListener
-    implements RunListener, ConsoleLogger, ConsoleOutputReceiver, ConsoleStream
+    implements TestReportListener<TestOutputReportEntry>
 {
     private final MasterProcessChannelEncoder target;
-
     private final boolean trim;
-
-    private volatile RunMode runMode = NORMAL_RUN;
 
     public ForkingRunListener( MasterProcessChannelEncoder target, boolean trim )
     {
@@ -71,7 +62,6 @@ public class ForkingRunListener
     @Override
     public void testSetCompleted( TestSetReportEntry report )
     {
-        target.systemProperties( report.getSystemProperties() );
         target.testSetCompleted( report, trim );
     }
 
@@ -118,24 +108,9 @@ public class ForkingRunListener
     }
 
     @Override
-    public RunMode markAs( RunMode currentRunMode )
+    public void writeTestOutput( TestOutputReportEntry reportEntry )
     {
-        RunMode runMode = this.runMode;
-        this.runMode = requireNonNull( currentRunMode );
-        return runMode;
-    }
-
-    @Override
-    public void writeTestOutput( String output, boolean newLine, boolean stdout )
-    {
-        if ( stdout )
-        {
-            target.stdOut( output, newLine );
-        }
-        else
-        {
-            target.stdErr( output, newLine );
-        }
+        target.testOutput( reportEntry );
     }
 
     @Override
@@ -196,11 +171,5 @@ public class ForkingRunListener
     public void error( Throwable t )
     {
         error( null, t );
-    }
-
-    @Override
-    public void println( String message )
-    {
-        writeTestOutput( message, true, true );
     }
 }

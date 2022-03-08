@@ -65,8 +65,6 @@ public abstract class DefaultCommandReader
     public Command readNextCommand()
         throws IOException
     {
-        tryFlush();
-
         if ( isClosed() )
         {
             return null;

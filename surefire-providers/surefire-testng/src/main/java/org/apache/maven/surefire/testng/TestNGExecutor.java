@@ -41,7 +41,6 @@ import org.testng.xml.XmlTest;
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,7 +56,7 @@ import static org.apache.maven.surefire.api.util.ReflectionUtils.newInstance;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.tryGetConstructor;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.tryGetMethod;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.tryLoadClass;
-import static org.apache.maven.surefire.api.util.internal.ConcurrencyUtils.countDownToZero;
+import static org.apache.maven.surefire.api.util.internal.ConcurrencyUtils.runIfZeroCountDown;
 
 /**
  * Contains utility methods for executing TestNG.
@@ -94,10 +93,10 @@ final class TestNGExecutor
 
     @SuppressWarnings( "checkstyle:parameternumbercheck" )
     static void run( Iterable<Class<?>> testClasses, String testSourceDirectory,
-                            Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
-                            RunListener reportManager, File reportsDirectory,
-                            TestListResolver methodFilter, List<CommandLineOption> mainCliOptions,
-                            int skipAfterFailureCount )
+                     Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
+                     TestNGReporter testNGReporter, File reportsDirectory,
+                     TestListResolver methodFilter, List<CommandLineOption> mainCliOptions,
+                     int skipAfterFailureCount )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
@@ -137,7 +136,7 @@ final class TestNGExecutor
                 xmlTest.setName( metadata.testName );
                 addSelector( xmlTest, groupMatchingSelector );
                 addSelector( xmlTest, methodNameFilteringSelector );
-                xmlTest.setXmlClasses( new ArrayList<XmlClass>() );
+                xmlTest.setXmlClasses( new ArrayList<>() );
 
                 suiteAndNamedTests.testNameToTest.put( metadata.testName, xmlTest );
             }
@@ -147,7 +146,7 @@ final class TestNGExecutor
 
         testng.setXmlSuites( xmlSuites );
         configurator.configure( testng, options );
-        postConfigure( testng, testSourceDirectory, reportManager, reportsDirectory, skipAfterFailureCount,
+        postConfigure( testng, testSourceDirectory, testNGReporter, reportsDirectory, skipAfterFailureCount,
                        extractVerboseLevel( options ) );
         testng.run();
     }
@@ -312,14 +311,14 @@ final class TestNGExecutor
     }
 
     static void run( List<String> suiteFiles, String testSourceDirectory,
-                            Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
-                            RunListener reportManager, File reportsDirectory, int skipAfterFailureCount )
+                     Map<String, String> options, // string,string because TestNGMapConfigurator#configure()
+                     TestNGReporter testNGReporter, File reportsDirectory, int skipAfterFailureCount )
         throws TestSetFailedException
     {
         TestNG testng = new TestNG( true );
         Configurator configurator = getConfigurator( options.get( "testng.configurator" ) );
         configurator.configure( testng, options );
-        postConfigure( testng, testSourceDirectory, reportManager, reportsDirectory, skipAfterFailureCount,
+        postConfigure( testng, testSourceDirectory, testNGReporter, reportsDirectory, skipAfterFailureCount,
                        extractVerboseLevel( options ) );
         testng.setTestSuites( suiteFiles );
         testng.run();
@@ -337,20 +336,19 @@ final class TestNGExecutor
         }
     }
 
-    private static void postConfigure( TestNG testNG, String sourcePath, final RunListener reportManager,
+    private static void postConfigure( TestNG testNG, String sourcePath, TestNGReporter testNGReporter,
                                        File reportsDirectory, int skipAfterFailureCount, int verboseLevel )
     {
         // 0 (default): turn off all TestNG output
         testNG.setVerbose( verboseLevel );
-
-        TestNGReporter reporter = createTestNGReporter( reportManager );
-        testNG.addListener( (ITestNGListener) reporter );
+        testNG.addListener( (ITestNGListener) testNGReporter );
 
         if ( skipAfterFailureCount > 0 )
         {
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             testNG.addListener( instantiate( classLoader, FailFastNotifier.class.getName(), Object.class ) );
-            testNG.addListener( new FailFastListener( createStoppable( reportManager, skipAfterFailureCount ) ) );
+            testNG.addListener(
+                new FailFastListener( createStoppable( testNGReporter.getRunListener(), skipAfterFailureCount ) ) );
         }
 
         // FIXME: use classifier to decide if we need to pass along the source dir (only for JDK14)
@@ -366,44 +364,11 @@ final class TestNGExecutor
     {
         final AtomicInteger currentFaultCount = new AtomicInteger( skipAfterFailureCount );
 
-        return new Stoppable()
+        return () ->
         {
-            @Override
-            public void fireStopEvent()
-            {
-                if ( countDownToZero( currentFaultCount ) )
-                {
-                    FailFastEventsSingleton.getInstance().setSkipOnNextTest();
-                }
-
-                reportManager.testExecutionSkippedByUser();
-            }
+            runIfZeroCountDown( () -> FailFastEventsSingleton.getInstance().setSkipOnNextTest(), currentFaultCount );
+            reportManager.testExecutionSkippedByUser();
         };
-    }
-
-    // If we have access to IResultListener, return a ConfigurationAwareTestNGReporter
-    // But don't cause NoClassDefFoundErrors if it isn't available; just return a regular TestNGReporter instead
-    private static TestNGReporter createTestNGReporter( RunListener reportManager )
-    {
-        try
-        {
-            Class.forName( "org.testng.internal.IResultListener" );
-            Class<?> c = Class.forName( "org.apache.maven.surefire.testng.ConfigurationAwareTestNGReporter" );
-            Constructor<?> ctor = c.getConstructor( RunListener.class );
-            return (TestNGReporter) ctor.newInstance( reportManager );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new RuntimeException( "Bug in ConfigurationAwareTestNGReporter", e.getCause() );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            return new TestNGReporter( reportManager );
-        }
-        catch ( Exception e )
-        {
-            throw new RuntimeException( "Bug in ConfigurationAwareTestNGReporter", e );
-        }
     }
 
     private static int extractVerboseLevel( Map<String, String> options )

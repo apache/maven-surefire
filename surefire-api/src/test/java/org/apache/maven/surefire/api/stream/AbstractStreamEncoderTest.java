@@ -69,109 +69,109 @@ public class AbstractStreamEncoderTest
         Encoder streamEncoder = new Encoder( new DummyChannel() );
         CharsetEncoder encoder = streamEncoder.newCharsetEncoder();
 
-        // :maven-surefire-event:8:sys-prop:10:normal-run:5:UTF-8:0001:kkk:0001:vvv:
+        // :maven-surefire-event:8:sys-prop:10:normal-run:1:5:UTF-8:0003:kkk:0003:vvv:
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_SYSPROPS.getOpcodeBinary().length, NORMAL_RUN,
-            encoder, 0, "k", "v" ) )
-            .isEqualTo( 72 );
+            encoder, 0, 1, "k", "v" ) )
+            .isEqualTo( 82 );
 
-        // :maven-surefire-event:16:testset-starting:10:normal-run:5:UTF-8:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:X0001:0001:sss:0001:sss:0001:sss:
+        // :maven-surefire-event:16:testset-starting:10:normal-run:1:5:UTF-8:0003:sss:0003:sss:0003:sss:0003:sss:0003:sss:0003:sss:X0003:0003:sss:0003:sss:0003:sss:
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_TESTSET_STARTING.getOpcodeBinary().length,
-            NORMAL_RUN, encoder, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
-            .isEqualTo( 149 );
+            NORMAL_RUN, encoder, 1, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
+            .isEqualTo( 159 );
 
-        // :maven-surefire-event:17:testset-completed:10:normal-run:5:UTF-8:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:X0001:0001:sss:0001:sss:0001:sss:
+        // :maven-surefire-event:17:testset-completed:10:normal-run:1:5:UTF-8:0003:sss:0003:sss:0003:sss:0003:sss:0003:sss:0003:sss:X0003:0003:sss:0003:sss:0003:sss:
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_TESTSET_COMPLETED.getOpcodeBinary().length,
-            NORMAL_RUN, encoder, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
-            .isEqualTo( 150 );
+            NORMAL_RUN, encoder, 1, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
+            .isEqualTo( 160 );
 
-        // :maven-surefire-event:13:test-starting:10:normal-run:5:UTF-8:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:X0001:0001:sss:0001:sss:0001:sss:
+        // :maven-surefire-event:13:test-starting:10:normal-run:1:5:UTF-8:0003:sss:0003:sss:0003:sss:0003:sss:0003:sss:0003:sss:X0003:0003:sss:0003:sss:0003:sss:
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_TEST_STARTING.getOpcodeBinary().length,
-            NORMAL_RUN, encoder, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
-            .isEqualTo( 146 );
-
-        // :maven-surefire-event:14:test-succeeded:10:normal-run:5:UTF-8:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:X0001:0001:sss:0001:sss:0001:sss:
-        assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_TEST_SUCCEEDED.getOpcodeBinary().length,
-            NORMAL_RUN, encoder, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
-            .isEqualTo( 147 );
-
-        // :maven-surefire-event:11:test-failed:10:normal-run:5:UTF-8:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:X0001:0001:sss:0001:sss:0001:sss:
-        assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_TEST_FAILED.getOpcodeBinary().length,
-            NORMAL_RUN, encoder, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
-            .isEqualTo( 144 );
-
-        // :maven-surefire-event:12:test-skipped:10:normal-run:5:UTF-8:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:X0001:0001:sss:0001:sss:0001:sss:
-        assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_TEST_SKIPPED.getOpcodeBinary().length,
-            NORMAL_RUN, encoder, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
-            .isEqualTo( 145 );
-
-        // :maven-surefire-event:10:test-error:10:normal-run:5:UTF-8:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:X0001:0001:sss:0001:sss:0001:sss:
-        assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_TEST_ERROR.getOpcodeBinary().length,
-            NORMAL_RUN, encoder, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
-            .isEqualTo( 143 );
-
-        // :maven-surefire-event:23:test-assumption-failure:10:normal-run:5:UTF-8:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:0001:sss:X0001:0001:sss:0001:sss:0001:sss:
-        assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_TEST_ASSUMPTIONFAILURE.getOpcodeBinary().length,
-            NORMAL_RUN, encoder, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
+            NORMAL_RUN, encoder, 1, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
             .isEqualTo( 156 );
 
-        // :maven-surefire-event:14:std-out-stream:10:normal-run:5:UTF-8:0001:sss:
+        // :maven-surefire-event:14:test-succeeded:10:normal-run:1:5:UTF-8:0003:sss:0003:sss:0003:sss:0003:sss:0003:sss:0003:sss:X0003:0003:sss:0003:sss:0003:sss:
+        assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_TEST_SUCCEEDED.getOpcodeBinary().length,
+            NORMAL_RUN, encoder, 1, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
+            .isEqualTo( 157 );
+
+        // :maven-surefire-event:11:test-failed:10:normal-run:1:5:UTF-8:0003:sss:0003:sss:0003:sss:0003:sss:0003:sss:0003:sss:X0003:0003:sss:0003:sss:0003:sss:
+        assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_TEST_FAILED.getOpcodeBinary().length,
+            NORMAL_RUN, encoder, 1, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
+            .isEqualTo( 154 );
+
+        // :maven-surefire-event:12:test-skipped:10:normal-run:1:5:UTF-8:0003:sss:0003:sss:0003:sss:0003:sss:0003:sss:0003:sss:X0003:0003:sss:0003:sss:0003:sss:
+        assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_TEST_SKIPPED.getOpcodeBinary().length,
+            NORMAL_RUN, encoder, 1, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
+            .isEqualTo( 155 );
+
+        // :maven-surefire-event:10:test-error:10:normal-run:1:5:UTF-8:0003:sss:0003:sss:0003:sss:0003:sss:0003:sss:0003:sss:X0003:0003:sss:0003:sss:0003:sss:
+        assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_TEST_ERROR.getOpcodeBinary().length,
+            NORMAL_RUN, encoder, 1, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
+            .isEqualTo( 153 );
+
+        // :maven-surefire-event:23:test-assumption-failure:10:normal-run:1:5:UTF-8:0003:sss:0003:sss:0003:sss:0003:sss:0003:sss:0003:sss:X0003:0003:sss:0003:sss:0003:sss:
+        assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_TEST_ASSUMPTIONFAILURE.getOpcodeBinary().length,
+            NORMAL_RUN, encoder, 1, 1, "s", "s", "s", "s", "s", "s", "s", "s", "s" ) )
+            .isEqualTo( 166 );
+
+        // :maven-surefire-event:14:std-out-stream:10:normal-run:1:5:UTF-8:0003:sss:
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_STDOUT.getOpcodeBinary().length,
-            NORMAL_RUN, encoder, 0, "s" ) )
-            .isEqualTo( 69 );
+            NORMAL_RUN, encoder, 0, 1, "s" ) )
+            .isEqualTo( 79 );
 
-        // :maven-surefire-event:23:std-out-stream-new-line:10:normal-run:5:UTF-8:0001:sss:
+        // :maven-surefire-event:23:std-out-stream-new-line:10:normal-run:1:5:UTF-8:0003:sss:
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_STDOUT_NEW_LINE.getOpcodeBinary().length,
-            NORMAL_RUN, encoder, 0, "s" ) )
-            .isEqualTo( 78 );
+            NORMAL_RUN, encoder, 0, 1, "s" ) )
+            .isEqualTo( 88 );
 
-        // :maven-surefire-event:14:std-err-stream:10:normal-run:5:UTF-8:0001:sss:
+        // :maven-surefire-event:14:std-err-stream:10:normal-run:1:5:UTF-8:0003:sss:
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_STDERR.getOpcodeBinary().length,
-            NORMAL_RUN, encoder, 0, "s" ) )
-            .isEqualTo( 69 );
+            NORMAL_RUN, encoder, 0, 1, "s" ) )
+            .isEqualTo( 79 );
 
-        // :maven-surefire-event:23:std-err-stream-new-line:10:normal-run:5:UTF-8:0001:sss:
+        // :maven-surefire-event:23:std-err-stream-new-line:10:normal-run:1:5:UTF-8:0003:sss:
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_STDERR_NEW_LINE.getOpcodeBinary().length,
-            NORMAL_RUN, encoder, 0, "s" ) )
-            .isEqualTo( 78 );
+            NORMAL_RUN, encoder, 0, 1, "s" ) )
+            .isEqualTo( 88 );
 
-        // :maven-surefire-event:16:console-info-log:5:UTF-8:0001:sss:
+        // :maven-surefire-event:16:console-info-log:5:UTF-8:0003:sss:
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_CONSOLE_INFO.getOpcodeBinary().length,
-            null, encoder, 0, "s" ) )
+            null, encoder, 0, 0, "s" ) )
             .isEqualTo( 58 );
 
-        // :maven-surefire-event:17:console-debug-log:5:UTF-8:0001:sss:
+        // :maven-surefire-event:17:console-debug-log:5:UTF-8:0003:sss:
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_CONSOLE_DEBUG.getOpcodeBinary().length,
-            null, encoder, 0, "s" ) )
+            null, encoder, 0, 0, "s" ) )
             .isEqualTo( 59 );
 
-        // :maven-surefire-event:19:console-warning-log:5:UTF-8:0001:sss:
+        // :maven-surefire-event:19:console-warning-log:5:UTF-8:0003:sss:
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_CONSOLE_WARNING.getOpcodeBinary().length,
-            null, encoder, 0, "s" ) )
+            null, encoder, 0, 0, "s" ) )
             .isEqualTo( 61 );
 
-        // :maven-surefire-event:17:console-error-log:5:UTF-8:0001:sss:
+        // :maven-surefire-event:17:console-error-log:5:UTF-8:0003:sss:
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_CONSOLE_ERROR.getOpcodeBinary().length,
-            null, encoder, 0, "s" ) )
+            null, encoder, 0, 0, "s" ) )
             .isEqualTo( 59 );
 
         // :maven-surefire-event:3:bye:
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_BYE.getOpcodeBinary().length,
-            null, null, 0 ) )
+            null, null, 0, 0 ) )
             .isEqualTo( 28 );
 
         // :maven-surefire-event:17:stop-on-next-test:
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_STOP_ON_NEXT_TEST.getOpcodeBinary().length,
-            null, null, 0 ) )
+            null, null, 0, 0 ) )
             .isEqualTo( 42 );
 
         // :maven-surefire-event:9:next-test:
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_NEXT_TEST.getOpcodeBinary().length,
-            null, null, 0 ) )
+            null, null, 0, 0 ) )
             .isEqualTo( 34 );
 
         // :maven-surefire-event:14:jvm-exit-error:
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_JVM_EXIT_ERROR.getOpcodeBinary().length,
-            null, null, 0 ) )
+            null, null, 0, 0 ) )
             .isEqualTo( 39 );
     }
 
@@ -180,12 +180,13 @@ public class AbstractStreamEncoderTest
     {
         Encoder streamEncoder = new Encoder( new DummyChannel() );
         ByteBuffer result = ByteBuffer.allocate( 128 );
-        streamEncoder.encodeHeader( result, BOOTERCODE_TEST_ERROR, NORMAL_RUN );
+        streamEncoder.encodeHeader( result, BOOTERCODE_TEST_ERROR, NORMAL_RUN, 1L );
         assertThat( toString( result ) )
-            .isEqualTo( ":maven-surefire-event:" + (char) 10 + ":test-error:" + (char) 10 + ":normal-run:" );
+            .isEqualTo( ":maven-surefire-event:" + (char) 10 + ":test-error:" + (char) 10
+                + ":normal-run:\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001:" );
 
         result = ByteBuffer.allocate( 1024 );
-        streamEncoder.encodeHeader( result, BOOTERCODE_CONSOLE_ERROR, null );
+        streamEncoder.encodeHeader( result, BOOTERCODE_CONSOLE_ERROR );
         streamEncoder.encodeCharset( result );
         assertThat( toString( result ) )
             .isEqualTo( ":maven-surefire-event:" + (char) 17 + ":console-error-log:" + (char) 5 + ":UTF-8:" );
@@ -196,10 +197,11 @@ public class AbstractStreamEncoderTest
     {
         Encoder streamEncoder = new Encoder( new DummyChannel() );
         ByteBuffer result = ByteBuffer.allocate( 128 );
-        streamEncoder.encode( streamEncoder.newCharsetEncoder(), result, BOOTERCODE_STDOUT, NORMAL_RUN, null, "msg" );
+        streamEncoder.encode( streamEncoder.newCharsetEncoder(), result, BOOTERCODE_STDOUT, NORMAL_RUN, 1L, "msg" );
         assertThat( toString( result ) )
             .isEqualTo( ":maven-surefire-event:\u000e:std-out-stream:"
-                + (char) 10 + ":normal-run:\u0005:UTF-8:\u0000\u0000\u0000\u0001:\u0000:\u0000\u0000\u0000\u0003:msg:" );
+                + (char) 10 + ":normal-run:\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001"
+                + ":\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:" );
     }
 
     @Test

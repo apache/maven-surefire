@@ -33,6 +33,8 @@ import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.shared.utils.logging.MessageUtils;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.api.report.SafeThrowable;
@@ -286,7 +288,7 @@ public class DefaultReporterFactoryTest
 
         DefaultReporterFactory factory = new DefaultReporterFactory( reportConfig, reporter );
 
-        TestSetRunListener runListener = (TestSetRunListener) factory.createReporter();
+        TestReportListener<TestOutputReportEntry> runListener = factory.createTestReportListener();
 
         assertTrue( runListener.isDebugEnabled() );
         assertTrue( runListener.isInfoEnabled() );
@@ -358,7 +360,7 @@ public class DefaultReporterFactoryTest
         DefaultReporterFactory factory = new DefaultReporterFactory( reportConfig, reporter );
         assertEquals( reportsDirectory, factory.getReportsDirectory() );
 
-        TestSetRunListener runListener = (TestSetRunListener) factory.createReporter();
+        TestSetRunListener runListener = (TestSetRunListener) factory.createTestReportListener();
         Collection listeners = getInternalState( factory, "listeners" );
         assertEquals( 1, listeners.size() );
         assertTrue( listeners.contains( runListener ) );

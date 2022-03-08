@@ -154,6 +154,8 @@ import static org.apache.maven.surefire.shared.utils.StringUtils.isEmpty;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isNotEmpty;
 import static org.apache.maven.surefire.shared.utils.StringUtils.split;
+import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
+import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
 
 /**
  * Abstract base class for running tests using Surefire.
@@ -281,39 +283,12 @@ public abstract class AbstractSurefireMojo
 
     /**
      * The test source directory containing test class sources.
+     * Important <b>only</b> for TestNG HTML reports.
      *
      * @since 2.2
      */
-    @Parameter( defaultValue = "${project.build.testSourceDirectory}", required = true )
+    @Parameter( defaultValue = "${project.build.testSourceDirectory}" )
     private File testSourceDirectory;
-
-    /**
-     * A list of &lt;exclude&gt; elements specifying the tests (by pattern) that should be excluded in testing. When not
-     * specified and when the {@code test} parameter is not specified, the default excludes will be <br>
-     * <pre><code>
-     * {@literal <excludes>}
-     *     {@literal <exclude>}**{@literal /}*$*{@literal </exclude>}
-     * {@literal </excludes>}
-     * </code></pre>
-     * (which excludes all inner classes).
-     * <br>
-     * This parameter is ignored if the TestNG {@code suiteXmlFiles} parameter is specified.
-     * <br>
-     * Each exclude item may also contain a comma-separated sub-list of items, which will be treated as multiple
-     * &nbsp;&lt;exclude&gt; entries.<br>
-     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):
-     * <pre><code>
-     * {@literal <exclude>}%regex[pkg.*Slow.*.class], Unstable*{@literal </exclude>}
-     * </code></pre>
-     * <br>
-     * <b>Notice that</b> these values are relative to the directory containing generated test classes of the project
-     * being tested. This directory is declared by the parameter {@code testClassesDirectory} which defaults
-     * to the POM property <code>${project.build.testOutputDirectory}</code>, typically
-     * <code>{@literal src/test/java}</code> unless overridden.
-     */
-    @Parameter
-    // TODO use regex for fully qualified class names in 3.0 and change the filtering abilities
-    private List<String> excludes;
 
     /**
      * ArtifactRepository of the localRepository. To obtain the directory of localRepository in unit tests use
@@ -921,29 +896,39 @@ public abstract class AbstractSurefireMojo
         // Stuff that should have been final
         setupStuff();
         Platform platform = PLATFORM.withJdkExecAttributesForTests( getEffectiveJvm() );
-
-        if ( verifyParameters() && !hasExecutedBefore() )
+        Thread shutdownThread = new Thread( platform::setShutdownState );
+        addShutDownHook( shutdownThread );
+        try
         {
-            DefaultScanResult scan = scanForTestClasses();
-            if ( !hasSuiteXmlFiles() && scan.isEmpty() )
+            if ( verifyParameters() && !hasExecutedBefore() )
             {
-                switch ( getEffectiveFailIfNoTests() )
+                DefaultScanResult scan = scanForTestClasses();
+                if ( !hasSuiteXmlFiles() && scan.isEmpty() )
                 {
-                    case COULD_NOT_RUN_DEFAULT_TESTS:
-                        throw new MojoFailureException(
-                            "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
-                    case COULD_NOT_RUN_SPECIFIED_TESTS:
-                        throw new MojoFailureException( "No tests matching pattern \""
-                            + getSpecificTests().toString()
-                            + "\" were executed! (Set "
-                            + "-D" + getPluginName() + ".failIfNoSpecifiedTests=false to ignore this error.)" );
-                    default:
-                        handleSummary( noTestsRun(), null );
-                        return;
+                    switch ( getEffectiveFailIfNoTests() )
+                    {
+                        case COULD_NOT_RUN_DEFAULT_TESTS:
+                            throw new MojoFailureException(
+                                "No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)" );
+                        case COULD_NOT_RUN_SPECIFIED_TESTS:
+                            throw new MojoFailureException( "No tests matching pattern \""
+                                + getSpecificTests().toString()
+                                + "\" were executed! (Set "
+                                + "-D" + getPluginName()
+                                + ".failIfNoSpecifiedTests=false to ignore this error.)" );
+                        default:
+                            handleSummary( noTestsRun(), null );
+                            return;
+                    }
                 }
+                logReportsDirectory();
+                executeAfterPreconditionsChecked( scan, platform );
             }
-            logReportsDirectory();
-            executeAfterPreconditionsChecked( scan, platform );
+        }
+        finally
+        {
+            platform.clearShutdownState();
+            removeShutdownHook( shutdownThread );
         }
     }
 
@@ -2209,78 +2194,110 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    private void maybeAppendList( List<String> base, List<String> list )
-    {
-        if ( list != null )
-        {
-            base.addAll( list );
-        }
-    }
-
-    @Nonnull private List<String> getExcludeList()
+    @Nonnull
+    private List<String> getExcludedScanList()
         throws MojoFailureException
     {
-        List<String> actualExcludes = null;
+        return getExcludeList( true );
+    }
+
+    @Nonnull
+    private List<String> getExcludeList()
+        throws MojoFailureException
+    {
+        return getExcludeList( false );
+    }
+
+    /**
+     * Computes a merge list of test exclusions.
+     * Used only in {@link #getExcludeList()} and {@link #getExcludedScanList()}.
+     * @param asScanList true if dependency or directory scanner
+     * @return list of patterns
+     * @throws MojoFailureException if the excludes breaks a pattern format
+     */
+    @Nonnull
+    private List<String> getExcludeList( boolean asScanList )
+        throws MojoFailureException
+    {
+        List<String> excludes;
         if ( isSpecificTestSpecified() )
         {
-            actualExcludes = Collections.emptyList();
+            excludes = Collections.emptyList();
         }
         else
         {
+            excludes = new ArrayList<>();
+            if ( asScanList )
+            {
+                if ( getExcludes() != null )
+                {
+                    excludes.addAll( getExcludes() );
+                }
+                checkMethodFilterInIncludesExcludes( excludes );
+            }
+
             if ( getExcludesFile() != null )
             {
-                actualExcludes = readListFromFile( getExcludesFile() );
+                excludes.addAll( readListFromFile( getExcludesFile() ) );
             }
 
-            if ( actualExcludes == null )
+            if ( asScanList && excludes.isEmpty() )
             {
-                actualExcludes = getExcludes();
-            }
-            else
-            {
-                maybeAppendList( actualExcludes, getExcludes() );
-            }
-
-            checkMethodFilterInIncludesExcludes( actualExcludes );
-
-            if ( actualExcludes == null || actualExcludes.isEmpty() )
-            {
-                actualExcludes = Collections.singletonList( getDefaultExcludes() );
+                excludes = Collections.singletonList( getDefaultExcludes() );
             }
         }
-        return filterNulls( actualExcludes );
+        return filterNulls( excludes );
     }
 
+    @Nonnull
+    private List<String> getIncludedScanList()
+        throws MojoFailureException
+    {
+        return getIncludeList( true );
+    }
+
+    @Nonnull
     private List<String> getIncludeList()
         throws MojoFailureException
     {
-        List<String> includes = null;
+        return getIncludeList( false );
+    }
+
+    /**
+     * Computes a merge list of test inclusions.
+     * Used only in {@link #getIncludeList()} and {@link #getIncludedScanList()}.
+     * @param asScanList true if dependency or directory scanner
+     * @return list of patterns
+     * @throws MojoFailureException if the includes breaks a pattern format
+     */
+    @Nonnull
+    private List<String> getIncludeList( boolean asScanList )
+        throws MojoFailureException
+    {
+        final List<String> includes = new ArrayList<>();
         if ( isSpecificTestSpecified() )
         {
-            includes = new ArrayList<>();
             addAll( includes, split( getTest(), "," ) );
         }
         else
         {
+            if ( asScanList )
+            {
+                if ( getIncludes() != null )
+                {
+                    includes.addAll( getIncludes() );
+                }
+                checkMethodFilterInIncludesExcludes( includes );
+            }
+
             if ( getIncludesFile() != null )
             {
-                includes = readListFromFile( getIncludesFile() );
+                includes.addAll( readListFromFile( getIncludesFile() ) );
             }
 
-            if ( includes == null )
+            if ( asScanList && includes.isEmpty() )
             {
-                includes = getIncludes();
-            }
-            else
-            {
-                maybeAppendList( includes, getIncludes() );
-            }
-
-            checkMethodFilterInIncludesExcludes( includes );
-
-            if ( includes == null || includes.isEmpty() )
-            {
-                includes = asList( getDefaultIncludes() );
+                addAll( includes, getDefaultIncludes() );
             }
         }
 
@@ -2290,16 +2307,12 @@ public abstract class AbstractSurefireMojo
     private void checkMethodFilterInIncludesExcludes( Iterable<String> patterns )
         throws MojoFailureException
     {
-        if ( patterns != null )
+        for ( String pattern : patterns )
         {
-            for ( String pattern : patterns )
+            if ( pattern != null && pattern.contains( "#" ) )
             {
-                if ( pattern != null && pattern.contains( "#" ) )
-                {
-                    throw new MojoFailureException( "Method filter prohibited in "
-                                                        + "includes|excludes|includesFile|excludesFile parameter: "
-                                                        + pattern );
-                }
+                throw new MojoFailureException( "Method filter prohibited in includes|excludes parameter: "
+                    + pattern );
             }
         }
     }
@@ -2309,16 +2322,18 @@ public abstract class AbstractSurefireMojo
     {
         if ( includedExcludedTests == null )
         {
-            includedExcludedTests = new TestListResolver( getIncludeList(), getExcludeList() );
+            includedExcludedTests = new TestListResolver( getIncludedScanList(), getExcludedScanList() );
+            getConsoleLogger().debug( "Resolved included and excluded patterns: " + includedExcludedTests );
         }
         return includedExcludedTests;
     }
 
     public TestListResolver getSpecificTests()
+        throws MojoFailureException
     {
         if ( specificTests == null )
         {
-            specificTests = new TestListResolver( getTest() );
+            specificTests = new TestListResolver( getIncludeList(), getExcludeList() );
         }
         return specificTests;
     }
@@ -2445,7 +2460,7 @@ public abstract class AbstractSurefireMojo
         StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration( configChecksum, false );
         ProviderConfiguration providerConfiguration = createProviderConfiguration( runOrderParameters );
         return new InPluginVMSurefireStarter( startupConfiguration, providerConfiguration, startupReportConfiguration,
-                                              getConsoleLogger() );
+                                              getConsoleLogger(), platform );
     }
 
     // todo this is in separate method and can be better tested than whole method createForkConfiguration()
@@ -3536,18 +3551,6 @@ public abstract class AbstractSurefireMojo
         {
             return createSurefireBootDirectoryInBuild();
         }
-    }
-
-    @Override
-    public List<String> getExcludes()
-    {
-        return excludes;
-    }
-
-    @Override
-    public void setExcludes( List<String> excludes )
-    {
-        this.excludes = excludes;
     }
 
     @Override

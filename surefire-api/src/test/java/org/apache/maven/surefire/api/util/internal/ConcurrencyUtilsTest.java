@@ -21,12 +21,12 @@ package org.apache.maven.surefire.api.util.internal;
 
 import org.junit.Test;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.maven.surefire.api.util.internal.ConcurrencyUtils.countDownToZero;
+import static org.apache.maven.surefire.api.util.internal.ConcurrencyUtils.runIfZeroCountDown;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
@@ -45,7 +45,9 @@ public class ConcurrencyUtilsTest
     public void countDownShouldBeUnchangedAsZeroNegativeTest()
     {
         AtomicInteger atomicCounter = new AtomicInteger( 0 );
-        assertFalse( countDownToZero( atomicCounter ) );
+        AtomicBoolean runner = new AtomicBoolean();
+        runIfZeroCountDown( () -> runner.set( true ), atomicCounter );
+        assertFalse( runner.get() );
         assertThat( atomicCounter.get(), is( 0 ) );
     }
 
@@ -53,7 +55,9 @@ public class ConcurrencyUtilsTest
     public void countDownShouldBeUnchangedAsNegativeNegativeTest()
     {
         AtomicInteger atomicCounter = new AtomicInteger( -1 );
-        assertFalse( countDownToZero( atomicCounter ) );
+        AtomicBoolean runner = new AtomicBoolean();
+        runIfZeroCountDown( () -> runner.set( true ), atomicCounter );
+        assertFalse( runner.get() );
         assertThat( atomicCounter.get(), is( -1 ) );
     }
 
@@ -61,7 +65,9 @@ public class ConcurrencyUtilsTest
     public void countDownShouldBeDecreasedByOneThreadModification()
     {
         AtomicInteger atomicCounter = new AtomicInteger( 10 );
-        assertFalse( countDownToZero( atomicCounter ) );
+        AtomicBoolean runner = new AtomicBoolean();
+        runIfZeroCountDown( () -> runner.set( true ), atomicCounter );
+        assertFalse( runner.get() );
         assertThat( atomicCounter.get(), is( 9 ) );
     }
 
@@ -69,7 +75,9 @@ public class ConcurrencyUtilsTest
     public void countDownToZeroShouldBeDecreasedByOneThreadModification()
     {
         AtomicInteger atomicCounter = new AtomicInteger( 1 );
-        assertTrue( countDownToZero( atomicCounter ) );
+        AtomicBoolean runner = new AtomicBoolean();
+        runIfZeroCountDown( () -> runner.set( true ), atomicCounter );
+        assertTrue( runner.get() );
         assertThat( atomicCounter.get(), is( 0 ) );
     }
 
@@ -77,27 +85,28 @@ public class ConcurrencyUtilsTest
     public void countDownShouldBeDecreasedByTwoThreadsModification()
         throws ExecutionException, InterruptedException
     {
-        final AtomicInteger atomicCounter = new AtomicInteger( 3 );
+        AtomicInteger atomicCounter = new AtomicInteger( 3 );
 
-        FutureTask<Boolean> task = new FutureTask<Boolean>( new Callable<Boolean>()
+        FutureTask<Boolean> task = new FutureTask<>( () ->
         {
-            @Override
-            public Boolean call()
-                throws Exception
-            {
-                return countDownToZero( atomicCounter );
-            }
+            AtomicBoolean runner = new AtomicBoolean();
+            runIfZeroCountDown( () -> runner.set( true ), atomicCounter );
+            return runner.get();
         } );
         Thread t = new Thread( task );
         t.start();
 
-        assertFalse( countDownToZero( atomicCounter ) );
+        AtomicBoolean runner = new AtomicBoolean();
+        runIfZeroCountDown( () -> runner.set( true ), atomicCounter );
+        assertFalse( runner.get() );
 
         assertFalse( task.get() );
 
         assertThat( atomicCounter.get(), is( 1 ) );
 
-        assertTrue( countDownToZero( atomicCounter ) );
+        runner.set( false );
+        runIfZeroCountDown( () -> runner.set( true ), atomicCounter );
+        assertTrue( runner.get() );
 
         assertThat( atomicCounter.get(), is( 0 ) );
     }

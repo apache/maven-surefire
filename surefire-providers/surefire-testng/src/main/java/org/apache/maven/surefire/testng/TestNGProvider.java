@@ -19,31 +19,34 @@ package org.apache.maven.surefire.testng;
  * under the License.
  */
 
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.maven.surefire.api.booter.Command;
-import org.apache.maven.surefire.api.provider.CommandChainReader;
-import org.apache.maven.surefire.api.provider.CommandListener;
 import org.apache.maven.surefire.api.cli.CommandLineOption;
 import org.apache.maven.surefire.api.provider.AbstractProvider;
+import org.apache.maven.surefire.api.provider.CommandChainReader;
+import org.apache.maven.surefire.api.provider.CommandListener;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
-import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.api.report.ReporterConfiguration;
 import org.apache.maven.surefire.api.report.ReporterFactory;
-import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.suite.RunResult;
-import org.apache.maven.surefire.testng.utils.FailFastEventsSingleton;
 import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.apache.maven.surefire.api.testset.TestRequest;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.RunOrderCalculator;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.TestsToRun;
-
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import org.apache.maven.surefire.testng.utils.FailFastEventsSingleton;
 
 import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.testset.TestListResolver.getEmptyTestListResolver;
 import static org.apache.maven.surefire.api.testset.TestListResolver.optionallyWildcardFilter;
 import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
@@ -72,8 +75,6 @@ public class TestNGProvider
 
     private final CommandChainReader commandsReader;
 
-    private TestsToRun testsToRun;
-
     public TestNGProvider( ProviderParameters bootParams )
     {
         // don't start a thread in CommandReader while we are in in-plugin process
@@ -97,43 +98,52 @@ public class TestNGProvider
             registerPleaseStopListener();
         }
 
-        final ReporterFactory reporterFactory = providerParameters.getReporterFactory();
-        final RunListener reporter = reporterFactory.createReporter();
-        /*
-         * {@link org.apache.maven.surefire.api.report.ConsoleOutputCapture#startCapture(ConsoleOutputReceiver)}
-         * called in prior to initializing variable {@link #testsToRun}
-         */
-        startCapture( (ConsoleOutputReceiver) reporter );
+        ReporterFactory reporterFactory = providerParameters.getReporterFactory();
+        TestReportListener<TestOutputReportEntry> reporter = reporterFactory.createTestReportListener();
 
         RunResult runResult;
         try
         {
             if ( isTestNGXmlTestSuite( testRequest ) )
             {
+                TestNGReporter testNGReporter = createTestNGReporter( reporter );
+                testNGReporter.setRunMode( NORMAL_RUN );
+                /*
+                 * {@link org.apache.maven.surefire.api.report.ConsoleOutputCapture#startCapture(ConsoleOutputReceiver)}
+                 * called in prior to initializing variable {@link #testsToRun}
+                 */
+                startCapture( testNGReporter );
+
                 if ( commandsReader != null )
                 {
                     commandsReader.awaitStarted();
                 }
                 TestNGXmlTestSuite testNGXmlTestSuite = newXmlSuite();
                 testNGXmlTestSuite.locateTestSets();
-                testNGXmlTestSuite.execute( reporter );
+                testNGXmlTestSuite.execute( testNGReporter );
             }
             else
             {
-                if ( testsToRun == null )
+                TestNGReporter testNGReporter = createTestNGReporter( reporter );
+                testNGReporter.setRunMode( NORMAL_RUN );
+                /*
+                 * {@link org.apache.maven.surefire.api.report.ConsoleOutputCapture#startCapture(ConsoleOutputReceiver)}
+                 * called in prior to initializing variable {@link #testsToRun}
+                 */
+                startCapture( testNGReporter );
+
+                final TestsToRun testsToRun;
+                if ( forkTestSet instanceof TestsToRun )
                 {
-                    if ( forkTestSet instanceof TestsToRun )
-                    {
-                        testsToRun = (TestsToRun) forkTestSet;
-                    }
-                    else if ( forkTestSet instanceof Class )
-                    {
-                        testsToRun = fromClass( (Class<?>) forkTestSet );
-                    }
-                    else
-                    {
-                        testsToRun = scanClassPath();
-                    }
+                    testsToRun = (TestsToRun) forkTestSet;
+                }
+                else if ( forkTestSet instanceof Class )
+                {
+                    testsToRun = fromClass( (Class<?>) forkTestSet );
+                }
+                else
+                {
+                    testsToRun = scanClassPath();
                 }
 
                 if ( commandsReader != null )
@@ -142,7 +152,7 @@ public class TestNGProvider
                     commandsReader.awaitStarted();
                 }
                 TestNGDirectoryTestSuite suite = newDirectorySuite();
-                suite.execute( testsToRun, reporter );
+                suite.execute( testsToRun, testNGReporter );
             }
         }
         finally
@@ -224,8 +234,7 @@ public class TestNGProvider
         }
         else
         {
-            testsToRun = scanClassPath();
-            return testsToRun;
+            return scanClassPath();
         }
     }
 
@@ -245,5 +254,30 @@ public class TestNGProvider
     {
         TestListResolver filter = optionallyWildcardFilter( testRequest.getTestListResolver() );
         return filter.isWildcard() ? getEmptyTestListResolver() : filter;
+    }
+
+    // If we have access to IResultListener, return a ConfigurationAwareTestNGReporter.
+    // But don't cause NoClassDefFoundErrors if it isn't available; just return a regular TestNGReporter instead.
+    private static TestNGReporter createTestNGReporter( TestReportListener<TestOutputReportEntry> reportManager )
+    {
+        try
+        {
+            Class.forName( "org.testng.internal.IResultListener" );
+            Class<?> c = Class.forName( "org.apache.maven.surefire.testng.ConfigurationAwareTestNGReporter" );
+            Constructor<?> ctor = c.getConstructor( TestReportListener.class );
+            return (TestNGReporter) ctor.newInstance( reportManager );
+        }
+        catch ( InvocationTargetException e )
+        {
+            throw new RuntimeException( "Bug in ConfigurationAwareTestNGReporter", e.getCause() );
+        }
+        catch ( ClassNotFoundException e )
+        {
+            return new TestNGReporter( reportManager );
+        }
+        catch ( Exception e )
+        {
+            throw new RuntimeException( "Bug in ConfigurationAwareTestNGReporter", e );
+        }
     }
 }

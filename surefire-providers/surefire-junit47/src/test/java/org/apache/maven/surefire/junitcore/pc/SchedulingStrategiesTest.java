@@ -19,8 +19,7 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.apache.maven.surefire.api.report.ConsoleStream;
-import org.apache.maven.surefire.api.report.DefaultDirectConsoleReporter;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutorService;
@@ -30,6 +29,7 @@ import java.util.concurrent.ThreadFactory;
 import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 /**
  * Tests the factories in SchedulingStrategy.
@@ -48,7 +48,7 @@ import static org.junit.Assert.assertTrue;
 public class SchedulingStrategiesTest
 {
     private static final ThreadFactory DAEMON_THREAD_FACTORY = newDaemonThreadFactory();
-    private final ConsoleStream logger = new DefaultDirectConsoleReporter( System.out );
+    private final ConsoleLogger logger = mock( ConsoleLogger.class );
 
     @Test
     public void invokerStrategy()

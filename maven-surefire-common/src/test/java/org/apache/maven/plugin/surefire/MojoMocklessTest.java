@@ -32,6 +32,7 @@ import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.util.DefaultScanResult;
 import org.apache.maven.toolchain.Toolchain;
+import org.codehaus.plexus.logging.Logger;
 import org.junit.Test;
 
 import java.io.File;
@@ -44,6 +45,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 import static org.powermock.reflect.Whitebox.invokeMethod;
 import static org.powermock.reflect.Whitebox.setInternalState;
 
@@ -243,6 +245,7 @@ public class MojoMocklessTest
         List<Artifact> projectTestArtifacts = singletonList( testDeps );
         String[] dependenciesToScan = { "g:a" };
         Mojo mojo = new Mojo( projectTestArtifacts, dependenciesToScan );
+        mojo.setLogger( mock( Logger.class ) );
         DefaultScanResult result = mojo.scanDependencies();
 
         assertThat( result )
@@ -275,6 +278,7 @@ public class MojoMocklessTest
         List<Artifact> projectTestArtifacts = singletonList( testDeps );
         String[] dependenciesToScan = { "g:a" };
         Mojo mojo = new Mojo( projectTestArtifacts, dependenciesToScan );
+        mojo.setLogger( mock( Logger.class ) );
         DefaultScanResult result = mojo.scanDependencies();
 
         assertThat( result )
@@ -306,6 +310,7 @@ public class MojoMocklessTest
         List<Artifact> projectTestArtifacts = singletonList( testDeps );
         String[] dependenciesToScan = { "g:a" };
         Mojo mojo = new Mojo( projectTestArtifacts, dependenciesToScan );
+        mojo.setLogger( mock( Logger.class ) );
         DefaultScanResult result = mojo.scanDependencies();
 
         assertThat( result )
@@ -352,6 +357,7 @@ public class MojoMocklessTest
         List<Artifact> projectTestArtifacts = asList( testDep1, testDep2 );
         String[] dependenciesToScan = { "g:a" };
         Mojo mojo = new Mojo( projectTestArtifacts, dependenciesToScan );
+        mojo.setLogger( mock( Logger.class ) );
         DefaultScanResult result = mojo.scanDependencies();
 
         assertThat( result )
@@ -501,6 +507,18 @@ public class MojoMocklessTest
 
         @Override
         public void setIncludes( List<String> includes )
+        {
+
+        }
+
+        @Override
+        public List<String> getExcludes()
+        {
+            return null;
+        }
+
+        @Override
+        public void setExcludes( List<String> excludes )
         {
 
         }

@@ -23,7 +23,6 @@ import org.apache.maven.surefire.api.booter.Command;
 import org.apache.maven.surefire.api.booter.MasterProcessCommand;
 import org.apache.maven.surefire.api.booter.Shutdown;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
-import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.stream.AbstractStreamDecoder;
 import org.apache.maven.surefire.api.stream.MalformedChannelException;
 import org.apache.maven.surefire.api.stream.SegmentType;
@@ -36,7 +35,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.ReadableByteChannel;
-import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 import static org.apache.maven.surefire.api.booter.Command.BYE_ACK;
@@ -47,11 +45,10 @@ import static org.apache.maven.surefire.api.booter.Command.toRunClass;
 import static org.apache.maven.surefire.api.booter.Command.toShutdown;
 import static org.apache.maven.surefire.api.booter.Constants.MAGIC_NUMBER_FOR_COMMANDS_BYTES;
 import static org.apache.maven.surefire.api.booter.MasterProcessCommand.COMMAND_TYPES;
-import static org.apache.maven.surefire.api.report.RunMode.RUN_MODES;
 import static org.apache.maven.surefire.api.stream.SegmentType.DATA_STRING;
 import static org.apache.maven.surefire.api.stream.SegmentType.END_OF_FRAME;
-import static org.apache.maven.surefire.api.stream.SegmentType.RUN_MODE;
 import static org.apache.maven.surefire.api.stream.SegmentType.STRING_ENCODING;
+import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
 
 /**
  *
@@ -62,13 +59,6 @@ public class CommandDecoder extends AbstractStreamDecoder<Command, MasterProcess
     private static final int NO_POSITION = -1;
 
     private static final SegmentType[] COMMAND_WITHOUT_DATA = new SegmentType[] {
-        END_OF_FRAME
-    };
-
-    private static final SegmentType[] COMMAND_WITH_RUNNABLE_STRING = new SegmentType[] {
-        RUN_MODE,
-        STRING_ENCODING,
-        DATA_STRING,
         END_OF_FRAME
     };
 
@@ -100,14 +90,11 @@ public class CommandDecoder extends AbstractStreamDecoder<Command, MasterProcess
                 throw new MalformedFrameException( memento.getLine().getPositionByteBuffer(),
                     memento.getByteBuffer().position() );
             }
-            RunMode runMode = null;
+
             for ( SegmentType segmentType : nextSegmentType( commandType ) )
             {
                 switch ( segmentType )
                 {
-                    case RUN_MODE:
-                        runMode = RUN_MODES.get( readSegment( memento ) );
-                        break;
                     case STRING_ENCODING:
                         memento.setCharset( readCharset( memento ) );
                         break;
@@ -120,7 +107,7 @@ public class CommandDecoder extends AbstractStreamDecoder<Command, MasterProcess
                     case END_OF_FRAME:
                         memento.getLine().setPositionByteBuffer( memento.getByteBuffer().position() );
                         memento.getLine().clear();
-                        return toMessage( commandType, runMode, memento );
+                        return toMessage( commandType, memento );
                     default:
                         memento.getLine().setPositionByteBuffer( NO_POSITION );
                         arguments.dumpStreamText( "Unknown enum ("
@@ -179,7 +166,6 @@ public class CommandDecoder extends AbstractStreamDecoder<Command, MasterProcess
             case TEST_SET_FINISHED:
                 return COMMAND_WITHOUT_DATA;
             case RUN_CLASS:
-                return COMMAND_WITH_RUNNABLE_STRING;
             case SHUTDOWN:
                 return COMMAND_WITH_ONE_STRING;
             default:
@@ -189,7 +175,7 @@ public class CommandDecoder extends AbstractStreamDecoder<Command, MasterProcess
 
     @Nonnull
     @Override
-    protected Command toMessage( @Nonnull MasterProcessCommand commandType, RunMode runMode, @Nonnull Memento memento )
+    protected Command toMessage( @Nonnull MasterProcessCommand commandType, @Nonnull Memento memento )
         throws MalformedFrameException
     {
         switch ( commandType )
@@ -248,14 +234,10 @@ public class CommandDecoder extends AbstractStreamDecoder<Command, MasterProcess
         {
             OutputStream fos = new FileOutputStream( sink, true );
             final OutputStream os = new BufferedOutputStream( fos, DEBUG_SINK_BUFFER_SIZE );
-            Runtime.getRuntime().addShutdownHook( new Thread( new FutureTask<>( new Callable<Void>()
+            addShutDownHook( new Thread( new FutureTask<>( () ->
             {
-                @Override
-                public Void call() throws Exception
-                {
-                    os.close();
-                    return null;
-                }
+                os.close();
+                return null;
             } ) ) );
             return os;
         }

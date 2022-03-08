@@ -19,16 +19,16 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import com.googlecode.junittoolbox.ParallelParameterized;
+import java.util.ArrayList;
+
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-
-import java.util.ArrayList;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
@@ -36,7 +36,7 @@ import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaV
 /**
  *
  */
-@RunWith( ParallelParameterized.class )
+@RunWith( Parameterized.class )
 @SuppressWarnings( "checkstyle:magicnumber" )
 public class JUnitPlatformIT
         extends SurefireJUnit4IntegrationTestCase

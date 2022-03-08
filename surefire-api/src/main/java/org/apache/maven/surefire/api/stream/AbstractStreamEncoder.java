@@ -79,7 +79,25 @@ public abstract class AbstractStreamEncoder<E extends Enum<E>>
         }
     }
 
-    public void encodeHeader( ByteBuffer result, E operation, RunMode runMode )
+    public void encodeHeader( ByteBuffer result, E operation, RunMode runMode, Long testRunId )
+    {
+        encodeHeader( result, operation );
+
+        byte[] runmode = runMode == null ? new byte[0] : runMode.getRunmodeBinary();
+        result.put( (byte) runmode.length );
+        result.put( (byte) ':' );
+        result.put( runmode );
+        result.put( (byte) ':' );
+
+        result.put( (byte) ( testRunId == null ? 0 : 1 ) );
+        if ( testRunId != null )
+        {
+            result.putLong( testRunId );
+        }
+        result.put( (byte) ':' );
+    }
+
+    public void encodeHeader( ByteBuffer result, E operation )
     {
         result.put( (byte) ':' );
         result.put( getEncodedMagicNumber() );
@@ -89,15 +107,6 @@ public abstract class AbstractStreamEncoder<E extends Enum<E>>
         result.put( (byte) ':' );
         result.put( opcode );
         result.put( (byte) ':' );
-
-        if ( runMode != null )
-        {
-            byte[] runmode = runMode.getRunmodeBinary();
-            result.put( (byte) runmode.length );
-            result.put( (byte) ':' );
-            result.put( runmode );
-            result.put( (byte) ':' );
-        }
     }
 
     public void encodeCharset( ByteBuffer result )
@@ -141,9 +150,21 @@ public abstract class AbstractStreamEncoder<E extends Enum<E>>
         result.put( (byte) ':' );
     }
 
-    public void encode( CharsetEncoder encoder, ByteBuffer result, E operation, RunMode runMode, String... messages )
+    public void encode( CharsetEncoder encoder, ByteBuffer result, E operation, RunMode runMode, Long testRunId,
+                        String... messages )
     {
-        encodeHeader( result, operation, runMode );
+        encodeHeader( result, operation, runMode, testRunId );
+        encodeStringData( result, encoder, messages );
+    }
+
+    public void encode( CharsetEncoder encoder, ByteBuffer result, E operation, String... messages )
+    {
+        encodeHeader( result, operation );
+        encodeStringData( result, encoder, messages );
+    }
+
+    private void encodeStringData( ByteBuffer result, CharsetEncoder encoder, String... messages )
+    {
         encodeCharset( result );
         for ( String message : messages )
         {
@@ -152,7 +173,7 @@ public abstract class AbstractStreamEncoder<E extends Enum<E>>
     }
 
     public int estimateBufferLength( int opcodeLength, RunMode runMode, CharsetEncoder encoder,
-                                     int integersCounter, String... strings )
+                                     int integersCounter, int longsCounter, String... strings )
     {
         assert !( encoder == null && strings.length != 0 );
 
@@ -173,12 +194,15 @@ public abstract class AbstractStreamEncoder<E extends Enum<E>>
         }
 
         // one byte (0x00 if NULL) + 4 bytes for integer + one delimiter character ':'
-        int lengthOfData = ( 1 + 1 + 4 ) * integersCounter;
+        int lengthOfData = ( 1 + 4 + 1 ) * integersCounter;
+
+        // one byte (0x00 if NULL) + 8 bytes for long + one delimiter character ':'
+        lengthOfData += ( 1 + 8 + 1 ) * longsCounter;
 
         for ( String string : strings )
         {
             String s = nonNull( string );
-            // 4 bytes of string length + one delimiter character ':' + <string> + one delimiter character ':'
+            // 4 bytes of length of the string + one delimiter character ':' + <string> + one delimiter character ':'
             lengthOfData += 4 + 1 + (int) ceil( encoder.maxBytesPerChar() * s.length() ) + 1;
         }
 

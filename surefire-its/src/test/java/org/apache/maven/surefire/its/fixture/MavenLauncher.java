@@ -105,7 +105,16 @@ public final class MavenLauncher
     {
         FileUtils.deleteDirectory( dest );
         //noinspection ResultOfMethodCallIgnored
-        getUnpackedAt().renameTo( dest );
+        boolean moved = getUnpackedAt().renameTo( dest );
+        if ( !moved )
+        {
+            String fileEncoding = System.getProperty( "file.encoding" );
+            String os = System.getProperty( "os.name" );
+            String version = System.getProperty( "os.version" );
+            String arch = System.getProperty( "os.arch" );
+            throw new IOException( "Could not move " + getUnpackedAt() + " to " + dest
+                + " (file.encoding=" + fileEncoding + ", " + os + " " + version + " " + arch + ")." );
+        }
         unpackedAt = dest;
     }
 

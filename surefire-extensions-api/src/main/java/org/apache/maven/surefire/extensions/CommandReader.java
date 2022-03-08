@@ -42,5 +42,4 @@ public interface CommandReader extends Closeable
     @Override
     void close();
     boolean isClosed();
-    void tryFlush() throws IOException;
 }

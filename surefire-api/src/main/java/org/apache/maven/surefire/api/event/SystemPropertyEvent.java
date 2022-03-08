@@ -31,13 +31,15 @@ import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTER
 public final class SystemPropertyEvent extends Event
 {
     private final RunMode runMode;
+    private final Long testRunId;
     private final String key;
     private final String value;
 
-    public SystemPropertyEvent( RunMode runMode, String key, String value )
+    public SystemPropertyEvent( RunMode runMode, Long testRunId, String key, String value )
     {
         super( BOOTERCODE_SYSPROPS );
         this.runMode = runMode;
+        this.testRunId = testRunId;
         this.key = key;
         this.value = value;
     }
@@ -45,6 +47,11 @@ public final class SystemPropertyEvent extends Event
     public RunMode getRunMode()
     {
         return runMode;
+    }
+
+    public Long getTestRunId()
+    {
+        return testRunId;
     }
 
     public String getKey()

@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
+package org.apache.maven.surefire.report;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,16 +19,14 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * under the License.
  */
 
-/**
- * Provides a {@link FlushReceiver}.
- *
- * @author Andreas Gudian
- */
-public interface FlushReceiverProvider
-{
+import org.apache.maven.surefire.api.report.RunMode;
 
-    /**
-     * @return a {@link FlushReceiver}
-     */
-    FlushReceiver getFlushReceiver();
+/**
+ * Sets the run mode in a listener, reflects the run mode of testset execution.
+ *
+ * @since 3.0.0-M6
+ */
+public interface RunModeSetter
+{
+    void setRunMode( RunMode runMode );
 }

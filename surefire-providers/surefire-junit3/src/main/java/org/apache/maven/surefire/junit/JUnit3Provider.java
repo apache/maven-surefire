@@ -19,14 +19,11 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
-import org.apache.maven.surefire.common.junit3.JUnit3TestChecker;
+import java.util.Map;
+
 import org.apache.maven.surefire.api.provider.AbstractProvider;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
-import org.apache.maven.surefire.api.report.ConsoleOutputCapture;
-import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.api.report.ReporterFactory;
-import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.api.suite.RunResult;
@@ -34,9 +31,11 @@ import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.RunOrderCalculator;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.TestsToRun;
+import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
+import org.apache.maven.surefire.common.junit3.JUnit3TestChecker;
 
-import java.util.Map;
-
+import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.instantiate;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.isSecurityManagerSupported;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
@@ -61,8 +60,6 @@ public class JUnit3Provider
 
     private final ScanResult scanResult;
 
-    private TestsToRun testsToRun;
-
     public JUnit3Provider( ProviderParameters booterParameters )
     {
         this.providerParameters = booterParameters;
@@ -78,35 +75,35 @@ public class JUnit3Provider
     public RunResult invoke( Object forkTestSet )
         throws TestSetFailedException
     {
-        if ( testsToRun == null )
+        ReporterFactory reporterFactory = providerParameters.getReporterFactory();
+        JUnit3Reporter reporter = new JUnit3Reporter( reporterFactory.createTestReportListener() );
+        reporter.setRunMode( NORMAL_RUN );
+        startCapture( reporter );
+
+        final TestsToRun testsToRun;
+        if ( forkTestSet instanceof TestsToRun )
         {
-            if ( forkTestSet instanceof TestsToRun )
-            {
-                testsToRun = (TestsToRun) forkTestSet;
-            }
-            else if ( forkTestSet instanceof Class )
-            {
-                testsToRun = TestsToRun.fromClass( (Class<?>) forkTestSet );
-            }
-            else
-            {
-                testsToRun = scanClassPath();
-            }
+            testsToRun = (TestsToRun) forkTestSet;
+        }
+        else if ( forkTestSet instanceof Class )
+        {
+            testsToRun = TestsToRun.fromClass( (Class<?>) forkTestSet );
+        }
+        else
+        {
+            testsToRun = scanClassPath();
         }
 
-        ReporterFactory reporterFactory = providerParameters.getReporterFactory();
         RunResult runResult;
         try
         {
-            final RunListener reporter = reporterFactory.createReporter();
-            ConsoleOutputCapture.startCapture( (ConsoleOutputReceiver) reporter );
             Map<String, String> systemProperties = systemProps();
             setSystemManager( System.getProperty( "surefire.security.manager" ) );
 
             for ( Class<?> clazz : testsToRun )
             {
-                SurefireTestSet surefireTestSet = createTestSet( clazz );
-                executeTestSet( surefireTestSet, reporter, testClassLoader, systemProperties );
+                SurefireTestSetExecutor surefireTestSetExecutor = createTestSet( clazz, reporter );
+                executeTestSet( clazz, surefireTestSetExecutor, reporter, systemProperties );
             }
         }
         finally
@@ -131,42 +128,43 @@ public class JUnit3Provider
         }
     }
 
-    private SurefireTestSet createTestSet( Class<?> clazz )
+    private SurefireTestSetExecutor createTestSet( Class<?> clazz, JUnit3Reporter reporter )
     {
         return reflector.isJUnit3Available() && jUnit3TestChecker.accept( clazz )
-            ? new JUnitTestSet( clazz, reflector )
-            : new PojoTestSet( clazz );
+            ? new JUnitTestSetExecutor( reflector, reporter )
+            : new PojoTestSetExecutor( reporter );
     }
 
-    private void executeTestSet( SurefireTestSet testSet, RunListener reporter, ClassLoader classLoader,
+    private void executeTestSet( Class<?> testSet, SurefireTestSetExecutor testSetExecutor, JUnit3Reporter reporter,
                                  Map<String, String> systemProperties )
         throws TestSetFailedException
     {
         String clazz = testSet.getName();
+        long testId = reporter.getClassMethodIndexer().indexClass( clazz );
 
         try
         {
-            TestSetReportEntry started = new SimpleReportEntry( clazz, null, null, null );
+            TestSetReportEntry started = new SimpleReportEntry( NORMAL_RUN, testId, clazz, null, null, null );
             reporter.testSetStarting( started );
-            testSet.execute( reporter, classLoader );
+            testSetExecutor.execute( testSet, testClassLoader );
         }
         finally
         {
-            TestSetReportEntry completed = new SimpleReportEntry( clazz, null, null, null, systemProperties );
+            TestSetReportEntry completed =
+                new SimpleReportEntry( NORMAL_RUN, testId, clazz, null, null, null, systemProperties );
             reporter.testSetCompleted( completed );
         }
     }
 
     private TestsToRun scanClassPath()
     {
-        final TestsToRun testsToRun = scanResult.applyFilter( testChecker, testClassLoader );
+        TestsToRun testsToRun = scanResult.applyFilter( testChecker, testClassLoader );
         return runOrderCalculator.orderTestClasses( testsToRun );
     }
 
     @Override
     public Iterable<Class<?>> getSuites()
     {
-        testsToRun = scanClassPath();
-        return testsToRun;
+        return scanClassPath();
     }
 }

@@ -19,7 +19,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Commandline;
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.booter.AbstractPathConfiguration;
@@ -77,7 +77,7 @@ public class ModularClasspathForkConfiguration
     }
 
     @Override
-    protected void resolveClasspath( @Nonnull OutputStreamFlushableCommandline cli, @Nonnull String startClass,
+    protected void resolveClasspath( @Nonnull Commandline cli, @Nonnull String startClass,
                                      @Nonnull StartupConfiguration config, @Nonnull File dumpLogDirectory )
             throws SurefireBooterForkException
     {
@@ -183,7 +183,7 @@ public class ModularClasspathForkConfiguration
 
                 for ( String pkg : packages )
                 {
-                    args.append( "--add-exports" )
+                    args.append( "--add-opens" )
                             .append( NL )
                             .append( moduleName )
                             .append( '/' )

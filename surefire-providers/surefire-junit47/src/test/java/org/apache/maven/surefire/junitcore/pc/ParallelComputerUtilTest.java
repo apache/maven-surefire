@@ -19,13 +19,12 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.apache.maven.surefire.junitcore.JUnitCoreParameters;
-import org.apache.maven.surefire.api.report.ConsoleStream;
-import org.apache.maven.surefire.api.report.DefaultDirectConsoleReporter;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.junitcore.JUnitCoreParameters;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoint;
@@ -41,20 +40,21 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.maven.surefire.junitcore.pc.ParallelComputerUtil.resolveConcurrency;
 import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.PARALLEL_KEY;
-import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.THREADCOUNT_KEY;
-import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.THREADCOUNTSUITES_KEY;
+import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.PARALLEL_TIMEOUTFORCED_KEY;
+import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.PARALLEL_TIMEOUT_KEY;
 import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.THREADCOUNTCLASSES_KEY;
 import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.THREADCOUNTMETHODS_KEY;
-import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.PARALLEL_TIMEOUT_KEY;
-import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.PARALLEL_TIMEOUTFORCED_KEY;
+import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.THREADCOUNTSUITES_KEY;
+import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.THREADCOUNT_KEY;
 import static org.apache.maven.surefire.junitcore.JUnitCoreParameters.USEUNLIMITEDTHREADS_KEY;
+import static org.apache.maven.surefire.junitcore.pc.ParallelComputerUtil.resolveConcurrency;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 /**
  * Testing an algorithm in {@link ParallelComputerUtil} which configures allocated thread resources in ParallelComputer
@@ -68,7 +68,7 @@ import static org.junit.Assert.assertTrue;
 @SuppressWarnings( "checkstyle:magicnumber" )
 public final class ParallelComputerUtilTest
 {
-    private static final ConsoleStream LOGGER = new DefaultDirectConsoleReporter( System.out );
+    private static final ConsoleLogger LOGGER = mock( ConsoleLogger.class );
 
     @DataPoint
     public static final int CPU_1 = 1;

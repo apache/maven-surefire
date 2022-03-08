@@ -19,7 +19,7 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.apache.maven.surefire.api.report.ConsoleStream;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.util.internal.DaemonThreadFactory;
 import org.junit.runner.Description;
 import org.junit.runners.model.RunnerScheduler;
@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit;
  */
 final class SingleThreadScheduler
 {
-    private final ConsoleStream logger;
+    private final ConsoleLogger logger;
 
     private final ExecutorService pool = newPool();
 
@@ -54,7 +54,7 @@ final class SingleThreadScheduler
         return new ThreadPoolExecutor( 1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), tf );
     }
 
-    SingleThreadScheduler( ConsoleStream logger )
+    SingleThreadScheduler( ConsoleLogger logger )
     {
         this.logger = logger;
         SchedulingStrategy strategy = SchedulingStrategies.createParallelSharedStrategy( logger, pool );

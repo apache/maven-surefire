@@ -128,7 +128,7 @@ For more information see the [chapter 'Selecting JDK by the Toolchains API in pl
 The plugin **maven-toolchains-plugin** should be used along with old versions of Surefire or Failsafe plugin.
 In this example you can see how to switch the JDK by Toolchain **(-t ...)** in the entire build (on Windows).
 
-    $ mvn -t D:\.m2\toolchains.xml test
+    $ mvn -t /path/to/.m2/toolchains.xml test
     
 Without **(-t ...)** the Toolchain should be located in **${user.home}/.m2/toolchains.xml**.
 

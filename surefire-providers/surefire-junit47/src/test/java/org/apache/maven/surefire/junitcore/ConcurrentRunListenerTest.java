@@ -23,17 +23,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
-import org.apache.maven.surefire.api.report.ConsoleStream;
-import org.apache.maven.surefire.api.report.DefaultDirectConsoleReporter;
-import org.apache.maven.surefire.api.report.ReporterFactory;
-import org.apache.maven.surefire.api.report.RunListener;
-import org.apache.maven.surefire.report.RunStatistics;
-import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
+import org.apache.maven.surefire.api.report.ReporterFactory;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.report.RunStatistics;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Computer;
@@ -148,16 +145,15 @@ public class ConcurrentRunListenerTest
     {
         DefaultReporterFactory reporterFactory = createReporterFactory();
         HashMap<String, TestSet> classMethodCounts = new HashMap<>();
-        final ConsoleStream defaultConsoleReporter = new DefaultDirectConsoleReporter( System.out );
-        RunListener reporter =
-            new ClassesParallelRunListener( classMethodCounts, reporterFactory, defaultConsoleReporter );
+        ConcurrentRunListener reporter =
+            new ClassesParallelRunListener( classMethodCounts, reporterFactory );
         JUnitCoreRunListener runListener = new JUnitCoreRunListener( reporter, classMethodCounts );
         RunStatistics result = runClasses( reporterFactory, runListener, classes );
         assertReporter( result, success, ignored, failure, "classes" );
         classMethodCounts.clear();
 
         reporterFactory = createReporterFactory();
-        reporter = new MethodsParallelRunListener( classMethodCounts, reporterFactory, true, defaultConsoleReporter );
+        reporter = new MethodsParallelRunListener( classMethodCounts, reporterFactory, true );
         runListener = new JUnitCoreRunListener( reporter, classMethodCounts );
         result = runClasses( reporterFactory, runListener, classes );
         assertReporter( result, success, ignored, failure, "methods" );
@@ -198,13 +194,10 @@ public class ConcurrentRunListenerTest
 
     private org.junit.runner.notification.RunListener createRunListener( ReporterFactory reporterFactory,
                                                                          Map<String, TestSet> testSetMap )
-        throws TestSetFailedException
     {
-        return new JUnitCoreRunListener(
-            new ClassesParallelRunListener( testSetMap, reporterFactory,
-                                                  new DefaultDirectConsoleReporter( System.out ) ), testSetMap );
+        ConcurrentRunListener handler = new ClassesParallelRunListener( testSetMap, reporterFactory );
+        return new JUnitCoreRunListener( handler, testSetMap );
     }
-
 
     /**
      *

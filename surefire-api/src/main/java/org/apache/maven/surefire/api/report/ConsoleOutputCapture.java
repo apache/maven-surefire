@@ -19,12 +19,18 @@ package org.apache.maven.surefire.api.report;
  * under the License.
  */
 
+import javax.annotation.Nonnull;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
 import static java.lang.System.setErr;
 import static java.lang.System.setOut;
+import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdErr;
+import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdErrln;
+import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdOut;
+import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdOutln;
 
 /**
  * Deals with system.out/err.
@@ -32,7 +38,7 @@ import static java.lang.System.setOut;
  */
 public final class ConsoleOutputCapture
 {
-    public static void startCapture( ConsoleOutputReceiver target )
+    public static void startCapture( TestOutputReceiver<OutputReportEntry> target )
     {
         setOut( new ForwardingPrintStream( true, target ) );
         setErr( new ForwardingPrintStream( false, target ) );
@@ -42,9 +48,9 @@ public final class ConsoleOutputCapture
         extends PrintStream
     {
         private final boolean isStdout;
-        private final ConsoleOutputReceiver target;
+        private final TestOutputReceiver<OutputReportEntry> target;
 
-        ForwardingPrintStream( boolean stdout, ConsoleOutputReceiver target )
+        ForwardingPrintStream( boolean stdout, TestOutputReceiver<OutputReportEntry> target )
         {
             super( new NullOutputStream() );
             isStdout = stdout;
@@ -52,13 +58,13 @@ public final class ConsoleOutputCapture
         }
 
         @Override
-        public void write( byte[] buf, int off, int len )
+        public void write( @Nonnull byte[] buf, int off, int len )
         {
-            target.writeTestOutput( new String( buf, off, len ), false, isStdout );
+            String log = new String( buf, off, len );
+            target.writeTestOutput( isStdout ? stdOut( log ) : stdErr( log ) );
         }
 
-        @Override
-        public void write( byte[] b )
+        public void write( @Nonnull byte[] b )
             throws IOException
         {
             write( b, 0, b.length );
@@ -114,7 +120,7 @@ public final class ConsoleOutputCapture
         }
 
         @Override
-        public void println( char[] x )
+        public void println( @Nonnull char[] x )
         {
             println( String.valueOf( x ) );
         }
@@ -128,13 +134,14 @@ public final class ConsoleOutputCapture
         @Override
         public void println( String s )
         {
-            target.writeTestOutput( s == null ? "null" : s, true, isStdout );
+            String log = s == null ? "null" : s;
+            target.writeTestOutput( isStdout ? stdOutln( log ) : stdErrln( log ) );
         }
 
         @Override
         public void println()
         {
-            target.writeTestOutput( "", true, isStdout );
+            target.writeTestOutput( isStdout ? stdOutln( "" ) : stdErrln( "" ) );
         }
 
         @Override
@@ -174,7 +181,7 @@ public final class ConsoleOutputCapture
         }
 
         @Override
-        public void print( char[] x )
+        public void print( @Nonnull char[] x )
         {
             print( String.valueOf( x ) );
         }
@@ -188,7 +195,8 @@ public final class ConsoleOutputCapture
         @Override
         public void print( String s )
         {
-            target.writeTestOutput( s == null ? "null" : s, false, isStdout );
+            String log = s == null ? "null" : s;
+            target.writeTestOutput( isStdout ? stdOut( log ) : stdErr( log ) );
         }
 
         @Override

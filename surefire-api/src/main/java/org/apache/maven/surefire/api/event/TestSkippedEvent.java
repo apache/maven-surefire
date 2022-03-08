@@ -20,7 +20,6 @@ package org.apache.maven.surefire.api.event;
  */
 
 import org.apache.maven.surefire.api.report.ReportEntry;
-import org.apache.maven.surefire.api.report.RunMode;
 
 import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TEST_SKIPPED;
 
@@ -31,8 +30,8 @@ import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTER
  */
 public final class TestSkippedEvent extends AbstractTestControlEvent<ReportEntry>
 {
-    public TestSkippedEvent( RunMode runMode, ReportEntry reportEntry )
+    public TestSkippedEvent( ReportEntry reportEntry )
     {
-        super( BOOTERCODE_TEST_SKIPPED, runMode, reportEntry );
+        super( BOOTERCODE_TEST_SKIPPED, reportEntry );
     }
 }

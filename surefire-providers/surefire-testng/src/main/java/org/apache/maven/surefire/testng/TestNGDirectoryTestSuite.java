@@ -23,17 +23,16 @@ import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.maven.surefire.api.cli.CommandLineOption;
-import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.TestsToRun;
 
+import static java.util.Collections.singleton;
 import static org.apache.maven.surefire.testng.TestNGExecutor.run;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 
@@ -82,45 +81,45 @@ final class TestNGDirectoryTestSuite
         this.skipAfterFailureCount = skipAfterFailureCount;
     }
 
-    void execute( TestsToRun testsToRun, RunListener reporterManager )
+    void execute( TestsToRun testsToRun, TestNGReporter testNGReporter )
         throws TestSetFailedException
     {
         if ( !testsToRun.allowEagerReading() )
         {
-            executeLazy( testsToRun, reporterManager );
+            executeLazy( testsToRun, testNGReporter );
         }
         else if ( testsToRun.containsAtLeast( 2 ) )
         {
-            executeMulti( testsToRun, reporterManager );
+            executeMulti( testsToRun, testNGReporter );
         }
         else if ( testsToRun.containsAtLeast( 1 ) )
         {
             Class<?> testClass = testsToRun.iterator().next();
-            executeSingleClass( reporterManager, testClass );
+            executeSingleClass( testNGReporter, testClass );
         }
     }
 
-    private void executeSingleClass( RunListener reporter, Class<?> testClass )
+    private void executeSingleClass( TestNGReporter testNGReporter, Class<?> testClass )
         throws TestSetFailedException
     {
         options.put( "suitename", testClass.getName() );
 
-        startTestSuite( reporter );
+        startTestSuite( testNGReporter.getRunListener() );
 
         Map<String, String> optionsToUse = isJUnitTest( testClass ) ? junitOptions : options;
 
-        run( Collections.<Class<?>>singleton( testClass ), testSourceDirectory, optionsToUse, reporter,
-                reportsDirectory, methodFilter, mainCliOptions, skipAfterFailureCount );
+        run( singleton( testClass ), testSourceDirectory, optionsToUse, testNGReporter,
+            reportsDirectory, methodFilter, mainCliOptions, skipAfterFailureCount );
 
-        finishTestSuite( reporter );
+        finishTestSuite( testNGReporter.getRunListener() );
     }
 
-    private void executeLazy( TestsToRun testsToRun, RunListener reporterManager )
+    private void executeLazy( TestsToRun testsToRun, TestNGReporter testNGReporter )
         throws TestSetFailedException
     {
         for ( Class<?> testToRun : testsToRun )
         {
-            executeSingleClass( reporterManager, testToRun );
+            executeSingleClass( testNGReporter, testToRun );
         }
     }
 
@@ -164,7 +163,7 @@ final class TestNGDirectoryTestSuite
         }
     }
 
-    private void executeMulti( TestsToRun testsToRun, RunListener reporterManager )
+    private void executeMulti( TestsToRun testsToRun, TestNGReporter testNGReporter )
         throws TestSetFailedException
     {
         List<Class<?>> testNgTestClasses = new ArrayList<>();
@@ -188,18 +187,18 @@ final class TestNGDirectoryTestSuite
             testNgReportsDirectory = new File( reportsDirectory, "testng-native-results" );
             junitReportsDirectory = new File( reportsDirectory, "testng-junit-results" );
         }
-        startTestSuite( reporterManager );
+        startTestSuite( testNGReporter.getRunListener() );
 
-        run( testNgTestClasses, testSourceDirectory, options, reporterManager,
+        run( testNgTestClasses, testSourceDirectory, options, testNGReporter,
                 testNgReportsDirectory, methodFilter, mainCliOptions, skipAfterFailureCount );
 
         if ( !junitTestClasses.isEmpty() )
         {
-            run( junitTestClasses, testSourceDirectory, junitOptions, reporterManager,
+            run( junitTestClasses, testSourceDirectory, junitOptions, testNGReporter,
                     junitReportsDirectory, methodFilter, mainCliOptions, skipAfterFailureCount );
         }
 
-        finishTestSuite( reporterManager );
+        finishTestSuite( testNGReporter.getRunListener() );
     }
 
     private boolean isJUnitTest( Class<?> c )

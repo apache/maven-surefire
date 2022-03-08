@@ -30,8 +30,8 @@ import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTER
  */
 public final class StandardStreamErrEvent extends AbstractStandardStreamEvent
 {
-    public StandardStreamErrEvent( RunMode runMode, String message )
+    public StandardStreamErrEvent( RunMode runMode, Long testRunId, String message )
     {
-        super( BOOTERCODE_STDERR, runMode, message );
+        super( BOOTERCODE_STDERR, runMode, testRunId, message );
     }
 }

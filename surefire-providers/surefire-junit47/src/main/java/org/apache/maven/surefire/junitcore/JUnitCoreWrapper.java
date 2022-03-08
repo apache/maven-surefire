@@ -19,12 +19,12 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.util.TestsToRun;
 import org.apache.maven.surefire.common.junit4.Notifier;
 import org.apache.maven.surefire.junitcore.pc.ParallelComputer;
 import org.apache.maven.surefire.junitcore.pc.ParallelComputerBuilder;
-import org.apache.maven.surefire.api.report.ConsoleStream;
-import org.apache.maven.surefire.api.testset.TestSetFailedException;
-import org.apache.maven.surefire.api.util.TestsToRun;
 import org.junit.Ignore;
 import org.junit.runner.Computer;
 import org.junit.runner.Description;
@@ -54,9 +54,9 @@ final class JUnitCoreWrapper
 {
     private final Notifier notifier;
     private final JUnitCoreParameters jUnitCoreParameters;
-    private final ConsoleStream consoleStream;
+    private final ConsoleLogger consoleStream;
 
-    JUnitCoreWrapper( Notifier notifier, JUnitCoreParameters jUnitCoreParameters, ConsoleStream consoleStream )
+    JUnitCoreWrapper( Notifier notifier, JUnitCoreParameters jUnitCoreParameters, ConsoleLogger consoleStream )
     {
         this.notifier = notifier;
         this.jUnitCoreParameters = jUnitCoreParameters;

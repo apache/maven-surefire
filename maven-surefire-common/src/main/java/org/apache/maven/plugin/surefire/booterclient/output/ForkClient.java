@@ -23,9 +23,11 @@ import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Notifiable
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.api.event.Event;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
-import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
+import org.apache.maven.surefire.api.report.TestOutputReceiver;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.RunMode;
@@ -54,7 +56,7 @@ import static org.apache.maven.surefire.api.report.CategorizedReportEntry.report
  *
  * @author Kristian Rosenvold
  */
-public class ForkClient
+public final class ForkClient
     implements EventHandler<Event>
 {
     private static final long START_TIME_ZERO = 0L;
@@ -70,7 +72,7 @@ public class ForkClient
 
     /**
      * <em>testSetStartedAt</em> is set to non-zero after received
-     * {@link MasterProcessChannelEncoder#testSetStarting(ReportEntry, boolean)}.
+     * {@link MasterProcessChannelEncoder#testSetStarting(TestSetReportEntry, boolean)}.
      */
     private final AtomicLong testSetStartedAt = new AtomicLong( START_TIME_ZERO );
 
@@ -78,7 +80,7 @@ public class ForkClient
 
     private final int forkNumber;
 
-    private volatile RunListener testSetReporter;
+    private volatile TestReportListener<TestOutputReportEntry> testSetReporter;
 
     /**
      * Written by one Thread and read by another: Main Thread and ForkStarter's Thread.
@@ -87,7 +89,8 @@ public class ForkClient
 
     private volatile StackTraceWriter errorInFork;
 
-    public ForkClient( DefaultReporterFactory defaultReporterFactory, NotifiableTestStream notifiableTestStream,
+    public ForkClient( DefaultReporterFactory defaultReporterFactory,
+                       NotifiableTestStream notifiableTestStream,
                        int forkNumber )
     {
         this.defaultReporterFactory = defaultReporterFactory;
@@ -108,17 +111,21 @@ public class ForkClient
         notifier.setAcquireNextTestListener( new AcquireNextTestListener() );
         notifier.setConsoleErrorListener( new ErrorListener() );
         notifier.setByeListener( new ByeListener() );
-        notifier.setStopOnNextTestListener( new StopOnNextTestListener() );
         notifier.setConsoleDebugListener( new DebugListener() );
         notifier.setConsoleWarningListener( new WarningListener() );
         notifier.setExitErrorEventListener( new ExitErrorEventListener() );
+    }
+
+    public void setStopOnNextTestListener( ForkedProcessEventListener listener )
+    {
+        notifier.setStopOnNextTestListener( listener );
     }
 
     private final class TestSetStartingListener
             implements ForkedProcessReportEventListener<TestSetReportEntry>
     {
         @Override
-        public void handle( RunMode runMode, TestSetReportEntry reportEntry )
+        public void handle( TestSetReportEntry reportEntry )
         {
             getTestSetReporter().testSetStarting( reportEntry );
             setCurrentStartTime();
@@ -129,13 +136,14 @@ public class ForkClient
             implements ForkedProcessReportEventListener<TestSetReportEntry>
     {
         @Override
-        public void handle( RunMode runMode, TestSetReportEntry reportEntry )
+        public void handle( TestSetReportEntry reportEntry )
         {
             testsInProgress.clear();
-            TestSetReportEntry entry = reportEntry( reportEntry.getSourceName(), reportEntry.getSourceText(),
-                    reportEntry.getName(), reportEntry.getNameText(),
-                    reportEntry.getGroup(), reportEntry.getStackTraceWriter(), reportEntry.getElapsed(),
-                    reportEntry.getMessage(), getTestVmSystemProperties() );
+            TestSetReportEntry entry = reportEntry( reportEntry.getRunMode(), reportEntry.getTestRunId(),
+                reportEntry.getSourceName(), reportEntry.getSourceText(),
+                reportEntry.getName(), reportEntry.getNameText(),
+                reportEntry.getGroup(), reportEntry.getStackTraceWriter(), reportEntry.getElapsed(),
+                reportEntry.getMessage(), getTestVmSystemProperties() );
             getTestSetReporter().testSetCompleted( entry );
         }
     }
@@ -143,7 +151,7 @@ public class ForkClient
     private final class TestStartingListener implements ForkedProcessReportEventListener<ReportEntry>
     {
         @Override
-        public void handle( RunMode runMode, ReportEntry reportEntry )
+        public void handle( ReportEntry reportEntry )
         {
             testsInProgress.offer( reportEntry.getSourceName() );
             getTestSetReporter().testStarting( reportEntry );
@@ -153,7 +161,7 @@ public class ForkClient
     private final class TestSucceededListener implements ForkedProcessReportEventListener<ReportEntry>
     {
         @Override
-        public void handle( RunMode runMode, ReportEntry reportEntry )
+        public void handle( ReportEntry reportEntry )
         {
             testsInProgress.remove( reportEntry.getSourceName() );
             getTestSetReporter().testSucceeded( reportEntry );
@@ -163,7 +171,7 @@ public class ForkClient
     private final class TestFailedListener implements ForkedProcessReportEventListener<ReportEntry>
     {
         @Override
-        public void handle( RunMode runMode, ReportEntry reportEntry )
+        public void handle( ReportEntry reportEntry )
         {
             testsInProgress.remove( reportEntry.getSourceName() );
             getTestSetReporter().testFailed( reportEntry );
@@ -173,7 +181,7 @@ public class ForkClient
     private final class TestSkippedListener implements ForkedProcessReportEventListener<ReportEntry>
     {
         @Override
-        public void handle( RunMode runMode, ReportEntry reportEntry )
+        public void handle( ReportEntry reportEntry )
         {
             testsInProgress.remove( reportEntry.getSourceName() );
             getTestSetReporter().testSkipped( reportEntry );
@@ -183,7 +191,7 @@ public class ForkClient
     private final class TestErrorListener implements ForkedProcessReportEventListener<ReportEntry>
     {
         @Override
-        public void handle( RunMode runMode, ReportEntry reportEntry )
+        public void handle( ReportEntry reportEntry )
         {
             testsInProgress.remove( reportEntry.getSourceName() );
             getTestSetReporter().testError( reportEntry );
@@ -193,7 +201,7 @@ public class ForkClient
     private final class TestAssumptionFailureListener implements ForkedProcessReportEventListener<ReportEntry>
     {
         @Override
-        public void handle( RunMode runMode, ReportEntry reportEntry )
+        public void handle( ReportEntry reportEntry )
         {
             testsInProgress.remove( reportEntry.getSourceName() );
             getTestSetReporter().testAssumptionFailure( reportEntry );
@@ -275,15 +283,6 @@ public class ForkClient
         }
     }
 
-    private final class StopOnNextTestListener implements ForkedProcessEventListener
-    {
-        @Override
-        public void handle()
-        {
-            stopOnNextTest();
-        }
-    }
-
     private final class DebugListener implements ForkedProcessStringEventListener
     {
         @Override
@@ -314,13 +313,6 @@ public class ForkClient
         }
     }
 
-    /**
-     * Overridden by a subclass, see {@link org.apache.maven.plugin.surefire.booterclient.ForkStarter}.
-     */
-    protected void stopOnNextTest()
-    {
-    }
-
     public void kill()
     {
         if ( !saidGoodBye )
@@ -336,7 +328,7 @@ public class ForkClient
      * @param currentTimeMillis    current time in millis seconds
      * @param forkedProcessTimeoutInSeconds timeout in seconds given by MOJO
      */
-    public final void tryToTimeout( long currentTimeMillis, int forkedProcessTimeoutInSeconds )
+    public void tryToTimeout( long currentTimeMillis, int forkedProcessTimeoutInSeconds )
     {
         if ( forkedProcessTimeoutInSeconds > 0 )
         {
@@ -350,13 +342,13 @@ public class ForkClient
         }
     }
 
-    public final DefaultReporterFactory getDefaultReporterFactory()
+    public DefaultReporterFactory getDefaultReporterFactory()
     {
         return defaultReporterFactory;
     }
 
     @Override
-    public final void handleEvent( @Nonnull Event event )
+    public void handleEvent( @Nonnull Event event )
     {
         notifier.notifyEvent( event );
     }
@@ -371,7 +363,7 @@ public class ForkClient
         }
     }
 
-    public final boolean hadTimeout()
+    public boolean hadTimeout()
     {
         return testSetStartedAt.get() == START_TIME_NEGATIVE_TIMEOUT;
     }
@@ -379,7 +371,7 @@ public class ForkClient
     /**
      * Only {@link #getConsoleOutputReceiver()} may call this method in another Thread.
      */
-    private RunListener getTestSetReporter()
+    private TestReportListener<TestOutputReportEntry> getTestSetReporter()
     {
         if ( testSetReporter == null )
         {
@@ -387,7 +379,7 @@ public class ForkClient
             {
                 if ( testSetReporter == null )
                 {
-                    testSetReporter = defaultReporterFactory.createReporter();
+                    testSetReporter = defaultReporterFactory.createTestReportListener();
                 }
             }
         }
@@ -404,10 +396,10 @@ public class ForkClient
     private void writeTestOutput( String output, boolean newLine, boolean isStdout )
     {
         getConsoleOutputReceiver()
-                .writeTestOutput( output, newLine, isStdout );
+                .writeTestOutput( new TestOutputReportEntry( output, isStdout, newLine, /*todo*/ null, null ) );
     }
 
-    public final Map<String, String> getTestVmSystemProperties()
+    public Map<String, String> getTestVmSystemProperties()
     {
         return unmodifiableMap( testVmSystemProperties );
     }
@@ -418,19 +410,19 @@ public class ForkClient
      *
      * @return A mock provider reporter
      */
-    public final RunListener getReporter()
+    public RunListener getReporter()
     {
         return getTestSetReporter();
     }
 
-    public ConsoleOutputReceiver getConsoleOutputReceiver()
+    public TestOutputReceiver<TestOutputReportEntry> getConsoleOutputReceiver()
     {
-        return (ConsoleOutputReceiver) getTestSetReporter();
+        return getTestSetReporter();
     }
 
     private ConsoleLogger getOrCreateConsoleLogger()
     {
-        return (ConsoleLogger) getTestSetReporter();
+        return getTestSetReporter();
     }
 
     public void close( boolean hadTimeout )
@@ -438,17 +430,17 @@ public class ForkClient
         // no op
     }
 
-    public final boolean isSaidGoodBye()
+    public boolean isSaidGoodBye()
     {
         return saidGoodBye;
     }
 
-    public final StackTraceWriter getErrorInFork()
+    public StackTraceWriter getErrorInFork()
     {
         return errorInFork;
     }
 
-    public final boolean isErrorInFork()
+    public boolean isErrorInFork()
     {
         return errorInFork != null;
     }

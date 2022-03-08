@@ -40,6 +40,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <version>4.8.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -52,6 +53,11 @@
             <groupId>com.github.stephenc.jcip</groupId>
             <artifactId>jcip-annotations</artifactId>
             <version>1.0-1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -71,100 +77,6 @@
                 </executions>
                 <configuration>
                     <propertyName>jacoco.agent</propertyName>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>main</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>junit</groupId>
-                                    <artifactId>junit</artifactId>
-                                    <version>4.7</version>
-                                    <type>jar</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>${project.build.directory}/endorsed-tmp</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>main-junit47-patch</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>junit</groupId>
-                                    <artifactId>junit</artifactId>
-                                    <version>4.12</version>
-                                    <type>jar</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>${project.build.directory}/endorsed-tmp</outputDirectory>
-                                    <includes>org/junit/runner/notification/RunListener*</includes>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>test</id>
-                        <phase>process-test-sources</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/endorsed-test</outputDirectory>
-                            <overWriteIfNewer>false</overWriteIfNewer>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>junit</groupId>
-                                    <artifactId>junit</artifactId>
-                                    <version>4.12</version>
-                                    <type>jar</type>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>patch-junit47</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <attach>false</attach>
-                            <finalName>junit-4.7</finalName>
-                            <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
-                            <descriptors>
-                                <descriptor>src/assembly/assembly.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <compilerArguments>
-                        <endorseddirs>${project.build.directory}/endorsed</endorseddirs>
-                    </compilerArguments>
-                    <testCompilerArguments>
-                        <endorseddirs>${project.build.directory}/endorsed-test</endorseddirs>
-                    </testCompilerArguments>
                 </configuration>
             </plugin>
             <plugin>

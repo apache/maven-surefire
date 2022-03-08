@@ -38,6 +38,7 @@ import junit.framework.TestCase;
 import org.apache.maven.surefire.api.util.internal.ClassMethod;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.shared.io.IOUtils.readLines;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -86,7 +87,8 @@ public class RunEntryStatisticsMapTest
     {
         File data = File.createTempFile( "surefire-unit", "test" );
         RunEntryStatisticsMap newResults = new RunEntryStatisticsMap();
-        ReportEntry reportEntry = new SimpleReportEntry( "abc", null, null, null, 42 );
+        ReportEntry reportEntry = new SimpleReportEntry( NORMAL_RUN, 0L,
+            "abc", null, null, null, 42 );
         newResults.add( newResults.createNextGeneration( reportEntry ) );
         newResults.serialize( data );
         try ( InputStream io = new FileInputStream( data ) )
@@ -131,9 +133,12 @@ public class RunEntryStatisticsMapTest
         RunEntryStatisticsMap existingEntries = RunEntryStatisticsMap.fromFile( data );
         RunEntryStatisticsMap newResults = new RunEntryStatisticsMap();
 
-        ReportEntry reportEntry1 = new SimpleReportEntry( "abc", null, "method1", null, 42 );
-        ReportEntry reportEntry2 = new SimpleReportEntry( "abc", null, "willFail", null, 17 );
-        ReportEntry reportEntry3 = new SimpleReportEntry( "abc", null, "method3", null, 100 );
+        ReportEntry reportEntry1 = new SimpleReportEntry( NORMAL_RUN, 0L,
+            "abc", null, "method1", null, 42 );
+        ReportEntry reportEntry2 = new SimpleReportEntry( NORMAL_RUN, 0L,
+            "abc", null, "willFail", null, 17 );
+        ReportEntry reportEntry3 = new SimpleReportEntry( NORMAL_RUN, 0L,
+            "abc", null, "method3", null, 100 );
 
         newResults.add( existingEntries.createNextGeneration( reportEntry1 ) );
         newResults.add( existingEntries.createNextGeneration( reportEntry2 ) );
@@ -154,9 +159,12 @@ public class RunEntryStatisticsMapTest
         RunEntryStatisticsMap nextRun = RunEntryStatisticsMap.fromFile( data );
         newResults = new RunEntryStatisticsMap();
 
-        ReportEntry newRunReportEntry1 = new SimpleReportEntry( "abc", null, "method1", null, 52 );
-        ReportEntry newRunReportEntry2 = new SimpleReportEntry( "abc", null, "willFail", null, 27 );
-        ReportEntry newRunReportEntry3 = new SimpleReportEntry( "abc", null, "method3", null, 110 );
+        ReportEntry newRunReportEntry1 = new SimpleReportEntry( NORMAL_RUN, 0L,
+            "abc", null, "method1", null, 52 );
+        ReportEntry newRunReportEntry2 = new SimpleReportEntry( NORMAL_RUN, 0L,
+            "abc", null, "willFail", null, 27 );
+        ReportEntry newRunReportEntry3 = new SimpleReportEntry( NORMAL_RUN, 0L,
+            "abc", null, "method3", null, 110 );
 
         newResults.add( nextRun.createNextGeneration( newRunReportEntry1 ) );
         newResults.add( nextRun.createNextGenerationFailure( newRunReportEntry2 ) );
@@ -180,7 +188,8 @@ public class RunEntryStatisticsMapTest
     {
         File data = File.createTempFile( "surefire-unit", "test" );
         RunEntryStatisticsMap reportEntries = RunEntryStatisticsMap.fromFile( data );
-        ReportEntry reportEntry = new SimpleReportEntry( "abc", null, "line1\nline2" + NL + " line3", null, 42 );
+        ReportEntry reportEntry = new SimpleReportEntry( NORMAL_RUN, 0L,
+            "abc", null, "line1\nline2" + NL + " line3", null, 42 );
         reportEntries.add( reportEntries.createNextGeneration( reportEntry ) );
 
         reportEntries.serialize( data );
@@ -215,10 +224,10 @@ public class RunEntryStatisticsMapTest
     {
         File data = File.createTempFile( "surefire-unit", "test" );
         RunEntryStatisticsMap reportEntries = RunEntryStatisticsMap.fromFile( data );
-        reportEntries.add(
-                reportEntries.createNextGeneration( new SimpleReportEntry( "abc", null, "line1\nline2", null, 42 ) ) );
-        reportEntries.add(
-                reportEntries.createNextGeneration( new SimpleReportEntry( "abc", null, "test", null, 10 ) ) );
+        reportEntries.add( reportEntries.createNextGeneration( new SimpleReportEntry( NORMAL_RUN, 0L,
+                    "abc", null, "line1\nline2", null, 42 ) ) );
+        reportEntries.add( reportEntries.createNextGeneration( new SimpleReportEntry( NORMAL_RUN, 0L,
+            "abc", null, "test", null, 10 ) ) );
 
         reportEntries.serialize( data );
         try ( InputStream io = new FileInputStream( data ) )

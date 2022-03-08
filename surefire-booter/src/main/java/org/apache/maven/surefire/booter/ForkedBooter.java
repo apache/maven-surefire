@@ -137,7 +137,7 @@ public final class ForkedBooter
         flushEventChannelOnExit();
 
         forkingReporterFactory = createForkingReporterFactory();
-        logger = (ConsoleLogger) forkingReporterFactory.createReporter();
+        logger = forkingReporterFactory.createTestReportListener();
         commandReader = new CommandReader( decoder, providerConfiguration.getShutdown(), logger );
 
         pingScheduler = isDebugging ? null : listenToShutdownCommands( booterDeserializer.getPluginPid() );
@@ -453,7 +453,7 @@ public final class ForkedBooter
     private void runSuitesInProcess()
         throws TestSetFailedException, InvocationTargetException
     {
-        createProviderInCurrentClassloader( forkingReporterFactory ).invoke( testSet );
+        createProviderInCurrentClassloader().invoke( testSet );
     }
 
     private ForkingReporterFactory createForkingReporterFactory()
@@ -504,14 +504,13 @@ public final class ForkedBooter
         );
     }
 
-    private SurefireProvider createProviderInCurrentClassloader( ForkingReporterFactory reporterManagerFactory )
+    private SurefireProvider createProviderInCurrentClassloader()
     {
         BaseProviderFactory bpf = new BaseProviderFactory( true );
-        bpf.setReporterFactory( reporterManagerFactory );
+        bpf.setReporterFactory( forkingReporterFactory );
         bpf.setCommandReader( commandReader );
         bpf.setTestRequest( providerConfiguration.getTestSuiteDefinition() );
         bpf.setReporterConfiguration( providerConfiguration.getReporterConfiguration() );
-        bpf.setForkedChannelEncoder( eventChannel );
         ClassLoader classLoader = currentThread().getContextClassLoader();
         bpf.setClassLoaders( classLoader );
         bpf.setTestArtifactInfo( providerConfiguration.getTestArtifact() );

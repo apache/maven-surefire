@@ -22,30 +22,25 @@ package org.apache.maven.surefire.junit;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
-import org.apache.maven.surefire.api.report.RunListener;
+
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 
 /**
  * JUnit3 test set
  *
  */
-public final class JUnitTestSet
-    implements SurefireTestSet
+public final class JUnitTestSetExecutor
+    implements SurefireTestSetExecutor
 {
-    private final Class testClass;
-
     private final JUnit3Reflector reflector;
 
-    public JUnitTestSet( Class testClass, JUnit3Reflector reflector )
-    {
-        if ( testClass == null )
-        {
-            throw new NullPointerException( "testClass is null" );
-        }
+    private final JUnit3Reporter reporter;
 
-        this.testClass = testClass;
+    public JUnitTestSetExecutor( JUnit3Reflector reflector, JUnit3Reporter reporter )
+    {
         this.reflector = reflector;
+        this.reporter = reporter;
 
         // ----------------------------------------------------------------------
         // Strategy for executing JUnit tests
@@ -62,13 +57,10 @@ public final class JUnitTestSet
         // the same as the param types of TestResult.addTestListener
     }
 
-
     @Override
-    public void execute( RunListener reporter, ClassLoader loader )
+    public void execute( Class<?> testClass, ClassLoader loader )
         throws TestSetFailedException
     {
-        Class testClass = getTestClass();
-
         try
         {
             Object testObject = reflector.constructTestObject( testClass );
@@ -110,16 +102,5 @@ public final class JUnitTestSet
         {
             throw new TestSetFailedException( testClass.getName(), e );
         }
-    }
-
-    @Override
-    public String getName()
-    {
-        return testClass.getName();
-    }
-
-    private Class getTestClass()
-    {
-        return testClass;
     }
 }

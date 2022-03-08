@@ -20,44 +20,39 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  */
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-import org.apache.maven.surefire.shared.utils.cli.CommandLineException;
 import org.apache.maven.surefire.shared.utils.cli.CommandLineUtils;
-import org.apache.maven.surefire.shared.utils.cli.Commandline;
+
+import static java.util.Collections.addAll;
 
 /**
- * A {@link Commandline} implementation that provides the output stream of
- * the executed process in form of a {@link FlushReceiver}, for it to be
- * flushed on demand.
+ * A {@link org.apache.maven.surefire.shared.utils.cli.Commandline} implementation.
  *
  * @author Andreas Gudian
  */
-public class OutputStreamFlushableCommandline
-    extends Commandline
-    implements FlushReceiverProvider
+public class Commandline
+    extends org.apache.maven.surefire.shared.utils.cli.Commandline
 {
     private final Collection<String> excludedEnvironmentVariables;
     private final Set<String> addedEnvironmentVariables;
-    private volatile FlushReceiver flushReceiver;
 
     /**
      * for testing purposes only
      */
-    public OutputStreamFlushableCommandline()
+    public Commandline()
     {
         this( new String[0] );
     }
 
-    public OutputStreamFlushableCommandline( String[] excludedEnvironmentVariables )
+    public Commandline( String[] excludedEnvironmentVariables )
     {
         this.excludedEnvironmentVariables = new ConcurrentLinkedDeque<>();
         addedEnvironmentVariables = new HashSet<>();
-        Collections.addAll( this.excludedEnvironmentVariables, excludedEnvironmentVariables );
+        addAll( this.excludedEnvironmentVariables, excludedEnvironmentVariables );
     }
 
     @Override
@@ -79,25 +74,5 @@ public class OutputStreamFlushableCommandline
                 addEnvironment( key, systemEnvVars.getProperty( key ) );
             }
         }
-    }
-
-    @Override
-    public Process execute()
-        throws CommandLineException
-    {
-        Process process = super.execute();
-
-        if ( process.getOutputStream() != null )
-        {
-            flushReceiver = new OutputStreamFlushReceiver( process.getOutputStream() );
-        }
-
-        return process;
-    }
-
-    @Override
-    public FlushReceiver getFlushReceiver()
-    {
-        return flushReceiver;
     }
 }

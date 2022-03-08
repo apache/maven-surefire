@@ -21,23 +21,18 @@ package org.apache.maven.surefire.junitcore;
 
 import java.util.Map;
 
-import org.apache.maven.surefire.api.report.ConsoleStream;
 import org.apache.maven.surefire.api.report.ReporterFactory;
-import org.apache.maven.surefire.api.testset.TestSetFailedException;
-import org.junit.runner.notification.RunListener.ThreadSafe;
 
 /**
  * @author Kristian Rosenvold
  */
-@ThreadSafe
-public class ClassesParallelRunListener
+@Deprecated // remove this class after StatelessXmlReporter is capable of parallel test sets processing
+final class ClassesParallelRunListener
     extends ConcurrentRunListener
 {
-    public ClassesParallelRunListener( Map<String, TestSet> classMethodCounts, ReporterFactory reporterFactory,
-                                       ConsoleStream consoleStream )
-        throws TestSetFailedException
+    ClassesParallelRunListener( Map<String, TestSet> classMethodCounts, ReporterFactory reporterFactory )
     {
-        super( reporterFactory, consoleStream, false, classMethodCounts );
+        super( reporterFactory, false, classMethodCounts );
     }
 
     @Override

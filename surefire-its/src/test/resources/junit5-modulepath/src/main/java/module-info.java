@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,21 +16,6 @@ package org.apache.maven.surefire.api.report;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-/**
- * A receiver of stdout/sterr output from running tests. This receiver knows how to associate
- * the output with a given testset.
- */
-public interface ConsoleOutputReceiver
-{
-
-    /**
-     * Forwards process output from the running test-case into the reporting system
-     *
-     * @param output stdout/sterr output from running tests
-     * @param newLine print on new line
-     * @param stdout Indicates if this is stdout
-     */
-    void writeTestOutput( String output, boolean newLine, boolean stdout );
-
+module com.app {
+    requires joda.time;
 }

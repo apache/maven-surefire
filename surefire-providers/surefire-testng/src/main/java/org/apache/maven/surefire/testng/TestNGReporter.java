@@ -20,11 +20,19 @@ package org.apache.maven.surefire.testng;
  */
 
 import org.apache.maven.surefire.api.report.CategorizedReportEntry;
+import org.apache.maven.surefire.api.report.OutputReportEntry;
+import org.apache.maven.surefire.api.report.RunMode;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.TestOutputReceiver;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
+import org.apache.maven.surefire.report.ClassMethodIndexer;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 
+import org.apache.maven.surefire.report.RunModeSetter;
 import org.testng.IClass;
 import org.testng.ISuite;
 import org.testng.ISuiteListener;
@@ -45,9 +53,11 @@ import static org.apache.maven.surefire.api.report.SimpleReportEntry.withExcepti
  * @author jkuhnert
  */
 public class TestNGReporter
-    implements ITestListener, ISuiteListener
+    implements TestOutputReceiver<OutputReportEntry>, ITestListener, ISuiteListener, RunModeSetter
 {
-    private final RunListener reporter;
+    private final ClassMethodIndexer classMethodIndexer = new ClassMethodIndexer();
+    private final TestReportListener<TestOutputReportEntry> reporter;
+    private volatile RunMode runMode;
 
     /**
      * Constructs a new instance that will listen to
@@ -59,23 +69,33 @@ public class TestNGReporter
      *
      * @param reportManager Instance to report suite status to
      */
-    public TestNGReporter( RunListener reportManager )
+    public TestNGReporter( TestReportListener<TestOutputReportEntry> reportManager )
     {
         this.reporter = reportManager;
+    }
+
+    protected final RunListener getRunListener()
+    {
+        return reporter;
     }
 
     @Override
     public void onTestStart( ITestResult result )
     {
-        String clazz = result.getTestClass().getName();
-        String group = groupString( result.getMethod().getGroups(), clazz );
-        reporter.testStarting( new CategorizedReportEntry( clazz, testName( result ), group ) );
+        String className = result.getTestClass().getName();
+        String methodName = testName( result );
+        long testRunId = classMethodIndexer.indexClassMethod( className, methodName );
+        String group = groupString( result.getMethod().getGroups(), className );
+        reporter.testStarting( new CategorizedReportEntry( runMode, testRunId, className, methodName, group ) );
     }
 
     @Override
     public void onTestSuccess( ITestResult result )
     {
-        ReportEntry report = new SimpleReportEntry( result.getTestClass().getName(), null, testName( result ), null );
+        String className = result.getTestClass().getName();
+        String methodName = testName( result );
+        long testRunId = classMethodIndexer.indexClassMethod( className, methodName );
+        ReportEntry report = new SimpleReportEntry( runMode, testRunId, className, null, methodName, null );
         reporter.testSucceeded( report );
     }
 
@@ -83,9 +103,13 @@ public class TestNGReporter
     public void onTestFailure( ITestResult result )
     {
         IClass clazz = result.getTestClass();
-        ReportEntry report = withException( clazz.getName(), null, testName( result ), null,
-            new PojoStackTraceWriter( clazz.getRealClass().getName(), result.getMethod().getMethodName(),
-                result.getThrowable() ) );
+        String className = clazz.getName();
+        String methodName = testName( result );
+        long testRunId = classMethodIndexer.indexClassMethod( className, methodName );
+        StackTraceWriter stackTraceWriter = new PojoStackTraceWriter( clazz.getRealClass().getName(),
+            result.getMethod().getMethodName(), result.getThrowable() );
+        ReportEntry report = withException( runMode, testRunId, clazz.getName(), null, methodName,
+            null, stackTraceWriter );
 
         reporter.testFailed( report );
     }
@@ -93,10 +117,13 @@ public class TestNGReporter
     @Override
     public void onTestSkipped( ITestResult result )
     {
+        String className = result.getTestClass().getName();
+        String methodName = testName( result );
+        long testRunId = classMethodIndexer.indexClassMethod( className, methodName );
         //noinspection ThrowableResultOfMethodCallIgnored
         Throwable t = result.getThrowable();
         String reason = t == null ? null : t.getMessage();
-        ReportEntry report = ignored( result.getTestClass().getName(), null, testName( result ), null, reason );
+        ReportEntry report = ignored( runMode, testRunId, className, null, methodName, null, reason );
         reporter.testSkipped( report );
     }
 
@@ -104,10 +131,12 @@ public class TestNGReporter
     public void onTestFailedButWithinSuccessPercentage( ITestResult result )
     {
         IClass clazz = result.getTestClass();
-        ReportEntry report = withException( clazz.getName(), null, testName( result ), null,
-            new PojoStackTraceWriter( clazz.getRealClass().getName(), result.getMethod().getMethodName(),
-                result.getThrowable() ) );
-
+        String className = clazz.getName();
+        String methodName = testName( result );
+        long testRunId = classMethodIndexer.indexClassMethod( className, methodName );
+        StackTraceWriter stackTraceWriter = new PojoStackTraceWriter( clazz.getRealClass().getName(),
+            result.getMethod().getMethodName(), result.getThrowable() );
+        ReportEntry report = withException( runMode, testRunId, className, null, methodName, null, stackTraceWriter );
         reporter.testSucceeded( report );
     }
 
@@ -196,5 +225,18 @@ public class TestNGReporter
         String name = result.getName();
         return parameters == null || parameters.length == 0
             ? name : name + Arrays.toString( parameters ) + "(" + result.getMethod().getCurrentInvocationCount() + ")";
+    }
+
+    @Override
+    public void setRunMode( RunMode runMode )
+    {
+        this.runMode = runMode;
+    }
+
+    @Override
+    public void writeTestOutput( OutputReportEntry reportEntry )
+    {
+        Long testRunId = classMethodIndexer.getLocalIndex();
+        reporter.writeTestOutput( new TestOutputReportEntry( reportEntry, runMode, testRunId ) );
     }
 }

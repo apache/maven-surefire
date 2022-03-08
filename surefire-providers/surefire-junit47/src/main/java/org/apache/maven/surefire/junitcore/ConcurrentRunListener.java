@@ -20,16 +20,16 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import java.util.Map;
-import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.api.report.ConsoleStream;
+
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.ReporterFactory;
-import org.apache.maven.surefire.api.report.RunListener;
-import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
-import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
+import static java.lang.ThreadLocal.withInitial;
 import static org.apache.maven.surefire.junitcore.TestMethod.getThreadTestMethod;
 
 /**
@@ -43,32 +43,25 @@ import static org.apache.maven.surefire.junitcore.TestMethod.getThreadTestMethod
  * @see org.apache.maven.surefire.junitcore.JUnitCoreRunListener for details about regular junit run listening
  * @author Kristian Rosenvold
  */
-public abstract class ConcurrentRunListener
-    implements RunListener, ConsoleOutputReceiver
+@Deprecated // remove this class after StatelessXmlReporter is capable of parallel test sets processing
+abstract class ConcurrentRunListener
+    implements TestReportListener<TestOutputReportEntry>
 {
     private final Map<String, TestSet> classMethodCounts;
 
-    private final ThreadLocal<RunListener> reporterManagerThreadLocal;
+    private final ThreadLocal<TestReportListener<TestOutputReportEntry>> reporterManagerThreadLocal;
 
     private final boolean reportImmediately;
 
-    private final ConsoleStream consoleStream;
+    private final ConsoleLogger logger;
 
-    ConcurrentRunListener( final ReporterFactory reporterFactory, ConsoleStream consoleStream,
-                           boolean reportImmediately, Map<String, TestSet> classMethodCounts )
-        throws TestSetFailedException
+    ConcurrentRunListener( final ReporterFactory reporterFactory, boolean reportImmediately,
+                           Map<String, TestSet> classMethodCounts )
     {
         this.reportImmediately = reportImmediately;
         this.classMethodCounts = classMethodCounts;
-        this.consoleStream = consoleStream;
-        reporterManagerThreadLocal = new ThreadLocal<RunListener>()
-        {
-            @Override
-            protected RunListener initialValue()
-            {
-                return reporterFactory.createReporter();
-            }
-        };
+        logger = reporterFactory.createTestReportListener();
+        reporterManagerThreadLocal = withInitial( reporterFactory::createTestReportListener );
     }
 
     @Override
@@ -81,7 +74,7 @@ public abstract class ConcurrentRunListener
     {
         try
         {
-            final RunListener reporterManager = getRunListener();
+            TestReportListener<TestOutputReportEntry> reporterManager = getRunListener();
             for ( TestSet testSet : classMethodCounts.values() )
             {
                 testSet.replay( reporterManager );
@@ -132,11 +125,6 @@ public abstract class ConcurrentRunListener
         getRunListener().testExecutionSkippedByUser();
     }
 
-    public RunMode markAs( RunMode currentRunMode )
-    {
-        return reporterManagerThreadLocal.get().markAs( currentRunMode );
-    }
-
     @Override
     public void testAssumptionFailure( ReportEntry failure )
     {
@@ -180,11 +168,11 @@ public abstract class ConcurrentRunListener
         TestSet testSet = getTestSet( description );
         if ( testSet == null )
         {
-            consoleStream.println( description.getName() );
+            logger.warning( description.getName() );
             StackTraceWriter writer = description.getStackTraceWriter();
             if ( writer != null )
             {
-                consoleStream.println( writer.writeTraceToString() );
+                logger.error( writer.writeTraceToString() );
             }
             return null;
         }
@@ -201,36 +189,94 @@ public abstract class ConcurrentRunListener
         return classMethodCounts.get( description.getSourceName() );
     }
 
-    RunListener getRunListener()
+    final TestReportListener<TestOutputReportEntry> getRunListener()
     {
         return reporterManagerThreadLocal.get();
     }
 
     public static ConcurrentRunListener createInstance( Map<String, TestSet> classMethodCounts,
-                                                            ReporterFactory reporterFactory,
-                                                            boolean parallelClasses, boolean parallelBoth,
-                                                            ConsoleStream consoleStream )
-        throws TestSetFailedException
+                                                        ReporterFactory reporterFactory,
+                                                        boolean parallelClasses, boolean parallelBoth )
     {
         return parallelClasses
-            ? new ClassesParallelRunListener( classMethodCounts, reporterFactory, consoleStream )
-            : new MethodsParallelRunListener( classMethodCounts, reporterFactory, !parallelBoth, consoleStream );
+            ? new ClassesParallelRunListener( classMethodCounts, reporterFactory )
+            : new MethodsParallelRunListener( classMethodCounts, reporterFactory, !parallelBoth );
     }
 
 
     @Override
-    public void writeTestOutput( String output, boolean newLine, boolean stdout )
+    public void writeTestOutput( TestOutputReportEntry reportEntry )
     {
         TestMethod threadTestMethod = getThreadTestMethod();
         if ( threadTestMethod != null )
         {
             LogicalStream logicalStream = threadTestMethod.getLogicalStream();
-            logicalStream.write( stdout, output, newLine );
+            logicalStream.write( reportEntry );
         }
         else
         {
             // Not able to associate output with any thread. Just dump to console
-            consoleStream.println( output );
+            logger.info( reportEntry.getLog() );
         }
+    }
+
+    @Override
+    public boolean isDebugEnabled()
+    {
+        return logger.isDebugEnabled();
+    }
+
+    @Override
+    public void debug( String message )
+    {
+        logger.debug( message );
+    }
+
+    @Override
+    public boolean isInfoEnabled()
+    {
+        return logger.isInfoEnabled();
+    }
+
+    @Override
+    public void info( String message )
+    {
+        logger.info( message );
+    }
+
+    @Override
+    public boolean isWarnEnabled()
+    {
+        return logger.isWarnEnabled();
+    }
+
+    @Override
+    public void warning( String message )
+    {
+        logger.warning( message );
+    }
+
+    @Override
+    public boolean isErrorEnabled()
+    {
+        return logger.isErrorEnabled();
+    }
+
+    @Override
+    public void error( String message )
+    {
+        logger.error( message );
+    }
+
+    @Override
+    public void error( String message, Throwable t )
+    {
+        logger.error( message, t );
+    }
+
+    @Override
+    public void error( Throwable t )
+    {
+        logger.error( t );
     }
 }

@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
+package com.app;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,20 +19,19 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * under the License.
  */
 
-import java.io.IOException;
+import org.junit.jupiter.api.Test;
 
-/**
- * Something that can be flushed.
- *
- * @author Andreas Gudian
- */
-public interface FlushReceiver
+public class AppTest
 {
-    /**
-     * Performs a flush, releasing any buffered resources.
-     *
-     * @throws IOException in case the flush operation failed
-     */
-    void flush()
-        throws IOException;
+    @Test
+    void testNoop()
+            throws Exception
+    {
+    }
+
+    @Test
+    void testMain()
+    {
+        Main.main();
+    }
 }

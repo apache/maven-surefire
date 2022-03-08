@@ -19,13 +19,12 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.util.internal.ClassMethod;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
-import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
-import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
@@ -41,37 +40,26 @@ import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProp
  * limitation a la Junit4 provider. Specifically, we can redirect properly the output even if we don't have class
  * demarcation in JUnit. It works when if there is a JVM instance per test run, i.e. with forkMode=always or perthread.
  */
-public class NonConcurrentRunListener
+@Deprecated // remove this class after StatelessXmlReporter is capable of parallel test sets processing
+class NonConcurrentRunListener
     extends JUnit4RunListener
-    implements ConsoleOutputReceiver
 {
     private Description currentTestSetDescription;
 
     private Description lastFinishedDescription;
 
-    public NonConcurrentRunListener( RunListener reporter )
-        throws TestSetFailedException
+    NonConcurrentRunListener( TestReportListener<TestOutputReportEntry> reporter )
     {
         super( reporter );
-    }
-
-    public synchronized void writeTestOutput( String output, boolean newLine, boolean stdout )
-    {
-        // We can write immediately: no parallelism and a single class.
-        ( (ConsoleOutputReceiver) reporter ).writeTestOutput( output, newLine, stdout );
-    }
-
-    @Override
-    protected SimpleReportEntry createReportEntry( Description description )
-    {
-        ClassMethod classMethod = toClassMethod( description );
-        return new SimpleReportEntry( classMethod.getClazz(), null, classMethod.getMethod(), null );
     }
 
     private TestSetReportEntry createReportEntryForTestSet( Description description, Map<String, String> systemProps )
     {
         ClassMethod classMethod = toClassMethod( description );
-        return new SimpleReportEntry( classMethod.getClazz(), null, null, null, systemProps );
+        String className = classMethod.getClazz();
+        String methodName = classMethod.getMethod();
+        long testRunId = classMethodIndexer.indexClassMethod( className, methodName );
+        return new SimpleReportEntry( getRunMode(), testRunId, className, null, null, null, systemProps );
     }
 
     private TestSetReportEntry createTestSetReportEntryStarted( Description description )
@@ -99,8 +87,7 @@ public class NonConcurrentRunListener
             currentTestSetDescription = description;
             if ( lastFinishedDescription != null )
             {
-                TestSetReportEntry reportEntry = createTestSetReportEntryFinished( lastFinishedDescription );
-                reporter.testSetCompleted( reportEntry );
+                reporter.testSetCompleted( createTestSetReportEntryFinished( lastFinishedDescription ) );
                 lastFinishedDescription = null;
             }
             reporter.testSetStarting( createTestSetReportEntryStarted( description ) );
@@ -157,6 +144,8 @@ public class NonConcurrentRunListener
     @Override
     public void testAssumptionFailure( Failure failure )
     {
+        finishLastTestSetIfNecessary( failure.getDescription() );
+
         super.testAssumptionFailure( failure );
         lastFinishedDescription = failure.getDescription();
     }

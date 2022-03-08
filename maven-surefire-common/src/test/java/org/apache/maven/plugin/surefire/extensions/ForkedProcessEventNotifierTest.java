@@ -36,7 +36,8 @@ import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
-import org.apache.maven.surefire.api.util.internal.ObjectUtils;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 import org.apache.maven.surefire.booter.spi.EventChannelEncoder;
 import org.apache.maven.surefire.extensions.EventHandler;
@@ -74,8 +75,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
+import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdErr;
+import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdOut;
+import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdOutln;
 import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
+import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.rules.ExpectedException.none;
@@ -100,48 +105,6 @@ public class ForkedProcessEventNotifierTest
     {
         @Rule
         public final ExpectedException rule = none();
-
-        @Test
-        public void shouldHaveSystemProperty() throws Exception
-        {
-            final Stream out = Stream.newStream();
-            WritableBufferedByteChannel wChannel = newBufferedChannel( out );
-            EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            Map<String, String> props = ObjectUtils.systemProps();
-            encoder.systemProperties( props );
-            wChannel.close();
-
-            ForkedProcessEventNotifier notifier = new ForkedProcessEventNotifier();
-            PropertyEventAssertionListener listener = new PropertyEventAssertionListener();
-            notifier.setSystemPropertiesListener( listener );
-
-            ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
-
-            EH eventHandler = new EH();
-            CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 0 );
-            ConsoleLoggerMock logger = new ConsoleLoggerMock( false, false, false, false );
-            ForkNodeArgumentsMock arguments = new ForkNodeArgumentsMock( logger, new File( "" ) );
-            try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
-            {
-                t.start();
-                for ( int i = 0; i < props.size(); i++ )
-                {
-                    notifier.notifyEvent( eventHandler.pullEvent() );
-                }
-            }
-
-            assertThat( logger.error ).isEmpty();
-            assertThat( logger.warning ).isEmpty();
-            assertThat( logger.info ).isEmpty();
-            assertThat( logger.debug ).isEmpty();
-
-            assertThat( logger.isCalled() )
-                .isFalse();
-            assertThat( arguments.isCalled() )
-                .isFalse();
-            assertThat( listener.counter.get() )
-                .isEqualTo( props.size() );
-        }
 
         @Test
         public void shouldSendByeEvent() throws Exception
@@ -253,6 +216,8 @@ public class ForkedProcessEventNotifierTest
             when( stackTraceWriter.writeTraceToString() ).thenReturn( exceptionStackTrace );
 
             ReportEntry reportEntry = mock( ReportEntry.class );
+            when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+            when( reportEntry.getTestRunId() ).thenReturn( 1L );
             when( reportEntry.getElapsed() ).thenReturn( 7 );
             when( reportEntry.getGroup() ).thenReturn( null );
             when( reportEntry.getMessage() ).thenReturn( null );
@@ -568,7 +533,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.stdOut( "msg", false );
+            encoder.testOutput( new TestOutputReportEntry( stdOut( "msg" ), NORMAL_RUN, 1L ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
@@ -607,7 +572,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.stdOut( "", false );
+            encoder.testOutput( new TestOutputReportEntry( stdOut( "" ), NORMAL_RUN, 1L ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
@@ -646,7 +611,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.stdOut( null, false );
+            encoder.testOutput( new TestOutputReportEntry( stdOut( null ), NORMAL_RUN, 1L ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
@@ -685,7 +650,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.stdOut( "", true );
+            encoder.testOutput( new TestOutputReportEntry( stdOutln( "" ), NORMAL_RUN, 1L ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
@@ -724,7 +689,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.stdOut( null, true );
+            encoder.testOutput( new TestOutputReportEntry( stdOutln( null ), NORMAL_RUN, 1L ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
@@ -763,7 +728,7 @@ public class ForkedProcessEventNotifierTest
             final Stream out = Stream.newStream();
             WritableBufferedByteChannel wChannel = newBufferedChannel( out );
             EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.stdErr( "msg", false );
+            encoder.testOutput( new TestOutputReportEntry( stdErr( "msg" ), NORMAL_RUN, 1L ) );
             wChannel.close();
 
             ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
@@ -772,44 +737,6 @@ public class ForkedProcessEventNotifierTest
             StandardOutErrEventAssertionListener listener =
                 new StandardOutErrEventAssertionListener( NORMAL_RUN, "msg", false );
             notifier.setStdErrListener( listener );
-
-            EH eventHandler = new EH();
-            CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 0 );
-            ConsoleLoggerMock logger = new ConsoleLoggerMock( false, false, false, false );
-            ForkNodeArgumentsMock arguments = new ForkNodeArgumentsMock( logger, new File( "" ) );
-            try ( EventConsumerThread t = new EventConsumerThread( "t", channel, eventHandler, countdown, arguments ) )
-            {
-                t.start();
-                notifier.notifyEvent( eventHandler.pullEvent() );
-            }
-
-            assertThat( logger.error ).isEmpty();
-            assertThat( logger.warning ).isEmpty();
-            assertThat( logger.info ).isEmpty();
-            assertThat( logger.debug ).isEmpty();
-
-            assertThat( logger.isCalled() )
-                .isFalse();
-            assertThat( arguments.isCalled() )
-                .isFalse();
-            assertThat( listener.called.get() )
-                .isTrue();
-        }
-
-        @Test
-        public void shouldCountSameNumberOfSystemProperties() throws Exception
-        {
-            final Stream out = Stream.newStream();
-            WritableBufferedByteChannel wChannel = newBufferedChannel( out );
-            EventChannelEncoder encoder = new EventChannelEncoder( wChannel );
-            encoder.systemProperties( ObjectUtils.systemProps() );
-            wChannel.close();
-
-            ReadableByteChannel channel = newChannel( new ByteArrayInputStream( out.toByteArray() ) );
-
-            ForkedProcessEventNotifier notifier = new ForkedProcessEventNotifier();
-            PropertyEventAssertionListener listener = new PropertyEventAssertionListener();
-            notifier.setSystemPropertiesListener( listener );
 
             EH eventHandler = new EH();
             CountdownCloseable countdown = new CountdownCloseable( mock( Closeable.class ), 0 );
@@ -996,7 +923,9 @@ public class ForkedProcessEventNotifierTest
                 when( stackTraceWriter.writeTraceToString() ).thenReturn( exceptionStackTrace );
             }
 
-            ReportEntry reportEntry = mock( ReportEntry.class );
+            TestSetReportEntry reportEntry = mock( TestSetReportEntry.class );
+            when( reportEntry.getRunMode() ).thenReturn( NORMAL_RUN );
+            when( reportEntry.getTestRunId() ).thenReturn( 1L );
             when( reportEntry.getElapsed() ).thenReturn( elapsed );
             when( reportEntry.getGroup() ).thenReturn( "this group" );
             when( reportEntry.getMessage() ).thenReturn( reportedMessage );
@@ -1006,12 +935,14 @@ public class ForkedProcessEventNotifierTest
             when( reportEntry.getSourceName() ).thenReturn( "pkg.MyTest" );
             when( reportEntry.getSourceText() ).thenReturn( "test class display name" );
             when( reportEntry.getStackTraceWriter() ).thenReturn( stackTraceWriter );
+            when( reportEntry.getSystemProperties() ).thenReturn( systemProps() );
 
             final Stream out = Stream.newStream();
 
             EventChannelEncoder encoder = new EventChannelEncoder( newBufferedChannel( out ) );
 
-            EventChannelEncoder.class.getMethod( operation[0], ReportEntry.class, boolean.class )
+            Class<?> reportType = operation[0].startsWith( "testSet" ) ? TestSetReportEntry.class : ReportEntry.class;
+            EventChannelEncoder.class.getMethod( operation[0], reportType, boolean.class )
                     .invoke( encoder, reportEntry, trim );
 
             ForkedProcessEventNotifier notifier = new ForkedProcessEventNotifier();
@@ -1173,7 +1104,7 @@ public class ForkedProcessEventNotifierTest
             this.hasStackTrace = hasStackTrace;
         }
 
-        public void handle( RunMode runMode, ReportEntry reportEntry )
+        public void handle( ReportEntry reportEntry )
         {
             called.set( true );
             assertThat( reportEntry.getSourceName() ).isEqualTo( this.reportEntry.getSourceName() );

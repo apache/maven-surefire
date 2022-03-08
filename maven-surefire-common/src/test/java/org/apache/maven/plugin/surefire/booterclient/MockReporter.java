@@ -19,12 +19,10 @@ package org.apache.maven.plugin.surefire.booterclient;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.api.report.ReportEntry;
-import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
-import org.apache.maven.surefire.api.report.RunMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Internal tests use only.
  */
 public class MockReporter
-    implements RunListener, ConsoleLogger, ConsoleOutputReceiver
+        implements TestReportListener<TestOutputReportEntry>
 {
     private final List<String> events = new ArrayList<>();
 
@@ -132,17 +130,6 @@ public class MockReporter
     {
     }
 
-    @Override
-    public RunMode markAs( RunMode currentRunMode )
-    {
-        return null;
-    }
-
-    public void testSkippedByUser( ReportEntry report )
-    {
-        testSkipped( report );
-    }
-
     public List<String> getEvents()
     {
         return events;
@@ -236,9 +223,10 @@ public class MockReporter
     }
 
     @Override
-    public void writeTestOutput( String output, boolean newLine, boolean stdout )
+    public void writeTestOutput( TestOutputReportEntry reportEntry )
     {
-        events.add( stdout ? STDOUT : STDERR );
-        data.add( newLine ? output + "\n" : output );
+        events.add( reportEntry.isStdOut() ? STDOUT : STDERR );
+        String output = reportEntry.getLog();
+        data.add( reportEntry.isNewLine() ? output + "\n" : output );
     }
 }

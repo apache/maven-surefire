@@ -19,18 +19,18 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import com.googlecode.junittoolbox.ParallelParameterized;
+import java.util.Arrays;
+
 import org.apache.maven.surefire.its.fixture.Settings;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-
-import java.util.Arrays;
 
 /**
  * TestNG test project using multiple method patterns, including wildcards in class and method names.
  */
-@RunWith( ParallelParameterized.class )
+@RunWith( Parameterized.class )
 public class TestMultipleMethodPatternsTestNGIT
     extends AbstractTestMultipleMethodPatterns
 {

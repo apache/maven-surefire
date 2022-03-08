@@ -89,8 +89,6 @@ public class CommandChannelDecoderTest
             .append( ":maven-surefire-command:" )
             .append( (char) 13 )
             .append( ":run-testclass:" )
-            .append( (char) 10 )
-            .append( ":normal-run:" )
             .append( (char) 5 )
             .append( ":UTF-8:" )
             .append( (char) 0 )
@@ -312,6 +310,7 @@ public class CommandChannelDecoderTest
     public void testBinaryCommandStream() throws Exception
     {
         InputStream commands = getClass().getResourceAsStream( "/binary-commands/75171711-encoder.bin" );
+        assertThat( commands ).isNotNull();
         ConsoleLoggerMock logger = new ConsoleLoggerMock( true, true, true, true );
         ForkNodeArguments args = new ForkNodeArgumentsMock( logger, new File( "" ) );
         CommandChannelDecoder decoder = new CommandChannelDecoder( newChannel( commands ), args );

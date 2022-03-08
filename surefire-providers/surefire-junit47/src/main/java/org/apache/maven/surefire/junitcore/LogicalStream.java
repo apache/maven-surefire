@@ -19,42 +19,30 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
-import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
-
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.apache.maven.surefire.api.report.TestOutputReceiver;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 
 /**
  * A stream-like object that preserves ordering between stdout/stderr
  */
+@Deprecated // remove this class after StatelessXmlReporter is capable of parallel test sets processing
 final class LogicalStream
 {
-    private final Queue<Entry> output = new ConcurrentLinkedQueue<>();
+    private final Queue<TestOutputReportEntry> output = new ConcurrentLinkedQueue<>();
 
-    private static final class Entry
+    synchronized void write( TestOutputReportEntry reportEntry )
     {
-        private final boolean stdout;
-        private final String text;
-        private final boolean newLine;
-
-        Entry( boolean stdout, String text, boolean newLine )
-        {
-            this.stdout = stdout;
-            this.text = text;
-            this.newLine = newLine;
-        }
+        output.add( reportEntry );
     }
 
-    synchronized void write( boolean stdout, String text, boolean newLine )
+    void writeDetails( TestOutputReceiver<TestOutputReportEntry> outputReceiver )
     {
-        output.add( new Entry( stdout, text, newLine ) );
-    }
-
-    void writeDetails( ConsoleOutputReceiver outputReceiver )
-    {
-        for ( Entry entry = output.poll(); entry != null; entry = output.poll() )
+        for ( TestOutputReportEntry entry = output.poll(); entry != null; entry = output.poll() )
         {
-            outputReceiver.writeTestOutput( entry.text, entry.newLine, entry.stdout );
+            outputReceiver.writeTestOutput( entry );
         }
     }
 }

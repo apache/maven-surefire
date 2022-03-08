@@ -19,16 +19,16 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import com.googlecode.junittoolbox.ParallelParameterized;
+import java.util.Iterator;
+
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-
-import java.util.Iterator;
 
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -49,7 +49,7 @@ import static org.junit.Assume.assumeTrue;
  * @author michaeltandy
  * @since 2.20
  */
-@RunWith( ParallelParameterized.class )
+@RunWith( Parameterized.class )
 public class Surefire1295AttributeJvmCrashesToTestsIT
         extends SurefireJUnit4IntegrationTestCase
 {

@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire.report;
 
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 import java.io.BufferedOutputStream;
@@ -88,7 +89,7 @@ public class ConsoleOutputFileReporter
     }
 
     @Override
-    public synchronized void writeTestOutput( String output, boolean newLine, boolean stdout )
+    public synchronized void writeTestOutput( TestOutputReportEntry reportEntry )
     {
         try
         {
@@ -109,14 +110,14 @@ public class ConsoleOutputFileReporter
                     os = new BufferedOutputStream( new FileOutputStream( file ), STREAM_BUFFER_SIZE );
                     fileOutputStream.set( os, OPEN );
                 }
-
+                String output = reportEntry.getLog();
                 if ( output == null )
                 {
                     output = "null";
                 }
                 Charset charset = Charset.forName( encoding );
                 os.write( output.getBytes( charset ) );
-                if ( newLine )
+                if ( reportEntry.isNewLine() )
                 {
                     os.write( NL.getBytes( charset ) );
                 }

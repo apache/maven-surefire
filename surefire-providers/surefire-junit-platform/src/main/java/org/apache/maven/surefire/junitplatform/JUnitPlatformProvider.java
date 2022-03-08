@@ -30,6 +30,8 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUD
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
 import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
+import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
 import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
@@ -50,10 +52,8 @@ import java.util.logging.Logger;
 
 import org.apache.maven.surefire.api.provider.AbstractProvider;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
-import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
 import org.apache.maven.surefire.api.report.ReporterException;
 import org.apache.maven.surefire.api.report.ReporterFactory;
-import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
@@ -122,20 +122,21 @@ public class JUnitPlatformProvider
         final RunResult runResult;
         try
         {
-            RunListener runListener = reporterFactory.createReporter();
-            startCapture( ( ConsoleOutputReceiver ) runListener );
+            RunListenerAdapter adapter = new RunListenerAdapter( reporterFactory.createTestReportListener() );
+            adapter.setRunMode( NORMAL_RUN );
+            startCapture( adapter );
             setupJunitLogger();
             if ( forkTestSet instanceof TestsToRun )
             {
-                invokeAllTests( (TestsToRun) forkTestSet, runListener );
+                invokeAllTests( (TestsToRun) forkTestSet, adapter );
             }
             else if ( forkTestSet instanceof Class )
             {
-                invokeAllTests( fromClass( ( Class<?> ) forkTestSet ), runListener );
+                invokeAllTests( fromClass( ( Class<?> ) forkTestSet ), adapter );
             }
             else if ( forkTestSet == null )
             {
-                invokeAllTests( scanClasspath(), runListener );
+                invokeAllTests( scanClasspath(), adapter );
             }
             else
             {
@@ -167,9 +168,8 @@ public class JUnitPlatformProvider
         return parameters.getRunOrderCalculator().orderTestClasses( scannedClasses );
     }
 
-    private void invokeAllTests( TestsToRun testsToRun, RunListener runListener )
+    private void invokeAllTests( TestsToRun testsToRun, RunListenerAdapter adapter )
     {
-        RunListenerAdapter adapter = new RunListenerAdapter( runListener );
         try
         {
             execute( testsToRun, adapter );
@@ -182,6 +182,7 @@ public class JUnitPlatformProvider
         int count = parameters.getTestRequest().getRerunFailingTestsCount();
         if ( count > 0 && adapter.hasFailingTests() )
         {
+            adapter.setRunMode( RERUN_TEST_AFTER_FAILURE );
             for ( int i = 0; i < count; i++ )
             {
                 try

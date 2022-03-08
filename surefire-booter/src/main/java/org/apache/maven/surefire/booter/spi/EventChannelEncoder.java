@@ -27,6 +27,8 @@ import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 import org.apache.maven.surefire.booter.stream.EventEncoder;
 
@@ -41,7 +43,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static java.util.Objects.requireNonNull;
 import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_BYE;
 import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_CONSOLE_DEBUG;
 import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_CONSOLE_ERROR;
@@ -63,7 +64,6 @@ import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTER
 import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TEST_SKIPPED;
 import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TEST_STARTING;
 import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TEST_SUCCEEDED;
-import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 
 /**
  * magic number : opcode : run mode [: opcode specific data]*
@@ -75,43 +75,18 @@ import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 @SuppressWarnings( "checkstyle:linelength" )
 public class EventChannelEncoder extends EventEncoder implements MasterProcessChannelEncoder
 {
-    private final RunMode runMode;
     private final AtomicBoolean trouble = new AtomicBoolean();
     private volatile boolean onExit;
 
     /**
-     * The encoder for events and normal test mode.
+     * The encoder for events.
      *
      * @param out     the channel available for writing the events
      */
     public EventChannelEncoder( @Nonnull WritableBufferedByteChannel out )
     {
-        this( out, NORMAL_RUN );
-    }
-
-    /**
-     * The encoder for events and any test mode.
-     *
-     * @param out     the channel available for writing the events
-     * @param runMode run mode
-     */
-    public EventChannelEncoder( @Nonnull WritableBufferedByteChannel out, @Nonnull RunMode runMode )
-    {
         super( out );
-        this.runMode = requireNonNull( runMode );
     }
-
-    /*@Override
-    public MasterProcessChannelEncoder asRerunMode() // todo apply this and rework providers
-    {
-        return new EventChannelEncoder( streamEncoder, RERUN_TEST_AFTER_FAILURE );
-    }
-
-    @Override
-    public MasterProcessChannelEncoder asNormalMode()
-    {
-        return new EventChannelEncoder( streamEncoder, NORMAL_RUN );
-    }*/
 
     @Override
     public boolean checkError()
@@ -126,8 +101,7 @@ public class EventChannelEncoder extends EventEncoder implements MasterProcessCh
         write( ByteBuffer.wrap( new byte[] {'\n'} ), true );
     }
 
-    @Override
-    public void systemProperties( Map<String, String> sysProps )
+    void encodeSystemProperties( Map<String, String> sysProps, RunMode runMode, Long testRunId )
     {
         CharsetEncoder encoder = newCharsetEncoder();
         ByteBuffer result = null;
@@ -138,88 +112,87 @@ public class EventChannelEncoder extends EventEncoder implements MasterProcessCh
             String value = entry.getValue();
 
             int bufferLength =
-                estimateBufferLength( BOOTERCODE_SYSPROPS.getOpcode().length(), runMode, encoder, 0, key, value );
+                estimateBufferLength( BOOTERCODE_SYSPROPS.getOpcode().length(), runMode, encoder, 0, 1, key, value );
             result = result != null && result.capacity() >= bufferLength ? result : ByteBuffer.allocate( bufferLength );
             ( (Buffer) result ).clear();
-            // :maven-surefire-event:sys-prop:rerun-test-after-failure:UTF-8:<integer>:<key>:<integer>:<value>:
-            encode( encoder, result, BOOTERCODE_SYSPROPS, runMode, key, value );
+            // :maven-surefire-event:sys-prop:<runMode>:<testRunId>:UTF-8:<integer>:<key>:<integer>:<value>:
+            encode( encoder, result, BOOTERCODE_SYSPROPS, runMode, testRunId, key, value );
             boolean sync = !it.hasNext();
             write( result, sync );
         }
     }
 
     @Override
-    public void testSetStarting( ReportEntry reportEntry, boolean trimStackTraces )
+    public void testSetStarting( TestSetReportEntry reportEntry, boolean trimStackTraces )
     {
-        encode( BOOTERCODE_TESTSET_STARTING, runMode, reportEntry, trimStackTraces, true );
+        encode( BOOTERCODE_TESTSET_STARTING, reportEntry, trimStackTraces, true );
     }
 
     @Override
-    public void testSetCompleted( ReportEntry reportEntry, boolean trimStackTraces )
+    public void testSetCompleted( TestSetReportEntry reportEntry, boolean trimStackTraces )
     {
-        encode( BOOTERCODE_TESTSET_COMPLETED, runMode, reportEntry, trimStackTraces, true );
+        encodeSystemProperties( reportEntry.getSystemProperties(), reportEntry.getRunMode(), reportEntry.getTestRunId() );
+        encode( BOOTERCODE_TESTSET_COMPLETED, reportEntry, trimStackTraces, true );
     }
 
     @Override
     public void testStarting( ReportEntry reportEntry, boolean trimStackTraces )
     {
-        encode( BOOTERCODE_TEST_STARTING, runMode, reportEntry, trimStackTraces, true );
+        encode( BOOTERCODE_TEST_STARTING, reportEntry, trimStackTraces, true );
     }
 
     @Override
     public void testSucceeded( ReportEntry reportEntry, boolean trimStackTraces )
     {
-        encode( BOOTERCODE_TEST_SUCCEEDED, runMode, reportEntry, trimStackTraces, true );
+        encode( BOOTERCODE_TEST_SUCCEEDED, reportEntry, trimStackTraces, true );
     }
 
     @Override
     public void testFailed( ReportEntry reportEntry, boolean trimStackTraces )
     {
-        encode( BOOTERCODE_TEST_FAILED, runMode, reportEntry, trimStackTraces, true );
+        encode( BOOTERCODE_TEST_FAILED, reportEntry, trimStackTraces, true );
     }
 
     @Override
     public void testSkipped( ReportEntry reportEntry, boolean trimStackTraces )
     {
-        encode( BOOTERCODE_TEST_SKIPPED, runMode, reportEntry, trimStackTraces, true );
+        encode( BOOTERCODE_TEST_SKIPPED, reportEntry, trimStackTraces, true );
     }
 
     @Override
     public void testError( ReportEntry reportEntry, boolean trimStackTraces )
     {
-        encode( BOOTERCODE_TEST_ERROR, runMode, reportEntry, trimStackTraces, true );
+        encode( BOOTERCODE_TEST_ERROR, reportEntry, trimStackTraces, true );
     }
 
     @Override
     public void testAssumptionFailure( ReportEntry reportEntry, boolean trimStackTraces )
     {
-        encode( BOOTERCODE_TEST_ASSUMPTIONFAILURE, runMode, reportEntry, trimStackTraces, true );
+        encode( BOOTERCODE_TEST_ASSUMPTIONFAILURE, reportEntry, trimStackTraces, true );
     }
 
     @Override
-    public void stdOut( String msg, boolean newLine )
+    public void testOutput( TestOutputReportEntry reportEntry )
     {
-        ForkedProcessEventType event = newLine ? BOOTERCODE_STDOUT_NEW_LINE : BOOTERCODE_STDOUT;
-        setOutErr( event, msg );
+        boolean stdout = reportEntry.isStdOut();
+        boolean newLine = reportEntry.isNewLine();
+        String msg = reportEntry.getLog();
+        ForkedProcessEventType event =
+            stdout ? ( newLine ? BOOTERCODE_STDOUT_NEW_LINE : BOOTERCODE_STDOUT )
+                : ( newLine ? BOOTERCODE_STDERR_NEW_LINE : BOOTERCODE_STDERR );
+        setOutErr( event, reportEntry.getRunMode(), reportEntry.getTestRunId(), msg );
     }
 
-    @Override
-    public void stdErr( String msg, boolean newLine )
+    private void setOutErr( ForkedProcessEventType eventType, RunMode runMode, Long testRunId, String message )
     {
-        ForkedProcessEventType event = newLine ? BOOTERCODE_STDERR_NEW_LINE : BOOTERCODE_STDERR;
-        setOutErr( event, msg );
-    }
-
-    private void setOutErr( ForkedProcessEventType eventType, String message )
-    {
-        ByteBuffer result = encodeMessage( eventType, runMode, message );
+        ByteBuffer result = encodeMessage( eventType, runMode, testRunId, message );
         write( result, false );
     }
 
     @Override
     public void consoleInfoLog( String message )
     {
-        ByteBuffer result = encodeMessage( BOOTERCODE_CONSOLE_INFO, null, message );
+        ByteBuffer result = encodeMessage( BOOTERCODE_CONSOLE_INFO, message );
         write( result, true );
     }
 
@@ -240,10 +213,10 @@ public class EventChannelEncoder extends EventEncoder implements MasterProcessCh
     {
         CharsetEncoder encoder = newCharsetEncoder();
         String stackTrace = t == null ? null : ConsoleLoggerUtils.toString( t );
-        int bufferMaxLength = estimateBufferLength( BOOTERCODE_CONSOLE_ERROR.getOpcode().length(), null, encoder, 0,
+        int bufferMaxLength = estimateBufferLength( BOOTERCODE_CONSOLE_ERROR.getOpcode().length(), null, encoder, 0, 0,
             message, stackTrace );
         ByteBuffer result = ByteBuffer.allocate( bufferMaxLength );
-        encodeHeader( result, BOOTERCODE_CONSOLE_ERROR, null );
+        encodeHeader( result, BOOTERCODE_CONSOLE_ERROR );
         encodeCharset( result );
         encode( encoder, result, message, null, stackTrace );
         write( result, true );
@@ -258,14 +231,14 @@ public class EventChannelEncoder extends EventEncoder implements MasterProcessCh
     @Override
     public void consoleDebugLog( String message )
     {
-        ByteBuffer result = encodeMessage( BOOTERCODE_CONSOLE_DEBUG, null, message );
+        ByteBuffer result = encodeMessage( BOOTERCODE_CONSOLE_DEBUG, message );
         write( result, true );
     }
 
     @Override
     public void consoleWarningLog( String message )
     {
-        ByteBuffer result = encodeMessage( BOOTERCODE_CONSOLE_WARNING, null, message );
+        ByteBuffer result = encodeMessage( BOOTERCODE_CONSOLE_WARNING, message );
         write( result, true );
     }
 
@@ -298,30 +271,30 @@ public class EventChannelEncoder extends EventEncoder implements MasterProcessCh
     {
         CharsetEncoder encoder = newCharsetEncoder();
         StackTrace stackTraceWrapper = new StackTrace( stackTraceWriter, trimStackTraces );
-        int bufferMaxLength = estimateBufferLength( eventType.getOpcode().length(), null, encoder, 0,
+        int bufferMaxLength = estimateBufferLength( eventType.getOpcode().length(), null, encoder, 0, 0,
             stackTraceWrapper.message, stackTraceWrapper.smartTrimmedStackTrace, stackTraceWrapper.stackTrace );
         ByteBuffer result = ByteBuffer.allocate( bufferMaxLength );
 
-        encodeHeader( result, eventType, null );
+        encodeHeader( result, eventType );
         encodeCharset( result );
         encode( encoder, result, stackTraceWrapper );
         write( result, sync );
     }
 
     // example
-    // :maven-surefire-event:testset-starting:rerun-test-after-failure:UTF-8:<integer>:SourceName:<integer>:SourceText:<integer>:Name:<integer>:NameText:<integer>:Group:<integer>:Message:<integer>:ElapsedTime:<integer>:LocalizedMessage:<integer>:SmartTrimmedStackTrace:<integer>:toStackTrace( stw, trimStackTraces ):<integer>:
-    private void encode( ForkedProcessEventType operation, RunMode runMode, ReportEntry reportEntry,
+    // :maven-surefire-event:testset-starting:rerun-test-after-failure:1:5:UTF-8:<integer>:SourceName:<integer>:SourceText:<integer>:Name:<integer>:NameText:<integer>:Group:<integer>:Message:<integer>:ElapsedTime:<integer>:LocalizedMessage:<integer>:SmartTrimmedStackTrace:<integer>:toStackTrace( stw, trimStackTraces ):<integer>:
+    private void encode( ForkedProcessEventType operation, ReportEntry reportEntry,
                          boolean trimStackTraces, @SuppressWarnings( "SameParameterValue" ) boolean sync )
     {
-        ByteBuffer result = encode( operation, runMode, reportEntry, trimStackTraces );
+        ByteBuffer result = encode( operation, reportEntry, trimStackTraces );
         write( result, sync );
     }
 
     private void encodeOpcode( ForkedProcessEventType eventType, boolean sync )
     {
-        int bufferMaxLength = estimateBufferLength( eventType.getOpcode().length(), null, null, 0 );
+        int bufferMaxLength = estimateBufferLength( eventType.getOpcode().length(), null, null, 0, 0 );
         ByteBuffer result = ByteBuffer.allocate( bufferMaxLength );
-        encodeHeader( result, eventType, null );
+        encodeHeader( result, eventType );
         write( result, sync );
     }
 
@@ -387,21 +360,20 @@ public class EventChannelEncoder extends EventEncoder implements MasterProcessCh
      * <li>{@link ForkedProcessEventType#BOOTERCODE_TEST_ASSUMPTIONFAILURE}.</li>
      * </ul>
      */
-    ByteBuffer encode( ForkedProcessEventType operation, RunMode runMode, ReportEntry reportEntry,
-                               boolean trimStackTraces )
+    ByteBuffer encode( ForkedProcessEventType operation, ReportEntry reportEntry, boolean trimStackTraces )
     {
         StackTrace stackTraceWrapper = new StackTrace( reportEntry.getStackTraceWriter(), trimStackTraces );
 
         CharsetEncoder encoder = newCharsetEncoder();
 
-        int bufferMaxLength = estimateBufferLength( operation.getOpcode().length(), runMode, encoder, 1,
-            reportEntry.getSourceName(), reportEntry.getSourceText(), reportEntry.getName(), reportEntry.getNameText(),
-            reportEntry.getGroup(), reportEntry.getMessage(), stackTraceWrapper.message,
+        int bufferMaxLength = estimateBufferLength( operation.getOpcode().length(), reportEntry.getRunMode(), encoder,
+            1, 1, reportEntry.getSourceName(), reportEntry.getSourceText(), reportEntry.getName(),
+            reportEntry.getNameText(), reportEntry.getGroup(), reportEntry.getMessage(), stackTraceWrapper.message,
             stackTraceWrapper.smartTrimmedStackTrace, stackTraceWrapper.stackTrace );
 
         ByteBuffer result = ByteBuffer.allocate( bufferMaxLength );
 
-        encodeHeader( result, operation, runMode );
+        encodeHeader( result, operation, reportEntry.getRunMode(), reportEntry.getTestRunId() );
         encodeCharset( result );
 
         encodeString( encoder, result, reportEntry.getSourceName() );
@@ -417,12 +389,22 @@ public class EventChannelEncoder extends EventEncoder implements MasterProcessCh
         return result;
     }
 
-    ByteBuffer encodeMessage( ForkedProcessEventType eventType, RunMode runMode, String message )
+    ByteBuffer encodeMessage( ForkedProcessEventType eventType, RunMode runMode, Long testRunId, String message )
     {
         CharsetEncoder encoder = newCharsetEncoder();
-        int bufferMaxLength = estimateBufferLength( eventType.getOpcode().length(), runMode, encoder, 0, message );
+        int bufferMaxLength = estimateBufferLength( eventType.getOpcode().length(), runMode, encoder, 0,
+            testRunId == null ? 0 : 1, message );
         ByteBuffer result = ByteBuffer.allocate( bufferMaxLength );
-        encode( encoder, result, eventType, runMode, message );
+        encode( encoder, result, eventType, runMode, testRunId, message );
+        return result;
+    }
+
+    ByteBuffer encodeMessage( ForkedProcessEventType eventType, String message )
+    {
+        CharsetEncoder encoder = newCharsetEncoder();
+        int bufferMaxLength = estimateBufferLength( eventType.getOpcode().length(), null, encoder, 0, 0, message );
+        ByteBuffer result = ByteBuffer.allocate( bufferMaxLength );
+        encode( encoder, result, eventType, message );
         return result;
     }
 

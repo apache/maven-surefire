@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
+package org.apache.maven.surefire.junit;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,29 +19,14 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * under the License.
  */
 
-import java.io.IOException;
-import java.io.OutputStream;
+import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 /**
- * Facade flushing {@link OutputStream} and isolating the stream in client.
+ * Describes a single test set
+ *
  */
-final class OutputStreamFlushReceiver
-        implements FlushReceiver
+public interface SurefireTestSetExecutor
 {
-    private final OutputStream outputStream;
-
-    /**
-     * Wraps an output stream in order to delegate a flush.
-     */
-    OutputStreamFlushReceiver( OutputStream outputStream )
-    {
-        this.outputStream = outputStream;
-    }
-
-    @Override
-    public void flush()
-            throws IOException
-    {
-        outputStream.flush();
-    }
+    void execute( Class<?> testClass, ClassLoader loader )
+        throws TestSetFailedException;
 }

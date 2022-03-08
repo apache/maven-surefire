@@ -19,23 +19,8 @@ package org.apache.maven.plugin.surefire.extensions;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
-import org.apache.maven.surefire.api.booter.Command;
-import org.apache.maven.surefire.api.event.Event;
-import org.apache.maven.surefire.api.fork.ForkNodeArguments;
-import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.booter.spi.EventChannelEncoder;
-import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
-import org.apache.maven.surefire.extensions.CommandReader;
-import org.apache.maven.surefire.extensions.EventHandler;
-import org.apache.maven.surefire.extensions.util.CountdownCloseable;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
 import javax.annotation.Nonnull;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -50,8 +35,28 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
+import org.apache.maven.surefire.api.booter.Command;
+import org.apache.maven.surefire.api.event.Event;
+import org.apache.maven.surefire.api.fork.ForkNodeArguments;
+import org.apache.maven.surefire.api.report.OutputReportEntry;
+import org.apache.maven.surefire.api.report.TestOutputReceiver;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.booter.spi.EventChannelEncoder;
+import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
+import org.apache.maven.surefire.extensions.CommandReader;
+import org.apache.maven.surefire.extensions.EventHandler;
+import org.apache.maven.surefire.extensions.util.CountdownCloseable;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
+import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdOutln;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
@@ -133,12 +138,12 @@ public class E2ETest
             @Override
             public void run()
             {
-                ConsoleOutputReceiver target = new ConsoleOutputReceiver()
+                TestOutputReceiver<OutputReportEntry> target = new TestOutputReceiver()
                 {
                     @Override
-                    public void writeTestOutput( String output, boolean newLine, boolean stdout )
+                    public void writeTestOutput( OutputReportEntry reportEntry )
                     {
-                        encoder.stdOut( output, true );
+                        encoder.testOutput( stdOutln( reportEntry.getLog() ) );
                     }
                 };
 
@@ -153,7 +158,7 @@ public class E2ETest
                     for ( int i = 0; i < totalCalls; i++ )
                     {
                         //System.out.println( LONG_STRING );
-                        encoder.stdOut( LONG_STRING, true );
+                        encoder.testOutput( new TestOutputReportEntry( stdOutln( LONG_STRING ), NORMAL_RUN, 1L ) );
                     }
                     long t2 = System.currentTimeMillis();
                     long spent = t2 - t1;
@@ -363,11 +368,6 @@ public class E2ETest
         public boolean isClosed()
         {
             return false;
-        }
-
-        @Override
-        public void tryFlush()
-        {
         }
     }
 

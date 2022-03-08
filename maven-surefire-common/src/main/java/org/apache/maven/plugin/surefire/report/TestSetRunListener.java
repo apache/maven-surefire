@@ -25,24 +25,20 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
+import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
-import org.apache.maven.surefire.api.report.ConsoleOutputReceiver;
-import org.apache.maven.surefire.api.report.ReportEntry;
-import org.apache.maven.surefire.api.report.RunListener;
-import org.apache.maven.surefire.api.report.RunMode;
-import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SKIPPED;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
-import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
-import static java.util.Objects.requireNonNull;
 
 /**
  * Reports data for a single test set.
@@ -51,13 +47,13 @@ import static java.util.Objects.requireNonNull;
  * @author Kristian Rosenvold
  */
 public class TestSetRunListener
-    implements RunListener, ConsoleOutputReceiver, ConsoleLogger
+    implements TestReportListener<TestOutputReportEntry>
 {
     private final Queue<TestMethodStats> testMethodStats = new ConcurrentLinkedQueue<>();
 
     private final TestSetStats detailsForThis;
 
-    private final ConsoleOutputReportEventListener consoleOutputReceiver;
+    private final ConsoleOutputReportEventListener testOutputReceiver;
 
     private final boolean briefOrPlainFormat;
 
@@ -75,15 +71,13 @@ public class TestSetRunListener
 
     private Utf8RecodingDeferredFileOutputStream testStdErr = initDeferred( "stderr" );
 
-    private volatile RunMode runMode = NORMAL_RUN;
-
     @SuppressWarnings( "checkstyle:parameternumber" )
     public TestSetRunListener( StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats>
                                            consoleReporter,
                                StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats>
                                        fileReporter,
                                StatelessReportEventListener<WrappedReportEntry, TestSetStats> simpleXMLReporter,
-                               ConsoleOutputReportEventListener consoleOutputReceiver,
+                               ConsoleOutputReportEventListener testOutputReceiver,
                                StatisticsReporter statisticsReporter, boolean trimStackTrace,
                                boolean isPlainFormat, boolean briefOrPlainFormat, Object lock )
     {
@@ -91,7 +85,7 @@ public class TestSetRunListener
         this.fileReporter = fileReporter;
         this.statisticsReporter = statisticsReporter;
         this.simpleXMLReporter = simpleXMLReporter;
-        this.consoleOutputReceiver = consoleOutputReceiver;
+        this.testOutputReceiver = testOutputReceiver;
         this.briefOrPlainFormat = briefOrPlainFormat;
         detailsForThis = new TestSetStats( trimStackTrace, isPlainFormat );
         this.lock = lock;
@@ -176,15 +170,15 @@ public class TestSetRunListener
     }
 
     @Override
-    public void writeTestOutput( String output, boolean newLine, boolean stdout )
+    public void writeTestOutput( TestOutputReportEntry reportEntry )
     {
         try
         {
             synchronized ( lock )
             {
-                Utf8RecodingDeferredFileOutputStream stream = stdout ? testStdOut : testStdErr;
-                stream.write( output, newLine );
-                consoleOutputReceiver.writeTestOutput( output, newLine, stdout );
+                Utf8RecodingDeferredFileOutputStream stream = reportEntry.isStdOut() ? testStdOut : testStdErr;
+                stream.write( reportEntry.getLog(), reportEntry.isNewLine() );
+                testOutputReceiver.writeTestOutput( reportEntry );
             }
         }
         catch ( IOException e )
@@ -198,7 +192,7 @@ public class TestSetRunListener
     {
         detailsForThis.testSetStart();
         consoleReporter.testSetStarting( report );
-        consoleOutputReceiver.testSetStarting( report );
+        testOutputReceiver.testSetStarting( report );
     }
 
     private void clearCapture()
@@ -217,7 +211,7 @@ public class TestSetRunListener
         simpleXMLReporter.testSetCompleted( wrap, detailsForThis );
         statisticsReporter.testSetCompleted();
         consoleReporter.testSetCompleted( wrap, detailsForThis, testResults );
-        consoleOutputReceiver.testSetCompleted( wrap );
+        testOutputReceiver.testSetCompleted( wrap );
         consoleReporter.reset();
 
         wrap.getStdout().free();
@@ -283,13 +277,6 @@ public class TestSetRunListener
     {
     }
 
-    public RunMode markAs( RunMode currentRunMode )
-    {
-        RunMode runMode = this.runMode;
-        this.runMode = requireNonNull( currentRunMode );
-        return runMode;
-    }
-
     @Override
     public void testAssumptionFailure( ReportEntry report )
     {
@@ -317,7 +304,7 @@ public class TestSetRunListener
 
     public void close()
     {
-        consoleOutputReceiver.close();
+        testOutputReceiver.close();
     }
 
     private void addTestMethodStats()

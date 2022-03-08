@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClassMethod;
-import static org.apache.maven.surefire.api.util.internal.ConcurrencyUtils.countDownToZero;
+import static org.apache.maven.surefire.api.util.internal.ConcurrencyUtils.runIfZeroCountDown;
 
 /**
  * Extends {@link RunNotifier JUnit notifier},
@@ -172,11 +172,7 @@ public class Notifier
      */
     private void fireStopEvent()
     {
-        if ( countDownToZero( skipAfterFailureCount ) )
-        {
-            pleaseStop();
-        }
-
+        runIfZeroCountDown( this::pleaseStop, skipAfterFailureCount );
         reporter.testExecutionSkippedByUser();
     }
 }

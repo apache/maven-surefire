@@ -20,9 +20,12 @@ package org.apache.maven.surefire.junitcore;
  */
 
 import org.apache.maven.surefire.api.report.ReportEntry;
-import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
+import org.apache.maven.surefire.report.ClassMethodIndexer;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -36,6 +39,7 @@ import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProp
 /**
  * * Represents the test-state of a testset that is run.
  */
+@Deprecated // remove this class after StatelessXmlReporter is capable of parallel test sets processing
 public class TestSet
 {
     private static final InheritableThreadLocal<TestSet> TEST_SET = new InheritableThreadLocal<>();
@@ -53,14 +57,30 @@ public class TestSet
 
     private final AtomicInteger numberOfTests = new AtomicInteger();
 
+    private final RunMode runMode;
+
+    private final ClassMethodIndexer classMethodIndexer;
+
     private volatile boolean allScheduled;
 
-    public TestSet( String testClassName )
+    public TestSet( String testClassName, RunMode runMode, ClassMethodIndexer classMethodIndexer )
     {
         this.testClassName = testClassName;
+        this.runMode = runMode;
+        this.classMethodIndexer = classMethodIndexer;
     }
 
-    public void replay( RunListener target )
+    final RunMode getRunMode()
+    {
+        return runMode;
+    }
+
+    final ClassMethodIndexer getClassMethodIndexer()
+    {
+        return classMethodIndexer;
+    }
+
+    public void replay( TestReportListener<TestOutputReportEntry> target )
     {
         if ( played.compareAndSet( false, true ) )
         {
@@ -120,7 +140,8 @@ public class TestSet
 
     private TestSetReportEntry createReportEntry( Integer elapsed, Map<String, String> systemProps )
     {
-        return new SimpleReportEntry( testClassName, null, testClassName, null, null, elapsed, systemProps );
+        return new SimpleReportEntry( runMode, classMethodIndexer.indexClass( testClassName ), testClassName, null,
+            testClassName, null, null, elapsed, systemProps );
     }
 
     public void incrementTestMethodCount()
@@ -133,7 +154,7 @@ public class TestSet
         testMethods.add( testMethod );
     }
 
-    public void incrementFinishedTests( RunListener reporterManager, boolean reportImmediately )
+    public void incrementFinishedTests( TestReportListener reporterManager, boolean reportImmediately )
     {
         numberOfCompletedChildren.incrementAndGet();
         if ( allScheduled && isAllTestsDone() && reportImmediately )
@@ -142,7 +163,7 @@ public class TestSet
         }
     }
 
-    public void setAllScheduled( RunListener reporterManager )
+    public void setAllScheduled( TestReportListener reporterManager )
     {
         allScheduled = true;
         if ( isAllTestsDone() )

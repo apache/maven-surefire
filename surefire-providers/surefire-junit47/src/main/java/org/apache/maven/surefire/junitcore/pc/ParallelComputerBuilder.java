@@ -34,8 +34,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.junitcore.JUnitCoreParameters;
-import org.apache.maven.surefire.api.report.ConsoleStream;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.internal.DaemonThreadFactory;
 import org.junit.internal.runners.ErrorReportingRunner;
@@ -93,7 +93,7 @@ public final class ParallelComputerBuilder
 
     private final Map<Type, Integer> parallelGroups = new EnumMap<>( Type.class );
 
-    private final ConsoleStream logger;
+    private final ConsoleLogger logger;
 
     private boolean useSeparatePools;
 
@@ -110,7 +110,7 @@ public final class ParallelComputerBuilder
      * Can be used only in unit tests.
      * Do NOT call this constructor in production.
      */
-    ParallelComputerBuilder( ConsoleStream logger )
+    ParallelComputerBuilder( ConsoleLogger logger )
     {
         this.logger = logger;
         runningInTests = true;
@@ -120,7 +120,7 @@ public final class ParallelComputerBuilder
         parallelGroups.put( METHODS, 0 );
     }
 
-    public ParallelComputerBuilder( ConsoleStream logger, JUnitCoreParameters parameters )
+    public ParallelComputerBuilder( ConsoleLogger logger, JUnitCoreParameters parameters )
     {
         this( logger );
         runningInTests = false;

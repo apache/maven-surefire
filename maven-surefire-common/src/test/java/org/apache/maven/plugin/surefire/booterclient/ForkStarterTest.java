@@ -22,7 +22,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.SurefireProperties;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.AbstractCommandReader;
-import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.OutputStreamFlushableCommandline;
+import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Commandline;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestLessInputStream.TestLessInputStreamBuilder;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.TestProvidingInputStream;
@@ -149,7 +149,7 @@ public class ForkStarterTest
             .thenReturn( tmp );
         when( forkConfiguration.getPluginPlatform() )
             .thenReturn( new Platform() );
-        OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
+        Commandline cli = new Commandline();
         cli.setWorkingDirectory( tmp );
         cli.setExecutable( System.getProperty( "java.home" ) + "/bin/java" );
         cli.createArg().setLine( "-jar" );
@@ -215,7 +215,7 @@ public class ForkStarterTest
             .thenReturn( tmp );
         when( forkConfiguration.getPluginPlatform() )
             .thenReturn( new Platform() );
-        OutputStreamFlushableCommandline cli = new OutputStreamFlushableCommandline();
+        Commandline cli = new Commandline();
         cli.setWorkingDirectory( tmp );
         cli.setExecutable( System.getProperty( "java.home" ) + "/bin/java" );
         cli.createArg().setLine( "-jar" );
