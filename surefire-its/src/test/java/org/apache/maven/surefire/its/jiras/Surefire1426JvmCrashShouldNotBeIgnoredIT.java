@@ -23,8 +23,6 @@ import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
-import java.util.List;
-
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
@@ -38,13 +36,12 @@ public class Surefire1426JvmCrashShouldNotBeIgnoredIT
     @Test
     public void mavenShouldFail() throws VerificationException
     {
-        List<String> logs = unpack( "surefire-1426-ignore-fail-jvm-crash" )
+        unpack( "surefire-1426-ignore-fail-jvm-crash" )
             .maven()
             .withFailure()
             .debugLogging()
             .executeTest()
             .assertThatLogLine( containsString( "BUILD SUCCESS" ), is( 0 ) )
-            .verifyTextInLog( "BUILD FAILURE" )
-            .loadLogLines();
+            .verifyTextInLog( "BUILD FAILURE" );
     }
 }
