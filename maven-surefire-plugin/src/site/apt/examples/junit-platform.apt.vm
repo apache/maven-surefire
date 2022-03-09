@@ -411,6 +411,42 @@ Using JUnit 5 Platform
 </dependencies>
 +---+
 
+** JUnit5 Suite
+
+  For more information see this
+  {{{https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit5-suite}example}}
+  and the {{{https://junit.org/junit5/docs/current/user-guide/#junit-platform-suite-engine}tutorial}}.
+
++---+
+<dependencies>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>5.8.2</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-suite-engine</artifactId>
+        <version>1.8.2</version>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+                <includes>
+                    <include>JUnit5Tests</include>
+                </includes>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
++---+
+
 * Provider Selection
 
    If nothing is configured, Surefire detects which JUnit version to use by the following algorithm:

@@ -129,4 +129,15 @@ public class Surefire1787JUnit5IT extends SurefireJUnit4IntegrationTestCase
             .verifyTextInLog( "Running pkg.JUnit5Tests" )
             .verifyTextInLog( "Using auto detected provider org.apache.maven.surefire.junit4.JUnit4Provider" );
     }
+
+    @Test
+    public void junit5Suite()
+    {
+        unpack( "junit5-suite" )
+            .executeTest()
+            .verifyErrorFree( 1 )
+            .verifyTextInLog( "Running pkg.JUnit5Test" )
+            .verifyTextInLog(
+                "Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider" );
+    }
 }

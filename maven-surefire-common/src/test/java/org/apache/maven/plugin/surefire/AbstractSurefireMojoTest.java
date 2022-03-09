@@ -779,6 +779,54 @@ public class AbstractSurefireMojoTest
     }
 
     @Test
+    public void shouldNotBeJunit5ArtifactInPluginDeps() throws Exception
+    {
+        Artifact testClasspathJupiter = new DefaultArtifact( "org.junit.jupiter", "junit-jupiter-engine",
+            createFromVersion( "5.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
+
+        Artifact testClasspathPlatformEng = new DefaultArtifact( "org.junit.platform", "junit-platform-engine",
+            createFromVersion( "1.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
+
+        Artifact testClasspathCommons = new DefaultArtifact( "org.junit.platform", "junit-platform-commons",
+            createFromVersion( "1.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
+
+        setProjectDepedenciesToMojo( testClasspathJupiter, testClasspathPlatformEng, testClasspathCommons );
+
+        Artifact pluginDep1 = new DefaultArtifact( "org.junit.platform", "junit-platform-runner",
+            createFromVersion( "1.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
+
+        Artifact pluginDep2 = new DefaultArtifact( "org.junit.platform", "junit-platform-commons",
+            createFromVersion( "1.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
+
+        addPluginDependencies( pluginDep1, pluginDep2 );
+
+        Artifact junitPlatformArtifact = invokeMethod( mojo, "getJUnit5Artifact" );
+        assertThat( junitPlatformArtifact ).isNull();
+    }
+
+    @Test
+    public void shouldNotBeJunit5ArtifactInProjectDeps() throws Exception
+    {
+        Artifact testClasspathJupiter = new DefaultArtifact( "org.junit.jupiter", "junit-jupiter-engine",
+            createFromVersion( "5.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
+
+        Artifact testClasspathPlatformEng = new DefaultArtifact( "org.junit.platform", "junit-platform-engine",
+            createFromVersion( "1.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
+
+        Artifact testClasspathCommons = new DefaultArtifact( "org.junit.platform", "junit-platform-commons",
+            createFromVersion( "1.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
+
+        Artifact testClasspathRunner = new DefaultArtifact( "org.junit.platform", "junit-platform-runner",
+            createFromVersion( "1.4.0" ), null, "jar", null, mock( ArtifactHandler.class ) );
+
+        setProjectDepedenciesToMojo( testClasspathJupiter, testClasspathPlatformEng, testClasspathCommons,
+            testClasspathRunner );
+
+        Artifact junitPlatformArtifact = invokeMethod( mojo, "getJUnit5Artifact" );
+        assertThat( junitPlatformArtifact ).isNull();
+    }
+
+    @Test
     public void shouldSmartlyResolveJUnit5ProviderWithJUnit4() throws Exception
     {
         MavenProject mavenProject = new MavenProject();
