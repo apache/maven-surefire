@@ -265,15 +265,18 @@ public final class SurefireHelper
                                            Exception firstForkException )
             throws MojoFailureException, MojoExecutionException
     {
+        String msg = createErrorMessage( reportParameters, result, firstForkException );
         if ( isFatal( firstForkException ) || result.isInternalError()  )
         {
-            throw new MojoExecutionException( createErrorMessage( reportParameters, result, firstForkException ),
-                                                    firstForkException );
+            throw firstForkException == null
+                ? new MojoExecutionException( msg )
+                : new MojoExecutionException( msg, firstForkException );
         }
         else
         {
-            throw new MojoFailureException( createErrorMessage( reportParameters, result, firstForkException ),
-                                                  firstForkException );
+            throw firstForkException == null
+                ? new MojoFailureException( msg )
+                : new MojoFailureException( msg, firstForkException );
         }
     }
 
