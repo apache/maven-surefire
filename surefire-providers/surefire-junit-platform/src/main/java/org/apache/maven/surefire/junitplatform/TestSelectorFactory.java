@@ -28,7 +28,7 @@ import java.util.Objects;
  * A test selector factory used in combination with a {@link org.apache.maven.surefire.api.testset.TestListResolver}
  * to determine whether a given {@link org.junit.platform.engine.TestSource} should be considered for running.
  *
- * <br /><br /><p>This is a service provider interface; clients may provide their own implementations
+ * <br><br><p>This is a service provider interface; clients may provide their own implementations
  * that will be applied along the default {@link MethodSelectorFactory}</p>
  */
 public interface TestSelectorFactory
