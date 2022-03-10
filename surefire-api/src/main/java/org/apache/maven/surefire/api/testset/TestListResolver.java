@@ -195,13 +195,13 @@ public class TestListResolver
     /**
      * Returns {@code true} if satisfies {@code testClassFile} and {@code methodName} filter.
      *
-     * @param testClassFile format must be e.g. "my/package/MyTest.class" including class extension; or null
-     * @param methodName real test-method name; or null
+     * @param containerName format must be e.g. "my/package/MyTest.class" including class extension; or null
+     * @param selectorName real test-method name; or null
      */
     @Override
-    public boolean shouldRun( String testClassFile, String methodName )
+    public boolean shouldRun( String containerName, String selectorName )
     {
-        if ( isEmpty() || isBlank( testClassFile ) && isBlank( methodName ) )
+        if ( isEmpty() || isBlank( containerName ) && isBlank( selectorName ) )
         {
             return true;
         }
@@ -217,7 +217,7 @@ public class TestListResolver
             {
                 for ( ResolvedTest filter : getIncludedPatterns() )
                 {
-                    if ( filter.matchAsInclusive( testClassFile, methodName ) )
+                    if ( filter.matchAsInclusive( containerName, selectorName ) )
                     {
                         shouldRun = true;
                         break;
@@ -229,7 +229,7 @@ public class TestListResolver
             {
                 for ( ResolvedTest filter : getExcludedPatterns() )
                 {
-                    if ( filter.matchAsExclusive( testClassFile, methodName ) )
+                    if ( filter.matchAsExclusive( containerName, selectorName ) )
                     {
                         shouldRun = false;
                         break;

@@ -19,37 +19,6 @@ package org.apache.maven.surefire.junitplatform;
  * under the License.
  */
 
-import static java.util.Arrays.stream;
-import static java.util.Collections.emptyMap;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
-import static java.util.logging.Level.WARNING;
-import static java.util.stream.Collectors.toList;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
-import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
-import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
-import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
-import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
-import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
-import static org.junit.platform.engine.discovery.DiscoverySelectors.selectUniqueId;
-import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
-
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.UncheckedIOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.logging.Logger;
-
 import org.apache.maven.surefire.api.provider.AbstractProvider;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
 import org.apache.maven.surefire.api.report.ReporterException;
@@ -70,13 +39,47 @@ import org.junit.platform.launcher.TagFilter;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.ServiceLoader;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import static java.util.Arrays.stream;
+import static java.util.Collections.emptyMap;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static java.util.logging.Level.WARNING;
+import static java.util.stream.Collectors.toList;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
+import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
+import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
+import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
+import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
+import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
+import static org.junit.platform.engine.discovery.DiscoverySelectors.selectUniqueId;
+import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
+
 /**
  * JUnit 5 Platform Provider.
  *
  * @since 2.22.0
  */
-public class JUnitPlatformProvider
-    extends AbstractProvider
+public class JUnitPlatformProvider extends AbstractProvider
 {
     static final String CONFIGURATION_PARAMETERS = "configurationParameters";
 
@@ -105,7 +108,7 @@ public class JUnitPlatformProvider
     public Iterable<Class<?>> getSuites()
     {
         try
-        { 
+        {
             return scanClasspath();
         }
         finally
@@ -115,8 +118,7 @@ public class JUnitPlatformProvider
     }
 
     @Override
-    public RunResult invoke( Object forkTestSet )
-                    throws TestSetFailedException, ReporterException
+    public RunResult invoke( Object forkTestSet ) throws TestSetFailedException, ReporterException
     {
         ReporterFactory reporterFactory = parameters.getReporterFactory();
         final RunResult runResult;
@@ -132,7 +134,7 @@ public class JUnitPlatformProvider
             }
             else if ( forkTestSet instanceof Class )
             {
-                invokeAllTests( fromClass( ( Class<?> ) forkTestSet ), adapter );
+                invokeAllTests( fromClass( (Class<?>) forkTestSet ), adapter );
             }
             else if ( forkTestSet == null )
             {
@@ -140,8 +142,7 @@ public class JUnitPlatformProvider
             }
             else
             {
-                throw new IllegalArgumentException(
-                        "Unexpected value of forkTestSet: " + forkTestSet );
+                throw new IllegalArgumentException( "Unexpected value of forkTestSet: " + forkTestSet );
             }
         }
         finally
@@ -189,7 +190,7 @@ public class JUnitPlatformProvider
                 {
                     // Replace the "discoveryRequest" so that it only specifies the failing tests
                     LauncherDiscoveryRequest discoveryRequest =
-                            buildLauncherDiscoveryRequestForRerunFailures( adapter );
+                        buildLauncherDiscoveryRequestForRerunFailures( adapter );
                     // Reset adapter's recorded failures and invoke the failed tests again
                     adapter.reset();
                     launcher.execute( discoveryRequest, adapter );
@@ -212,37 +213,32 @@ public class JUnitPlatformProvider
         if ( testsToRun.allowEagerReading() )
         {
             List<DiscoverySelector> selectors = new ArrayList<>();
-            testsToRun.iterator()
-                .forEachRemaining( c -> selectors.add( selectClass( c.getName() )  ) );
+            testsToRun.iterator().forEachRemaining( c -> selectors.add( selectClass( c.getName() ) ) );
 
-            LauncherDiscoveryRequestBuilder builder = request()
-                .filters( filters )
-                .configurationParameters( configurationParameters )
-                .selectors( selectors );
+            LauncherDiscoveryRequestBuilder builder =
+                request().filters( filters ).configurationParameters( configurationParameters ).selectors( selectors );
 
             launcher.execute( builder.build(), adapter );
         }
         else
         {
-            testsToRun.iterator()
-                .forEachRemaining( c ->
-                {
-                    LauncherDiscoveryRequestBuilder builder = request()
-                        .filters( filters )
-                        .configurationParameters( configurationParameters )
+            testsToRun.iterator().forEachRemaining( c ->
+            {
+                LauncherDiscoveryRequestBuilder builder =
+                    request().filters( filters ).configurationParameters( configurationParameters )
                         .selectors( selectClass( c.getName() ) );
-                    launcher.execute( builder.build(), adapter );
-                } );
+                launcher.execute( builder.build(), adapter );
+            } );
         }
     }
-    
+
     private void closeLauncher()
     {
         if ( launcher instanceof AutoCloseable )
         {
             try
             {
-                ( (AutoCloseable) launcher ).close();
+                ( ( AutoCloseable ) launcher ).close();
             }
             catch ( Exception e )
             {
@@ -253,8 +249,8 @@ public class JUnitPlatformProvider
 
     private LauncherDiscoveryRequest buildLauncherDiscoveryRequestForRerunFailures( RunListenerAdapter adapter )
     {
-        LauncherDiscoveryRequestBuilder builder = request().filters( filters ).configurationParameters(
-                configurationParameters );
+        LauncherDiscoveryRequestBuilder builder =
+            request().filters( filters ).configurationParameters( configurationParameters );
         // Iterate over recorded failures
         for ( TestIdentifier identifier : new LinkedHashSet<>( adapter.getFailures().keySet() ) )
         {
@@ -263,33 +259,31 @@ public class JUnitPlatformProvider
         return builder.build();
     }
 
+    private Collection<TestSelectorFactory> loadSelectorFactories()
+    {
+        return StreamSupport.stream( ServiceLoader.load( TestSelectorFactory.class ).spliterator(), false )
+            .collect( Collectors.toSet() );
+    }
+
     private Filter<?>[] newFilters()
     {
         List<Filter<?>> filters = new ArrayList<>();
 
-        getPropertiesList( TESTNG_GROUPS_PROP )
-                .map( TagFilter::includeTags )
-                .ifPresent( filters::add );
+        getPropertiesList( TESTNG_GROUPS_PROP ).map( TagFilter::includeTags ).ifPresent( filters::add );
 
-        getPropertiesList( TESTNG_EXCLUDEDGROUPS_PROP )
-                .map( TagFilter::excludeTags )
-                .ifPresent( filters::add );
+        getPropertiesList( TESTNG_EXCLUDEDGROUPS_PROP ).map( TagFilter::excludeTags ).ifPresent( filters::add );
 
         TestListResolver testListResolver = parameters.getTestRequest().getTestListResolver();
         if ( !testListResolver.isEmpty() )
         {
-            filters.add( new TestMethodFilter( testListResolver ) );
+            filters.add( new TestSelectorFilter( testListResolver, loadSelectorFactories() ) );
         }
 
-        getPropertiesList( INCLUDE_JUNIT5_ENGINES_PROP )
-            .map( EngineFilter::includeEngines )
-            .ifPresent( filters::add );
+        getPropertiesList( INCLUDE_JUNIT5_ENGINES_PROP ).map( EngineFilter::includeEngines ).ifPresent( filters::add );
 
-        getPropertiesList( EXCLUDE_JUNIT5_ENGINES_PROP )
-            .map( EngineFilter::excludeEngines )
-            .ifPresent( filters::add );
+        getPropertiesList( EXCLUDE_JUNIT5_ENGINES_PROP ).map( EngineFilter::excludeEngines ).ifPresent( filters::add );
 
-        return filters.toArray( new Filter<?>[ filters.size() ] );
+        return filters.toArray( new Filter<?>[0] );
     }
 
     Filter<?>[] getFilters()
@@ -309,8 +303,7 @@ public class JUnitPlatformProvider
             Map<String, String> result = new HashMap<>();
             Properties props = new Properties();
             props.load( reader );
-            props.stringPropertyNames()
-                    .forEach( key -> result.put( key, props.getProperty( key ) ) );
+            props.stringPropertyNames().forEach( key -> result.put( key, props.getProperty( key ) ) );
             return result;
         }
         catch ( IOException e )
@@ -328,9 +321,8 @@ public class JUnitPlatformProvider
     {
         String property = parameters.getProviderProperties().get( key );
         return isBlank( property ) ? empty()
-                        : of( stream( property.split( "[,]+" ) )
-                                              .filter( StringUtils::isNotBlank )
-                                              .map( String::trim )
-                                              .collect( toList() ) );
+            : of( stream( property.split( "[,]+" ) )
+            .filter( StringUtils::isNotBlank )
+            .map( String::trim ).collect( toList() ) );
     }
 }

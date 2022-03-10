@@ -14,7 +14,7 @@
   ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
   ~ KIND, either express or implied.  See the License for the
   ~ specific language governing permissions and limitations
-  ~ under the License. 
+  ~ under the License.
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -532,8 +532,7 @@
                 <exclude>src/test/resources/**/*</exclude>
                 <exclude>src/test/resources/**/*.css</exclude>
                 <exclude>**/*.jj</exclude>
-                <exclude>src/main/resources/META-INF/services/org.apache.maven.surefire.api.provider.SurefireProvider
-                </exclude>
+                <exclude>src/main/resources/META-INF/services/**</exclude>
                 <exclude>DEPENDENCIES</exclude>
                 <exclude>.m2/**</exclude>
                 <exclude>.m2</exclude>

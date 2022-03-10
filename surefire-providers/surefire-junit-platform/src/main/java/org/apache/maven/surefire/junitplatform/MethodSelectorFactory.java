@@ -19,25 +19,26 @@ package org.apache.maven.surefire.junitplatform;
  * under the License.
  */
 
-import junit.framework.JUnit4TestAdapter;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.platform.engine.TestSource;
+import org.junit.platform.engine.support.descriptor.MethodSource;
 
-/**
- * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
- *
- * @since 3.0.0-M4
- */
-public class JUnit47SuiteTest extends TestCase
+class MethodSelectorFactory implements TestSelectorFactory
 {
-    public static Test suite()
+    @Override
+    public boolean supports( TestSource source )
     {
-        TestSuite suite = new TestSuite();
-        suite.addTest( new JUnit4TestAdapter( JUnitPlatformProviderTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( RunListenerAdapterTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( TestSelectorFilterTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( TestPlanScannerFilterTest.class ) );
-        return suite;
+        return source instanceof MethodSource;
+    }
+
+    @Override
+    public String getContainerName( TestSource source )
+    {
+        return ( ( MethodSource ) source ).getClassName();
+    }
+
+    @Override
+    public String getSelectorName( TestSource source )
+    {
+        return ( ( MethodSource ) source ).getMethodName();
     }
 }
