@@ -22,6 +22,9 @@ package org.apache.maven.surefire.junitplatform;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 
+/**
+ * The default implementation for {@link TestSelectorFactory}, recognizing instances of {@link MethodSource}
+ */
 public class MethodSelectorFactory implements TestSelectorFactory
 {
     @Override
