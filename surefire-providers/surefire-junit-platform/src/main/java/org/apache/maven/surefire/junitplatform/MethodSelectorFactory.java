@@ -22,7 +22,7 @@ package org.apache.maven.surefire.junitplatform;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 
-class MethodSelectorFactory implements TestSelectorFactory
+public class MethodSelectorFactory implements TestSelectorFactory
 {
     @Override
     public boolean supports( TestSource source )
