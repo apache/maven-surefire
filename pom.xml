@@ -23,7 +23,7 @@
   <parent>
     <artifactId>maven-parent</artifactId>
     <groupId>org.apache.maven</groupId>
-    <version>34</version>
+    <version>35</version>
   </parent>
 
   <groupId>org.apache.maven.surefire</groupId>
@@ -96,7 +96,6 @@
     <!-- maven-shared-utils:3.3.4 uses org.fusesource.jansi:jansi:2.2.0 -->
     <mavenSharedUtilsVersion>3.3.4</mavenSharedUtilsVersion>
     <powermockVersion>2.0.9</powermockVersion>
-    <mavenPluginToolsVersion>3.6.2</mavenPluginToolsVersion>
     <jacocoVersion>0.8.7</jacocoVersion>
     <surefire-shared-utils.version>${project.version}</surefire-shared-utils.version>
     <maven.surefire.scm.devConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-surefire.git</maven.surefire.scm.devConnection>
@@ -371,48 +370,22 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <!-- TODO remove with next parent -->
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-shade-plugin</artifactId>
-          <version>3.2.4</version><!-- TODO remove when upgrading parent to 35 -->
+          <artifactId>maven-pmd-plugin</artifactId>
+          <version>3.16.0</version>
+        </plugin>
+        <plugin>
+          <!-- TODO remove with next parent -->
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>taglist-maven-plugin</artifactId>
+          <version>3.0.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <executions>
-            <execution>
-              <id>compile-generated</id>
-              <phase>process-sources</phase>
-              <goals>
-                <goal>compile</goal>
-              </goals>
-              <configuration>
-                <includes>
-                  <include>HelpMojo.java</include>
-                  <include>**/HelpMojo.java</include>
-                </includes>
-                <compilerArgs>
-                  <!-- FIXME: maven-plugin-plugin therefore used -syntax or none due to HelpMojo -->
-                  <arg>-Xdoclint:none</arg>
-                </compilerArgs>
-              </configuration>
-            </execution>
-            <execution>
-              <id>default-compile</id>
-              <phase>compile</phase>
-              <goals>
-                <goal>compile</goal>
-              </goals>
-              <configuration>
-                <excludes>
-                  <exclude>HelpMojo.java</exclude>
-                  <exclude>**/HelpMojo.java</exclude>
-                </excludes>
-                <compilerArgs>
-                  <arg>-Xdoclint:all</arg>
-                </compilerArgs>
-              </configuration>
-            </execution>
-          </executions>
+          <!-- TODO version remove with next parent -->
+          <version>3.10.1</version>
           <configuration>
             <fork>true</fork>
             <compilerArgs>
@@ -459,10 +432,6 @@
           </executions>
         </plugin>
         <plugin>
-          <artifactId>maven-invoker-plugin</artifactId>
-          <version>3.2.2</version>
-        </plugin>
-        <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
           <version>${jacocoVersion}</version>
@@ -487,18 +456,6 @@
               <exclude>org/jacoco/**/*</exclude>
               <exclude>com/vladium/emma/rt/*</exclude>
             </excludes>
-          </configuration>
-        </plugin>
-        <plugin>
-          <artifactId>maven-site-plugin</artifactId>
-          <version>3.10.0</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.3.1</version>
-          <configuration>
-            <!-- TODO remove when upgrading parent to 35 - MPOM-280 -->
-            <detectLinks>false</detectLinks>
           </configuration>
         </plugin>
       </plugins>
@@ -543,59 +500,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.0.0-M3</version>
-        <executions>
-          <execution>
-            <id>enforce-java</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <requireJavaVersion>
-                  <version>[1.8, )</version>
-                </requireJavaVersion>
-              </rules>
-            </configuration>
-          </execution>
-          <execution>
-            <id>enforce-maven</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <requireMavenVersion>
-                  <version>[3.1.0,)</version>
-                </requireMavenVersion>
-              </rules>
-            </configuration>
-          </execution>
-          <execution>
-            <id>enforce-bytecode-version</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <enforceBytecodeVersion>
-                  <maxJdkVersion>${maven.compiler.target}</maxJdkVersion>
-                  <excludes>
-                    <exclude>org.junit.platform:junit-platform-commons</exclude>
-                    <exclude>org.assertj:assertj-core</exclude>
-                  </excludes>
-                </enforceBytecodeVersion>
-              </rules>
-            </configuration>
-          </execution>
-        </executions>
-        <configuration>
-          <fail>true</fail>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -676,8 +580,19 @@
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-pmd-plugin</artifactId>
+            <reportSets>
+              <reportSet>
+                <reports>
+                  <report>cpd</report>
+                  <report>pmd</report>
+                </reports>
+              </reportSet>
+            </reportSets>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-changes-plugin</artifactId>
-            <version>2.12.1</version>
             <configuration>
               <!-- For JIRA-report -->
               <columnNames>Type,Priority,Key,Summary,Resolution</columnNames>
