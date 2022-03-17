@@ -179,17 +179,6 @@
             <reporting>
                 <plugins>
                     <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>l10n-maven-plugin</artifactId>
-                        <version>1.0-alpha-2</version>
-                        <configuration>
-                            <locales>
-                                <locale>de</locale>
-                                <locale>sv</locale>
-                            </locales>
-                        </configuration>
-                    </plugin>
-                    <plugin>
                         <artifactId>maven-changes-plugin</artifactId>
                         <configuration>
                             <skip>false</skip>

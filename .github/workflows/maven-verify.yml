@@ -28,7 +28,7 @@ jobs:
     with:
       jdk-matrix: '[ "8", "11", "17", "18-ea" ]'
       ff-jdk: '18-ea'
-      ff-goal: 'clean install site site:stage -nsu'
+      ff-goal: 'clean install site site:stage -P reporting -nsu'
       ff-site-goal: '-v'
       verify-goal: 'clean install -nsu -P run-its'
       verify-fail-fast: false
