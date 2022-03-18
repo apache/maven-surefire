@@ -22,6 +22,7 @@ package org.apache.maven.surefire.junit4;
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
@@ -30,6 +31,9 @@ public class JUnit4SuiteTest extends TestCase
 {
     public static Test suite()
     {
-        return new JUnit4TestAdapter( JUnit4ProviderTest.class );
+        TestSuite testSuite = new TestSuite();
+        testSuite.addTest( new JUnit4TestAdapter( JUnit4ProviderTest.class ) );
+        testSuite.addTest( new JUnit4TestAdapter( JUnit4ProviderOrderingTest.class ) );
+        return testSuite;
     }
 }

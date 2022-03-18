@@ -29,6 +29,7 @@ import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.apache.maven.surefire.api.testset.TestRequest;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.TestsToRun;
+import org.junit.Ignore;
 import org.junit.Test;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -92,6 +93,20 @@ public class JUnit4ProviderOrderingTest
             TestX.class.getName() + "#testC",
             TestX.class.getName() + "#testA",
             TestX.class.getName() + "#testB"
+        );
+    }
+
+    @Test
+    @Ignore( "this is currently not possible" )
+    public void testShouldOrderWithinInterleavedTestClasses() throws TestSetFailedException
+    {
+        assertTestOrder(
+            TestX.class.getName() + "#testC",
+            TestY.class.getName() + "#testE",
+            TestX.class.getName() + "#testA",
+            TestY.class.getName() + "#testD",
+            TestX.class.getName() + "#testB",
+            TestY.class.getName() + "#testF"
         );
     }
 
