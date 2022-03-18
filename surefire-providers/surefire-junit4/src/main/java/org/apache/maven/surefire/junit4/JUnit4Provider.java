@@ -24,6 +24,7 @@ import org.apache.maven.surefire.api.provider.CommandChainReader;
 import org.apache.maven.surefire.api.provider.CommandListener;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
+import org.apache.maven.surefire.api.testset.ResolvedTest;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
 import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.apache.maven.surefire.common.junit4.JUnitTestFailureListener;
@@ -50,8 +51,13 @@ import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.StoppedByUserException;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.lang.reflect.Modifier.isAbstract;
 import static java.lang.reflect.Modifier.isInterface;
@@ -270,18 +276,57 @@ public class JUnit4Provider
         }
     }
 
+    private static int indexOf( List<ResolvedTest> tests, Description description )
+    {
+        if ( description.isSuite() )
+        {
+            return Integer.MAX_VALUE;
+        }
+        Pattern p = Pattern.compile( "(.*)\\((.*)\\)" );
+        Matcher m = p.matcher( description.toString() );
+        if ( !m.matches() )
+        {
+            return Integer.MAX_VALUE;
+        }
+        String methodName = m.group( 1 );
+        String className = m.group( 2 );
+        String classFileName = className.replace( ".", "/" ) + ".class";
+        for ( int i = 0; i < tests.size(); i++ )
+        {
+            ResolvedTest resolvedTest = tests.get( i );
+            if ( resolvedTest.matchAsInclusive( classFileName, methodName ) )
+            {
+                return i;
+            }
+        }
+        return Integer.MAX_VALUE;
+    }
+
     private void executeWithRerun( Class<?> clazz, Notifier notifier, RunModeSetter runMode )
     {
         JUnitTestFailureListener failureListener = new JUnitTestFailureListener();
         notifier.addListener( failureListener );
         boolean hasMethodFilter = testResolver != null && testResolver.hasMethodPatterns();
 
+        // This relies on the set being a LinkedHashSet (predictable iteration order)
+        List<ResolvedTest> includedPatterns = new ArrayList<>( testResolver.getIncludedPatterns() );
+        Comparator<Description> descriptionComparator = new Comparator<Description>()
+        {
+            @Override
+            public int compare( Description d1, Description d2 )
+            {
+                int i1 = indexOf( includedPatterns, d1 );
+                int i2 = indexOf( includedPatterns, d2 );
+                return i1 - i2;
+            }
+        };
+
         try
         {
             try
             {
                 notifier.asFailFast( isFailFast() );
-                execute( clazz, notifier, hasMethodFilter ? createMethodFilter() : null );
+                execute( clazz, notifier, hasMethodFilter ? createMethodFilter() : null, descriptionComparator );
             }
             finally
             {
@@ -299,7 +344,7 @@ public class JUnit4Provider
                     Set<Description> failures = generateFailingTestDescriptions( failureListener.getAllFailures() );
                     failureListener.reset();
                     Filter failureDescriptionFilter = createMatchAnyDescriptionFilter( failures );
-                    execute( clazz, rerunNotifier, failureDescriptionFilter );
+                    execute( clazz, rerunNotifier, failureDescriptionFilter, descriptionComparator );
                 }
             }
         }
@@ -361,12 +406,14 @@ public class JUnit4Provider
         return System.getProperty( "surefire.junit4.upgradecheck" ) != null;
     }
 
-    private static void execute( Class<?> testClass, Notifier notifier, Filter filter )
+    private static void execute( Class<?> testClass, Notifier notifier, Filter filter,
+                                 Comparator<Description> descriptionComparator )
     {
         final int classModifiers = testClass.getModifiers();
         if ( !isAbstract( classModifiers ) && !isInterface( classModifiers ) )
         {
             Request request = aClass( testClass );
+            request = request.sortWith( descriptionComparator );
             if ( filter != null )
             {
                 request = request.filterWith( filter );
