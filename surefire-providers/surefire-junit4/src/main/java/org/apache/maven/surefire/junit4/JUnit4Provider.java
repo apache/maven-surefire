@@ -61,6 +61,7 @@ import java.util.regex.Pattern;
 
 import static java.lang.reflect.Modifier.isAbstract;
 import static java.lang.reflect.Modifier.isInterface;
+import static java.util.Collections.emptySet;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.createMatchAnyDescriptionFilter;
@@ -84,6 +85,7 @@ import static org.junit.runner.Request.aClass;
 public class JUnit4Provider
     extends AbstractProvider
 {
+    private static final Pattern JUNIT_TEST_DESCRIPTION_PATTERN = Pattern.compile( "(.*)\\((.*)\\)" );
     private static final String UNDETERMINED_TESTS_DESCRIPTION = "cannot determine test in forked JVM with surefire";
 
     private final ClassMethodIndexer classMethodIndexer = new ClassMethodIndexer();
@@ -276,57 +278,19 @@ public class JUnit4Provider
         }
     }
 
-    private static int indexOf( List<ResolvedTest> tests, Description description )
-    {
-        if ( description.isSuite() )
-        {
-            return Integer.MAX_VALUE;
-        }
-        Pattern p = Pattern.compile( "(.*)\\((.*)\\)" );
-        Matcher m = p.matcher( description.toString() );
-        if ( !m.matches() )
-        {
-            return Integer.MAX_VALUE;
-        }
-        String methodName = m.group( 1 );
-        String className = m.group( 2 );
-        String classFileName = className.replace( ".", "/" ) + ".class";
-        for ( int i = 0; i < tests.size(); i++ )
-        {
-            ResolvedTest resolvedTest = tests.get( i );
-            if ( resolvedTest.matchAsInclusive( classFileName, methodName ) )
-            {
-                return i;
-            }
-        }
-        return Integer.MAX_VALUE;
-    }
-
     private void executeWithRerun( Class<?> clazz, Notifier notifier, RunModeSetter runMode )
     {
         JUnitTestFailureListener failureListener = new JUnitTestFailureListener();
         notifier.addListener( failureListener );
         boolean hasMethodFilter = testResolver != null && testResolver.hasMethodPatterns();
-
-        // This relies on the set being a LinkedHashSet (predictable iteration order)
-        List<ResolvedTest> includedPatterns = new ArrayList<>( testResolver.getIncludedPatterns() );
-        Comparator<Description> descriptionComparator = new Comparator<Description>()
-        {
-            @Override
-            public int compare( Description d1, Description d2 )
-            {
-                int i1 = indexOf( includedPatterns, d1 );
-                int i2 = indexOf( includedPatterns, d2 );
-                return i1 - i2;
-            }
-        };
+        Set<ResolvedTest> includedPatterns = testResolver != null ? testResolver.getIncludedPatterns() : emptySet();
 
         try
         {
             try
             {
                 notifier.asFailFast( isFailFast() );
-                execute( clazz, notifier, hasMethodFilter ? createMethodFilter() : null, descriptionComparator );
+                execute( clazz, notifier, hasMethodFilter ? createMethodFilter() : null, includedPatterns );
             }
             finally
             {
@@ -344,7 +308,7 @@ public class JUnit4Provider
                     Set<Description> failures = generateFailingTestDescriptions( failureListener.getAllFailures() );
                     failureListener.reset();
                     Filter failureDescriptionFilter = createMatchAnyDescriptionFilter( failures );
-                    execute( clazz, rerunNotifier, failureDescriptionFilter, descriptionComparator );
+                    execute( clazz, rerunNotifier, failureDescriptionFilter, includedPatterns );
                 }
             }
         }
@@ -407,13 +371,18 @@ public class JUnit4Provider
     }
 
     private static void execute( Class<?> testClass, Notifier notifier, Filter filter,
-                                 Comparator<Description> descriptionComparator )
+                                 Set<ResolvedTest> includedPatterns )
     {
         final int classModifiers = testClass.getModifiers();
         if ( !isAbstract( classModifiers ) && !isInterface( classModifiers ) )
         {
             Request request = aClass( testClass );
-            request = request.sortWith( descriptionComparator );
+
+            if ( !includedPatterns.isEmpty() )
+            {
+                request = sortByTestOrder( includedPatterns, request );
+            }
+
             if ( filter != null )
             {
                 request = request.filterWith( filter );
@@ -424,6 +393,50 @@ public class JUnit4Provider
                 runner.run( notifier );
             }
         }
+    }
+
+    private static Request sortByTestOrder( Set<ResolvedTest> includedPatterns, Request request )
+    {
+        // This relies on the set being a LinkedHashSet (predictable iteration order)
+        List<ResolvedTest> testOrder = new ArrayList<>( includedPatterns );
+        Comparator<Description> descriptionComparator = ( d1, d2 ) ->
+        {
+            int i1 = indexOf( testOrder, d1 );
+            int i2 = indexOf( testOrder, d2 );
+            return i1 - i2;
+        };
+        return request.sortWith( descriptionComparator );
+    }
+
+    /**
+     * Finds the position of the ResolvedTest that matches the JUnit description
+     * @param orderedTests a test order
+     * @param description JUnit Description
+     * @return the position, or Integer.MAX_VALUE if not found
+     */
+    private static int indexOf( List<ResolvedTest> orderedTests, Description description )
+    {
+        if ( description.isSuite() )
+        {
+            return Integer.MAX_VALUE;
+        }
+        Matcher m = JUNIT_TEST_DESCRIPTION_PATTERN.matcher( description.toString() );
+        if ( !m.matches() )
+        {
+            return Integer.MAX_VALUE;
+        }
+        String methodName = m.group( 1 );
+        String className = m.group( 2 );
+        String classFileName = className.replace( ".", "/" ) + ".class";
+        for ( int i = 0; i < orderedTests.size(); i++ )
+        {
+            ResolvedTest resolvedTest = orderedTests.get( i );
+            if ( resolvedTest.matchAsInclusive( classFileName, methodName ) )
+            {
+                return i;
+            }
+        }
+        return Integer.MAX_VALUE;
     }
 
     /**
