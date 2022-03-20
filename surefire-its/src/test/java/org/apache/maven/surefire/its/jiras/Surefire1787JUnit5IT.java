@@ -22,6 +22,9 @@ package org.apache.maven.surefire.its.jiras;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+
 /**
  *
  */
@@ -128,5 +131,18 @@ public class Surefire1787JUnit5IT extends SurefireJUnit4IntegrationTestCase
             .verifyErrorFree( 1 )
             .verifyTextInLog( "Running pkg.JUnit5Tests" )
             .verifyTextInLog( "Using auto detected provider org.apache.maven.surefire.junit4.JUnit4Provider" );
+    }
+
+    @Test
+    public void junit5Suite() throws Exception
+    {
+        unpack( "junit5-suite" )
+            .executeTest()
+            .verifyErrorFree( 1 )
+            .verifyTextInLog(
+                "Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider" )
+            .verifyTextInLog( "Running pkg.JUnit5Test" )
+            .verifyTextInLog( "Running pkg.domain.AxTest" )
+            .assertThatLogLine( containsString( "Running pkg.domain.BxTest" ), equalTo( 0 ) );
     }
 }

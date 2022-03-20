@@ -32,6 +32,7 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG
 import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
+import static org.apache.maven.surefire.api.testset.TestListResolver.optionallyWildcardFilter;
 import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
@@ -55,7 +56,6 @@ import org.apache.maven.surefire.api.provider.ProviderParameters;
 import org.apache.maven.surefire.api.report.ReporterException;
 import org.apache.maven.surefire.api.report.ReporterFactory;
 import org.apache.maven.surefire.api.suite.RunResult;
-import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.SurefireReflectionException;
@@ -275,11 +275,11 @@ public class JUnitPlatformProvider
                 .map( TagFilter::excludeTags )
                 .ifPresent( filters::add );
 
-        TestListResolver testListResolver = parameters.getTestRequest().getTestListResolver();
-        if ( !testListResolver.isEmpty() )
-        {
-            filters.add( new TestMethodFilter( testListResolver ) );
-        }
+        of( optionallyWildcardFilter( parameters.getTestRequest().getTestListResolver() ) )
+            .filter( f -> !f.isEmpty() )
+            .filter( f -> !f.isWildcard() )
+            .map( TestMethodFilter::new )
+            .ifPresent( filters::add );
 
         getPropertiesList( INCLUDE_JUNIT5_ENGINES_PROP )
             .map( EngineFilter::includeEngines )
