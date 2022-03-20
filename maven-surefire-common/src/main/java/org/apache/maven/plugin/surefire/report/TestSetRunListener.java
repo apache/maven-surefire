@@ -39,6 +39,7 @@ import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SKIPPED;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
 
 /**
  * Reports data for a single test set.
@@ -205,21 +206,8 @@ public class TestSetRunListener
     public void testSetCompleted( TestSetReportEntry report )
     {
         final WrappedReportEntry wrap = wrapTestSet( report );
-        final List<String> testResults =
-                briefOrPlainFormat ? detailsForThis.getTestResults() : Collections.<String>emptyList();
-        fileReporter.testSetCompleted( wrap, detailsForThis, testResults );
-        simpleXMLReporter.testSetCompleted( wrap, detailsForThis );
-        statisticsReporter.testSetCompleted();
-        consoleReporter.testSetCompleted( wrap, detailsForThis, testResults );
-        testOutputReceiver.testSetCompleted( wrap );
-        consoleReporter.reset();
 
-        wrap.getStdout().free();
-        wrap.getStdErr().free();
-
-        addTestMethodStats();
-        detailsForThis.reset();
-        clearCapture();
+        finishTestSet( wrap );
     }
 
     // ----------------------------------------------------------------------
@@ -269,6 +257,15 @@ public class TestSetRunListener
         WrappedReportEntry wrapped = wrap( reportEntry, SKIPPED );
         detailsForThis.testSkipped( wrapped );
         statisticsReporter.testSkipped( reportEntry );
+
+        if ( isBlank( wrapped.getName() ) )
+        {
+            // This means that we are skipping not single test, but the entire test set
+            finishTestSet( wrapped );
+
+            return;
+        }
+
         clearCapture();
     }
 
@@ -281,6 +278,26 @@ public class TestSetRunListener
     public void testAssumptionFailure( ReportEntry report )
     {
         testSkipped( report );
+    }
+
+    private void finishTestSet( WrappedReportEntry reportEntry )
+    {
+        final List<String> testResults =
+            briefOrPlainFormat ? detailsForThis.getTestResults() : Collections.<String>emptyList();
+        fileReporter.testSetCompleted( reportEntry, detailsForThis, testResults );
+        simpleXMLReporter.testSetCompleted( reportEntry, detailsForThis );
+        statisticsReporter.testSetCompleted();
+        consoleReporter.testSetCompleted( reportEntry, detailsForThis, testResults );
+        testOutputReceiver.testSetCompleted( reportEntry );
+        consoleReporter.reset();
+
+        reportEntry.getStdout().free();
+        reportEntry.getStdErr().free();
+
+        addTestMethodStats();
+        detailsForThis.reset();
+
+        clearCapture();
     }
 
     private WrappedReportEntry wrap( ReportEntry other, ReportEntryType reportEntryType )
