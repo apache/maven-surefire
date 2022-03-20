@@ -29,6 +29,7 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUD
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -43,6 +44,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
+import static org.powermock.reflect.Whitebox.getInternalState;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -889,6 +891,65 @@ public class JUnitPlatformProviderTest
         assertEquals( "42", provider.getConfigurationParameters().get( "bar" ) );
         assertEquals( "*", provider.getConfigurationParameters().get( "baz" ) );
         assertEquals( "EOF", provider.getConfigurationParameters().get( "qux" ) );
+    }
+
+    @Test
+    public void shouldFilterTestMethod()
+    {
+        ProviderParameters providerParameters = providerParametersMock();
+        TestListResolver testListResolver = new TestListResolver( "**/*Test#test*" );
+        assertFalse( testListResolver.isEmpty() );
+        assertFalse( testListResolver.isWildcard() );
+        TestRequest request = new TestRequest( null, null, testListResolver, 0 );
+        when( providerParameters.getTestRequest() ).thenReturn( request );
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
+
+        assertThat( provider.getFilters() )
+            .hasSize( 1 );
+
+        assertThat( provider.getFilters()[0] )
+            .isInstanceOf( TestMethodFilter.class );
+
+        Object expectedTestListResolver = getInternalState( provider.getFilters()[0], "testListResolver" );
+
+        assertThat( expectedTestListResolver )
+            .isInstanceOf( TestListResolver.class );
+
+        assertThat( expectedTestListResolver  )
+            .isSameAs( testListResolver );
+    }
+
+    @Test
+    public void shouldNotFilterEmpty()
+    {
+        ProviderParameters providerParameters = providerParametersMock();
+        TestListResolver testListResolver = new TestListResolver( "" );
+        assertTrue( testListResolver.isEmpty() );
+        assertFalse( testListResolver.isWildcard() );
+        TestRequest request = new TestRequest( null, null, testListResolver, 0 );
+        when( providerParameters.getTestRequest() ).thenReturn( request );
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
+
+        assertThat( provider.getFilters() )
+            .isEmpty();
+    }
+
+    @Test
+    public void shouldNotFilterWildcard()
+    {
+        ProviderParameters providerParameters = providerParametersMock();
+        TestListResolver testListResolver = new TestListResolver( "*.java" );
+        assertTrue( testListResolver.isWildcard() );
+        assertFalse( testListResolver.isEmpty() );
+        TestRequest request = new TestRequest( null, null, testListResolver, 0 );
+        when( providerParameters.getTestRequest() ).thenReturn( request );
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( providerParameters );
+
+        assertThat( provider.getFilters() )
+            .isEmpty();
     }
 
     @Test
