@@ -20,6 +20,7 @@ package org.apache.maven.surefire.api.util;
  */
 
 import org.apache.maven.surefire.api.runorder.RunEntryStatisticsMap;
+import org.apache.maven.surefire.api.testset.ResolvedTest;
 import org.apache.maven.surefire.api.testset.RunOrderParameters;
 
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 /**
  * Applies the final runorder of the tests
@@ -42,17 +44,21 @@ public class DefaultRunOrderCalculator
 
     private final RunOrder[] runOrder;
 
+    private final List<ResolvedTest> resolvedTests;
+
     private final RunOrderParameters runOrderParameters;
 
     private final int threadCount;
 
     private final Random random;
 
-    public DefaultRunOrderCalculator( RunOrderParameters runOrderParameters, int threadCount )
+    public DefaultRunOrderCalculator( RunOrderParameters runOrderParameters, int threadCount,
+                                      List<ResolvedTest> resolvedTests )
     {
         this.runOrderParameters = runOrderParameters;
         this.threadCount = threadCount;
         this.runOrder = runOrderParameters.getRunOrder();
+        this.resolvedTests = resolvedTests;
         this.sortOrder = this.runOrder.length > 0 ? getSortOrderComparator( this.runOrder[0] ) : null;
         Long runOrderRandomSeed = runOrderParameters.getRunOrderRandomSeed();
         if ( runOrderRandomSeed == null )
@@ -121,10 +127,23 @@ public class DefaultRunOrderCalculator
             final int hour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
             return ( ( hour % 2 ) == 0 ) ? getAlphabeticalComparator() : getReverseAlphabeticalComparator();
         }
+        else if ( RunOrder.TEST.equals( runOrder ) )
+        {
+            return getTestOrderComparator( resolvedTests );
+        }
         else
         {
             return null;
         }
+    }
+
+    private Comparator<Class> getTestOrderComparator( List<ResolvedTest> resolvedTests )
+    {
+        return Comparator.comparing( testClass -> IntStream.range( 0, resolvedTests.size() )
+            .filter( i -> resolvedTests.get( i ).matchClass( testClass.getName().replace( '.', '/' ) ) )
+            .findFirst()
+            .orElse( -1 )
+        );
     }
 
     private Comparator<Class> getReverseAlphabeticalComparator()

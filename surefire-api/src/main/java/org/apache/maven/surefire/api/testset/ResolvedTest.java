@@ -288,7 +288,7 @@ public final class ResolvedTest
         return matchClass( testClassFile ) && matchMethod( methodName );
     }
 
-    private boolean matchClass( String testClassFile )
+    public boolean matchClass( String testClassFile )
     {
         return classPattern == null || classMatcher.matchTestClassFile( testClassFile );
     }

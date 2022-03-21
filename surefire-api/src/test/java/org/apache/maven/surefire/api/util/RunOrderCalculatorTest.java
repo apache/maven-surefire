@@ -19,12 +19,18 @@ package org.apache.maven.surefire.api.util;
  * under the License.
  */
 
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
+import org.apache.maven.surefire.api.testset.ResolvedTest;
 import org.apache.maven.surefire.api.testset.RunOrderParameters;
 
 import junit.framework.TestCase;
+
+import static java.util.Arrays.asList;
 
 /**
  * @author Kristian Rosenvold
@@ -33,13 +39,36 @@ public class RunOrderCalculatorTest
     extends TestCase
 {
 
-    public void testOrderTestClasses()
+    public void testAlphabeticalOrder()
     {
         getClassesToRun();
         TestsToRun testsToRun = new TestsToRun( getClassesToRun() );
-        RunOrderCalculator runOrderCalculator = new DefaultRunOrderCalculator( RunOrderParameters.alphabetical(), 1 );
-        final TestsToRun testsToRun1 = runOrderCalculator.orderTestClasses( testsToRun );
-        assertEquals( A.class, testsToRun1.iterator().next() );
+        RunOrderCalculator runOrderCalculator = new DefaultRunOrderCalculator( RunOrderParameters.alphabetical(),
+            1, Collections.emptyList() );
+        final TestsToRun orderedTestsToRun = runOrderCalculator.orderTestClasses( testsToRun );
+        Iterator<Class<?>> iterator = orderedTestsToRun.iterator();
+        assertEquals( A.class, iterator.next() );
+        assertEquals( B.class, iterator.next() );
+        assertEquals( C.class, iterator.next() );
+    }
+
+    public void testTestOrder()
+    {
+        TestsToRun testsToRun = new TestsToRun( getClassesToRun() );
+        ResolvedTest testA = new ResolvedTest( A.class.getName(), null, false );
+        ResolvedTest testB = new ResolvedTest( B.class.getName(), null, false );
+        ResolvedTest testC = new ResolvedTest( C.class.getName(), null, false );
+
+        List<ResolvedTest> resolvedTests = asList( testB, testC, testA );
+        RunOrderParameters runOrderParameters = new RunOrderParameters(
+            RunOrder.valueOfMulti( "test" ), null );
+        RunOrderCalculator runOrderCalculator = new DefaultRunOrderCalculator( runOrderParameters,
+            1, resolvedTests );
+        final TestsToRun orderedTestsToRun = runOrderCalculator.orderTestClasses( testsToRun );
+        Iterator<Class<?>> iterator = orderedTestsToRun.iterator();
+        assertEquals( B.class, iterator.next() );
+        assertEquals( C.class, iterator.next() );
+        assertEquals( A.class, iterator.next() );
     }
 
     private Set<Class<?>> getClassesToRun()
@@ -47,6 +76,7 @@ public class RunOrderCalculatorTest
         Set<Class<?>> classesToRun = new LinkedHashSet<>();
         classesToRun.add( B.class );
         classesToRun.add( A.class );
+        classesToRun.add( C.class );
         return classesToRun;
     }
 
@@ -56,6 +86,11 @@ public class RunOrderCalculatorTest
     }
 
     static class B
+    {
+
+    }
+
+    static class C
     {
 
     }
