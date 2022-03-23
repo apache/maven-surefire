@@ -146,11 +146,6 @@ public class TestListResolver
         return resolver.hasMethodPatterns() ? resolver : WILDCARD;
     }
 
-    public static TestListResolver getWildcard()
-    {
-        return WILDCARD;
-    }
-
     public static TestListResolver getEmptyTestListResolver()
     {
         return EMPTY;
