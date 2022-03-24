@@ -13,3 +13,4 @@ build
 .surefire-*
 .DS_Store
 *.versionsBackup
+.m2
