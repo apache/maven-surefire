@@ -49,10 +49,6 @@ public class TestListResolver
 {
     private static final String JAVA_CLASS_FILE_EXTENSION = ".class";
 
-    private static final TestListResolver WILDCARD = new TestListResolver( "*" + JAVA_CLASS_FILE_EXTENSION );
-
-    private static final TestListResolver EMPTY = new TestListResolver( "" );
-
     private final Set<ResolvedTest> includedPatterns;
 
     private final Set<ResolvedTest> excludedPatterns;
@@ -133,27 +129,6 @@ public class TestListResolver
     public boolean hasMethodPatterns()
     {
         return hasIncludedMethodPatterns() || hasExcludedMethodPatterns();
-    }
-
-    /**
-     *
-     * @param resolver    filter possibly having method patterns
-     * @return {@code resolver} if {@link TestListResolver#hasMethodPatterns() resolver.hasMethodPatterns()}
-     * returns {@code true}; Otherwise wildcard filter {@code *.class} is returned.
-     */
-    public static TestListResolver optionallyWildcardFilter( TestListResolver resolver )
-    {
-        return resolver.hasMethodPatterns() ? resolver : WILDCARD;
-    }
-
-    public static TestListResolver getEmptyTestListResolver()
-    {
-        return EMPTY;
-    }
-
-    public final boolean isWildcard()
-    {
-        return equals( WILDCARD );
     }
 
     public TestFilter<String, String> and( final TestListResolver another )
@@ -238,7 +213,7 @@ public class TestListResolver
     @Override
     public boolean isEmpty()
     {
-        return equals( EMPTY );
+        return includedPatterns.isEmpty() && excludedPatterns.isEmpty();
     }
 
     @Override

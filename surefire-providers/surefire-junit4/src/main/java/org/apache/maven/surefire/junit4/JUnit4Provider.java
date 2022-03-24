@@ -67,7 +67,6 @@ import static org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory.c
 import static org.apache.maven.surefire.common.junit4.Notifier.pureNotifier;
 import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.api.report.SimpleReportEntry.withException;
-import static org.apache.maven.surefire.api.testset.TestListResolver.optionallyWildcardFilter;
 import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
 import static org.junit.runner.Request.aClass;
@@ -274,14 +273,13 @@ public class JUnit4Provider
     {
         JUnitTestFailureListener failureListener = new JUnitTestFailureListener();
         notifier.addListener( failureListener );
-        boolean hasMethodFilter = testResolver != null && testResolver.hasMethodPatterns();
 
         try
         {
             try
             {
                 notifier.asFailFast( isFailFast() );
-                execute( clazz, notifier, hasMethodFilter ? createMethodFilter() : null );
+                execute( clazz, notifier, createMethodFilter() );
             }
             finally
             {
@@ -432,7 +430,6 @@ public class JUnit4Provider
 
     private Filter createMethodFilter()
     {
-        TestListResolver methodFilter = optionallyWildcardFilter( testResolver );
-        return methodFilter.isEmpty() || methodFilter.isWildcard() ? null : new TestResolverFilter( methodFilter );
+        return testResolver != null && testResolver.hasMethodPatterns() ? new TestResolverFilter( testResolver ) : null;
     }
 }

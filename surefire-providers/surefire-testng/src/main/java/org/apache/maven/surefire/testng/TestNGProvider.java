@@ -47,8 +47,6 @@ import org.apache.maven.surefire.testng.utils.FailFastEventsSingleton;
 
 import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
-import static org.apache.maven.surefire.api.testset.TestListResolver.getEmptyTestListResolver;
-import static org.apache.maven.surefire.api.testset.TestListResolver.optionallyWildcardFilter;
 import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
 
 /**
@@ -205,7 +203,7 @@ public class TestNGProvider
     private TestNGDirectoryTestSuite newDirectorySuite()
     {
         return new TestNGDirectoryTestSuite( testRequest.getTestSourceDirectory().toString(), providerProperties,
-                                             reporterConfiguration.getReportsDirectory(), getTestFilter(),
+                                             reporterConfiguration.getReportsDirectory(), getTestMethodFilterFilter(),
                                              mainCliOptions, getSkipAfterFailureCount() );
     }
 
@@ -247,13 +245,13 @@ public class TestNGProvider
     private boolean hasSpecificTests()
     {
         TestListResolver specificTestPatterns = testRequest.getTestListResolver();
-        return !specificTestPatterns.isEmpty() && !specificTestPatterns.isWildcard();
+        return !specificTestPatterns.isEmpty();
     }
 
-    private TestListResolver getTestFilter()
+    private TestListResolver getTestMethodFilterFilter()
     {
-        TestListResolver filter = optionallyWildcardFilter( testRequest.getTestListResolver() );
-        return filter.isWildcard() ? getEmptyTestListResolver() : filter;
+        TestListResolver filter = testRequest.getTestListResolver();
+        return filter.hasMethodPatterns() ? filter : null;
     }
 
     // If we have access to IResultListener, return a ConfigurationAwareTestNGReporter.
