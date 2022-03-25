@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicStampedReference;
 
@@ -126,8 +127,7 @@ public class ConsoleOutputFileReporter
         catch ( IOException e )
         {
             dumpException( e );
-            // todo use UncheckedIOException in Java 8
-            throw new RuntimeException( e );
+            throw new UncheckedIOException( e );
         }
     }
 
