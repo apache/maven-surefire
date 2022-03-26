@@ -540,7 +540,7 @@ public class ForkedProcessEventNotifierTest
 
             ForkedProcessEventNotifier notifier = new ForkedProcessEventNotifier();
             StandardOutErrEventAssertionListener listener =
-                new StandardOutErrEventAssertionListener( NORMAL_RUN, "msg", false );
+                new StandardOutErrEventAssertionListener( NORMAL_RUN, 1L, "msg", false );
             notifier.setStdOutListener( listener );
 
             EH eventHandler = new EH();
@@ -579,7 +579,7 @@ public class ForkedProcessEventNotifierTest
 
             ForkedProcessEventNotifier notifier = new ForkedProcessEventNotifier();
             StandardOutErrEventAssertionListener listener =
-                new StandardOutErrEventAssertionListener( NORMAL_RUN, "", false );
+                new StandardOutErrEventAssertionListener( NORMAL_RUN, 1L, "", false );
             notifier.setStdOutListener( listener );
 
             EH eventHandler = new EH();
@@ -618,7 +618,7 @@ public class ForkedProcessEventNotifierTest
 
             ForkedProcessEventNotifier notifier = new ForkedProcessEventNotifier();
             StandardOutErrEventAssertionListener listener =
-                new StandardOutErrEventAssertionListener( NORMAL_RUN, null, false );
+                new StandardOutErrEventAssertionListener( NORMAL_RUN, 1L, null, false );
             notifier.setStdOutListener( listener );
 
             EH eventHandler = new EH();
@@ -657,7 +657,7 @@ public class ForkedProcessEventNotifierTest
 
             ForkedProcessEventNotifier notifier = new ForkedProcessEventNotifier();
             StandardOutErrEventAssertionListener listener =
-                new StandardOutErrEventAssertionListener( NORMAL_RUN, "", true );
+                new StandardOutErrEventAssertionListener( NORMAL_RUN, 1L, "", true );
             notifier.setStdOutListener( listener );
 
             EH eventHandler = new EH();
@@ -696,7 +696,7 @@ public class ForkedProcessEventNotifierTest
 
             ForkedProcessEventNotifier notifier = new ForkedProcessEventNotifier();
             StandardOutErrEventAssertionListener listener =
-                new StandardOutErrEventAssertionListener( NORMAL_RUN, null, true );
+                new StandardOutErrEventAssertionListener( NORMAL_RUN, 1L, null, true );
             notifier.setStdOutListener( listener );
 
             EH eventHandler = new EH();
@@ -735,7 +735,7 @@ public class ForkedProcessEventNotifierTest
 
             ForkedProcessEventNotifier notifier = new ForkedProcessEventNotifier();
             StandardOutErrEventAssertionListener listener =
-                new StandardOutErrEventAssertionListener( NORMAL_RUN, "msg", false );
+                new StandardOutErrEventAssertionListener( NORMAL_RUN, 1L, "msg", false );
             notifier.setStdErrListener( listener );
 
             EH eventHandler = new EH();
@@ -995,11 +995,12 @@ public class ForkedProcessEventNotifierTest
         private final Map<?, ?> sysProps = System.getProperties();
         private final AtomicInteger counter = new AtomicInteger();
 
-        public void handle( RunMode runMode, String key, String value )
+        public void handle( String key, String value, RunMode runMode, Long testRunId )
         {
             called.set( true );
             counter.incrementAndGet();
             assertThat( runMode ).isEqualTo( NORMAL_RUN );
+            assertThat( testRunId ).isEqualTo( 1L );
             assertTrue( sysProps.containsKey( key ) );
             assertThat( sysProps.get( key ) ).isEqualTo( value );
         }
@@ -1067,22 +1068,27 @@ public class ForkedProcessEventNotifierTest
     {
         final AtomicBoolean called = new AtomicBoolean();
         private final RunMode runMode;
+        private final long testRunId;
         private final String output;
         private final boolean newLine;
 
-        StandardOutErrEventAssertionListener( RunMode runMode, String output, boolean newLine )
+        StandardOutErrEventAssertionListener( RunMode runMode, long testRunId, String output, boolean newLine )
         {
             this.runMode = runMode;
+            this.testRunId = testRunId;
             this.output = output;
             this.newLine = newLine;
         }
 
-        public void handle( RunMode runMode, String output, boolean newLine )
+        public void handle( String output, boolean newLine, RunMode runMode, Long testRunId )
         {
             called.set( true );
 
             assertThat( runMode )
                     .isEqualTo( this.runMode );
+
+            assertThat( testRunId )
+                .isEqualTo( this.testRunId );
 
             assertThat( output )
                     .isEqualTo( this.output );
