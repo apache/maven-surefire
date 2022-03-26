@@ -22,39 +22,48 @@ package org.apache.maven.surefire.junitplatform;
 import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.junit.platform.engine.FilterResult;
 import org.junit.platform.engine.TestDescriptor;
-import org.junit.platform.engine.support.descriptor.MethodSource;
+import org.junit.platform.engine.TestSource;
 import org.junit.platform.launcher.PostDiscoveryFilter;
+
+import java.util.Collection;
+import java.util.Optional;
 
 /**
  * @since 2.22.0
  */
-class TestMethodFilter
+class TestSelectorFilter
     implements PostDiscoveryFilter
 {
 
     private final TestListResolver testListResolver;
+    private final Collection<TestSelectorFactory> selectorFactories;
 
-    TestMethodFilter( TestListResolver testListResolver )
+    TestSelectorFilter( TestListResolver testListResolver, Collection<TestSelectorFactory> selectorFactories )
     {
         this.testListResolver = testListResolver;
+        this.selectorFactories = selectorFactories;
     }
 
     @Override
     public FilterResult apply( TestDescriptor descriptor )
     {
         boolean shouldRun = descriptor.getSource()
-                                      .filter( MethodSource.class::isInstance )
-                                      .map( MethodSource.class::cast )
-                                      .map( this::shouldRun )
-                                      .orElse( true );
-
+            .flatMap( source -> resolveFactory( source )
+                .map( factory -> factory.createSelector( source ) ) )
+            .map( this::shouldRun )
+            .orElse( true );
         return FilterResult.includedIf( shouldRun );
     }
 
-    private boolean shouldRun( MethodSource source )
+    private boolean shouldRun( TestSelectorFactory.TestSelector selector )
     {
-        String testClass = TestListResolver.toClassFileName( source.getClassName() );
-        String testMethod = source.getMethodName();
-        return this.testListResolver.shouldRun( testClass, testMethod );
+        return this.testListResolver.shouldRun( selector.getContainerName(), selector.getSelectorName() );
+    }
+
+    private Optional<TestSelectorFactory> resolveFactory( TestSource source )
+    {
+        return selectorFactories.stream()
+            .filter( factory -> factory.supports( source ) )
+            .findAny();
     }
 }

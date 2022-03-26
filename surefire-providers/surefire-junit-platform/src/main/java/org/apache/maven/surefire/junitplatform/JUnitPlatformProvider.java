@@ -42,13 +42,17 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.apache.maven.surefire.api.provider.AbstractProvider;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
@@ -105,7 +109,7 @@ public class JUnitPlatformProvider
     public Iterable<Class<?>> getSuites()
     {
         try
-        { 
+        {
             return scanClasspath();
         }
         finally
@@ -235,7 +239,7 @@ public class JUnitPlatformProvider
                 } );
         }
     }
-    
+
     private void closeLauncher()
     {
         if ( launcher instanceof AutoCloseable )
@@ -263,6 +267,12 @@ public class JUnitPlatformProvider
         return builder.build();
     }
 
+    private Collection<TestSelectorFactory> loadSelectorFactories()
+    {
+        return StreamSupport.stream( ServiceLoader.load( TestSelectorFactory.class ).spliterator(), false )
+            .collect( Collectors.toSet() );
+    }
+
     private Filter<?>[] newFilters()
     {
         List<Filter<?>> filters = new ArrayList<>();
@@ -278,7 +288,7 @@ public class JUnitPlatformProvider
         TestListResolver testListResolver = parameters.getTestRequest().getTestListResolver();
         if ( !testListResolver.isEmpty() )
         {
-            filters.add( new TestMethodFilter( testListResolver ) );
+            filters.add( new TestSelectorFilter( testListResolver, loadSelectorFactories() ) );
         }
 
         getPropertiesList( INCLUDE_JUNIT5_ENGINES_PROP )
@@ -289,7 +299,7 @@ public class JUnitPlatformProvider
             .map( EngineFilter::excludeEngines )
             .ifPresent( filters::add );
 
-        return filters.toArray( new Filter<?>[ filters.size() ] );
+        return filters.toArray( new Filter<?>[ 0 ] );
     }
 
     Filter<?>[] getFilters()

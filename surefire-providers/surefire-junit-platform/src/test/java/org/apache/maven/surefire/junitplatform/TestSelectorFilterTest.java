@@ -19,14 +19,6 @@ package org.apache.maven.surefire.junitplatform;
  * under the License.
  */
 
-import static org.apache.maven.surefire.api.testset.TestListResolver.toClassFileName;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.lang.reflect.Method;
-
 import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.junit.Test;
 import org.junit.jupiter.engine.descriptor.ClassTestDescriptor;
@@ -35,18 +27,28 @@ import org.junit.platform.engine.ConfigurationParameters;
 import org.junit.platform.engine.FilterResult;
 import org.junit.platform.engine.UniqueId;
 
+import java.lang.reflect.Method;
+
+import static java.util.Collections.singletonList;
+import static org.apache.maven.surefire.api.testset.TestListResolver.toClassFileName;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 /**
- * Unit tests for {@link TestMethodFilter}.
+ * Unit tests for {@link TestSelectorFilter}.
  *
  * @since 2.22.0
  */
-public class TestMethodFilterTest
+public class TestSelectorFilterTest
 {
     private static final ConfigurationParameters CONFIG_PARAMS = mock( ConfigurationParameters.class );
 
     private final TestListResolver resolver = mock( TestListResolver.class );
 
-    private final TestMethodFilter filter = new TestMethodFilter( this.resolver );
+    private final TestSelectorFilter filter
+        = new TestSelectorFilter( this.resolver, singletonList( new MethodSelectorFactory() ) );
 
     @Test
     public void includesBasedOnTestListResolver()
