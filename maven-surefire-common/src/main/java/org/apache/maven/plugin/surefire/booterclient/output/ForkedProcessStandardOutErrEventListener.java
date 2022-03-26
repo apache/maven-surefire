@@ -27,5 +27,5 @@ import org.apache.maven.surefire.api.report.RunMode;
  */
 public interface ForkedProcessStandardOutErrEventListener
 {
-    void handle( RunMode runMode, String output, boolean newLine );
+    void handle( String output, boolean newLine, RunMode runMode, Long testRunId );
 }

@@ -27,5 +27,5 @@ import org.apache.maven.surefire.api.report.RunMode;
  */
 public interface ForkedProcessPropertyEventListener
 {
-    void handle( RunMode runMode, String key, String value );
+    void handle( String key, String value, RunMode runMode, Long testRunId );
 }

@@ -207,18 +207,20 @@ public final class ForkedProcessEventNotifier
             ForkedProcessStandardOutErrEventListener listener = stdOutErrEventListeners.get( eventType );
             if ( listener != null )
             {
-                listener.handle( standardStreamEvent.getRunMode(), standardStreamEvent.getMessage(), newLine );
+                listener.handle( standardStreamEvent.getMessage(), newLine,
+                    standardStreamEvent.getRunMode(), standardStreamEvent.getTestRunId() );
             }
         }
         else if ( event.isSysPropCategory() )
         {
             SystemPropertyEvent systemPropertyEvent = (SystemPropertyEvent) event;
             RunMode runMode = systemPropertyEvent.getRunMode();
+            Long testRunId = systemPropertyEvent.getTestRunId();
             String key = systemPropertyEvent.getKey();
             String value = systemPropertyEvent.getValue();
             if ( propertyEventListener != null )
             {
-                propertyEventListener.handle( runMode, key, value );
+                propertyEventListener.handle( key, value, runMode, testRunId );
             }
         }
         else if ( event.isTestCategory() )
