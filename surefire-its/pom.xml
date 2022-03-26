@@ -243,11 +243,6 @@
                     <artifactId>maven-invoker-plugin</artifactId>
                     <configuration>
                       <localRepositoryPath>${settings.localRepository}</localRepositoryPath>
-                      <extraArtifacts>
-                        <extraArtifact>org.apache.maven.plugins:maven-surefire-report-plugin:${project.version}</extraArtifact>
-                        <extraArtifact>org.apache.maven.plugins:maven-surefire-plugin:${project.version}</extraArtifact>
-                        <extraArtifact>org.apache.maven.plugins:maven-failsafe-plugin:${project.version}</extraArtifact>
-                      </extraArtifacts>
                     </configuration>
                     <executions>
                       <execution>
