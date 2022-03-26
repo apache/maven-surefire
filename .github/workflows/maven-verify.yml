@@ -28,9 +28,9 @@ jobs:
     with:
       jdk-matrix: '[ "8", "11", "17", "18" ]'
       ff-jdk: '18'
-      ff-goal: 'clean install site site:stage -P reporting -nsu'
+      ff-goal: 'clean install site site:stage -P reporting -nsu -T3'
       ff-site-goal: '-v'
-      verify-goal: 'clean install -nsu -P run-its'
+      verify-goal: 'clean install -nsu -P run-its -T3'
       verify-fail-fast: false
       failure-upload-path: |
         surefire-its/target/*/log.txt
