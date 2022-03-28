@@ -82,6 +82,11 @@
             <artifactId>common-java5</artifactId>
             <version>${project.version}</version>
         </dependency>
+      <dependency>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>common-junit5</artifactId>
+        <version>${project.version}</version>
+      </dependency>
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-launcher</artifactId>

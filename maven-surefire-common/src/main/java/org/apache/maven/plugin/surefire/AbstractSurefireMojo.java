@@ -3054,30 +3054,43 @@ public abstract class AbstractSurefireMojo
         {
             try
             {
-                Artifact testng = getTestNgArtifact();
-                if ( testng != null )
+                Artifact junit5 = getJUnit5Artifact();
+                if ( junit5 != null )
                 {
-                    VersionRange range = VersionRange.createFromVersionSpec( "[5.10,)" );
-                    if ( !range.containsVersion( new DefaultArtifactVersion( testng.getVersion() ) ) )
+                    VersionRange range = VersionRange.createFromVersionSpec( "[1.4.0,)" );
+                    if ( !range.containsVersion( new DefaultArtifactVersion( junit5.getVersion() ) ) )
                     {
                         throw new MojoFailureException(
-                            "Parameter \"skipAfterFailureCount\" expects TestNG Version 5.10 or higher. "
-                                + "java.lang.NoClassDefFoundError: org/testng/IInvokedMethodListener" );
+                            "Parameter \"skipAfterFailureCount\" expects JUnit5 Version 5.4.0 or higher." );
                     }
                 }
                 else
                 {
-                    // TestNG is dependent on JUnit
-                    Artifact junit = getJunitArtifact();
-                    if ( junit != null )
+                    Artifact testng = getTestNgArtifact();
+                    if ( testng != null )
                     {
-                        VersionRange range = VersionRange.createFromVersionSpec( "[4.0,)" );
-                        if ( !range.containsVersion( new DefaultArtifactVersion( junit.getVersion() ) ) )
+                        VersionRange range = VersionRange.createFromVersionSpec( "[5.10,)" );
+                        if ( !range.containsVersion( new DefaultArtifactVersion( testng.getVersion() ) ) )
                         {
                             throw new MojoFailureException(
-                                "Parameter \"skipAfterFailureCount\" expects JUnit Version 4.0 or higher. "
-                                    + "java.lang.NoSuchMethodError: "
-                                    + "org.junit.runner.notification.RunNotifier.pleaseStop()V" );
+                                "Parameter \"skipAfterFailureCount\" expects TestNG Version 5.10 or higher. "
+                                    + "java.lang.NoClassDefFoundError: org/testng/IInvokedMethodListener" );
+                        }
+                    }
+                    else
+                    {
+                        // TestNG is dependent on JUnit
+                        Artifact junit = getJunitArtifact();
+                        if ( junit != null )
+                        {
+                            VersionRange range = VersionRange.createFromVersionSpec( "[4.0,)" );
+                            if ( !range.containsVersion( new DefaultArtifactVersion( junit.getVersion() ) ) )
+                            {
+                                throw new MojoFailureException(
+                                    "Parameter \"skipAfterFailureCount\" expects JUnit Version 4.0 or higher. "
+                                        + "java.lang.NoSuchMethodError: "
+                                        + "org.junit.runner.notification.RunNotifier.pleaseStop()V" );
+                            }
                         }
                     }
                 }

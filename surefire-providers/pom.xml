@@ -38,6 +38,7 @@
     <module>common-java5</module>
     <module>common-junit4</module>
     <module>common-junit48</module>
+    <module>common-junit5</module>
     <module>surefire-junit3</module>
     <module>surefire-junit4</module>
     <module>surefire-junit47</module>

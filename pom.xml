@@ -296,12 +296,6 @@
         <groupId>org.powermock</groupId>
         <artifactId>powermock-reflect</artifactId>
         <version>${powermockVersion}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.objenesis</groupId>
-            <artifactId>objenesis</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.javassist</groupId>
