@@ -20,51 +20,43 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  */
 
 import java.io.IOException;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Function;
 
 final class MultipleFailureException
         extends IOException
 {
-    private final Queue<Throwable> exceptions = new ConcurrentLinkedQueue<>();
-
     void addException( Throwable exception )
     {
-        exceptions.add( exception );
+        addSuppressed( exception );
     }
 
     boolean hasNestedExceptions()
     {
-        return !exceptions.isEmpty();
+        return getSuppressed().length != 0;
     }
 
     @Override
     public String getLocalizedMessage()
     {
-        StringBuilder messages = new StringBuilder();
-        for ( Throwable exception : exceptions )
-        {
-            if ( messages.length() != 0 )
-            {
-                messages.append( '\n' );
-            }
-            String message = exception.getLocalizedMessage();
-            messages.append( message == null ? exception.toString() : message );
-        }
-        return messages.toString();
+        return toMessage( Throwable::getLocalizedMessage );
     }
 
     @Override
     public String getMessage()
     {
+        return toMessage( Throwable::getMessage );
+    }
+
+    private String toMessage( Function<Throwable, String> msg )
+    {
         StringBuilder messages = new StringBuilder();
-        for ( Throwable exception : exceptions )
+        for ( Throwable exception : getSuppressed() )
         {
             if ( messages.length() != 0 )
             {
                 messages.append( '\n' );
             }
-            String message = exception.getMessage();
+            String message = msg.apply( exception );
             messages.append( message == null ? exception.toString() : message );
         }
         return messages.toString();
