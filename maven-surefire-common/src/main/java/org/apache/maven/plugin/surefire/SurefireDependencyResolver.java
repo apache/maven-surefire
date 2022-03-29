@@ -32,8 +32,10 @@ import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
+import org.apache.maven.artifact.resolver.ResolutionErrorHandler;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
@@ -41,6 +43,7 @@ import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.repository.RepositorySystem;
 
@@ -87,8 +90,9 @@ final class SurefireDependencyResolver
 
     private final List<ArtifactRepository> projectRemoteRepositories;
 
-    private final String pluginName;
+    private final ResolutionErrorHandler resolutionErrorHandler;
 
+    private final String pluginName;
 
     private final boolean offline;
 
@@ -96,6 +100,7 @@ final class SurefireDependencyResolver
                                 ArtifactRepository localRepository,
                                 List<ArtifactRepository> pluginRemoteRepositories,
                                 List<ArtifactRepository> projectRemoteRepositories,
+                                ResolutionErrorHandler resolutionErrorHandler,
                                 String pluginName, boolean offline )
     {
         this.repositorySystem = repositorySystem;
@@ -103,6 +108,7 @@ final class SurefireDependencyResolver
         this.localRepository = localRepository;
         this.pluginRemoteRepositories = pluginRemoteRepositories;
         this.projectRemoteRepositories = projectRemoteRepositories;
+        this.resolutionErrorHandler = resolutionErrorHandler;
         this.pluginName = pluginName;
         this.offline = offline;
     }
@@ -132,6 +138,7 @@ final class SurefireDependencyResolver
     }
 
     Map<String, Artifact> resolvePluginDependencies( Plugin plugin, Map<String, Artifact> pluginResolvedDependencies )
+        throws MojoExecutionException
     {
         Map<String, Artifact> resolved = new LinkedHashMap<>();
         Collection<Dependency> pluginDependencies = plugin.getDependencies();
@@ -153,28 +160,30 @@ final class SurefireDependencyResolver
         return resolved;
     }
 
-    ArtifactResolutionResult resolvePluginArtifact( Artifact artifact )
+    ArtifactResolutionResult resolvePluginArtifact( Artifact artifact ) throws MojoExecutionException
     {
         return resolvePluginArtifact( artifact, new RuntimeArtifactFilter() );
     }
 
-    ArtifactResolutionResult resolveProjectArtifact( Artifact artifact )
+    ArtifactResolutionResult resolveProjectArtifact( Artifact artifact ) throws MojoExecutionException
     {
         return resolveProjectArtifact( artifact, new RuntimeArtifactFilter() );
     }
 
     private ArtifactResolutionResult resolvePluginArtifact( Artifact artifact, ArtifactFilter filter )
+        throws MojoExecutionException
     {
         return resolveArtifact( artifact, pluginRemoteRepositories, filter );
     }
 
     private ArtifactResolutionResult resolveProjectArtifact( Artifact artifact, ArtifactFilter filter )
+        throws MojoExecutionException
     {
         return resolveArtifact( artifact, projectRemoteRepositories, filter );
     }
 
     private ArtifactResolutionResult resolveArtifact( Artifact artifact, List<ArtifactRepository> repositories,
-                                                      ArtifactFilter filter )
+                                                      ArtifactFilter filter ) throws MojoExecutionException
     {
         ArtifactResolutionRequest request = new ArtifactResolutionRequest()
             .setOffline( offline )
@@ -184,11 +193,22 @@ final class SurefireDependencyResolver
             .setCollectionFilter( filter )
             .setRemoteRepositories( repositories );
 
-        return repositorySystem.resolve( request );
+        ArtifactResolutionResult result = repositorySystem.resolve( request );
+        try
+        {
+            resolutionErrorHandler.throwErrors( request, result );
+        }
+        catch ( ArtifactResolutionException e )
+        {
+            throw new MojoExecutionException( e.getMessage(), e );
+        }
+
+        return result;
     }
 
     @Nonnull
     Set<Artifact> getProviderClasspath( String providerArtifactId, String providerVersion )
+        throws MojoExecutionException
     {
         Dependency provider = toProviderDependency( providerArtifactId, providerVersion );
 
@@ -211,6 +231,7 @@ final class SurefireDependencyResolver
 
     @Nonnull
     Map<String, Artifact> getProviderClasspathAsMap( String providerArtifactId, String providerVersion )
+        throws MojoExecutionException
     {
         return artifactMapByVersionlessId( getProviderClasspath( providerArtifactId, providerVersion ) );
     }

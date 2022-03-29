@@ -27,12 +27,15 @@ import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
+import org.apache.maven.artifact.resolver.DefaultResolutionErrorHandler;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.surefire.SurefireDependencyResolver.RuntimeArtifactFilter;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.repository.RepositorySystem;
@@ -49,6 +52,7 @@ import static java.util.Collections.singletonMap;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
 import static org.apache.maven.plugin.surefire.SurefireDependencyResolver.PROVIDER_GROUP_ID;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -108,7 +112,7 @@ public class SurefireDependencyResolverTest
     }
 
     @Test
-    public void testResolveArtifact() throws InvalidVersionSpecificationException
+    public void testResolveArtifact() throws InvalidVersionSpecificationException, MojoExecutionException
     {
         final Artifact provider = createArtifact( "surefire-junit-platform" );
         RepositorySystem repositorySystem = mock( RepositorySystem.class );
@@ -152,7 +156,8 @@ public class SurefireDependencyResolverTest
             } );
 
         SurefireDependencyResolver surefireDependencyResolver =
-            new SurefireDependencyResolver( repositorySystem, null, null, null, null, null, false );
+            new SurefireDependencyResolver( repositorySystem, null, null, null, null,
+                new DefaultResolutionErrorHandler(), null, false );
 
         ArtifactResolutionResult actualResult = surefireDependencyResolver.resolvePluginArtifact( provider );
 
@@ -246,7 +251,8 @@ public class SurefireDependencyResolverTest
         ConsoleLogger log = mock( ConsoleLogger.class );
 
         SurefireDependencyResolver surefireDependencyResolver =
-            new SurefireDependencyResolver( repositorySystem, log, null, null, null, null, false );
+            new SurefireDependencyResolver( repositorySystem, log, null, null, null,
+                new DefaultResolutionErrorHandler(), null, false );
 
         when( log.isDebugEnabled() )
             .thenReturn( true );
@@ -273,6 +279,35 @@ public class SurefireDependencyResolverTest
 
         assertThat( it.next() )
             .isSameAs( ext );
+    }
+
+    @Test
+    public void testGetProviderClasspathShouldPropagateTheResolutionException() throws Exception
+    {
+        Artifact provider = createArtifact( "surefire-junit-platform" );
+        provider.setFile( null );
+
+        Set<Artifact> providerArtifacts = new LinkedHashSet<>();
+        providerArtifacts.add( provider );
+
+        ArtifactResolutionResult result = mock( ArtifactResolutionResult.class );
+        when( result.getArtifacts() ).thenReturn( providerArtifacts );
+        when( result.hasMetadataResolutionExceptions() ).thenReturn( true );
+        ArtifactResolutionException resolutionException =
+            new ArtifactResolutionException( "failed to resolve", provider );
+        when( result.getMetadataResolutionException( 0 ) ).thenReturn( resolutionException );
+
+        RepositorySystem repositorySystem = mock( RepositorySystem.class );
+        when( repositorySystem.resolve( any( ArtifactResolutionRequest.class ) ) ).thenReturn( result );
+        when( repositorySystem.createDependencyArtifact( any( Dependency.class ) ) ).thenReturn( provider );
+
+        SurefireDependencyResolver surefireDependencyResolver =
+            new SurefireDependencyResolver( repositorySystem, mock( ConsoleLogger.class ), null, null, null,
+                new DefaultResolutionErrorHandler(), null, false );
+
+        assertThatThrownBy( () -> surefireDependencyResolver.getProviderClasspath( "surefire-junit-platform", "1" ) )
+            .isInstanceOf( MojoExecutionException.class )
+            .hasCause( resolutionException );
     }
 
     @Test
@@ -306,7 +341,8 @@ public class SurefireDependencyResolverTest
             singletonMap( PROVIDER_GROUP_ID + ":surefire-shadefire", providerAsArtifact );
 
         SurefireDependencyResolver surefireDependencyResolver =
-            new SurefireDependencyResolver( repositorySystem, null, null, null, null, null, false );
+            new SurefireDependencyResolver( repositorySystem, null, null, null, null,
+                new DefaultResolutionErrorHandler(), null, false );
 
         Map<String, Artifact> providers =
             surefireDependencyResolver.resolvePluginDependencies( plugin, pluginResolvedDependencies );

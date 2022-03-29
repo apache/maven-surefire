@@ -44,6 +44,7 @@ import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
+import org.apache.maven.artifact.resolver.DefaultResolutionErrorHandler;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
@@ -157,6 +158,7 @@ public class AbstractSurefireMojoTest
         plugin.setVersion( mojoArtifact.getVersion() );
         when( pluginDescriptor.getPlugin() ).thenReturn( plugin );
         mojo.setPluginDescriptor( pluginDescriptor );
+        mojo.setResolutionErrorHandler( new DefaultResolutionErrorHandler() );
     }
 
     @Test
