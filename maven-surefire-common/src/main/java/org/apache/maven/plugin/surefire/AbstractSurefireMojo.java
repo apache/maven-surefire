@@ -48,6 +48,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.ResolutionErrorHandler;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
@@ -801,6 +802,9 @@ public abstract class AbstractSurefireMojo
     @Component
     private ProviderDetector providerDetector;
 
+    @Component
+    private ResolutionErrorHandler resolutionErrorHandler;
+
     private Toolchain toolchain;
 
     private int effectiveForkCount = -1;
@@ -1001,6 +1005,7 @@ public abstract class AbstractSurefireMojo
                 getConsoleLogger(), getLocalRepository(),
                 getRemoteRepositories(),
                 getProjectRemoteRepositories(),
+                resolutionErrorHandler,
                 getPluginName(),
                 getSession().isOffline() );
 
@@ -2474,6 +2479,7 @@ public abstract class AbstractSurefireMojo
     @Nonnull
     private ForkConfiguration createForkConfiguration( @Nonnull Platform platform,
                                                        @Nonnull ResolvePathResultWrapper resolvedJavaModularityResult )
+        throws MojoExecutionException
     {
         File tmpDir = getSurefireTempDir();
 
@@ -2899,7 +2905,7 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    private Classpath getArtifactClasspath( Artifact surefireArtifact )
+    private Classpath getArtifactClasspath( Artifact surefireArtifact ) throws MojoExecutionException
     {
         Classpath existing = classpathCache.getCachedClassPath( surefireArtifact.getArtifactId() );
         if ( existing == null )
@@ -3154,7 +3160,7 @@ public abstract class AbstractSurefireMojo
 
         @Override
         @Nonnull
-        public Set<Artifact> getProviderClasspath()
+        public Set<Artifact> getProviderClasspath() throws MojoExecutionException
         {
             Artifact surefireArtifact = getBooterArtifact();
             String version = surefireArtifact.getBaseVersion();
@@ -3191,7 +3197,7 @@ public abstract class AbstractSurefireMojo
 
         @Override
         @Nonnull
-        public Set<Artifact> getProviderClasspath()
+        public Set<Artifact> getProviderClasspath() throws MojoExecutionException
         {
             // add the JUnit provider as default - it doesn't require JUnit to be present,
             // since it supports POJO tests.
@@ -3239,7 +3245,7 @@ public abstract class AbstractSurefireMojo
 
         @Override
         @Nonnull
-        public Set<Artifact> getProviderClasspath()
+        public Set<Artifact> getProviderClasspath() throws MojoExecutionException
         {
             String version = getBooterArtifact().getBaseVersion();
             return surefireDependencyResolver.getProviderClasspath( "surefire-junit4", version );
@@ -3365,7 +3371,7 @@ public abstract class AbstractSurefireMojo
         }
 
         private void addEngineByApi( String engineGroupId, String engineArtifactId, String engineVersion,
-                                     Map<String, Artifact> providerArtifacts )
+                                     Map<String, Artifact> providerArtifacts ) throws MojoExecutionException
         {
             for ( Artifact dep : resolve( engineGroupId, engineArtifactId, engineVersion, null, "jar" ) )
             {
@@ -3380,7 +3386,7 @@ public abstract class AbstractSurefireMojo
             providerArtifacts.keySet().removeAll( testDependencies.keySet() );
         }
 
-        private void alignProviderVersions( Map<String, Artifact> providerArtifacts )
+        private void alignProviderVersions( Map<String, Artifact> providerArtifacts ) throws MojoExecutionException
         {
             String version = junitPlatformArtifact.getBaseVersion();
             for ( Artifact launcherArtifact : resolve( PROVIDER_DEP_GID, PROVIDER_DEP_AID, version, null, "jar" ) )
@@ -3393,7 +3399,7 @@ public abstract class AbstractSurefireMojo
             }
         }
 
-        private Set<Artifact> resolve( String g, String a, String v, String c, String t )
+        private Set<Artifact> resolve( String g, String a, String v, String c, String t ) throws MojoExecutionException
         {
             ArtifactHandler handler = junitPlatformArtifact.getArtifactHandler();
             Artifact artifact = new DefaultArtifact( g, a, v, null, t, c, handler );
@@ -3471,7 +3477,7 @@ public abstract class AbstractSurefireMojo
 
         @Override
         @Nonnull
-        public Set<Artifact> getProviderClasspath()
+        public Set<Artifact> getProviderClasspath() throws MojoExecutionException
         {
             String version = getBooterArtifact().getBaseVersion();
             return surefireDependencyResolver.getProviderClasspath( "surefire-junit47", version );
@@ -4080,6 +4086,11 @@ public abstract class AbstractSurefireMojo
     public void setTempDir( String tempDir )
     {
         this.tempDir = tempDir;
+    }
+
+    public void setResolutionErrorHandler( ResolutionErrorHandler resolutionErrorHandler )
+    {
+        this.resolutionErrorHandler = resolutionErrorHandler;
     }
 
     private static String getEffectiveForkMode( String forkMode )
