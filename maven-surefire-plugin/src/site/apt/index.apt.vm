@@ -31,11 +31,10 @@
 Maven ${thisPlugin} Plugin
 
 
-  Requirements: Maven 3.x and JDK 1.7 or higher. Due to wrong formatting of console text messages
-  in Maven Version prior to 3.1.0 it is highly recommended to use Maven 3.1.0 or higher.
+  Requirements: Maven 3.2.5 and JDK 1.8 or higher.
 
 
- This is the road map of the development, see the {{{https://github.com/apache/maven-surefire/pull/251}GH}}.
+ This is the road map of the development.
 
 *---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ||Versions                                    ||Release Targets                                                                                                                                                                     |
