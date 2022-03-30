@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire-providers</artifactId>
-    <version>3.0.0-M6</version>
+    <version>3.0.0-M7-SNAPSHOT</version>
   </parent>
 
   <artifactId>common-junit3</artifactId>
@@ -72,9 +72,4 @@
       </plugin>
     </plugins>
   </build>
-
-
-  <scm>
-    <tag>surefire-3.0.0-M6</tag>
-  </scm>
 </project>
