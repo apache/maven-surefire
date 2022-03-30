@@ -371,17 +371,11 @@ Using JUnit 5 Platform
         <version>1.0.1</version>
         <scope>test</scope>
     </dependency>
-    <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
-        <version>5.8.2</version>
-        <scope>test</scope>
-    </dependency>
 </dependencies>
 +---+
 
   The Maven does not take any responsibility for broken compatibilities in this case and the responsibility for
-  the dependency <<<com.github.testng-team:testng-junit5>>>.
+  the dependency <<<org.junit.support:testng-engine>>>.
 
 ** JUnit Runner
 

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 class JUnit5Test {
     @Test
-    public void test() {
+    void test() {
 
     }
 }
