@@ -349,44 +349,33 @@ Using JUnit 5 Platform
 </profile>
 +---+
 
-** How to run TestNG tests within Jupiter engine
+** How to run TestNG tests within the JUnit Platform
 
   You can run TestNG tests combined with JUnit5 tests.
 
   For more information see this
-  {{{https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit5-testng}example}}.
+  {{{https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit5-testng}example}}
+  and {{{https://github.com/junit-team/testng-engine}TestNG Engine for the JUnit Platform}}.
 
 +---+
 <dependencies>
     <dependency>
         <groupId>org.testng</groupId>
         <artifactId>testng</artifactId>
-        <version>7.1.0</version>
+        <version>7.4.0</version>
         <scope>test</scope>
     </dependency>
     <dependency>
-        <groupId>com.github.testng-team</groupId>
-        <artifactId>testng-junit5</artifactId>
-        <version>0.0.1</version>
-        <scope>test</scope>
-        <exclusions>
-            <exclusion>
-                <groupId>org.junit.platform</groupId>
-                <artifactId>junit-platform-engine</artifactId>
-            </exclusion>
-        </exclusions>
-    </dependency>
-    <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
-        <version>5.6.2</version>
+        <groupId>org.junit.support</groupId>
+        <artifactId>testng-engine</artifactId>
+        <version>1.0.1</version>
         <scope>test</scope>
     </dependency>
 </dependencies>
 +---+
 
   The Maven does not take any responsibility for broken compatibilities in this case and the responsibility for
-  the dependency <<<com.github.testng-team:testng-junit5>>>.
+  the dependency <<<org.junit.support:testng-engine>>>.
 
 ** JUnit Runner
 
