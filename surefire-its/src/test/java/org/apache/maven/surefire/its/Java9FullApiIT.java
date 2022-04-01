@@ -19,15 +19,14 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import java.io.File;
+
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.junit.Test;
 
-import java.io.File;
-
 import static org.apache.maven.surefire.its.fixture.SurefireLauncher.EXT_JDK_HOME;
 import static org.apache.maven.surefire.its.fixture.SurefireLauncher.EXT_JDK_HOME_KEY;
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
 /**
@@ -50,15 +49,13 @@ public class Java9FullApiIT
                                             .execute( "verify" )
                                             .verifyErrorFree( 1 );
 
+        String jVersion = extractExternalJavaVersion();
         validator.verifyTextInLog( "loaded class java.sql.SQLException" )
                 .verifyTextInLog( "loaded class javax.xml.ws.Holder" )
                 .verifyTextInLog( "loaded class javax.xml.bind.JAXBException" )
                 .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
                 .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
-                .assertThatLogLine( anyOf( is( "java.specification.version=9" ),
-                                           is( "java.specification.version=10" ),
-                                           is( "java.specification.version=11" ) ),
-                                    greaterThanOrEqualTo( 1 ) );
+                .assertThatLogLine( containsString( "java.specification.version is " + jVersion ), is( 2 ) );
     }
 
     @Test
@@ -71,15 +68,13 @@ public class Java9FullApiIT
                                             .execute( "verify" )
                                             .verifyErrorFree( 1 );
 
+        String jVersion = extractExternalJavaVersion();
         validator.verifyTextInLog( "loaded class java.sql.SQLException" )
                 .verifyTextInLog( "loaded class javax.xml.ws.Holder" )
                 .verifyTextInLog( "loaded class javax.xml.bind.JAXBException" )
                 .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
                 .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
-                .assertThatLogLine( anyOf( is( "java.specification.version=9" ),
-                                           is( "java.specification.version=10" ),
-                                           is( "java.specification.version=11" ) ),
-                                    greaterThanOrEqualTo( 1 ) );
+                .assertThatLogLine( containsString( "java.specification.version is " + jVersion ), is( 2 ) );
     }
 
     @Test
@@ -87,21 +82,20 @@ public class Java9FullApiIT
     {
         OutputValidator validator = assumeJava9Property()
                                             .setForkJvm()
+                                            .debugLogging()
                                             .activateProfile( "use-toolchains" )
                                             .addGoal( "--toolchains" )
                                             .addGoal( System.getProperty( "maven.toolchains.file" ) )
                                             .execute( "verify" )
                                             .verifyErrorFree( 1 );
 
+        String jVersion = System.getProperty( "java.specification.version" );
         validator.verifyTextInLog( "loaded class java.sql.SQLException" )
                 .verifyTextInLog( "loaded class javax.xml.ws.Holder" )
                 .verifyTextInLog( "loaded class javax.xml.bind.JAXBException" )
                 .verifyTextInLog( "loaded class javax.transaction.TransactionManager" )
                 .verifyTextInLog( "loaded class javax.transaction.InvalidTransactionException" )
-                .assertThatLogLine( anyOf( is( "java.specification.version=9" ),
-                                           is( "java.specification.version=10" ),
-                                           is( "java.specification.version=11" ) ),
-                                    greaterThanOrEqualTo( 1 ) );
+                .assertThatLogLine( containsString( "java.specification.version is " + jVersion ), is( 2 ) );
     }
 
     @Override

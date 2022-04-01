@@ -19,15 +19,16 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.Arrays;
-import java.util.Collection;
-
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaMaxVersion;
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.junit.runners.Parameterized.Parameter;
 import static org.junit.runners.Parameterized.Parameters;
@@ -71,8 +72,9 @@ public class CheckTestNgListenerReporterIT
             { "5.14.6", null, 1.5d }, // Usage of org.testng:guice removed
             { "5.14.9", null, 1.5d }, // Latest 5.14.x TestNG version
             { "6.0", null, 1.5d },
-            { "6.9.9", null, 1.7d } // Currently latest TestNG version
-        });
+            { "6.14.3", null, 1.7d },
+            { "7.5", null, 1.8d } // Currently latest TestNG version
+        } );
     }
 
     @Parameter
@@ -88,6 +90,14 @@ public class CheckTestNgListenerReporterIT
     public void testNgListenerReporter()
     {
         assumeJavaVersion( javaVersion );
+
+        if ( version.equals( "5.13" ) )
+        {
+            // only 5.13 uses Google Guice, reflection which breaks jdk 16+
+            // module java.base does not "opens java.lang" to unnamed module @209c0b14
+            assumeJavaMaxVersion( 15 );
+        }
+
         final SurefireLauncher launcher = unpack( "testng-listener-reporter", "_" + version )
                                                   .sysProp( "testNgVersion", version );
 
@@ -97,7 +107,7 @@ public class CheckTestNgListenerReporterIT
         }
 
         launcher.executeTest()
-                .verifyErrorFree( 1 )
+                .assertTestSuiteResults( 1, 0, 0, 0 )
                 .getTargetFile( "resultlistener-output.txt" ).assertFileExists()
                 .getTargetFile( "suitelistener-output.txt" ).assertFileExists()
                 .getTargetFile( "reporter-output.txt" ).assertFileExists();

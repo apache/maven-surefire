@@ -458,6 +458,7 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.12.4</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
           <configuration>
+            <skipTests>${skipUnitTests}</skipTests>
             <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
             <useSystemClassLoader>false</useSystemClassLoader>
             <argLine>${jvm.args.tests} ${jacoco.agent} -Dnet.bytebuddy.experimental=true</argLine>
@@ -486,7 +487,7 @@
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.2</version>
+          <version>0.8.7</version>
         </plugin>
       </plugins>
     </pluginManagement>

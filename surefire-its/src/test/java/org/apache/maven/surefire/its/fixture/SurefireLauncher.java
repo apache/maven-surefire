@@ -147,6 +147,8 @@ public final class SurefireLauncher
 
         goals.add( "-Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2" );
 
+        goals.add( "-nsu" );
+
         return goals;
     }
 

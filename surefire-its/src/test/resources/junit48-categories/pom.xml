@@ -33,8 +33,8 @@
     <junit.version>4.8.1</junit.version>
     <groups>junit4.CategoryA,junit4.CategoryB</groups>
     <excludedGroups></excludedGroups>
-    <maven.compiler.source>1.6</maven.compiler.source>
-    <maven.compiler.target>1.6</maven.compiler.target>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
   </properties>
 
   <dependencies>

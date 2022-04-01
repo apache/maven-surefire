@@ -38,8 +38,8 @@ public class JUnit47RerunFailingTestWithCucumberIT
     extends SurefireJUnit4IntegrationTestCase {
 
     @Before
-    public void assumeJdk17() {
-        assumeJavaVersion(1.7d);
+    public void assumeJava8Plus() {
+        assumeJavaVersion(1.8d);
     }
 
 

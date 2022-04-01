@@ -38,33 +38,29 @@ public class JUnit47WithCucumberIT
 {
 
     @Before
-    public void assumeJdk16()
+    public void assumeJava8Plus()
     {
-        assumeJavaVersion( 1.6d );
+        assumeJavaVersion( 1.8d );
     }
 
     @Test
     public void testWithoutParallel()
     {
-        // 8 tests in total is what's probably correct
-        doTest( "none", 8 );
+        doTest( "none" );
     }
 
     @Test
     public void testWithParallelClasses()
     {
-        // with parallel=classes, we get 9 tests in total,
-        // as the dummy "scenario" test entry is reported twice: once as success, and once with the failure from the
-        // failing test step
-        doTest( "classes", 9 );
+        doTest( "classes" );
     }
 
-    private void doTest( String parallel, int total )
+    private void doTest( String parallel )
     {
         unpack( "junit47-cucumber" )
-                .sysProp( "parallel", parallel )
-                .sysProp( "threadCount", "2" )
+                .parallel( parallel )
+                .threadCount( 2 )
                 .executeTest()
-                .assertTestSuiteResults( total, 0, 2, 0 );
+                .assertTestSuiteResults( 2, 0, 1, 0 );
     }
 }

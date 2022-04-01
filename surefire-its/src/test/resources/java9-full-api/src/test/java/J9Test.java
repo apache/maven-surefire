@@ -30,7 +30,7 @@ public class J9Test
         System.out.println( "loaded class " + javax.transaction.InvalidTransactionException.class.getName() );
         System.out.println( "loaded class " + javax.transaction.TransactionManager.class.getName() );
         System.out.println( "loaded class " + javax.xml.xpath.XPath.class.getName() );
-        System.out.println( "java.specification.version=" + System.getProperty( "java.specification.version" ) );
+        System.out.println( "java.specification.version is " + System.getProperty( "java.specification.version" ) );
     }
 
 }

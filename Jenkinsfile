@@ -31,8 +31,8 @@ properties(
 )
 
 final def oses = ['linux':'ubuntu', 'windows':'windows-he']
-final def mavens = env.BRANCH_NAME == 'master' ? ['3.2.x', '3.5.x'] : ['3.5.x']
-final def jdks = [7, 8, 11]
+final def mavens = env.BRANCH_NAME == 'master' ? ['3.2.x', '3.8.x'] : ['3.8.x']
+final def jdks = [7, 8, 11, 18]
 
 final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
 final def goals = ['clean', 'install', 'jacoco:report']
@@ -71,7 +71,7 @@ oses.eachWithIndex { osMapping, indexOfOs ->
                         def boolean makeReports = os == 'linux' && indexOfMaven == mavens.size() - 1 && jdk == 9
                         def failsafeItPort = 8000 + 100 * indexOfMaven + 10 * indexOfJdk
                         def allOptions = options + ["-Dfailsafe-integration-test-port=${failsafeItPort}", "-Dfailsafe-integration-test-stop-port=${1 + failsafeItPort}"]
-                        if (jdk == 11) {
+                        if (jdk > 11) {
                             allOptions += ['-DskipUnitTests=true']
                         }
                         buildProcess(stageKey, jdkName, jdkTestName, mvnName, goals, allOptions, mavenOpts, makeReports)

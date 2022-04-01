@@ -83,7 +83,7 @@
 
     <profiles>
         <profile>
-            <id>use-jvm-config-paramater</id>
+            <id>use-jvm-config-parameter</id>
             <activation>
                 <property>
                     <name>jdk.home</name>

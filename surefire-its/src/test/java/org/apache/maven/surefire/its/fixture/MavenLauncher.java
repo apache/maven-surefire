@@ -160,8 +160,10 @@ public final class MavenLauncher
     public OutputValidator getSubProjectValidator( String subProject )
         throws VerificationException
     {
-        final File subFile = getValidator().getSubFile( subProject );
-        return new OutputValidator( new Verifier( subFile.getAbsolutePath() ) );
+        File subFile = getValidator().getSubFile( subProject );
+        Verifier subProjectVerifier = new Verifier( subFile.getAbsolutePath() );
+        subProjectVerifier.setLocalRepo( System.getProperty( "localRepository" ) );
+        return new OutputValidator( subProjectVerifier );
     }
 
     public MavenLauncher addEnvVar( String key, String value )
@@ -292,16 +294,9 @@ public final class MavenLauncher
     {
         try
         {
-            File generatedSettings = new File( System.getProperty( "maven.settings.file" ) ).getCanonicalFile();
-            String generatedSettingsPath = generatedSettings.getAbsolutePath();
-            addCliOption( "-s " + generatedSettingsPath );
             getVerifier().setCliOptions( cliOptions );
             getVerifier().executeGoals( goals, envvars );
             return getValidator();
-        }
-        catch ( IOException e )
-        {
-            throw new SurefireVerifierException( e.getLocalizedMessage(), e );
         }
         catch ( VerificationException e )
         {
@@ -390,8 +385,7 @@ public final class MavenLauncher
                     ? new Verifier( ensureUnpacked().getAbsolutePath(), null, false )
                     : new Verifier( ensureUnpacked().getAbsolutePath(), null, false, cli );
 
-                verifier.getVerifierProperties()
-                        .setProperty( "use.mavenRepoLocal", "false" );
+                verifier.setLocalRepo( System.getProperty( "localRepository" ) );
             }
             catch ( VerificationException e )
             {

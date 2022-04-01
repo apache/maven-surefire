@@ -21,10 +21,11 @@ package org.sample.cucumber;
 
 import org.junit.runner.RunWith;
 
-import cucumber.api.junit.Cucumber;
+import io.cucumber.junit.CucumberOptions;
+import io.cucumber.junit.Cucumber;
 
 @RunWith( Cucumber.class )
-@Cucumber.Options( features = { "classpath:success" } )
+@CucumberOptions( features = { "classpath:success" } )
 public class SuccessCucumberTest
 {
 
