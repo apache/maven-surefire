@@ -59,6 +59,8 @@ public final class SystemUtils
 
     private static final BigDecimal JIGSAW_JAVA_VERSION = new BigDecimal( 9 ).stripTrailingZeros();
 
+    private static final BigDecimal JAVA_VERSION_17 = new BigDecimal( 17 ).stripTrailingZeros();
+
     private static final int PROC_STATUS_PID_FIRST_CHARS = 20;
 
     private SystemUtils()
@@ -224,6 +226,14 @@ public final class SystemUtils
                     externalJavaHome == null ? null : toJdkVersionFromReleaseFile( externalJavaHome );
             return isJava9AtLeast( releaseFileVersion );
         }
+    }
+
+    /**
+     * @return true if SecurityManager is supported (even if deprecated) in JDK (up to 17)
+     */
+    public static boolean isSecurityManagerSupported()
+    {
+        return JAVA_SPECIFICATION_VERSION.compareTo( JAVA_VERSION_17 ) >= 0;
     }
 
     public static boolean isBuiltInJava9AtLeast()

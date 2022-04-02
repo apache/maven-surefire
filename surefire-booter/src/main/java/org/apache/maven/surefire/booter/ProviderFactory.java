@@ -28,6 +28,7 @@ import org.apache.maven.surefire.report.ReporterException;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.testset.TestSetFailedException;
 
+import static org.apache.maven.surefire.booter.SystemUtils.isSecurityManagerSupported;
 import static org.apache.maven.surefire.util.ReflectionUtils.getMethod;
 import static org.apache.maven.surefire.util.ReflectionUtils.invokeGetter;
 import static org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray;
@@ -85,7 +86,7 @@ public class ProviderFactory
         }
         finally
         {
-            if ( restoreStreams && System.getSecurityManager() == null )
+            if ( restoreStreams && ( !isSecurityManagerSupported() || System.getSecurityManager() == null ) )
             {
                 System.setOut( orgSystemOut );
                 System.setErr( orgSystemErr );

@@ -102,6 +102,11 @@ public class JUnit3Provider
             final String smClassName = systemProperties.get( "surefire.security.manager" );
             if ( smClassName != null )
             {
+                if ( !isSecurityManagerSupported() )
+                {
+                    throw new TestSetFailedException( "JDK does not support overriding Security Manager with "
+                            + "a value in system property 'surefire.security.manager'." );
+                }
                 SecurityManager securityManager =
                     ReflectionUtils.instantiate( getClass().getClassLoader(), smClassName, SecurityManager.class );
                 System.setSecurityManager( securityManager );
@@ -153,5 +158,13 @@ public class JUnit3Provider
     {
         testsToRun = scanClassPath();
         return testsToRun;
+    }
+
+    /**
+     * @return true if SecurityManager is supported (even if deprecated) in JDK (up to 17)
+     */
+    private static boolean isSecurityManagerSupported()
+    {
+        return Double.parseDouble( System.getProperty( "java.specification.version" ) ) <= 17;
     }
 }
