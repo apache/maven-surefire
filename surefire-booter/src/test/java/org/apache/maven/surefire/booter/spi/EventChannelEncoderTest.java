@@ -1227,6 +1227,32 @@ public class EventChannelEncoderTest
     }
 
     @Test
+    public void testStdErrStreamEmptyMessageNullTestId() throws IOException
+    {
+        Stream out = Stream.newStream();
+        WritableBufferedByteChannel channel = newBufferedChannel( out );
+        EventChannelEncoder encoder = new EventChannelEncoder( channel );
+
+        // This used to produce a BufferOverflowException; see SUREFIRE-2056.
+        // In essence, we used to under-allocate for the encoding of a null test ID
+        // (we used to allocate 0 byte instead of 1 byte).
+        // The message needs to be empty in order to reproduce the bug,
+        // otherwise we over-allocate for the test message
+        // (for safety, due to unpredictability of the size of encoded text)
+        // and this over-allocation ends up compensating the under-allocation for the null test id.
+        encoder.testOutput( new TestOutputReportEntry( stdErr( "" ), NORMAL_RUN, null ) );
+        channel.close();
+
+        String expected = ":maven-surefire-event:\u000e:std-err-stream:"
+            + (char) 10 + ":normal-run:\u0000:"
+            + "\u0005:UTF-8:\u0000\u0000\u0000\u0000::";
+
+        assertThat( new String( out.toByteArray(), UTF_8 ) )
+            .isEqualTo( expected );
+    }
+
+
+    @Test
     @SuppressWarnings( "checkstyle:innerassignment" )
     public void shouldCountSameNumberOfSystemProperties() throws IOException
     {
