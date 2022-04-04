@@ -25,8 +25,10 @@ import org.apache.maven.surefire.api.provider.ProviderParameters;
 import org.apache.maven.surefire.api.report.ReporterConfiguration;
 import org.apache.maven.surefire.api.report.ReporterFactory;
 import org.apache.maven.surefire.api.testset.DirectoryScannerParameters;
+import org.apache.maven.surefire.api.testset.ResolvedTest;
 import org.apache.maven.surefire.api.testset.RunOrderParameters;
 import org.apache.maven.surefire.api.testset.TestArtifactInfo;
+import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.apache.maven.surefire.api.testset.TestRequest;
 import org.apache.maven.surefire.api.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.api.util.DefaultRunOrderCalculator;
@@ -35,6 +37,7 @@ import org.apache.maven.surefire.api.util.DirectoryScanner;
 import org.apache.maven.surefire.api.util.RunOrderCalculator;
 import org.apache.maven.surefire.api.util.ScanResult;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -115,7 +118,11 @@ public class BaseProviderFactory
     @Override
     public RunOrderCalculator getRunOrderCalculator()
     {
-        return new DefaultRunOrderCalculator( runOrderParameters, getThreadCount() );
+        TestListResolver testListResolver = testRequest.getTestListResolver();
+        List<ResolvedTest> resolvedTests = new ArrayList<>( testListResolver == null
+            ? emptyList()
+            : testListResolver.getIncludedPatterns() );
+        return new DefaultRunOrderCalculator( runOrderParameters, getThreadCount(), resolvedTests );
     }
 
     public void setReporterFactory( ReporterFactory reporterFactory )

@@ -44,6 +44,8 @@ public class RunOrder
 
     public static final RunOrder FAILEDFIRST = new RunOrder( "failedfirst" );
 
+    public static final RunOrder TEST = new RunOrder( "test" );
+
     public static final RunOrder[] DEFAULT = new RunOrder[]{ FILESYSTEM };
 
     /**
@@ -108,7 +110,8 @@ public class RunOrder
 
     private static RunOrder[] values()
     {
-        return new RunOrder[]{ ALPHABETICAL, FILESYSTEM, HOURLY, RANDOM, REVERSE_ALPHABETICAL, BALANCED, FAILEDFIRST };
+        return new RunOrder[]{ ALPHABETICAL, FILESYSTEM, HOURLY, RANDOM, REVERSE_ALPHABETICAL, BALANCED, FAILEDFIRST,
+            TEST };
     }
 
     public static String asString( RunOrder[] runOrder )

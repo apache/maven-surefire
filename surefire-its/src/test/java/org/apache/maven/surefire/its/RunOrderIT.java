@@ -42,6 +42,8 @@ public class RunOrderIT
 
     private static final String[] TESTS_IN_REVERSE_ALPHABETICAL_ORDER = { "TC", "TB", "TA" };
 
+    private static final String[] TESTS_IN_TEST_ORDER = { "TC", "TA", "TB" };
+
     // testing random is left as an exercise to the reader. Patches welcome
 
     @Test
@@ -97,7 +99,7 @@ public class RunOrderIT
             }
         }
     }
-    
+
     @Test
     public void testReverseAlphabeticalJUnit4()
         throws Exception
@@ -151,6 +153,22 @@ public class RunOrderIT
     }
 
     @Test
+    public void testTestOrderJUnit4()
+        throws Exception
+    {
+        OutputValidator validator = executeWithTestOrder( "junit4" );
+        assertTestnamesAppearInSpecificOrder( validator, TESTS_IN_TEST_ORDER );
+    }
+
+    @Test
+    public void testTestOrderJUnit5()
+        throws Exception
+    {
+        OutputValidator validator = executeWithTestOrder( "junit5" );
+        assertTestnamesAppearInSpecificOrder( validator, TESTS_IN_TEST_ORDER );
+    }
+
+    @Test
     public void testNonExistingRunOrderJUnit4()
     {
         unpack()
@@ -194,6 +212,17 @@ public class RunOrderIT
             .forkMode( getForkMode() )
             .runOrder( "random" )
             .runOrderRandomSeed( String.valueOf( seed ) )
+            .executeTest()
+            .verifyErrorFree( 3 );
+    }
+
+    private OutputValidator executeWithTestOrder( String profile  )
+    {
+        return unpack()
+            .activateProfile( profile )
+            .forkMode( getForkMode() )
+            .setTestToRun( "junit.runOrder.TestC,junit.runOrder.TestA,junit.runOrder.TestB" )
+            .runOrder( "test" )
             .executeTest()
             .verifyErrorFree( 3 );
     }
