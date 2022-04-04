@@ -186,9 +186,9 @@ public final class MavenLauncher
         return this;
     }
 
-    public MavenLauncher assertNotPresent( String subFile )
+    public MavenLauncher verifyFileNotPresent( String subFile ) throws VerificationException
     {
-        getVerifier().assertFileNotPresent( getValidator().getSubFile( subFile ).getAbsolutePath() );
+        getVerifier().verifyFileNotPresent( getValidator().getSubFile( subFile ).getAbsolutePath() );
         return this;
     }
 
