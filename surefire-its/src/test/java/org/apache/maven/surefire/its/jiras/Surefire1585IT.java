@@ -20,10 +20,7 @@ package org.apache.maven.surefire.its.jiras;
  */
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Before;
 import org.junit.Test;
-
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 
 /**
  *
@@ -32,12 +29,6 @@ import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaV
 public class Surefire1585IT
         extends SurefireJUnit4IntegrationTestCase
 {
-    @Before
-    public void setUp()
-    {
-        assumeJavaVersion( 1.8d );
-    }
-
     @Test
     public void shouldRunWithJupiterApi()
     {

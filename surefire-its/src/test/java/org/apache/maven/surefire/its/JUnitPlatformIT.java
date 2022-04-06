@@ -23,7 +23,6 @@ import java.util.ArrayList;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -31,7 +30,6 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 
 /**
  *
@@ -60,12 +58,6 @@ public class JUnitPlatformIT
         args.add( new Object[] { "5.6.2", "1.2.7" } );
         args.add( new Object[] { "5.7.1", "1.5.0" } );
         return args;
-    }
-
-    @Before
-    public void setUp()
-    {
-        assumeJavaVersion( 1.8d );
     }
 
     @Test

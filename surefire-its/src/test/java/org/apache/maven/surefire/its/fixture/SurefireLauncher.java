@@ -39,13 +39,9 @@ public final class SurefireLauncher
 
     private final String surefireVersion = System.getProperty( "surefire.version" );
 
-    private final File javaHome;
-
-    public SurefireLauncher( MavenLauncher mavenLauncher, File javaHome )
+    public SurefireLauncher( MavenLauncher mavenLauncher )
     {
         this.mavenLauncher = mavenLauncher;
-        this.javaHome = javaHome;
-        mavenLauncher.addEnvVar( "JAVA_HOME", javaHome.getAbsolutePath() );
         reset();
     }
 
@@ -70,7 +66,7 @@ public final class SurefireLauncher
 
     public SurefireLauncher getSubProjectLauncher( String subProject )
     {
-        return new SurefireLauncher( mavenLauncher.getSubProjectLauncher( subProject ), javaHome );
+        return new SurefireLauncher( mavenLauncher.getSubProjectLauncher( subProject ) );
     }
 
     public OutputValidator getSubProjectValidator( String subProject )
@@ -98,9 +94,6 @@ public final class SurefireLauncher
 
         String jacocoAgent = System.getProperty( "jacoco.agent", "" );
         goals.add( "-Djacoco.agent=" + jacocoAgent );
-
-        goals.add( "-Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2" );
-
         goals.add( "-nsu" );
 
         return goals;

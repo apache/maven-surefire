@@ -22,10 +22,7 @@ package org.apache.maven.surefire.its;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Before;
 import org.junit.Test;
-
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 
 /**
  * JUnit4 RunListener Integration Test.
@@ -41,12 +38,6 @@ public class JUnitPlatformRerunFailingTestsIT extends SurefireJUnit4IntegrationT
     private SurefireLauncher unpack()
     {
         return unpack( "/junit-platform-rerun-failing-tests" );
-    }
-
-    @Before
-    public void setup()
-    {
-        assumeJavaVersion( 1.8 );
     }
 
     @Test

@@ -22,13 +22,11 @@ package org.apache.maven.surefire.its;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
 
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.startsWith;
 
@@ -39,12 +37,6 @@ import static org.hamcrest.CoreMatchers.startsWith;
 public class JUnitPlatformStreamCorruptionIT
         extends SurefireJUnit4IntegrationTestCase
 {
-    @Before
-    public void setUp()
-    {
-        assumeJavaVersion( 1.8d );
-    }
-
     @Test
     public void warningIsNotEmitted() throws VerificationException
     {

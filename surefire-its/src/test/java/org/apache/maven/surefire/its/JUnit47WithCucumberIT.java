@@ -20,10 +20,7 @@ package org.apache.maven.surefire.its;
  */
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Before;
 import org.junit.Test;
-
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 
 /**
  * Tests the JUnit 47 provider with the cucumber runner. At the moment, they don't play along that perfectly (minor
@@ -37,12 +34,6 @@ import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaV
 public class JUnit47WithCucumberIT
     extends SurefireJUnit4IntegrationTestCase
 {
-    @Before
-    public void assumeJava8Plus()
-    {
-        assumeJavaVersion( 1.8d );
-    }
-
     @Test
     public void testWithoutParallel()
     {

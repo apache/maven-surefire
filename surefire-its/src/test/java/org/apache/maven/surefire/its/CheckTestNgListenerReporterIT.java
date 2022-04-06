@@ -29,7 +29,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaMaxVersion;
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.junit.runners.Parameterized.Parameter;
 import static org.junit.runners.Parameterized.Parameters;
 
@@ -49,10 +48,10 @@ public class CheckTestNgListenerReporterIT
     {
         return Arrays.asList( new Object[][]
                 {
-            { "5.6", "jdk15", 1.5d }, // First TestNG version with reporter support
-            { "5.7", "jdk15", 1.5d }, // default version from pom of the test case
-            { "5.10", "jdk15", 1.5d },
-            { "5.13", null, 1.5d }, // "reporterslist" param becomes String instead of List<ReporterConfig>
+            { "5.6", "jdk15" }, // First TestNG version with reporter support
+            { "5.7", "jdk15" }, // default version from pom of the test case
+            { "5.10", "jdk15" },
+            { "5.13", null }, // "reporterslist" param becomes String instead of List<ReporterConfig>
                         // "listener" param becomes String instead of List<Class>
 
                 // configure(Map) in 5.14.1 and 5.14.2 is transforming List<Class> into a String with a space as separator.
@@ -71,11 +70,11 @@ public class CheckTestNgListenerReporterIT
             //{ "5.14.4", null, "1.5" }, { "5.14.5", null, "1.5" }, // Fails: not able to test due to system dependency org.testng:guice missed the path and use to break CI
                                         // ClassNotFoundException: com.beust.jcommander.ParameterException
 
-            { "5.14.6", null, 1.5d }, // Usage of org.testng:guice removed
-            { "5.14.9", null, 1.5d }, // Latest 5.14.x TestNG version
-            { "6.0", null, 1.5d },
-            { "6.14.3", null, 1.7d },
-            { "7.0.0", null, 1.8d } // Currently latest TestNG version
+            { "5.14.6", null }, // Usage of org.testng:guice removed
+            { "5.14.9", null }, // Latest 5.14.x TestNG version
+            { "6.0", null },
+            { "6.14.3", null },
+            { "7.0.0", null } // Currently latest TestNG version
         } );
     }
 
@@ -87,15 +86,9 @@ public class CheckTestNgListenerReporterIT
     @SuppressWarnings( "checkstyle:visibilitymodifier" )
     public String classifier;
 
-    @Parameter( 2 )
-    @SuppressWarnings( "checkstyle:visibilitymodifier" )
-    public double javaVersion;
-
     @Test
     public void testNgListenerReporter()
     {
-        assumeJavaVersion( javaVersion );
-
         if ( version.equals( "5.13" ) )
         {
             // only 5.13 uses Google Guice, reflection which breaks jdk 16+
