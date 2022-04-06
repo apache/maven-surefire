@@ -393,7 +393,7 @@ public class EventChannelEncoder extends EventEncoder implements MasterProcessCh
     {
         CharsetEncoder encoder = newCharsetEncoder();
         int bufferMaxLength = estimateBufferLength( eventType.getOpcode().length(), runMode, encoder, 0,
-            testRunId == null ? 0 : 1, message );
+            1, message );
         ByteBuffer result = ByteBuffer.allocate( bufferMaxLength );
         encode( encoder, result, eventType, runMode, testRunId, message );
         return result;
