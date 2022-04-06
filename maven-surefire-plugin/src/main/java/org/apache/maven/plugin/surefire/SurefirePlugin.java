@@ -510,7 +510,7 @@ public class SurefirePlugin
      *
      * @since 3.0.0-M6
      */
-    @Parameter( property = "includeJUnit5Engines" )
+    @Parameter( property = "surefire.includeJUnit5Engines" )
     private String[] includeJUnit5Engines;
 
     /**
@@ -518,7 +518,7 @@ public class SurefirePlugin
      *
      * @since 3.0.0-M6
      */
-    @Parameter( property = "excludeJUnit5Engines" )
+    @Parameter( property = "surefire.excludeJUnit5Engines" )
     private String[] excludeJUnit5Engines;
 
     @Override

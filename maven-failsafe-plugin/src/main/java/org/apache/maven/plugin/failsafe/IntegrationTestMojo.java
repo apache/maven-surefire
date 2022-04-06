@@ -520,7 +520,7 @@ public class IntegrationTestMojo
      *
      * @since 3.0.0-M6
      */
-    @Parameter( property = "includeJUnit5Engines" )
+    @Parameter( property = "failsafe.includeJUnit5Engines" )
     private String[] includeJUnit5Engines;
 
     /**
@@ -528,7 +528,7 @@ public class IntegrationTestMojo
      *
      * @since 3.0.0-M6
      */
-    @Parameter( property = "excludeJUnit5Engines" )
+    @Parameter( property = "failsafe.excludeJUnit5Engines" )
     private String[] excludeJUnit5Engines;
 
     @Override
