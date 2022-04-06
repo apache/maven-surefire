@@ -23,7 +23,6 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaMaxVersion;
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 
 /**
  *
@@ -34,7 +33,6 @@ public class SpockIT extends SurefireJUnit4IntegrationTestCase
     @Test
     public void test()
     {
-        assumeJavaVersion( 1.8d );
         assumeJavaMaxVersion( 14d );
         unpack( "junit5-spock" )
             .executeTest()

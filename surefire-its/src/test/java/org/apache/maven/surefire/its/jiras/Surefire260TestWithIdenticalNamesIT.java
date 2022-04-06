@@ -32,7 +32,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlDivision;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.junit.Test;
 
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -51,7 +50,6 @@ public class Surefire260TestWithIdenticalNamesIT
     public void testWithIdenticalNames()
         throws IOException
     {
-        assumeJavaVersion( 1.8d );
         OutputValidator validator = unpack( "surefire-260-testWithIdenticalNames" )
                 .failNever()
                 .addGoal( "site" )

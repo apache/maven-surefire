@@ -19,9 +19,6 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
-import java.io.File;
-import java.io.IOException;
-
 import static java.lang.Double.parseDouble;
 
 /**
@@ -37,8 +34,6 @@ import static java.lang.Double.parseDouble;
 public abstract class SurefireJUnit4IntegrationTestCase
 {
     private static final int JAVA9_VERSION = 9;
-
-    public static final File JAVA_HOME = javaHome();
 
     public static final double JAVA_VERSION = javaVersion();
 
@@ -72,7 +67,7 @@ public abstract class SurefireJUnit4IntegrationTestCase
     private static SurefireLauncher unpack( Class<?> testClass, String sourceName, String suffix, String[] cli )
     {
         MavenLauncher mavenLauncher = new MavenLauncher( testClass, sourceName, suffix, cli );
-        return new SurefireLauncher( mavenLauncher, JAVA_HOME );
+        return new SurefireLauncher( mavenLauncher );
     }
 
     private static double javaVersion()
@@ -83,33 +78,5 @@ public abstract class SurefireJUnit4IntegrationTestCase
     private static boolean isJDK9Plus()
     {
         return javaVersion() >= JAVA9_VERSION;
-    }
-
-    private static File javaHome()
-    {
-        String javaHome = System.getProperty( "java.home" );
-        if ( !isJDK9Plus() )
-        {
-            File jre = new File( javaHome );
-            if ( "jre".equals( jre.getName() ) )
-            {
-                javaHome = jre.getParent();
-            }
-        }
-
-        try
-        {
-            File javaHomeAsDir = new File( javaHome ).getCanonicalFile();
-            if ( !javaHomeAsDir.isDirectory() )
-            {
-                throw new RuntimeException( javaHomeAsDir.getAbsolutePath() + " is not a JAVA_HOME directory." );
-            }
-            System.out.println( "Using JAVA_HOME=" + javaHomeAsDir.getAbsolutePath() + " in forked launcher." );
-            return javaHomeAsDir;
-        }
-        catch ( IOException e )
-        {
-            throw new RuntimeException( e );
-        }
     }
 }

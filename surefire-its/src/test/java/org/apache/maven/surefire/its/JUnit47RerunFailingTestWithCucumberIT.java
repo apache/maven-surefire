@@ -23,14 +23,12 @@ import java.util.ArrayList;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -50,12 +48,6 @@ public class JUnit47RerunFailingTestWithCucumberIT extends SurefireJUnit4Integra
 
     private static final String SUREFIRE_FORK_NODE =
         "org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory";
-
-    @Before
-    public void assumeJava8Plus()
-    {
-        assumeJavaVersion( 1.8d );
-    }
 
     @Parameters
     public static Iterable<Object[]> data()

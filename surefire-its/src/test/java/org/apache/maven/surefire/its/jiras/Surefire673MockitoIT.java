@@ -20,10 +20,7 @@ package org.apache.maven.surefire.its.jiras;
  */
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Before;
 import org.junit.Test;
-
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 
 /**
  * SUREFIRE-673 Asserts that a given mockito build works as it should (classloader problem in 2.7)
@@ -34,12 +31,6 @@ import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaV
 public class Surefire673MockitoIT
     extends SurefireJUnit4IntegrationTestCase
 {
-    @Before
-    public void assumeJava8Plus()
-    {
-        assumeJavaVersion( 1.8d );
-    }
-
     @Test
     public void testBuildFailingWhenErrors()
     {

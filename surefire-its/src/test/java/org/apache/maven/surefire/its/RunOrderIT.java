@@ -27,8 +27,6 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
-
 /**
  * Verifies the runOrder setting and its effect
  *
@@ -56,7 +54,6 @@ public class RunOrderIT
     public void testAlphabeticalJUnit5()
         throws Exception
     {
-        assumeJavaVersion( 1.8d );
         OutputValidator validator = executeWithRunOrder( "alphabetical", "junit5" );
         assertTestnamesAppearInSpecificOrder( validator, TESTS_IN_ALPHABETICAL_ORDER );
     }
@@ -110,7 +107,6 @@ public class RunOrderIT
     public void testReverseAlphabeticalJUnit5()
         throws Exception
     {
-        assumeJavaVersion( 1.8d );
         OutputValidator validator = executeWithRunOrder( "reversealphabetical", "junit5" );
         assertTestnamesAppearInSpecificOrder( validator, TESTS_IN_REVERSE_ALPHABETICAL_ORDER );
     }
@@ -136,7 +132,6 @@ public class RunOrderIT
     public void testHourlyJUnit5()
         throws Exception
     {
-        assumeJavaVersion( 1.8d );
         int startHour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
         OutputValidator validator = executeWithRunOrder( "hourly", "junit5" );
         int endHour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
@@ -166,7 +161,6 @@ public class RunOrderIT
     @Test
     public void testNonExistingRunOrderJUnit5()
     {
-        assumeJavaVersion( 1.8d );
         unpack()
             .activateProfile( "junit5" )
             .forkMode( getForkMode() )

@@ -25,7 +25,6 @@ import java.util.List;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -33,7 +32,6 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.apache.maven.surefire.its.fixture.IsRegex.regex;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Sets.set;
@@ -85,12 +83,6 @@ public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase
         args.add( new Object[] {"1.6.2", "5.6.2", "1.2.0", "1.1.0"} );
         //args.add( new Object[] { "1.6.0-SNAPSHOT", "5.6.0-SNAPSHOT", "1.2.0", "1.1.0" } );
         return args;
-    }
-
-    @Before
-    public void setUp()
-    {
-        assumeJavaVersion( 1.8d );
     }
 
     @Test
