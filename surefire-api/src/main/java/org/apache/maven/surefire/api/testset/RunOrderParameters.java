@@ -22,10 +22,13 @@ package org.apache.maven.surefire.api.testset;
 import java.io.File;
 import org.apache.maven.surefire.api.util.RunOrder;
 
+import static org.apache.maven.surefire.api.util.RunOrder.ALPHABETICAL;
+import static org.apache.maven.surefire.api.util.RunOrder.DEFAULT;
+
 /**
  * @author Kristian Rosenvold
  */
-public class RunOrderParameters
+public final class RunOrderParameters
 {
     private final RunOrder[] runOrder;
 
@@ -35,16 +38,17 @@ public class RunOrderParameters
 
     public RunOrderParameters( RunOrder[] runOrder, File runStatisticsFile )
     {
-        this.runOrder = runOrder;
-        this.runStatisticsFile = runStatisticsFile;
-        this.runOrderRandomSeed = null;
+        this( runOrder, runStatisticsFile, null );
     }
 
     public RunOrderParameters( String runOrder, File runStatisticsFile )
     {
-        this.runOrder = runOrder == null ? RunOrder.DEFAULT : RunOrder.valueOfMulti( runOrder );
-        this.runStatisticsFile = runStatisticsFile;
-        this.runOrderRandomSeed = null;
+        this( runOrder, runStatisticsFile, null );
+    }
+
+    public RunOrderParameters( String runOrder, File runStatisticsFile, Long runOrderRandomSeed )
+    {
+        this( runOrder == null ? DEFAULT : RunOrder.valueOfMulti( runOrder ), runStatisticsFile, runOrderRandomSeed );
     }
 
     public RunOrderParameters( RunOrder[] runOrder, File runStatisticsFile, Long runOrderRandomSeed )
@@ -54,16 +58,9 @@ public class RunOrderParameters
         this.runOrderRandomSeed = runOrderRandomSeed;
     }
 
-    public RunOrderParameters( String runOrder, File runStatisticsFile, Long runOrderRandomSeed )
-    {
-        this.runOrder = runOrder == null ? RunOrder.DEFAULT : RunOrder.valueOfMulti( runOrder );
-        this.runStatisticsFile = runStatisticsFile;
-        this.runOrderRandomSeed = runOrderRandomSeed;
-    }
-
     public static RunOrderParameters alphabetical()
     {
-        return new RunOrderParameters( new RunOrder[]{ RunOrder.ALPHABETICAL }, null );
+        return new RunOrderParameters( new RunOrder[]{ ALPHABETICAL }, null );
     }
 
     public RunOrder[] getRunOrder()
@@ -80,5 +77,4 @@ public class RunOrderParameters
     {
         return runStatisticsFile;
     }
-
 }
