@@ -29,9 +29,9 @@ public class RunOrderParameters
 {
     private final RunOrder[] runOrder;
 
-    private File runStatisticsFile;
+    private final File runStatisticsFile;
 
-    private Long runOrderRandomSeed;
+    private final Long runOrderRandomSeed;
 
     public RunOrderParameters( RunOrder[] runOrder, File runStatisticsFile )
     {
@@ -74,11 +74,6 @@ public class RunOrderParameters
     public Long getRunOrderRandomSeed()
     {
         return runOrderRandomSeed;
-    }
-
-    public void setRunOrderRandomSeed( Long runOrderRandomSeed )
-    {
-        this.runOrderRandomSeed = runOrderRandomSeed;
     }
 
     public File getRunStatisticsFile()

@@ -38,7 +38,7 @@ import java.util.Random;
 public class DefaultRunOrderCalculator
     implements RunOrderCalculator
 {
-    private final Comparator<Class> sortOrder;
+    private final Comparator<Class<?>> sortOrder;
 
     private final RunOrder[] runOrder;
 
@@ -55,12 +55,7 @@ public class DefaultRunOrderCalculator
         this.runOrder = runOrderParameters.getRunOrder();
         this.sortOrder = this.runOrder.length > 0 ? getSortOrderComparator( this.runOrder[0] ) : null;
         Long runOrderRandomSeed = runOrderParameters.getRunOrderRandomSeed();
-        if ( runOrderRandomSeed == null )
-        {
-            runOrderRandomSeed = System.nanoTime();
-            runOrderParameters.setRunOrderRandomSeed( runOrderRandomSeed );
-        }
-        this.random = new Random( runOrderRandomSeed );
+        this.random = new Random( runOrderRandomSeed == null ? System.nanoTime() : runOrderRandomSeed );
     }
 
     @Override
@@ -102,11 +97,11 @@ public class DefaultRunOrderCalculator
         }
         else if ( sortOrder != null )
         {
-            Collections.sort( testClasses, sortOrder );
+            testClasses.sort( sortOrder );
         }
     }
 
-    private Comparator<Class> getSortOrderComparator( RunOrder runOrder )
+    private static Comparator<Class<?>> getSortOrderComparator( RunOrder runOrder )
     {
         if ( RunOrder.ALPHABETICAL.equals( runOrder ) )
         {
@@ -127,27 +122,13 @@ public class DefaultRunOrderCalculator
         }
     }
 
-    private Comparator<Class> getReverseAlphabeticalComparator()
+    private static Comparator<Class<?>> getReverseAlphabeticalComparator()
     {
-        return new Comparator<Class>()
-        {
-            @Override
-            public int compare( Class o1, Class o2 )
-            {
-                return o2.getName().compareTo( o1.getName() );
-            }
-        };
+        return ( o1, o2 ) -> o2.getName().compareTo( o1.getName() );
     }
 
-    private Comparator<Class> getAlphabeticalComparator()
+    private static Comparator<Class<?>> getAlphabeticalComparator()
     {
-        return new Comparator<Class>()
-        {
-            @Override
-            public int compare( Class o1, Class o2 )
-            {
-                return o1.getName().compareTo( o2.getName() );
-            }
-        };
+        return Comparator.comparing( Class::getName );
     }
 }
