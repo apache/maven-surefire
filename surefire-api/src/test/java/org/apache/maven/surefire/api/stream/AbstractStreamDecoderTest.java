@@ -259,6 +259,56 @@ public class AbstractStreamDecoderTest
     }
 
     @Test
+    public void shouldReadStringOverflowOnNewLine() throws Exception
+    {
+        StringBuilder s = new StringBuilder( 1025 );
+        for ( int i = 0; i < 10; i++ )
+        {
+            s.append( PATTERN1 );
+        }
+        s.append( PATTERN1, 0, 23 );
+        s.append( "\u00FA\n" ); // 2-bytes encoded character + LF
+
+        Channel channel = new Channel( s.toString().getBytes( UTF_8 ), s.length() );
+
+        Mock thread = new Mock( channel, new MockForkNodeArguments(),
+            Collections.<Segment, ForkedProcessEventType>emptyMap() );
+
+        Memento memento = thread.new Memento();
+
+        assertThat( (String) invokeMethod( thread, "readString", memento, 1026 ) )
+            .isEqualTo( s.toString() );
+
+        assertThat ( memento.getByteBuffer().remaining() )
+            .isEqualTo( 0 );
+    }
+
+    @Test
+    public void shouldReadStringOverflowOn4BytesEncodedSymbol() throws Exception
+    {
+        StringBuilder s = new StringBuilder( 1025 );
+        for ( int i = 0; i < 10; i++ )
+        {
+            s.append( PATTERN1 );
+        }
+        s.append( PATTERN1, 0, 23 );
+        s.append( "\uD83D\uDE35" ); // 4-bytes encoded character
+
+        Channel channel = new Channel( s.toString().getBytes( UTF_8 ), s.length() );
+
+        Mock thread = new Mock( channel, new MockForkNodeArguments(),
+            Collections.<Segment, ForkedProcessEventType>emptyMap() );
+
+        Memento memento = thread.new Memento();
+
+        assertThat( (String) invokeMethod( thread, "readString", memento, 1027 ) )
+            .isEqualTo( s.toString() );
+
+        assertThat ( memento.getByteBuffer().remaining() )
+            .isEqualTo( 0 );
+    }
+
+    @Test
     public void shouldReadStringShiftedBuffer() throws Exception
     {
         StringBuilder s = new StringBuilder( 1100 );
