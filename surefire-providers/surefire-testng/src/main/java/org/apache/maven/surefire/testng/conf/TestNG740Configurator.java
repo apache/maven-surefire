@@ -20,14 +20,13 @@ package org.apache.maven.surefire.testng.conf;
  */
 
 import org.apache.maven.surefire.testset.TestSetFailedException;
-import org.apache.maven.surefire.util.ReflectionUtils;
 import org.testng.xml.XmlSuite;
 
 import java.util.Map;
 
-import static java.lang.Integer.parseInt;
 import static org.apache.maven.surefire.booter.ProviderParameterNames.PARALLEL_PROP;
-import static org.apache.maven.surefire.booter.ProviderParameterNames.THREADCOUNT_PROP;
+import static org.apache.maven.surefire.util.ReflectionUtils.invokeSetter;
+import static org.apache.maven.surefire.util.ReflectionUtils.loadClass;
 
 /**
  * TestNG 7.4.0 configurator. Changed setParallel type to enum value.
@@ -37,34 +36,37 @@ import static org.apache.maven.surefire.booter.ProviderParameterNames.THREADCOUN
  * @since 3.0.0-M6
  * @since 2.22.3
  */
-public class TestNG740Configurator extends TestNG60Configurator
+public class TestNG740Configurator
+    extends TestNG60Configurator
 {
+    /**
+     * Convert and apply the value of the [parallel] setting.
+     * <p>
+     * <b>NOTE</b>: Since TestNG 7.4, the value of the {@code parallel} setting of the {@link XmlSuite} class has been
+     * specified via a <b>ParallelMode</b> enumeration. This method converts the [parallel] setting specified in the
+     * Surefire plugin configuration to its corresponding constant and applies this to the specified suite object.
+     *
+     * @param suite TestNG {@link XmlSuite} object
+     * @param options Surefire plugin configuration options
+     * @throws TestSetFailedException if unable to convert specified [parallel] setting
+     */
     @Override
-    public void configure( XmlSuite suite, Map<String, String> options )
+    protected void configureParallel( XmlSuite suite, Map<String, String> options )
         throws TestSetFailedException
     {
-        String threadCountAsString = options.get( THREADCOUNT_PROP );
-        int threadCount = threadCountAsString == null ? 1 : parseInt( threadCountAsString );
-        suite.setThreadCount( threadCount );
-
         String parallel = options.get( PARALLEL_PROP );
         if ( parallel != null )
         {
-            if ( !"methods".equalsIgnoreCase( parallel ) && !"classes".equalsIgnoreCase( parallel ) )
+            Class enumClass = loadClass( XmlSuite.class.getClassLoader(), "org.testng.xml.XmlSuite$ParallelMode" );
+            try
             {
-                throw new TestSetFailedException( "Unsupported TestNG parallel setting: "
-                    + parallel + " ( only METHODS or CLASSES supported )" );
+                Enum<?> parallelEnum = Enum.valueOf( enumClass, parallel.toUpperCase() );
+                invokeSetter( suite, "setParallel", enumClass, parallelEnum );
             }
-            Class enumClass = ReflectionUtils.tryLoadClass( XmlSuite.class.getClassLoader(),
-                "org.testng.xml.XmlSuite$ParallelMode" );
-            Object parallelEnum = Enum.valueOf( enumClass, parallel.toUpperCase() );
-            ReflectionUtils.invokeSetter( suite, "setParallel", enumClass, parallelEnum );
-        }
-
-        String dataProviderThreadCount = options.get( "dataproviderthreadcount" );
-        if ( dataProviderThreadCount != null )
-        {
-            suite.setDataProviderThreadCount( Integer.parseInt( dataProviderThreadCount ) );
+            catch ( IllegalArgumentException e )
+            {
+                throw new TestSetFailedException( "Unsupported TestNG [parallel] setting: " + parallel, e );
+            }
         }
     }
 }
