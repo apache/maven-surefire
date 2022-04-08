@@ -28,6 +28,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.surefire.suite.RunResult;
 import org.apache.maven.surefire.util.DefaultScanResult;
+import org.codehaus.plexus.logging.Logger;
 import org.junit.Test;
 
 import java.io.File;
@@ -39,6 +40,7 @@ import java.util.zip.ZipOutputStream;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.fest.assertions.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class MojoMocklessTest
 {
@@ -121,6 +123,7 @@ public class MojoMocklessTest
         List<Artifact> projectTestArtifacts = singletonList( testDeps );
         String[] dependenciesToScan = { "g:a" };
         Mojo mojo = new Mojo( projectTestArtifacts, dependenciesToScan );
+        mojo.setLogger( mock( Logger.class ) );
         DefaultScanResult result = mojo.scanDependencies();
 
         assertThat( result )
@@ -152,6 +155,7 @@ public class MojoMocklessTest
         List<Artifact> projectTestArtifacts = singletonList( testDeps );
         String[] dependenciesToScan = { "g:a" };
         Mojo mojo = new Mojo( projectTestArtifacts, dependenciesToScan );
+        mojo.setLogger( mock( Logger.class ) );
         DefaultScanResult result = mojo.scanDependencies();
 
         assertThat( result )
@@ -183,6 +187,7 @@ public class MojoMocklessTest
         List<Artifact> projectTestArtifacts = singletonList( testDeps );
         String[] dependenciesToScan = { "g:a" };
         Mojo mojo = new Mojo( projectTestArtifacts, dependenciesToScan );
+        mojo.setLogger( mock( Logger.class ) );
         DefaultScanResult result = mojo.scanDependencies();
 
         assertThat( result )
@@ -228,6 +233,7 @@ public class MojoMocklessTest
         List<Artifact> projectTestArtifacts = asList( testDep1, testDep2 );
         String[] dependenciesToScan = { "g:a" };
         Mojo mojo = new Mojo( projectTestArtifacts, dependenciesToScan );
+        mojo.setLogger( mock( Logger.class ) );
         DefaultScanResult result = mojo.scanDependencies();
 
         assertThat( result )

@@ -477,7 +477,6 @@ public abstract class AbstractTestMultipleMethodPatterns
         prepare( pattern )
             .failNever()
             .executeTest()
-            .verifyTextInLog( "Method filter prohibited in includes|excludes|includesFile|excludesFile parameter: "
-                                  + pattern );
+            .verifyTextInLog( "Method filter prohibited in includes|excludes parameter: " + pattern );
     }
 }
