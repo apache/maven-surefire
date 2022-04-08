@@ -150,6 +150,7 @@
                         </goals>
                         <configuration>
                             <propertyName>jacoco-it.agent</propertyName>
+                            <destFile>${project.build.directory}/jacoco.exec</destFile>
                         </configuration>
                     </execution>
                 </executions>
