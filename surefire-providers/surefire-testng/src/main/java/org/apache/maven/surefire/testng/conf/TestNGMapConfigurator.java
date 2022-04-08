@@ -61,10 +61,21 @@ public class TestNGMapConfigurator
     public void configure( XmlSuite suite, Map<String, String> options )
         throws TestSetFailedException
     {
+        configureThreadCount( suite, options );
+        configureParallel( suite, options );
+    }
+    
+    protected void configureThreadCount( XmlSuite suite, Map<String, String> options )
+        throws TestSetFailedException
+    {
         String threadCountAsString = options.get( THREADCOUNT_PROP );
         int threadCount = threadCountAsString == null ? 1 : parseInt( threadCountAsString );
         suite.setThreadCount( threadCount );
-
+    }
+    
+    protected void configureParallel( XmlSuite suite, Map<String, String> options )
+        throws TestSetFailedException
+    {
         String parallel = options.get( PARALLEL_PROP );
         if ( parallel != null )
         {
