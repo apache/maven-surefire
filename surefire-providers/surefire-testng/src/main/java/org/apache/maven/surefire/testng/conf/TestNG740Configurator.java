@@ -34,6 +34,7 @@ import static org.apache.maven.surefire.booter.ProviderParameterNames.THREADCOUN
  * Uses reflection since ParallelMode enum doesn't exist in supported
  * TestNG 5.x versions.
  *
+ * @since 3.0.0-M6
  * @since 2.22.3
  */
 public class TestNG740Configurator extends TestNG60Configurator

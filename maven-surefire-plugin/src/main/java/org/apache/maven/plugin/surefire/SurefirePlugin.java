@@ -303,7 +303,7 @@ public class SurefirePlugin
      * %regex[.*Test.*|.*Not.*]
      * </code></pre>
      * <br>
-     * Since 2.22.3, method filtering support is provided in the inclusions file as well, example:
+     * Since 3.0.0-M6 and 2.22.3, method filtering support is provided in the inclusions file as well, example:
      * <pre><code>
      * pkg.SomeTest#testMethod
      * </code></pre>
@@ -322,7 +322,7 @@ public class SurefirePlugin
      * %regex[.*Test.*|.*Not.*]
      * </code></pre>
      *
-     * Since 2.22.3, method filtering support is provided in the exclusions file as well, example:
+     * Since 3.0.0-M6 and 2.22.3, method filtering support is provided in the exclusions file as well, example:
      * <pre><code>
      * pkg.SomeTest#testMethod
      * </code></pre>
