@@ -598,12 +598,14 @@ public class SurefirePlugin
     }
 
     @Override
+    @Deprecated
     public boolean isSkipExec()
     {
         return skipExec;
     }
 
     @Override
+    @Deprecated
     public void setSkipExec( boolean skipExec )
     {
         this.skipExec = skipExec;

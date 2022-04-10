@@ -373,7 +373,9 @@ public abstract class AbstractSurefireMojo
      * JVM is executing one test-class. See also the parameter {@code reuseForks} for the lifetime of JVM.
      *
      * @since 2.1
+     * @deprecated
      */
+    @Deprecated
     @Parameter( property = "forkMode", defaultValue = "once" )
     private String forkMode;
 

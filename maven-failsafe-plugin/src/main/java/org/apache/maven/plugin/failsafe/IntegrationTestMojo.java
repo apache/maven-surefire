@@ -628,7 +628,6 @@ public class IntegrationTestMojo
     }
 
     @Override
-    @SuppressWarnings( "deprecation" )
     @Deprecated
     public boolean isSkipExec()
     {
@@ -636,7 +635,6 @@ public class IntegrationTestMojo
     }
 
     @Override
-    @SuppressWarnings( "deprecation" )
     @Deprecated
     public void setSkipExec( boolean skipExec )
     {
