@@ -305,36 +305,25 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
         memento.getDecoder().reset();
         final CharBuffer output = memento.getCharBuffer();
         ( (Buffer) output ).clear();
-        final ByteBuffer input = memento.getByteBuffer();
         final List<String> strings = new ArrayList<>();
         int countDecodedBytes = 0;
         for ( boolean endOfInput = false; !endOfInput; )
         {
-            final int bytesToRead = totalBytes - countDecodedBytes;
+            final int bytesToRead = totalBytes - countDecodedBytes; // our wish to read bytes as much as possible
             read( memento, bytesToRead );
-            int bytesToDecode = min( input.remaining(), bytesToRead );
+            final ByteBuffer input = memento.getByteBuffer();
+            int bytesToDecode = min( input.remaining(), bytesToRead ); // our guarantee of available bytes in buffer
             final boolean isLastChunk = bytesToDecode == bytesToRead;
             endOfInput = countDecodedBytes + bytesToDecode >= totalBytes;
-            do
-            {
-                boolean endOfChunk = output.remaining() >= bytesToRead;
-                boolean endOfOutput = isLastChunk && endOfChunk;
-                int readInputBytes = decodeString( memento.getDecoder(), input, output, bytesToDecode, endOfOutput,
-                    memento.getLine().getPositionByteBuffer() );
-                bytesToDecode -= readInputBytes;
-                countDecodedBytes += readInputBytes;
-            }
-            while ( isLastChunk && bytesToDecode > 0 && output.hasRemaining() );
-
-            if ( isLastChunk || !output.hasRemaining() )
-            {
-                strings.add( ( (Buffer) output ).flip().toString() );
-                ( (Buffer) output ).clear();
-            }
+            boolean endOfChunk = output.remaining() >= bytesToRead;
+            boolean endOfOutput = isLastChunk && endOfChunk;
+            int readInputBytes = decodeString( memento.getDecoder(), input, output, bytesToDecode, endOfOutput,
+                memento.getLine().getPositionByteBuffer() );
+            countDecodedBytes += readInputBytes;
+            strings.add( ( (Buffer) output ).flip().toString() );
+            ( (Buffer) output ).clear();
+            memento.getLine().setPositionByteBuffer( 0 );
         }
-
-        memento.getDecoder().reset();
-        ( (Buffer) output ).clear();
 
         return toString( strings );
     }
