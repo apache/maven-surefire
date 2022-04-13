@@ -22,7 +22,6 @@ package org.apache.maven.surefire.booter.spi;
 import org.apache.maven.surefire.api.booter.Command;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
-import org.apache.maven.surefire.api.stream.AbstractStreamDecoder.Memento;
 import org.apache.maven.surefire.api.stream.MalformedChannelException;
 import org.apache.maven.surefire.booter.stream.CommandDecoder;
 
@@ -40,7 +39,6 @@ import java.nio.channels.ReadableByteChannel;
 public class CommandChannelDecoder implements MasterProcessChannelDecoder
 {
     private final CommandDecoder decoder;
-    private Memento memento;
 
     public CommandChannelDecoder( @Nonnull ReadableByteChannel channel,
                                   @Nonnull ForkNodeArguments arguments )
@@ -53,18 +51,11 @@ public class CommandChannelDecoder implements MasterProcessChannelDecoder
     @SuppressWarnings( "checkstyle:innerassignment" )
     public Command decode() throws IOException
     {
-        if ( memento == null )
-        {
-            // do not create memento in constructor because the constructor is called in another thread
-            // memento is the thread confinement object
-            memento = decoder.new Memento();
-        }
-
         do
         {
             try
             {
-                Command command = decoder.decode( memento );
+                Command command = decoder.decode();
                 if ( command != null )
                 {
                     return command;

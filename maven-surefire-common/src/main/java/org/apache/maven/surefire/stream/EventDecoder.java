@@ -140,6 +140,8 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
 
     private final OutputStream debugSink;
 
+    private Memento memento;
+
     public EventDecoder( @Nonnull ReadableByteChannel channel,
                          @Nonnull ForkNodeArguments arguments )
     {
@@ -148,8 +150,15 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
     }
 
     @Override
-    public Event decode( @Nonnull Memento memento ) throws IOException
+    public Event decode() throws IOException
     {
+        if ( memento == null )
+        {
+            // do not create memento in constructor because the constructor is called in another thread
+            // memento is the thread confinement object
+            memento = new Memento();
+        }
+
         try
         {
             ForkedProcessEventType eventType = readMessageType( memento );

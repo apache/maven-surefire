@@ -89,7 +89,15 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
         logger = arguments.getConsoleLogger();
     }
 
-    public abstract M decode( @Nonnull Memento memento ) throws MalformedChannelException, IOException;
+    /**
+     * Decoding and returns a message {@code M} and waiting, if necessary, for the next
+     * message received from the channel.
+     *
+     * @return message {@code M}, or null if could not decode a message due to a frame error
+     * @throws MalformedChannelException the channel error
+     * @throws IOException stream I/O exception
+     */
+    public abstract M decode() throws MalformedChannelException, IOException;
 
     @Nonnull
     protected abstract byte[] getEncodedMagicNumber();
