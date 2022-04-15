@@ -2049,6 +2049,7 @@ public abstract class AbstractSurefireMojo
             ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings( testClasspath.getClassPath() )
                     .setIncludeAllProviders( true )
                     .setJdkHome( javaHome )
+                    .setIncludeStatic( true )
                     .setModuleDescriptor( javaModuleDescriptor );
 
             ResolvePathsResult<String> result = getLocationManager().resolvePaths( req );

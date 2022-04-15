@@ -152,6 +152,7 @@ public class AbstractSurefireMojoJava7PlusTest
         mockStatic( ResolvePathsRequest.class );
         when( ResolvePathsRequest.ofStrings( eq( testClasspath.toClasspath().getClassPath() ) ) ).thenReturn( req );
         when( req.setJdkHome( anyString() ) ).thenReturn( req );
+        when( req.setIncludeStatic( true ) ).thenReturn( req );
         when( req.setIncludeAllProviders( anyBoolean() ) ).thenReturn( req );
         when( req.setModuleDescriptor( eq( descriptor ) ) ).thenReturn( req );
 
