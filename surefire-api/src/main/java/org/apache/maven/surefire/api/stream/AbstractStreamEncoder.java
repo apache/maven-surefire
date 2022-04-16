@@ -184,7 +184,7 @@ public abstract class AbstractStreamEncoder<E extends Enum<E>>
         if ( runMode != null )
         {
             // one byte of length + one delimiter character ':' + <string> + one delimiter character ':'
-            lengthOfMetadata += 1 + 1 + runMode.geRunmode().length() + 1;
+            lengthOfMetadata += 1 + 1 + runMode.getRunmode().length() + 1;
         }
 
         if ( encoder != null )
