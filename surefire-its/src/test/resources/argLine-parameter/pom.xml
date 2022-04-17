@@ -52,7 +52,14 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <forkMode>once</forkMode>
-          <argLine>-Dfoo.property="foo foo/foo/bar/1.0" -Dbar.property="bar bar/foo/bar/2.0"</argLine>
+          <argLine>
+            <!--
+            These lines must be tab-indented, see SUREFIRE-2063;
+            regular tab characters could easily be reformatted by an IDE,
+            so we're using XML entities here.
+            -->
+            -Dfoo.property="foo foo/foo/bar/1.0"&#09;-Dbar.property="bar bar/foo/bar/2.0"
+          </argLine>
         </configuration>
       </plugin>
     </plugins>
