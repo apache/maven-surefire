@@ -251,9 +251,9 @@ public abstract class DefaultForkConfiguration
     }
 
     @Nonnull
-    private static String stripNewLines( @Nonnull String argLine )
+    private static String stripWhitespace( @Nonnull String argLine )
     {
-        return argLine.replace( "\n", " " ).replace( "\r", " " );
+        return argLine.replaceAll( "\\s+", " " );
     }
 
     /**
@@ -361,7 +361,7 @@ public abstract class DefaultForkConfiguration
     @Nonnull
     private String newJvmArgLine( int forks )
     {
-        String interpolatedArgs = stripNewLines( interpolateArgLineWithPropertyExpressions() );
+        String interpolatedArgs = stripWhitespace( interpolateArgLineWithPropertyExpressions() );
         String argsWithReplacedForkNumbers = replaceThreadNumberPlaceholders( interpolatedArgs, forks );
         return extendJvmArgLine( argsWithReplacedForkNumbers );
     }
