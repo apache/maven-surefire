@@ -251,7 +251,7 @@ public abstract class DefaultForkConfiguration
     }
 
     @Nonnull
-    static String stripWhitespace( @Nonnull String argLine )
+    private static String stripWhitespace( @Nonnull String argLine )
     {
         return argLine.replaceAll( "\\s", " " );
     }
