@@ -26,7 +26,7 @@ import java.util.Map;
 
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.PARALLEL_PROP;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeSetter;
-import static org.apache.maven.surefire.api.util.ReflectionUtils.tryLoadClass;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.loadClass;
 
 /**
  * TestNG 7.4.0 configurator. Changed setParallel type to enum value.
@@ -54,30 +54,17 @@ public class TestNG740Configurator
         throws TestSetFailedException
     {
         String parallel = options.get( PARALLEL_PROP );
-        // if [parallel] spec'd
         if ( parallel != null )
         {
-            // try to load the [ParallelMode] enumeration
-            Class enumClass = tryLoadClass( XmlSuite.class.getClassLoader(), "org.testng.xml.XmlSuite$ParallelMode" );
-            // if enumeration loaded
-            if ( enumClass != null )
+            Class enumClass = loadClass( XmlSuite.class.getClassLoader(), "org.testng.xml.XmlSuite$ParallelMode" );
+            try
             {
-                try
-                {
-                    // convert [parallel] option to corresponding constant
-                    Enum<?> parallelEnum = Enum.valueOf( enumClass, parallel.toUpperCase() );
-                    // set [XmlSuite] parallel mode to specified value
-                    invokeSetter( suite, "setParallel", enumClass, parallelEnum );
-                }
-                catch ( IllegalArgumentException e )
-                {
-                    throw new TestSetFailedException( "Unsupported TestNG [parallel] setting: " + parallel, e );
-                }
+                Enum<?> parallelEnum = Enum.valueOf( enumClass, parallel.toUpperCase() );
+                invokeSetter( suite, "setParallel", enumClass, parallelEnum );
             }
-            else
+            catch ( IllegalArgumentException e )
             {
-                throw new TestSetFailedException(
-                        "Failed loading TestNG [ParallelMode] enumeration to convert [parallel] setting: " + parallel );
+                throw new TestSetFailedException( "Unsupported TestNG [parallel] setting: " + parallel, e );
             }
         }
     }
