@@ -70,6 +70,7 @@ public class CommandDecoder extends AbstractStreamDecoder<Command, MasterProcess
 
     private final ForkNodeArguments arguments;
     private final OutputStream debugSink;
+    private Memento memento;
 
     public CommandDecoder( @Nonnull ReadableByteChannel channel,
                            @Nonnull ForkNodeArguments arguments )
@@ -80,8 +81,15 @@ public class CommandDecoder extends AbstractStreamDecoder<Command, MasterProcess
     }
 
     @Override
-    public Command decode( @Nonnull Memento memento ) throws IOException, MalformedChannelException
+    public Command decode() throws IOException, MalformedChannelException
     {
+        if ( memento == null )
+        {
+            // do not create memento in constructor because the constructor is called in another thread
+            // memento is the thread confinement object
+            memento = new Memento();
+        }
+
         try
         {
             MasterProcessCommand commandType = readMessageType( memento );

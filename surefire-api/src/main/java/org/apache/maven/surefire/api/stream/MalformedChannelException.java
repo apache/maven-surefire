@@ -20,7 +20,7 @@ package org.apache.maven.surefire.api.stream;
  */
 
 /**
- *
+ * No supported message type.
  */
 public class MalformedChannelException extends Exception
 {

@@ -664,7 +664,7 @@ public class AbstractStreamDecoderTest
         }
 
         @Override
-        public Event decode( @Nonnull Memento memento ) throws MalformedChannelException
+        public Event decode() throws MalformedChannelException
         {
             throw new MalformedChannelException();
         }

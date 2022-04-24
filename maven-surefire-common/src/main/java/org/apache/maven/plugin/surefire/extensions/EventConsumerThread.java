@@ -21,7 +21,6 @@ package org.apache.maven.plugin.surefire.extensions;
 
 import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
-import org.apache.maven.surefire.api.stream.AbstractStreamDecoder.Memento;
 import org.apache.maven.surefire.extensions.CloseableDaemonThread;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
@@ -67,10 +66,9 @@ public class EventConsumerThread extends CloseableDaemonThread
               CountdownCloseable c = countdownCloseable;
               EventDecoder eventDecoder = decoder )
         {
-            Memento memento = eventDecoder.new Memento();
             do
             {
-                Event event = eventDecoder.decode( memento );
+                Event event = eventDecoder.decode();
                 if ( event != null && !disabled )
                 {
                     eventHandler.handleEvent( event );
