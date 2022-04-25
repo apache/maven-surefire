@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.its;
+package testng.simple;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,28 +19,17 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
-/**
- */
-@SuppressWarnings( "checkstyle:magicnumber" )
-public class CheckTestNg740ParallelIT
-    extends SurefireJUnit4IntegrationTestCase
-{
+
+public class TestNG740ParallelTest {
     @Test
-    public void withTestNG740AndParallelSet()
-    {
-        unpack( "testng-740-parallel" )
-            .executeTest()
-            .assertTestSuiteResults( 2, 0, 0, 0 );
+    public void testOne() {
+
     }
-    
+
     @Test
-    public void withTestNG740AndParallelSetWithoutThreadCount()
-    {
-        unpack( "testng-740-parallel-without-threadcount" )
-            .executeTest()
-            .assertTestSuiteResults( 2, 0, 0, 0 );
+    public void testTwo() {
+
     }
 }
