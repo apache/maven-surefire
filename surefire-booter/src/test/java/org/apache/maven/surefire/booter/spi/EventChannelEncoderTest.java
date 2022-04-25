@@ -1251,6 +1251,25 @@ public class EventChannelEncoderTest
             .isEqualTo( expected );
     }
 
+    @Test
+    public void testStdErrStreamEmptyMessageNullRunMode() throws IOException
+    {
+        Stream out = Stream.newStream();
+        WritableBufferedByteChannel channel = newBufferedChannel( out );
+        EventChannelEncoder encoder = new EventChannelEncoder( channel );
+
+        // This used to produce a BufferOverflowException; see SUREFIRE-2076.
+        encoder.testOutput( new TestOutputReportEntry( stdErr( "" ), null, 1L ) );
+        channel.close();
+
+        String expected = ":maven-surefire-event:\u000e:std-err-stream:"
+            + (char) 0 + "::" // One byte for length and 1+1 bytes for the 2 delimiters (0 bytes for null runMode)
+            + "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001:"
+            + "\u0005:UTF-8:\u0000\u0000\u0000\u0000::";
+
+        assertThat( new String( out.toByteArray(), UTF_8 ) )
+            .isEqualTo( expected );
+    }
 
     @Test
     @SuppressWarnings( "checkstyle:innerassignment" )
