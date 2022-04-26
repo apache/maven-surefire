@@ -29,7 +29,6 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.CharsetDecoder;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -51,6 +50,7 @@ import static java.nio.charset.CodingErrorAction.REPLACE;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static org.apache.maven.surefire.api.booter.Constants.DEFAULT_STREAM_ENCODING;
 import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_STDOUT;
@@ -196,8 +196,7 @@ public class AbstractStreamDecoderTest
     {
         Channel channel = new Channel( new byte[] {0x01, 0x02, 0x03, 0x04, ':'}, 1 );
 
-        Mock thread = new Mock( channel, new MockForkNodeArguments(),
-            Collections.<Segment, ForkedProcessEventType>emptyMap() );
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
 
         Memento memento = thread.new Memento();
 
@@ -210,8 +209,7 @@ public class AbstractStreamDecoderTest
     {
         Channel channel = new Channel( new byte[] {(byte) 0xff, 0x01, 0x02, 0x03, 0x04, ':'}, 1 );
 
-        Mock thread = new Mock( channel, new MockForkNodeArguments(),
-            Collections.<Segment, ForkedProcessEventType>emptyMap() );
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
 
         Memento memento = thread.new Memento();
         assertThat( thread.readInteger( memento ) )
@@ -223,8 +221,7 @@ public class AbstractStreamDecoderTest
     {
         Channel channel = new Channel( new byte[] {(byte) 0x00, ':'}, 1 );
 
-        Mock thread = new Mock( channel, new MockForkNodeArguments(),
-            Collections.<Segment, ForkedProcessEventType>emptyMap() );
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
 
         Memento memento = thread.new Memento();
         assertThat( thread.readInteger( memento ) )
@@ -237,8 +234,7 @@ public class AbstractStreamDecoderTest
         Channel channel = new Channel( PATTERN1.getBytes(), PATTERN1.length() );
         channel.read( ByteBuffer.allocate( 100 ) );
 
-        Mock thread = new Mock( channel, new MockForkNodeArguments(),
-            Collections.<Segment, ForkedProcessEventType>emptyMap() );
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
 
         Memento memento = thread.new Memento();
         invokeMethod( thread, "readString", memento, 10 );
@@ -249,13 +245,60 @@ public class AbstractStreamDecoderTest
     {
         Channel channel = new Channel( PATTERN1.getBytes(), PATTERN1.length() );
 
-        Mock thread = new Mock( channel, new MockForkNodeArguments(),
-            Collections.<Segment, ForkedProcessEventType>emptyMap() );
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
 
         Memento memento = thread.new Memento();
         String s = invokeMethod( thread, "readString", memento, 10 );
         assertThat( s )
             .isEqualTo( "0123456789" );
+    }
+
+    @Test
+    public void shouldReadStringOverflowOnNewLine() throws Exception
+    {
+        StringBuilder s = new StringBuilder( 1025 );
+        for ( int i = 0; i < 10; i++ )
+        {
+            s.append( PATTERN1 );
+        }
+        s.append( PATTERN1, 0, 23 );
+        s.append( "\u00FA\n" ); // 2-bytes encoded character + LF
+
+        Channel channel = new Channel( s.toString().getBytes( UTF_8 ), s.length() );
+
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+
+        Memento memento = thread.new Memento();
+
+        assertThat( (String) invokeMethod( thread, "readString", memento, 1026 ) )
+            .isEqualTo( s.toString() );
+
+        assertThat ( memento.getByteBuffer().remaining() )
+            .isEqualTo( 0 );
+    }
+
+    @Test
+    public void shouldReadStringOverflowOn4BytesEncodedSymbol() throws Exception
+    {
+        StringBuilder s = new StringBuilder( 1025 );
+        for ( int i = 0; i < 10; i++ )
+        {
+            s.append( PATTERN1 );
+        }
+        s.append( PATTERN1, 0, 23 );
+        s.append( "\uD83D\uDE35" ); // 4-bytes encoded character
+
+        Channel channel = new Channel( s.toString().getBytes( UTF_8 ), s.length() );
+
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+
+        Memento memento = thread.new Memento();
+
+        assertThat( (String) invokeMethod( thread, "readString", memento, 1027 ) )
+            .isEqualTo( s.toString() );
+
+        assertThat ( memento.getByteBuffer().remaining() )
+            .isEqualTo( 0 );
     }
 
     @Test
@@ -269,8 +312,7 @@ public class AbstractStreamDecoderTest
 
         Channel channel = new Channel( s.toString().getBytes( UTF_8 ), s.length() );
 
-        Mock thread = new Mock( channel, new MockForkNodeArguments(),
-            Collections.<Segment, ForkedProcessEventType>emptyMap() );
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
 
         Memento memento = thread.new Memento();
         // whatever position will be compacted to 0
@@ -291,8 +333,7 @@ public class AbstractStreamDecoderTest
         Channel channel = new Channel( s.toString().getBytes( UTF_8 ), s.length() );
         channel.read( ByteBuffer.allocate( 997 ) );
 
-        Mock thread = new Mock( channel, new MockForkNodeArguments(),
-            Collections.<Segment, ForkedProcessEventType>emptyMap() );
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
 
         Memento memento = thread.new Memento();
         assertThat( (String) invokeMethod( thread, "readString", memento, PATTERN1.length() ) )
@@ -312,8 +353,7 @@ public class AbstractStreamDecoderTest
         Channel channel = new Channel( s.toString().getBytes( UTF_8 ), s.length() );
         channel.read( ByteBuffer.allocate( 1997 ) );
 
-        Mock thread = new Mock( channel, new MockForkNodeArguments(),
-            Collections.<Segment, ForkedProcessEventType>emptyMap() );
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
 
         Memento memento = thread.new Memento();
         // whatever position will be compacted to 0
@@ -341,8 +381,7 @@ public class AbstractStreamDecoderTest
         }
 
         Channel channel = new Channel( input, 64 * 1024 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(),
-            Collections.<Segment, ForkedProcessEventType>emptyMap() );
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
         Memento memento = thread.new Memento();
         String decodedOutput = invokeMethod( thread, "readString", memento, input.length );
 
@@ -416,8 +455,7 @@ public class AbstractStreamDecoderTest
     {
         byte[] stream = ":xxxxx-xxxxxxxx-xxxxx:\u000E:xxx".getBytes( UTF_8 );
         Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(),
-            Collections.<Segment, ForkedProcessEventType>emptyMap() );
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
 
         Memento memento = thread.new Memento();
         memento.setCharset( UTF_8 );
@@ -429,8 +467,7 @@ public class AbstractStreamDecoderTest
     {
         byte[] stream = "\u0000\u0000\u0000\u0000::".getBytes( UTF_8 );
         Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(),
-            Collections.<Segment, ForkedProcessEventType>emptyMap() );
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
 
         Memento memento = thread.new Memento();
         memento.setCharset( UTF_8 );
@@ -444,8 +481,7 @@ public class AbstractStreamDecoderTest
     {
         byte[] stream = "\u0000\u0000\u0000\u0001:\u0000:".getBytes( UTF_8 );
         Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(),
-            Collections.<Segment, ForkedProcessEventType>emptyMap() );
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
 
         Memento memento = thread.new Memento();
         memento.setCharset( UTF_8 );
@@ -459,8 +495,7 @@ public class AbstractStreamDecoderTest
     {
         byte[] stream = "\u0000\u0000\u0000\u0001:A:".getBytes( UTF_8 );
         Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(),
-            Collections.<Segment, ForkedProcessEventType>emptyMap() );
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
 
         Memento memento = thread.new Memento();
         memento.setCharset( UTF_8 );
@@ -474,8 +509,7 @@ public class AbstractStreamDecoderTest
     {
         byte[] stream = "\u0000\u0000\u0000\u0003:ABC:".getBytes( UTF_8 );
         Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(),
-            Collections.<Segment, ForkedProcessEventType>emptyMap() );
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
 
         Memento memento = thread.new Memento();
         memento.setCharset( UTF_8 );
@@ -489,8 +523,7 @@ public class AbstractStreamDecoderTest
     {
         byte[] stream = "\u0005:UTF-8:".getBytes( US_ASCII );
         Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(),
-            Collections.<Segment, ForkedProcessEventType>emptyMap() );
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
 
         Memento memento = thread.new Memento();
         memento.setCharset( UTF_8 );
@@ -505,8 +538,7 @@ public class AbstractStreamDecoderTest
     {
         byte[] stream = ( (char) 10 + ":ISO_8859_1:" ).getBytes( US_ASCII );
         Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(),
-            Collections.<Segment, ForkedProcessEventType>emptyMap() );
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
 
         Memento memento = thread.new Memento();
         memento.setCharset( UTF_8 );
@@ -521,10 +553,9 @@ public class AbstractStreamDecoderTest
     {
         byte[] stream = {};
         Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(),
-            Collections.<Segment, ForkedProcessEventType>emptyMap() );
-        Memento memento = thread.new Memento();
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
 
+        Memento memento = thread.new Memento();
         memento.setCharset( ISO_8859_1 );
         assertThat( memento.getDecoder().charset() ).isEqualTo( ISO_8859_1 );
 
@@ -541,8 +572,7 @@ public class AbstractStreamDecoderTest
     {
         byte[] stream = ( (char) 8 + ":ISO_8859:" ).getBytes( US_ASCII );
         Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(),
-            Collections.<Segment, ForkedProcessEventType>emptyMap() );
+        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
 
         Memento memento = thread.new Memento();
         memento.setCharset( UTF_8 );

@@ -326,11 +326,8 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
             }
             while ( isLastChunk && bytesToDecode > 0 && output.hasRemaining() );
 
-            if ( isLastChunk || !output.hasRemaining() )
-            {
-                strings.add( ( (Buffer) output ).flip().toString() );
-                ( (Buffer) output ).clear();
-            }
+            strings.add( ( (Buffer) output ).flip().toString() );
+            ( (Buffer) output ).clear();
         }
 
         memento.getDecoder().reset();
