@@ -134,45 +134,45 @@ public class AbstractStreamEncoderTest
             NORMAL_RUN, encoder, 0, 1, "s" ) )
             .isEqualTo( 88 );
 
-        // :maven-surefire-event:16:console-info-log:5:UTF-8:0003:sss:
+        // :maven-surefire-event:16:console-info-log:0::5:UTF-8:0001:s:
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_CONSOLE_INFO.getOpcodeBinary().length,
-            null, encoder, 0, 0, "s" ) )
-            .isEqualTo( 58 );
-
-        // :maven-surefire-event:17:console-debug-log:5:UTF-8:0003:sss:
-        assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_CONSOLE_DEBUG.getOpcodeBinary().length,
-            null, encoder, 0, 0, "s" ) )
-            .isEqualTo( 59 );
-
-        // :maven-surefire-event:19:console-warning-log:5:UTF-8:0003:sss:
-        assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_CONSOLE_WARNING.getOpcodeBinary().length,
             null, encoder, 0, 0, "s" ) )
             .isEqualTo( 61 );
 
-        // :maven-surefire-event:17:console-error-log:5:UTF-8:0003:sss:
+        // :maven-surefire-event:17:console-debug-log:0::5:UTF-8:0001:s:
+        assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_CONSOLE_DEBUG.getOpcodeBinary().length,
+            null, encoder, 0, 0, "s" ) )
+            .isEqualTo( 62 );
+
+        // :maven-surefire-event:19:console-warning-log:0::5:UTF-8:0001:s:
+        assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_CONSOLE_WARNING.getOpcodeBinary().length,
+            null, encoder, 0, 0, "s" ) )
+            .isEqualTo( 64 );
+
+        // :maven-surefire-event:17:console-error-log:0::5:UTF-8:0001:s:
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_CONSOLE_ERROR.getOpcodeBinary().length,
             null, encoder, 0, 0, "s" ) )
-            .isEqualTo( 59 );
+            .isEqualTo( 62 );
 
-        // :maven-surefire-event:3:bye:
+        // :maven-surefire-event:3:bye:0::
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_BYE.getOpcodeBinary().length,
             null, null, 0, 0 ) )
-            .isEqualTo( 28 );
+            .isEqualTo( 31 );
 
-        // :maven-surefire-event:17:stop-on-next-test:
+        // :maven-surefire-event:17:stop-on-next-test:0::
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_STOP_ON_NEXT_TEST.getOpcodeBinary().length,
             null, null, 0, 0 ) )
-            .isEqualTo( 42 );
+            .isEqualTo( 45 );
 
-        // :maven-surefire-event:9:next-test:
+        // :maven-surefire-event:9:next-test:0::
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_NEXT_TEST.getOpcodeBinary().length,
             null, null, 0, 0 ) )
-            .isEqualTo( 34 );
+            .isEqualTo( 37 );
 
-        // :maven-surefire-event:14:jvm-exit-error:
+        // :maven-surefire-event:14:jvm-exit-error:0::
         assertThat( streamEncoder.estimateBufferLength( BOOTERCODE_JVM_EXIT_ERROR.getOpcodeBinary().length,
             null, null, 0, 0 ) )
-            .isEqualTo( 39 );
+            .isEqualTo( 42 );
     }
 
     @Test

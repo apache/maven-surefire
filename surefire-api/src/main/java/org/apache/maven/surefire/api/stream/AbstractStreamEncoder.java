@@ -181,11 +181,8 @@ public abstract class AbstractStreamEncoder<E extends Enum<E>>
         // one byte + one delimiter character ':' + <string> + one delimiter character ':'
         int lengthOfMetadata = 1 + getEncodedMagicNumber().length + 1 + 1 + 1 + opcodeLength + 1;
 
-        if ( runMode != null )
-        {
-            // one byte of length + one delimiter character ':' + <string> + one delimiter character ':'
-            lengthOfMetadata += 1 + 1 + runMode.getRunmode().length() + 1;
-        }
+        // one byte of length + one delimiter character ':' + <string> + one delimiter character ':'
+        lengthOfMetadata += 1 + 1 + ( runMode == null ? 0 : runMode.getRunmodeBinary().length ) + 1;
 
         if ( encoder != null )
         {
