@@ -214,7 +214,7 @@ public class EventChannelEncoder extends EventEncoder implements MasterProcessCh
         CharsetEncoder encoder = newCharsetEncoder();
         String stackTrace = t == null ? null : ConsoleLoggerUtils.toString( t );
         int bufferMaxLength = estimateBufferLength( BOOTERCODE_CONSOLE_ERROR.getOpcode().length(), null, encoder, 0, 0,
-            message, stackTrace );
+            message, null, stackTrace );
         ByteBuffer result = ByteBuffer.allocate( bufferMaxLength );
         encodeHeader( result, BOOTERCODE_CONSOLE_ERROR );
         encodeCharset( result );
