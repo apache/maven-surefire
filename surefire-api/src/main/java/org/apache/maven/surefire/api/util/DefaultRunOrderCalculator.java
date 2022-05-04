@@ -55,7 +55,7 @@ public class DefaultRunOrderCalculator
         this.runOrder = runOrderParameters.getRunOrder();
         this.sortOrder = this.runOrder.length > 0 ? getSortOrderComparator( this.runOrder[0] ) : null;
         Long runOrderRandomSeed = runOrderParameters.getRunOrderRandomSeed();
-        this.random = new Random( runOrderRandomSeed == null ? System.nanoTime() : runOrderRandomSeed );
+        random = new Random( runOrderRandomSeed == null ? System.nanoTime() : runOrderRandomSeed );
     }
 
     @Override

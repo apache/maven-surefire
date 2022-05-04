@@ -94,7 +94,21 @@ public class RunOrderIT
             }
         }
     }
-    
+
+    @Test
+    public void testRandomJUnit4PrintSeedWithGivenSeed()
+    {
+        OutputValidator validator = executeWithRandomOrder( "junit4", 0L );
+        validator.verifyTextInLog( "To reproduce ordering use flag" );
+    }
+
+    @Test
+    public void testRandomJUnit4PrintSeedWithNoGivenSeed()
+    {
+        OutputValidator validator = executeWithRandomOrder( "junit4" );
+        validator.verifyTextInLog( "To reproduce ordering use flag" );
+    }
+
     @Test
     public void testReverseAlphabeticalJUnit4()
         throws Exception
@@ -177,6 +191,16 @@ public class RunOrderIT
             .activateProfile( profile )
             .forkMode( getForkMode() )
             .runOrder( runOrder )
+            .executeTest()
+            .verifyErrorFree( 3 );
+    }
+
+    private OutputValidator executeWithRandomOrder( String profile )
+    {
+        return unpack()
+            .activateProfile( profile )
+            .forkMode( getForkMode() )
+            .runOrder( "random" )
             .executeTest()
             .verifyErrorFree( 3 );
     }
