@@ -14,28 +14,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-# Please see the documentation for all configuration options:
-# https://help.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
-#
 version: 2
 updates:
-- package-ecosystem: maven
+- package-ecosystem: "maven"
   directory: "/"
   schedule:
-    interval: daily
-    time: '04:00'
-  ignore:
-    # ignore Java 8+ dependencies
-    - dependency-name: org.mockito:mockito-core
-      versions:
-        - ">= 3.0"
-    - dependency-name: org.apache.commons:commons-lang3
-      versions:
-        - ">= 3.9"
-    - dependency-name: commons-io:commons-io
-      versions:
-        - ">= 2.7"
-    # Ignore Maven 3.2.1+
-    - dependency-name: org.apache.maven.plugin-testing:maven-plugin-testing-tools
-      versions:
-        - ">=3.2.0"
+    interval: "daily"
+- package-ecosystem: "github-actions"
+  directory: "/"
+  schedule:
+    interval: "daily"
