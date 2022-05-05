@@ -23,7 +23,7 @@
   <parent>
     <artifactId>maven-parent</artifactId>
     <groupId>org.apache.maven</groupId>
-    <version>35</version>
+    <version>36</version>
   </parent>
 
   <groupId>org.apache.maven.surefire</groupId>
@@ -360,22 +360,8 @@
     <pluginManagement>
       <plugins>
         <plugin>
-          <!-- TODO remove with next parent -->
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-pmd-plugin</artifactId>
-          <version>3.16.0</version>
-        </plugin>
-        <plugin>
-          <!-- TODO remove with next parent -->
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>taglist-maven-plugin</artifactId>
-          <version>3.0.0</version>
-        </plugin>
-        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <!-- TODO version remove with next parent -->
-          <version>3.10.1</version>
           <configuration>
             <fork>true</fork>
             <compilerArgs>
@@ -568,18 +554,6 @@
       <id>reporting</id>
       <reporting>
         <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-pmd-plugin</artifactId>
-            <reportSets>
-              <reportSet>
-                <reports>
-                  <report>cpd</report>
-                  <report>pmd</report>
-                </reports>
-              </reportSet>
-            </reportSets>
-          </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-changes-plugin</artifactId>
