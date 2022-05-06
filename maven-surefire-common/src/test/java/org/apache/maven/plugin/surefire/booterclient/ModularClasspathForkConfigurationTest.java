@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Commandline;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
+import org.apache.maven.surefire.api.util.SureFireFileManager;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ForkedBooter;
@@ -36,7 +37,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import static java.io.File.createTempFile;
 import static java.io.File.pathSeparatorChar;
 import static java.io.File.separator;
 import static java.io.File.separatorChar;
@@ -147,7 +147,7 @@ public class ModularClasspathForkConfigurationTest
             modularClasspathConfiguration, clc, null, Collections.<String[]>emptyList() );
         Commandline cli = new Commandline();
         config.resolveClasspath( cli, ForkedBooter.class.getName(), startupConfiguration,
-                createTempFile( "surefire", "surefire-reports" ) );
+                SureFireFileManager.createTempFile( "surefire", "surefire-reports" ) );
 
         assertThat( cli.getArguments() ).isNotNull();
         assertThat( cli.getArguments() ).hasSize( 1 );

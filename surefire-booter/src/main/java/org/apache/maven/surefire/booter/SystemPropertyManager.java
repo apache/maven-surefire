@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.maven.surefire.api.util.TempFileManager;
+
 /**
  * @author Kristian Rosenvold
  */
@@ -74,7 +76,7 @@ public class SystemPropertyManager
                                             boolean keepForkFiles )
         throws IOException
     {
-        File file = File.createTempFile( name, "tmp", tempDirectory );
+        File file = TempFileManager.instance( tempDirectory ).createTempFile( name, "tmp" );
         if ( !keepForkFiles )
         {
             file.deleteOnExit();

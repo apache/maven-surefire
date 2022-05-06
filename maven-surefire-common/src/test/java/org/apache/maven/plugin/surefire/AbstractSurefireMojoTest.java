@@ -59,6 +59,7 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.util.DefaultScanResult;
+import org.apache.maven.surefire.api.util.SureFireFileManager;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
@@ -2522,7 +2523,7 @@ public class AbstractSurefireMojoTest
     {
         Mojo plugin = new Mojo();
 
-        File includesExcludes = File.createTempFile( "surefire", "-includes" );
+        File includesExcludes = SureFireFileManager.createTempFile( "surefire", "includes" );
         FileUtils.write( includesExcludes, "AnotherTest#method" , UTF_8 );
         plugin.setIncludesFile( includesExcludes );
 
@@ -2533,7 +2534,7 @@ public class AbstractSurefireMojoTest
         VersionRange version = VersionRange.createFromVersion( "1.0" );
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDeps = new DefaultArtifact( "g", "a", version, "compile", "jar", null, handler );
-        File artifactFile = File.createTempFile( "surefire", ".jar" );
+        File artifactFile = SureFireFileManager.createTempFile( "surefire", ".jar" );
         artifactFile.deleteOnExit();
         testDeps.setFile( artifactFile );
         plugin.setProjectTestArtifacts( singletonList( testDeps ) );
@@ -2550,14 +2551,14 @@ public class AbstractSurefireMojoTest
 
         plugin.setLogger( mock( Logger.class ) );
 
-        File includes = File.createTempFile( "surefire", "-includes" );
+        File includes = SureFireFileManager.createTempFile( "surefire", "includes" );
         FileUtils.write( includes, "AnotherTest#method" , UTF_8 );
         plugin.setIncludesFile( includes );
 
         VersionRange version = VersionRange.createFromVersion( "1.0" );
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDeps = new DefaultArtifact( "g", "a", version, "compile", "test-jar", null, handler );
-        File artifactFile = File.createTempFile( "surefire", "-classes" );
+        File artifactFile = SureFireFileManager.createTempFile( "surefire", "classes" );
         String classDir = artifactFile.getCanonicalPath();
         assertThat( artifactFile.delete() ).isTrue();
         File classes = new File( classDir );
@@ -2580,14 +2581,14 @@ public class AbstractSurefireMojoTest
 
         plugin.setLogger( mock( Logger.class ) );
 
-        File excludes = File.createTempFile( "surefire", "-excludes" );
+        File excludes = SureFireFileManager.createTempFile( "surefire", "-excludes" );
         FileUtils.write( excludes, "AnotherTest" , UTF_8 );
         plugin.setExcludesFile( excludes );
 
         VersionRange version = VersionRange.createFromVersion( "1.0" );
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDeps = new DefaultArtifact( "g", "a", version, "compile", "test-jar", null, handler );
-        File artifactFile = File.createTempFile( "surefire", "-classes" );
+        File artifactFile = SureFireFileManager.createTempFile( "surefire", "-classes" );
         String classDir = artifactFile.getCanonicalPath();
         assertThat( artifactFile.delete() ).isTrue();
         File classes = new File( classDir );
@@ -2615,7 +2616,7 @@ public class AbstractSurefireMojoTest
         VersionRange version = VersionRange.createFromVersion( "1.0" );
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDeps = new DefaultArtifact( "g", "a", version, "compile", "jar", null, handler );
-        File artifactFile = File.createTempFile( "surefire", "-classes" );
+        File artifactFile = SureFireFileManager.createTempFile( "surefire", "-classes" );
         String classDir = artifactFile.getCanonicalPath();
         assertThat( artifactFile.delete() ).isTrue();
         File classes = new File( classDir );
@@ -2638,7 +2639,7 @@ public class AbstractSurefireMojoTest
 
         plugin.setLogger( mock( Logger.class ) );
 
-        File includes = File.createTempFile( "surefire", "-includes" );
+        File includes = SureFireFileManager.createTempFile( "surefire", "-includes" );
         FileUtils.write( includes, "AnotherTest" , UTF_8 );
         plugin.setIncludesFile( includes );
         plugin.setTest( "DifferentTest" );
@@ -2646,7 +2647,7 @@ public class AbstractSurefireMojoTest
         VersionRange version = VersionRange.createFromVersion( "1.0" );
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDeps = new DefaultArtifact( "g", "a", version, "compile", "test-jar", null, handler );
-        File artifactFile = File.createTempFile( "surefire", "-classes" );
+        File artifactFile = SureFireFileManager.createTempFile( "surefire", "-classes" );
         String classDir = artifactFile.getCanonicalPath();
         assertThat( artifactFile.delete() ).isTrue();
         File classes = new File( classDir );

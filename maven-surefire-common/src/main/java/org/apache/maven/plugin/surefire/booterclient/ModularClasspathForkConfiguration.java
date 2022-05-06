@@ -22,6 +22,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Commandline;
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.api.util.TempFileManager;
 import org.apache.maven.surefire.booter.AbstractPathConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ModularClasspath;
@@ -42,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static java.io.File.createTempFile;
 import static java.io.File.pathSeparatorChar;
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
@@ -118,7 +118,7 @@ public class ModularClasspathForkConfiguration
                          @Nonnull List<String[]> providerJpmsArguments )
             throws IOException
     {
-        File surefireArgs = createTempFile( "surefireargs", "", getTempDirectory() );
+        File surefireArgs = TempFileManager.instance( getTempDirectory() ).createTempFile( "surefireargs", "" );
         if ( isDebug() )
         {
             getLogger().debug( "Path to args file: " +  surefireArgs.getCanonicalPath() );

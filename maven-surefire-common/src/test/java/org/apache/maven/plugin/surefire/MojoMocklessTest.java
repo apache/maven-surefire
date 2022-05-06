@@ -31,6 +31,7 @@ import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoR
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.util.DefaultScanResult;
+import org.apache.maven.surefire.api.util.SureFireFileManager;
 import org.apache.maven.toolchain.Toolchain;
 import org.codehaus.plexus.logging.Logger;
 import org.junit.Test;
@@ -213,7 +214,7 @@ public class MojoMocklessTest
         VersionRange version = VersionRange.createFromVersion( "1.0" );
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDeps = new DefaultArtifact( "g", "a", version, "compile", "war", null, handler );
-        File artifactFile = File.createTempFile( "surefire", ".war" );
+        File artifactFile = SureFireFileManager.createTempFile( "surefire", ".war" );
         testDeps.setFile( artifactFile );
         List<Artifact> projectTestArtifacts = singletonList( testDeps );
         String[] dependenciesToScan = { "g:a" };
@@ -231,7 +232,7 @@ public class MojoMocklessTest
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDeps = new DefaultArtifact( "g", "a", version, "compile", "test-jar", null, handler );
 
-        File artifactFile = File.createTempFile( "surefire", ".jar" );
+        File artifactFile = SureFireFileManager.createTempFile( "surefire", ".jar" );
         testDeps.setFile( artifactFile );
         try ( ZipOutputStream os = new ZipOutputStream( new FileOutputStream( artifactFile ) ) )
         {
@@ -266,7 +267,7 @@ public class MojoMocklessTest
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDeps = new DefaultArtifact( "g", "a", version, "compile", "jar", null, handler );
 
-        File artifactFile = File.createTempFile( "surefire", ".jar" );
+        File artifactFile = SureFireFileManager.createTempFile( "surefire", ".jar" );
         testDeps.setFile( artifactFile );
         try ( ZipOutputStream os = new ZipOutputStream( new FileOutputStream( artifactFile ) ) )
         {
@@ -296,7 +297,7 @@ public class MojoMocklessTest
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDeps = new DefaultArtifact( "g", "a", version, "compile", "test-jar", null, handler );
 
-        File artifactFile = File.createTempFile( "surefire", "-classes" );
+        File artifactFile = SureFireFileManager.createTempFile( "surefire", "-classes" );
         String classDir = artifactFile.getCanonicalPath();
         assertThat( artifactFile.delete() ).isTrue();
         File classes = new File( classDir );
@@ -331,7 +332,7 @@ public class MojoMocklessTest
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDep1 = new DefaultArtifact( "g", "x", version, "compile", "jar", null, handler );
 
-        File artifactFile1 = File.createTempFile( "surefire", "-classes" );
+        File artifactFile1 = SureFireFileManager.createTempFile( "surefire", "-classes" );
         String classDir = artifactFile1.getCanonicalPath();
         assertThat( artifactFile1.delete() ).isTrue();
         File classes = new File( classDir );
@@ -343,7 +344,7 @@ public class MojoMocklessTest
                 .isTrue();
 
         Artifact testDep2 = new DefaultArtifact( "g", "a", version, "test", "jar", null, handler );
-        File artifactFile2 = File.createTempFile( "surefire", ".jar" );
+        File artifactFile2 = SureFireFileManager.createTempFile( "surefire", ".jar" );
         testDep2.setFile( artifactFile2 );
         try ( ZipOutputStream os = new ZipOutputStream( new FileOutputStream( artifactFile2 ) ) )
         {

@@ -20,6 +20,7 @@ package org.apache.maven.surefire.booter;
  */
 
 import org.apache.maven.surefire.api.booter.DumpErrorSingleton;
+import org.apache.maven.surefire.api.util.SureFireFileManager;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -38,7 +39,6 @@ import java.util.regex.Pattern;
 import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
 import static java.lang.String.join;
-import static java.nio.file.Files.createTempFile;
 import static java.nio.file.Files.delete;
 import static java.nio.file.Files.readAllBytes;
 import static java.util.concurrent.TimeUnit.DAYS;
@@ -407,7 +407,8 @@ final class PpidChecker
             Path stdErr = null;
             try
             {
-                stdErr = createTempFile( "surefire", null );
+                stdErr = SureFireFileManager.createTempFile( "surefire", null ).toPath();
+
                 processBuilder.redirectError( stdErr.toFile() );
                 if ( IS_OS_HP_UX ) // force to run shell commands in UNIX Standard mode on HP-UX
                 {

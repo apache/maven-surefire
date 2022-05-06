@@ -35,6 +35,7 @@ import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 
 import junit.framework.TestCase;
+import org.apache.maven.surefire.api.util.SureFireFileManager;
 import org.apache.maven.surefire.api.util.internal.ClassMethod;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -85,7 +86,7 @@ public class RunEntryStatisticsMapTest
     public void testSerializeClass()
         throws Exception
     {
-        File data = File.createTempFile( "surefire-unit", "test" );
+        File data = SureFireFileManager.createTempFile( "surefire-unit", "test" );
         RunEntryStatisticsMap newResults = new RunEntryStatisticsMap();
         ReportEntry reportEntry = new SimpleReportEntry( NORMAL_RUN, 0L,
             "abc", null, null, null, 42 );
@@ -107,7 +108,7 @@ public class RunEntryStatisticsMapTest
     public void testDeserializeClass()
         throws Exception
     {
-        File data = File.createTempFile( "surefire-unit", "test" );
+        File data = SureFireFileManager.createTempFile( "surefire-unit", "test" );
         Files.write( data.toPath(), "1,42,abc".getBytes( UTF_8 ) );
         RunEntryStatisticsMap existingEntries = RunEntryStatisticsMap.fromFile( data );
         Map<?, ?> runEntryStatistics = getInternalState( existingEntries, "runEntryStatistics" );
@@ -129,7 +130,7 @@ public class RunEntryStatisticsMapTest
     public void testSerialize()
         throws Exception
     {
-        File data = File.createTempFile( "surefire-unit", "test" );
+        File data = SureFireFileManager.createTempFile( "surefire-unit", "test" );
         RunEntryStatisticsMap existingEntries = RunEntryStatisticsMap.fromFile( data );
         RunEntryStatisticsMap newResults = new RunEntryStatisticsMap();
 
@@ -186,7 +187,7 @@ public class RunEntryStatisticsMapTest
     @SuppressWarnings( "checkstyle:magicnumber" )
     public void testMultiLineTestMethodName() throws IOException
     {
-        File data = File.createTempFile( "surefire-unit", "test" );
+        File data = SureFireFileManager.createTempFile( "surefire-unit", "test" );
         RunEntryStatisticsMap reportEntries = RunEntryStatisticsMap.fromFile( data );
         ReportEntry reportEntry = new SimpleReportEntry( NORMAL_RUN, 0L,
             "abc", null, "line1\nline2" + NL + " line3", null, 42 );
@@ -222,7 +223,7 @@ public class RunEntryStatisticsMapTest
     @SuppressWarnings( "checkstyle:magicnumber" )
     public void testCombinedMethodNames() throws IOException
     {
-        File data = File.createTempFile( "surefire-unit", "test" );
+        File data = SureFireFileManager.createTempFile( "surefire-unit", "test" );
         RunEntryStatisticsMap reportEntries = RunEntryStatisticsMap.fromFile( data );
         reportEntries.add( reportEntries.createNextGeneration( new SimpleReportEntry( NORMAL_RUN, 0L,
                     "abc", null, "line1\nline2", null, 42 ) ) );
