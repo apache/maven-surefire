@@ -19,14 +19,13 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.lang.ref.SoftReference;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
@@ -44,7 +43,8 @@ final class Utf8RecodingDeferredFileOutputStream
     public static final int CACHE_SIZE = 64 * 1024;
 
     private final String channel;
-    private Path file;
+    /** Output file lazily initialized on first write. */
+    private File file;
     private RandomAccessFile storage;
     private boolean closed;
     private SoftReference<byte[]> largeCache;
@@ -56,6 +56,13 @@ final class Utf8RecodingDeferredFileOutputStream
         this.channel = requireNonNull( channel );
     }
 
+    /**
+     * Writes the specified output to the stream unless {@code closed}.
+     *
+     * @param output output to write
+     * @param newLine whether to append a newline sequence after output
+     * @throws IOException if temporary file cannot be created/opened or write operation fails
+     */
     public synchronized void write( String output, boolean newLine )
         throws IOException
     {
@@ -66,8 +73,9 @@ final class Utf8RecodingDeferredFileOutputStream
 
         if ( storage == null )
         {
-            file = Files.createTempFile( channel, "deferred" );
-            storage = new RandomAccessFile( file.toFile(), "rw" );
+            file = File.createTempFile( channel, "deferred" );
+            file.deleteOnExit();
+            storage = new RandomAccessFile( file, "rw" );
         }
 
         if ( output == null )
@@ -120,13 +128,16 @@ final class Utf8RecodingDeferredFileOutputStream
     {
         try
         {
-            long length = 0;
             if ( storage != null )
             {
                 sync();
-                length = storage.length();
+                return storage.length();
             }
-            return length;
+            else if ( file != null )
+            {
+                return file.length();
+            }
+            return 0;
         }
         catch ( IOException e )
         {
@@ -134,41 +145,57 @@ final class Utf8RecodingDeferredFileOutputStream
         }
     }
 
+    /**
+     * Writes contents of the temporary file to an output stream.<br>
+     * This operation is always permitted (even if this stream is {@code closed}.
+     *
+     * @param out output stream
+     * @throws IOException if reading from temp file or writing to output stream fails
+     */
     @SuppressWarnings( "checkstyle:innerassignment" )
     public synchronized void writeTo( OutputStream out )
         throws IOException
     {
-        if ( storage != null )
+        try ( RandomAccessFile f = new RandomAccessFile( file, "r" ) )
         {
-            sync();
-            storage.seek( 0L );
             byte[] buffer = new byte[CACHE_SIZE];
-            for ( int readCount; ( readCount = storage.read( buffer ) ) != -1; )
+            for ( int readCount; ( readCount = f.read( buffer ) ) != -1; )
             {
                 out.write ( buffer, 0, readCount );
             }
         }
     }
 
+    /**
+     * Synchronizes the cache to file and closes the file.<br>
+     * This stream is marked as {@code closed} and cannot be written to further.
+     */
     public synchronized void free()
     {
-        if ( !closed )
+        closed = true;
+        if ( file == null )
         {
-            closed = true;
+            return;
+        }
+
+        // file was written at least once (file != null)
+        try
+        {
             if ( cache != null )
             {
-                try
-                {
-                    sync();
-                    storage.close();
-                    Files.delete( file );
-                }
-                catch ( IOException e )
-                {
-                    file.toFile()
-                        .deleteOnExit();
-                }
+                sync(); // synchronize cache to file
+                ( (Buffer) cache ).clear();
+                cache = null;
             }
+            if ( storage != null )
+            {
+                storage.close();
+                storage = null;
+            }
+        }
+        catch ( IOException e )
+        {
+            storage = null;
         }
     }
 
@@ -202,4 +229,12 @@ final class Utf8RecodingDeferredFileOutputStream
         }
         return buffer;
     }
+
+    @Override
+    public String toString()
+    {
+        return getClass().getSimpleName()
+                + String.format( "[file=%s, closed=%s]", file, closed );
+    }
+
 }

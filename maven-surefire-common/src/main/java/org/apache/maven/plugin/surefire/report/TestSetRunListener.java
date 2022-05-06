@@ -197,6 +197,8 @@ public class TestSetRunListener
 
     private void clearCapture()
     {
+        testStdOut.free();
+        testStdErr.free();
         testStdOut = initDeferred( "stdout" );
         testStdErr = initDeferred( "stderr" );
     }
@@ -219,7 +221,6 @@ public class TestSetRunListener
 
         addTestMethodStats();
         detailsForThis.reset();
-        clearCapture();
     }
 
     // ----------------------------------------------------------------------

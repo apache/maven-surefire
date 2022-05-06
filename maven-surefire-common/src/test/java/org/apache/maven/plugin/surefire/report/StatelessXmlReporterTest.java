@@ -35,7 +35,6 @@ import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.file.Path;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -423,16 +422,15 @@ public class StatelessXmlReporterTest
     {
         Utf8RecodingDeferredFileOutputStream out = new Utf8RecodingDeferredFileOutputStream( "test" );
         setInternalState( out, "cache", ByteBuffer.allocate( 0 ) );
-        Path path = mock( Path.class );
         File file = mock( File.class );
-        when( path.toFile() ).thenReturn( file );
-        setInternalState( out, "file", path );
+        setInternalState( out, "file", file );
         RandomAccessFile storage = mock( RandomAccessFile.class );
         doThrow( IOException.class ).when( storage ).close();
         setInternalState( out, "storage", storage );
         out.free();
         assertThat( (boolean) getInternalState( out, "closed" ) ).isTrue();
-        verify( file, times( 1 ) ).deleteOnExit();
+        assertThat( (ByteBuffer) getInternalState( out, "cache" ) ).isNull();
+        verify( storage, times( 1 ) ).close();
     }
 
     public void testCacheOnDeferredFile() throws Exception
@@ -461,7 +459,7 @@ public class StatelessXmlReporterTest
         assertThat( (boolean) getInternalState( out, "isDirty" ) ).isFalse();
         setInternalState( out, "isDirty", true );
         File file = new File( reportDir, "test" );
-        setInternalState( out, "file", file.toPath() );
+        setInternalState( out, "file", file );
         RandomAccessFile storage = new RandomAccessFile( file, "rw" );
         setInternalState( out, "storage", storage );
         invokeMethod( out, "sync" );
@@ -482,7 +480,6 @@ public class StatelessXmlReporterTest
         assertThat( (boolean) getInternalState( out, "closed" ) ).isFalse();
         out.free();
         assertThat( (boolean) getInternalState( out, "closed" ) ).isTrue();
-        assertThat( file ).doesNotExist();
         out.free();
         assertThat( (boolean) getInternalState( out, "closed" ) ).isTrue();
     }
