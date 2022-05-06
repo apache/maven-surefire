@@ -70,14 +70,6 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <artifactSet>
-                                <includes>
-                                    <include>org.apache.maven.shared:maven-shared-utils</include>
-                                    <incclude>commons-io:commons-io</incclude>
-                                    <include>org.apache.commons:commons-lang3</include>
-                                    <include>org.apache.commons:commons-compress</include>
-                                </includes>
-                            </artifactSet>
                             <relocations>
                                 <relocation>
                                     <pattern>org.apache.maven.shared.utils</pattern>
