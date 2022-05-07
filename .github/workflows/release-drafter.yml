@@ -20,6 +20,11 @@ on:
   push:
     branches:
       - master
+permissions:
+  contents: read
+
 jobs:
    update_release_draft:
+      permissions:
+        contents: none
       uses: apache/maven-gh-actions-shared/.github/workflows/release-drafter.yml@v2

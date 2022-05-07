@@ -21,6 +21,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: none
+
 jobs:
   build:
     name: Verify
