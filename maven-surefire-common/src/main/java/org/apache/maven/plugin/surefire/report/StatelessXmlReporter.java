@@ -511,6 +511,7 @@ public class StatelessXmlReporter
             outputStreamWriter.flush();
             eos.getUnderlying().write( ByteConstantsHolder.CDATA_START_BYTES ); // emit cdata
             utf8RecodingDeferredFileOutputStream.writeTo( eos );
+            utf8RecodingDeferredFileOutputStream.free();
             eos.getUnderlying().write( ByteConstantsHolder.CDATA_END_BYTES );
             eos.flush();
             xmlWriter.endElement();

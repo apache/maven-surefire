@@ -197,6 +197,16 @@ public class TestSetRunListener
 
     private void clearCapture()
     {
+        if ( testStdOut != null )
+        {
+            testStdOut.commit();
+        }
+
+        if ( testStdErr != null )
+        {
+            testStdErr.commit();
+        }
+
         testStdOut = initDeferred( "stdout" );
         testStdErr = initDeferred( "stderr" );
     }
@@ -275,6 +285,7 @@ public class TestSetRunListener
     @Override
     public void testExecutionSkippedByUser()
     {
+        clearCapture();
     }
 
     @Override
