@@ -22,6 +22,7 @@ package org.apache.maven.plugin.surefire.report;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.io.UncheckedIOException;
 import java.lang.ref.SoftReference;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -29,14 +30,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+// import static java.nio.file.Files.delete;
+import static java.nio.file.Files.notExists;
+import static java.nio.file.Files.size;
 import static java.util.Objects.requireNonNull;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 
 import org.apache.maven.surefire.api.util.SureFireFileManager;
 
 /**
- * A deferred file output stream decorator that recodes the bytes written into the stream from the VM default encoding
- * to UTF-8.
+ * A deferred file output stream decorator that encodes the string from the VM to UTF-8.
+ * <br>
+ * The deferred file is temporary file, and it is created at the first {@link #write(String, boolean) write}.
+ * The {@link #writeTo(OutputStream) reads} can be called anytime.
+ * It is highly recommended to {@link #commit() commit} the cache which would close the file stream
+ * and subsequent reads may continue.
+ * The {@link #free()} method would commit and delete the deferred file.
  *
  * @author Andreas Gudian
  */
@@ -123,13 +132,12 @@ final class Utf8RecodingDeferredFileOutputStream
     {
         try
         {
-            long length = 0;
-            if ( storage != null )
+            sync();
+            if ( storage != null && !closed )
             {
-                sync();
-                length = storage.length();
+                storage.getFD().sync();
             }
-            return length;
+            return file == null ? 0 : size( file );
         }
         catch ( IOException e )
         {
@@ -141,15 +149,57 @@ final class Utf8RecodingDeferredFileOutputStream
     public synchronized void writeTo( OutputStream out )
         throws IOException
     {
+        if ( file != null && notExists( file ) )
+        {
+            storage = null;
+        }
+
+        if ( ( storage == null && file != null ) || ( storage != null && !storage.getChannel().isOpen() ) )
+        {
+            storage = new RandomAccessFile( file.toFile(), "rw" );
+        }
+
         if ( storage != null )
         {
             sync();
+            final long currentFilePosition = storage.getFilePointer();
             storage.seek( 0L );
-            byte[] buffer = new byte[CACHE_SIZE];
-            for ( int readCount; ( readCount = storage.read( buffer ) ) != -1; )
+            try
             {
-                out.write ( buffer, 0, readCount );
+                byte[] buffer = new byte[CACHE_SIZE];
+                for ( int readCount; ( readCount = storage.read( buffer ) ) != -1; )
+                {
+                    out.write( buffer, 0, readCount );
+                }
             }
+            finally
+            {
+                storage.seek( currentFilePosition );
+            }
+        }
+    }
+
+    public synchronized void commit()
+    {
+        if ( storage == null )
+        {
+            return;
+        }
+
+        try
+        {
+            sync();
+            storage.close();
+        }
+        catch ( IOException e )
+        {
+            throw new UncheckedIOException( e );
+        }
+        finally
+        {
+            storage = null;
+            cache = null;
+            largeCache = null;
         }
     }
 
@@ -158,19 +208,28 @@ final class Utf8RecodingDeferredFileOutputStream
         if ( !closed )
         {
             closed = true;
-            if ( cache != null )
+            if ( file != null )
             {
                 try
                 {
-                    sync();
-                    storage.close();
-                    Files.delete( file );
+                    commit();
+                    //todo delete( file ); uncomment L485 assertThat( file ).doesNotExist() in StatelessXmlReporterTest
                 }
-                catch ( IOException e )
+                catch ( /*todo uncomment IOException |*/ UncheckedIOException e )
                 {
+                    /*todo uncomment file.toFile()
+                        .deleteOnExit();*/
+                }
+                finally
+                {
+                    // todo should be removed after uncommented delete( file )
                     file.toFile()
                         .deleteOnExit();
                 }
+
+                storage = null;
+                cache = null;
+                largeCache = null;
             }
         }
     }
@@ -184,14 +243,17 @@ final class Utf8RecodingDeferredFileOutputStream
 
         isDirty = false;
 
-        ( (Buffer) cache ).flip();
-        byte[] array = cache.array();
-        int offset = cache.arrayOffset() + ( (Buffer) cache ).position();
-        int length = cache.remaining();
-        ( (Buffer) cache ).clear();
-        storage.write( array, offset, length );
-        // the data that you wrote with the mode "rw" may still only be kept in memory and may be read back
-        // storage.getFD().sync();
+        if ( storage != null && cache != null )
+        {
+            ( (Buffer) cache ).flip();
+            byte[] array = cache.array();
+            int offset = cache.arrayOffset() + ( (Buffer) cache ).position();
+            int length = cache.remaining();
+            ( (Buffer) cache ).clear();
+            storage.write( array, offset, length );
+            // the data that you wrote with the mode "rw" may still only be kept in memory and may be read back
+            // storage.getFD().sync();
+        }
     }
 
     @SuppressWarnings( "checkstyle:innerassignment" )
