@@ -248,8 +248,8 @@ public class DefaultForkConfigurationTest
         DefaultForkConfiguration mockedConfig = spy( config );
         String newArgLine = invokeMethod( mockedConfig, "newJvmArgLine", new Class[] { int.class }, 2 );
         verifyPrivate( mockedConfig, times( 1 ) ).invoke( "interpolateArgLineWithPropertyExpressions" );
-        verifyPrivate( mockedConfig, times( 1 ) ).invoke( "extendJvmArgLine", eq( "a b" ) );
-        assertThat( newArgLine ).isEqualTo( "a b" );
+        verifyPrivate( mockedConfig, times( 1 ) ).invoke( "extendJvmArgLine", eq( "a  b" ) );
+        assertThat( newArgLine ).isEqualTo( "a  b" );
     }
 
     @Test
