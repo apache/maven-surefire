@@ -21,28 +21,8 @@
 
 <project name="Surefire">
 
-  <bannerLeft>
-    <name>${project.name}</name>
-    <src>http://maven.apache.org/images/apache-maven-project.png</src>
-    <href>http://maven.apache.org/</href>
-  </bannerLeft>
-  <bannerRight>
-    <src>http://maven.apache.org/images/maventxt_logo_200.gif</src>
-  </bannerRight>
-
-  <skin>
-    <groupId>org.apache.maven.skins</groupId>
-    <artifactId>maven-fluido-skin</artifactId>
-    <version>1.9</version>
-  </skin>
-
   <custom>
     <fluidoSkin>
-      <topBarEnabled>true</topBarEnabled>
-      <sideBarEnabled>true</sideBarEnabled>
-      <googleSearch>
-        <sitesearch>${project.url}</sitesearch>
-      </googleSearch>
       <gitHub>
         <projectId>apache/maven-surefire</projectId>
         <ribbonOrientation>right</ribbonOrientation>
@@ -64,7 +44,7 @@
     
     <footer>
 		<![CDATA[
-		  <p>Apache ${project.name}, ${project.name}, Apache, the Apache feather logo, and the Apache ${project.name} project logos are trademarks of The Apache Software Foundation. <a href="${project.url}privacy-policy.html">Privacy Policy</a></p>
+		  <p>Apache ${project.name}, ${project.name}, Apache, the Apache feather logo, and the Apache ${project.name} project logos are trademarks of The Apache Software Foundation.</p>
         ]]>
     </footer>
   </body>
