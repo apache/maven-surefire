@@ -1,0 +1,90 @@
+  ------
+  History
+  ------
+  Stephen Connolly
+  Allan Ramirez
+  ------
+  2011-06-27
+  ------
+  
+~~ Licensed to the Apache Software Foundation (ASF) under one
+~~ or more contributor license agreements.  See the NOTICE file
+~~ distributed with this work for additional information
+~~ regarding copyright ownership.  The ASF licenses this file
+~~ to you under the Apache License, Version 2.0 (the
+~~ "License"); you may not use this file except in compliance
+~~ with the License.  You may obtain a copy of the License at
+~~
+~~   http://www.apache.org/licenses/LICENSE-2.0
+~~
+~~ Unless required by applicable law or agreed to in writing,
+~~ software distributed under the License is distributed on an
+~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+~~ KIND, either express or implied.  See the License for the
+~~ specific language governing permissions and limitations
+~~ under the License.
+
+~~ NOTE: For help with the syntax of this file, see:
+~~ http://maven.apache.org/doxia/references/apt-format.html
+  
+
+Maven ${thisPlugin} Plugin
+
+
+ This is the history of features of the plugin.
+
+*---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+||Versions                                    ||Release Targets                                                                                                                                                                   \ |
+*---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|                                             | Maven API 3.0 and Java 1.7                                                                                                                                                        \ |
+|                                             |                                                                                                                                                                                   \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1493}Maven Plugin API 3.0}}                                                                                                     \ |
+| 3.0.0-M1                                    | {{{https://issues.apache.org/jira/browse/SUREFIRE-1474}Java 1.7 as minimum}}                                                                                                      \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1212}@Component is deprecated. @Parameter should be used instead}}                                                              \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1588}Surefire manifest jar classloading broken on latest Debian/Ubuntu Java8}}                                                  \ |
+|                                             | {{{https://issues.apache.org/jira/projects/SUREFIRE/versions/12342871}See the Release Notes for the version 3.0.0-M1}}                                                            \ |
+*---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|                                             | Fixed: JDK9 and Windows Class-Path issues, 3.0 and Legacy Report XSD, 3.0.0-M2 shadefire                                                                                          \ |
+|                                             |                                                                                                                                                                                   \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1568}Fixed JDK9+ (Jigsaw) modular paths (module-info.java) having white spaces on file system}}                                 \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1593}Windows slashes appear in relative paths of Class-Path in MANIFEST.MF (Boot Manifest-JAR)}}                                \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1602}Surefire fails loading class ForkedBooter when using a sub-directory pom file}}                                            \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1605}Plugin fails if used Toolchains together with JDK9+ and (Jigsaw) modular paths (module-info.java)}}                        \ |
+| 3.0.0-M2                                    | {{{https://issues.apache.org/jira/browse/SUREFIRE-1590}3.0 and Legacy Report XSD}}                                                                                                \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1600}3.0.0-M2 shadefire}}                                                                                                       \ |
+|                                             |                                                                                                                                                                                   \ |
+|                                             | Feature: Option to switch-off Java 9 modules                                                                                                                                      \ |
+|                                             |                                                                                                                                                                                   \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1531}Option to switch-off Java 9 modules}}                                                                                      \ |
+|                                             |                                                                                                                                                                                   \ |
+|                                             | {{{https://issues.apache.org/jira/projects/SUREFIRE/versions/12344396}See the Release Notes for the version 3.0.0-M2}}                                                            \ |
+*---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|                                             | Fixed: maven-surefire-report-plugin supports JDK11, JUnit5 issues, deprecated skipTests in Failsafe plugin, used ShadeFire 3.0.0-M2                                               \ |
+|                                             |                                                                                                                                                                                   \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1613}maven-surefire-report-plugin fails on JDK 11}}                                                                             \ |
+| 3.0.0-M3                                    | {{{https://issues.apache.org/jira/browse/SUREFIRE-1614}JUnit Runner that writes to System.out corrupts Surefire's STDOUT when using JUnit's Vintage Engine}}                      \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1616}Smart stacktrace in test summary should not print JUnit5 assertion exception type}}                                        \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1611}Deprecate skipTests in Failsafe Plugin}}                                                                                   \ |
+|                                             | {{{https://issues.apache.org/jira/projects/SUREFIRE/versions/12342872}See the Release Notes for the version 3.0.0-M3}}                                                            \ |
+*---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|                                             | Provided 3 extensions of reporters which can be used to customize XML report, console and file reporters. It is very useful for JUnit5 users.                                     \ |
+|                                             | The internal implementation was reworked so that new commands and events can be easily added. The impl is located in a center point and it is a prerequisite in next versions.    \ |
+| 3.0.0-M4                                    | Provided bug fixes for Docker Alpine/BusyBox Linux, JUnit5 and 43 more.                                                                                                           \ |
+|                                             |                                                                                                                                                                                   \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1222}ForkClient attempts to consume unrelated lines}}                                                                           \ |
+*---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|                                             | Test Report tasks (prerequisite: SUREFIRE-1222 in 3.0.0-M4)                                                                                                                       \ |
+|                                             | New interprocess communication with TCP/IP which fixed current blocker and critical bugs.                                                                                         \ |
+| 3.0.0-M5                                    | Provided extensions which can be used to customize this interprocess communication in plugin configuration. It is internally used to switch over the pipes and TCP connector.     \ |
+|                                             |                                                                                                                                                                                   \ |
+|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1658}TCP/IP Channel for forked Surefire JVM. Extensions API and SPI. Polymorphism for remote and local process communication.}} \ |
+*---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 3.0.0-M6                                    | ReportEntry contains new fields testRunId:long and RunMode which help identifying the tests and logs. The plugin supports Java 1.8 and Maven Plugin API 3.2.5. Many bug fixes.    \ |
+|                                             | {{{https://issues.apache.org/jira/issues/?jql=project%20%3D%20SUREFIRE%20AND%20fixVersion%20%3D%203.0.0-M6%20ORDER%20BY%20priority%20DESC%2C%20key}ASF Release versions}}         \ |
+*---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 3.0.0-M7                                    | SurefireProvider interface, TestSetRunListener, StatelessXmlReporter, and related code will be reworked. Currently, Java classes are executed as tests and we will support more.  \ |
+|                                             | {{{https://issues.apache.org/jira/issues/?jql=project%20%3D%20SUREFIRE%20AND%20fixVersion%20%3D%203.0.0-M7%20ORDER%20BY%20priority%20DESC%2C%20key}ASF Release versions}}         \ |
+*---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 3.0.0                                       | Breaking backwards compatibility with system properties in configuration parameters, removing deprecated configuration parameters and removing deprecated code, etc.              \ |
+|                                             | {{{https://issues.apache.org/jira/issues/?jql=project%20%3D%20SUREFIRE%20AND%20fixVersion%20%3D%203.0%20ORDER%20BY%20priority%20DESC%2C%20key}ASF Release versions}}              \ |
+*---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
