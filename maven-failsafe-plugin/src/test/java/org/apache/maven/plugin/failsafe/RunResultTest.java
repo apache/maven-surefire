@@ -21,6 +21,7 @@ package org.apache.maven.plugin.failsafe;
 
 import org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils;
 import org.apache.maven.surefire.api.suite.RunResult;
+import org.apache.maven.surefire.api.util.SureFireFileManager;
 import org.junit.Test;
 
 import java.io.File;
@@ -84,7 +85,7 @@ public class RunResultTest
         RunResult simpleAggregate = getSimpleAggregate();
         RunResult additional = new RunResult( 2, 1, 2, 2, "msg " + ( (char) 0x0E01 ), true );
 
-        File summary = File.createTempFile( "failsafe", "test" );
+        File summary = SureFireFileManager.createTempFile( "failsafe", "test" );
         FailsafeSummaryXmlUtils.writeSummary( simpleAggregate, summary, false );
         FailsafeSummaryXmlUtils.writeSummary( additional, summary, true );
         RunResult actual = FailsafeSummaryXmlUtils.toRunResult( summary );
@@ -121,7 +122,7 @@ public class RunResultTest
     private void writeReadCheck( RunResult expected )
             throws Exception
     {
-        File tmp = File.createTempFile( "test", "xml" );
+        File tmp = SureFireFileManager.createTempFile( "test", "xml" );
         FailsafeSummaryXmlUtils.fromRunResultToFile( expected, tmp );
 
         RunResult actual = FailsafeSummaryXmlUtils.toRunResult( tmp );

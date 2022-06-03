@@ -21,6 +21,7 @@ package org.apache.maven.plugin.failsafe;
 
 import org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils;
 import org.apache.maven.surefire.api.suite.RunResult;
+import org.apache.maven.surefire.api.util.SureFireFileManager;
 import org.junit.Test;
 
 import java.io.File;
@@ -73,7 +74,7 @@ public class MarshallerUnmarshallerTest
                                              + "\n\tat org.apache.maven.plugin.surefire.booterclient.ForkStarter"
                                              + ".awaitResultsDone(ForkStarter.java:489)", true );
 
-        File xml = File.createTempFile( "failsafe-summary", ".xml" );
+        File xml = SureFireFileManager.createTempFile( "failsafe-summary", ".xml" );
         FailsafeSummaryXmlUtils.writeSummary( expected, xml, false );
 
         RunResult actual = FailsafeSummaryXmlUtils.toRunResult( xml );

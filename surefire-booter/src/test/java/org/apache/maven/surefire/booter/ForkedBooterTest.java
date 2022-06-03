@@ -19,6 +19,7 @@ package org.apache.maven.surefire.booter;
  * under the License.
  */
 
+import org.apache.maven.surefire.api.util.SureFireFileManager;
 import org.apache.maven.surefire.shared.io.FileUtils;
 import org.junit.Test;
 
@@ -202,7 +203,7 @@ public class ForkedBooterTest
     @Test
     public void testPropsExist() throws Exception
     {
-        File props = File.createTempFile( "surefire", ".properties" );
+        File props = SureFireFileManager.createTempFile( "surefire", ".properties" );
         String target = props.getParent();
         String file = props.getName();
         FileUtils.write( props, "Hi", StandardCharsets.US_ASCII );

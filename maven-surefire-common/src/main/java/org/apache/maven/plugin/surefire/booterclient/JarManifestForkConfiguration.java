@@ -25,6 +25,7 @@ import org.apache.maven.surefire.shared.compress.archivers.zip.ZipArchiveOutputS
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Commandline;
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.api.util.TempFileManager;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
@@ -113,7 +114,7 @@ public final class JarManifestForkConfiguration
                             @Nonnull File dumpLogDirectory )
             throws IOException
     {
-        File file = File.createTempFile( "surefirebooter", ".jar", getTempDirectory() );
+        File file = TempFileManager.instance( getTempDirectory() ).createTempFile( "surefirebooter", ".jar" );
         if ( !isDebug() )
         {
             file.deleteOnExit();

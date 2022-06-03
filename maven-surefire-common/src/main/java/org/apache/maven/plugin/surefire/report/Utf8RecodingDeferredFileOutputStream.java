@@ -32,6 +32,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 
+import org.apache.maven.surefire.api.util.SureFireFileManager;
+
 /**
  * A deferred file output stream decorator that recodes the bytes written into the stream from the VM default encoding
  * to UTF-8.
@@ -66,7 +68,8 @@ final class Utf8RecodingDeferredFileOutputStream
 
         if ( storage == null )
         {
-            file = Files.createTempFile( channel, "deferred" );
+
+            file = SureFireFileManager.createTempFile( channel, "deferred" ).toPath();
             storage = new RandomAccessFile( file.toFile(), "rw" );
         }
 
