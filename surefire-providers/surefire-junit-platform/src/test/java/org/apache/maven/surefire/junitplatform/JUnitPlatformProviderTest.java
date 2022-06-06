@@ -448,7 +448,7 @@ public class JUnitPlatformProviderTest
 
         assertEquals( DisplayNameTest.class.getName(), reportEntries.get( 0 ).getSourceName() );
         assertEquals( "<< ✨ >>", reportEntries.get( 0 ).getSourceText() );
-        assertEquals( "test1", reportEntries.get( 0 ).getName() );
+        assertEquals( "test1()", reportEntries.get( 0 ).getName() );
         assertEquals( "73$71 ✔", reportEntries.get( 0 ).getNameText() );
     }
 
@@ -480,7 +480,7 @@ public class JUnitPlatformProviderTest
 
         assertEquals( TestClass8.class.getName(), reportEntries.get( 0 ).getSourceName() );
         assertNull( reportEntries.get( 0 ).getSourceText() );
-        assertEquals( "testParameterizedTestCases", reportEntries.get( 0 ).getName() );
+        assertEquals( "testParameterizedTestCases()", reportEntries.get( 0 ).getName() );
         assertNull( reportEntries.get( 0 ).getNameText() );
 
         TestExecutionSummary summary = executionListener.summaries.get( 0 );
@@ -519,7 +519,7 @@ public class JUnitPlatformProviderTest
 
         assertEquals( TestClass9.class.getName(), reportEntries.get( 0 ).getSourceName() );
         assertNull( reportEntries.get( 0 ).getSourceText() );
-        assertEquals( "testParameterizedTestCases", reportEntries.get( 0 ).getName() );
+        assertEquals( "testParameterizedTestCases()", reportEntries.get( 0 ).getName() );
         assertNull( reportEntries.get( 0 ).getNameText() );
 
         TestExecutionSummary summary = executionListener.summaries.get( 0 );

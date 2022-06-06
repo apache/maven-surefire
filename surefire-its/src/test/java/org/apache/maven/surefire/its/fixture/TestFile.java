@@ -154,6 +154,25 @@ public class TestFile
         return assertContainsText( containsString( text ) );
     }
 
+    public TestFile assertNotContainsText( Matcher<String> matcher )
+    {
+        final List<String> list = surefireVerifier.loadFile( file, encoding );
+        for ( String line : list )
+        {
+            if ( matcher.matches( line ) )
+            {
+                Assert.fail( "Did not find expected message in log" );
+                return null;
+            }
+        }
+        return this;
+    }
+
+    public TestFile assertNotContainsText( String text )
+    {
+        return assertNotContainsText( containsString( text ) );
+    }
+
     public URI toURI()
     {
         return file.toURI();
