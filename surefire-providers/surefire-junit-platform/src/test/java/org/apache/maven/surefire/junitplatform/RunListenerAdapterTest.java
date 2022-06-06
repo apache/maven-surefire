@@ -111,7 +111,7 @@ public class RunListenerAdapterTest
         verify( listener ).testStarting( entryCaptor.capture() );
 
         ReportEntry entry = entryCaptor.getValue();
-        assertEquals( MY_TEST_METHOD_NAME, entry.getName() );
+        assertEquals( MY_TEST_METHOD_NAME.concat( "()" ), entry.getName() );
         assertEquals( MyTestClass.class.getName(), entry.getSourceName() );
         assertNull( entry.getStackTraceWriter() );
     }
@@ -161,7 +161,7 @@ public class RunListenerAdapterTest
 
         adapter.executionStarted( TestIdentifier.from( child ) );
         verify( listener ).testStarting( new SimpleReportEntry( NORMAL_RUN, 0x0000000100000001L, className, null,
-            MY_TEST_METHOD_NAME, null ) );
+            MY_TEST_METHOD_NAME.concat( "()" ), null ) );
         verifyNoMoreInteractions( listener );
 
         adapter.executionFinished( TestIdentifier.from( child ), successful() );
@@ -176,7 +176,7 @@ public class RunListenerAdapterTest
         assertThat( report.getValue().getSourceText() )
                 .isNull();
         assertThat( report.getValue().getName() )
-                .isEqualTo( MY_TEST_METHOD_NAME );
+                .isEqualTo( MY_TEST_METHOD_NAME.concat( "()" ) );
         assertThat( report.getValue().getNameText() )
                 .isNull();
         assertThat( report.getValue().getElapsed() )
@@ -526,7 +526,7 @@ public class RunListenerAdapterTest
 
         ReportEntry entry = entryCaptor.getValue();
         assertEquals( MyTestClass.class.getTypeName(), entry.getSourceName() );
-        assertEquals( MY_TEST_METHOD_NAME, entry.getName() );
+        assertEquals( MY_TEST_METHOD_NAME.concat( "()" ), entry.getName() );
         assertNotNull( entry.getStackTraceWriter() );
         assertNotNull( entry.getStackTraceWriter().getThrowable() );
         assertThat( entry.getStackTraceWriter().getThrowable().getTarget() )
@@ -800,10 +800,24 @@ public class RunListenerAdapterTest
 
     static class TestMethodTestDescriptorWithDisplayName extends AbstractTestDescriptor
     {
+        private final String legacyName;
+
         private TestMethodTestDescriptorWithDisplayName( UniqueId uniqueId,
                                                          Class<?> testClass, Method testMethod, String displayName )
         {
-            super( uniqueId, displayName, MethodSource.from( testClass, testMethod ) );
+            this( uniqueId, displayName, MethodSource.from( testClass, testMethod ) );
+        }
+
+        private TestMethodTestDescriptorWithDisplayName( UniqueId uniqueId, String displayName, MethodSource source )
+        {
+            super( uniqueId, displayName, source );
+            legacyName = source.getMethodName();
+        }
+
+        @Override
+        public String getLegacyReportingName()
+        {
+            return legacyName;
         }
 
         @Override
