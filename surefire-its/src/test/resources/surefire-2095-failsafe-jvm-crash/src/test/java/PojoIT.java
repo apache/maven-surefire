@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.failsafe;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.failsafe;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -19,29 +17,28 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
-import junit.framework.JUnit4TestAdapter;
-import junit.framework.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
-
-/**
- * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
- *
- * @author Tibor Digana (tibor17)
- * @since 2.21.0
- */
-@SuiteClasses( {
-        IntegrationTestMojoTest.class,
-        MarshallerUnmarshallerTest.class,
-        RunResultTest.class,
-        VerifyMojoTest.class
-} )
-@RunWith( Suite.class )
-public class JUnit4SuiteTest
+public class PojoIT
 {
-    public static Test suite()
+    private static int calls;
+
+    public void setUp()
     {
-        return new JUnit4TestAdapter( JUnit4SuiteTest.class );
+        System.out.println( "setUp called " + ++calls );
     }
+
+    public void tearDown()
+    {
+        System.out.println( "tearDown called " + calls );
+    }
+
+    public void testSuccess()
+    {
+        assert true;
+    }
+
+    public void testFailure()
+    {
+        assert false;
+    }
+
 }

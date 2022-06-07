@@ -33,6 +33,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.surefire.api.cli.CommandLineOption;
 import org.apache.maven.surefire.api.suite.RunResult;
+import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.codehaus.plexus.logging.Logger;
 
 import java.io.File;
@@ -198,8 +199,25 @@ public class VerifyMojo
                 throw new MojoExecutionException( e.getMessage(), e );
             }
 
-            reportExecution( this, summary, getConsoleLogger(), null );
+            reportExecution( this, summary, getConsoleLogger(), getBooterForkException( summary ) );
         }
+    }
+
+    private Exception getBooterForkException( RunResult summary )
+    {
+        String firstForkExceptionFailureMessage =
+            String.format( "%s: " , SurefireBooterForkException.class.getName() );
+        if ( summary.getFailure() != null && summary.getFailure().contains( firstForkExceptionFailureMessage ) )
+        {
+            return new SurefireBooterForkException(
+                summary.getFailure().substring( firstForkExceptionFailureMessage.length() ) );
+        }
+        return null;
+    }
+
+    void setLogger( Logger logger )
+    {
+        this.logger = logger;
     }
 
     private PluginConsoleLogger getConsoleLogger()
@@ -359,6 +377,16 @@ public class VerifyMojo
         this.reportsDirectory = reportsDirectory;
     }
 
+    public File getSummaryFile()
+    {
+        return summaryFile;
+    }
+
+    public void setSummaryFile( File summaryFile )
+    {
+        this.summaryFile = summaryFile;
+    }
+
     @Override
     public boolean getFailIfNoTests()
     {
@@ -381,6 +409,16 @@ public class VerifyMojo
     public void setFailOnFlakeCount( int failOnFlakeCount )
     {
         this.failOnFlakeCount = failOnFlakeCount;
+    }
+
+    public MavenSession getSession()
+    {
+        return session;
+    }
+
+    public void setSession( MavenSession session )
+    {
+        this.session = session;
     }
 
     private boolean existsSummaryFile()
