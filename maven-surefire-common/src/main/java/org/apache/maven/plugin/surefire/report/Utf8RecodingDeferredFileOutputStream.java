@@ -26,11 +26,9 @@ import java.io.UncheckedIOException;
 import java.lang.ref.SoftReference;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-// import static java.nio.file.Files.delete;
 import static java.nio.file.Files.notExists;
 import static java.nio.file.Files.size;
 import static java.util.Objects.requireNonNull;
