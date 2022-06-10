@@ -223,6 +223,11 @@
     <profiles>
         <profile>
             <id>run-its</id>
+            <properties>
+              <verifier.forkMode>auto</verifier.forkMode>
+              <surefireMemory>-Xmx512m</surefireMemory>
+              <surefire.extraArgLine>-server -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</surefire.extraArgLine>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -234,7 +239,7 @@
                             <threadCount>1</threadCount>
                             <perCoreThreadCount>false</perCoreThreadCount>
                             <forkMode>once</forkMode>
-                            <argLine>-server -Xmx64m -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+                            <argLine>${surefireMemory} ${surefire.extraArgLine}</argLine>
                             <includes>
                                 <include>org/apache/**/*IT*.java</include>
                             </includes>
@@ -246,7 +251,7 @@
                                 <maven.settings.file>${project.build.directory}/private/settings.xml</maven.settings.file>
                                 <maven.toolchains.file>${project.build.directory}/private/toolchains.xml</maven.toolchains.file>
                                 <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>
-                                <verifier.forkMode>forked</verifier.forkMode>
+                                <verifier.forkMode>${verifier.forkMode}</verifier.forkMode>
                                 <jacoco.agent>${jacoco-it.agent}</jacoco.agent>
                             </systemPropertyVariables>
                             <redirectTestOutputToFile>true</redirectTestOutputToFile>
