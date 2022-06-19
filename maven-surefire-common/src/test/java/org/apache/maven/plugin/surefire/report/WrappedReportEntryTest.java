@@ -116,6 +116,42 @@ public class WrappedReportEntryTest
         assertTrue( wr.isSkipped() );
     }
 
+    public void testGetReportNameWithGroupWhenSourceTextIsNull()
+    {
+        String className = "ClassName";
+        String classText = null;
+        ReportEntry reportEntry = new SimpleReportEntry( NORMAL_RUN, 1L, className, classText, null, null );
+        WrappedReportEntry wr = new WrappedReportEntry( reportEntry, SKIPPED, 12, null, null );
+        assertEquals( className, wr.getReportNameWithGroup() );
+    }
+
+    public void testGetReportNameWithGroupWhenSourceTextIsEmpty()
+    {
+        String className = "ClassName";
+        String classText = "";
+        ReportEntry reportEntry = new SimpleReportEntry( NORMAL_RUN, 1L, className, classText, null, null );
+        WrappedReportEntry wr = new WrappedReportEntry( reportEntry, SKIPPED, 12, null, null );
+        assertEquals( className, wr.getReportNameWithGroup() );
+    }
+
+    public void testGetReportNameWithGroupWhenSourceTextIsBlank()
+    {
+        String className = "ClassName";
+        String classText = "  ";
+        ReportEntry reportEntry = new SimpleReportEntry( NORMAL_RUN, 1L, className, classText, null, null );
+        WrappedReportEntry wr = new WrappedReportEntry( reportEntry, SKIPPED, 12, null, null );
+        assertEquals( className, wr.getReportNameWithGroup() );
+    }
+
+    public void testGetReportNameWithGroupWhenSourceTextIsProvided()
+    {
+        String className = "ClassName";
+        String classText = "The Class Name";
+        ReportEntry reportEntry = new SimpleReportEntry( NORMAL_RUN, 1L, className, classText, null, null );
+        WrappedReportEntry wr = new WrappedReportEntry( reportEntry, SKIPPED, 12, null, null );
+        assertEquals( classText, wr.getReportNameWithGroup() );
+    }
+
     public void testElapsed()
     {
         String className = "[0] 1\u002C 2\u002C 3 (testSum)";

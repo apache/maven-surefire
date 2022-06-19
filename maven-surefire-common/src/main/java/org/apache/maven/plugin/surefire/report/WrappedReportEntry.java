@@ -223,7 +223,14 @@ public class WrappedReportEntry
     @Override
     public String getReportNameWithGroup()
     {
-        return original.getReportNameWithGroup();
+        String reportNameWithGroup = original.getReportNameWithGroup();
+
+        if ( isBlank ( reportNameWithGroup ) )
+        {
+            return getNameWithGroup();
+        }
+
+        return reportNameWithGroup;
     }
 
     @Nonnull

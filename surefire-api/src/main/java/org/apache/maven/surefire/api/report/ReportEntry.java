@@ -105,7 +105,8 @@ public interface ReportEntry
     /**
      * A source text of the test case together with the group or category (if any exists).
      *
-     * @return A string with the test case text and group/category, or just the source text.
+     * @return A string with the test case text and group/category, or just the source text. If no
+     * source text is provided, then this will return null.
      */
     String getReportNameWithGroup();
 
