@@ -20,20 +20,47 @@ package org.apache.maven.surefire.api.util;
  */
 
 import java.io.File;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
- * Centralized file management of surefire.
+ * Centralized file management of temporary files in surefire.<br>
+ * Files are deleted on VM exit.
  *
  * @author Markus Spann
  */
 public final class SureFireFileManager
 {
 
+    private static TempFileManager instance = create();
+
+    private static TempFileManager create()
+    {
+        String subDirName = "surefire";
+
+        // create directory name suffix from legal chars in the current user name
+        // or a millisecond timestamp as fallback
+        String userSuffix = Stream.of( "user.name", "USER", "USERNAME" )
+                        .map( System::getProperty )
+                        .filter( Objects::nonNull )
+                        .findFirst()
+                        .map( u -> u.replaceAll( "[^A-Za-z0-9\\-_]", "" ) )
+                        .map( u -> u.isEmpty() ? null : u )
+                        .orElse( Long.toString( System.currentTimeMillis() ) );
+
+        if ( userSuffix != null )
+        {
+            subDirName += "-" + userSuffix;
+        }
+
+        TempFileManager tfm = TempFileManager.instance( subDirName );
+        tfm.setDeleteOnExit( true );
+        return tfm;
+    }
+
     public static File createTempFile( String prefix, String suffix )
     {
-
-        return TempFileManager.instance( "surefire" ).createTempFile( prefix, suffix );
-
+        return instance.createTempFile( prefix, suffix );
     }
 
 }
