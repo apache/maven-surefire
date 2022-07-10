@@ -170,7 +170,7 @@ public class SurefireReportMojoTest
 
         String htmlContent = FileUtils.fileRead( report );
 
-        int idx = htmlContent.indexOf( "./xref-test/com/shape/CircleTest.html#44" );
+        int idx = htmlContent.indexOf( "./xref-test/com/shape/CircleTest.html#L44" );
 
         assertTrue( idx == -1 );
     }
@@ -195,7 +195,7 @@ public class SurefireReportMojoTest
 
         String htmlContent = FileUtils.fileRead( report );
 
-        int idx = htmlContent.indexOf( "./xref-test/com/shape/CircleTest.html#44" );
+        int idx = htmlContent.indexOf( "./xref-test/com/shape/CircleTest.html#L44" );
 
         assertTrue( idx < 0 );
     }
@@ -276,7 +276,7 @@ public class SurefireReportMojoTest
 
         assertThat( htmlContent, containsString( ">surefire.MyTest:13</a>" ) );
 
-        assertThat( htmlContent, containsString( "./xref-test/surefire/MyTest.html#13" ) );
+        assertThat( htmlContent, containsString( "./xref-test/surefire/MyTest.html#L13" ) );
 
         assertThat( htmlContent, containsString( toSystemNewLine( "<pre>"
         + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
@@ -361,7 +361,7 @@ public class SurefireReportMojoTest
         assertThat( htmlContent,
                     containsString( ">surefire.MyTest:13</a>" ) );
 
-        assertThat( htmlContent, containsString( "./xref-test/surefire/MyTest.html#13" ) );
+        assertThat( htmlContent, containsString( "./xref-test/surefire/MyTest.html#L13" ) );
 
         assertThat( htmlContent, containsString( toSystemNewLine( "<pre>"
         + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
@@ -424,7 +424,7 @@ public class SurefireReportMojoTest
         assertThat( htmlContent,
                     containsString( ">surefire.MyTest:13</a>" ) );
 
-        assertThat( htmlContent, containsString( "./xref-test/surefire/MyTest.html#13" ) );
+        assertThat( htmlContent, containsString( "./xref-test/surefire/MyTest.html#L13" ) );
 
         assertThat( htmlContent, containsString( toSystemNewLine( "<pre>"
         + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
@@ -511,7 +511,7 @@ public class SurefireReportMojoTest
 
         assertThat( htmlContent, containsString( ">surefire.MyTest$A:45</a>" ) );
 
-        assertThat( htmlContent, containsString( "./xref-test/surefire/MyTest$A.html#45" ) );
+        assertThat( htmlContent, containsString( "./xref-test/surefire/MyTest$A.html#L45" ) );
 
         assertThat( htmlContent, containsString( toSystemNewLine( "<pre>"
         + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
@@ -573,7 +573,7 @@ public class SurefireReportMojoTest
 
         assertThat( htmlContent, containsString( ">surefire.MyTest$A:45</a>" ) );
 
-        assertThat( htmlContent, containsString( "./xref-test/surefire/MyTest$A.html#45" ) );
+        assertThat( htmlContent, containsString( "./xref-test/surefire/MyTest$A.html#L45" ) );
 
         assertThat( htmlContent, containsString( toSystemNewLine(
             "<pre>" + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
