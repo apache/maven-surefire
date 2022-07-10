@@ -608,7 +608,7 @@ public final class SurefireReportGenerator
                 if ( xrefLocation != null )
                 {
                     String path = fullClassName.replace( '.', '/' );
-                    sink.link( xrefLocation + "/" + path + ".html#" + errorLineNumber );
+                    sink.link( xrefLocation + "/" + path + ".html#L" + errorLineNumber );
                 }
                 sink.text( fullClassName + ":" + errorLineNumber );
 
