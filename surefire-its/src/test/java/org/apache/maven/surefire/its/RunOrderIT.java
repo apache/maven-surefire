@@ -40,6 +40,8 @@ public class RunOrderIT
 
     private static final String[] TESTS_IN_REVERSE_ALPHABETICAL_ORDER = { "TC", "TB", "TA" };
 
+    private static final String[] TEST_IN_SPECIFIED_ORDER = { "TD#2", "TD#1", "TB" };
+
     // testing random is left as an exercise to the reader. Patches welcome
 
     @Test
@@ -183,6 +185,25 @@ public class RunOrderIT
             .withFailure()
             .executeTest()
             .verifyTextInLog( "There's no RunOrder with the name nonExistingRunOrder." );
+    }
+
+    @Test
+    public void testSpecifiedTestOrderJUnit4()
+        throws Exception
+    {
+        OutputValidator validator = executeWithTestOrder( "junit4" );
+        assertTestnamesAppearInSpecificOrder( validator, TEST_IN_SPECIFIED_ORDER );
+    }
+
+    private OutputValidator executeWithTestOrder( String profile  )
+    {
+        return unpack()
+            .activateProfile( profile )
+            .forkMode( getForkMode() )
+            .setTestToRun( "junit.runOrder.TestD#testTwo,junit.runOrder.TestD#testOne,junit.runOrder.TestB" )
+            .runOrder( "testorder" )
+            .executeTest()
+            .verifyErrorFree( 3 );
     }
 
     private OutputValidator executeWithRunOrder( String runOrder, String profile )
