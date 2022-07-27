@@ -152,6 +152,17 @@ public class BooterDeserializerProviderConfigurationTest
         assertEquals( cli, reloaded.getMainCliOptions() );
     }
 
+    public void testRunOrderParameter()
+        throws IOException
+    {
+        ProviderConfiguration reloaded = getReloadedProviderConfiguration();
+
+        Assert.assertEquals( RunOrder.DEFAULT[0], reloaded.getRunOrderParameters().getRunOrder()[0] );
+        Assert.assertNull( reloaded.getRunOrderParameters().getRunStatisticsFile() );
+        Assert.assertEquals( "c1#m2,c2#m1", reloaded.getRunOrderParameters().getSpecifiedRunOrder() );
+        Assert.assertEquals( new Long( "65" ), reloaded.getRunOrderParameters().getRunOrderRandomSeed() );
+    }
+
     public void testTestRequest()
         throws IOException
     {
@@ -275,7 +286,8 @@ public class BooterDeserializerProviderConfigurationTest
             new TestRequest( getSuiteXmlFileStrings(), getTestSourceDirectory(),
                              new TestListResolver( USER_REQUESTED_TEST + "#aUserRequestedTestMethod" ),
                     RERUN_FAILING_TEST_COUNT );
-        RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null );
+        RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null, new Long( "65" ),
+                                                                        "c1#m2,c2#m1" );
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, reporterConfiguration,
                 new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new HashMap<String, String>(), TEST_TYPED,
                 readTestsFromInStream, cli, 0, Shutdown.DEFAULT, 0 );

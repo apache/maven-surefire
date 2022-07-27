@@ -197,7 +197,8 @@ public class BooterDeserializerStartupConfigurationTest
             new TestRequest( Arrays.asList( getSuiteXmlFileStrings() ), getTestSourceDirectory(),
                              new TestListResolver( "aUserRequestedTest#aUserRequestedTestMethod" ) );
 
-        RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null );
+        RunOrderParameters runOrderParameters = new RunOrderParameters( RunOrder.DEFAULT, null,
+                                                                        new Long( "65" ), "c1#m2,c2#m1" );
         return new ProviderConfiguration( directoryScannerParameters, runOrderParameters, reporterConfiguration,
                 new TestArtifactInfo( "5.0", "ABC" ), testSuiteDefinition, new HashMap<String, String>(),
                 BooterDeserializerProviderConfigurationTest.TEST_TYPED, true, cli, 0, Shutdown.DEFAULT, 0 );
