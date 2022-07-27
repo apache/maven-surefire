@@ -51,6 +51,7 @@ import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.StoppedByUserException;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Set;
 
 import static java.lang.reflect.Modifier.isAbstract;
@@ -281,7 +282,8 @@ public class JUnit4Provider
             try
             {
                 notifier.asFailFast( isFailFast() );
-                execute( clazz, notifier, hasMethodFilter ? createMethodFilter() : null );
+                execute( clazz, notifier, hasMethodFilter ? createMethodFilter() : null,
+                         runOrderCalculator.comparatorForTestMethods() );
             }
             finally
             {
@@ -299,7 +301,8 @@ public class JUnit4Provider
                     Set<Description> failures = generateFailingTestDescriptions( failureListener.getAllFailures() );
                     failureListener.reset();
                     Filter failureDescriptionFilter = createMatchAnyDescriptionFilter( failures );
-                    execute( clazz, rerunNotifier, failureDescriptionFilter );
+                    execute( clazz, rerunNotifier, failureDescriptionFilter,
+                             runOrderCalculator.comparatorForTestMethods() );
                 }
             }
         }
@@ -361,7 +364,8 @@ public class JUnit4Provider
         return System.getProperty( "surefire.junit4.upgradecheck" ) != null;
     }
 
-    private static void execute( Class<?> testClass, Notifier notifier, Filter filter )
+    private static void execute( Class<?> testClass, Notifier notifier, Filter filter,
+                                 Comparator<String> runOrderComparator )
     {
         final int classModifiers = testClass.getModifiers();
         if ( !isAbstract( classModifiers ) && !isInterface( classModifiers ) )
@@ -370,6 +374,10 @@ public class JUnit4Provider
             if ( filter != null )
             {
                 request = request.filterWith( filter );
+            }
+            if ( runOrderComparator != null )
+            {
+                request = request.sortWith( ( o1, o2 ) -> runOrderComparator.compare( o1.toString(), o2.toString() ) );
             }
             Runner runner = request.getRunner();
             if ( countTestsInRunner( runner.getDescription() ) != 0 )
