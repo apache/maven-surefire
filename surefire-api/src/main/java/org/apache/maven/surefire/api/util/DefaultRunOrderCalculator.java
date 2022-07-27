@@ -20,6 +20,7 @@ package org.apache.maven.surefire.api.util;
  */
 
 import org.apache.maven.surefire.api.runorder.RunEntryStatisticsMap;
+import org.apache.maven.surefire.api.testset.ResolvedTest;
 import org.apache.maven.surefire.api.testset.RunOrderParameters;
 
 import java.util.ArrayList;
@@ -29,6 +30,8 @@ import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
+
+import static org.apache.maven.surefire.api.testset.TestListResolver.toClassFileName;
 
 /**
  * Applies the final runorder of the tests
@@ -48,11 +51,14 @@ public class DefaultRunOrderCalculator
 
     private final Random random;
 
+    private final List<ResolvedTest> specifiedRunOrder;
+
     public DefaultRunOrderCalculator( RunOrderParameters runOrderParameters, int threadCount )
     {
         this.runOrderParameters = runOrderParameters;
         this.threadCount = threadCount;
         this.runOrder = runOrderParameters.getRunOrder();
+        this.specifiedRunOrder = runOrderParameters.resolvedSpecifiedRunOrder();
         this.sortOrder = this.runOrder.length > 0 ? getSortOrderComparator( this.runOrder[0] ) : null;
         Long runOrderRandomSeed = runOrderParameters.getRunOrderRandomSeed();
         random = new Random( runOrderRandomSeed == null ? System.nanoTime() : runOrderRandomSeed );
@@ -73,9 +79,49 @@ public class DefaultRunOrderCalculator
         return new TestsToRun( new LinkedHashSet<>( result ) );
     }
 
+    @Override
+    public Comparator<String> comparatorForTestMethods()
+    {
+        if ( RunOrder.TESTORDER.equals( runOrder[0] ) && specifiedRunOrder != null )
+        {
+            return new Comparator<String>()
+            {
+                @Override
+                public int compare( String o1, String o2 )
+                {
+                    String[] classAndMethod1 = getClassAndMethod( o1 );
+                    String className1 = classAndMethod1[0];
+                    String methodName1 = classAndMethod1[1];
+                    String[] classAndMethod2 = getClassAndMethod( o2 );
+                    String className2 = classAndMethod2[0];
+                    String methodName2 = classAndMethod2[1];
+                    return testOrderComparator( className1, className2, methodName1, methodName2 );
+                }
+            };
+        }
+        else
+        {
+            return null;
+        }
+    }
+
     private void orderTestClasses( List<Class<?>> testClasses, RunOrder runOrder )
     {
-        if ( RunOrder.RANDOM.equals( runOrder ) )
+        if ( RunOrder.TESTORDER.equals( runOrder ) )
+        {
+            if ( specifiedRunOrder != null )
+            {
+                Collections.sort( testClasses, new Comparator<Class<?>>()
+                {
+                    @Override
+                    public int compare( Class<?> o1, Class<?> o2 )
+                    {
+                        return testOrderComparator( o1.getName(), o2.getName(), null, null );
+                    }
+                } );
+            }
+        }
+        else if ( RunOrder.RANDOM.equals( runOrder ) )
         {
             Collections.shuffle( testClasses, random );
         }
@@ -130,5 +176,43 @@ public class DefaultRunOrderCalculator
     private static Comparator<Class<?>> getAlphabeticalComparator()
     {
         return Comparator.comparing( Class::getName );
+    }
+
+    public int testOrderComparator( String className1, String className2, String methodName1, String methodName2 )
+    {
+        String classFileName1 = toClassFileName( className1 );
+        String classFileName2 = toClassFileName( className2 );
+        int index1 = -1;
+        int index2 = -1;
+        if ( specifiedRunOrder != null )
+        {
+            for ( ResolvedTest filter : specifiedRunOrder )
+            {
+                if ( filter.matchAsInclusive( classFileName1, methodName1 ) )
+                {
+                    index1 = specifiedRunOrder.indexOf( filter );
+                }
+            }
+            for ( ResolvedTest filter : specifiedRunOrder )
+            {
+                if ( filter.matchAsInclusive( classFileName2, methodName2 ) )
+                {
+                    index2 = specifiedRunOrder.indexOf( filter );
+                }
+            }
+        }
+        return index1 - index2;
+    }
+
+    public String[] getClassAndMethod( String request )
+    {
+        String[] classAndMethod = { request, request };
+        if ( request.contains( "(" ) )
+        {
+            String[] nameSplit1 = request.split( "\\(" );
+            classAndMethod[0] = nameSplit1[1].substring( 0, nameSplit1[1].length() - 1 );
+            classAndMethod[1] = nameSplit1[0];
+        }
+        return classAndMethod;
     }
 }
