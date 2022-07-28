@@ -34,6 +34,7 @@
 
     <properties>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+      <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
     </properties>
 
     <dependencies>
@@ -254,7 +255,6 @@
                                 <verifier.forkMode>${verifier.forkMode}</verifier.forkMode>
                                 <jacoco.agent>${jacoco-it.agent}</jacoco.agent>
                             </systemPropertyVariables>
-                            <redirectTestOutputToFile>true</redirectTestOutputToFile>
                             <shutdown>kill</shutdown>
                         </configuration>
                         <dependencies>
