@@ -48,6 +48,7 @@ import java.util.Optional;
 
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
@@ -394,28 +395,39 @@ public class RunListenerAdapterTest
     }
 
     @Test
-    public void notifiedWithCorrectNamesWhenClassExecutionSkipped()
+    public void notifiedWithCorrectNamesWhenClassExecutionSkipped() throws Exception
     {
-        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
-        TestPlan testPlan = TestPlan.from( singletonList( new EngineDescriptor( newId(), "Luke's Plan" ) ) );
+        EngineDescriptor engineDescriptor = new EngineDescriptor( newId(), "Luke's Plan" );
+        TestDescriptor classTestDescriptor = newClassDescriptor();
+        TestDescriptor method1 = newMethodDescriptor();
+        classTestDescriptor.addChild( method1 );
+        TestDescriptor method2 = newMethodDescriptor();
+        classTestDescriptor.addChild( method2 );
+        engineDescriptor.addChild( classTestDescriptor );
+        TestPlan testPlan = TestPlan.from( singletonList( engineDescriptor ) );
         adapter.testPlanExecutionStarted( testPlan );
 
         TestIdentifier classIdentifier =
                         identifiersAsParentOnTestPlan( testPlan, newEngineDescriptor(), newClassDescriptor() );
 
+        ArgumentCaptor<TestSetReportEntry> entryCaptor1 = ArgumentCaptor.forClass( TestSetReportEntry.class );
+        ArgumentCaptor<ReportEntry> entryCaptor2 = ArgumentCaptor.forClass( ReportEntry.class );
+        ArgumentCaptor<ReportEntry> entryCaptor3 = ArgumentCaptor.forClass( ReportEntry.class );
+        ArgumentCaptor<TestSetReportEntry> entryCaptor4 = ArgumentCaptor.forClass( TestSetReportEntry.class );
+
         adapter.executionSkipped( classIdentifier, "test" );
-        verify( listener ).testSkipped( entryCaptor.capture() );
+        verify( listener ).testSetStarting( entryCaptor1.capture() );
+        verify( listener ).testSkipped( entryCaptor2.capture() );
+        verify( listener ).testSkipped( entryCaptor3.capture() );
+        verify( listener ).testSetCompleted( entryCaptor4.capture() );
 
-        ReportEntry entry = entryCaptor.getValue();
-        assertNull( entry.getName() );
-        assertEquals( MyTestClass.class.getTypeName(), entry.getSourceName() );
-    }
+        ReportEntry entry1 = entryCaptor1.getValue();
+        assertNull( entry1.getName() );
+        assertEquals( MyTestClass.class.getTypeName(), entry1.getSourceName() );
 
-    @Test
-    public void notifiedWhenEngineExecutionSkipped()
-    {
-        adapter.executionSkipped( newEngineIdentifier(), "test" );
-        verify( listener ).testSkipped( any() );
+        ReportEntry entry4 = entryCaptor1.getValue();
+        assertNull( entry4.getName() );
+        assertEquals( MyTestClass.class.getTypeName(), entry4.getSourceName() );
     }
 
     @Test
