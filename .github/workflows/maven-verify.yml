@@ -26,7 +26,7 @@ jobs:
     name: Verify
     uses: apache/maven-gh-actions-shared/.github/workflows/maven-verify.yml@v2
     with:
-      jdk-matrix: '[ "8", "11", "17", "18" ]'
+      jdk-matrix: '[ "8", "11", "17", "18", "19" ]'
       ff-jdk: '18'
       ff-goal: 'clean install site site:stage -P reporting -nsu'
       ff-site-goal: '-v'
