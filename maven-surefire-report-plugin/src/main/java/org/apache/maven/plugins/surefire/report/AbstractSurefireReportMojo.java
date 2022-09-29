@@ -200,9 +200,16 @@ public abstract class AbstractSurefireReportMojo
             }
             if ( this.reportsDirectories == null )
             {
-                for ( MavenProject mavenProject : getProjectsWithoutRoot() )
+                if ( reactorProjects.size() > 1 )
                 {
-                    resolvedReportsDirectories.add( getSurefireReportsDirectory( mavenProject ) );
+                    for ( MavenProject mavenProject : getProjectsWithoutRoot() )
+                    {
+                        resolvedReportsDirectories.add( getSurefireReportsDirectory( mavenProject ) );
+                    }
+                } 
+                else 
+                {
+                    resolvedReportsDirectories.add( getSurefireReportsDirectory( project ) );
                 }
             }
             else
