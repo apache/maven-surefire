@@ -75,6 +75,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.platform.launcher.EngineFilter;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.TestIdentifier;
@@ -450,6 +451,40 @@ public class JUnitPlatformProviderTest
         assertEquals( "<< ✨ >>", reportEntries.get( 0 ).getSourceText() );
         assertEquals( "test1", reportEntries.get( 0 ).getName() );
         assertEquals( "73$71 ✔", reportEntries.get( 0 ).getNameText() );
+    }
+
+    @Test
+    public void runNestingTest() throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        ProviderParameters parameters = providerParametersMock();
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( parameters, launcher );
+
+        TestReportListener<TestOutputReportEntry> listener = mock( TestReportListener.class );
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
+        RunListenerAdapter adapter = new RunListenerAdapter( listener );
+        adapter.setRunMode( NORMAL_RUN );
+
+        launcher.registerTestExecutionListeners( adapter );
+
+        invokeProvider( provider, NestingTest.class );
+
+        verify( listener, times( 2 ) ).testStarting( entryCaptor.capture() );
+        List<ReportEntry> reportEntries = entryCaptor.getAllValues();
+
+        assertEquals( 2, reportEntries.size() );
+
+        assertEquals( NestingTest.Level1NestedTest.class.getName(),
+                      reportEntries.get( 0 ).getSourceName() );
+        assertNull( reportEntries.get( 0 ).getSourceText() );
+        assertEquals( "level1test", reportEntries.get( 0 ).getName() );
+        assertNull( reportEntries.get( 0 ).getNameText() );
+
+        assertEquals( NestingTest.Level1NestedTest.Level2NestedTest.class.getName(),
+                      reportEntries.get( 1 ).getSourceName() );
+        assertNull( reportEntries.get( 1 ).getSourceText() );
+        assertEquals( "level2test", reportEntries.get( 1 ).getName() );
+        assertNull( reportEntries.get( 1 ).getNameText() );
     }
 
     @Test
@@ -1424,6 +1459,27 @@ public class JUnitPlatformProviderTest
         @DisplayName( "73$71 ✔" )
         void test1()
         {
+        }
+    }
+
+    static class NestingTest
+    {
+        @Nested
+        class Level1NestedTest
+        {
+            @org.junit.jupiter.api.Test
+            void level1test()
+            {
+            }
+
+            @Nested
+            class Level2NestedTest
+            {
+                @org.junit.jupiter.api.Test
+                void level2test()
+                {
+                }
+            }
         }
     }
 
