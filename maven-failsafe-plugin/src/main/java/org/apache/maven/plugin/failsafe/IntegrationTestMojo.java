@@ -130,12 +130,24 @@ public class IntegrationTestMojo
     private boolean useFile;
 
     /**
-     * Set this to "true" to cause a failure if none of the tests specified in -Dtest=... are run. Defaults to
+     * Set this to "false" to prevent a failure if none of the tests specified in -Dit.test=... are run. Defaults to
      * "true".
      *
      * @since 2.12
+     * @deprecated Since 3.0.0-M8, use "failsafe.failIfNoSpecifiedTests" instead.
      */
+    @Deprecated
     @Parameter( property = "it.failIfNoSpecifiedTests", defaultValue = "true" )
+    private boolean failIfNoSpecifiedTestsDeprecated;
+
+    /**
+     * Set this to "false" to prevent a failure if none of the tests specified in -Dit.test=... are run. Defaults to
+     * "true".
+     * Replacing "it.failIfNoSpecifiedTests" to be consistent with surefire plugin.
+     *
+     * @since 3.0.0-M8
+     */
+    @Parameter( property = "failsafe.failIfNoSpecifiedTests", defaultValue = "true" )
     private boolean failIfNoSpecifiedTests;
 
     /**
@@ -899,9 +911,16 @@ public class IntegrationTestMojo
     }
 
     @Override
+    @SuppressWarnings( "deprecation" )
     public boolean getFailIfNoSpecifiedTests()
     {
-        return failIfNoSpecifiedTests;
+        if ( !failIfNoSpecifiedTestsDeprecated )
+        {
+            getConsoleLogger().warning( "Use " + getPluginName()
+                    + ".failIfNoSpecifiedTests property instead of obsolete it.failIfNoSpecifiedTests." );
+        }
+        // since both have default "true", assuming that any "false" is set by user on purpose
+        return failIfNoSpecifiedTests && failIfNoSpecifiedTestsDeprecated;
     }
 
     @Override
