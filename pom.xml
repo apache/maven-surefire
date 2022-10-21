@@ -238,19 +238,11 @@
         <version>${plexus-java-version}</version>
       </dependency>
       <dependency>
-        <groupId>org.junit.platform</groupId>
-        <artifactId>junit-platform-launcher</artifactId>
-        <version>1.3.2</version>
-      </dependency>
-      <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-engine</artifactId>
-        <version>5.3.2</version>
-      </dependency>
-      <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-params</artifactId>
-        <version>5.3.2</version>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>5.9.1</version>
+        <scope>import</scope>
+        <type>pom</type>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
