@@ -35,7 +35,6 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <forkMode>once</forkMode>
           <forkCount>1</forkCount>
         </configuration>
         <dependencies>

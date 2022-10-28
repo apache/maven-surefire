@@ -47,7 +47,7 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <forkMode>once</forkMode>
+                    <forkCount>1</forkCount>
                 </configuration>
             </plugin>
             <plugin>
@@ -61,7 +61,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <forkMode>once</forkMode>
+                    <forkCount>1</forkCount>
                 </configuration>
             </plugin>
         </plugins>

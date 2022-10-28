@@ -103,7 +103,7 @@ public class CommonReflectorTest
         assertThat( reportConfiguration.getRerunFailingTestsCount() ).isEqualTo( 1 );
         assertThat( reportConfiguration.getXsdSchemaLocation() ).isNull();
         assertThat( reportConfiguration.getEncoding() ).isEqualTo( UTF_8 );
-        assertThat( reportConfiguration.isForkMode() ).isFalse();
+        assertThat( reportConfiguration.isForking() ).isFalse();
         assertThat( reportConfiguration.getXmlReporter().toString() )
                 .isEqualTo( xmlReporter.toString() );
         assertThat( reportConfiguration.getTestsetReporter().toString() )

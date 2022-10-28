@@ -25,7 +25,8 @@
            <version>${surefire.version}</version>
            <configuration>
              <disableXmlReport>false</disableXmlReport>
-             <forkMode>${forkMode}</forkMode>
+             <forkCount>${forkCount}</forkCount>
+             <reuseForks>${reuseForks}</reuseForks>
              <printSummary>${printSummary}</printSummary>
              <useFile>true</useFile>
              <redirectTestOutputToFile>${redirect.to.file}</redirectTestOutputToFile>
@@ -41,7 +42,8 @@
     <properties>
       <junit.version>4.8.1</junit.version>
       <redirect.to.file>true</redirect.to.file>
-      <forkMode>once</forkMode>
+      <forkCount>1</forkCount>
+      <reuseForks>true</reuseForks>
       <printSummary>true</printSummary>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>

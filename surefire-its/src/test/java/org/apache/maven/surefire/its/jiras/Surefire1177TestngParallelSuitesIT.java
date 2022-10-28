@@ -46,7 +46,7 @@ public class Surefire1177TestngParallelSuitesIT
         throws VerificationException
     {
         OutputValidator validator = unpack()
-                .forkMode( "never" )
+                .forkNever()
                 .executeTest()
                 .verifyErrorFree( 2 );
 
@@ -61,7 +61,7 @@ public class Surefire1177TestngParallelSuitesIT
             throws VerificationException
     {
         OutputValidator validator = unpack()
-                .forkMode( "once" )
+                .forkOnce()
                 .executeTest()
                 .verifyErrorFree( 2 );
 

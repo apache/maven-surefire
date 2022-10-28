@@ -33,7 +33,7 @@
   </build>
   <properties>
     <junit.version>4.8.1</junit.version>
-    <forkMode>once</forkMode>
+    <forkCount>1</forkCount>
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
   </properties>

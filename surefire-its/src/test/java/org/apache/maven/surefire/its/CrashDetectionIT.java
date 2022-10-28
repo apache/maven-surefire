@@ -38,9 +38,8 @@ public class CrashDetectionIT
     public void crashInReusableFork()
     {
         unpack( "crash-detection" )
-                .forkPerThread()
-                .reuseForks( true )
-                .threadCount( 1 )
+                .forkPerThread( getThreadCount() )
+                .threadCount( getThreadCount() )
                 .maven()
                 .withFailure()
                 .executeTest();
@@ -50,12 +49,16 @@ public class CrashDetectionIT
     public void hardCrashInReusableFork()
     {
         unpack( "crash-detection" )
-                .forkPerThread()
-                .reuseForks( true )
-                .threadCount( 1 )
+                .forkPerThread( getThreadCount() )
+                .threadCount( getThreadCount() )
                 .addGoal( "-DkillHard=true" )
                 .maven()
                 .withFailure()
                 .executeTest();
+    }
+
+    protected int getThreadCount()
+    {
+        return 1;
     }
 }

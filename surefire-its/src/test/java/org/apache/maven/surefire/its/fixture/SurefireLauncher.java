@@ -183,27 +183,22 @@ public final class SurefireLauncher
 
     public SurefireLauncher forkOnce()
     {
-        return forkMode( "once" );
+        return forkCount( 1 ).reuseForks( true );
     }
 
     public SurefireLauncher forkNever()
     {
-        return forkMode( "never" );
+        return forkCount( 0 );
     }
 
     public SurefireLauncher forkAlways()
     {
-        return forkMode( "always" );
+        return forkCount( 1 ).reuseForks( false );
     }
 
-    public SurefireLauncher forkPerTest()
+    public SurefireLauncher forkPerThread( int threadCount )
     {
-        return forkMode( "pertest" );
-    }
-
-    public SurefireLauncher forkPerThread()
-    {
-        return forkMode( "perthread" );
+        return forkCount( threadCount ).reuseForks( true );
     }
 
     public SurefireLauncher threadCount( int threadCount )
@@ -221,12 +216,6 @@ public final class SurefireLauncher
     public SurefireLauncher reuseForks( boolean reuseForks )
     {
         mavenLauncher.sysProp( "reuseForks", reuseForks );
-        return this;
-    }
-
-    public SurefireLauncher forkMode( String forkMode )
-    {
-        mavenLauncher.sysProp( "forkMode", forkMode );
         return this;
     }
 

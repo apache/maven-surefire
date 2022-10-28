@@ -51,7 +51,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <forkMode>once</forkMode>
+          <forkCount>1</forkCount>
           <argLine>
             <!--
             These lines must be tab-indented, see SUREFIRE-2063;

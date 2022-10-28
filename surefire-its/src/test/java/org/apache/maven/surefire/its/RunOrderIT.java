@@ -164,7 +164,8 @@ public class RunOrderIT
     {
         unpack()
             .activateProfile( "junit4" )
-            .forkMode( getForkMode() )
+            .forkCount( 1 )
+            .reuseForks( reuseForks() )
             .runOrder( "nonExistingRunOrder" )
             .maven()
             .withFailure()
@@ -177,7 +178,8 @@ public class RunOrderIT
     {
         unpack()
             .activateProfile( "junit5" )
-            .forkMode( getForkMode() )
+            .forkCount( 1 )
+            .reuseForks( reuseForks() )
             .runOrder( "nonExistingRunOrder" )
             .maven()
             .withFailure()
@@ -189,7 +191,8 @@ public class RunOrderIT
     {
         return unpack()
             .activateProfile( profile )
-            .forkMode( getForkMode() )
+            .forkCount( 1 )
+            .reuseForks( reuseForks() )
             .runOrder( runOrder )
             .executeTest()
             .verifyErrorFree( 3 );
@@ -199,7 +202,8 @@ public class RunOrderIT
     {
         return unpack()
             .activateProfile( profile )
-            .forkMode( getForkMode() )
+            .forkCount( 1 )
+            .reuseForks( reuseForks() )
             .runOrder( "random" )
             .executeTest()
             .verifyErrorFree( 3 );
@@ -209,16 +213,17 @@ public class RunOrderIT
     {
         return unpack()
             .activateProfile( profile )
-            .forkMode( getForkMode() )
+            .forkCount( 1 )
+            .reuseForks( reuseForks() )
             .runOrder( "random" )
             .runOrderRandomSeed( String.valueOf( seed ) )
             .executeTest()
             .verifyErrorFree( 3 );
     }
 
-    protected String getForkMode()
+    protected boolean reuseForks()
     {
-        return "once";
+        return true;
     }
 
     private SurefireLauncher unpack()

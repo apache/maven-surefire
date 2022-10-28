@@ -75,7 +75,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <forkMode>once</forkMode>
+          <forkCount>1</forkCount>
           <argLine>-Dp1=@{from.prop} -Dp2=@{override.prop} -Dp3=@{undefined.prop} -Dp4=@{generated.prop}</argLine>
         </configuration>
       </plugin>

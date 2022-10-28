@@ -100,7 +100,7 @@ public class Surefire946KillMainProcessInReusableForkIT
                 .sysProp( "testSleepTime", String.valueOf( TEST_SLEEP_TIME ) )
                 .addGoal( "org.apache.maven.plugins.surefire:maven-selfdestruct-plugin:selfdestruct" )
                 .setForkJvm()
-                .forkPerThread().threadCount( 1 ).reuseForks( true ).maven().withFailure().executeTest();
+                .forkPerThread( 1 ).maven().withFailure().executeTest();
 
 
         XPathFactory xpathFactory = XPathFactory.newInstance();

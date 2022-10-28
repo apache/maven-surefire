@@ -55,7 +55,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <test>junit4/BasicTest#testSuccessOne+testFailOne,junit4/TestThree#testSuccessTwo</test>
-          <forkMode>once</forkMode>
+          <forkCount>1</forkCount>
         </configuration>
       </plugin>
     </plugins>

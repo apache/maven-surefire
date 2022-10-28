@@ -50,7 +50,8 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <forkMode>${forkMode}</forkMode>
+                    <forkCount>${forkCount}</forkCount>
+                    <reuseForks>${reuseForks}</reuseForks>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                 </configuration>
             </plugin>

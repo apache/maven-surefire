@@ -404,32 +404,6 @@ public class TestSuite {
   properties, e.g. <<<baseDir>>>, which may lead to changing system properties
   and unexpected runtime behaviour.
 
-* Migrating the Deprecated forkMode Parameter to forkCount and reuseForks
-
-  ${thisPlugin.toLowerCase()} versions prior 2.14 used the parameter <<<forkMode>>>
-  to configure forking. Although that parameter is still supported for backward
-  compatibility, users are strongly encouraged to migrate their configuration
-  and use <<<forkCount>>> and <<<reuseForks>>> instead.
-  
-
-  The migration is quite simple, given the following mapping:
-
-*--------------------------+-------------------------------------------+
- <<Old Setting>>           | <<New Setting>>                           |
-*--------------------------+-------------------------------------------+
- <<<forkMode=once>>>       | <<<forkCount=1>>> (default),              |
- (default)                 | <<<reuseForks=true>>> (default)           |
-*--------------------------+-------------------------------------------+
- <<<forkMode=always>>>     | <<<forkCount=1>>> (default),              |
-                           | <<<reuseForks=false>>>                    |
-*--------------------------+-------------------------------------------+
- <<<forkMode=never>>>      | <<<forkCount=0>>>                         |
-*--------------------------+-------------------------------------------+
- <<<forkMode=perthread>>>, | <<<forkCount=N>>>,                        |
- <<<threadCount=N>>>       | (<<<reuseForks=false>>>, if you did not   |
-                           | had that one set)                         |
-*--------------------------+-------------------------------------------+
-
 * Known issues and limitations
 
  * <<<$\{surefire.forkNumber\}>>> propagation is not supported on Maven 2.x

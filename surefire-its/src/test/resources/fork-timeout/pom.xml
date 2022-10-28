@@ -10,7 +10,8 @@
   <properties>
     <junit.version>4.8.1</junit.version>
     <junit.parallel>classes</junit.parallel>
-    <forkMode>once</forkMode>
+    <forkCount>1</forkCount>
+    <reuseForks>true</reuseForks>
     <timeOut>1</timeOut>
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
@@ -29,7 +30,8 @@
            <artifactId>maven-surefire-plugin</artifactId>
            <version>${surefire.version}</version>
            <configuration>
-             <forkMode>${forkMode}</forkMode>
+             <forkCount>${forkCount}</forkCount>
+             <reuseForks>${reuseForks}</reuseForks>
              <parallel>${junit.parallel}</parallel>
              <threadCount>3</threadCount>
              <perCoreThreadCount>false</perCoreThreadCount>

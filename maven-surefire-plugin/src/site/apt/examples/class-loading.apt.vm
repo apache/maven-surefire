@@ -167,7 +167,7 @@ java -classpath booter.jar MyApp
 
  * Run Maven with <<<--debug>>> (or equivalently, <<<-X>>>) to get more detailed output
 
- * Check your <<<forkCount>>>.  If <<<forkCount=0>>> (or <<<forkMode=never>>>, the deprecated version of that), it's impossible to use the system class loader or a plain old Java classpath; we have to use an isolated class loader.
+ * Check your <<<forkCount>>>.  If <<<forkCount=0>>>, it's impossible to use the system class loader or a plain old Java classpath; we have to use an isolated class loader.
 
  * If you're using the defaults, <<<useSystemClassLoader=true>>> and <<<useManifestOnlyJar=false>>>.  In that case, look at the generated manifest-only Surefire booter JAR.  Open it up (it's just a zip) and read its manifest.
 

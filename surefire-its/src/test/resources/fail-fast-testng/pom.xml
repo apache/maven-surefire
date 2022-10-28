@@ -50,8 +50,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <runOrder>alphabetical</runOrder>
-          <forkMode>once</forkMode><!--override to default value in order to enable forkCount-->
-            <argLine>-Xms64m -Xmx128m</argLine>
+          <argLine>-Xms64m -Xmx128m</argLine>
         </configuration>
       </plugin>
     </plugins>

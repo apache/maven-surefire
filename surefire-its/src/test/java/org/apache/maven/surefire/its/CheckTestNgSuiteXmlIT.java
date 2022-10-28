@@ -40,7 +40,7 @@ public class CheckTestNgSuiteXmlIT
     }
 
     @Test
-    public void suiteXmlForkModeAlways()
+    public void suiteXmlForkAlways()
     {
         unpack().forkAlways()
                 .executeTest()
