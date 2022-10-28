@@ -81,7 +81,10 @@ Build the Surefire project using **Maven 3.2.5+** and **JDK 1.8+**.
      * Check module `surefire-grouper` has source folder `target/generated-sources/javacc`.
        If not, add it manually in the module's project properties
 
-* Setup for development in [IntelliJ IDEA](https://www.jetbrains.com/idea/) should work out of the box.
+* Setup for development in [IntelliJ IDEA](https://www.jetbrains.com/idea/) works largely out of the box. There may be unresolved symbols because [IntelliJ does not support the maven-shade-plugin](https://youtrack.jetbrains.com/issue/IDEA-126596). As a workaround:
+
+    * In IntelliJ, right click `surefire-shared-utils/pom.xml` and choose "Maven" -> "Ignore Projects". Don't remove the module if prompted.
+    * Right click the parent `pom.xml` and choose "Maven" -> "Reload project"
 
 ### Deploying web site
 
