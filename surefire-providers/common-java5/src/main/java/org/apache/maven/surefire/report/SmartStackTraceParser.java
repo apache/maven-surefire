@@ -74,6 +74,15 @@ public class SmartStackTraceParser
         return className.substring( i + 1 );
     }
 
+    public String getTrimmedStackTrace( )
+    {
+        StackTraceFilter filter = new ClassNameStackTraceFilter( testClassName );
+        Throwable topmost = findTopmostWithClass( throwable.getTarget(), filter );
+        List<StackTraceElement> stackTraceElements = asList( topmost.getStackTrace() );
+        String s = causeToString( topmost.getCause(), filter );
+        return toTrimmedString( throwable.getTarget(), stackTraceElements, filter ) + s;
+    }
+
     @SuppressWarnings( "ThrowableResultOfMethodCallIgnored" )
     public String getString()
     {
@@ -256,6 +265,44 @@ public class SmartStackTraceParser
             cause = cause.getCause();
         }
         return resp.toString();
+    }
+
+    private static String toTrimmedString( Throwable t, Iterable<StackTraceElement> elements, StackTraceFilter filter )
+    {
+        StringBuilder result = new StringBuilder();
+        if ( t != null )
+        {
+            result.append( t.getClass().getName() );
+            String msg = t.getMessage();
+            if ( msg != null )
+            {
+                result.append( ": " );
+                if ( isMultiLine( msg ) )
+                {
+                    // SUREFIRE-986
+                    result.append( '\n' );
+                }
+                result.append( msg );
+            }
+            result.append( '\n' );
+        }
+
+        boolean matched = false;
+        for ( StackTraceElement element : elements )
+        {
+            if ( filter.matches( element ) )
+            {
+                matched = true;
+            }
+
+            if ( filter.matches( element ) || !matched )
+            {
+                result.append( "\tat " )
+                    .append( element )
+                    .append( '\n' );
+            }
+        }
+        return result.toString();
     }
 
     private static String toString( Throwable t, Iterable<StackTraceElement> elements, StackTraceFilter filter )

@@ -55,10 +55,19 @@ public class PojoStackTraceWriter
         if ( t != null )
         {
             StringWriter w = new StringWriter();
-            try ( PrintWriter stackTrace = new PrintWriter( w ) )
+
+            if ( testClass != null )
             {
-                t.printStackTrace( stackTrace );
+                return trimmedStackTrace();
             }
+            else
+            {
+                try ( PrintWriter stackTrace = new PrintWriter( w ) )
+                {
+                    t.printStackTrace( stackTrace );
+                }
+            }
+
             StringBuffer builder = w.getBuffer();
             if ( isMultiLineExceptionMessage( t ) )
             {
@@ -72,6 +81,11 @@ public class PojoStackTraceWriter
             return builder.toString();
         }
         return "";
+    }
+
+    public String trimmedStackTrace()
+    {
+        return t == null ? "" : new SmartStackTraceParser( testClass, t, testMethod ).getTrimmedStackTrace( );
     }
 
     @Override

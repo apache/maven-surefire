@@ -21,6 +21,8 @@ package org.apache.maven.surefire.report;
 
 import junit.framework.TestCase;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  *
  */
@@ -54,6 +56,37 @@ public class PojoStackTraceWriterTest
             String stackTrace = writer.writeTraceToString();
             assertTrue( stackTrace.startsWith( "java.lang.RuntimeException: \n" + msg ) );
         }
+    }
+
+    public void testTrimmedStackTrace( )
+    {
+        Throwable throwable = new Exception( "" );
+
+        try
+        {
+            throwExceptionFromTestClass( );
+        }
+        catch ( Throwable t )
+        {
+            throwable = t;
+        }
+        PojoStackTraceWriter a = new PojoStackTraceWriter(
+            "org.apache.maven.surefire.report.PojoStackTraceWriterTest", null, throwable
+        );
+        String result = a.trimmedStackTrace();
+
+        assertThat( result ).contains( "org.apache.maven.surefire.report.PojoStackTraceWriterTest."
+            + "throwExceptionFromTestClass(PojoStackTraceWriterTest.java" );
+        assertThat( result ).contains( "org.apache.maven.surefire.report.PojoStackTraceWriterTest."
+            + "testTrimmedStackTrace(PojoStackTraceWriterTest.java" );
+        assertThat( result ).hasLineCount( 8 );
+        assertThat( result ).contains( "Caused by: java.lang.Exception: Hey ho, hey ho, a throwable we throw!" );
+    }
+
+    public void throwExceptionFromTestClass() throws Exception
+    {
+        Object call = new RunnableTestClass1().call();
+        throw new IllegalStateException( "illegal state", (Throwable) call );
     }
 
     static class ATestClass
