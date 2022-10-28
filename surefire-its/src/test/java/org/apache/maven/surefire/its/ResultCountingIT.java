@@ -40,27 +40,28 @@ public class ResultCountingIT
     public void testCountingWithJunit481ForkNever()
         throws Exception
     {
-        assertForkMode( "never" );
+        assertForkCount( 0, true );
     }
 
     @Test
     public void testCountingWithJunit481ForkOnce()
         throws Exception
     {
-        assertForkMode( "once" );
+        assertForkCount( 1, true );
     }
 
     @Test
     public void testCountingWithJunit481ForkAlways()
         throws Exception
     {
-        assertForkMode( "always" );
+        assertForkCount( 1, false );
     }
 
-    private void assertForkMode( String forkMode )
+    private void assertForkCount( int forkCount, boolean reuseForks )
         throws IOException, VerificationException
     {
-        OutputValidator outputValidator = unpack( "result-counting" ).failNever().forkMode( forkMode ).executeTest();
+        OutputValidator outputValidator = unpack( "result-counting" ).failNever().forkCount( forkCount )
+            .reuseForks( reuseForks ).executeTest();
         outputValidator.assertTestSuiteResults( 36, 23, 4, 2 );
         outputValidator.verifyTextInLog( "Tests run: 36, Failures: 4, Errors: 23, Skipped: 2" );
     }

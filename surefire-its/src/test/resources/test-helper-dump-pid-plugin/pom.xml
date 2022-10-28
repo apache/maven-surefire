@@ -55,7 +55,7 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<!-- No test sources here. See the ForkModeIT and surefire-its/src/main/resources/fork-mode. -->
+				<!-- No test sources here. See the ForkCountIT and surefire-its/src/main/resources/fork-count. -->
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>${surefire.version}</version>
 				<configuration>

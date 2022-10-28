@@ -27,8 +27,8 @@ public class RunOrderParallelForksIT
 {
 
     @Override
-    protected String getForkMode()
+    protected boolean reuseForks()
     {
-        return "perthread";
+        return false;
     }
 }

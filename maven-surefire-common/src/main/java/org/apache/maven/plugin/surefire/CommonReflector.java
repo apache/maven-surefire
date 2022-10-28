@@ -90,7 +90,7 @@ public class CommonReflector
             reporterConfiguration.isTrimStackTrace(), reporterConfiguration.getReportNameSuffix(),
             reporterConfiguration.getStatisticsFile(), reporterConfiguration.isRequiresRunHistory(),
             reporterConfiguration.getRerunFailingTestsCount(), reporterConfiguration.getXsdSchemaLocation(),
-            reporterConfiguration.getEncoding().name(), reporterConfiguration.isForkMode(),
+            reporterConfiguration.getEncoding().name(), reporterConfiguration.isForking(),
             reporterConfiguration.getXmlReporter().clone( surefireClassLoader ),
             reporterConfiguration.getConsoleOutputReporter().clone( surefireClassLoader ),
             reporterConfiguration.getTestsetReporter().clone( surefireClassLoader )

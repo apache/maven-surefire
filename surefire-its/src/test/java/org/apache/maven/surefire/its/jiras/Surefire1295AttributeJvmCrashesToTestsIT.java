@@ -53,6 +53,8 @@ import static org.junit.Assume.assumeTrue;
 public class Surefire1295AttributeJvmCrashesToTestsIT
         extends SurefireJUnit4IntegrationTestCase
 {
+    private static final int ONE_FORK_REUSE_THREAD_COUNT = 1;
+
     /**
      *
      */
@@ -108,9 +110,8 @@ public class Surefire1295AttributeJvmCrashesToTestsIT
                         .reuseForks( false );
                 break;
             case ONE_FORK_REUSE:
-                launcher.forkPerThread()
-                        .reuseForks( true )
-                        .threadCount( 1 );
+                launcher.forkPerThread( ONE_FORK_REUSE_THREAD_COUNT )
+                        .threadCount( ONE_FORK_REUSE_THREAD_COUNT );
                 break;
             default:
                 fail();

@@ -84,7 +84,7 @@ public final class StartupReportConfiguration
 
     private final Charset encoding;
 
-    private final boolean isForkMode;
+    private final boolean isForking;
 
     private final SurefireStatelessReporter xmlReporter;
 
@@ -99,7 +99,7 @@ public final class StartupReportConfiguration
                boolean redirectTestOutputToFile,
                @Nonnull File reportsDirectory, boolean trimStackTrace, String reportNameSuffix,
                File statisticsFile, boolean requiresRunHistory, int rerunFailingTestsCount,
-               String xsdSchemaLocation, String encoding, boolean isForkMode,
+               String xsdSchemaLocation, String encoding, boolean isForking,
                SurefireStatelessReporter xmlReporter, SurefireConsoleOutputReporter consoleOutputReporter,
                SurefireStatelessTestsetInfoReporter testsetReporter )
     {
@@ -118,7 +118,7 @@ public final class StartupReportConfiguration
         this.xsdSchemaLocation = xsdSchemaLocation;
         String charset = trimToNull( encoding );
         this.encoding = charset == null ? UTF_8 : Charset.forName( charset );
-        this.isForkMode = isForkMode;
+        this.isForking = isForking;
         this.xmlReporter = xmlReporter;
         this.consoleOutputReporter = consoleOutputReporter;
         this.testsetReporter = testsetReporter;
@@ -162,14 +162,14 @@ public final class StartupReportConfiguration
     public StatelessReportEventListener<WrappedReportEntry, TestSetStats> instantiateStatelessXmlReporter(
             Integer forkNumber )
     {
-        assert ( forkNumber == null ) == !isForkMode;
+        assert ( forkNumber == null ) == !isForking;
 
         // If forking TestNG the suites have same name 'TestSuite' and tend to override report statistics in stateful
         // reporter, see Surefire1535TestNGParallelSuitesIT. The testClassMethodRunHistory should be isolated.
         // In the in-plugin execution of parallel JUnit4.7 with rerun the map must be shared because reports and
         // listeners are in ThreadLocal, see Surefire1122ParallelAndFlakyTestsIT.
         Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory
-                = isForkMode
+                = isForking
                 ? new ConcurrentHashMap<String, Deque<WrappedReportEntry>>()
                 : this.testClassMethodRunHistory;
 
@@ -243,9 +243,9 @@ public final class StartupReportConfiguration
         return encoding;
     }
 
-    public boolean isForkMode()
+    public boolean isForking()
     {
-        return isForkMode;
+        return isForking;
     }
 
     private File resolveReportsDirectory( Integer forkNumber )

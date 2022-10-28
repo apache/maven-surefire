@@ -19,7 +19,8 @@
         <version>${surefire.version}</version>
         <configuration>
           <useManifestOnlyJar>false</useManifestOnlyJar>
-          <forkMode>always</forkMode>
+          <forkCount>1</forkCount>
+          <reuseForks>false</reuseForks>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <systemPropertyVariables>
             <java.awt.headless>true</java.awt.headless>

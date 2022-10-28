@@ -36,9 +36,10 @@ import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClass
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
 
 /**
- * A class to be used when there is no JUnit parallelism (methods or/and class). This allow to workaround JUnit
+ * A class to be used when there is no JUnit parallelism (methods or/and class). This allows to workaround JUnit
  * limitation a la Junit4 provider. Specifically, we can redirect properly the output even if we don't have class
- * demarcation in JUnit. It works when if there is a JVM instance per test run, i.e. with forkMode=always or perthread.
+ * demarcation in JUnit. It works when if there is a JVM instance per test run, i.e. with reuseForks=false and
+ * forkCount greater than one.
  */
 @Deprecated // remove this class after StatelessXmlReporter is capable of parallel test sets processing
 class NonConcurrentRunListener

@@ -40,7 +40,7 @@ public class XmlReporterRunTimeIT
     extends SurefireJUnit4IntegrationTestCase
 {
     @Test
-    public void testForkModeAlways()
+    public void testForkAlways()
         throws Exception
     {
         // just generate .surefire-<hash> in order to apply runOrder

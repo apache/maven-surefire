@@ -168,10 +168,6 @@ public abstract class AbstractSurefireMojo
     extends AbstractMojo
     implements SurefireExecutionParameters
 {
-    private static final String FORK_ONCE = "once";
-    private static final String FORK_ALWAYS = "always";
-    private static final String FORK_NEVER = "never";
-    private static final String FORK_PERTHREAD = "perthread";
     private static final Map<String, String> JAVA_9_MATCHER_OLD_NOTATION = singletonMap( "version", "[1.9,)" );
     private static final Map<String, String> JAVA_9_MATCHER = singletonMap( "version", "[9,)" );
     private static final Platform PLATFORM = new Platform();
@@ -363,23 +359,6 @@ public abstract class AbstractSurefireMojo
     private boolean failIfNoTests;
 
     /**
-     * <strong>DEPRECATED</strong> since version 2.14. Use {@code forkCount} and {@code reuseForks} instead.
-     * <br>
-     * <br>
-     * Option to specify the forking mode. Can be {@code never}, {@code once}, {@code always}, {@code perthread}.<br>
-     * The {@code none} and {@code pertest} are also accepted for backwards compatibility.<br>
-     * The {@code always} forks for each test-class.<br>
-     * The {@code perthread} creates the number of parallel forks specified by {@code threadCount}, where each forked
-     * JVM is executing one test-class. See also the parameter {@code reuseForks} for the lifetime of JVM.
-     *
-     * @since 2.1
-     * @deprecated
-     */
-    @Deprecated
-    @Parameter( property = "forkMode", defaultValue = "once" )
-    private String forkMode;
-
-    /**
      * Relative path to <i>temporary-surefire-boot</i> directory containing internal Surefire temporary files.
      * <br>
      * The <i>temporary-surefire-boot</i> directory is <i>project.build.directory</i> on most platforms or
@@ -440,7 +419,7 @@ public abstract class AbstractSurefireMojo
 
     /**
      * When false it makes tests run using the standard classloader delegation instead of the default Maven isolated
-     * classloader. Only used when forking ({@code forkMode} is not {@code none}).<br>
+     * classloader. Only used when forking ({@code forkCount} is greater than zero).<br>
      * Setting it to false helps with some problems caused by conflicts between xml parsers in the classpath and the
      * Java 5 provider parser.
      *
@@ -1123,10 +1102,8 @@ public abstract class AbstractSurefireMojo
         else
         {
             ensureEnableProcessChecker();
-            convertDeprecatedForkMode();
             ensureWorkingDirectoryExists();
             ensureParallelRunningCompatibility();
-            ensureThreadCountWithPerThread();
             warnIfUselessUseSystemClassLoaderParameter();
             warnIfDefunctGroupsCombinations();
             warnIfRerunClashes();
@@ -1796,26 +1773,9 @@ public abstract class AbstractSurefireMojo
         return isWithinVersionSpec( artifact, "[4.0,)" );
     }
 
-    private static boolean isForkModeNever( String forkMode )
-    {
-        return FORK_NEVER.equals( forkMode );
-    }
-
     protected boolean isForking()
     {
         return 0 < getEffectiveForkCount();
-    }
-
-    String getEffectiveForkMode()
-    {
-        String forkMode1 = getForkMode();
-
-        if ( toolchain != null && isForkModeNever( forkMode1 ) )
-        {
-            return FORK_ONCE;
-        }
-
-        return getEffectiveForkMode( forkMode1 );
     }
 
     private List<RunOrder> getRunOrders()
@@ -2144,7 +2104,7 @@ public abstract class AbstractSurefireMojo
         return getPluginArtifactMap().get( "org.apache.maven.surefire:surefire-shadefire" );
     }
 
-    private StartupReportConfiguration getStartupReportConfiguration( String configChecksum, boolean isForkMode )
+    private StartupReportConfiguration getStartupReportConfiguration( String configChecksum, boolean isForking )
     {
         SurefireStatelessReporter xmlReporter =
                 statelessTestsetReporter == null
@@ -2165,7 +2125,7 @@ public abstract class AbstractSurefireMojo
                                                getReportsDirectory(), isTrimStackTrace(), getReportNameSuffix(),
                                                getStatisticsFile( configChecksum ), requiresRunHistory(),
                                                getRerunFailingTestsCount(), getReportSchemaLocation(), getEncoding(),
-                                               isForkMode, xmlReporter, outReporter, testsetReporter );
+                                               isForking, xmlReporter, outReporter, testsetReporter );
     }
 
     private boolean isSpecificTestSpecified()
@@ -2557,31 +2517,6 @@ public abstract class AbstractSurefireMojo
         }
     }
 
-    private void convertDeprecatedForkMode()
-    {
-        String effectiveForkMode = getEffectiveForkMode();
-        // FORK_ONCE (default) is represented by the default values of forkCount and reuseForks
-        if ( FORK_PERTHREAD.equals( effectiveForkMode ) )
-        {
-            forkCount = String.valueOf( threadCount );
-        }
-        else if ( FORK_NEVER.equals( effectiveForkMode ) )
-        {
-            forkCount = "0";
-        }
-        else if ( FORK_ALWAYS.equals( effectiveForkMode ) )
-        {
-            forkCount = "1";
-            reuseForks = false;
-        }
-
-        if ( !FORK_ONCE.equals( getForkMode() ) )
-        {
-            getConsoleLogger().warning( "The parameter forkMode is deprecated since version 2.14. "
-                                                + "Use forkCount and reuseForks instead." );
-        }
-    }
-
     @SuppressWarnings( "checkstyle:emptyblock" )
     protected int getEffectiveForkCount()
     {
@@ -2764,7 +2699,6 @@ public abstract class AbstractSurefireMojo
         checksum.add( getReportNameSuffix() );
         checksum.add( isUseFile() );
         checksum.add( isRedirectTestOutputToFile() );
-        checksum.add( getForkMode() );
         checksum.add( getForkCount() );
         checksum.add( isReuseForks() );
         checksum.add( getJvm() );
@@ -2970,15 +2904,6 @@ public abstract class AbstractSurefireMojo
         if ( isMavenParallel() && isNotForking() )
         {
             throw new MojoFailureException( "parallel maven execution is not compatible with surefire forkCount 0" );
-        }
-    }
-
-    private void ensureThreadCountWithPerThread()
-        throws MojoFailureException
-    {
-        if ( FORK_PERTHREAD.equals( getEffectiveForkMode() ) && getThreadCount() < 1 )
-        {
-            throw new MojoFailureException( "Fork mode perthread requires a thread count" );
         }
     }
 
@@ -3678,17 +3603,6 @@ public abstract class AbstractSurefireMojo
         this.failIfNoTests = failIfNoTests;
     }
 
-    public String getForkMode()
-    {
-        return forkMode;
-    }
-
-    @SuppressWarnings( "UnusedDeclaration" )
-    public void setForkMode( String forkMode )
-    {
-        this.forkMode = forkMode;
-    }
-
     public String getJvm()
     {
         return jvm;
@@ -4097,27 +4011,6 @@ public abstract class AbstractSurefireMojo
     public void setResolutionErrorHandler( ResolutionErrorHandler resolutionErrorHandler )
     {
         this.resolutionErrorHandler = resolutionErrorHandler;
-    }
-
-    private static String getEffectiveForkMode( String forkMode )
-    {
-        if ( "pertest".equalsIgnoreCase( forkMode ) )
-        {
-            return FORK_ALWAYS;
-        }
-        else if ( "none".equalsIgnoreCase( forkMode ) )
-        {
-            return FORK_NEVER;
-        }
-        else if ( forkMode.equals( FORK_NEVER ) || forkMode.equals( FORK_ONCE )
-                || forkMode.equals( FORK_ALWAYS ) || forkMode.equals( FORK_PERTHREAD ) )
-        {
-            return forkMode;
-        }
-        else
-        {
-            throw new IllegalArgumentException( "Fork mode " + forkMode + " is not a legal value" );
-        }
     }
 
     private static final class ClasspathCache

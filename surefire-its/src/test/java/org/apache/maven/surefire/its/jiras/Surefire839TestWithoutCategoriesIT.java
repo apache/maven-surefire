@@ -38,11 +38,11 @@ public class Surefire839TestWithoutCategoriesIT
     @Test
     public void classWithoutCategoryForked()
     {
+        int threadCount = 2;
         unpack( "junit48-categories" )
                 .setJUnitVersion( "4.11" )
-                .forkPerThread()
-                .reuseForks( true )
-                .threadCount( 2 )
+                .forkPerThread( threadCount )
+                .threadCount( threadCount )
                 .executeTest()
                 .verifyErrorFree( 3 );
     }

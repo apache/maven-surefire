@@ -49,7 +49,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire.version}</version>
         <configuration>
-          <forkMode>once</forkMode>
+          <forkCount>1</forkCount>
         </configuration>
       </plugin>
     </plugins>

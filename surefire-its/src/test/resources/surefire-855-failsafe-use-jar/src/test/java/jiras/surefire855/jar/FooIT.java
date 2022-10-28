@@ -130,7 +130,7 @@ public final class FooIT
     public void shouldBeJarWithForking()
         throws IOException
     {
-        assumeThat( System.getProperty( "forkMode" ), is( not( "never" ) ) );
+        assumeThat( System.getProperty( "forkCount" ), is( not( "0" ) ) );
 
         String classPath = manifestClassPath( getClass() );
         System.out.println( "CLASS PATH:" );
@@ -159,7 +159,7 @@ public final class FooIT
     public void jarShouldExistWhenNotForking()
         throws Exception
     {
-        assumeThat( System.getProperty( "forkMode" ), is( "never" ) );
+        assumeThat( System.getProperty( "forkCount" ), is( "0" ) );
 
         assertThat( surefireDir() ).isNull();
         assertThat( new File( "target/" + ARTIFACT_FILE_NAME ).getCanonicalFile() ).isFile();

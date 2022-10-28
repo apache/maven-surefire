@@ -349,7 +349,7 @@ public class DefaultReporterFactoryTest
         assertEquals( 0, reportConfig.getRerunFailingTestsCount() );
         assertNull( reportConfig.getXsdSchemaLocation() );
         assertEquals( UTF_8, reportConfig.getEncoding() );
-        assertFalse( reportConfig.isForkMode() );
+        assertFalse( reportConfig.isForking() );
         assertNotNull( reportConfig.getXmlReporter() );
         assertNotNull( reportConfig.getConsoleOutputReporter() );
         assertNotNull( reportConfig.getTestsetReporter() );

@@ -15,7 +15,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire.version}</version>
         <configuration>
-          <forkMode>once</forkMode>
+          <forkCount>1</forkCount>
           <useSystemClassLoader>true</useSystemClassLoader>
         </configuration>
       </plugin>

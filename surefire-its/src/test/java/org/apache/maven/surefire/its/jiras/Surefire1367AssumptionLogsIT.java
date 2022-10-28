@@ -38,8 +38,8 @@ public class Surefire1367AssumptionLogsIT extends SurefireJUnit4IntegrationTestC
     @Test
     public void shouldSeeLogsParallelForked()
     {
-        OutputValidator outputValidator = unpack().setForkJvm().forkMode(
-                "once" ).parallelClassesAndMethods().disablePerCoreThreadCount().threadCountClasses(
+        OutputValidator outputValidator =
+            unpack().setForkJvm().forkOnce().parallelClassesAndMethods().disablePerCoreThreadCount().threadCountClasses(
                 2 ).threadCountMethods( 2 ).executeTest().assertTestSuiteResults( 2, 0, 0, 2 );
 
         verifyReportA( outputValidator );
@@ -49,9 +49,10 @@ public class Surefire1367AssumptionLogsIT extends SurefireJUnit4IntegrationTestC
     @Test
     public void shouldSeeLogsParallelInPlugin()
     {
-        OutputValidator outputValidator = unpack().setForkJvm().forkMode(
-                "never" ).parallelClassesAndMethods().disablePerCoreThreadCount().threadCountClasses(
-                2 ).threadCountMethods( 2 ).executeTest().assertTestSuiteResults( 2, 0, 0, 2 );
+        OutputValidator outputValidator =
+            unpack().setForkJvm().forkNever().parallelClassesAndMethods().disablePerCoreThreadCount()
+                .threadCountClasses(
+                    2 ).threadCountMethods( 2 ).executeTest().assertTestSuiteResults( 2, 0, 0, 2 );
 
         verifyReportA( outputValidator );
         verifyReportB( outputValidator );
@@ -60,8 +61,8 @@ public class Surefire1367AssumptionLogsIT extends SurefireJUnit4IntegrationTestC
     @Test
     public void shouldSeeLogsForked()
     {
-        OutputValidator outputValidator = unpack().setForkJvm().forkMode( "once" ).executeTest().assertTestSuiteResults(
-                2, 0, 0, 2 );
+        OutputValidator outputValidator = unpack().setForkJvm().forkOnce().executeTest().assertTestSuiteResults(
+            2, 0, 0, 2 );
 
         verifyReportA( outputValidator );
         verifyReportB( outputValidator );
@@ -70,8 +71,8 @@ public class Surefire1367AssumptionLogsIT extends SurefireJUnit4IntegrationTestC
     @Test
     public void shouldSeeLogsInPlugin()
     {
-        OutputValidator outputValidator = unpack().setForkJvm().forkMode(
-                "never" ).executeTest().assertTestSuiteResults( 2, 0, 0, 2 );
+        OutputValidator outputValidator =
+            unpack().setForkJvm().forkNever().executeTest().assertTestSuiteResults( 2, 0, 0, 2 );
 
         verifyReportA( outputValidator );
         verifyReportB( outputValidator );

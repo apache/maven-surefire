@@ -39,7 +39,7 @@ public class Surefire1364SystemPropertiesIT
         SurefireLauncher launcher = unpack( "surefire-1364" );
         OutputValidator validator = launcher.setForkJvm()
                                             .activateProfile( "junit3" )
-                                            .forkMode( "once" )
+                                            .forkOnce()
                                             .executeTest()
                                             .verifyErrorFree( 2 );
 
@@ -56,7 +56,7 @@ public class Surefire1364SystemPropertiesIT
         SurefireLauncher launcher = unpack( "surefire-1364" );
         OutputValidator validator = launcher.setForkJvm()
                                             .activateProfile( "junit3" )
-                                            .forkMode( "never" )
+                                            .forkNever()
                                             .executeTest()
                                             .verifyErrorFree( 2 );
 
@@ -72,7 +72,7 @@ public class Surefire1364SystemPropertiesIT
     {
         SurefireLauncher launcher = unpack( "surefire-1364" );
         OutputValidator validator = launcher.setForkJvm()
-                                            .forkMode( "once" )
+                                            .forkOnce()
                                             .executeTest()
                                             .verifyErrorFree( 2 );
 
@@ -88,7 +88,7 @@ public class Surefire1364SystemPropertiesIT
     {
         SurefireLauncher launcher = unpack( "surefire-1364" );
         OutputValidator validator = launcher.setForkJvm()
-                                            .forkMode( "never" )
+                                            .forkNever()
                                             .executeTest()
                                             .verifyErrorFree( 2 );
 
@@ -105,7 +105,7 @@ public class Surefire1364SystemPropertiesIT
         SurefireLauncher launcher = unpack( "surefire-1364" );
         OutputValidator validator = launcher.setForkJvm()
                                             .activateProfile( "junit47" )
-                                            .forkMode( "once" )
+                                            .forkOnce()
                                             .executeTest()
                                             .verifyErrorFree( 2 );
 
@@ -122,7 +122,7 @@ public class Surefire1364SystemPropertiesIT
         SurefireLauncher launcher = unpack( "surefire-1364" );
         OutputValidator validator = launcher.setForkJvm()
                                             .activateProfile( "junit47" )
-                                            .forkMode( "never" )
+                                            .forkNever()
                                             .executeTest()
                                             .verifyErrorFree( 2 );
 
@@ -139,7 +139,7 @@ public class Surefire1364SystemPropertiesIT
         SurefireLauncher launcher = unpack( "surefire-1364" );
         OutputValidator validator = launcher.setForkJvm()
                                             .activateProfile( "junit47" )
-                                            .forkMode( "once" )
+                                            .forkOnce()
                                             .parallelClasses()
                                             .threadCount( 2 )
                                             .disablePerCoreThreadCount()
@@ -159,7 +159,7 @@ public class Surefire1364SystemPropertiesIT
         SurefireLauncher launcher = unpack( "surefire-1364" );
         OutputValidator validator = launcher.setForkJvm()
                                             .activateProfile( "junit47" )
-                                            .forkMode( "never" )
+                                            .forkNever()
                                             .parallelClasses()
                                             .threadCount( 2 )
                                             .disablePerCoreThreadCount()
@@ -179,7 +179,7 @@ public class Surefire1364SystemPropertiesIT
         SurefireLauncher launcher = unpack( "surefire-1364" );
         OutputValidator validator = launcher.setForkJvm()
                                             .activateProfile( "testng" )
-                                            .forkMode( "once" )
+                                            .forkOnce()
                                             .executeTest()
                                             .verifyErrorFree( 3 );
 
@@ -193,7 +193,7 @@ public class Surefire1364SystemPropertiesIT
         SurefireLauncher launcher = unpack( "surefire-1364" );
         OutputValidator validator = launcher.setForkJvm()
                                             .activateProfile( "testng" )
-                                            .forkMode( "never" )
+                                            .forkNever()
                                             .executeTest()
                                             .verifyErrorFree( 3 );
 

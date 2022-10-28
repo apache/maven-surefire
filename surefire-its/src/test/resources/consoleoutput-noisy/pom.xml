@@ -30,7 +30,8 @@
            <groupId>org.apache.maven.plugins</groupId>
            <artifactId>maven-surefire-plugin</artifactId>
            <configuration>
-             <forkMode>${forkMode}</forkMode>
+             <forkCount>${forkCount}</forkCount>
+             <reuseForks>${reuseForks}</reuseForks>
              <printSummary>${printSummary}</printSummary>
              <useFile>${useFile}</useFile>
              <parallel>${parallel}</parallel>
@@ -52,7 +53,8 @@
       <useFile>true</useFile>
       <junit.version>4.8.1</junit.version>
       <redirect.to.file>true</redirect.to.file>
-      <forkMode>once</forkMode>
+      <forkCount>1</forkCount>
+      <reuseForks>true</reuseForks>
       <printSummary>true</printSummary>
       <parallel></parallel>
       <reportFormat>brief</reportFormat>
