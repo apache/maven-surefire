@@ -99,11 +99,11 @@ public class JUnit4StackTraceWriter
         try
         {
             Throwable e = junitFailure.getException();
-            return stackTraceWithFocusOnClassAsString( e, testClass );
+            return new SmartStackTraceParser( testClass, e, null ).getTrimmedStackTrace();
         }
         catch ( Throwable t )
         {
-            return stackTraceWithFocusOnClassAsString( t, testClass );
+            return new SmartStackTraceParser( testClass, t, null ).getTrimmedStackTrace();
         }
     }
 
