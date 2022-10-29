@@ -34,7 +34,7 @@ import java.util.Objects;
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  */
 public class PojoStackTraceWriter
-    implements StackTraceWriter
+        implements StackTraceWriter
 {
     private final Throwable t;
 
@@ -55,12 +55,10 @@ public class PojoStackTraceWriter
         if ( t != null )
         {
             StringWriter w = new StringWriter();
-
             try ( PrintWriter stackTrace = new PrintWriter( w ) )
             {
                 t.printStackTrace( stackTrace );
             }
-
             StringBuffer builder = w.getBuffer();
             if ( isMultiLineExceptionMessage( t ) )
             {
@@ -126,10 +124,10 @@ public class PojoStackTraceWriter
         {
             return false;
         }
-        PojoStackTraceWriter that = (PojoStackTraceWriter) o;
+        PojoStackTraceWriter that = ( PojoStackTraceWriter ) o;
         return Objects.equals( t, that.t )
-            && Objects.equals( testClass, that.testClass )
-            && Objects.equals( testMethod, that.testMethod );
+                && Objects.equals( testClass, that.testClass )
+                && Objects.equals( testMethod, that.testMethod );
     }
 
     @Override
