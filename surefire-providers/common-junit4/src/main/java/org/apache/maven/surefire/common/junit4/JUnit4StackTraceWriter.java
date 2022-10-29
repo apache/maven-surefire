@@ -26,7 +26,6 @@ import org.apache.maven.surefire.api.util.internal.ClassMethod;
 import org.junit.runner.notification.Failure;
 
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClassMethod;
-import static org.apache.maven.surefire.report.SmartStackTraceParser.stackTraceWithFocusOnClassAsString;
 
 /**
  * Writes out a specific {@link org.junit.runner.notification.Failure} for

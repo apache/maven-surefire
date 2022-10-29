@@ -212,7 +212,8 @@ public class SmartStackTraceParser
         return t;
     }
 
-    public String getTrimmedStackTrace( ) {
+    public String getTrimmedStackTrace( )
+    {
         StackTraceFilter filter = new ClassNameStackTraceFilter( testClassName );
         Throwable topmost = findTopmostWithClass( throwable.getTarget(), filter );
         List<StackTraceElement> stackTraceElements = asList( topmost.getStackTrace() );
