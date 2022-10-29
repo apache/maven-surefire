@@ -73,7 +73,7 @@ public class PojoStackTraceWriterTest
         PojoStackTraceWriter a = new PojoStackTraceWriter(
             "org.apache.maven.surefire.report.PojoStackTraceWriterTest", null, throwable
         );
-        String result = a.trimmedStackTrace();
+        String result = a.writeTrimmedTraceToString();
 
         assertThat( result ).contains( "org.apache.maven.surefire.report.PojoStackTraceWriterTest."
             + "throwExceptionFromTestClass(PojoStackTraceWriterTest.java" );

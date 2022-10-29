@@ -74,15 +74,6 @@ public class SmartStackTraceParser
         return className.substring( i + 1 );
     }
 
-    public String getTrimmedStackTrace( )
-    {
-        StackTraceFilter filter = new ClassNameStackTraceFilter( testClassName );
-        Throwable topmost = findTopmostWithClass( throwable.getTarget(), filter );
-        List<StackTraceElement> stackTraceElements = asList( topmost.getStackTrace() );
-        String s = causeToString( topmost.getCause(), filter );
-        return toTrimmedString( throwable.getTarget(), stackTraceElements, filter ) + s;
-    }
-
     @SuppressWarnings( "ThrowableResultOfMethodCallIgnored" )
     public String getString()
     {
@@ -219,6 +210,14 @@ public class SmartStackTraceParser
         }
         while ( n != null );
         return t;
+    }
+
+    public String getTrimmedStackTrace( ) {
+        StackTraceFilter filter = new ClassNameStackTraceFilter( testClassName );
+        Throwable topmost = findTopmostWithClass( throwable.getTarget(), filter );
+        List<StackTraceElement> stackTraceElements = asList( topmost.getStackTrace() );
+        String s = causeToString( topmost.getCause(), filter );
+        return toTrimmedString( throwable.getTarget(), stackTraceElements, filter ) + s;
     }
 
     public static String stackTraceWithFocusOnClassAsString( Throwable t, String className )
