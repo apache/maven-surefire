@@ -34,6 +34,7 @@ public class LegacyPojoStackTraceWriterTest extends TestCase
     {
         String stackTrace = "junit.framework.AssertionFailedError: blah\n"
                 + "    at junit.framework.Assert.fail(Assert.java:47)\n"
+                + "    at AnotherClass.execute(AnotherClass.java:60)\n"
                 + "    at TestSurefire3.testQuote(TestSurefire3.java:23)\n"
                 + "    at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n"
                 + "    at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)\n"
@@ -64,7 +65,10 @@ public class LegacyPojoStackTraceWriterTest extends TestCase
         MockThrowable t = new MockThrowable( stackTrace );
         LegacyPojoStackTraceWriter w = new LegacyPojoStackTraceWriter( "TestSurefire3", "testQuote", t );
         String out = w.writeTrimmedTraceToString();
-        String expected = "junit.framework.AssertionFailedError: blah\n" + "    at junit.framework.Assert.fail(Assert.java:47)\n" + "    at TestSurefire3.testQuote(TestSurefire3.java:23)\n";
+        String expected = "junit.framework.AssertionFailedError: blah\n"
+            + "    at junit.framework.Assert.fail(Assert.java:47)\n"
+            + "    at AnotherClass.execute(AnotherClass.java:60)\n"
+            + "    at TestSurefire3.testQuote(TestSurefire3.java:23)\n";
         assertEquals( expected, out );
     }
 
@@ -72,6 +76,7 @@ public class LegacyPojoStackTraceWriterTest extends TestCase
     public void testCausedBy()
     {
         String stackTrace = "java.lang.RuntimeException: blah\n"
+                + "    at AnotherClass.execute(AnotherClass.java:60)\n"
                 + "    at TestSurefire3.testBlah(TestSurefire3.java:45)\n"
                 + "    at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n"
                 + "    at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)\n"
@@ -109,6 +114,7 @@ public class LegacyPojoStackTraceWriterTest extends TestCase
         LegacyPojoStackTraceWriter w = new LegacyPojoStackTraceWriter( "TestSurefire3", "testBlah", t );
         String out = w.writeTrimmedTraceToString();
         String expected = "java.lang.RuntimeException: blah\n"
+                + "    at AnotherClass.execute(AnotherClass.java:60)\n"
                 + "    at TestSurefire3.testBlah(TestSurefire3.java:45)\n"
                 + "Caused by: junit.framework.AssertionFailedError: \"\n"
                 + "    at junit.framework.Assert.fail(Assert.java:47)\n"
