@@ -106,8 +106,8 @@ public class Surefire943ReportContentIT
         Assert.assertEquals( "Expected skipped tag for ignored method for " + className, 1,
                              child.getChildren( "skipped" ).length );
 
-        Assert.assertTrue( "time for ignored test is expected to be zero",
-                           Double.compare( Double.parseDouble( child.getAttribute( "time" ) ), 0.0d ) == 0 );
+        Assert.assertEquals( "time for ignored test is expected to be zero", 0,
+                Double.compare( Double.parseDouble( child.getAttribute( "time" ) ), 0.0d ) );
     }
 
     private void validate( OutputValidator validator, String className, int ignored )
@@ -134,8 +134,8 @@ public class Surefire943ReportContentIT
                 Assert.assertEquals( "Expected skipped-tag for ignored method for " + className, 1,
                                      child.getChildren( "skipped" ).length );
 
-                Assert.assertTrue( "time for ignored test is expected to be zero",
-                                   Double.compare( Double.parseDouble( child.getAttribute( "time" ) ), 0.0d ) == 0 );
+                Assert.assertEquals( "time for ignored test is expected to be zero", 0,
+                        Double.compare( Double.parseDouble( child.getAttribute( "time" ) ), 0.0d ) );
 
             }
             else

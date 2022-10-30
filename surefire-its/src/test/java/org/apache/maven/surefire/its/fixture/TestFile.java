@@ -34,6 +34,7 @@ import junit.framework.Assert;
 import org.hamcrest.Matcher;
 
 import static java.nio.charset.Charset.defaultCharset;
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.Matchers.containsString;
 
@@ -75,7 +76,7 @@ public class TestFile
 
     public OutputValidator assertFileNotExists()
     {
-        assertTrue( "File doesn't exist: " + file.getAbsolutePath(), !file.exists() );
+        assertFalse( "File doesn't exist: " + file.getAbsolutePath(), file.exists() );
         return surefireVerifier;
     }
 
