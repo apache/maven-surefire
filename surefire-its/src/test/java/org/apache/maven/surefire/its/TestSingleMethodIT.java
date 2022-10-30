@@ -63,19 +63,19 @@ public class TestSingleMethodIT
     @Test
     public void testJunit44()
     {
-        singleMethod( "junit44-single-method", Collections.<String, String>emptyMap(), null );
+        singleMethod( "junit44-single-method", Collections.emptyMap(), null );
     }
 
     @Test
     public void testJunit48Provider4()
     {
-        singleMethod( "junit48-single-method", Collections.<String, String>emptyMap(), null, "-P surefire-junit4" );
+        singleMethod( "junit48-single-method", Collections.emptyMap(), null, "-P surefire-junit4" );
     }
 
     @Test
     public void testJunit48Provider47()
     {
-        singleMethod( "junit48-single-method", Collections.<String, String>emptyMap(), null, "-P surefire-junit47" )
+        singleMethod( "junit48-single-method", Collections.emptyMap(), null, "-P surefire-junit47" )
             .verifyTextInLog( RUNNING_WITH_PROVIDER47 );
     }
 
@@ -102,20 +102,20 @@ public class TestSingleMethodIT
     @Test
     public void testTestNg5149()
     {
-        singleMethod( "/testng-single-method-5-14-9", Collections.<String, String>emptyMap(), null );
+        singleMethod( "/testng-single-method-5-14-9", Collections.emptyMap(), null );
     }
 
     @Test
     public void fullyQualifiedJunit48Provider4()
     {
-        singleMethod( "junit48-single-method", Collections.<String, String>emptyMap(),
+        singleMethod( "junit48-single-method", Collections.emptyMap(),
                             "junit4.BasicTest#testSuccessOne", "-P surefire-junit4" );
     }
 
     @Test
     public void fullyQualifiedJunit48Provider47()
     {
-        singleMethod( "junit48-single-method", Collections.<String, String>emptyMap(),
+        singleMethod( "junit48-single-method", Collections.emptyMap(),
                             "junit4.BasicTest#testSuccessOne", "-P surefire-junit47" );
     }
 
