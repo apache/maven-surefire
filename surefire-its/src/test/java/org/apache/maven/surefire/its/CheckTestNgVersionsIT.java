@@ -158,11 +158,6 @@ public class CheckTestNgVersionsIT
         runTestNgTest( version, null, false );
     }
 
-    private void runTestNgTest( String version, boolean validateRunOrder )
-    {
-        runTestNgTest( version, null, validateRunOrder );
-    }
-
     private void runTestNgTest( String version, String classifier )
     {
         runTestNgTest( version, classifier, false );
