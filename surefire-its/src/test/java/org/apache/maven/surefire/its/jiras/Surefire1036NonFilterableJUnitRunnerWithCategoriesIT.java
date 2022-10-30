@@ -45,7 +45,7 @@ public class Surefire1036NonFilterableJUnitRunnerWithCategoriesIT
 
     @Test
     public void test()
-        throws VerificationException, FileNotFoundException
+        throws FileNotFoundException
     {
         OutputValidator validator = unpack().maven().executeTest();
         validator.assertTestSuiteResults( 1, 0, 0, 0 );

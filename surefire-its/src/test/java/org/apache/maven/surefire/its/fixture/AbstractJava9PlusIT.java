@@ -19,8 +19,6 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
-import java.io.IOException;
-
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -34,7 +32,7 @@ public abstract class AbstractJava9PlusIT
 {
     protected abstract String getProjectDirectoryName();
 
-    protected SurefireLauncher assumeJava9() throws IOException
+    protected SurefireLauncher assumeJava9()
     {
         assumeTrue( "There's no JDK 9 provided.", IS_JAVA9_PLUS );
         return unpack();

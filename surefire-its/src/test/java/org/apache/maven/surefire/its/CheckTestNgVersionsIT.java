@@ -193,7 +193,6 @@ public class CheckTestNgVersionsIT
     }
 
     private void runTestNgTest( String version, String classifier, boolean validateRunOrder )
-        throws Exception
     {
         final SurefireLauncher launcher = unpack( "testng-simple" )
                                             .sysProp( "testNgVersion", version );

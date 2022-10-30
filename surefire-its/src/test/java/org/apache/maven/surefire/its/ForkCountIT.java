@@ -47,7 +47,6 @@ public class ForkCountIT
 
     @BeforeClass
     public static void installDumpPidPlugin()
-        throws Exception
     {
         unpack( ForkCountIT.class, "test-helper-dump-pid-plugin", "plugin" ).executeInstall();
     }

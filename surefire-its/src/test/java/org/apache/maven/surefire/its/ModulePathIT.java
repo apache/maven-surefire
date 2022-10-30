@@ -34,7 +34,6 @@ public class ModulePathIT
 
     @Test
     public void testModulePath()
-            throws IOException
     {
         assumeJava9()
                 .debugLogging()
@@ -45,7 +44,6 @@ public class ModulePathIT
 
     @Test
     public void testModulePathWithSpaces()
-            throws IOException
     {
         suffix = " with spaces";
         assumeJava9()

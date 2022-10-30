@@ -92,7 +92,7 @@ public class Surefire1158RemoveInfoLinesIT extends SurefireJUnit4IntegrationTest
         }
     }
 
-    private OutputValidator assertTest() throws Exception
+    private OutputValidator assertTest()
     {
         final String[] cli = {"--batch-mode"};
         return unpack( "/surefire-1158-remove-info-lines", "_" + description, cli )

@@ -19,8 +19,6 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
-import java.io.IOException;
-
 import org.apache.maven.surefire.its.fixture.AbstractJava9PlusIT;
 import org.junit.Test;
 
@@ -34,7 +32,6 @@ public class Junit5ModulePathIT
 
     @Test
     public void testModulePath()
-            throws IOException
     {
         assumeJava9()
                 .debugLogging()
@@ -45,7 +42,6 @@ public class Junit5ModulePathIT
 
     @Test
     public void testModulePathWithSpaces()
-            throws IOException
     {
         suffix = " with spaces";
         assumeJava9()

@@ -35,7 +35,6 @@ public class CheckTestNgReportTestIT
 {
     @Test
     public void testNgReport()
-        throws Exception
     {
         unpack( "/testng-simple" )
                 .sysProp( "testNgVersion", "5.7" )

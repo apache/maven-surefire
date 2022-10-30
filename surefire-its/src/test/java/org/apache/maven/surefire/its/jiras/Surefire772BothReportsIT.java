@@ -46,7 +46,6 @@ public class Surefire772BothReportsIT
 
     @Test
     public void testReportGeneration()
-        throws Exception
     {
         OutputValidator outputValidator =
             unpack().addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
@@ -60,7 +59,6 @@ public class Surefire772BothReportsIT
 
     @Test
     public void testSkippedFailsafeReportGeneration()
-        throws Exception
     {
         OutputValidator validator = unpack().
             activateProfile(
@@ -75,7 +73,6 @@ public class Surefire772BothReportsIT
 
     @Test
     public void testSkippedSurefireReportGeneration()
-        throws Exception
     {
         OutputValidator validator = unpack().failNever().
             activateProfile(

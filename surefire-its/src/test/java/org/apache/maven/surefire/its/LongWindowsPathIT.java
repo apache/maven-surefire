@@ -45,10 +45,6 @@ public class LongWindowsPathIT
         extends SurefireJUnit4IntegrationTestCase
 {
     private static final String PROJECT_DIR = "long-windows-path";
-    private static final String LONG_PATH = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
-
-    // the IT engine crashes using long path
-    private static final String LONG_DIR = LONG_PATH + LONG_PATH + LONG_PATH;
 
     @Test
     public void shouldRunInSystemTmp() throws Exception
@@ -81,8 +77,8 @@ public class LongWindowsPathIT
         }
     }
 
-    private SurefireLauncher unpack() throws IOException
+    private SurefireLauncher unpack()
     {
-        return unpack( PROJECT_DIR/*, "_" + LONG_DIR*/ );
+        return unpack( PROJECT_DIR );
     }
 }

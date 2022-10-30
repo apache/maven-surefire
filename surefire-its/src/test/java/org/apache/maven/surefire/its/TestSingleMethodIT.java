@@ -40,7 +40,6 @@ public class TestSingleMethodIT
 
     public OutputValidator singleMethod( String projectName, Map<String, String> props, String testToRun,
                                          String... goals )
-        throws Exception
     {
         SurefireLauncher launcher = unpack( projectName );
         for ( Map.Entry<String, String> entry : props.entrySet() )
@@ -85,7 +84,6 @@ public class TestSingleMethodIT
 
     @Test
     public void testJunit48parallel()
-        throws Exception
     {
         unpack( "junit48-single-method" )
             .parallel( "all" )

@@ -36,7 +36,6 @@ public class Surefire1202RerunAndSkipIT
 {
     @Test
     public void junit47()
-            throws VerificationException
     {
         unpack().executeTest()
                 .assertTestSuiteResults( 5, 0, 0, 3, 4 );
@@ -44,7 +43,6 @@ public class Surefire1202RerunAndSkipIT
 
     @Test
     public void junit4()
-            throws VerificationException
     {
         unpack().addGoal( "-Pjunit4" )
                 .executeTest()

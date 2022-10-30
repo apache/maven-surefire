@@ -39,7 +39,6 @@ public class JUnit4RerunFailingTestsIT
 
     @Test
     public void testRerunFailingErrorTestsWithOneRetry()
-        throws Exception
     {
         OutputValidator outputValidator =
             unpack().addGoal( "-Dprovider=surefire-junit4" ).setJUnitVersion( "4.13" ).maven().addGoal(
@@ -65,7 +64,6 @@ public class JUnit4RerunFailingTestsIT
 
     @Test
     public void testRerunFailingErrorTestsTwoRetry()
-        throws Exception
     {
         // Four flakes, both tests have been re-run twice
         OutputValidator outputValidator =
@@ -95,7 +93,6 @@ public class JUnit4RerunFailingTestsIT
 
     @Test
     public void testRerunFailingErrorTestsFalse()
-        throws Exception
     {
         OutputValidator outputValidator = unpack().addGoal( "-Dprovider=surefire-junit4" ).setJUnitVersion(
             "4.13" ).maven().withFailure().executeTest().assertTestSuiteResults( 5, 1, 1, 0, 0 );
@@ -122,7 +119,6 @@ public class JUnit4RerunFailingTestsIT
 
     @Test
     public void testRerunOneTestClass()
-        throws Exception
     {
         OutputValidator outputValidator =
             unpack().addGoal( "-Dprovider=surefire-junit4" ).setJUnitVersion( "4.13" ).maven().addGoal(
@@ -154,7 +150,6 @@ public class JUnit4RerunFailingTestsIT
 
     @Test
     public void testRerunOneTestMethod()
-        throws Exception
     {
         OutputValidator outputValidator =
             unpack().addGoal( "-Dprovider=surefire-junit4" ).setJUnitVersion( "4.13" ).maven().addGoal(

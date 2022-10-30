@@ -54,7 +54,6 @@ public class JUnit47RedirectOutputIT
     }
 
     private void checkReports( OutputValidator validator )
-        throws IOException
     {
         String report = StringUtils.trimToNull(
             validator.getSurefireReportsFile( "junit47ConsoleOutput.Test1-output.txt" ).readFileToString() );

@@ -21,6 +21,7 @@ package org.apache.maven.surefire.its;
 
 import java.util.ArrayList;
 
+import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
@@ -77,7 +78,7 @@ public class JUnit47RerunFailingTestWithCucumberIT extends SurefireJUnit4Integra
 
     @Test
     public void testRerunFailingErrorTestsFalse()
-        throws Exception
+        throws VerificationException
     {
         String cls = profileId == null ? LEGACY_FORK_NODE : SUREFIRE_FORK_NODE;
         unpack()
@@ -94,7 +95,7 @@ public class JUnit47RerunFailingTestWithCucumberIT extends SurefireJUnit4Integra
 
     @Test
     public void testRerunFailingErrorTestsWithOneRetry()
-        throws Exception
+        throws VerificationException
     {
         String cls = profileId == null ? LEGACY_FORK_NODE : SUREFIRE_FORK_NODE;
         unpack()
@@ -111,7 +112,7 @@ public class JUnit47RerunFailingTestWithCucumberIT extends SurefireJUnit4Integra
 
     @Test
     public void testRerunFailingErrorTestsTwoRetry()
-        throws Exception
+        throws VerificationException
     {
         String cls = profileId == null ? LEGACY_FORK_NODE : SUREFIRE_FORK_NODE;
         unpack()

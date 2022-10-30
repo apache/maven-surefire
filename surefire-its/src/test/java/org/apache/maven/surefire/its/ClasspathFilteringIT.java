@@ -32,7 +32,6 @@ public class ClasspathFilteringIT
 {
     @Test
     public void additionalClasspath()
-        throws Exception
     {
         unpack( "classpath-filtering" ).debugLogging().executeTest().verifyErrorFree( 1 );
     }

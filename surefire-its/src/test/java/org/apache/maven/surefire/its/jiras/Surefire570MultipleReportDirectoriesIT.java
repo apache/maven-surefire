@@ -36,7 +36,6 @@ public class Surefire570MultipleReportDirectoriesIT
 
     @Test
     public void testReportWithAggregate()
-        throws Exception
     {
 
         SurefireLauncher surefireLauncher = unpack().failNever();

@@ -37,7 +37,6 @@ public class TestMultipleMethodsIT
     private static final String RUNNING_WITH_PROVIDER47 = "parallel='none', perCoreThreadCount=true, threadCount=0";
 
     public OutputValidator multipleMethod( String projectName, String... goals )
-        throws Exception
     {
         SurefireLauncher launcher = unpack( projectName );
         for ( String goal : goals )

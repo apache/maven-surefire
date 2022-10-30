@@ -121,7 +121,7 @@ public class Surefire995CategoryInheritanceIT extends SurefireJUnit4IntegrationT
     }
 
     @Test
-    public void junit412ShouldExecuteInheritedCategories() throws VerificationException
+    public void junit412ShouldExecuteInheritedCategories()
     {
         // GIVEN a project using junit 4.12
         final OutputValidator outputValidator = unpack()

@@ -19,6 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
@@ -32,7 +33,7 @@ public class Surefire1602IT
     extends SurefireJUnit4IntegrationTestCase
 {
     @Test
-    public void nonCanonicalPath() throws Exception
+    public void nonCanonicalPath() throws VerificationException
     {
         SurefireLauncher launcher = unpack( "/surefire-1602" );
         launcher.executeInstall();

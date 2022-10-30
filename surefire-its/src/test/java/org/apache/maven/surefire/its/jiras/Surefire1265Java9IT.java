@@ -42,7 +42,7 @@ public class Surefire1265Java9IT
         extends AbstractJava9PlusIT
 {
     @Test
-    public void shouldRunInPluginJava9() throws IOException
+    public void shouldRunInPluginJava9()
     {
         assumeJava9()
                 .executeTest()

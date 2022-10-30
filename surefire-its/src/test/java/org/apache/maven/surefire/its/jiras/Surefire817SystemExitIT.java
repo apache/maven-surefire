@@ -35,7 +35,6 @@ public class Surefire817SystemExitIT
 
     @Test
     public void systemExit1()
-        throws VerificationException
     {
         unpack().maven().withFailure().executeTest().verifyTextInLog( "class jiras.surefire817.Test main" );
     }

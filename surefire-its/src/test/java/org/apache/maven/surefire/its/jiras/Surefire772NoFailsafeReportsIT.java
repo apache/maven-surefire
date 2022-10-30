@@ -101,7 +101,7 @@ public class Surefire772NoFailsafeReportsIT
     }
 
     private SurefireLauncher unpack()
-        throws VerificationException, IOException
+        throws VerificationException
     {
         final SurefireLauncher unpack = unpack( "surefire-772-no-failsafe-reports" );
         unpack.maven().deleteSiteDir().skipClean().failNever().verifyFileNotPresent( "site" );

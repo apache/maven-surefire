@@ -32,7 +32,6 @@ public class TimeoutForkedTestIT
 {
     @Test
     public void testTimeoutForked()
-        throws Exception
     {
         unpack( "/timeout-forked" ).addGoal( "-DsleepLength=10000" ).addGoal(
             "-DforkTimeout=1" ).maven().withFailure().executeTest();
