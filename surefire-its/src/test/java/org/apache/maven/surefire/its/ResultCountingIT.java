@@ -38,21 +38,18 @@ public class ResultCountingIT
 {
     @Test
     public void testCountingWithJunit481ForkNever()
-        throws Exception
     {
         assertForkCount( 0, true );
     }
 
     @Test
     public void testCountingWithJunit481ForkOnce()
-        throws Exception
     {
         assertForkCount( 1, true );
     }
 
     @Test
     public void testCountingWithJunit481ForkAlways()
-        throws Exception
     {
         assertForkCount( 1, false );
     }

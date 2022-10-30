@@ -38,7 +38,6 @@ public class JUnit47RedirectOutputIT
 {
     @Test
     public void testPrintSummaryTrueWithRedirect()
-        throws Exception
     {
         final OutputValidator clean = unpack().redirectToFile( true ).addGoal( "clean" ).executeTest();
         checkReports( clean );
@@ -46,7 +45,6 @@ public class JUnit47RedirectOutputIT
 
     @Test
     public void testClassesParallel()
-        throws Exception
     {
         final OutputValidator clean =
             unpack().redirectToFile( true ).parallelClasses().addGoal( "clean" ).executeTest();

@@ -50,21 +50,18 @@ public class TestMultipleMethodsIT
 
     @Test
     public void testJunit44()
-        throws Exception
     {
         multipleMethod( "junit44-multiple-methods" );
     }
 
     @Test
     public void testJunit48Provider4()
-        throws Exception
     {
         multipleMethod( "junit48-multiple-methods", "-P surefire-junit4" );
     }
 
     @Test
     public void testJunit48Provider47()
-        throws Exception
     {
         multipleMethod( "junit48-multiple-methods", "-P surefire-junit47" )
             .verifyTextInLog( RUNNING_WITH_PROVIDER47 );

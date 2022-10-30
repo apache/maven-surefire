@@ -62,21 +62,18 @@ public class TestSingleMethodIT
 
     @Test
     public void testJunit44()
-        throws Exception
     {
         singleMethod( "junit44-single-method", Collections.<String, String>emptyMap(), null );
     }
 
     @Test
     public void testJunit48Provider4()
-        throws Exception
     {
         singleMethod( "junit48-single-method", Collections.<String, String>emptyMap(), null, "-P surefire-junit4" );
     }
 
     @Test
     public void testJunit48Provider47()
-        throws Exception
     {
         singleMethod( "junit48-single-method", Collections.<String, String>emptyMap(), null, "-P surefire-junit47" )
             .verifyTextInLog( RUNNING_WITH_PROVIDER47 );
@@ -95,7 +92,6 @@ public class TestSingleMethodIT
 
     @Test
     public void testTestNg()
-        throws Exception
     {
         Map<String, String> props = new HashMap<>();
         props.put( "testNgVersion", "5.7" );
@@ -105,14 +101,12 @@ public class TestSingleMethodIT
 
     @Test
     public void testTestNg5149()
-        throws Exception
     {
         singleMethod( "/testng-single-method-5-14-9", Collections.<String, String>emptyMap(), null );
     }
 
     @Test
     public void fullyQualifiedJunit48Provider4()
-            throws Exception
     {
         singleMethod( "junit48-single-method", Collections.<String, String>emptyMap(),
                             "junit4.BasicTest#testSuccessOne", "-P surefire-junit4" );
@@ -120,7 +114,6 @@ public class TestSingleMethodIT
 
     @Test
     public void fullyQualifiedJunit48Provider47()
-            throws Exception
     {
         singleMethod( "junit48-single-method", Collections.<String, String>emptyMap(),
                             "junit4.BasicTest#testSuccessOne", "-P surefire-junit47" );
@@ -128,7 +121,6 @@ public class TestSingleMethodIT
 
     @Test
     public void fullyQualifiedTestNg()
-            throws Exception
     {
         Map<String, String> props = new HashMap<>();
         props.put( "testNgVersion", "5.7" );

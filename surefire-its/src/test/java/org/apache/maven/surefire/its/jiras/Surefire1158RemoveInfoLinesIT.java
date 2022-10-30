@@ -79,7 +79,7 @@ public class Surefire1158RemoveInfoLinesIT extends SurefireJUnit4IntegrationTest
     public boolean isJUnit;
 
     @Test
-    public void shouldRunWithCliOption() throws Exception
+    public void shouldRunWithCliOption()
     {
         OutputValidator validator = assertTest();
         if ( isJUnit )

@@ -45,7 +45,6 @@ public class CheckTestNgVersionsIT
 {
 
     @Test public void test47()
-        throws Exception
     {
         runTestNgTest( "4.7", "jdk15" );
     }
@@ -53,7 +52,6 @@ public class CheckTestNgVersionsIT
     @Test
     @Ignore( "5.0 and 5.0.1 jars on central are malformed SUREFIRE-375 + MAVENUPLOAD-1024" )
     public void xXXtest50()
-        throws Exception
     {
         runTestNgTest( "5.0", "jdk15" );
     }
@@ -61,133 +59,111 @@ public class CheckTestNgVersionsIT
     @Test
     @Ignore( "5.0 and 5.0.1 jars on central are malformed SUREFIRE-375 + MAVENUPLOAD-1024" )
     public void xXXtest501()
-        throws Exception
     {
         runTestNgTest( "5.0.1", "jdk15" );
     }
 
     @Test public void test502()
-        throws Exception
     {
         runTestNgTest( "5.0.2", "jdk15" );
     }
 
     @Test public void test51()
-        throws Exception
     {
         runTestNgTest( "5.1", "jdk15" );
     }
 
     @Test public void test55()
-        throws Exception
     {
         runTestNgTest( "5.5", "jdk15" );
     }
 
     @Test public void test56()
-        throws Exception
     {
         runTestNgTest( "5.6", "jdk15" );
     }
 
     @Test public void test57()
-        throws Exception
     {
         runTestNgTest( "5.7", "jdk15" );
     }
 
     @Test public void test58()
-        throws Exception
     {
         runTestNgTest( "5.8", "jdk15" );
     }
 
     @Test public void test59()
-        throws Exception
     {
         runTestNgTest( "5.9", "jdk15" );
     }
 
     @Test public void test510()
-        throws Exception
     {
         runTestNgTest( "5.10", "jdk15" );
     }
 
     @Test public void test511()
-        throws Exception
     {
         runTestNgTest( "5.11", "jdk15" );
     }
 
     @Test public void test512()
-        throws Exception
     {
         runTestNgTest( "5.12.1" );
     }
 
     @Test public void test513()
-        throws Exception
     {
         runTestNgTest( "5.13" );
     }
 
     @Test public void test5131()
-        throws Exception
     {
         runTestNgTest( "5.13.1" );
     }
 
     @Test public void test514()
-        throws Exception
     {
         runTestNgTest( "5.14" );
     }
 
     @Test public void test5141()
-        throws Exception
     {
         runTestNgTest( "5.14.1" );
     }
 
     @Test public void test5142()
-        throws Exception
     {
         runTestNgTest( "5.14.2" );
     }
 
     @Test public void test60()
-        throws Exception
     {
         runTestNgTest( "6.0" );
     }
 
     @Test public void test685()
-        throws Exception
     {
         runTestNgTestWithRunOrder( "6.8.5" );
     }
 
     private void runTestNgTestWithRunOrder( String version )
-        throws Exception
     {
         runTestNgTest( version, null, true );
     }
 
     private void runTestNgTest( String version )
-            throws Exception
     {
         runTestNgTest( version, null, false );
     }
 
     private void runTestNgTest( String version, boolean validateRunOrder )
-            throws Exception
     {
         runTestNgTest( version, null, validateRunOrder );
     }
 
     private void runTestNgTest( String version, String classifier )
-        throws Exception
     {
         runTestNgTest( version, classifier, false );
     }
