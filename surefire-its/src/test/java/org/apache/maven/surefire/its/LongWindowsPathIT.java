@@ -25,7 +25,6 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.IOException;
 
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.assertj.core.api.Assertions.assertThat;

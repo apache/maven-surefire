@@ -19,7 +19,6 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.it.VerificationException;
 import org.apache.maven.shared.utils.xml.Xpp3Dom;
 import org.apache.maven.shared.utils.xml.Xpp3DomBuilder;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
