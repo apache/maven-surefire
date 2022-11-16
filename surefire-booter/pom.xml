@@ -104,12 +104,11 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M6</version>
         <dependencies>
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-shadefire</artifactId>
-            <version>3.0.0-M6</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+            <version>3.0.0-M7</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
           </dependency>
         </dependencies>
         <configuration>
