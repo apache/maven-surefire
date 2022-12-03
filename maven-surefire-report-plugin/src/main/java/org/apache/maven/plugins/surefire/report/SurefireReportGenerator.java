@@ -36,7 +36,6 @@ import static org.apache.maven.doxia.sink.Sink.JUSTIFY_LEFT;
 import static org.apache.maven.doxia.sink.SinkEventAttributes.CLASS;
 import static org.apache.maven.doxia.sink.SinkEventAttributes.HREF;
 import static org.apache.maven.doxia.sink.SinkEventAttributes.ID;
-import static org.apache.maven.doxia.sink.SinkEventAttributes.NAME;
 import static org.apache.maven.doxia.sink.SinkEventAttributes.STYLE;
 import static org.apache.maven.doxia.sink.SinkEventAttributes.TYPE;
 
@@ -725,7 +724,7 @@ public final class SurefireReportGenerator
     {
         // Dollar '$' for nested classes is not valid character in sink.anchor() and therefore it is ignored
         // https://issues.apache.org/jira/browse/SUREFIRE-1443
-        sink.unknown( A.toString(), TAG_TYPE_START, new SinkEventAttributeSet( NAME, anchor ) );
+        sink.unknown( A.toString(), TAG_TYPE_START, new SinkEventAttributeSet( ID, anchor ) );
         sink.unknown( A.toString(), TAG_TYPE_END, null );
     }
 

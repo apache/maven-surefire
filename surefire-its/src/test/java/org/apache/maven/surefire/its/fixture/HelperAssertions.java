@@ -146,7 +146,7 @@ public final class HelperAssertions
             reportsDirs.add( reportsDir );
         }
         ConsoleLogger logger = new PrintStreamLogger( System.out );
-        SurefireReportParser parser = new SurefireReportParser( reportsDirs, Locale.getDefault(), logger );
+        SurefireReportParser parser = new SurefireReportParser( reportsDirs, Locale.ROOT, logger );
         try
         {
             return parser.parseXMLReportFiles();
@@ -167,7 +167,7 @@ public final class HelperAssertions
             reportsDirs.add( reportsDir );
         }
         ConsoleLogger logger = new PrintStreamLogger( System.out );
-        SurefireReportParser parser = new SurefireReportParser( reportsDirs, Locale.getDefault(), logger );
+        SurefireReportParser parser = new SurefireReportParser( reportsDirs, Locale.ROOT, logger );
         try
         {
             return parser.parseXMLReportFiles();
