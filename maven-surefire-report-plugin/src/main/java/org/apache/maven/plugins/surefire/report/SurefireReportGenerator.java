@@ -119,11 +119,10 @@ public final class SurefireReportGenerator
         Map<String, String> summary = report.getSummary( testSuites );
 
         sink.section1();
+        sinkAnchor( sink, "Summary" );
         sink.sectionTitle1();
         sink.text( bundle.getReportLabelSummary() );
         sink.sectionTitle1_();
-
-        sinkAnchor( sink, "Summary" );
 
         constructHotLinks( sink, bundle );
 
@@ -186,11 +185,10 @@ public final class SurefireReportGenerator
         NumberFormat numberFormat = report.getNumberFormat();
 
         sink.section1();
+        sinkAnchor( sink, "Package_List" );
         sink.sectionTitle1();
         sink.text( bundle.getReportLabelPackageList() );
         sink.sectionTitle1_();
-
-        sinkAnchor( sink, "Package_List" );
 
         constructHotLinks( sink, bundle );
 
@@ -262,11 +260,10 @@ public final class SurefireReportGenerator
             List<ReportTestSuite> testSuiteList = entry.getValue();
 
             sink.section2();
+            sinkAnchor( sink, packageName );
             sink.sectionTitle2();
             sink.text( packageName );
             sink.sectionTitle2_();
-
-            sinkAnchor( sink, packageName );
 
             boolean showTable = false;
 
@@ -380,11 +377,10 @@ public final class SurefireReportGenerator
         NumberFormat numberFormat = report.getNumberFormat();
 
         sink.section1();
+        sinkAnchor( sink, "Test_Cases" );
         sink.sectionTitle1();
         sink.text( bundle.getReportLabelTestCases() );
         sink.sectionTitle1_();
-
-        sinkAnchor( sink, "Test_Cases" );
 
         constructHotLinks( sink, bundle );
 
@@ -395,11 +391,10 @@ public final class SurefireReportGenerator
             if ( !testCases.isEmpty() )
             {
                 sink.section2();
+                sinkAnchor( sink, suite.getPackageName() + '.' + suite.getName() );
                 sink.sectionTitle2();
                 sink.text( suite.getName() );
                 sink.sectionTitle2_();
-
-                sinkAnchor( sink, suite.getPackageName() + '.' + suite.getName() );
 
                 boolean showTable = false;
 
@@ -465,7 +460,6 @@ public final class SurefireReportGenerator
         if ( !testCase.isSuccessful() )
         {
             sink.tableCell();
-
             sinkAnchor( sink, "TC_" + toHtmlId( testCase.getFullName() ) );
 
             sinkLink( sink, testCase.getName(), "#" + toHtmlId( testCase.getFullName() ) );
@@ -550,11 +544,10 @@ public final class SurefireReportGenerator
     private void constructFailureDetails( Sink sink, LocalizedProperties bundle, List<ReportTestCase> failures )
     {
         sink.section1();
+        sinkAnchor( sink, "Failure_Details" );
         sink.sectionTitle1();
         sink.text( bundle.getReportLabelFailureDetails() );
         sink.sectionTitle1_();
-
-        sinkAnchor( sink, "Failure_Details" );
 
         constructHotLinks( sink, bundle );
 
