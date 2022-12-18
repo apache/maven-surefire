@@ -122,7 +122,6 @@ public class PpidCheckerTest
     public void shouldHavePid() throws Exception
     {
         String expectedPid = ManagementFactory.getRuntimeMXBean().getName().split( "@" )[0].trim();
-        System.out.println( "java version " + System.getProperty( "java.version" ) + " expectedPid=" + expectedPid );
 
         PpidChecker checker = new PpidChecker( expectedPid );
         setInternalState( checker, "parentProcessInfo",

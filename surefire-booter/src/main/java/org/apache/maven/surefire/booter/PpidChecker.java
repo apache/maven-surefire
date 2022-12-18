@@ -26,7 +26,6 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Queue;
@@ -170,7 +169,8 @@ final class PpidChecker
     // http://hg.openjdk.java.net/jdk7/jdk7/jdk/file/9b8c96f96a0f/test/java/lang/ProcessBuilder/Basic.java#L167
     ProcessInfo unix()
     {
-        ProcessInfoConsumer reader = new ProcessInfoConsumer( Charset.defaultCharset().name() )
+        String charset = System.getProperty( "native.encoding", System.getProperty( "file.encoding", "UTF-8" ) );
+        ProcessInfoConsumer reader = new ProcessInfoConsumer( charset )
         {
             @Override
             @Nonnull
