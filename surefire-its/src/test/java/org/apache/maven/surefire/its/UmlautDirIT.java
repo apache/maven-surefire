@@ -94,24 +94,38 @@ public class UmlautDirIT extends SurefireJUnit4IntegrationTestCase
         Path to = Paths.get( cwd, "target", "UmlautDirIT_surefire1617WithColonInLocalRepo", "target",
                 "test-classes", "umlautTest" );
 
-        MavenLauncher mavenLauncher = unpackWithColonInLocalRepo()
-                .maven();
+        Path localRepoDirWithColonInName =
+                Paths.get( System.getProperty( "user.dir" ), "target", "local repo for: SUREFIRE-1617" );
 
-        mavenLauncher.setForkJvm( true );
-        mavenLauncher.setAutoclean( false );
-
-        if ( !Files.exists( to ) )
+        try
         {
-            Files.createDirectories( to );
-        }
+            MavenLauncher mavenLauncher = unpackWithCustomLocalRepoDirectory( localRepoDirWithColonInName ).maven();
 
-        FileUtils.copyDirectory( from.toFile(), to.toFile() );
+            mavenLauncher.setForkJvm( true );
+            mavenLauncher.setAutoclean( false );
 
-        mavenLauncher.sysProp( "skipCompiler", true )
+            if ( !Files.exists( to ) )
+            {
+                Files.createDirectories( to );
+            }
+
+            FileUtils.copyDirectory( from.toFile(), to.toFile() );
+
+            mavenLauncher.sysProp( "skipCompiler", true )
                 .debugLogging()
                 .executeTest()
                 .verifyErrorFreeLog()
                 .assertTestSuiteResults( 1, 0, 0, 0 );
+        }
+        finally
+        {
+            if ( Files.exists( localRepoDirWithColonInName ) )
+            {
+                String dirNameWithoutColon = "surefire-1617-colon-in-local-repo_renamed-after-test";
+                Path localRepoDirWithNoColonInName = localRepoDirWithColonInName.resolveSibling( dirNameWithoutColon );
+                Files.move( localRepoDirWithColonInName, localRepoDirWithNoColonInName );
+            }
+        }
     }
 
     @Test
@@ -119,12 +133,27 @@ public class UmlautDirIT extends SurefireJUnit4IntegrationTestCase
             throws Exception
     {
         assumeTrue( IS_OS_LINUX );
-        unpackWithNewProjectDirectory( "this is: a test", "_surefire-1617" )
+        SurefireLauncher mavenLauncher = null;
+        try
+        {
+            mavenLauncher = unpackWithNewProjectDirectory( "this is: a test", "_surefire-1617" );
+            mavenLauncher
                 .setForkJvm()
                 .sysProp( "argLine", "-Dpath.separator=;" )
                 .executeTest()
                 .verifyErrorFreeLog()
                 .assertTestSuiteResults( 1, 0, 0, 0 );
+        }
+        finally
+        {
+            if ( mavenLauncher != null )
+            {
+                String dirNameWithoutColon = "surefire-1617-colon-in-project-dir_renamed-after-test";
+                Path projectDirWithColonInName = mavenLauncher.getUnpackedAt().toPath();
+                Path projectDirWithNoColonInName = projectDirWithColonInName.resolveSibling( dirNameWithoutColon );
+                Files.move( projectDirWithColonInName, projectDirWithNoColonInName );
+            }
+        }
     }
 
     @Test
@@ -158,11 +187,10 @@ public class UmlautDirIT extends SurefireJUnit4IntegrationTestCase
         return unpack;
     }
 
-    private SurefireLauncher unpackWithColonInLocalRepo()
+    private SurefireLauncher unpackWithCustomLocalRepoDirectory( Path customLocalRepoPath )
             throws IOException
     {
-        String newLocalRepo =
-                Paths.get( System.getProperty( "user.dir" ), "target", "local repo for: SUREFIRE-1617" ).toString();
+        String newLocalRepo = customLocalRepoPath.toString();
         String defaultLocalRepo = new MavenLauncher( getClass(), "junit-pathWithUmlaut", null ).getLocalRepository();
 
         copyFolder( Paths.get( defaultLocalRepo, "org", "apache", "maven", "surefire" ),
