@@ -630,6 +630,12 @@ public class ForkStarter
             {
                 runResult = timeout( reporter.getGlobalRunStatistics().getRunResult() );
             }
+            else if ( forkClient.isErrorInFork() )
+            {
+                final StackTraceWriter stackTrace = forkClient.getErrorInFork();
+                booterForkException =
+                    new SurefireBooterForkException( stackTrace.writeTraceToString() );
+            }
             else if ( result != SUCCESS )
             {
                 booterForkException =
