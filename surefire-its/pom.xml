@@ -34,6 +34,7 @@
 
     <properties>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+      <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
     </properties>
 
     <dependencies>
@@ -78,6 +79,57 @@
             <artifactId>commons-lang3</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- those dependencies are here to fake the build plan calculation
+        and being able to use -Txx or mvnd and have a faster multithread build
+        -->
+        <dependency>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${project.version}</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>${project.version}</version>
+          <scope>compile</scope>
+        </dependency>
+      <dependency>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>${project.version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>surefire-junit-platform</artifactId>
+        <version>${project.version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>surefire-junit47</artifactId>
+        <version>${project.version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>surefire-junit4</artifactId>
+        <version>${project.version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>surefire-junit3</artifactId>
+        <version>${project.version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>surefire-testng</artifactId>
+        <version>${project.version}</version>
+        <scope>compile</scope>
+      </dependency>
     </dependencies>
 
     <build>
@@ -172,6 +224,11 @@
     <profiles>
         <profile>
             <id>run-its</id>
+            <properties>
+              <verifier.forkMode>auto</verifier.forkMode>
+              <surefireMemory>-Xmx512m</surefireMemory>
+              <surefire.extraArgLine>-server -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</surefire.extraArgLine>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -183,7 +240,7 @@
                             <threadCount>1</threadCount>
                             <perCoreThreadCount>false</perCoreThreadCount>
                             <forkMode>once</forkMode>
-                            <argLine>-server -Xmx64m -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+                            <argLine>${surefireMemory} ${surefire.extraArgLine}</argLine>
                             <includes>
                                 <include>org/apache/**/*IT*.java</include>
                             </includes>
@@ -195,10 +252,9 @@
                                 <maven.settings.file>${project.build.directory}/private/settings.xml</maven.settings.file>
                                 <maven.toolchains.file>${project.build.directory}/private/toolchains.xml</maven.toolchains.file>
                                 <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>
-                                <verifier.forkMode>forked</verifier.forkMode>
+                                <verifier.forkMode>${verifier.forkMode}</verifier.forkMode>
                                 <jacoco.agent>${jacoco-it.agent}</jacoco.agent>
                             </systemPropertyVariables>
-                            <redirectTestOutputToFile>true</redirectTestOutputToFile>
                             <shutdown>kill</shutdown>
                         </configuration>
                         <dependencies>
@@ -217,6 +273,22 @@
                             </execution>
                         </executions>
                     </plugin>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-invoker-plugin</artifactId>
+                    <configuration>
+                      <localRepositoryPath>${settings.localRepository}</localRepositoryPath>
+                    </configuration>
+                    <executions>
+                      <execution>
+                        <id>install-dependencies</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                          <goal>install</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                  </plugin>
                 </plugins>
             </build>
         </profile>

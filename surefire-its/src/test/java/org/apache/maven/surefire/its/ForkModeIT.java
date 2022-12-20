@@ -73,7 +73,7 @@ public class ForkModeIT
     @Test
     public void testForkModeNever()
     {
-        String[] pids = doTest( unpack( getProject() ).forkNever() );
+        String[] pids = doTest( unpack( getProject() ).setForkJvm().forkNever() );
         assertSamePids( pids );
         assertEndWith( pids, "_1_1", 3 );
         assertEquals( "my pid is equal to pid 1 of the test", getMainPID(), pids[0] );
@@ -82,7 +82,7 @@ public class ForkModeIT
     @Test
     public void testForkModeNone()
     {
-        String[] pids = doTest( unpack( getProject() ).forkMode( "none" ) );
+        String[] pids = doTest( unpack( getProject() ).setForkJvm().forkMode( "none" ) );
         assertSamePids( pids );
         assertEndWith( pids, "_1_1", 3 );
         assertEquals( "my pid is equal to pid 1 of the test", getMainPID(), pids[0] );
@@ -116,7 +116,7 @@ public class ForkModeIT
     @Test
     public void testForkCountZero()
     {
-        String[] pids = doTest( unpack( getProject() ).forkCount( 0 ) );
+        String[] pids = doTest( unpack( getProject() ).setForkJvm().forkCount( 0 ) );
         assertSamePids( pids );
         assertEndWith( pids, "_1_1", 3 );
         assertEquals( "my pid is equal to pid 1 of the test", getMainPID(), pids[0] );
