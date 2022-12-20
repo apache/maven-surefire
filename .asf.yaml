@@ -34,3 +34,5 @@ github:
     merge:   false
     # enable rebase button:
     rebase:  true
+  autolink_jira:
+    - SUREFIRE
