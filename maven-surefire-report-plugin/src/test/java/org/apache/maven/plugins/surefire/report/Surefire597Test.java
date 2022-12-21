@@ -113,7 +113,7 @@ public class Surefire597Test
             "<table border=\"1\" class=\"bodyTable\">\n"
                 + "<tr class=\"a\">\n"
                 + "<td align=\"left\"><figure><img src=\"images/icon_error_sml.gif\" alt=\"\" /></figure></td>\n"
-                + "<td align=\"left\"><a name=\"surefire.MyTest.test\"></a>test</td></tr>\n"
+                + "<td align=\"left\"><a id=\"surefire.MyTest.test\"></a>test</td></tr>\n"
                 + "<tr class=\"b\">\n"
                 + "<td align=\"left\"></td>\n"
                 + "<td align=\"left\">java.lang.RuntimeException: java.lang.IndexOutOfBoundsException: msg</td></tr>\n"

@@ -48,6 +48,7 @@
 
     <properties>
       <doxiaVersion>1.11.1</doxiaVersion>
+      <aetherVersion>1.0.0.v20140518</aetherVersion>
     </properties>
 
     <dependencies>
@@ -118,6 +119,36 @@
             <groupId>org.xmlunit</groupId>
             <artifactId>xmlunit-core</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.eclipse.aether</groupId>
+          <artifactId>aether-impl</artifactId>
+          <version>${aetherVersion}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.eclipse.aether</groupId>
+          <artifactId>aether-connector-basic</artifactId>
+          <version>${aetherVersion}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.eclipse.aether</groupId>
+          <artifactId>aether-transport-wagon</artifactId>
+          <version>${aetherVersion}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.maven.wagon</groupId>
+          <artifactId>wagon-http-lightweight</artifactId>
+          <version>3.5.1</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-simple</artifactId>
+          <version>1.7.36</version>
+          <scope>test</scope>
         </dependency>
     </dependencies>
 

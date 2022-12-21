@@ -37,7 +37,6 @@ public class JUnit4SuiteTest extends TestCase
         TestSuite suite = new TestSuite();
         suite.addTest( new JUnit4TestAdapter( Surefire597Test.class ) );
         suite.addTest( new JUnit4TestAdapter( SurefireSchemaValidationTest.class ) );
-        suite.addTestSuite( Surefire1183Test.class );
         suite.addTestSuite( SurefireReportMojoTest.class );
         return suite;
     }

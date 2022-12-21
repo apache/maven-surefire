@@ -206,8 +206,8 @@ public abstract class AbstractSurefireReportMojo
                     {
                         resolvedReportsDirectories.add( getSurefireReportsDirectory( mavenProject ) );
                     }
-                } 
-                else 
+                }
+                else
                 {
                     resolvedReportsDirectories.add( getSurefireReportsDirectory( project ) );
                 }
@@ -344,5 +344,11 @@ public abstract class AbstractSurefireReportMojo
     final LocalizedProperties getBundle( Locale locale )
     {
         return getBundle( locale, getClass().getClassLoader() );
+    }
+
+    @Override
+    protected MavenProject getProject()
+    {
+        return project;
     }
 }

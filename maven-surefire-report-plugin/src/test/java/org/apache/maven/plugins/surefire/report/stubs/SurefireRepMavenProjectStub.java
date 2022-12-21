@@ -20,6 +20,11 @@ package org.apache.maven.plugins.surefire.report.stubs;
  */
 
 import java.util.List;
+import java.util.Collections;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
+import org.apache.maven.artifact.repository.MavenArtifactRepository;
+import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.model.Reporting;
@@ -50,5 +55,17 @@ public class SurefireRepMavenProjectStub
         model.setReporting( reporting );
 
         return reporting.getPlugins();
+    }
+
+    @Override
+    public List<ArtifactRepository> getRemoteArtifactRepositories()
+    {
+        ArtifactRepository repository =
+                new MavenArtifactRepository( "central", "https://repo1.maven.org/maven2",
+                                             new DefaultRepositoryLayout(),
+                                             new ArtifactRepositoryPolicy(),
+                                             new ArtifactRepositoryPolicy() );
+
+        return Collections.singletonList( repository );
     }
 }
