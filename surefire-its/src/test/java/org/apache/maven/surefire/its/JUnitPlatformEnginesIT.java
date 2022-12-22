@@ -39,6 +39,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.Matchers.matchesRegex;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;
 
@@ -366,7 +367,7 @@ public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase
     }
 
     @Test
-    public void testJupiterEngineWithDisplayNames()
+    public void testJupiterEngineWithDisplayNames() throws VerificationException
     {
         OutputValidator validator = unpack( "junit-platform-engine-jupiter", "-" + jupiter )
                 .sysProp( "junit5.version", jupiter )
@@ -410,6 +411,12 @@ public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase
                         + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" )
                 .assertContainsText( "<testcase name=\"add(int, int, int) 1 + 100 = 101\" "
                         + "classname=\"junitplatformenginejupiter.BasicJupiterTest\"" );
+
+        validator
+            .assertThatLogLine( matchesRegex( ".*Running junitplatformenginejupiter.BasicJupiterTest$" ), is( 1 ) )
+            .assertThatLogLine( matchesRegex( ".*Tests run.* junitplatformenginejupiter.BasicJupiterTest$" ), is( 1 ) )
+            .assertThatLogLine( matchesRegex( ".*Running << . >>$" ), is( 1 ) )
+            .assertThatLogLine( matchesRegex( ".*Tests run.* << . >>$" ), is( 1 ) );
     }
 
     @Test

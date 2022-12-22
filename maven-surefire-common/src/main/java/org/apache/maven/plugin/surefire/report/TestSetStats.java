@@ -297,7 +297,7 @@ public class TestSetStats
      */
     static String concatenateWithTestGroup( MessageBuilder builder, ReportEntry report, boolean phrasedClassName )
     {
-        if ( phrasedClassName )
+        if ( phrasedClassName && report.getReportNameWithGroup() != null )
         {
             return builder.strong( report.getReportNameWithGroup() )
                     .toString();
