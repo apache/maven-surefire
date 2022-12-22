@@ -28,6 +28,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.apache.maven.surefire.shared.utils.logging.MessageUtils.buffer;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -62,10 +63,27 @@ public class TestSetStatsTest
         when( reportEntry.getReportNameWithGroup() )
                 .thenReturn( "pkg.MyTest (my group)" );
         String actual = TestSetStats.concatenateWithTestGroup( buffer(), reportEntry, true );
-        verify( reportEntry, times( 1 ) ).getReportNameWithGroup();
+        verify( reportEntry, atLeastOnce() ).getReportNameWithGroup();
         verifyNoMoreInteractions( reportEntry );
         String expected = buffer().strong( "pkg.MyTest (my group)" ).toString();
         assertThat( actual )
                 .isEqualTo( expected );
     }
+
+    @Test
+    public void shouldFallBackToTestGroupIfJUnit5TestGroupIsNull()
+    {
+        when( reportEntry.getReportNameWithGroup() )
+            .thenReturn( null );
+        when( reportEntry.getNameWithGroup() )
+            .thenReturn( "pkg.MyTest (my group)" );
+        String actual = TestSetStats.concatenateWithTestGroup( buffer(), reportEntry, true );
+        verify( reportEntry, atLeastOnce() ).getReportNameWithGroup();
+        verify( reportEntry, atLeastOnce() ).getNameWithGroup();
+        verifyNoMoreInteractions( reportEntry );
+        String expected = buffer().a( "pkg." ).strong( "MyTest (my group)" ).toString();
+        assertThat( actual )
+            .isEqualTo( expected );
+    }
+
 }
