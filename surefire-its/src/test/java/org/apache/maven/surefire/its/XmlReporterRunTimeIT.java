@@ -41,7 +41,6 @@ public class XmlReporterRunTimeIT
 {
     @Test
     public void testForkAlways()
-        throws Exception
     {
         // just generate .surefire-<hash> in order to apply runOrder
         unpack( "/runorder-parallel" )

@@ -52,7 +52,6 @@ public class ResultCountingIT
     }
 
     private void assertForkCount( int forkCount, boolean reuseForks )
-        throws IOException, VerificationException
     {
         OutputValidator outputValidator = unpack( "result-counting" ).failNever().forkCount( forkCount )
             .reuseForks( reuseForks ).executeTest();
