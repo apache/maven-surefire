@@ -60,8 +60,6 @@ public class FailFastTestNgIT
         args.add( new Object[] { "testng-oneFork-ff3", null,     props( 1, 3, true ),    5,   2,      0,    0, true } );
         args.add( new Object[] { "testng-twoForks-ff3", null,    props( 2, 3, true ),    5,   2,      0,    0, true } );
         args.add( new Object[] { "testng-twoForks-ff3-tcp", null, props( 2, 3, true ),    5,   2,      0,    0, false } );
-        /*args.add( new Object[] { "testng-twoForks-ff1x", null,   props( 2, 1, false ),   5,   2,      0,    3 } );
-        args.add( new Object[] { "testng-twoForks-ff2x", null,   props( 2, 2, false ),   5,   2,      0,    2 } );*/
         return args;
     }
 

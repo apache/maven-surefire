@@ -101,7 +101,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void simpleNameTest()
-        throws Exception
     {
         prepare( "TestTwo" )
             .executeTest()
@@ -113,7 +112,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void simpleNameTestAsParallel()
-        throws Exception
     {
         assumeThat( getSettings().getFramework(), anyOf( is( JUNIT47 ), is( TestNG ) ) );
         prepare( "TestTwo" )
@@ -128,7 +126,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void simpleNameTestWithJavaExt()
-        throws Exception
     {
         prepare( "TestTwo.java" )
             .executeTest()
@@ -140,7 +137,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void simpleNameTestWithWildcardPkg()
-        throws Exception
     {
         prepare( "**/TestTwo" )
             .executeTest()
@@ -152,7 +148,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void simpleNameTestWithJavaExtWildcardPkg()
-        throws Exception
     {
         prepare( "**/TestTwo.java" )
             .executeTest()
@@ -164,7 +159,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void fullyQualifiedTest()
-        throws Exception
     {
         prepare( "jiras/surefire745/TestTwo.java" )
             .executeTest()
@@ -176,7 +170,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void shouldMatchSimpleClassNameAndMethod()
-        throws Exception
     {
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
         prepare( "BasicTest#testSuccessTwo" )
@@ -230,7 +223,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void shouldMatchWildcardPackageAndClassAndMethod()
-        throws Exception
     {
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
         prepare( "jiras/**/BasicTest#testSuccessTwo" )
@@ -242,7 +234,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void regexClass()
-        throws Exception
     {
         prepare( "%regex[.*.TestTwo.*]" )
             .executeTest()
@@ -254,7 +245,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void testSuccessTwo()
-        throws Exception
     {
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
         prepare( "#testSuccessTwo" )
@@ -266,7 +256,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void testRegexSuccessTwo()
-        throws Exception
     {
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
         prepare( "%regex[#testSuccessTwo]" )
@@ -277,7 +266,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void regexClassAndMethod()
-        throws Exception
     {
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
         prepare( "%regex[.*.BasicTest.*#testSuccessTwo]" )
@@ -289,7 +277,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void shouldMatchExactClassAndMethodWildcard()
-        throws Exception
     {
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
         prepare( "BasicTest#test*One" )
@@ -301,7 +288,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void shouldMatchExactClassAndMethodsWildcard()
-        throws Exception
     {
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
         prepare( "BasicTest#testSuccess*" )
@@ -314,7 +300,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void shouldMatchExactClassAndMethodCharacters()
-        throws Exception
     {
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
         prepare( "BasicTest#test???????One" )
@@ -326,7 +311,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void shouldMatchExactClassAndMethodsPostfix()
-        throws Exception
     {
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
         prepare( "TestFive#testSuccess???" )
@@ -339,7 +323,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void shouldMatchExactClassAndMethodPostfix()
-        throws Exception
     {
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
         prepare( "TestFive#testSuccess?????" )
@@ -351,7 +334,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void shouldMatchExactClassAndMultipleMethods()
-        throws Exception
     {
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
         prepare( "TestFive#testSuccessOne+testSuccessThree" )
@@ -364,7 +346,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void shouldMatchMultiplePatterns()
-        throws Exception
     {
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
         String test = "jiras/surefire745/BasicTest#testSuccessOne+testSuccessTwo" //2
@@ -381,7 +362,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void shouldMatchMultiplePatternsAsParallel()
-        throws Exception
     {
         assumeThat( getSettings().getFramework(), anyOf( is( JUNIT47 ), is( TestNG ) ) );
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
@@ -401,7 +381,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void shouldMatchMultiplePatternsComplex()
-        throws Exception
     {
         assumeThat( getSettings().getConfiguration(), is( TEST ) );
         String test = "**/BasicTest#testSuccessOne+testSuccessTwo" //2
@@ -418,7 +397,6 @@ public abstract class AbstractTestMultipleMethodPatterns
 
     @Test
     public void shouldMatchMultiplePatternsComplexAsParallel()
-        throws Exception
     {
         assumeThat( getSettings().getFramework(), anyOf( is( JUNIT47 ), is( TestNG ) ) );
         assumeThat( getSettings().getConfiguration(), is( TEST ) );

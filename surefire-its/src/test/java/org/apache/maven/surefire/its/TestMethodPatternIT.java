@@ -98,21 +98,21 @@ public class TestMethodPatternIT
     public void testJUnit44()
         throws Exception
     {
-        runMethodPattern( "junit44-method-pattern", Collections.<String, String>emptyMap() );
+        runMethodPattern( "junit44-method-pattern", Collections.emptyMap() );
     }
 
     @Test
     public void testJUnit48Provider4()
         throws Exception
     {
-        runMethodPattern( "junit48-method-pattern", Collections.<String, String>emptyMap(), "-P surefire-junit4" );
+        runMethodPattern( "junit48-method-pattern", Collections.emptyMap(), "-P surefire-junit4" );
     }
 
     @Test
     public void testJUnit48Provider47()
         throws Exception
     {
-        runMethodPattern( "junit48-method-pattern", Collections.<String, String>emptyMap(), "-P surefire-junit47" )
+        runMethodPattern( "junit48-method-pattern", Collections.emptyMap(), "-P surefire-junit47" )
             .verifyTextInLog( RUNNING_WITH_PROVIDER47 );
     }
 

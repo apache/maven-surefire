@@ -34,7 +34,6 @@ public class Surefire975DefaultVMEncodingIT
 
     @Test
     public void runWithRussian1251()
-        throws Exception
     {
         OutputValidator outputValidator =
             unpack( "surefire-975-wrong-encoding" ).setMavenOpts( "-Dfile.encoding=windows-1251" ).executeTest();

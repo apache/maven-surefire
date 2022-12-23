@@ -39,7 +39,6 @@ public class JUnit4RunListenerIT
 
     @Test
     public void testJUnit4RunListener()
-        throws Exception
     {
         final OutputValidator outputValidator = unpack().addGoal( "-Dprovider=surefire-junit4" ).setJUnitVersion(
             "4.4" ).executeTest().verifyErrorFreeLog();
@@ -51,7 +50,6 @@ public class JUnit4RunListenerIT
 
     @Test
     public void testRunlistenerJunitCoreProvider()
-        throws Exception
     {
         final OutputValidator outputValidator =
             unpack().addGoal( "-Dprovider=surefire-junit47" ).setJUnitVersion( "4.8.1" ).addGoal(

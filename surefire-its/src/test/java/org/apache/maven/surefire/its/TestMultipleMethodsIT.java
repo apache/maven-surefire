@@ -37,7 +37,6 @@ public class TestMultipleMethodsIT
     private static final String RUNNING_WITH_PROVIDER47 = "parallel='none', perCoreThreadCount=true, threadCount=0";
 
     public OutputValidator multipleMethod( String projectName, String... goals )
-        throws Exception
     {
         SurefireLauncher launcher = unpack( projectName );
         for ( String goal : goals )
@@ -51,21 +50,18 @@ public class TestMultipleMethodsIT
 
     @Test
     public void testJunit44()
-        throws Exception
     {
         multipleMethod( "junit44-multiple-methods" );
     }
 
     @Test
     public void testJunit48Provider4()
-        throws Exception
     {
         multipleMethod( "junit48-multiple-methods", "-P surefire-junit4" );
     }
 
     @Test
     public void testJunit48Provider47()
-        throws Exception
     {
         multipleMethod( "junit48-multiple-methods", "-P surefire-junit47" )
             .verifyTextInLog( RUNNING_WITH_PROVIDER47 );

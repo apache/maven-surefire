@@ -19,7 +19,6 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
@@ -35,7 +34,6 @@ public class Surefire817SystemExitIT
 
     @Test
     public void systemExit1()
-        throws VerificationException
     {
         unpack().maven().withFailure().executeTest().verifyTextInLog( "class jiras.surefire817.Test main" );
     }

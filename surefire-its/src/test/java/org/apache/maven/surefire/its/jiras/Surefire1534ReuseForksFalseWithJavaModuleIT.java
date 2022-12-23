@@ -24,8 +24,6 @@ import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
 
-import java.io.IOException;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertTrue;
 
@@ -38,7 +36,6 @@ public class Surefire1534ReuseForksFalseWithJavaModuleIT
 
     @Test
     public void testExecuteWithReuseForksFalseWithJavaModule()
-            throws IOException
     {
         OutputValidator validator = assumeJava9()
                 .reuseForks( false )
@@ -58,7 +55,6 @@ public class Surefire1534ReuseForksFalseWithJavaModuleIT
 
     @Test
     public void testExecuteWithReuseForksFalseWithJavaModuleWithFilter()
-            throws IOException
     {
         OutputValidator validator = assumeJava9()
                 .reuseForks( false )
@@ -79,7 +75,6 @@ public class Surefire1534ReuseForksFalseWithJavaModuleIT
 
     @Test
     public void testExecuteWithZeroForkCountWithJavaModule()
-            throws IOException
     {
         OutputValidator validator = assumeJava9()
                 .forkCount( 0 )

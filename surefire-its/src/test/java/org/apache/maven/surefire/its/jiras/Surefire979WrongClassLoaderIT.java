@@ -31,7 +31,6 @@ public class Surefire979WrongClassLoaderIT
 {
     @Test
     public void wrongClassloaderUSedInSmartStacktraceparser()
-        throws Exception
     {
         OutputValidator outputValidator =
             unpack( "surefire-979-smartStackTrace-wrongClassloader" )

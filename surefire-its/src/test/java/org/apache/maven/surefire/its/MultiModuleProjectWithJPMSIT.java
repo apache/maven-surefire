@@ -19,6 +19,7 @@ package org.apache.maven.surefire.its;
  * under the License.
  */
 
+import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.AbstractJava9PlusIT;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.junit.Test;
@@ -35,7 +36,7 @@ import static org.hamcrest.Matchers.is;
 public class MultiModuleProjectWithJPMSIT extends AbstractJava9PlusIT
 {
     @Test
-    public void test() throws Exception
+    public void test() throws VerificationException
     {
         OutputValidator validator = assumeJava9()
             .debugLogging()

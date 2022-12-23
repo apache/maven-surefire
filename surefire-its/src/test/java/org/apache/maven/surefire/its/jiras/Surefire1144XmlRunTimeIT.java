@@ -43,7 +43,6 @@ public class Surefire1144XmlRunTimeIT
 {
     @Test
     public void testXmlRunTime()
-        throws Exception
     {
         OutputValidator outputValidator = unpack( "/surefire-1144-xml-runtime" ).forkOnce().executeTest();
 

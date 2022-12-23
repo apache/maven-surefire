@@ -34,7 +34,6 @@ public class SmartStackTraceIT
 
     @Test
     public void misg()
-        throws Exception
     {
         OutputValidator outputValidator = unpack( "/junit48-smartStackTrace" ).maven().withFailure().executeTest();
         outputValidator.verifyTextInLog(

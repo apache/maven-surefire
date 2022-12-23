@@ -30,7 +30,7 @@ import org.junit.Test;
 public class Surefire257NotRerunningTestsIT extends SurefireJUnit4IntegrationTestCase
 {
     @Test
-    public void shouldNotRerun() throws Exception
+    public void shouldNotRerun()
     {
         unpack( "/surefire-257-rerunningTests" )
                 .addSurefireReportGoal().addSurefireReportGoal().executeCurrentGoals().verifyTextInLog(

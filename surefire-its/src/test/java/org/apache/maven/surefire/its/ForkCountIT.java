@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its;
  */
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
@@ -47,7 +47,6 @@ public class ForkCountIT
 
     @BeforeClass
     public static void installDumpPidPlugin()
-        throws Exception
     {
         unpack( ForkCountIT.class, "test-helper-dump-pid-plugin", "plugin" ).executeInstall();
     }
@@ -71,7 +70,7 @@ public class ForkCountIT
                 .threadCount( threadCount ) );
         assertSamePids( pids );
         assertEndWith( pids, "_1_1", 3 );
-        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
+        assertNotEquals( "pid 1 is not the same as the main process' pid", pids[0], getMainPID() );
     }
 
     @Test
@@ -83,7 +82,7 @@ public class ForkCountIT
                 .threadCount( threadCount )
                 .addGoal( "-DsleepLength=7200" ) );
         assertDifferentPids( pids, 2 );
-        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
+        assertNotEquals( "pid 1 is not the same as the main process' pid", pids[0], getMainPID() );
     }
 
     @Test
@@ -92,7 +91,7 @@ public class ForkCountIT
         String[] pids = doTest( unpack( getProject() ).setForkJvm().forkCount( 1 ).reuseForks( false ) );
         assertDifferentPids( pids );
         assertEndWith( pids, "_1_1", 3 );
-        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
+        assertNotEquals( "pid 1 is not the same as the main process' pid", pids[0], getMainPID() );
     }
 
     @Test
@@ -101,7 +100,7 @@ public class ForkCountIT
         String[] pids = doTest( unpack( getProject() ).setForkJvm().forkCount( 1 ).reuseForks( true ) );
         assertSamePids( pids );
         assertEndWith( pids, "_1_1", 3 );
-        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
+        assertNotEquals( "pid 1 is not the same as the main process' pid", pids[0], getMainPID() );
     }
 
     @Test
@@ -110,7 +109,7 @@ public class ForkCountIT
         String[] pids = doTest( unpack( getProject() ).setForkJvm().forkCount( 2 ).reuseForks( false )
                 .addGoal( "-DsleepLength=7200" ) );
         assertDifferentPids( pids );
-        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
+        assertNotEquals( "pid 1 is not the same as the main process' pid", pids[0], getMainPID() );
     }
 
     @Test
@@ -119,7 +118,7 @@ public class ForkCountIT
         String[] pids =
             doTest( unpack( getProject() ).forkCount( 2 ).reuseForks( true ).addGoal( "-DsleepLength=7200" ) );
         assertDifferentPids( pids, 2 );
-        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
+        assertNotEquals( "pid 1 is not the same as the main process' pid", pids[0], getMainPID() );
     }
 
     private void assertEndWith( String[] pids, String suffix, int expectedMatches )
@@ -147,7 +146,7 @@ public class ForkCountIT
     {
         String[] pids = doTest( unpack( getProject() ).forkOnce() );
         assertSamePids( pids );
-        assertFalse( "pid 1 is not the same as the main process' pid", pids[0].equals( getMainPID() ) );
+        assertNotEquals( "pid 1 is not the same as the main process' pid", pids[0], getMainPID() );
     }
 
     private String getMainPID()

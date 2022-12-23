@@ -25,8 +25,6 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
-import java.io.IOException;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
@@ -38,7 +36,6 @@ public class JUnit47RedirectOutputIT
 {
     @Test
     public void testPrintSummaryTrueWithRedirect()
-        throws Exception
     {
         final OutputValidator clean = unpack().redirectToFile( true ).addGoal( "clean" ).executeTest();
         checkReports( clean );
@@ -46,7 +43,6 @@ public class JUnit47RedirectOutputIT
 
     @Test
     public void testClassesParallel()
-        throws Exception
     {
         final OutputValidator clean =
             unpack().redirectToFile( true ).parallelClasses().addGoal( "clean" ).executeTest();
@@ -54,7 +50,6 @@ public class JUnit47RedirectOutputIT
     }
 
     private void checkReports( OutputValidator validator )
-        throws IOException
     {
         String report = StringUtils.trimToNull(
             validator.getSurefireReportsFile( "junit47ConsoleOutput.Test1-output.txt" ).readFileToString() );

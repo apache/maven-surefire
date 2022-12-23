@@ -30,7 +30,7 @@ public class Surefire1881IT extends SurefireJUnit4IntegrationTestCase
 {
 
     @Test( timeout = 60_000L )
-    public void test() throws Exception
+    public void test()
     {
         unpack( "/surefire-1881" )
             .executeVerify()

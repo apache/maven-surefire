@@ -44,7 +44,7 @@ public class RunOrderIT
 
     @Test
     public void testAlphabeticalJUnit4()
-        throws Exception
+        throws VerificationException
     {
         OutputValidator validator = executeWithRunOrder( "alphabetical", "junit4" );
         assertTestnamesAppearInSpecificOrder( validator, TESTS_IN_ALPHABETICAL_ORDER );
@@ -52,7 +52,7 @@ public class RunOrderIT
 
     @Test
     public void testAlphabeticalJUnit5()
-        throws Exception
+        throws VerificationException
     {
         OutputValidator validator = executeWithRunOrder( "alphabetical", "junit5" );
         assertTestnamesAppearInSpecificOrder( validator, TESTS_IN_ALPHABETICAL_ORDER );
@@ -60,7 +60,7 @@ public class RunOrderIT
 
     @Test
     public void testRandomJUnit4DifferentSeed()
-        throws Exception
+        throws VerificationException
     {
         long seed = 0L;
         OutputValidator validator = executeWithRandomOrder( "junit4", seed );
@@ -79,7 +79,7 @@ public class RunOrderIT
 
     @Test
     public void testRandomJUnit4SameSeed()
-        throws Exception
+        throws VerificationException
     {
         long seed = 0L;
         OutputValidator validator = executeWithRandomOrder( "junit4", seed );
@@ -111,7 +111,7 @@ public class RunOrderIT
 
     @Test
     public void testReverseAlphabeticalJUnit4()
-        throws Exception
+        throws VerificationException
     {
         OutputValidator validator = executeWithRunOrder( "reversealphabetical", "junit4" );
         assertTestnamesAppearInSpecificOrder( validator, TESTS_IN_REVERSE_ALPHABETICAL_ORDER );
@@ -119,7 +119,7 @@ public class RunOrderIT
 
     @Test
     public void testReverseAlphabeticalJUnit5()
-        throws Exception
+        throws VerificationException
     {
         OutputValidator validator = executeWithRunOrder( "reversealphabetical", "junit5" );
         assertTestnamesAppearInSpecificOrder( validator, TESTS_IN_REVERSE_ALPHABETICAL_ORDER );
@@ -127,7 +127,7 @@ public class RunOrderIT
 
     @Test
     public void testHourlyJUnit4()
-        throws Exception
+        throws VerificationException
     {
         int startHour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
         OutputValidator validator = executeWithRunOrder( "hourly", "junit4" );
@@ -144,7 +144,7 @@ public class RunOrderIT
 
     @Test
     public void testHourlyJUnit5()
-        throws Exception
+        throws VerificationException
     {
         int startHour = Calendar.getInstance().get( Calendar.HOUR_OF_DAY );
         OutputValidator validator = executeWithRunOrder( "hourly", "junit5" );

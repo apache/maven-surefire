@@ -19,7 +19,6 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import org.apache.maven.it.VerificationException;
 import org.apache.maven.shared.utils.xml.Xpp3Dom;
 import org.apache.maven.shared.utils.xml.Xpp3DomBuilder;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
@@ -45,7 +44,7 @@ public class Surefire1036NonFilterableJUnitRunnerWithCategoriesIT
 
     @Test
     public void test()
-        throws VerificationException, FileNotFoundException
+        throws FileNotFoundException
     {
         OutputValidator validator = unpack().maven().executeTest();
         validator.assertTestSuiteResults( 1, 0, 0, 0 );

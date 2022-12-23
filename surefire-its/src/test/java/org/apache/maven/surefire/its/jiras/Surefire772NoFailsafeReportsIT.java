@@ -19,7 +19,6 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import java.io.IOException;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
@@ -101,7 +100,7 @@ public class Surefire772NoFailsafeReportsIT
     }
 
     private SurefireLauncher unpack()
-        throws VerificationException, IOException
+        throws VerificationException
     {
         final SurefireLauncher unpack = unpack( "surefire-772-no-failsafe-reports" );
         unpack.maven().deleteSiteDir().skipClean().failNever().verifyFileNotPresent( "site" );

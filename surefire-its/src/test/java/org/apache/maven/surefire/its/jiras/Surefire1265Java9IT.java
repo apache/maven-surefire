@@ -22,8 +22,6 @@ package org.apache.maven.surefire.its.jiras;
 import org.apache.maven.surefire.its.fixture.AbstractJava9PlusIT;
 import org.junit.Test;
 
-import java.io.IOException;
-
 @SuppressWarnings( { "javadoc", "checkstyle:javadoctype" } )
 /**
  * IsolatedClassLoader should take platform ClassLoader as a parent ClassLoader if running on the top of JDK9.
@@ -42,7 +40,7 @@ public class Surefire1265Java9IT
         extends AbstractJava9PlusIT
 {
     @Test
-    public void shouldRunInPluginJava9() throws IOException
+    public void shouldRunInPluginJava9()
     {
         assumeJava9()
                 .executeTest()

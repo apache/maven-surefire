@@ -24,6 +24,7 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,7 +38,7 @@ public class CheckTestNgCustomTestRunnerFactoryIT
 {
     @Test
     public void testTestNgListenerReporter()
-        throws Exception
+        throws IOException
     {
         File baseDir = unpack()
             .executeTest()

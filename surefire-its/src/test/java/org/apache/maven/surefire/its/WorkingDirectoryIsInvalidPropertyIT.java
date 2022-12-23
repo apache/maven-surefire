@@ -32,7 +32,6 @@ public class WorkingDirectoryIsInvalidPropertyIT
 {
     @Test
     public void testWorkingDirectory()
-        throws Exception
     {
         unpack( "working-directory-is-invalid-property" ).maven().withFailure().executeTest().verifyTextInLog(
             "workingDirectory cannot be null" );

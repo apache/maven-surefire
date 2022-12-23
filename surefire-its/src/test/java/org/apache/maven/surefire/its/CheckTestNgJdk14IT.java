@@ -33,7 +33,6 @@ public class CheckTestNgJdk14IT
 
     @Test
     public void testNgJdk14()
-        throws Exception
     {
         unpack( "/testng-jdk14" ).executeTest().verifyErrorFree( 1 );
 

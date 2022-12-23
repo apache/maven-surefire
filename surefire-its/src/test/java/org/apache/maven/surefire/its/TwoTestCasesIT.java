@@ -42,7 +42,6 @@ public class TwoTestCasesIT
 {
     @Test
     public void testTwoTestCases()
-        throws Exception
     {
         unpack( "junit-twoTestCases" )
                 .sysProp( "testNgVersion", "5.7" )
@@ -57,7 +56,6 @@ public class TwoTestCasesIT
      */
     @Test
     public void testTwoTestCaseSuite()
-        throws Exception
     {
         final OutputValidator outputValidator = unpack( "junit-twoTestCaseSuite" )
                                                         .sysProp( "testNgVersion", "5.7" )
@@ -94,7 +92,6 @@ public class TwoTestCasesIT
 
     @Test
     public void testJunit4Suite()
-        throws Exception
     {
         final OutputValidator outputValidator = unpack( "junit4-twoTestCaseSuite" )
                                                         .sysProp( "testNgVersion", "5.7" )
@@ -114,7 +111,6 @@ public class TwoTestCasesIT
 
     @Test
     public void testTestNGSuite()
-        throws Exception
     {
         final OutputValidator outputValidator = unpack( "testng-twoTestCaseSuite" )
                                                         .sysProp( "testNgVersion", "5.7" )

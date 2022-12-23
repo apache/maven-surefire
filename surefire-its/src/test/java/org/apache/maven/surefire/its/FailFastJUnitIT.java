@@ -65,10 +65,6 @@ public class FailFastJUnitIT
         args.add( new Object[] { "junit4-twoForks-ff3", "junit4",  props( 2, 3, true ),  5,   0,      2,    0, true } );
         args.add( new Object[] { "junit47-twoForks-ff3", "junit47", props( 2, 3, true ),  5,   0,      2,    0, true } );
         args.add( new Object[] { "junit47-twoForks-ff3-tcp", "junit47", props( 2, 3, true ),  5,   0,      2,    0, false } );
-        /*args.add( new Object[] { "junit4-twoForks-ff1x","junit4",  props( 2, 1, false ), 5,   0,      2,    3 } );
-        args.add( new Object[] { "junit47-twoForks-ff1x","junit47",props( 2, 1, false ), 5,   0,      2,    3 } );
-        args.add( new Object[] { "junit4-twoForks-ff2x","junit4",  props( 2, 2, false ), 5,   0,      2,    2 } );
-        args.add( new Object[] { "junit47-twoForks-ff2x","junit47",props( 2, 2, false ), 5,   0,      2,    2 } );*/
         return args;
     }
 
