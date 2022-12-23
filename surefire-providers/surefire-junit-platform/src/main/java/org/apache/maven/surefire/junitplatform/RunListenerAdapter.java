@@ -210,8 +210,25 @@ final class RunListenerAdapter
     @Override
     public void executionSkipped( TestIdentifier testIdentifier, String reason )
     {
-        testStartTime.remove( testIdentifier );
-        runListener.testSkipped( createReportEntry( testIdentifier, null, emptyMap(), reason, null ) );
+        boolean isClass = testIdentifier.isContainer()
+            && testIdentifier.getSource().filter( ClassSource.class::isInstance ).isPresent();
+        boolean isTest = testIdentifier.isTest();
+
+        if ( isClass )
+        {
+            SimpleReportEntry report = createReportEntry( testIdentifier );
+            runListener.testSetStarting( report );
+            for ( TestIdentifier child : testPlan.getChildren( testIdentifier ) )
+            {
+                runListener.testSkipped( createReportEntry( child, null, emptyMap(), reason, null ) );
+            }
+            runListener.testSetCompleted( report );
+        }
+        else if ( isTest )
+        {
+            testStartTime.remove( testIdentifier );
+            runListener.testSkipped( createReportEntry( testIdentifier, null, emptyMap(), reason, null ) );
+        }
     }
 
     private SimpleReportEntry createReportEntry( TestIdentifier testIdentifier,
