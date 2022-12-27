@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
+import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
+
 /**
  * @author Kristian Rosenvold
  */
@@ -97,7 +99,14 @@ public class CategorizedReportEntry
     @Override
     public String getReportNameWithGroup()
     {
-        return isNameWithGroup() ? getSourceText() + GROUP_PREFIX + getGroup() + GROUP_SUFIX : getSourceText();
+        String sourceText = getSourceText();
+
+        if ( isBlank ( sourceText ) )
+        {
+            return null;
+        }
+
+        return isNameWithGroup() ? sourceText + GROUP_PREFIX + getGroup() + GROUP_SUFIX : sourceText;
     }
 
     @Override
