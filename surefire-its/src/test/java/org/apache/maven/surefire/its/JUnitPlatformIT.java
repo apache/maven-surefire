@@ -20,6 +20,7 @@ package org.apache.maven.surefire.its;
  */
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
@@ -50,13 +51,15 @@ public class JUnitPlatformIT
     @Parameters( name = "{0}" )
     public static Iterable<Object[]> artifactVersions()
     {
-        ArrayList<Object[]> args = new ArrayList<>();
+        List<Object[]> args = new ArrayList<>();
         args.add( new Object[] { "5.2.0", "0.8.0" } );
         args.add( new Object[] { "5.3.2", "0.9.0" } );
         args.add( new Object[] { "5.4.2", "1.0.0" } );
         args.add( new Object[] { "5.5.2", "0.8.15" } );
-        args.add( new Object[] { "5.6.2", "1.2.7" } );
-        args.add( new Object[] { "5.7.1", "1.5.0" } );
+        args.add( new Object[] { "5.6.2", "1.3.5" } );
+        args.add( new Object[] { "5.7.2", "1.5.5" } );
+        args.add( new Object[] { "5.8.2", "1.6.5" } );
+        args.add( new Object[] { "5.9.1", "1.7.1" } );
         return args;
     }
 

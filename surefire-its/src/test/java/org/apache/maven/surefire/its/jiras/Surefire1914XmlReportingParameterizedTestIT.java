@@ -19,8 +19,7 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
@@ -41,40 +40,19 @@ public class Surefire1914XmlReportingParameterizedTestIT extends SurefireJUnit4I
 {
     @Parameter
     @SuppressWarnings( "checkstyle:visibilitymodifier" )
-    public String platform;
-
-    @Parameter( 1 )
-    @SuppressWarnings( "checkstyle:visibilitymodifier" )
-    public String jupiter;
-
-    @Parameter( 2 )
-    @SuppressWarnings( "checkstyle:visibilitymodifier" )
-    public String opentest;
-
-    @Parameter( 3 )
-    @SuppressWarnings( "checkstyle:visibilitymodifier" )
-    public String apiguardian;
+    public String jupiterVersion;
 
     @Parameters( name = "{0}" )
-    public static Iterable<Object[]> artifactVersions()
+    public static Iterable<?> junitJupiterVersions()
     {
-        List<Object[]> args = new ArrayList<>();
-        args.add( new Object[] {"1.0.3", "5.0.3", "1.0.0", "1.0.0"} );
-        args.add( new Object[] {"1.1.1", "5.1.1", "1.0.0", "1.0.0"} );
-        args.add( new Object[] {"1.2.0", "5.2.0", "1.1.0", "1.0.0"} );
-        args.add( new Object[] {"1.3.2", "5.3.2", "1.1.1", "1.0.0"} );
-        args.add( new Object[] {"1.4.2", "5.4.2", "1.1.1", "1.0.0"} );
-        args.add( new Object[] {"1.5.2", "5.5.2", "1.2.0", "1.1.0"} );
-        args.add( new Object[] {"1.6.2", "5.6.2", "1.2.0", "1.1.0"} );
-        args.add( new Object[] {"1.7.1", "5.7.1", "1.2.0", "1.1.0" } );
-        return args;
+        return Arrays.asList( "5.2.0", "5.8.2", "5.9.1" );
     }
 
     @Test
     public void testXmlReport()
     {
-        OutputValidator validator = unpack( "surefire-1914-xml-reporting-parameterizedtest", "-" + jupiter )
-                .sysProp( "junit5.version", jupiter )
+        OutputValidator validator = unpack( "surefire-1914-xml-reporting-parameterizedtest", "-" + jupiterVersion )
+                .sysProp( "junit5.version", jupiterVersion )
                 .executeTest()
                 .verifyErrorFree( 16 );
 
