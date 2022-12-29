@@ -21,5 +21,6 @@ open module wtf.g4s8.oot.test
 {
     requires wtf.g4s8.oot;
     requires transitive org.junit.jupiter.engine;
+    requires transitive org.junit.jupiter.api;
     requires transitive org.hamcrest;
 }
