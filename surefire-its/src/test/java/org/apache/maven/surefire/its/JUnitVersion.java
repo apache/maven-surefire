@@ -43,7 +43,9 @@ public enum JUnitVersion
     JUNIT_4_10( "4.10" ),
     JUNIT_4_11( "4.11" ),
     JUNIT_4_12( "4.12" ),
-    JUNIT_4_13( "4.13" );
+    JUNIT_4_13( "4.13" ),
+    JUNIT_4_13_1( "4.13.1" ),
+    JUNIT_4_13_2( "4.13.2" );
 
     private final String version;
 

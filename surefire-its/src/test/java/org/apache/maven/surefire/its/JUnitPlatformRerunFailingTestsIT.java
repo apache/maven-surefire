@@ -33,7 +33,7 @@ import org.junit.Test;
 @SuppressWarnings( "checkstyle:magicnumber" )
 public class JUnitPlatformRerunFailingTestsIT extends SurefireJUnit4IntegrationTestCase
 {
-    private static final String VERSION = "5.5.2";
+    private static final String VERSION = "5.9.1";
 
     private SurefireLauncher unpack()
     {
