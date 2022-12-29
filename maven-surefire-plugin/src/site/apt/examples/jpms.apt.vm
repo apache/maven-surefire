@@ -108,7 +108,7 @@ module test
     <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.13</version>
+        <version>4.13.2</version>
         <scope>test</scope>
         <exclusions>
             <exclusion>
@@ -154,7 +154,7 @@ module test
   demonstrating the Java Modularity (JPMS) in Maven multi-module project.
 
   The JDK version must be 9 or higher. The POM contains the dependency
-  <<<org.junit.jupiter:junit-jupiter-engine:5.6.2>>> which is named module. It activates the internal provider
+  <<<org.junit.jupiter:junit-jupiter-engine:5.9.1>>> which is named module. It activates the internal provider
   <<<surefire-junit-platform>>> in the plugin.
 
 +---+

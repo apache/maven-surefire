@@ -80,7 +80,7 @@ The `pom.xml`:
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.13</version>
+                <version>4.13.2</version>
             </dependency>
         </dependencies>
     
