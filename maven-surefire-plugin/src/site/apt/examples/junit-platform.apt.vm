@@ -40,7 +40,7 @@ Using JUnit 5 Platform
     <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-engine</artifactId>
-        <version>5.4.0</version>
+        <version>5.9.1</version>
         <scope>test</scope>
     </dependency>
     [...]
@@ -55,7 +55,7 @@ Using JUnit 5 Platform
   (e.g., <<<src/test/java>>>).
 
   If you want to write and execute JUnit 3 or 4 tests via the JUnit Platform add the Vintage Engine to the
-  dependencies, which transitively pulls in (and requires) <<<junit:junit:4.12>>>:
+  dependencies, which transitively pulls in (and requires) <<<junit:junit:4.13.2>>>:
 
 +---+
 <dependencies>
@@ -63,7 +63,7 @@ Using JUnit 5 Platform
     <dependency>
         <groupId>org.junit.vintage</groupId>
         <artifactId>junit-vintage-engine</artifactId>
-        <version>5.4.0</version>
+        <version>5.9.1</version>
         <scope>test</scope>
     </dependency>
     [...]
@@ -85,7 +85,7 @@ Using JUnit 5 Platform
 
 ** How to run only one API
 
-  Normally, the developer does not want to access internal classes of JUnit5 engine (e.g. <<<5.4.0>>>).
+  Normally, the developer does not want to access internal classes of JUnit5 engine (e.g. <<<5.9.1>>>).
   In the next chapters you can find your way to use the Jupiter or JUnit5 API where the plugin would resolve the engine.
 
 *** Jupiter API in test dependencies
@@ -100,7 +100,7 @@ Using JUnit 5 Platform
     <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-api</artifactId>
-        <version>5.4.0</version>
+        <version>5.9.1</version>
         <scope>test</scope>
     </dependency>
     [...]
@@ -125,7 +125,7 @@ Using JUnit 5 Platform
 
   In the following example the engine artifact appears in plugin dependencies and the engine is resolved by the plugin
   and downloaded from a remote repository for plugins. You may want to update the version of engine with fixed bugs in
-  <<<5.3.2>>> but the API version <<<5.3.0>>> stays intact!
+  <<<5.9.1>>> but the API version <<<5.9.0>>> stays intact!
 
 +---+
 <dependencies>
@@ -133,7 +133,7 @@ Using JUnit 5 Platform
     <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-api</artifactId>
-        <version>5.3.0</version>
+        <version>5.9.0</version>
         <scope>test</scope>
     </dependency>
     [...]
@@ -150,7 +150,7 @@ Using JUnit 5 Platform
                 <dependency>
                     <groupId>org.junit.jupiter</groupId>
                     <artifactId>junit-jupiter-engine</artifactId>
-                    <version>5.3.2</version>
+                    <version>5.9.1</version>
                 </dependency>
             </dependencies>
         </plugin>
@@ -172,7 +172,7 @@ Using JUnit 5 Platform
     <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.13</version>
+        <version>4.13.2</version>
         <scope>test</scope>
     </dependency>
     [...]
@@ -189,7 +189,7 @@ Using JUnit 5 Platform
                 <dependency>
                     <groupId>org.junit.vintage</groupId>
                     <artifactId>junit-vintage-engine</artifactId>
-                    <version>5.4.0</version>
+                    <version>5.9.1</version>
                 </dependency>
             </dependencies>
         </plugin>
@@ -212,13 +212,13 @@ Using JUnit 5 Platform
     <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-api</artifactId>
-        <version>5.6.2</version>
+        <version>5.9.1</version>
         <scope>test</scope>
     </dependency>
     <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.13</version>
+        <version>4.13.2</version>
         <scope>test</scope>
     </dependency>
 </dependencies>
@@ -231,13 +231,13 @@ Using JUnit 5 Platform
     <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-api</artifactId>
-        <version>5.6.2</version>
+        <version>5.9.1</version>
         <scope>test</scope>
     </dependency>
     <dependency>
         <groupId>org.junit.vintage</groupId>
         <artifactId>junit-vintage-engine</artifactId>
-        <version>5.6.2</version>
+        <version>5.9.1</version>
         <scope>test</scope>
     </dependency>
 </dependencies>
@@ -250,13 +250,13 @@ Using JUnit 5 Platform
     <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-engine</artifactId>
-        <version>5.6.2</version>
+        <version>5.9.1</version>
         <scope>test</scope>
     </dependency>
     <dependency>
         <groupId>org.junit.vintage</groupId>
         <artifactId>junit-vintage-engine</artifactId>
-        <version>5.6.2</version>
+        <version>5.9.1</version>
         <scope>test</scope>
     </dependency>
 </dependencies>
@@ -277,13 +277,13 @@ Using JUnit 5 Platform
     <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-api</artifactId>
-        <version>5.6.2</version>
+        <version>5.9.1</version>
         <scope>test</scope>
     </dependency>
     <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.13</version>
+        <version>4.13.2</version>
         <scope>test</scope>
     </dependency>
 </dependencies>
@@ -299,7 +299,7 @@ Using JUnit 5 Platform
                     <dependency>
                         <groupId>org.junit.jupiter</groupId>
                         <artifactId>junit-jupiter-engine</artifactId>
-                        <version>5.6.2</version>
+                        <version>5.9.1</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -318,13 +318,13 @@ Using JUnit 5 Platform
     <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-api</artifactId>
-        <version>5.6.2</version>
+        <version>5.9.1</version>
         <scope>test</scope>
     </dependency>
     <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.13</version>
+        <version>4.13.2</version>
         <scope>test</scope>
     </dependency>
 </dependencies>
@@ -340,7 +340,7 @@ Using JUnit 5 Platform
                     <dependency>
                         <groupId>org.junit.vintage</groupId>
                         <artifactId>junit-vintage-engine</artifactId>
-                        <version>5.6.2</version>
+                        <version>5.9.1</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -390,13 +390,13 @@ Using JUnit 5 Platform
     <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-engine</artifactId>
-        <version>5.6.2</version>
+        <version>5.9.1</version>
         <scope>test</scope>
     </dependency>
     <dependency>
         <groupId>org.junit.platform</groupId>
         <artifactId>junit-platform-runner</artifactId>
-        <version>1.6.2</version>
+        <version>1.9.1</version>
         <scope>test</scope>
     </dependency>
 </dependencies>
@@ -413,13 +413,13 @@ Using JUnit 5 Platform
     <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-engine</artifactId>
-        <version>5.8.2</version>
+        <version>5.9.1</version>
         <scope>test</scope>
     </dependency>
     <dependency>
         <groupId>org.junit.platform</groupId>
         <artifactId>junit-platform-suite-engine</artifactId>
-        <version>1.8.2</version>
+        <version>1.9.1</version>
         <scope>test</scope>
     </dependency>
 </dependencies>
