@@ -92,7 +92,7 @@
     <commonsLang3Version>3.12.0</commonsLang3Version>
     <commonsCompress>1.21</commonsCompress>
     <commonsIoVersion>2.11.0</commonsIoVersion>
-    <plexus-java-version>1.1.1</plexus-java-version>
+    <plexus-java-version>1.1.2</plexus-java-version>
     <!-- maven-shared-utils:3.3.4 uses org.fusesource.jansi:jansi:2.2.0 -->
     <mavenSharedUtilsVersion>3.3.4</mavenSharedUtilsVersion>
     <powermockVersion>2.0.9</powermockVersion>
