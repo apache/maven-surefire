@@ -130,7 +130,7 @@ public final class SurefireReportGenerator
 
         sink.table();
 
-        sink.tableRows( new int[]{ LEFT, LEFT, LEFT, LEFT, LEFT, LEFT }, true );
+        sink.tableRows( new int[]{ LEFT, LEFT, LEFT, LEFT, LEFT, LEFT }, false );
 
         sink.tableRow();
 
@@ -196,7 +196,7 @@ public final class SurefireReportGenerator
 
         sink.table();
 
-        sink.tableRows( new int[]{ LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT }, true );
+        sink.tableRows( new int[]{ LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT }, false );
 
         sink.tableRow();
 
@@ -281,7 +281,7 @@ public final class SurefireReportGenerator
             {
                 sink.table();
 
-                sink.tableRows( new int[]{ LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT }, true );
+                sink.tableRows( new int[]{ LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT, LEFT }, false );
 
                 sink.tableRow();
 
@@ -412,7 +412,7 @@ public final class SurefireReportGenerator
                 {
                     sink.table();
 
-                    sink.tableRows( new int[]{ LEFT, LEFT, LEFT }, true );
+                    sink.tableRows( new int[]{ LEFT, LEFT, LEFT }, false );
 
                     for ( ReportTestCase testCase : testCases )
                     {
@@ -555,7 +555,7 @@ public final class SurefireReportGenerator
 
         sink.table();
 
-        sink.tableRows( new int[]{ LEFT, LEFT }, true );
+        sink.tableRows( new int[]{ LEFT, LEFT }, false );
 
         for ( ReportTestCase tCase : failures )
         {
