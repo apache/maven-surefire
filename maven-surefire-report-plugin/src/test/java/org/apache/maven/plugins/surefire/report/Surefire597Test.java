@@ -101,7 +101,7 @@ public class Surefire597Test
                 + "<th>Success Rate</th>\n"
                 + "<th>Time</th></tr>\n"
                 + "<tr class=\"b\">\n"
-                + "<td align=\"left\"><a href=\"#surefire.MyTest\"><figure><img src=\"images/icon_error_sml.gif\" alt=\"\" /></figure></a></td>\n"
+                + "<td align=\"left\"><a href=\"#surefire.MyTest\"><img src=\"images/icon_error_sml.gif\" alt=\"\" /></a></td>\n"
                 + "<td align=\"left\"><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
                 + "<td align=\"left\">1</td>\n"
                 + "<td align=\"left\">1</td>\n"
@@ -112,7 +112,7 @@ public class Surefire597Test
         assertThat( xml, containsString( toSystemNewLine(
             "<table border=\"0\" class=\"bodyTable\">\n"
                 + "<tr class=\"a\">\n"
-                + "<td align=\"left\"><figure><img src=\"images/icon_error_sml.gif\" alt=\"\" /></figure></td>\n"
+                + "<td align=\"left\"><img src=\"images/icon_error_sml.gif\" alt=\"\" /></td>\n"
                 + "<td align=\"left\"><a id=\"surefire.MyTest.test\"></a>test</td></tr>\n"
                 + "<tr class=\"b\">\n"
                 + "<td align=\"left\"></td>\n"

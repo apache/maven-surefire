@@ -659,8 +659,6 @@ public final class SurefireReportGenerator
 
     private static void sinkIcon( String type, Sink sink )
     {
-        sink.figure();
-
         if ( type.startsWith( "junit.framework" ) || "skipped".equals( type ) )
         {
             sink.figureGraphics( "images/icon_warning_sml.gif" );
@@ -673,8 +671,6 @@ public final class SurefireReportGenerator
         {
             sink.figureGraphics( "images/icon_error_sml.gif" );
         }
-
-        sink.figure_();
     }
 
     private static void sinkHeader( Sink sink, String header )
