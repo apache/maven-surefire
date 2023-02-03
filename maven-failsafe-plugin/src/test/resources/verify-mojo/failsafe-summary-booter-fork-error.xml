@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<failsafe-summary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/failsafe-summary.xsd" result="254" timeout="false">
+    <completed>0</completed>
+    <errors>0</errors>
+    <failures>0</failures>
+    <skipped>0</skipped>
+    <failureMessage>org.apache.maven.surefire.booter.SurefireBooterForkException: The forked VM terminated without properly saying goodbye. VM crash or System.exit called?
+Command was /bin/sh -c cd &apos;/Users/aaron.braunstein/git/apache/maven-surefire/surefire-its/target/TestClass_testMethod&apos; &amp;&amp; &apos;/Library/Java/JavaVirtualMachines/temurin-11.jdk/Contents/Home/bin/java&apos; &apos;-Dfile.encoding=UTF-8&apos; &apos;-Duser.language=en&apos; &apos;-XFakeUnrecognizedOptionThatWillCrashJVM&apos; &apos;-Duser.region=US&apos; &apos;-showversion&apos; &apos;-Xmx6g&apos; &apos;-Xms2g&apos; &apos;-XX:+PrintGCDetails&apos; &apos;-jar&apos; &apos;/Users/aaron.braunstein/git/apache/maven-surefire/surefire-its/target/TestClass_testMethod/target/surefire/surefirebooter-20220606220315261_3.jar&apos; &apos;/Users/aaron.braunstein/git/apache/maven-surefire/surefire-its/target/TestClass_testMethod/target/surefire&apos; &apos;2022-06-06T22-03-11_910-jvmRun1&apos; &apos;surefire-20220606220315261_1tmp&apos; &apos;surefire_0-20220606220315261_2tmp&apos;
+Error occurred in starting fork, check output in log
+Process Exit Code: 1
+	at org.apache.maven.plugin.surefire.booterclient.ForkStarter.fork(ForkStarter.java:714)
+	at org.apache.maven.plugin.surefire.booterclient.ForkStarter.run(ForkStarter.java:311)
+	at org.apache.maven.plugin.surefire.booterclient.ForkStarter.run(ForkStarter.java:268)
+	at org.apache.maven.plugin.surefire.AbstractSurefireMojo.executeProvider(AbstractSurefireMojo.java:1334)
+	at org.apache.maven.plugin.surefire.AbstractSurefireMojo.executeAfterPreconditionsChecked(AbstractSurefireMojo.java:1167)
+	at org.apache.maven.plugin.surefire.AbstractSurefireMojo.execute(AbstractSurefireMojo.java:931)
+	at org.apache.maven.plugin.DefaultBuildPluginManager.executeMojo(DefaultBuildPluginManager.java:137)
+	at org.apache.maven.lifecycle.internal.MojoExecutor.doExecute(MojoExecutor.java:301)
+	at org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:211)
+	at org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:165)
+	at org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:157)
+	at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject(LifecycleModuleBuilder.java:121)
+	at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject(LifecycleModuleBuilder.java:81)
+	at org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder.build(SingleThreadedBuilder.java:56)
+	at org.apache.maven.lifecycle.internal.LifecycleStarter.execute(LifecycleStarter.java:127)
+	at org.apache.maven.DefaultMaven.doExecute(DefaultMaven.java:294)
+	at org.apache.maven.DefaultMaven.doExecute(DefaultMaven.java:192)
+	at org.apache.maven.DefaultMaven.execute(DefaultMaven.java:105)
+	at org.apache.maven.cli.MavenCli.execute(MavenCli.java:960)
+	at org.apache.maven.cli.MavenCli.doMain(MavenCli.java:293)
+	at org.apache.maven.cli.MavenCli.main(MavenCli.java:196)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced(Launcher.java:282)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.launch(Launcher.java:225)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode(Launcher.java:406)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.main(Launcher.java:347)
+</failureMessage>
+</failsafe-summary>
