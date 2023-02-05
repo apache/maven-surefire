@@ -33,7 +33,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.maven.surefire.api.report.OutputReportEntry;
@@ -61,8 +60,6 @@ import org.junit.platform.launcher.TestPlan;
 final class RunListenerAdapter
     implements TestExecutionListener, TestOutputReceiver<OutputReportEntry>, RunModeSetter
 {
-    private static final Pattern COMMA_PATTERN = Pattern.compile( "," );
-
     private final ClassMethodIndexer classMethodIndexer = new ClassMethodIndexer();
     private final ConcurrentMap<TestIdentifier, Long> testStartTime = new ConcurrentHashMap<>();
     private final ConcurrentMap<TestIdentifier, TestExecutionResult> failures = new ConcurrentHashMap<>();
@@ -147,7 +144,7 @@ final class RunListenerAdapter
                     break;
                 case FAILED:
                     String reason = safeGetMessage( testExecutionResult.getThrowable().orElse( null ) );
-                    SimpleReportEntry reportEntry = createReportEntry( testIdentifier, testExecutionResult, 
+                    SimpleReportEntry reportEntry = createReportEntry( testIdentifier, testExecutionResult,
                             reason, elapsed );
                     if ( isAssertionError )
                     {
@@ -320,7 +317,9 @@ final class RunListenerAdapter
             MethodSource methodSource = testSource.map( MethodSource.class::cast ).get();
             String realClassName = methodSource.getClassName();
 
-            String[] source = testPlan.getParent( testIdentifier )
+            String[] source = collectAllTestIdentifiersInHierarchy( testIdentifier )
+                    .filter( i -> i.getSource().map( ClassSource.class::isInstance ).orElse( false ) )
+                    .findFirst()
                     .map( this::toClassMethodName )
                     .map( s -> new String[] { s[0], s[1] } )
                     .orElse( new String[] { realClassName, realClassName } );
@@ -334,26 +333,34 @@ final class RunListenerAdapter
             boolean needsSpaceSeparator = isNotBlank( parentDisplay ) && !display.startsWith( "[" );
             String methodDisplay = parentDisplay + ( needsSpaceSeparator ? " " : "" ) + display;
 
-            String simpleClassNames = COMMA_PATTERN.splitAsStream( methodSource.getMethodParameterTypes() )
-                    .map( s -> s.substring( 1 + s.lastIndexOf( '.' ) ) )
-                    .collect( joining( "," ) );
+            boolean hasParameterizedParent =
+                collectAllTestIdentifiersInHierarchy( testIdentifier )
+                    .filter( identifier -> !identifier.getSource().isPresent() )
+                    .map( TestIdentifier::getLegacyReportingName )
+                    .anyMatch( legacyReportingName -> legacyReportingName.matches( "^\\[.+]$" ) );
 
-            boolean hasParams = isNotBlank( methodSource.getMethodParameterTypes() );
+            boolean parameterized = isNotBlank( methodSource.getMethodParameterTypes() ) || hasParameterizedParent;
             String methodName = methodSource.getMethodName();
             String description = testIdentifier.getLegacyReportingName();
-            String methodSign = hasParams ? methodName + '(' + simpleClassNames + ')' : methodName;
             boolean equalDescriptions = methodDisplay.equals( description );
             boolean hasLegacyDescription = description.startsWith( methodName + '(' );
             boolean hasDisplayName = !equalDescriptions || !hasLegacyDescription;
-            String methodDesc = equalDescriptions || !hasParams ? methodSign : description;
+            String methodDesc = parameterized ? description : methodName;
             String methodDisp = hasDisplayName ? methodDisplay : methodDesc;
 
             // The behavior of methods getLegacyReportingName() and getDisplayName().
-            //     test      ||  legacy  |  display
+            //     junit4    ||  legacy  |  display
+            // ==============||==========|==========
+            //     normal    ||     m    |     m
+            //     param     ||   m[0]   |   m[0]
+            //  param+displ  || m[displ] | m[displ]
+
+            //     junit5    ||  legacy  |  display
             // ==============||==========|==========
             //    normal     ||    m()   |    m()
-            //  normal+displ ||   displ  |  displ
-            // parameterized ||  m()[1]  |  displ
+            //  normal+displ ||    m()   |   displ
+            //     param     ||  m()[1]  | [1] <param>
+            //  param+displ  ||  m()[1]  |   displ
 
             return new String[] {source[0], source[1], methodDesc, methodDisp};
         }
