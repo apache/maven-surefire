@@ -31,7 +31,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>${java.specification.version}</maven.compiler.source>
     <maven.compiler.target>${java.specification.version}</maven.compiler.target>
-    <junit4.version>4.12</junit4.version>
+    <junit4.version>4.13.1</junit4.version>
   </properties>
 
   <dependencies>
