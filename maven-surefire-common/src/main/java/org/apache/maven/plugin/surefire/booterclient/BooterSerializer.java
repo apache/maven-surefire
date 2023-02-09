@@ -65,6 +65,7 @@ import static org.apache.maven.surefire.booter.BooterConstants.RUN_STATISTICS_FI
 import static org.apache.maven.surefire.booter.BooterConstants.SHUTDOWN;
 import static org.apache.maven.surefire.booter.BooterConstants.SOURCE_DIRECTORY;
 import static org.apache.maven.surefire.booter.BooterConstants.SPECIFIC_TEST_PROPERTY_PREFIX;
+import static org.apache.maven.surefire.booter.BooterConstants.SPECIFIED_RUN_ORDER;
 import static org.apache.maven.surefire.booter.BooterConstants.SYSTEM_EXIT_TIMEOUT;
 import static org.apache.maven.surefire.booter.BooterConstants.TEST_CLASSES_DIRECTORY;
 import static org.apache.maven.surefire.booter.BooterConstants.TEST_SUITE_XML_FILES;
@@ -162,6 +163,7 @@ class BooterSerializer
             properties.setProperty( RUN_ORDER, RunOrder.asString( runOrderParameters.getRunOrder() ) );
             properties.setProperty( RUN_STATISTICS_FILE, runOrderParameters.getRunStatisticsFile() );
             properties.setProperty( RUN_ORDER_RANDOM_SEED, runOrderParameters.getRunOrderRandomSeed() );
+            properties.setProperty( SPECIFIED_RUN_ORDER, runOrderParameters.getSpecifiedRunOrder() );
         }
 
         ReporterConfiguration reporterConfiguration = providerConfiguration.getReporterConfiguration();

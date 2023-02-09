@@ -21,6 +21,7 @@ package org.apache.maven.surefire.junitcore;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.util.RunOrderCalculator;
 import org.apache.maven.surefire.api.util.TestsToRun;
 import org.apache.maven.surefire.common.junit4.Notifier;
 import org.apache.maven.surefire.junitcore.pc.ParallelComputer;
@@ -36,6 +37,7 @@ import org.junit.runner.notification.StoppedByUserException;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Queue;
 
@@ -55,12 +57,15 @@ final class JUnitCoreWrapper
     private final Notifier notifier;
     private final JUnitCoreParameters jUnitCoreParameters;
     private final ConsoleLogger consoleStream;
+    private final RunOrderCalculator runOrderCalculator;
 
-    JUnitCoreWrapper( Notifier notifier, JUnitCoreParameters jUnitCoreParameters, ConsoleLogger consoleStream )
+    JUnitCoreWrapper( Notifier notifier, JUnitCoreParameters jUnitCoreParameters, ConsoleLogger consoleStream,
+                      RunOrderCalculator runOrderCalculator )
     {
         this.notifier = notifier;
         this.jUnitCoreParameters = jUnitCoreParameters;
         this.consoleStream = consoleStream;
+        this.runOrderCalculator = runOrderCalculator;
     }
 
     void execute( TestsToRun testsToRun, Filter filter )
@@ -132,6 +137,11 @@ final class JUnitCoreWrapper
                 // nothing to run
                 return;
             }
+        }
+        final Comparator<String> testOrderComparator = runOrderCalculator.comparatorForTestMethods();
+        if ( testOrderComparator != null )
+        {
+            req = req.sortWith( ( o1, o2 ) -> testOrderComparator.compare( o1.toString(), o2.toString() ) );
         }
 
         Result run = junitCore.run( req.getRunner() );

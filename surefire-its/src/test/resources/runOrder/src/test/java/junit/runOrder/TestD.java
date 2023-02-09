@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.api.util;
+package junit.runOrder;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,14 +19,19 @@ package org.apache.maven.surefire.api.util;
  * under the License.
  */
 
-import java.util.Comparator;
+import junit.framework.TestCase;
 
-/**
- * @author Kristian Rosenvold
- */
-public interface RunOrderCalculator
+public class TestD
+    extends TestCase
 {
-    TestsToRun orderTestClasses( TestsToRun scannedClasses );
+    public void testOne()
+    {
+        System.out.println( "TD#1" );
+    }
 
-    Comparator<String> comparatorForTestMethods();
+    public void testTwo()
+    {
+        System.out.println( "TD#2" );
+    }
+
 }

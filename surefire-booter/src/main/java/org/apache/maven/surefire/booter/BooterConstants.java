@@ -60,4 +60,5 @@ public final class BooterConstants
     public static final String PROCESS_CHECKER = "processChecker";
     public static final String FORK_NODE_CONNECTION_STRING = "forkNodeConnectionString";
     public static final String FORK_NUMBER = "forkNumber";
+    public static final String SPECIFIED_RUN_ORDER = "specifiedRunOrder";
 }

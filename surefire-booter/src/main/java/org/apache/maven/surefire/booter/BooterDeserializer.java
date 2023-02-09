@@ -109,6 +109,7 @@ public class BooterDeserializer
         final String runOrder = properties.getProperty( RUN_ORDER );
         final Long runOrderRandomSeed = properties.getLongProperty( RUN_ORDER_RANDOM_SEED );
         final String runStatisticsFile = properties.getProperty( RUN_STATISTICS_FILE );
+        final String specifiedRunOrder = properties.getProperty( SPECIFIED_RUN_ORDER );
 
         final int rerunFailingTestsCount = properties.getIntProperty( RERUN_FAILING_TESTS_COUNT );
 
@@ -117,7 +118,7 @@ public class BooterDeserializer
 
         RunOrderParameters runOrderParameters
                 = new RunOrderParameters( runOrder, runStatisticsFile == null ? null : new File( runStatisticsFile ),
-                                          runOrderRandomSeed );
+                                          runOrderRandomSeed, specifiedRunOrder );
 
         TestArtifactInfo testNg = new TestArtifactInfo( testNgVersion, testArtifactClassifier );
         TestRequest testSuiteDefinition =

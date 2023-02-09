@@ -146,7 +146,7 @@ public class JUnitCoreProvider
 
         try
         {
-            JUnitCoreWrapper core = new JUnitCoreWrapper( notifier, jUnitCoreParameters, logger );
+            JUnitCoreWrapper core = new JUnitCoreWrapper( notifier, jUnitCoreParameters, logger, runOrderCalculator );
 
             if ( commandsReader != null )
             {
@@ -164,7 +164,8 @@ public class JUnitCoreProvider
                 listener.setRunMode( RERUN_TEST_AFTER_FAILURE );
                 Notifier rerunNotifier = pureNotifier();
                 notifier.copyListenersTo( rerunNotifier );
-                JUnitCoreWrapper rerunCore = new JUnitCoreWrapper( rerunNotifier, jUnitCoreParameters, logger );
+                JUnitCoreWrapper rerunCore = new JUnitCoreWrapper( rerunNotifier, jUnitCoreParameters, logger,
+                                                                   runOrderCalculator );
                 for ( int i = 0; i < rerunFailingTestsCount && !testFailureListener.getAllFailures().isEmpty(); i++ )
                 {
                     Set<Description> failures = generateFailingTestDescriptions( testFailureListener.getAllFailures() );
