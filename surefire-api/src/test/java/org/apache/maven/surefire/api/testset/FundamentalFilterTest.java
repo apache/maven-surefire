@@ -28,7 +28,7 @@ import static org.hamcrest.Matchers.is;
 /**
  * Inclusive test patters:<p>
  *
- * <table cellspacing=0 border=1>
+ * <table cellspacing=0 border=0>
  * <tr>
  * <td style=min-width:50px> test</td>
  * <td style=min-width:50px></td>
@@ -178,7 +178,7 @@ import static org.hamcrest.Matchers.is;
  * <p>
  * Exclusive test patters:<p>
  *
- * <table cellspacing=0 border=1>
+ * <table cellspacing=0 border=0>
  * <tr>
  * <td style=min-width:50px> test</td>
  * <td style=min-width:50px></td>

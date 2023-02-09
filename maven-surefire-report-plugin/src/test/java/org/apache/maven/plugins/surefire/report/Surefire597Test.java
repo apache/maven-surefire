@@ -54,7 +54,7 @@ public class Surefire597Test
         gen.doGenerateReport( new SurefireReportMojo().getBundle( ENGLISH ), sink );
         String xml = writer.toString();
         assertThat( xml, containsString( toSystemNewLine(
-            "<table border=\"1\" class=\"bodyTable\">\n"
+            "<table border=\"0\" class=\"bodyTable\">\n"
                 + "<tr class=\"a\">\n"
                 + "<th>Tests</th>\n"
                 + "<th>Errors</th>\n"
@@ -72,7 +72,7 @@ public class Surefire597Test
                 + "</tr>"
                 + "</table>" ) ) );
         assertThat( xml, containsString( toSystemNewLine(
-            "<table border=\"1\" class=\"bodyTable\">\n"
+            "<table border=\"0\" class=\"bodyTable\">\n"
                 + "<tr class=\"a\">\n"
                 + "<th>Package</th>\n"
                 + "<th>Tests</th>\n"
@@ -90,7 +90,7 @@ public class Surefire597Test
                 + "<td align=\"left\">0%</td>\n"
                 + "<td align=\"left\">0</td></tr></table>" ) ) );
         assertThat( xml, containsString( toSystemNewLine(
-            "<table border=\"1\" class=\"bodyTable\">\n"
+            "<table border=\"0\" class=\"bodyTable\">\n"
                 + "<tr class=\"a\">\n"
                 + "<th></th>\n"
                 + "<th>Class</th>\n"
@@ -110,7 +110,7 @@ public class Surefire597Test
                 + "<td align=\"left\">0%</td>\n"
                 + "<td align=\"left\">0</td></tr></table>" ) ) );
         assertThat( xml, containsString( toSystemNewLine(
-            "<table border=\"1\" class=\"bodyTable\">\n"
+            "<table border=\"0\" class=\"bodyTable\">\n"
                 + "<tr class=\"a\">\n"
                 + "<td align=\"left\"><figure><img src=\"images/icon_error_sml.gif\" alt=\"\" /></figure></td>\n"
                 + "<td align=\"left\"><a id=\"surefire.MyTest.test\"></a>test</td></tr>\n"
