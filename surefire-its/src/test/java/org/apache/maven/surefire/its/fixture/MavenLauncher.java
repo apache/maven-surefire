@@ -218,7 +218,8 @@ public final class MavenLauncher
 
     public MavenLauncher skipClean()
     {
-        writeGoal( "-Dclean.skip=true" );
+        writeGoal( "-Dclean.skip=true" /* for maven-clean-plugin < 3.0 */ );
+        writeGoal( "-Dmaven.clean.skip=true" /* for maven-clean-plugin 3.0+ */ );
         return this;
     }
 

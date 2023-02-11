@@ -51,6 +51,15 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire.version}</version>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.1</version>
+        <!-- Version pinned because version 3.9.0 and higher of the maven-compiler-plugin throw an -->
+        <!-- UnmappableCharacterException when trying to compile the tests in this project -->
+        <!-- This happens only on Windows and only if the Java version is 8 - 17. Not with JDK 19. -->
+        <!-- Further investigation needed to find the cause and a proper fix. -->
+      </plugin>
     </plugins>
   </build>
 
