@@ -488,6 +488,49 @@ public class JUnitPlatformProviderTest
     }
 
     @Test
+    public void detectSkippedParameterized() throws Exception
+    {
+        Launcher launcher = LauncherFactory.create();
+        ProviderParameters parameters = providerParametersMock();
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider( parameters, launcher );
+
+        TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
+
+        TestReportListener<TestOutputReportEntry> listener = mock( TestReportListener.class );
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass( ReportEntry.class );
+        RunListenerAdapter adapter = new RunListenerAdapter( listener );
+        adapter.setRunMode( NORMAL_RUN );
+
+        launcher.registerTestExecutionListeners( executionListener, adapter );
+
+        invokeProvider( provider, DisabledParameterizedTest.class );
+
+        assertThat( executionListener.summaries ).hasSize( 1 );
+
+        verify( listener, times( 1 ) ).testSetCompleted( any() );
+        verify( listener, times( 1 ) ).testSkipped( entryCaptor.capture() );
+        List<ReportEntry> reportEntries = entryCaptor.getAllValues();
+
+        assertEquals( DisabledParameterizedTest.class.getName(), reportEntries.get( 0 ).getSourceName() );
+        assertNull( reportEntries.get( 0 ).getSourceText() );
+        assertEquals( "disabledParameterized(String)", reportEntries.get( 0 ).getName() );
+        assertNull( reportEntries.get( 0 ).getNameText() );
+
+        TestExecutionSummary summary = executionListener.summaries.get( 0 );
+        assertEquals( 0, summary.getTestsFoundCount() );
+        assertEquals( 0, summary.getTestsStartedCount() );
+        assertEquals( 0, summary.getTestsSucceededCount() );
+        assertEquals( 0, summary.getTestsFailedCount() );
+        assertEquals( 0, summary.getTestsSkippedCount() );
+        assertEquals( 3, summary.getContainersFoundCount() );
+        assertEquals( 2, summary.getContainersStartedCount() );
+        assertEquals( 2, summary.getContainersSucceededCount() );
+        assertEquals( 0, summary.getContainersFailedCount() );
+        assertEquals( 1, summary.getContainersSkippedCount() );
+    }
+
+    @Test
     public void detectErroredParameterized()
         throws Exception
     {
@@ -1480,6 +1523,16 @@ public class JUnitPlatformProviderTest
                 {
                 }
             }
+        }
+    }
+
+    static class DisabledParameterizedTest
+    {
+        @org.junit.jupiter.params.ParameterizedTest
+        @org.junit.jupiter.params.provider.ValueSource( strings = { "1", "2" } )
+        @Disabled
+        void disabledParameterized( String param )
+        {
         }
     }
 

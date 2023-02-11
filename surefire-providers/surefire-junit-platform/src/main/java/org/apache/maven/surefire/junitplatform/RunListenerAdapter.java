@@ -212,7 +212,8 @@ final class RunListenerAdapter
     {
         boolean isClass = testIdentifier.isContainer()
             && testIdentifier.getSource().filter( ClassSource.class::isInstance ).isPresent();
-        boolean isTest = testIdentifier.isTest();
+
+        testStartTime.remove( testIdentifier );
 
         if ( isClass )
         {
@@ -224,9 +225,8 @@ final class RunListenerAdapter
             }
             runListener.testSetCompleted( report );
         }
-        else if ( isTest )
+        else
         {
-            testStartTime.remove( testIdentifier );
             runListener.testSkipped( createReportEntry( testIdentifier, null, emptyMap(), reason, null ) );
         }
     }
@@ -244,7 +244,7 @@ final class RunListenerAdapter
         {
             classText = null;
         }
-        boolean failed = testExecutionResult != null && testExecutionResult.getStatus() == FAILED;
+        boolean failed = testExecutionResult == null || testExecutionResult.getStatus() == FAILED;
         String methodName = failed || testIdentifier.isTest() ? classMethodName[2] : null;
         String methodText = failed || testIdentifier.isTest() ? classMethodName[3] : null;
         if ( Objects.equals( methodName, methodText ) )
