@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.booter;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.booter;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,22 +16,21 @@ package org.apache.maven.surefire.booter;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.booter;
 
 import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 
 /**
  *
  */
-public enum ProcessCheckerType
-{
-    PING( "ping" ),
-    NATIVE( "native" ),
-    ALL( "all" );
+public enum ProcessCheckerType {
+    PING("ping"),
+    NATIVE("native"),
+    ALL("all");
 
     private final String type;
 
-    ProcessCheckerType( String type )
-    {
+    ProcessCheckerType(String type) {
         this.type = type;
     }
 
@@ -43,38 +40,29 @@ public enum ProcessCheckerType
      * @param type ping, native, all
      * @return {@link ProcessCheckerType}
      */
-    public static ProcessCheckerType toEnum( String type )
-    {
-        if ( isBlank( type ) )
-        {
+    public static ProcessCheckerType toEnum(String type) {
+        if (isBlank(type)) {
             return null;
         }
 
-        for ( ProcessCheckerType e : values() )
-        {
-            if ( e.type.equals( type ) )
-            {
+        for (ProcessCheckerType e : values()) {
+            if (e.type.equals(type)) {
                 return e;
             }
         }
 
-        throw new IllegalArgumentException( "unknown process checker" );
+        throw new IllegalArgumentException("unknown process checker");
     }
 
-    public String getType()
-    {
+    public String getType() {
         return type;
     }
 
-    public static boolean isValid( String type )
-    {
-        try
-        {
-            toEnum( type );
+    public static boolean isValid(String type) {
+        try {
+            toEnum(type);
             return true;
-        }
-        catch ( IllegalArgumentException e )
-        {
+        } catch (IllegalArgumentException e) {
             return false;
         }
     }

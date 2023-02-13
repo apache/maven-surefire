@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.log.api;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.log.api;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire.log.api;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.log.api;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
@@ -32,12 +31,10 @@ import org.junit.runners.Suite.SuiteClasses;
  * @author Tibor Digana (tibor17)
  * @since 3.0.0-M4
  */
-@SuiteClasses( { ConsoleLoggerUtilsTest.class, LevelTest.class, LoggersTest.class } )
-@RunWith( Suite.class )
-public class JUnit4SuiteTest extends TestCase
-{
-    public static Test suite()
-    {
-        return new JUnit4TestAdapter( JUnit4SuiteTest.class );
+@SuiteClasses({ConsoleLoggerUtilsTest.class, LevelTest.class, LoggersTest.class})
+@RunWith(Suite.class)
+public class JUnit4SuiteTest extends TestCase {
+    public static Test suite() {
+        return new JUnit4TestAdapter(JUnit4SuiteTest.class);
     }
 }

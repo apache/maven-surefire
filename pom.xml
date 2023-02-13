@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ Licensed to the Apache Software Foundation (ASF) under one
   ~ or more contributor license agreements.  See the NOTICE file
@@ -16,14 +17,13 @@
   ~ specific language governing permissions and limitations
   ~ under the License. 
   -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>maven-parent</artifactId>
     <groupId>org.apache.maven</groupId>
-    <version>36</version>
+    <artifactId>maven-parent</artifactId>
+    <version>39</version>
   </parent>
 
   <groupId>org.apache.maven.surefire</groupId>
@@ -68,8 +68,8 @@
   <scm>
     <connection>${maven.surefire.scm.devConnection}</connection>
     <developerConnection>${maven.surefire.scm.devConnection}</developerConnection>
-    <url>https://github.com/apache/maven-surefire/tree/${project.scm.tag}</url>
     <tag>surefire-3.0.0-M8</tag>
+    <url>https://github.com/apache/maven-surefire/tree/${project.scm.tag}</url>
   </scm>
   <issueManagement>
     <system>jira</system>
@@ -193,11 +193,11 @@
           </exclusion>
           <exclusion>
             <groupId>org.apache.maven</groupId>
-             <artifactId>maven-model</artifactId>
+            <artifactId>maven-model</artifactId>
           </exclusion>
           <exclusion>
-             <groupId>org.sonatype.sisu</groupId>
-             <artifactId>sisu-inject-plexus</artifactId>
+            <groupId>org.sonatype.sisu</groupId>
+            <artifactId>sisu-inject-plexus</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -322,8 +322,8 @@
       <dependency>
         <groupId>org.jacoco</groupId>
         <artifactId>org.jacoco.agent</artifactId>
-        <classifier>runtime</classifier>
         <version>${jacocoVersion}</version>
+        <classifier>runtime</classifier>
       </dependency>
       <dependency>
         <groupId>com.googlecode.junit-toolbox</groupId>
@@ -380,11 +380,13 @@
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.0.0-M7</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+          <version>3.0.0-M7</version>
+          <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
           <configuration>
             <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
             <useSystemClassLoader>false</useSystemClassLoader>
-            <argLine>${jvm.args.tests}</argLine><!-- -Dnet.bytebuddy.experimental=true ${jacoco.agent}-->
+            <argLine>${jvm.args.tests}</argLine>
+            <!-- -Dnet.bytebuddy.experimental=true ${jacoco.agent}-->
             <useFile>false</useFile>
             <redirectTestOutputToFile>false</redirectTestOutputToFile>
           </configuration>
@@ -461,17 +463,18 @@
                 <exclude>**/*.iws</exclude>
                 <exclude>**/*.versionsBackup</exclude>
                 <exclude>**/dependency-reduced-pom.xml</exclude>
-                <exclude>.repository/**</exclude> <!-- jenkins with local maven repository -->
+                <exclude>.repository/**</exclude>
+                <!-- jenkins with local maven repository -->
                 <exclude>src/test/resources/**/*</exclude>
                 <exclude>src/test/resources/**/*.css</exclude>
                 <exclude>**/*.jj</exclude>
-                <exclude>src/main/resources/META-INF/services/org.apache.maven.surefire.api.provider.SurefireProvider
-                </exclude>
+                <exclude>src/main/resources/META-INF/services/org.apache.maven.surefire.api.provider.SurefireProvider</exclude>
                 <exclude>DEPENDENCIES</exclude>
                 <exclude>.m2/**</exclude>
                 <exclude>.m2</exclude>
                 <exclude>.travis.yml</exclude>
                 <exclude>.mvn/wrapper/maven-wrapper.properties</exclude>
+                <exclude>**/.gitattributes</exclude>
               </excludes>
             </configuration>
           </execution>
@@ -483,11 +486,11 @@
         <executions>
           <execution>
             <id>signature-check</id>
-            <!-- we use offline jacoco instrumentation so check must be done after restoring original classes -->
-            <phase>verify</phase>
             <goals>
               <goal>check</goal>
             </goals>
+            <!-- we use offline jacoco instrumentation so check must be done after restoring original classes -->
+            <phase>verify</phase>
             <configuration>
               <checkTestClasses>true</checkTestClasses>
               <signature>
@@ -524,22 +527,23 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>3.0.0-M7</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+        <version>3.0.0-M7</version>
+        <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
       </plugin>
     </plugins>
   </reporting>
 
   <profiles>
     <profile>
-        <!-- First, install the project without tests -> mvn install -DskipTests
+      <!-- First, install the project without tests -> mvn install -DskipTests
         This is a workaround for IntelliJ IDEA, see https://youtrack.jetbrains.com/issue/IDEA-148573
         IDEA is able to recognize external artifacts with classifiers. But IDEA expects modules and their artifacts
         without classifier. If the version differs from project, the idea would understand it as external artifact.
         -->
-        <id>ide-development</id>
-        <properties>
-            <surefire-shared-utils.version>3-SNAPSHOT</surefire-shared-utils.version>
-        </properties>
+      <id>ide-development</id>
+      <properties>
+        <surefire-shared-utils.version>3-SNAPSHOT</surefire-shared-utils.version>
+      </properties>
     </profile>
     <profile>
       <id>jdk9+</id>

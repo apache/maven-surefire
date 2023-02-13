@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire.report;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.report;
 
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -28,21 +27,18 @@ import java.util.Locale;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  */
-final class ReporterUtils
-{
+final class ReporterUtils {
     private static final int MS_PER_SEC = 1000;
 
-    private ReporterUtils()
-    {
-        throw new IllegalStateException( "non instantiable constructor" );
+    private ReporterUtils() {
+        throw new IllegalStateException("non instantiable constructor");
     }
 
-    static String formatElapsedTime( double runTime )
-    {
-        NumberFormat numberFormat = NumberFormat.getInstance( Locale.ENGLISH );
-        numberFormat.setGroupingUsed( true );
-        numberFormat.setMinimumFractionDigits( 0 );
-        numberFormat.setMaximumFractionDigits( 3 );
-        return numberFormat.format( runTime / MS_PER_SEC );
+    static String formatElapsedTime(double runTime) {
+        NumberFormat numberFormat = NumberFormat.getInstance(Locale.ENGLISH);
+        numberFormat.setGroupingUsed(true);
+        numberFormat.setMinimumFractionDigits(0);
+        numberFormat.setMaximumFractionDigits(3);
+        return numberFormat.format(runTime / MS_PER_SEC);
     }
 }

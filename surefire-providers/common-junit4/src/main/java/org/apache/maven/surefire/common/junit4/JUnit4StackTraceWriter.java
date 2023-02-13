@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.common.junit4;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.common.junit4;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,11 +16,12 @@ package org.apache.maven.surefire.common.junit4;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.common.junit4;
 
 import org.apache.maven.surefire.api.report.SafeThrowable;
-import org.apache.maven.surefire.report.SmartStackTraceParser;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.util.internal.ClassMethod;
+import org.apache.maven.surefire.report.SmartStackTraceParser;
 import org.junit.runner.notification.Failure;
 
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClassMethod;
@@ -34,9 +33,7 @@ import static org.apache.maven.surefire.report.SmartStackTraceParser.stackTraceW
  *
  * @author Karl M. Davis
  */
-public class JUnit4StackTraceWriter
-    implements StackTraceWriter
-{
+public class JUnit4StackTraceWriter implements StackTraceWriter {
     private final Failure junitFailure;
 
     /**
@@ -44,31 +41,26 @@ public class JUnit4StackTraceWriter
      *
      * @param junitFailure the {@link Failure} that this will be operating on
      */
-    public JUnit4StackTraceWriter( Failure junitFailure )
-    {
+    public JUnit4StackTraceWriter(Failure junitFailure) {
         this.junitFailure = junitFailure;
     }
 
     /*
-      * (non-Javadoc)
-      *
-      * @see org.apache.maven.surefire.report.StackTraceWriter#writeTraceToString()
-      */
+     * (non-Javadoc)
+     *
+     * @see org.apache.maven.surefire.report.StackTraceWriter#writeTraceToString()
+     */
     @Override
-    public String writeTraceToString()
-    {
+    public String writeTraceToString() {
         Throwable t = junitFailure.getException();
-        if ( t != null )
-        {
+        if (t != null) {
             String originalTrace = junitFailure.getTrace();
-            if ( isMultiLineExceptionMessage( t ) )
-            {
+            if (isMultiLineExceptionMessage(t)) {
                 // SUREFIRE-986
-                StringBuilder builder = new StringBuilder( originalTrace );
+                StringBuilder builder = new StringBuilder(originalTrace);
                 String exc = t.getClass().getName() + ": ";
-                if ( originalTrace.startsWith( exc ) )
-                {
-                    builder.insert( exc.length(), '\n' );
+                if (originalTrace.startsWith(exc)) {
+                    builder.insert(exc.length(), '\n');
                 }
                 return builder.toString();
             }
@@ -78,13 +70,12 @@ public class JUnit4StackTraceWriter
     }
 
     @Override
-    public String smartTrimmedStackTrace()
-    {
+    public String smartTrimmedStackTrace() {
         Throwable exception = junitFailure.getException();
-        ClassMethod classMethod = toClassMethod( junitFailure.getDescription() );
+        ClassMethod classMethod = toClassMethod(junitFailure.getDescription());
         return exception == null
-            ? junitFailure.getMessage()
-            : new SmartStackTraceParser( classMethod.getClazz(), exception, classMethod.getMethod() ).getString();
+                ? junitFailure.getMessage()
+                : new SmartStackTraceParser(classMethod.getClazz(), exception, classMethod.getMethod()).getString();
     }
 
     /**
@@ -93,17 +84,13 @@ public class JUnit4StackTraceWriter
      * @see StackTraceWriter#writeTrimmedTraceToString()
      */
     @Override
-    public String writeTrimmedTraceToString()
-    {
-        String testClass = toClassMethod( junitFailure.getDescription() ).getClazz();
-        try
-        {
+    public String writeTrimmedTraceToString() {
+        String testClass = toClassMethod(junitFailure.getDescription()).getClazz();
+        try {
             Throwable e = junitFailure.getException();
-            return stackTraceWithFocusOnClassAsString( e, testClass );
-        }
-        catch ( Throwable t )
-        {
-            return stackTraceWithFocusOnClassAsString( t, testClass );
+            return stackTraceWithFocusOnClassAsString(e, testClass);
+        } catch (Throwable t) {
+            return stackTraceWithFocusOnClassAsString(t, testClass);
         }
     }
 
@@ -113,30 +100,23 @@ public class JUnit4StackTraceWriter
      * @see StackTraceWriter#getThrowable()
      */
     @Override
-    public SafeThrowable getThrowable()
-    {
-        return new SafeThrowable( junitFailure.getException() );
+    public SafeThrowable getThrowable() {
+        return new SafeThrowable(junitFailure.getException());
     }
 
-    private static boolean isMultiLineExceptionMessage( Throwable t )
-    {
+    private static boolean isMultiLineExceptionMessage(Throwable t) {
         String msg = t.getLocalizedMessage();
-        if ( msg != null )
-        {
+        if (msg != null) {
             int countNewLines = 0;
-            for ( int i = 0, length = msg.length(); i < length; i++ )
-            {
-                if ( msg.charAt( i ) == '\n' )
-                {
-                    if ( ++countNewLines == 2 )
-                    {
+            for (int i = 0, length = msg.length(); i < length; i++) {
+                if (msg.charAt(i) == '\n') {
+                    if (++countNewLines == 2) {
                         break;
                     }
                 }
             }
-            return countNewLines > 1 || countNewLines == 1 && !msg.trim().endsWith( "\n" );
+            return countNewLines > 1 || countNewLines == 1 && !msg.trim().endsWith("\n");
         }
         return false;
     }
-
 }

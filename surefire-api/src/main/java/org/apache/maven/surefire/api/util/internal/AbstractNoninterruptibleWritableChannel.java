@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.util.internal;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.util.internal;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.api.util.internal;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.api.util.internal;
 
 import java.io.IOException;
 import java.nio.Buffer;
@@ -31,62 +30,54 @@ import java.nio.channels.NonWritableChannelException;
  *
  * @since 3.0.0-M5
  */
-abstract class AbstractNoninterruptibleWritableChannel implements WritableBufferedByteChannel
-{
+abstract class AbstractNoninterruptibleWritableChannel implements WritableBufferedByteChannel {
     private volatile boolean open = true;
 
-    protected abstract void writeImpl( ByteBuffer src ) throws IOException;
+    protected abstract void writeImpl(ByteBuffer src) throws IOException;
+
     protected abstract void closeImpl() throws IOException;
+
     protected abstract void flushImpl() throws IOException;
 
     @Override
-    public final int write( ByteBuffer src ) throws IOException
-    {
-        return write( src, true );
+    public final int write(ByteBuffer src) throws IOException {
+        return write(src, true);
     }
 
     @Override
-    public final void writeBuffered( ByteBuffer src ) throws IOException
-    {
-        write( src, false );
+    public final void writeBuffered(ByteBuffer src) throws IOException {
+        write(src, false);
     }
 
-    int write( ByteBuffer src, boolean flush ) throws IOException
-    {
-        if ( !isOpen() )
-        {
+    int write(ByteBuffer src, boolean flush) throws IOException {
+        if (!isOpen()) {
             throw new ClosedChannelException();
         }
 
-        if ( !src.hasArray() || src.isReadOnly() )
-        {
+        if (!src.hasArray() || src.isReadOnly()) {
             throw new NonWritableChannelException();
         }
 
-        if ( src.remaining() != src.capacity() )
-        {
-            ( (Buffer) src ).flip();
+        if (src.remaining() != src.capacity()) {
+            ((Buffer) src).flip();
         }
 
         int countWrittenBytes = src.remaining();
-        writeImpl( src );
-        ( (Buffer) src ).position( ( (Buffer) src ).limit() );
-        if ( flush )
-        {
+        writeImpl(src);
+        ((Buffer) src).position(((Buffer) src).limit());
+        if (flush) {
             flushImpl();
         }
         return countWrittenBytes;
     }
 
     @Override
-    public final boolean isOpen()
-    {
+    public final boolean isOpen() {
         return open;
     }
 
     @Override
-    public final void close() throws IOException
-    {
+    public final void close() throws IOException {
         open = false;
         closeImpl();
     }

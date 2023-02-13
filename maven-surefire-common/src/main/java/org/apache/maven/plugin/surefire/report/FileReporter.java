@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,9 +16,7 @@ package org.apache.maven.plugin.surefire.report;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
-import org.apache.maven.surefire.api.report.ReporterException;
+package org.apache.maven.plugin.surefire.report;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -31,6 +27,9 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.List;
 
+import org.apache.maven.surefire.api.report.ReporterException;
+import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
+
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
 
@@ -40,72 +39,68 @@ import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  * @author Kristian Rosenvold
  */
-public class FileReporter
-        extends StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats>
-{
+public class FileReporter extends StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats> {
     private final boolean usePhrasedFileName;
     private final boolean usePhrasedClassNameInRunning;
     private final boolean usePhrasedClassNameInTestCaseSummary;
 
-    public FileReporter( File reportsDirectory, String reportNameSuffix, Charset encoding, boolean usePhrasedFileName,
-                         boolean usePhrasedClassNameInRunning, boolean usePhrasedClassNameInTestCaseSummary )
-    {
-        super( reportsDirectory, reportNameSuffix, encoding );
+    public FileReporter(
+            File reportsDirectory,
+            String reportNameSuffix,
+            Charset encoding,
+            boolean usePhrasedFileName,
+            boolean usePhrasedClassNameInRunning,
+            boolean usePhrasedClassNameInTestCaseSummary) {
+        super(reportsDirectory, reportNameSuffix, encoding);
         this.usePhrasedFileName = usePhrasedFileName;
         this.usePhrasedClassNameInRunning = usePhrasedClassNameInRunning;
         this.usePhrasedClassNameInTestCaseSummary = usePhrasedClassNameInTestCaseSummary;
     }
 
-    static File getReportFile( File reportsDirectory, String reportEntryName, String reportNameSuffix,
-                               String fileExtension )
-    {
+    static File getReportFile(
+            File reportsDirectory, String reportEntryName, String reportNameSuffix, String fileExtension) {
         String fileName =
-                reportEntryName + ( isNotBlank( reportNameSuffix ) ? "-" + reportNameSuffix : "" ) + fileExtension;
-        return new File( reportsDirectory, stripIllegalFilenameChars( fileName ) );
+                reportEntryName + (isNotBlank(reportNameSuffix) ? "-" + reportNameSuffix : "") + fileExtension;
+        return new File(reportsDirectory, stripIllegalFilenameChars(fileName));
     }
 
     @Override
-    public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
-    {
-        File reportFile = getReportFile( getReportsDirectory(),
-                                         usePhrasedFileName ? report.getReportSourceName() : report.getSourceName(),
-                                         getReportNameSuffix(),
-                                         ".txt" );
+    public void testSetCompleted(WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults) {
+        File reportFile = getReportFile(
+                getReportsDirectory(),
+                usePhrasedFileName ? report.getReportSourceName() : report.getSourceName(),
+                getReportNameSuffix(),
+                ".txt");
 
         File reportDir = reportFile.getParentFile();
 
         // noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
 
-        try ( BufferedWriter writer = createFileReporterWriter( reportFile, getEncoding() ) )
-        {
-            writer.write( "-------------------------------------------------------------------------------" );
+        try (BufferedWriter writer = createFileReporterWriter(reportFile, getEncoding())) {
+            writer.write("-------------------------------------------------------------------------------");
             writer.newLine();
 
             String tesSet = usePhrasedClassNameInRunning ? report.getReportSourceName() : report.getSourceName();
-            writer.write( "Test set: " + tesSet );
+            writer.write("Test set: " + tesSet);
             writer.newLine();
 
-            writer.write( "-------------------------------------------------------------------------------" );
+            writer.write("-------------------------------------------------------------------------------");
             writer.newLine();
 
-            writer.write( testSetStats.getTestSetSummary( report, usePhrasedClassNameInTestCaseSummary ) );
+            writer.write(testSetStats.getTestSetSummary(report, usePhrasedClassNameInTestCaseSummary));
             writer.newLine();
-            for ( String testResult : testResults )
-            {
-                writer.write( testResult );
+            for (String testResult : testResults) {
+                writer.write(testResult);
                 writer.newLine();
             }
-        }
-        catch ( IOException e )
-        {
-            throw new ReporterException( "Unable to create file for report: " + e.getLocalizedMessage(), e );
+        } catch (IOException e) {
+            throw new ReporterException("Unable to create file for report: " + e.getLocalizedMessage(), e);
         }
     }
 
-    private static BufferedWriter createFileReporterWriter( File reportFile, Charset encoding )
-            throws FileNotFoundException
-    {
-        return new BufferedWriter( new OutputStreamWriter( new FileOutputStream( reportFile ), encoding ), 64 * 1024 );
+    private static BufferedWriter createFileReporterWriter(File reportFile, Charset encoding)
+            throws FileNotFoundException {
+        return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(reportFile), encoding), 64 * 1024);
     }
 }

@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.util;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.util;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire.util;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.util;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -32,23 +31,20 @@ import org.apache.maven.surefire.api.util.DefaultScanResult;
  * @author Karl M. Davis
  * @author Kristian Rosenvold
  */
-public class DirectoryScanner
-{
+public class DirectoryScanner {
     private final File basedir;
 
     private final TestListResolver filter;
 
-    public DirectoryScanner( File basedir, TestListResolver filter )
-    {
+    public DirectoryScanner(File basedir, TestListResolver filter) {
         this.basedir = basedir;
         this.filter = filter;
     }
 
-    public DefaultScanResult scan()
-    {
-        FileScanner scanner = new FileScanner( basedir, "class" );
+    public DefaultScanResult scan() {
+        FileScanner scanner = new FileScanner(basedir, "class");
         List<String> result = new ArrayList<>();
-        scanner.scanTo( result, filter );
-        return new DefaultScanResult( result );
+        scanner.scanTo(result, filter);
+        return new DefaultScanResult(result);
     }
 }

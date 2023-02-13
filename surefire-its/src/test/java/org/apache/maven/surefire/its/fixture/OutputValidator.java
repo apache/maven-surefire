@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.maven.surefire.its.fixture;
 
 /*
@@ -39,102 +57,75 @@ import static org.hamcrest.MatcherAssert.assertThat;
  *
  * @author Kristian Rosenvold
  */
-public class OutputValidator
-{
+public class OutputValidator {
     final Verifier verifier;
 
     private final File baseDir;
 
-    public OutputValidator( Verifier verifier )
-    {
+    public OutputValidator(Verifier verifier) {
         this.verifier = verifier;
-        this.baseDir = new File( verifier.getBasedir() );
+        this.baseDir = new File(verifier.getBasedir());
     }
 
-    public OutputValidator verifyTextInLog( String text )
-    {
-        try
-        {
-            verifier.verifyTextInLog( text );
-        }
-        catch ( VerificationException e )
-        {
-            throw new SurefireVerifierException( e );
+    public OutputValidator verifyTextInLog(String text) {
+        try {
+            verifier.verifyTextInLog(text);
+        } catch (VerificationException e) {
+            throw new SurefireVerifierException(e);
         }
         return this;
     }
 
-
-    public OutputValidator verifyErrorFreeLog()
-    {
-        try
-        {
+    public OutputValidator verifyErrorFreeLog() {
+        try {
             verifier.verifyErrorFreeLog();
-        }
-        catch ( VerificationException e )
-        {
-            throw new SurefireVerifierException( e );
+        } catch (VerificationException e) {
+            throw new SurefireVerifierException(e);
         }
         return this;
     }
 
-    public OutputValidator verifyErrorFree( int total )
-    {
-        try
-        {
+    public OutputValidator verifyErrorFree(int total) {
+        try {
             verifier.verifyErrorFreeLog();
-            this.assertTestSuiteResults( total, 0, 0, 0 );
+            this.assertTestSuiteResults(total, 0, 0, 0);
             return this;
-        }
-        catch ( VerificationException e )
-        {
-            throw new SurefireVerifierException( e );
+        } catch (VerificationException e) {
+            throw new SurefireVerifierException(e);
         }
     }
 
-    public OutputValidator assertThatLogLine( Matcher<String> line, Matcher<Integer> nTimes )
-        throws VerificationException
-    {
-        int counter = loadLogLines( line ).size();
-        assertThat( "log pattern does not match nTimes", counter, nTimes );
+    public OutputValidator assertThatLogLine(Matcher<String> line, Matcher<Integer> nTimes)
+            throws VerificationException {
+        int counter = loadLogLines(line).size();
+        assertThat("log pattern does not match nTimes", counter, nTimes);
         return this;
     }
 
-    public List<String> loadLogLines()
-        throws VerificationException
-    {
-        return verifier.loadFile( verifier.getBasedir(), verifier.getLogFileName(), false );
+    public List<String> loadLogLines() throws VerificationException {
+        return verifier.loadFile(verifier.getBasedir(), verifier.getLogFileName(), false);
     }
 
-    public List<String> loadLogLines( Matcher<String> line )
-            throws VerificationException
-    {
+    public List<String> loadLogLines(Matcher<String> line) throws VerificationException {
         List<String> matchedLines = new ArrayList<>();
-        for ( String log : loadLogLines() )
-        {
-            if ( line.matches( log ) )
-            {
-                matchedLines.add( log );
+        for (String log : loadLogLines()) {
+            if (line.matches(log)) {
+                matchedLines.add(log);
             }
         }
         return matchedLines;
     }
 
-    public List<String> loadFile( File file, Charset charset )
-    {
+    public List<String> loadFile(File file, Charset charset) {
         //noinspection unchecked
-        try
-        {
-            return FileUtils.readLines( file, charset.name() );
-        }
-        catch ( IOException e )
-        {
-            throw new SurefireVerifierException( e );
+        try {
+            return FileUtils.readLines(file, charset.name());
+        } catch (IOException e) {
+            throw new SurefireVerifierException(e);
         }
     }
 
-    public String getBasedir()
-    {
+    public String getBasedir() {
         return verifier.getBasedir();
     }
 
@@ -144,105 +135,85 @@ public class OutputValidator
      * @param path The subdirectory under basedir
      * @return A file
      */
-    public File getSubFile( String path )
-    {
-        return new File( getBasedir(), path );
+    public File getSubFile(String path) {
+        return new File(getBasedir(), path);
     }
 
-    public OutputValidator assertTestSuiteResults( int total, int errors, int failures, int skipped )
-    {
-        HelperAssertions.assertTestSuiteResults( total, errors, failures, skipped, baseDir );
+    public OutputValidator assertTestSuiteResults(int total, int errors, int failures, int skipped) {
+        HelperAssertions.assertTestSuiteResults(total, errors, failures, skipped, baseDir);
         return this;
     }
 
-    public OutputValidator assertTestSuiteResults( int total, int errors, int failures, int skipped, int flakes )
-    {
-        HelperAssertions.assertTestSuiteResults( total, errors, failures, skipped, flakes, baseDir );
+    public OutputValidator assertTestSuiteResults(int total, int errors, int failures, int skipped, int flakes) {
+        HelperAssertions.assertTestSuiteResults(total, errors, failures, skipped, flakes, baseDir);
         return this;
     }
 
-    public OutputValidator assertTestSuiteResults( int total )
-    {
-        HelperAssertions.assertTestSuiteResults( total, baseDir );
+    public OutputValidator assertTestSuiteResults(int total) {
+        HelperAssertions.assertTestSuiteResults(total, baseDir);
         return this;
     }
 
-    public OutputValidator assertIntegrationTestSuiteResults( int total, int errors, int failures, int skipped )
-    {
-        HelperAssertions.assertIntegrationTestSuiteResults( total, errors, failures, skipped, baseDir );
+    public OutputValidator assertIntegrationTestSuiteResults(int total, int errors, int failures, int skipped) {
+        HelperAssertions.assertIntegrationTestSuiteResults(total, errors, failures, skipped, baseDir);
         return this;
     }
 
-    public OutputValidator assertIntegrationTestSuiteResults( int total )
-    {
-        HelperAssertions.assertIntegrationTestSuiteResults( total, baseDir );
+    public OutputValidator assertIntegrationTestSuiteResults(int total) {
+        HelperAssertions.assertIntegrationTestSuiteResults(total, baseDir);
         return this;
     }
 
-    public TestFile getTargetFile( String modulePath, String fileName )
-    {
-        File targetDir = getSubFile( modulePath + "/target" );
-        return new TestFile( new File( targetDir, fileName ), this );
+    public TestFile getTargetFile(String modulePath, String fileName) {
+        File targetDir = getSubFile(modulePath + "/target");
+        return new TestFile(new File(targetDir, fileName), this);
     }
 
-    public TestFile getTargetFile( String fileName )
-    {
-        File targetDir = getSubFile( "target" );
-        return new TestFile( new File( targetDir, fileName ), this );
+    public TestFile getTargetFile(String fileName) {
+        File targetDir = getSubFile("target");
+        return new TestFile(new File(targetDir, fileName), this);
     }
 
-    public TestFile getSurefireReportsFile( String fileName, Charset charset )
-    {
+    public TestFile getSurefireReportsFile(String fileName, Charset charset) {
         File targetDir = getSurefireReportsDirectory();
-        return new TestFile( new File( targetDir, fileName ), charset, this );
+        return new TestFile(new File(targetDir, fileName), charset, this);
     }
 
-    public TestFile getSurefireReportsFile( String fileName )
-    {
-        return getSurefireReportsFile( fileName, null );
+    public TestFile getSurefireReportsFile(String fileName) {
+        return getSurefireReportsFile(fileName, null);
     }
 
-    public TestFile getSurefireReportsXmlFile( String fileName )
-    {
+    public TestFile getSurefireReportsXmlFile(String fileName) {
         File targetDir = getSurefireReportsDirectory();
-        return new TestFile( new File( targetDir, fileName ), UTF_8, this );
+        return new TestFile(new File(targetDir, fileName), UTF_8, this);
     }
 
-    public File getSurefireReportsDirectory()
-    {
-        return getSubFile( "target/surefire-reports" );
+    public File getSurefireReportsDirectory() {
+        return getSubFile("target/surefire-reports");
     }
 
-    public TestFile getSiteFile( String fileName )
-    {
-        File targetDir = getSubFile( "target/site" );
-        return new TestFile( new File( targetDir, fileName ), this );
+    public TestFile getSiteFile(String fileName) {
+        File targetDir = getSubFile("target/site");
+        return new TestFile(new File(targetDir, fileName), this);
     }
 
-    public File getBaseDir()
-    {
+    public File getBaseDir() {
         return baseDir;
     }
 
-    public String[] getStringsOrderInLog( String[] strings )
-        throws VerificationException
-    {
+    public String[] getStringsOrderInLog(String[] strings) throws VerificationException {
         String[] retArr = new String[strings.length];
-        List<String> strList = new ArrayList<String>( Arrays.asList( strings ) );
+        List<String> strList = new ArrayList<String>(Arrays.asList(strings));
         int i = 0;
-        for ( String line : loadLogLines() )
-        {
-            for ( int j = 0; j < strList.size(); j++ )
-            {
-                if ( line.startsWith( strList.get( j ) ) ) 
-                {
-                    retArr[i] = strList.get( j );
+        for (String line : loadLogLines()) {
+            for (int j = 0; j < strList.size(); j++) {
+                if (line.startsWith(strList.get(j))) {
+                    retArr[i] = strList.get(j);
                     ++i;
-                    if ( i == strings.length )
-                    {
+                    if (i == strings.length) {
                         return retArr;
                     }
-                    strList.remove( j );
+                    strList.remove(j);
                     break;
                 }
             }
@@ -250,16 +221,11 @@ public class OutputValidator
         return retArr;
     }
 
-    public boolean stringsAppearInSpecificOrderInLog( String[] strings )
-        throws VerificationException
-    {
+    public boolean stringsAppearInSpecificOrderInLog(String[] strings) throws VerificationException {
         int i = 0;
-        for ( String line : loadLogLines() )
-        {
-            if ( line.startsWith( strings[i] ) )
-            {
-                if ( i == strings.length - 1 )
-                {
+        for (String line : loadLogLines()) {
+            if (line.startsWith(strings[i])) {
+                if (i == strings.length - 1) {
                     return true;
                 }
                 ++i;

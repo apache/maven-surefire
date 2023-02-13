@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.extensions;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.extensions;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,12 +16,13 @@ package org.apache.maven.surefire.extensions;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.api.report.TestSetReportEntry;
+package org.apache.maven.surefire.extensions;
 
 import java.io.File;
 import java.nio.charset.Charset;
+
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 /**
  * Extension listener for stateless file and console reporter of test-set.
@@ -34,25 +33,21 @@ import java.nio.charset.Charset;
  * @param <R> report entry type, see <em>WrappedReportEntry</em> from module the <em>maven-surefire-common</em>
  * @param <S> test-set statistics, see <em>TestSetStats</em> from module the <em>maven-surefire-common</em>
  */
-public abstract class StatelessTestsetInfoReporter<R extends TestSetReportEntry, S>
-{
+public abstract class StatelessTestsetInfoReporter<R extends TestSetReportEntry, S> {
     private boolean disable;
 
-    public abstract StatelessTestsetInfoConsoleReportEventListener<R, S> createListener( ConsoleLogger logger );
+    public abstract StatelessTestsetInfoConsoleReportEventListener<R, S> createListener(ConsoleLogger logger);
 
-    public abstract StatelessTestsetInfoFileReportEventListener<R, S> createListener( File reportsDirectory,
-                                                                                      String reportNameSuffix,
-                                                                                      Charset encoding );
+    public abstract StatelessTestsetInfoFileReportEventListener<R, S> createListener(
+            File reportsDirectory, String reportNameSuffix, Charset encoding);
 
-    public abstract Object clone( ClassLoader target );
+    public abstract Object clone(ClassLoader target);
 
-    public boolean isDisable()
-    {
+    public boolean isDisable() {
         return disable;
     }
 
-    public void setDisable( boolean disable )
-    {
+    public void setDisable(boolean disable) {
         this.disable = disable;
     }
 }

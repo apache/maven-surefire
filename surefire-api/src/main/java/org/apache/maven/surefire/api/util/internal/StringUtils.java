@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.util.internal;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.util.internal;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.api.util.internal;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.api.util.internal;
 
 import java.util.StringTokenizer;
 
@@ -48,32 +47,25 @@ import static java.lang.System.lineSeparator;
  * @version $Id: StringUtils.java 8001 2009-01-03 13:17:09Z vsiveton $
  * @since 1.0
  */
-public final class StringUtils
-{
+public final class StringUtils {
     public static final String NL = lineSeparator();
 
-    private StringUtils()
-    {
-        throw new IllegalStateException( "no instantiable constructor" );
+    private StringUtils() {
+        throw new IllegalStateException("no instantiable constructor");
     }
 
-    public static String[] split( String text, String separator )
-    {
+    public static String[] split(String text, String separator) {
         final StringTokenizer tok;
-        if ( separator == null )
-        {
+        if (separator == null) {
             // Null separator means we're using StringTokenizer's default
             // delimiter, which comprises all whitespace characters.
-            tok = new StringTokenizer( text );
-        }
-        else
-        {
-            tok = new StringTokenizer( text, separator );
+            tok = new StringTokenizer(text);
+        } else {
+            tok = new StringTokenizer(text, separator);
         }
 
         String[] list = new String[tok.countTokens()];
-        for ( int i = 0; tok.hasMoreTokens(); i++ )
-        {
+        for (int i = 0; tok.hasMoreTokens(); i++) {
             list[i] = tok.nextToken();
         }
         return list;
@@ -86,18 +78,12 @@ public final class StringUtils
      * @param pattern    a pattern which should start in {@code buffer}
      * @return    {@code true} if buffer's literal starts with given {@code pattern}, or both are empty.
      */
-    public static boolean startsWith( StringBuffer buffer, String pattern )
-    {
-        if ( buffer.length() < pattern.length() )
-        {
+    public static boolean startsWith(StringBuffer buffer, String pattern) {
+        if (buffer.length() < pattern.length()) {
             return false;
-        }
-        else
-        {
-            for ( int i = 0, len = pattern.length(); i < len; i++ )
-            {
-                if ( buffer.charAt( i ) != pattern.charAt( i ) )
-                {
+        } else {
+            for (int i = 0, len = pattern.length(); i < len; i++) {
+                if (buffer.charAt(i) != pattern.charAt(i)) {
                     return false;
                 }
             }

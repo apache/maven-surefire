@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,14 +16,15 @@ package org.apache.maven.plugin.surefire.report;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.report;
 
 import java.util.List;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.shared.utils.logging.MessageBuilder;
 import org.apache.maven.plugin.surefire.log.api.Level;
-import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
+import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
+import org.apache.maven.surefire.shared.utils.logging.MessageBuilder;
 
 import static org.apache.maven.plugin.surefire.log.api.Level.resolveLevel;
 import static org.apache.maven.plugin.surefire.report.TestSetStats.concatenateWithTestGroup;
@@ -37,9 +36,7 @@ import static org.apache.maven.surefire.shared.utils.logging.MessageUtils.buffer
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  * @author Kristian Rosenvold
  */
-public class ConsoleReporter
-        extends StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats>
-{
+public class ConsoleReporter extends StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats> {
     public static final String BRIEF = "brief";
     public static final String PLAIN = "plain";
     private static final String TEST_SET_STARTING_PREFIX = "Running ";
@@ -47,60 +44,48 @@ public class ConsoleReporter
     private final boolean usePhrasedClassNameInRunning;
     private final boolean usePhrasedClassNameInTestCaseSummary;
 
-    public ConsoleReporter( ConsoleLogger logger,
-                            boolean usePhrasedClassNameInRunning, boolean usePhrasedClassNameInTestCaseSummary )
-    {
-        super( logger );
+    public ConsoleReporter(
+            ConsoleLogger logger, boolean usePhrasedClassNameInRunning, boolean usePhrasedClassNameInTestCaseSummary) {
+        super(logger);
         this.usePhrasedClassNameInRunning = usePhrasedClassNameInRunning;
         this.usePhrasedClassNameInTestCaseSummary = usePhrasedClassNameInTestCaseSummary;
     }
 
     @Override
-    public void testSetStarting( TestSetReportEntry report )
-    {
-        MessageBuilder builder = buffer().a( TEST_SET_STARTING_PREFIX );
-        String runningTestCase = concatenateWithTestGroup( builder, report, usePhrasedClassNameInRunning );
-        getConsoleLogger()
-                .info( runningTestCase );
+    public void testSetStarting(TestSetReportEntry report) {
+        MessageBuilder builder = buffer().a(TEST_SET_STARTING_PREFIX);
+        String runningTestCase = concatenateWithTestGroup(builder, report, usePhrasedClassNameInRunning);
+        getConsoleLogger().info(runningTestCase);
     }
 
     @Override
-    public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
-    {
+    public void testSetCompleted(WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults) {
         boolean success = testSetStats.getCompletedCount() > 0;
         boolean failures = testSetStats.getFailures() > 0;
         boolean errors = testSetStats.getErrors() > 0;
         boolean skipped = testSetStats.getSkipped() > 0;
         boolean flakes = testSetStats.getSkipped() > 0;
-        Level level = resolveLevel( success, failures, errors, skipped, flakes );
+        Level level = resolveLevel(success, failures, errors, skipped, flakes);
 
-        println( testSetStats.getColoredTestSetSummary( report, usePhrasedClassNameInTestCaseSummary ), level );
-        for ( String testResult : testResults )
-        {
-            println( testResult, level );
+        println(testSetStats.getColoredTestSetSummary(report, usePhrasedClassNameInTestCaseSummary), level);
+        for (String testResult : testResults) {
+            println(testResult, level);
         }
     }
 
     @Override
-    public void reset()
-    {
-    }
+    public void reset() {}
 
-    private void println( String message, Level level )
-    {
-        switch ( level )
-        {
+    private void println(String message, Level level) {
+        switch (level) {
             case FAILURE:
-                getConsoleLogger()
-                        .error( message );
+                getConsoleLogger().error(message);
                 break;
             case UNSTABLE:
-                getConsoleLogger()
-                        .warning( message );
+                getConsoleLogger().warning(message);
                 break;
             default:
-                getConsoleLogger()
-                        .info( message );
+                getConsoleLogger().info(message);
         }
     }
 }

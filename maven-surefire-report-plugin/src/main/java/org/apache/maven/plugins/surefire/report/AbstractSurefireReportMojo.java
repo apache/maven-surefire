@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.maven.plugins.surefire.report;
 
 /*
@@ -24,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+
 import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -41,14 +60,12 @@ import static org.apache.maven.shared.utils.StringUtils.isEmpty;
  *
  * @author Stephen Connolly
  */
-public abstract class AbstractSurefireReportMojo
-    extends AbstractMavenReport
-{
+public abstract class AbstractSurefireReportMojo extends AbstractMavenReport {
 
     /**
      * If set to false, only failures are shown.
      */
-    @Parameter( defaultValue = "true", required = true, property = "showSuccess" )
+    @Parameter(defaultValue = "true", required = true, property = "showSuccess")
     private boolean showSuccess;
 
     /**
@@ -68,25 +85,25 @@ public abstract class AbstractSurefireReportMojo
     /**
      * The projects in the reactor for aggregation report.
      */
-    @Parameter( defaultValue = "${reactorProjects}", readonly = true )
+    @Parameter(defaultValue = "${reactorProjects}", readonly = true)
     private List<MavenProject> reactorProjects;
 
     /**
      * Location of the Xrefs to link.
      */
-    @Parameter( defaultValue = "${project.reporting.outputDirectory}/xref-test" )
+    @Parameter(defaultValue = "${project.reporting.outputDirectory}/xref-test")
     private File xrefLocation;
 
     /**
      * Whether to link the XRef if found.
      */
-    @Parameter( defaultValue = "true", property = "linkXRef" )
+    @Parameter(defaultValue = "true", property = "linkXRef")
     private boolean linkXRef;
 
     /**
      * Whether to build an aggregated report at the root, or build individual reports.
      */
-    @Parameter( defaultValue = "false", property = "aggregate" )
+    @Parameter(defaultValue = "false", property = "aggregate")
     private boolean aggregate;
 
     private List<File> resolvedReportsDirectories;
@@ -97,8 +114,7 @@ public abstract class AbstractSurefireReportMojo
      * @return {@code true} if and only if the report should be generated.
      * @since 2.11
      */
-    protected boolean isSkipped()
-    {
+    protected boolean isSkipped() {
         return false;
     }
 
@@ -108,16 +124,15 @@ public abstract class AbstractSurefireReportMojo
      * @return {@code true} if and only if the report should be generated when there are no result files at all.
      * @since 2.11
      */
-    protected boolean isGeneratedWhenNoResults()
-    {
+    protected boolean isGeneratedWhenNoResults() {
         return false;
     }
 
-    public abstract void setTitle( String title );
+    public abstract void setTitle(String title);
 
     public abstract String getTitle();
 
-    public abstract void setDescription( String description );
+    public abstract void setDescription(String description);
 
     public abstract String getDescription();
 
@@ -125,124 +140,94 @@ public abstract class AbstractSurefireReportMojo
      * {@inheritDoc}
      */
     @Override
-    public void executeReport( Locale locale )
-        throws MavenReportException
-    {
-        if ( !hasReportDirectories() )
-        {
+    public void executeReport(Locale locale) throws MavenReportException {
+        if (!hasReportDirectories()) {
             return;
         }
 
-        new SurefireReportGenerator( getReportsDirectories(), locale, showSuccess, determineXrefLocation(),
-                                           getConsoleLogger() )
-                .doGenerateReport( getBundle( locale ), getSink() );
+        new SurefireReportGenerator(
+                        getReportsDirectories(), locale, showSuccess, determineXrefLocation(), getConsoleLogger())
+                .doGenerateReport(getBundle(locale), getSink());
     }
 
     @Override
-    public boolean canGenerateReport()
-    {
+    public boolean canGenerateReport() {
         return hasReportDirectories() && super.canGenerateReport();
     }
 
-    private boolean hasReportDirectories()
-    {
-        if ( isSkipped() )
-        {
+    private boolean hasReportDirectories() {
+        if (isSkipped()) {
             return false;
         }
 
         final List<File> reportsDirectories = getReportsDirectories();
 
-        if ( reportsDirectories == null )
-        {
+        if (reportsDirectories == null) {
             return false;
         }
 
-        if ( !isGeneratedWhenNoResults() )
-        {
+        if (!isGeneratedWhenNoResults()) {
             boolean atLeastOneDirectoryExists = false;
-            for ( Iterator<File> i = reportsDirectories.iterator(); i.hasNext() && !atLeastOneDirectoryExists; )
-            {
-                atLeastOneDirectoryExists = hasReportFiles( i.next() );
+            for (Iterator<File> i = reportsDirectories.iterator(); i.hasNext() && !atLeastOneDirectoryExists; ) {
+                atLeastOneDirectoryExists = hasReportFiles(i.next());
             }
-            if ( !atLeastOneDirectoryExists )
-            {
+            if (!atLeastOneDirectoryExists) {
                 return false;
             }
         }
         return true;
     }
 
-    private List<File> getReportsDirectories()
-    {
-        if ( resolvedReportsDirectories != null )
-        {
+    private List<File> getReportsDirectories() {
+        if (resolvedReportsDirectories != null) {
             return resolvedReportsDirectories;
         }
 
         resolvedReportsDirectories = new ArrayList<>();
 
-        if ( this.reportsDirectories != null )
-        {
-            addAll( resolvedReportsDirectories, this.reportsDirectories );
+        if (this.reportsDirectories != null) {
+            addAll(resolvedReportsDirectories, this.reportsDirectories);
         }
         //noinspection deprecation
-        if ( reportsDirectory != null )
-        {
+        if (reportsDirectory != null) {
             //noinspection deprecation
-            resolvedReportsDirectories.add( reportsDirectory );
+            resolvedReportsDirectories.add(reportsDirectory);
         }
-        if ( aggregate )
-        {
-            if ( !project.isExecutionRoot() )
-            {
+        if (aggregate) {
+            if (!project.isExecutionRoot()) {
                 return null;
             }
-            if ( this.reportsDirectories == null )
-            {
-                if ( reactorProjects.size() > 1 )
-                {
-                    for ( MavenProject mavenProject : getProjectsWithoutRoot() )
-                    {
-                        resolvedReportsDirectories.add( getSurefireReportsDirectory( mavenProject ) );
+            if (this.reportsDirectories == null) {
+                if (reactorProjects.size() > 1) {
+                    for (MavenProject mavenProject : getProjectsWithoutRoot()) {
+                        resolvedReportsDirectories.add(getSurefireReportsDirectory(mavenProject));
                     }
+                } else {
+                    resolvedReportsDirectories.add(getSurefireReportsDirectory(project));
                 }
-                else
-                {
-                    resolvedReportsDirectories.add( getSurefireReportsDirectory( project ) );
-                }
-            }
-            else
-            {
+            } else {
                 // Multiple report directories are configured.
                 // Let's see if those directories exist in each sub-module to fix SUREFIRE-570
                 String parentBaseDir = getProject().getBasedir().getAbsolutePath();
-                for ( MavenProject subProject : getProjectsWithoutRoot() )
-                {
+                for (MavenProject subProject : getProjectsWithoutRoot()) {
                     String moduleBaseDir = subProject.getBasedir().getAbsolutePath();
-                    for ( File reportsDirectory1 : this.reportsDirectories )
-                    {
+                    for (File reportsDirectory1 : this.reportsDirectories) {
                         String reportDir = reportsDirectory1.getPath();
-                        if ( reportDir.startsWith( parentBaseDir ) )
-                        {
-                            reportDir = reportDir.substring( parentBaseDir.length() );
+                        if (reportDir.startsWith(parentBaseDir)) {
+                            reportDir = reportDir.substring(parentBaseDir.length());
                         }
-                        File reportsDirectory = new File( moduleBaseDir, reportDir );
-                        if ( reportsDirectory.exists() && reportsDirectory.isDirectory() )
-                        {
-                            getConsoleLogger().debug( "Adding report dir : " + moduleBaseDir + reportDir );
-                            resolvedReportsDirectories.add( reportsDirectory );
+                        File reportsDirectory = new File(moduleBaseDir, reportDir);
+                        if (reportsDirectory.exists() && reportsDirectory.isDirectory()) {
+                            getConsoleLogger().debug("Adding report dir : " + moduleBaseDir + reportDir);
+                            resolvedReportsDirectories.add(reportsDirectory);
                         }
                     }
                 }
             }
-        }
-        else
-        {
-            if ( resolvedReportsDirectories.isEmpty() )
-            {
+        } else {
+            if (resolvedReportsDirectories.isEmpty()) {
 
-                resolvedReportsDirectories.add( getSurefireReportsDirectory( project ) );
+                resolvedReportsDirectories.add(getSurefireReportsDirectory(project));
             }
         }
         return resolvedReportsDirectories;
@@ -254,57 +239,44 @@ public abstract class AbstractSurefireReportMojo
      * @param subProject the project to query.
      * @return the default surefire reports directory for the specified project.
      */
-    protected abstract File getSurefireReportsDirectory( MavenProject subProject );
+    protected abstract File getSurefireReportsDirectory(MavenProject subProject);
 
-    private List<MavenProject> getProjectsWithoutRoot()
-    {
+    private List<MavenProject> getProjectsWithoutRoot() {
         List<MavenProject> result = new ArrayList<>();
-        for ( MavenProject subProject : reactorProjects )
-        {
-            if ( !project.equals( subProject ) )
-            {
-                result.add( subProject );
+        for (MavenProject subProject : reactorProjects) {
+            if (!project.equals(subProject)) {
+                result.add(subProject);
             }
         }
         return result;
-
     }
 
-    private String determineXrefLocation()
-    {
+    private String determineXrefLocation() {
         String location = null;
 
-        if ( linkXRef )
-        {
-            String relativePath = PathTool.getRelativePath( getOutputDirectory(), xrefLocation.getAbsolutePath() );
-            if ( isEmpty( relativePath ) )
-            {
+        if (linkXRef) {
+            String relativePath = PathTool.getRelativePath(getOutputDirectory(), xrefLocation.getAbsolutePath());
+            if (isEmpty(relativePath)) {
                 relativePath = ".";
             }
             relativePath = relativePath + "/" + xrefLocation.getName();
-            if ( xrefLocation.exists() )
-            {
+            if (xrefLocation.exists()) {
                 // XRef was already generated by manual execution of a lifecycle binding
                 location = relativePath;
-            }
-            else
-            {
+            } else {
                 // Not yet generated - check if the report is on its way
-                for ( Object o : project.getReportPlugins() )
-                {
+                for (Object o : project.getReportPlugins()) {
                     ReportPlugin report = (ReportPlugin) o;
 
                     String artifactId = report.getArtifactId();
-                    if ( "maven-jxr-plugin".equals( artifactId ) || "jxr-maven-plugin".equals( artifactId ) )
-                    {
+                    if ("maven-jxr-plugin".equals(artifactId) || "jxr-maven-plugin".equals(artifactId)) {
                         location = relativePath;
                     }
                 }
             }
 
-            if ( location == null )
-            {
-                getConsoleLogger().warning( "Unable to locate Test Source XRef to link to - DISABLED" );
+            if (location == null) {
+                getConsoleLogger().warning("Unable to locate Test Source XRef to link to - DISABLED");
             }
         }
         return location;
@@ -314,18 +286,16 @@ public abstract class AbstractSurefireReportMojo
      * {@inheritDoc}
      */
     @Override
-    public String getName( Locale locale )
-    {
-        return getBundle( locale ).getReportName();
+    public String getName(Locale locale) {
+        return getBundle(locale).getReportName();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public String getDescription( Locale locale )
-    {
-        return getBundle( locale ).getReportDescription();
+    public String getDescription(Locale locale) {
+        return getBundle(locale).getReportDescription();
     }
 
     /**
@@ -334,21 +304,18 @@ public abstract class AbstractSurefireReportMojo
     @Override
     public abstract String getOutputName();
 
-    protected abstract LocalizedProperties getBundle( Locale locale, ClassLoader resourceBundleClassLoader );
+    protected abstract LocalizedProperties getBundle(Locale locale, ClassLoader resourceBundleClassLoader);
 
-    protected final ConsoleLogger getConsoleLogger()
-    {
-        return new PluginConsoleLogger( getLog() );
+    protected final ConsoleLogger getConsoleLogger() {
+        return new PluginConsoleLogger(getLog());
     }
 
-    final LocalizedProperties getBundle( Locale locale )
-    {
-        return getBundle( locale, getClass().getClassLoader() );
+    final LocalizedProperties getBundle(Locale locale) {
+        return getBundle(locale, getClass().getClassLoader());
     }
 
     @Override
-    protected MavenProject getProject()
-    {
+    protected MavenProject getProject() {
         return project;
     }
 }

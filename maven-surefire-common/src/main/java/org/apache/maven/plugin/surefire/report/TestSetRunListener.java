@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire.report;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.report;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -46,9 +45,7 @@ import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
  *
  * @author Kristian Rosenvold
  */
-public class TestSetRunListener
-    implements TestReportListener<TestOutputReportEntry>
-{
+public class TestSetRunListener implements TestReportListener<TestOutputReportEntry> {
     private final Queue<TestMethodStats> testMethodStats = new ConcurrentLinkedQueue<>();
 
     private final TestSetStats detailsForThis;
@@ -67,161 +64,136 @@ public class TestSetRunListener
 
     private final Object lock;
 
-    private Utf8RecodingDeferredFileOutputStream testStdOut = initDeferred( "stdout" );
+    private Utf8RecodingDeferredFileOutputStream testStdOut = initDeferred("stdout");
 
-    private Utf8RecodingDeferredFileOutputStream testStdErr = initDeferred( "stderr" );
+    private Utf8RecodingDeferredFileOutputStream testStdErr = initDeferred("stderr");
 
-    @SuppressWarnings( "checkstyle:parameternumber" )
-    public TestSetRunListener( StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats>
-                                           consoleReporter,
-                               StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats>
-                                       fileReporter,
-                               StatelessReportEventListener<WrappedReportEntry, TestSetStats> simpleXMLReporter,
-                               ConsoleOutputReportEventListener testOutputReceiver,
-                               StatisticsReporter statisticsReporter, boolean trimStackTrace,
-                               boolean isPlainFormat, boolean briefOrPlainFormat, Object lock )
-    {
+    @SuppressWarnings("checkstyle:parameternumber")
+    public TestSetRunListener(
+            StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats> consoleReporter,
+            StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats> fileReporter,
+            StatelessReportEventListener<WrappedReportEntry, TestSetStats> simpleXMLReporter,
+            ConsoleOutputReportEventListener testOutputReceiver,
+            StatisticsReporter statisticsReporter,
+            boolean trimStackTrace,
+            boolean isPlainFormat,
+            boolean briefOrPlainFormat,
+            Object lock) {
         this.consoleReporter = consoleReporter;
         this.fileReporter = fileReporter;
         this.statisticsReporter = statisticsReporter;
         this.simpleXMLReporter = simpleXMLReporter;
         this.testOutputReceiver = testOutputReceiver;
         this.briefOrPlainFormat = briefOrPlainFormat;
-        detailsForThis = new TestSetStats( trimStackTrace, isPlainFormat );
+        detailsForThis = new TestSetStats(trimStackTrace, isPlainFormat);
         this.lock = lock;
     }
 
     @Override
-    public boolean isDebugEnabled()
-    {
+    public boolean isDebugEnabled() {
         return consoleReporter.getConsoleLogger().isDebugEnabled();
     }
 
     @Override
-    public void debug( String message )
-    {
-        synchronized ( lock )
-        {
-            consoleReporter.getConsoleLogger().debug( trimTrailingNewLine( message ) );
+    public void debug(String message) {
+        synchronized (lock) {
+            consoleReporter.getConsoleLogger().debug(trimTrailingNewLine(message));
         }
     }
 
     @Override
-    public boolean isInfoEnabled()
-    {
+    public boolean isInfoEnabled() {
         return consoleReporter.getConsoleLogger().isInfoEnabled();
     }
 
     @Override
-    public void info( String message )
-    {
-        synchronized ( lock )
-        {
-            consoleReporter.getConsoleLogger().info( trimTrailingNewLine( message ) );
+    public void info(String message) {
+        synchronized (lock) {
+            consoleReporter.getConsoleLogger().info(trimTrailingNewLine(message));
         }
     }
 
     @Override
-    public boolean isWarnEnabled()
-    {
+    public boolean isWarnEnabled() {
         return consoleReporter.getConsoleLogger().isWarnEnabled();
     }
 
     @Override
-    public void warning( String message )
-    {
-        synchronized ( lock )
-        {
-            consoleReporter.getConsoleLogger().warning( trimTrailingNewLine( message ) );
+    public void warning(String message) {
+        synchronized (lock) {
+            consoleReporter.getConsoleLogger().warning(trimTrailingNewLine(message));
         }
     }
 
     @Override
-    public boolean isErrorEnabled()
-    {
+    public boolean isErrorEnabled() {
         return consoleReporter.getConsoleLogger().isErrorEnabled();
     }
 
     @Override
-    public void error( String message )
-    {
-        synchronized ( lock )
-        {
-            consoleReporter.getConsoleLogger().error( trimTrailingNewLine( message ) );
+    public void error(String message) {
+        synchronized (lock) {
+            consoleReporter.getConsoleLogger().error(trimTrailingNewLine(message));
         }
     }
 
     @Override
-    public void error( String message, Throwable t )
-    {
-        synchronized ( lock )
-        {
-            consoleReporter.getConsoleLogger().error( trimTrailingNewLine( message ), t );
+    public void error(String message, Throwable t) {
+        synchronized (lock) {
+            consoleReporter.getConsoleLogger().error(trimTrailingNewLine(message), t);
         }
     }
 
     @Override
-    public void error( Throwable t )
-    {
-        synchronized ( lock )
-        {
-            consoleReporter.getConsoleLogger().error( t );
+    public void error(Throwable t) {
+        synchronized (lock) {
+            consoleReporter.getConsoleLogger().error(t);
         }
     }
 
     @Override
-    public void writeTestOutput( TestOutputReportEntry reportEntry )
-    {
-        try
-        {
-            synchronized ( lock )
-            {
+    public void writeTestOutput(TestOutputReportEntry reportEntry) {
+        try {
+            synchronized (lock) {
                 Utf8RecodingDeferredFileOutputStream stream = reportEntry.isStdOut() ? testStdOut : testStdErr;
-                stream.write( reportEntry.getLog(), reportEntry.isNewLine() );
-                testOutputReceiver.writeTestOutput( reportEntry );
+                stream.write(reportEntry.getLog(), reportEntry.isNewLine());
+                testOutputReceiver.writeTestOutput(reportEntry);
             }
-        }
-        catch ( IOException e )
-        {
-            throw new RuntimeException( e );
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void testSetStarting( TestSetReportEntry report )
-    {
+    public void testSetStarting(TestSetReportEntry report) {
         detailsForThis.testSetStart();
-        consoleReporter.testSetStarting( report );
-        testOutputReceiver.testSetStarting( report );
+        consoleReporter.testSetStarting(report);
+        testOutputReceiver.testSetStarting(report);
     }
 
-    private void clearCapture()
-    {
-        if ( testStdOut != null )
-        {
+    private void clearCapture() {
+        if (testStdOut != null) {
             testStdOut.commit();
         }
 
-        if ( testStdErr != null )
-        {
+        if (testStdErr != null) {
             testStdErr.commit();
         }
 
-        testStdOut = initDeferred( "stdout" );
-        testStdErr = initDeferred( "stderr" );
+        testStdOut = initDeferred("stdout");
+        testStdErr = initDeferred("stderr");
     }
 
     @Override
-    public void testSetCompleted( TestSetReportEntry report )
-    {
-        final WrappedReportEntry wrap = wrapTestSet( report );
+    public void testSetCompleted(TestSetReportEntry report) {
+        final WrappedReportEntry wrap = wrapTestSet(report);
         final List<String> testResults =
                 briefOrPlainFormat ? detailsForThis.getTestResults() : Collections.<String>emptyList();
-        fileReporter.testSetCompleted( wrap, detailsForThis, testResults );
-        simpleXMLReporter.testSetCompleted( wrap, detailsForThis );
+        fileReporter.testSetCompleted(wrap, detailsForThis, testResults);
+        simpleXMLReporter.testSetCompleted(wrap, detailsForThis);
         statisticsReporter.testSetCompleted();
-        consoleReporter.testSetCompleted( wrap, detailsForThis, testResults );
-        testOutputReceiver.testSetCompleted( wrap );
+        consoleReporter.testSetCompleted(wrap, detailsForThis, testResults);
+        testOutputReceiver.testSetCompleted(wrap);
         consoleReporter.reset();
 
         wrap.getStdout().free();
@@ -237,35 +209,31 @@ public class TestSetRunListener
     // ----------------------------------------------------------------------
 
     @Override
-    public void testStarting( ReportEntry report )
-    {
+    public void testStarting(ReportEntry report) {
         detailsForThis.testStart();
     }
 
     @Override
-    public void testSucceeded( ReportEntry reportEntry )
-    {
-        WrappedReportEntry wrapped = wrap( reportEntry, SUCCESS );
-        detailsForThis.testSucceeded( wrapped );
-        statisticsReporter.testSucceeded( reportEntry );
+    public void testSucceeded(ReportEntry reportEntry) {
+        WrappedReportEntry wrapped = wrap(reportEntry, SUCCESS);
+        detailsForThis.testSucceeded(wrapped);
+        statisticsReporter.testSucceeded(reportEntry);
         clearCapture();
     }
 
     @Override
-    public void testError( ReportEntry reportEntry )
-    {
-        WrappedReportEntry wrapped = wrap( reportEntry, ERROR );
-        detailsForThis.testError( wrapped );
-        statisticsReporter.testError( reportEntry );
+    public void testError(ReportEntry reportEntry) {
+        WrappedReportEntry wrapped = wrap(reportEntry, ERROR);
+        detailsForThis.testError(wrapped);
+        statisticsReporter.testError(reportEntry);
         clearCapture();
     }
 
     @Override
-    public void testFailed( ReportEntry reportEntry )
-    {
-        WrappedReportEntry wrapped = wrap( reportEntry, FAILURE );
-        detailsForThis.testFailure( wrapped );
-        statisticsReporter.testFailed( reportEntry );
+    public void testFailed(ReportEntry reportEntry) {
+        WrappedReportEntry wrapped = wrap(reportEntry, FAILURE);
+        detailsForThis.testFailure(wrapped);
+        statisticsReporter.testFailed(reportEntry);
         clearCapture();
     }
 
@@ -274,79 +242,71 @@ public class TestSetRunListener
     // ----------------------------------------------------------------------
 
     @Override
-    public void testSkipped( ReportEntry reportEntry )
-    {
-        WrappedReportEntry wrapped = wrap( reportEntry, SKIPPED );
-        detailsForThis.testSkipped( wrapped );
-        statisticsReporter.testSkipped( reportEntry );
+    public void testSkipped(ReportEntry reportEntry) {
+        WrappedReportEntry wrapped = wrap(reportEntry, SKIPPED);
+        detailsForThis.testSkipped(wrapped);
+        statisticsReporter.testSkipped(reportEntry);
         clearCapture();
     }
 
     @Override
-    public void testExecutionSkippedByUser()
-    {
+    public void testExecutionSkippedByUser() {
         clearCapture();
     }
 
     @Override
-    public void testAssumptionFailure( ReportEntry report )
-    {
-        testSkipped( report );
+    public void testAssumptionFailure(ReportEntry report) {
+        testSkipped(report);
     }
 
-    private WrappedReportEntry wrap( ReportEntry other, ReportEntryType reportEntryType )
-    {
+    private WrappedReportEntry wrap(ReportEntry other, ReportEntryType reportEntryType) {
         int estimatedElapsed = 0;
-        if ( reportEntryType != SKIPPED )
-        {
+        if (reportEntryType != SKIPPED) {
             Integer etime = other.getElapsed();
             estimatedElapsed = etime == null ? detailsForThis.getElapsedSinceLastStart() : etime;
         }
 
-        return new WrappedReportEntry( other, reportEntryType, estimatedElapsed, testStdOut, testStdErr );
+        return new WrappedReportEntry(other, reportEntryType, estimatedElapsed, testStdOut, testStdErr);
     }
 
-    private WrappedReportEntry wrapTestSet( TestSetReportEntry other )
-    {
-        return new WrappedReportEntry( other, null, other.getElapsed() != null
-            ? other.getElapsed()
-            : detailsForThis.getElapsedSinceTestSetStart(), testStdOut, testStdErr, other.getSystemProperties() );
+    private WrappedReportEntry wrapTestSet(TestSetReportEntry other) {
+        return new WrappedReportEntry(
+                other,
+                null,
+                other.getElapsed() != null ? other.getElapsed() : detailsForThis.getElapsedSinceTestSetStart(),
+                testStdOut,
+                testStdErr,
+                other.getSystemProperties());
     }
 
-    public void close()
-    {
+    public void close() {
         testOutputReceiver.close();
     }
 
-    private void addTestMethodStats()
-    {
-        for ( WrappedReportEntry reportEntry : detailsForThis.getReportEntries() )
-        {
-            TestMethodStats methodStats =
-                new TestMethodStats( reportEntry.getClassMethodName(), reportEntry.getReportEntryType(),
-                                     reportEntry.getStackTraceWriter() );
-            testMethodStats.add( methodStats );
+    private void addTestMethodStats() {
+        for (WrappedReportEntry reportEntry : detailsForThis.getReportEntries()) {
+            TestMethodStats methodStats = new TestMethodStats(
+                    reportEntry.getClassMethodName(),
+                    reportEntry.getReportEntryType(),
+                    reportEntry.getStackTraceWriter());
+            testMethodStats.add(methodStats);
         }
     }
 
-    public Queue<TestMethodStats> getTestMethodStats()
-    {
+    public Queue<TestMethodStats> getTestMethodStats() {
         return testMethodStats;
     }
 
-    private static String trimTrailingNewLine( final String message )
-    {
-        final int e = message == null ? 0 : lineBoundSymbolWidth( message );
-        return message != null && e != 0 ? message.substring( 0, message.length() - e ) : message;
+    private static String trimTrailingNewLine(final String message) {
+        final int e = message == null ? 0 : lineBoundSymbolWidth(message);
+        return message != null && e != 0 ? message.substring(0, message.length() - e) : message;
     }
 
-    private static int lineBoundSymbolWidth( String message )
-    {
-        return message.endsWith( "\r\n" ) ? 2 : ( message.endsWith( "\n" ) || message.endsWith( "\r" ) ? 1 : 0 );
+    private static int lineBoundSymbolWidth(String message) {
+        return message.endsWith("\r\n") ? 2 : (message.endsWith("\n") || message.endsWith("\r") ? 1 : 0);
     }
 
-    private static Utf8RecodingDeferredFileOutputStream initDeferred( String channel )
-    {
-        return new Utf8RecodingDeferredFileOutputStream( channel );
+    private static Utf8RecodingDeferredFileOutputStream initDeferred(String channel) {
+        return new Utf8RecodingDeferredFileOutputStream(channel);
     }
 }

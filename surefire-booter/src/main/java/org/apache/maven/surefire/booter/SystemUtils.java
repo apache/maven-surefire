@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.booter;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.booter;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,8 +16,7 @@ package org.apache.maven.surefire.booter;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.surefire.api.util.ReflectionUtils;
+package org.apache.maven.surefire.booter;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,16 +30,18 @@ import java.math.BigDecimal;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import org.apache.maven.surefire.api.util.ReflectionUtils;
+
 import static java.lang.Thread.currentThread;
 import static java.util.Objects.requireNonNull;
-import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray;
-import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_RECENT;
-import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_9;
-import static org.apache.maven.surefire.shared.lang3.StringUtils.isNumeric;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodChain;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.tryLoadClass;
-import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_LINUX;
+import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_9;
+import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_RECENT;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isNumeric;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_FREE_BSD;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_LINUX;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_NET_BSD;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_OPEN_BSD;
 
@@ -52,27 +51,24 @@ import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_OPEN_BSD;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20.1
  */
-public final class SystemUtils
-{
-    private static final BigDecimal JIGSAW_JAVA_VERSION = new BigDecimal( 9 ).stripTrailingZeros();
+public final class SystemUtils {
+    private static final BigDecimal JIGSAW_JAVA_VERSION = new BigDecimal(9).stripTrailingZeros();
 
     private static final int PROC_STATUS_PID_FIRST_CHARS = 20;
 
-    private SystemUtils()
-    {
-        throw new IllegalStateException( "no instantiable constructor" );
+    private SystemUtils() {
+        throw new IllegalStateException("no instantiable constructor");
     }
 
     /**
      * @param jvmExecPath    e.g. /jdk/bin/java, /jdk/jre/bin/java
      * @return {@code true} if {@code jvmExecPath} is path to java binary executor
      */
-    public static boolean endsWithJavaPath( String jvmExecPath )
-    {
-        File javaExec = new File( jvmExecPath ).getAbsoluteFile();
+    public static boolean endsWithJavaPath(String jvmExecPath) {
+        File javaExec = new File(jvmExecPath).getAbsoluteFile();
         File bin = javaExec.getParentFile();
         String exec = javaExec.getName();
-        return exec.startsWith( "java" ) && bin != null && bin.getName().equals( "bin" );
+        return exec.startsWith("java") && bin != null && bin.getName().equals("bin");
     }
 
     /**
@@ -84,16 +80,13 @@ public final class SystemUtils
      * @param jvmExecutable    /jdk/bin/java* or /jdk/jre/bin/java*
      * @return path to jdk directory; or <code>null</code> if wrong path or directory layout of JDK installation.
      */
-    public static File toJdkHomeFromJvmExec( String jvmExecutable )
-    {
-        File bin = new File( jvmExecutable ).getAbsoluteFile().getParentFile();
-        if ( "bin".equals( bin.getName() ) )
-        {
+    public static File toJdkHomeFromJvmExec(String jvmExecutable) {
+        File bin = new File(jvmExecutable).getAbsoluteFile().getParentFile();
+        if ("bin".equals(bin.getName())) {
             File parent = bin.getParentFile();
-            if ( "jre".equals( parent.getName() ) )
-            {
+            if ("jre".equals(parent.getName())) {
                 File jdk = parent.getParentFile();
-                return new File( jdk, "bin" ).isDirectory() ? jdk : null;
+                return new File(jdk, "bin").isDirectory() ? jdk : null;
             }
             return parent;
         }
@@ -107,9 +100,8 @@ public final class SystemUtils
      *
      * @return path to JDK
      */
-    public static File toJdkHomeFromJre()
-    {
-        return toJdkHomeFromJre( System.getProperty( "java.home" ) );
+    public static File toJdkHomeFromJre() {
+        return toJdkHomeFromJre(System.getProperty("java.home"));
     }
 
     /**
@@ -121,114 +113,83 @@ public final class SystemUtils
      * @param jreHome    path to /jdk or /jdk/jre
      * @return path to JDK
      */
-    static File toJdkHomeFromJre( String jreHome )
-    {
-        File pathToJreOrJdk = new File( jreHome ).getAbsoluteFile();
-        return "jre".equals( pathToJreOrJdk.getName() ) ? pathToJreOrJdk.getParentFile() : pathToJreOrJdk;
+    static File toJdkHomeFromJre(String jreHome) {
+        File pathToJreOrJdk = new File(jreHome).getAbsoluteFile();
+        return "jre".equals(pathToJreOrJdk.getName()) ? pathToJreOrJdk.getParentFile() : pathToJreOrJdk;
     }
 
-    public static BigDecimal toJdkVersionFromReleaseFile( File jdkHome )
-    {
-        File release = new File( requireNonNull( jdkHome ).getAbsoluteFile(), "release" );
-        if ( !release.isFile() )
-        {
+    public static BigDecimal toJdkVersionFromReleaseFile(File jdkHome) {
+        File release = new File(requireNonNull(jdkHome).getAbsoluteFile(), "release");
+        if (!release.isFile()) {
             return null;
         }
         Properties properties = new Properties();
-        try ( InputStream is = new FileInputStream( release ) )
-        {
-            properties.load( is );
-            String javaVersion = properties.getProperty( "JAVA_VERSION" ).replace( "\"", "" );
-            StringTokenizer versions = new StringTokenizer( javaVersion, "._" );
+        try (InputStream is = new FileInputStream(release)) {
+            properties.load(is);
+            String javaVersion = properties.getProperty("JAVA_VERSION").replace("\"", "");
+            StringTokenizer versions = new StringTokenizer(javaVersion, "._");
 
-            if ( versions.countTokens() == 1 )
-            {
+            if (versions.countTokens() == 1) {
                 javaVersion = versions.nextToken();
-            }
-            else if ( versions.countTokens() >= 2 )
-            {
+            } else if (versions.countTokens() >= 2) {
                 String majorVersion = versions.nextToken();
                 String minorVersion = versions.nextToken();
-                javaVersion = isNumeric( minorVersion ) ? majorVersion + "." + minorVersion : majorVersion;
-            }
-            else
-            {
+                javaVersion = isNumeric(minorVersion) ? majorVersion + "." + minorVersion : majorVersion;
+            } else {
                 return null;
             }
 
-            return new BigDecimal( javaVersion );
-        }
-        catch ( IOException e )
-        {
+            return new BigDecimal(javaVersion);
+        } catch (IOException e) {
             return null;
         }
     }
 
-    public static boolean isJava9AtLeast( String jvmExecutablePath )
-    {
-        File externalJavaHome = toJdkHomeFromJvmExec( jvmExecutablePath );
+    public static boolean isJava9AtLeast(String jvmExecutablePath) {
+        File externalJavaHome = toJdkHomeFromJvmExec(jvmExecutablePath);
         File thisJavaHome = toJdkHomeFromJre();
-        if ( thisJavaHome.equals( externalJavaHome ) )
-        {
+        if (thisJavaHome.equals(externalJavaHome)) {
             return isBuiltInJava9AtLeast();
-        }
-        else
-        {
+        } else {
             BigDecimal releaseFileVersion =
-                    externalJavaHome == null ? null : toJdkVersionFromReleaseFile( externalJavaHome );
-            return isJava9AtLeast( releaseFileVersion );
+                    externalJavaHome == null ? null : toJdkVersionFromReleaseFile(externalJavaHome);
+            return isJava9AtLeast(releaseFileVersion);
         }
     }
 
-    public static boolean isBuiltInJava9AtLeast()
-    {
-        return JAVA_RECENT.atLeast( JAVA_9 );
+    public static boolean isBuiltInJava9AtLeast() {
+        return JAVA_RECENT.atLeast(JAVA_9);
     }
 
-    public static boolean isJava9AtLeast( BigDecimal version )
-    {
-        return version != null && version.compareTo( JIGSAW_JAVA_VERSION ) >= 0;
+    public static boolean isJava9AtLeast(BigDecimal version) {
+        return version != null && version.compareTo(JIGSAW_JAVA_VERSION) >= 0;
     }
 
-    public static ClassLoader platformClassLoader()
-    {
-        if ( isBuiltInJava9AtLeast() )
-        {
-            return reflectClassLoader( ClassLoader.class, "getPlatformClassLoader" );
+    public static ClassLoader platformClassLoader() {
+        if (isBuiltInJava9AtLeast()) {
+            return reflectClassLoader(ClassLoader.class, "getPlatformClassLoader");
         }
         return null;
     }
 
-    public static Long pid()
-    {
-        if ( isBuiltInJava9AtLeast() )
-        {
+    public static Long pid() {
+        if (isBuiltInJava9AtLeast()) {
             Long pid = pidOnJava9();
-            if ( pid != null )
-            {
+            if (pid != null) {
                 return pid;
             }
         }
 
-        if ( IS_OS_LINUX )
-        {
-            try
-            {
+        if (IS_OS_LINUX) {
+            try {
                 return pidStatusOnLinux();
-            }
-            catch ( Exception e )
-            {
+            } catch (Exception e) {
                 // examine PID via JMX
             }
-        }
-        else if ( IS_OS_FREE_BSD || IS_OS_NET_BSD || IS_OS_OPEN_BSD )
-        {
-            try
-            {
+        } else if (IS_OS_FREE_BSD || IS_OS_NET_BSD || IS_OS_OPEN_BSD) {
+            try {
                 return pidStatusOnBSD();
-            }
-            catch ( Exception e )
-            {
+            } catch (Exception e) {
                 // examine PID via JMX
             }
         }
@@ -236,18 +197,13 @@ public final class SystemUtils
         return pidOnJMX();
     }
 
-    static Long pidOnJMX()
-    {
+    static Long pidOnJMX() {
         String processName = ManagementFactory.getRuntimeMXBean().getName();
-        if ( processName.contains( "@" ) )
-        {
-            String pid = processName.substring( 0, processName.indexOf( '@' ) ).trim();
-            try
-            {
-                return Long.parseLong( pid );
-            }
-            catch ( NumberFormatException e )
-            {
+        if (processName.contains("@")) {
+            String pid = processName.substring(0, processName.indexOf('@')).trim();
+            try {
+                return Long.parseLong(pid);
+            } catch (NumberFormatException e) {
                 return null;
             }
         }
@@ -271,9 +227,8 @@ public final class SystemUtils
      * @return self PID
      * @throws Exception i/o and number format exc
      */
-    static Long pidStatusOnLinux() throws Exception
-    {
-        return pidStatusOnLinux( "" );
+    static Long pidStatusOnLinux() throws Exception {
+        return pidStatusOnLinux("");
     }
 
     /**
@@ -283,15 +238,13 @@ public final class SystemUtils
      * @return same as in {@link #pidStatusOnLinux()}
      * @throws Exception same as in {@link #pidStatusOnLinux()}
      */
-    static Long pidStatusOnLinux( String root ) throws Exception
-    {
-        try ( FileReader input = new FileReader( root + "/proc/self/stat" ) )
-        {
+    static Long pidStatusOnLinux(String root) throws Exception {
+        try (FileReader input = new FileReader(root + "/proc/self/stat")) {
             // Reading and encoding 20 characters is bit faster than whole line.
             // size of (long) = 19, + 1 space
             char[] buffer = new char[PROC_STATUS_PID_FIRST_CHARS];
-            String startLine = new String( buffer, 0, input.read( buffer ) );
-            return Long.parseLong( startLine.substring( 0, startLine.indexOf( ' ' ) ) );
+            String startLine = new String(buffer, 0, input.read(buffer));
+            return Long.parseLong(startLine.substring(0, startLine.indexOf(' ')));
         }
     }
 
@@ -313,9 +266,8 @@ public final class SystemUtils
      * @return current PID
      * @throws Exception if could not read /proc/curproc/status
      */
-    static Long pidStatusOnBSD() throws Exception
-    {
-        return pidStatusOnBSD( "" );
+    static Long pidStatusOnBSD() throws Exception {
+        return pidStatusOnBSD("");
     }
 
     /**
@@ -325,35 +277,28 @@ public final class SystemUtils
      * @return same as in {@link #pidStatusOnBSD()}
      * @throws Exception same as in {@link #pidStatusOnBSD()}
      */
-    static Long pidStatusOnBSD( String root ) throws Exception
-    {
-        try ( BufferedReader input = new BufferedReader( new FileReader( root + "/proc/curproc/status" ) ) )
-        {
+    static Long pidStatusOnBSD(String root) throws Exception {
+        try (BufferedReader input = new BufferedReader(new FileReader(root + "/proc/curproc/status"))) {
             String line = input.readLine();
-            int i1 = 1 + line.indexOf( ' ' );
-            int i2 = line.indexOf( ' ', i1 );
-            return Long.parseLong( line.substring( i1, i2 ) );
+            int i1 = 1 + line.indexOf(' ');
+            int i2 = line.indexOf(' ', i1);
+            return Long.parseLong(line.substring(i1, i2));
         }
     }
 
-    static Long pidOnJava9()
-    {
+    static Long pidOnJava9() {
         ClassLoader classLoader = currentThread().getContextClassLoader();
-        Class<?> processHandle = tryLoadClass( classLoader, "java.lang.ProcessHandle" );
-        Class<?>[] classesChain = { processHandle, processHandle };
-        String[] methodChain = { "current", "pid" };
-        return invokeMethodChain( classesChain, methodChain, null );
+        Class<?> processHandle = tryLoadClass(classLoader, "java.lang.ProcessHandle");
+        Class<?>[] classesChain = {processHandle, processHandle};
+        String[] methodChain = {"current", "pid"};
+        return invokeMethodChain(classesChain, methodChain, null);
     }
 
-    static ClassLoader reflectClassLoader( Class<?> target, String getterMethodName )
-    {
-        try
-        {
-            Method getter = ReflectionUtils.getMethod( target, getterMethodName );
-            return invokeMethodWithArray( null, getter );
-        }
-        catch ( RuntimeException e )
-        {
+    static ClassLoader reflectClassLoader(Class<?> target, String getterMethodName) {
+        try {
+            Method getter = ReflectionUtils.getMethod(target, getterMethodName);
+            return invokeMethodWithArray(null, getter);
+        } catch (RuntimeException e) {
             return null;
         }
     }

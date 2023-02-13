@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.maven.surefire.testng;
 
 /*
@@ -54,9 +72,7 @@ import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
 /**
  * @author Kristian Rosenvold
  */
-public class TestNGProvider
-    extends AbstractProvider
-{
+public class TestNGProvider extends AbstractProvider {
     private final Map<String, String> providerProperties;
 
     private final ReporterConfiguration reporterConfiguration;
@@ -75,8 +91,7 @@ public class TestNGProvider
 
     private final CommandChainReader commandsReader;
 
-    public TestNGProvider( ProviderParameters bootParams )
-    {
+    public TestNGProvider(ProviderParameters bootParams) {
         // don't start a thread in CommandReader while we are in in-plugin process
         commandsReader = bootParams.isInsideFork() ? bootParams.getCommandReader() : null;
         providerParameters = bootParams;
@@ -90,11 +105,8 @@ public class TestNGProvider
     }
 
     @Override
-    public RunResult invoke( Object forkTestSet )
-        throws TestSetFailedException
-    {
-        if ( isFailFast() && commandsReader != null )
-        {
+    public RunResult invoke(Object forkTestSet) throws TestSetFailedException {
+        if (isFailFast() && commandsReader != null) {
             registerPleaseStopListener();
         }
 
@@ -102,182 +114,146 @@ public class TestNGProvider
         TestReportListener<TestOutputReportEntry> reporter = reporterFactory.createTestReportListener();
 
         RunResult runResult;
-        try
-        {
-            if ( isTestNGXmlTestSuite( testRequest ) )
-            {
-                TestNGReporter testNGReporter = createTestNGReporter( reporter );
-                testNGReporter.setRunMode( NORMAL_RUN );
+        try {
+            if (isTestNGXmlTestSuite(testRequest)) {
+                TestNGReporter testNGReporter = createTestNGReporter(reporter);
+                testNGReporter.setRunMode(NORMAL_RUN);
                 /*
                  * {@link org.apache.maven.surefire.api.report.ConsoleOutputCapture#startCapture(ConsoleOutputReceiver)}
                  * called in prior to initializing variable {@link #testsToRun}
                  */
-                startCapture( testNGReporter );
+                startCapture(testNGReporter);
 
-                if ( commandsReader != null )
-                {
+                if (commandsReader != null) {
                     commandsReader.awaitStarted();
                 }
                 TestNGXmlTestSuite testNGXmlTestSuite = newXmlSuite();
                 testNGXmlTestSuite.locateTestSets();
-                testNGXmlTestSuite.execute( testNGReporter );
-            }
-            else
-            {
-                TestNGReporter testNGReporter = createTestNGReporter( reporter );
-                testNGReporter.setRunMode( NORMAL_RUN );
+                testNGXmlTestSuite.execute(testNGReporter);
+            } else {
+                TestNGReporter testNGReporter = createTestNGReporter(reporter);
+                testNGReporter.setRunMode(NORMAL_RUN);
                 /*
                  * {@link org.apache.maven.surefire.api.report.ConsoleOutputCapture#startCapture(ConsoleOutputReceiver)}
                  * called in prior to initializing variable {@link #testsToRun}
                  */
-                startCapture( testNGReporter );
+                startCapture(testNGReporter);
 
                 final TestsToRun testsToRun;
-                if ( forkTestSet instanceof TestsToRun )
-                {
+                if (forkTestSet instanceof TestsToRun) {
                     testsToRun = (TestsToRun) forkTestSet;
-                }
-                else if ( forkTestSet instanceof Class )
-                {
-                    testsToRun = fromClass( (Class<?>) forkTestSet );
-                }
-                else
-                {
+                } else if (forkTestSet instanceof Class) {
+                    testsToRun = fromClass((Class<?>) forkTestSet);
+                } else {
                     testsToRun = scanClassPath();
                 }
 
-                if ( commandsReader != null )
-                {
-                    registerShutdownListener( testsToRun );
+                if (commandsReader != null) {
+                    registerShutdownListener(testsToRun);
                     commandsReader.awaitStarted();
                 }
                 TestNGDirectoryTestSuite suite = newDirectorySuite();
-                suite.execute( testsToRun, testNGReporter );
+                suite.execute(testsToRun, testNGReporter);
             }
-        }
-        finally
-        {
+        } finally {
             runResult = reporterFactory.close();
         }
         return runResult;
     }
 
-    boolean isTestNGXmlTestSuite( TestRequest testSuiteDefinition )
-    {
+    boolean isTestNGXmlTestSuite(TestRequest testSuiteDefinition) {
         Collection<File> suiteXmlFiles = testSuiteDefinition.getSuiteXmlFiles();
         return !suiteXmlFiles.isEmpty() && !hasSpecificTests();
     }
 
-    private boolean isFailFast()
-    {
+    private boolean isFailFast() {
         return providerParameters.getSkipAfterFailureCount() > 0;
     }
 
-    private int getSkipAfterFailureCount()
-    {
+    private int getSkipAfterFailureCount() {
         return isFailFast() ? providerParameters.getSkipAfterFailureCount() : 0;
     }
 
-    private void registerShutdownListener( final TestsToRun testsToRun )
-    {
-        commandsReader.addShutdownListener( new CommandListener()
-        {
+    private void registerShutdownListener(final TestsToRun testsToRun) {
+        commandsReader.addShutdownListener(new CommandListener() {
             @Override
-            public void update( Command command )
-            {
+            public void update(Command command) {
                 testsToRun.markTestSetFinished();
             }
-        } );
+        });
     }
 
-    private void registerPleaseStopListener()
-    {
-        commandsReader.addSkipNextTestsListener( new CommandListener()
-        {
+    private void registerPleaseStopListener() {
+        commandsReader.addSkipNextTestsListener(new CommandListener() {
             @Override
-            public void update( Command command )
-            {
+            public void update(Command command) {
                 FailFastEventsSingleton.getInstance().setSkipOnNextTest();
             }
-        } );
+        });
     }
 
-    private TestNGDirectoryTestSuite newDirectorySuite()
-    {
-        return new TestNGDirectoryTestSuite( testRequest.getTestSourceDirectory().toString(), providerProperties,
-                                             reporterConfiguration.getReportsDirectory(), getTestFilter(),
-                                             mainCliOptions, getSkipAfterFailureCount() );
+    private TestNGDirectoryTestSuite newDirectorySuite() {
+        return new TestNGDirectoryTestSuite(
+                testRequest.getTestSourceDirectory().toString(),
+                providerProperties,
+                reporterConfiguration.getReportsDirectory(),
+                getTestFilter(),
+                mainCliOptions,
+                getSkipAfterFailureCount());
     }
 
-    private TestNGXmlTestSuite newXmlSuite()
-    {
-        return new TestNGXmlTestSuite( testRequest.getSuiteXmlFiles(),
-                                       testRequest.getTestSourceDirectory().toString(),
-                                       providerProperties,
-                                       reporterConfiguration.getReportsDirectory(), getSkipAfterFailureCount() );
+    private TestNGXmlTestSuite newXmlSuite() {
+        return new TestNGXmlTestSuite(
+                testRequest.getSuiteXmlFiles(),
+                testRequest.getTestSourceDirectory().toString(),
+                providerProperties,
+                reporterConfiguration.getReportsDirectory(),
+                getSkipAfterFailureCount());
     }
 
     @Override
-    @SuppressWarnings( "unchecked" )
-    public Iterable<Class<?>> getSuites()
-    {
-        if ( isTestNGXmlTestSuite( testRequest ) )
-        {
-            try
-            {
+    @SuppressWarnings("unchecked")
+    public Iterable<Class<?>> getSuites() {
+        if (isTestNGXmlTestSuite(testRequest)) {
+            try {
                 return newXmlSuite().locateTestSets();
+            } catch (TestSetFailedException e) {
+                throw new RuntimeException(e);
             }
-            catch ( TestSetFailedException e )
-            {
-                throw new RuntimeException( e );
-            }
-        }
-        else
-        {
+        } else {
             return scanClassPath();
         }
     }
 
-    private TestsToRun scanClassPath()
-    {
-        final TestsToRun scanned = scanResult.applyFilter( null, testClassLoader );
-        return runOrderCalculator.orderTestClasses( scanned );
+    private TestsToRun scanClassPath() {
+        final TestsToRun scanned = scanResult.applyFilter(null, testClassLoader);
+        return runOrderCalculator.orderTestClasses(scanned);
     }
 
-    private boolean hasSpecificTests()
-    {
+    private boolean hasSpecificTests() {
         TestListResolver specificTestPatterns = testRequest.getTestListResolver();
         return !specificTestPatterns.isEmpty() && !specificTestPatterns.isWildcard();
     }
 
-    private TestListResolver getTestFilter()
-    {
-        TestListResolver filter = optionallyWildcardFilter( testRequest.getTestListResolver() );
+    private TestListResolver getTestFilter() {
+        TestListResolver filter = optionallyWildcardFilter(testRequest.getTestListResolver());
         return filter.isWildcard() ? getEmptyTestListResolver() : filter;
     }
 
     // If we have access to IResultListener, return a ConfigurationAwareTestNGReporter.
     // But don't cause NoClassDefFoundErrors if it isn't available; just return a regular TestNGReporter instead.
-    private static TestNGReporter createTestNGReporter( TestReportListener<TestOutputReportEntry> reportManager )
-    {
-        try
-        {
-            Class.forName( "org.testng.internal.IResultListener" );
-            Class<?> c = Class.forName( "org.apache.maven.surefire.testng.ConfigurationAwareTestNGReporter" );
-            Constructor<?> ctor = c.getConstructor( TestReportListener.class );
-            return (TestNGReporter) ctor.newInstance( reportManager );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new RuntimeException( "Bug in ConfigurationAwareTestNGReporter", e.getCause() );
-        }
-        catch ( ClassNotFoundException e )
-        {
-            return new TestNGReporter( reportManager );
-        }
-        catch ( Exception e )
-        {
-            throw new RuntimeException( "Bug in ConfigurationAwareTestNGReporter", e );
+    private static TestNGReporter createTestNGReporter(TestReportListener<TestOutputReportEntry> reportManager) {
+        try {
+            Class.forName("org.testng.internal.IResultListener");
+            Class<?> c = Class.forName("org.apache.maven.surefire.testng.ConfigurationAwareTestNGReporter");
+            Constructor<?> ctor = c.getConstructor(TestReportListener.class);
+            return (TestNGReporter) ctor.newInstance(reportManager);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException("Bug in ConfigurationAwareTestNGReporter", e.getCause());
+        } catch (ClassNotFoundException e) {
+            return new TestNGReporter(reportManager);
+        } catch (Exception e) {
+            throw new RuntimeException("Bug in ConfigurationAwareTestNGReporter", e);
         }
     }
 }

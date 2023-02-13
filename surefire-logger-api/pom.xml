@@ -18,79 +18,78 @@
   ~ under the License.
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.apache.maven.surefire</groupId>
-        <artifactId>surefire</artifactId>
-        <version>3.0.0-M10-SNAPSHOT</version>
-    </parent>
+  <parent>
+    <groupId>org.apache.maven.surefire</groupId>
+    <artifactId>surefire</artifactId>
+    <version>3.0.0-M10-SNAPSHOT</version>
+  </parent>
 
-    <artifactId>surefire-logger-api</artifactId>
+  <artifactId>surefire-logger-api</artifactId>
 
-    <name>SureFire Logger API</name>
-    <description>
-        Interfaces and Utilities related only to internal SureFire Logger API. Free of dependencies.
-    </description>
+  <name>SureFire Logger API</name>
+  <description>Interfaces and Utilities related only to internal SureFire Logger API. Free of dependencies.</description>
 
-    <properties>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    </properties>
+  <developers>
+    <developer>
+      <id>tibordigana</id>
+      <name>Tibor Digaňa (tibor17)</name>
+      <email>tibordigana@apache.org</email>
+      <roles>
+        <role>PMC</role>
+      </roles>
+      <timezone>Europe/Bratislava</timezone>
+    </developer>
+  </developers>
 
-    <developers>
-        <developer>
-            <id>tibordigana</id>
-            <name>Tibor Digaňa (tibor17)</name>
-            <email>tibordigana@apache.org</email>
-            <roles>
-                <role>PMC</role>
-            </roles>
-            <timezone>Europe/Bratislava</timezone>
-        </developer>
-    </developers>
+  <properties>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+  <dependencies>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>jacoco-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <propertyName>jacoco.agent</propertyName>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <argLine>${jvm.args.tests} ${jacoco.agent}</argLine>
-                    <includes>
-                        <include>**/JUnit4SuiteTest.java</include>
-                    </includes>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.maven.surefire</groupId>
-                        <artifactId>surefire-shadefire</artifactId>
-                        <version>3.0.0-M7</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
-                    </dependency>
-                </dependencies>
-            </plugin>
-        </plugins>
-    </build>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <configuration>
+          <propertyName>jacoco.agent</propertyName>
+        </configuration>
+        <executions>
+          <execution>
+            <id>jacoco-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>${jvm.args.tests} ${jacoco.agent}</argLine>
+          <includes>
+            <include>**/JUnit4SuiteTest.java</include>
+          </includes>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.surefire</groupId>
+            <artifactId>surefire-shadefire</artifactId>
+            <version>3.0.0-M7</version>
+            <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

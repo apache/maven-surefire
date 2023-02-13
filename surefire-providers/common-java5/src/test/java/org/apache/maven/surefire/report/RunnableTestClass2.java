@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,28 +16,21 @@ package org.apache.maven.surefire.report;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.report;
 
 import java.util.concurrent.Callable;
 
-class RunnableTestClass2
-    implements Callable<Object>
-
-{
+class RunnableTestClass2 implements Callable<Object> {
 
     @Override
-    public Object call()
-        throws Exception
-    {
+    public Object call() throws Exception {
         InnerRunnableTestClass.cThrows();
         return null;
     }
 
-    static class InnerRunnableTestClass
-    {
-        public static void cThrows()
-            throws Exception
-        {
-            throw new Exception( "Hey ho, hey ho, a throwable we throw!" );
+    static class InnerRunnableTestClass {
+        public static void cThrows() throws Exception {
+            throw new Exception("Hey ho, hey ho, a throwable we throw!");
         }
     }
 }

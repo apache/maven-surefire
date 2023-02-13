@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.log.api;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.log.api;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire.log.api;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.log.api;
 
 import org.junit.Test;
 
@@ -27,47 +26,40 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Tests for {@link Level}.
  */
-public class LevelTest
-{
+public class LevelTest {
     @Test
-    public void shouldHaveSuccess()
-    {
-        Level level = resolveLevel( true, false, false, false, false );
-        assertThat( level ).isEqualTo( Level.SUCCESS );
+    public void shouldHaveSuccess() {
+        Level level = resolveLevel(true, false, false, false, false);
+        assertThat(level).isEqualTo(Level.SUCCESS);
     }
 
     @Test
-    public void shouldNotHaveSuccess()
-    {
-        Level level = resolveLevel( false, false, false, false, false );
-        assertThat( level ).isEqualTo( Level.NO_COLOR );
+    public void shouldNotHaveSuccess() {
+        Level level = resolveLevel(false, false, false, false, false);
+        assertThat(level).isEqualTo(Level.NO_COLOR);
     }
 
     @Test
-    public void shouldBeFailure()
-    {
-        Level level = resolveLevel( false, true, false, false, false );
-        assertThat( level ).isEqualTo( Level.FAILURE );
+    public void shouldBeFailure() {
+        Level level = resolveLevel(false, true, false, false, false);
+        assertThat(level).isEqualTo(Level.FAILURE);
     }
 
     @Test
-    public void shouldBeError()
-    {
-        Level level = resolveLevel( false, false, true, false, false );
-        assertThat( level ).isEqualTo( Level.FAILURE );
+    public void shouldBeError() {
+        Level level = resolveLevel(false, false, true, false, false);
+        assertThat(level).isEqualTo(Level.FAILURE);
     }
 
     @Test
-    public void shouldBeSkipped()
-    {
-        Level level = resolveLevel( false, false, false, true, false );
-        assertThat( level ).isEqualTo( Level.UNSTABLE );
+    public void shouldBeSkipped() {
+        Level level = resolveLevel(false, false, false, true, false);
+        assertThat(level).isEqualTo(Level.UNSTABLE);
     }
 
     @Test
-    public void shouldBeFlake()
-    {
-        Level level = resolveLevel( false, false, false, false, true );
-        assertThat( level ).isEqualTo( Level.UNSTABLE );
+    public void shouldBeFlake() {
+        Level level = resolveLevel(false, false, false, false, true);
+        assertThat(level).isEqualTo(Level.UNSTABLE);
     }
 }

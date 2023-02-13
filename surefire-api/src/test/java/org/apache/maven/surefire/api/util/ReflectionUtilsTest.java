@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.util;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.util;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,10 +16,11 @@ package org.apache.maven.surefire.api.util;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.junit.Test;
+package org.apache.maven.surefire.api.util;
 
 import java.lang.reflect.Constructor;
+
+import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,112 +30,88 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20.1
  */
-public class ReflectionUtilsTest
-{
+public class ReflectionUtilsTest {
     @Test
-    public void shouldGetConstructor() throws Exception
-    {
+    public void shouldGetConstructor() throws Exception {
         Constructor<ClassWithParameterizedConstructor> constructor =
-                ReflectionUtils.tryGetConstructor( ClassWithParameterizedConstructor.class, int.class );
-        assertThat( constructor ).isNotNull();
+                ReflectionUtils.tryGetConstructor(ClassWithParameterizedConstructor.class, int.class);
+        assertThat(constructor).isNotNull();
         // Verify the Constructor returned really is for the class it should be
-        assertThat( constructor.newInstance( 10 ) ).isInstanceOf( ClassWithParameterizedConstructor.class );
+        assertThat(constructor.newInstance(10)).isInstanceOf(ClassWithParameterizedConstructor.class);
     }
 
     @Test
-    public void shouldNotGetNonExistingConstructor()
-    {
-        assertThat( ReflectionUtils.tryGetConstructor( ClassWithParameterizedConstructor.class, String.class ) )
-            .isNull();
+    public void shouldNotGetNonExistingConstructor() {
+        assertThat(ReflectionUtils.tryGetConstructor(ClassWithParameterizedConstructor.class, String.class))
+                .isNull();
     }
 
     @Test
-    public void shouldReloadClass() throws Exception
-    {
+    public void shouldReloadClass() throws Exception {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        assertThat( ReflectionUtils.reloadClass( cl, new B() ) )
-                .isEqualTo( B.class );
+        assertThat(ReflectionUtils.reloadClass(cl, new B())).isEqualTo(B.class);
     }
 
-    @Test( expected = RuntimeException.class )
-    public void shouldNotInvokeStaticMethod()
-    {
-        ReflectionUtils.invokeStaticMethod( ReflectionUtilsTest.class, "notCallable",
-                                                  new Class<?>[0], new Object[0] );
+    @Test(expected = RuntimeException.class)
+    public void shouldNotInvokeStaticMethod() {
+        ReflectionUtils.invokeStaticMethod(ReflectionUtilsTest.class, "notCallable", new Class<?>[0], new Object[0]);
     }
 
     @Test
-    public void shouldInvokeStaticMethod()
-    {
-        Object o = ReflectionUtils.invokeStaticMethod( ReflectionUtilsTest.class, "callable",
-                                                             new Class<?>[0], new Object[0] );
-        assertThat( o )
-                .isEqualTo( 3L );
+    public void shouldInvokeStaticMethod() {
+        Object o = ReflectionUtils.invokeStaticMethod(
+                ReflectionUtilsTest.class, "callable", new Class<?>[0], new Object[0]);
+        assertThat(o).isEqualTo(3L);
     }
 
     @Test
-    public void shouldInvokeMethodChain()
-    {
-        Class<?>[] classes1 = { A.class, A.class };
-        String[] chain = { "current", "pid" };
-        Object o = ReflectionUtils.invokeMethodChain( classes1, chain, null );
-        assertThat( o )
-                .isEqualTo( 3L );
+    public void shouldInvokeMethodChain() {
+        Class<?>[] classes1 = {A.class, A.class};
+        String[] chain = {"current", "pid"};
+        Object o = ReflectionUtils.invokeMethodChain(classes1, chain, null);
+        assertThat(o).isEqualTo(3L);
 
-        Class<?>[] classes2 = { A.class, A.class, B.class };
-        String[] longChain = { "current", "createB", "pid" };
-        o = ReflectionUtils.invokeMethodChain( classes2, longChain, null );
-        assertThat( o )
-                .isEqualTo( 1L );
+        Class<?>[] classes2 = {A.class, A.class, B.class};
+        String[] longChain = {"current", "createB", "pid"};
+        o = ReflectionUtils.invokeMethodChain(classes2, longChain, null);
+        assertThat(o).isEqualTo(1L);
     }
 
     @Test
-    public void shouldInvokeFallbackOnMethodChain()
-    {
-        Class<?>[] classes1 = { A.class, A.class };
-        String[] chain = { "current", "abc" };
-        Object o = ReflectionUtils.invokeMethodChain( classes1, chain, 5L );
-        assertThat( o )
-                .isEqualTo( 5L );
+    public void shouldInvokeFallbackOnMethodChain() {
+        Class<?>[] classes1 = {A.class, A.class};
+        String[] chain = {"current", "abc"};
+        Object o = ReflectionUtils.invokeMethodChain(classes1, chain, 5L);
+        assertThat(o).isEqualTo(5L);
 
-        Class<?>[] classes2 = { A.class, B.class, B.class };
-        String[] longChain = { "current", "createB", "abc" };
-        o = ReflectionUtils.invokeMethodChain( classes2, longChain, 6L );
-        assertThat( o )
-                .isEqualTo( 6L );
+        Class<?>[] classes2 = {A.class, B.class, B.class};
+        String[] longChain = {"current", "createB", "abc"};
+        o = ReflectionUtils.invokeMethodChain(classes2, longChain, 6L);
+        assertThat(o).isEqualTo(6L);
     }
 
-    private static void notCallable()
-    {
-    }
+    private static void notCallable() {}
 
-    public static long callable()
-    {
+    public static long callable() {
         return 3L;
     }
 
-    static class A
-    {
-        public static A current()
-        {
+    static class A {
+        public static A current() {
             return new A();
         }
 
-        public long pid()
-        {
+        public long pid() {
             return 3L;
         }
 
-        public B createB()
-        {
+        public B createB() {
             return new B();
         }
     }
 
-    static class B
-    {
-        public long pid()
-        {
+    static class B {
+        public long pid() {
             return 1L;
         }
     }
@@ -144,10 +119,7 @@ public class ReflectionUtilsTest
     // The constructor has to be public for ReflectionUtils.tryGetConstructor to find it. Currently, the checkstyle
     // rules require that class be public too, and a public class must be documented, hence minimalist javadoc.
     /** */
-    public static class ClassWithParameterizedConstructor
-    {
-        public ClassWithParameterizedConstructor( int param )
-        {
-        }
+    public static class ClassWithParameterizedConstructor {
+        public ClassWithParameterizedConstructor(int param) {}
     }
 }

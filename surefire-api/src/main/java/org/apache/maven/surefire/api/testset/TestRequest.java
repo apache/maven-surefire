@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.testset;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.testset;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.api.testset;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.api.testset;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -28,8 +27,7 @@ import java.util.List;
  *
  * @author Kristian Rosenvold
  */
-public class TestRequest
-{
+public class TestRequest {
     private final List<File> suiteXmlFiles;
 
     private final File testSourceDirectory;
@@ -38,15 +36,13 @@ public class TestRequest
 
     private final int rerunFailingTestsCount;
 
-    public TestRequest( List suiteXmlFiles, File testSourceDirectory, TestListResolver requestedTests )
-    {
-        this( createFiles( suiteXmlFiles ), testSourceDirectory, requestedTests, 0 );
+    public TestRequest(List suiteXmlFiles, File testSourceDirectory, TestListResolver requestedTests) {
+        this(createFiles(suiteXmlFiles), testSourceDirectory, requestedTests, 0);
     }
 
-    public TestRequest( List suiteXmlFiles, File testSourceDirectory, TestListResolver requestedTests,
-                        int rerunFailingTestsCount )
-    {
-        this.suiteXmlFiles = createFiles( suiteXmlFiles );
+    public TestRequest(
+            List suiteXmlFiles, File testSourceDirectory, TestListResolver requestedTests, int rerunFailingTestsCount) {
+        this.suiteXmlFiles = createFiles(suiteXmlFiles);
         this.testSourceDirectory = testSourceDirectory;
         this.requestedTests = requestedTests;
         this.rerunFailingTestsCount = rerunFailingTestsCount;
@@ -57,8 +53,7 @@ public class TestRequest
      *
      * @return A list of java.io.File objects.
      */
-    public List<File> getSuiteXmlFiles()
-    {
+    public List<File> getSuiteXmlFiles() {
         return suiteXmlFiles;
     }
 
@@ -67,8 +62,7 @@ public class TestRequest
      *
      * @return A file pointing to test sources
      */
-    public File getTestSourceDirectory()
-    {
+    public File getTestSourceDirectory() {
         return testSourceDirectory;
     }
 
@@ -77,8 +71,7 @@ public class TestRequest
      *
      * @return filter
      */
-    public TestListResolver getTestListResolver()
-    {
+    public TestListResolver getTestListResolver() {
         return requestedTests;
     }
 
@@ -87,25 +80,20 @@ public class TestRequest
      *
      * @return The int parameter to indicate how many times to rerun failing tests
      */
-    public int getRerunFailingTestsCount()
-    {
+    public int getRerunFailingTestsCount() {
         return rerunFailingTestsCount;
     }
 
-    private static List<File> createFiles( List suiteXmlFiles )
-    {
-        if ( suiteXmlFiles != null )
-        {
+    private static List<File> createFiles(List suiteXmlFiles) {
+        if (suiteXmlFiles != null) {
             List<File> files = new ArrayList<>();
             Object element;
-            for ( Object suiteXmlFile : suiteXmlFiles )
-            {
+            for (Object suiteXmlFile : suiteXmlFiles) {
                 element = suiteXmlFile;
-                files.add( element instanceof String ? new File( (String) element ) : (File) element );
+                files.add(element instanceof String ? new File((String) element) : (File) element);
             }
             return files;
         }
         return null;
     }
-
 }

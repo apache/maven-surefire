@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.maven.plugins.surefire.report;
 
 /*
@@ -28,9 +46,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
-
 import junit.framework.TestCase;
+import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 
 import static java.util.Collections.singletonList;
 import static java.util.Locale.ENGLISH;
@@ -38,124 +55,114 @@ import static java.util.Locale.ENGLISH;
 /**
  *
  */
-@SuppressWarnings( "checkstyle:magicnumber" )
-public class SurefireReportParserTest
-    extends TestCase
-{
-    public void testParseXMLReportFiles()
-        throws Exception
-    {
+@SuppressWarnings("checkstyle:magicnumber")
+public class SurefireReportParserTest extends TestCase {
+    public void testParseXMLReportFiles() throws Exception {
         SurefireReportParser report =
-                new SurefireReportParser( singletonList( getTestDir() ), ENGLISH, new NullConsoleLogger() );
+                new SurefireReportParser(singletonList(getTestDir()), ENGLISH, new NullConsoleLogger());
 
         List<ReportTestSuite> suites = report.parseXMLReportFiles();
 
-        assertEquals( 8, suites.size() );
+        assertEquals(8, suites.size());
 
-        for ( ReportTestSuite suite : suites )
-        {
-            assertNotNull( suite.getName() + " was not correctly parsed", suite.getTestCases() );
-            assertNotNull( suite.getName() );
-            assertNotNull( suite.getPackageName() );
+        for (ReportTestSuite suite : suites) {
+            assertNotNull(suite.getName() + " was not correctly parsed", suite.getTestCases());
+            assertNotNull(suite.getName());
+            assertNotNull(suite.getPackageName());
         }
     }
 
-    private File getTestDir()
-        throws UnsupportedEncodingException
-    {
-        URL resource = getClass().getResource( "/test-reports" );
+    private File getTestDir() throws UnsupportedEncodingException {
+        URL resource = getClass().getResource("/test-reports");
         // URLDecoder.decode necessary for JDK 1.5+, where spaces are escaped to %20
-        return new File( URLDecoder.decode( resource.getPath(), "UTF-8" ) ).getAbsoluteFile();
+        return new File(URLDecoder.decode(resource.getPath(), "UTF-8")).getAbsoluteFile();
     }
 
-    public void testGetSummary()
-        throws Exception
-    {
+    public void testGetSummary() throws Exception {
         ReportTestSuite tSuite1 = new ReportTestSuite()
-            .setNumberOfErrors( 10 )
-            .setNumberOfFailures( 20 )
-            .setNumberOfSkipped( 2 )
-            .setTimeElapsed( 1.0f )
-            .setNumberOfTests( 100 );
+                .setNumberOfErrors(10)
+                .setNumberOfFailures(20)
+                .setNumberOfSkipped(2)
+                .setTimeElapsed(1.0f)
+                .setNumberOfTests(100);
 
         ReportTestSuite tSuite2 = new ReportTestSuite()
-            .setNumberOfErrors( 10 )
-            .setNumberOfFailures( 20 )
-            .setNumberOfSkipped( 2 )
-            .setTimeElapsed( 1.0f )
-            .setNumberOfTests( 100 );
+                .setNumberOfErrors(10)
+                .setNumberOfFailures(20)
+                .setNumberOfSkipped(2)
+                .setTimeElapsed(1.0f)
+                .setNumberOfTests(100);
 
         List<ReportTestSuite> suites = new ArrayList<>();
 
-        suites.add( tSuite1 );
+        suites.add(tSuite1);
 
-        suites.add( tSuite2 );
+        suites.add(tSuite2);
 
-        SurefireReportParser report = new SurefireReportParser( null, ENGLISH, new NullConsoleLogger() );
+        SurefireReportParser report = new SurefireReportParser(null, ENGLISH, new NullConsoleLogger());
 
-        Map<String, String> testMap = report.getSummary( suites );
+        Map<String, String> testMap = report.getSummary(suites);
 
-        assertEquals( 20, Integer.parseInt( testMap.get( "totalErrors" ) ) );
+        assertEquals(20, Integer.parseInt(testMap.get("totalErrors")));
 
-        assertEquals( 40, Integer.parseInt( testMap.get( "totalFailures" ) ) );
+        assertEquals(40, Integer.parseInt(testMap.get("totalFailures")));
 
-        assertEquals( 200, Integer.parseInt( testMap.get( "totalTests" ) ) );
+        assertEquals(200, Integer.parseInt(testMap.get("totalTests")));
 
-        assertEquals( 4, Integer.parseInt( testMap.get( "totalSkipped" ) ) );
+        assertEquals(4, Integer.parseInt(testMap.get("totalSkipped")));
 
         NumberFormat numberFormat = report.getNumberFormat();
 
-        assertEquals( 2.0f, numberFormat.parse( testMap.get( "totalElapsedTime" ) ).floatValue(), 0.0f );
+        assertEquals(2.0f, numberFormat.parse(testMap.get("totalElapsedTime")).floatValue(), 0.0f);
 
-        assertEquals( 68.00f, numberFormat.parse( testMap.get( "totalPercentage" ) ).floatValue(), 0 );
+        assertEquals(68.00f, numberFormat.parse(testMap.get("totalPercentage")).floatValue(), 0);
     }
 
-    public void testGetSuitesGroupByPackage()
-    {
+    public void testGetSuitesGroupByPackage() {
         ReportTestSuite tSuite1 = new ReportTestSuite();
 
         ReportTestSuite tSuite2 = new ReportTestSuite();
 
         ReportTestSuite tSuite3 = new ReportTestSuite();
 
-        tSuite1.setPackageName( "Package1" );
+        tSuite1.setPackageName("Package1");
 
-        tSuite2.setPackageName( "Package1" );
+        tSuite2.setPackageName("Package1");
 
-        tSuite3.setPackageName( "Package2" );
+        tSuite3.setPackageName("Package2");
 
         List<ReportTestSuite> suites = new ArrayList<>();
 
-        suites.add( tSuite1 );
+        suites.add(tSuite1);
 
-        suites.add( tSuite2 );
+        suites.add(tSuite2);
 
-        suites.add( tSuite3 );
+        suites.add(tSuite3);
 
-        SurefireReportParser report = new SurefireReportParser( null, ENGLISH, new NullConsoleLogger() );
+        SurefireReportParser report = new SurefireReportParser(null, ENGLISH, new NullConsoleLogger());
 
-        Map<String, List<ReportTestSuite>> groupMap = report.getSuitesGroupByPackage( suites );
+        Map<String, List<ReportTestSuite>> groupMap = report.getSuitesGroupByPackage(suites);
 
-        assertEquals( 2, groupMap.size() );
+        assertEquals(2, groupMap.size());
 
-        assertEquals( tSuite1, groupMap.get( "Package1" ).get( 0 ) );
+        assertEquals(tSuite1, groupMap.get("Package1").get(0));
 
-        assertEquals( tSuite2, groupMap.get( "Package1" ).get( 1 ) );
+        assertEquals(tSuite2, groupMap.get("Package1").get(1));
 
-        assertEquals( tSuite3, groupMap.get( "Package2" ).get( 0 ) );
+        assertEquals(tSuite3, groupMap.get("Package2").get(0));
     }
 
-    public void testComputePercentage()
-        throws Exception
-    {
-        SurefireReportParser report = new SurefireReportParser( null, ENGLISH, new NullConsoleLogger() );
+    public void testComputePercentage() throws Exception {
+        SurefireReportParser report = new SurefireReportParser(null, ENGLISH, new NullConsoleLogger());
         NumberFormat numberFormat = report.getNumberFormat();
 
-        assertEquals( 70.00f, numberFormat.parse( report.computePercentage( 100, 20, 10, 0 ) ).floatValue(), 0 );
+        assertEquals(
+                70.00f,
+                numberFormat.parse(report.computePercentage(100, 20, 10, 0)).floatValue(),
+                0);
     }
 
-    public void testGetFailureDetails()
-    {
+    public void testGetFailureDetails() {
         ReportTestSuite tSuite1 = new ReportTestSuite();
 
         ReportTestSuite tSuite2 = new ReportTestSuite();
@@ -166,38 +173,38 @@ public class SurefireReportParserTest
 
         ReportTestCase tCase3 = new ReportTestCase();
 
-        tCase1.setFailure( null, IllegalArgumentException.class.getName() );
+        tCase1.setFailure(null, IllegalArgumentException.class.getName());
 
-        tCase3.setFailure( "index: 0, size: 0", IndexOutOfBoundsException.class.getName() );
+        tCase3.setFailure("index: 0, size: 0", IndexOutOfBoundsException.class.getName());
 
         List<ReportTestCase> tCases = new ArrayList<>();
 
         List<ReportTestCase> tCases2 = new ArrayList<>();
 
-        tCases.add( tCase1 );
+        tCases.add(tCase1);
 
-        tCases.add( tCase2 );
+        tCases.add(tCase2);
 
-        tCases2.add( tCase3 );
+        tCases2.add(tCase3);
 
-        tSuite1.setTestCases( tCases );
+        tSuite1.setTestCases(tCases);
 
-        tSuite2.setTestCases( tCases2 );
+        tSuite2.setTestCases(tCases2);
 
         List<ReportTestSuite> suites = new ArrayList<>();
 
-        suites.add( tSuite1 );
+        suites.add(tSuite1);
 
-        suites.add( tSuite2 );
+        suites.add(tSuite2);
 
-        SurefireReportParser report = new SurefireReportParser( null, ENGLISH, new NullConsoleLogger() );
+        SurefireReportParser report = new SurefireReportParser(null, ENGLISH, new NullConsoleLogger());
 
-        List<ReportTestCase> failures = report.getFailureDetails( suites );
+        List<ReportTestCase> failures = report.getFailureDetails(suites);
 
-        assertEquals( 2, failures.size() );
+        assertEquals(2, failures.size());
 
-        assertEquals( tCase1, failures.get( 0 ) );
+        assertEquals(tCase1, failures.get(0));
 
-        assertEquals( tCase3, failures.get( 1 ) );
+        assertEquals(tCase3, failures.get(1));
     }
 }

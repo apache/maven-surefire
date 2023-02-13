@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,15 +16,16 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.surefire.api.booter.Command;
-import org.apache.maven.surefire.api.booter.Shutdown;
+package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
 
 import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.maven.surefire.api.booter.Command;
+import org.apache.maven.surefire.api.booter.Shutdown;
 
 import static org.apache.maven.surefire.api.booter.Command.BYE_ACK;
 import static org.apache.maven.surefire.api.booter.Command.NOOP;
@@ -46,10 +45,8 @@ import static org.apache.maven.surefire.api.booter.Command.toShutdown;
  * @author Andreas Gudian
  * @author Tibor Digana (tibor17)
  */
-public final class TestProvidingInputStream
-        extends DefaultCommandReader
-{
-    private final Semaphore barrier = new Semaphore( 0 );
+public final class TestProvidingInputStream extends DefaultCommandReader {
+    private final Semaphore barrier = new Semaphore(0);
 
     private final Queue<Command> commands = new ConcurrentLinkedQueue<>();
 
@@ -62,88 +59,70 @@ public final class TestProvidingInputStream
      *
      * @param testClassNames source of the tests to be read from this stream
      */
-    public TestProvidingInputStream( Queue<String> testClassNames )
-    {
+    public TestProvidingInputStream(Queue<String> testClassNames) {
         this.testClassNames = testClassNames;
     }
 
     /**
      * For testing purposes.
      */
-    void testSetFinished()
-    {
-        if ( canContinue() )
-        {
-            commands.add( TEST_SET_FINISHED );
+    void testSetFinished() {
+        if (canContinue()) {
+            commands.add(TEST_SET_FINISHED);
             barrier.release();
         }
     }
 
     @Override
-    public void skipSinceNextTest()
-    {
-        if ( canContinue() )
-        {
-            commands.add( SKIP_SINCE_NEXT_TEST );
+    public void skipSinceNextTest() {
+        if (canContinue()) {
+            commands.add(SKIP_SINCE_NEXT_TEST);
             barrier.release();
         }
     }
 
     @Override
-    public void shutdown( Shutdown shutdownType )
-    {
-        if ( canContinue() )
-        {
-            commands.add( toShutdown( shutdownType ) );
+    public void shutdown(Shutdown shutdownType) {
+        if (canContinue()) {
+            commands.add(toShutdown(shutdownType));
             barrier.release();
         }
     }
 
     @Override
-    public void noop()
-    {
-        if ( canContinue() )
-        {
-            commands.add( NOOP );
+    public void noop() {
+        if (canContinue()) {
+            commands.add(NOOP);
             barrier.release();
         }
     }
 
     @Override
-    public void acknowledgeByeEventReceived()
-    {
-        if ( canContinue() )
-        {
-            commands.add( BYE_ACK );
+    public void acknowledgeByeEventReceived() {
+        if (canContinue()) {
+            commands.add(BYE_ACK);
             barrier.release();
         }
     }
 
     @Override
-    protected Command nextCommand()
-    {
+    protected Command nextCommand() {
         Command cmd = commands.poll();
-        if ( cmd == null )
-        {
+        if (cmd == null) {
             String cmdData = testClassNames.poll();
-            return cmdData == null ? TEST_SET_FINISHED : toRunClass( cmdData );
-        }
-        else
-        {
+            return cmdData == null ? TEST_SET_FINISHED : toRunClass(cmdData);
+        } else {
             return cmd;
         }
     }
 
     @Override
-    protected void beforeNextCommand()
-        throws IOException
-    {
+    protected void beforeNextCommand() throws IOException {
         awaitNextTest();
     }
 
     @Override
-    public boolean isClosed()
-    {
+    public boolean isClosed() {
         return closed.get();
     }
 
@@ -151,34 +130,25 @@ public final class TestProvidingInputStream
      * Signal that a new test is to be provided.
      */
     @Override
-    public void provideNewTest()
-    {
-        if ( canContinue() )
-        {
+    public void provideNewTest() {
+        if (canContinue()) {
             barrier.release();
         }
     }
 
     @Override
-    public void close()
-    {
-        if ( closed.compareAndSet( false, true ) )
-        {
+    public void close() {
+        if (closed.compareAndSet(false, true)) {
             barrier.drainPermits();
             barrier.release();
         }
     }
 
-    private void awaitNextTest()
-        throws IOException
-    {
-        try
-        {
+    private void awaitNextTest() throws IOException {
+        try {
             barrier.acquire();
-        }
-        catch ( InterruptedException e )
-        {
-            throw new IOException( e.getLocalizedMessage(), e );
+        } catch (InterruptedException e) {
+            throw new IOException(e.getLocalizedMessage(), e);
         }
     }
 }

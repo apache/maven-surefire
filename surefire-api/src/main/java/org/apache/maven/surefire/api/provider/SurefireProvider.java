@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.provider;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.provider;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,8 +16,10 @@ package org.apache.maven.surefire.api.provider;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.api.provider;
 
 import java.lang.reflect.InvocationTargetException;
+
 import org.apache.maven.surefire.api.report.ReporterException;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
@@ -41,8 +41,7 @@ import org.apache.maven.surefire.api.testset.TestSetFailedException;
  *
  * @author Kristian Rosenvold
  */
-public interface SurefireProvider
-{
+public interface SurefireProvider {
     /**
      * Determines the number of forks.
      * <br>
@@ -66,9 +65,8 @@ public interface SurefireProvider
      *          When testset fails
      * @throws InvocationTargetException fails in {@code ProviderFactory}
      */
-    @SuppressWarnings( "checkstyle:redundantthrows" )
-    RunResult invoke( Object forkTestSet )
-        throws TestSetFailedException, ReporterException, InvocationTargetException;
+    @SuppressWarnings("checkstyle:redundantthrows")
+    RunResult invoke(Object forkTestSet) throws TestSetFailedException, ReporterException, InvocationTargetException;
 
     /**
      * Makes an attempt at cancelling the current run, giving the provider a chance to notify

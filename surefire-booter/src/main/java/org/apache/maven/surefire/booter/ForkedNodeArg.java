@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.booter;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.booter;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,26 +16,26 @@ package org.apache.maven.surefire.booter;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.booter;
+
+import javax.annotation.Nonnull;
+
+import java.io.File;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.surefire.api.booter.DumpErrorSingleton;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 
-import javax.annotation.Nonnull;
-import java.io.File;
-
 /**
  *
  */
-public final class ForkedNodeArg implements ForkNodeArguments
-{
+public final class ForkedNodeArg implements ForkNodeArguments {
     private final int forkChannelId;
     private final ConsoleLogger logger;
     private final boolean isDebug;
 
-    public ForkedNodeArg( int forkChannelId, boolean isDebug )
-    {
+    public ForkedNodeArg(int forkChannelId, boolean isDebug) {
         this.forkChannelId = forkChannelId;
         logger = new NullConsoleLogger();
         this.isDebug = isDebug;
@@ -45,60 +43,51 @@ public final class ForkedNodeArg implements ForkNodeArguments
 
     @Nonnull
     @Override
-    public String getSessionId()
-    {
+    public String getSessionId() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public int getForkChannelId()
-    {
+    public int getForkChannelId() {
         return forkChannelId;
     }
 
     @Override
     @Nonnull
-    public File dumpStreamText( @Nonnull String text )
-    {
-        return DumpErrorSingleton.getSingleton().dumpStreamText( text );
+    public File dumpStreamText(@Nonnull String text) {
+        return DumpErrorSingleton.getSingleton().dumpStreamText(text);
     }
 
     @Nonnull
     @Override
-    public File dumpStreamException( @Nonnull Throwable t )
-    {
-        return DumpErrorSingleton.getSingleton().dumpStreamException( t, t.getLocalizedMessage() );
+    public File dumpStreamException(@Nonnull Throwable t) {
+        return DumpErrorSingleton.getSingleton().dumpStreamException(t, t.getLocalizedMessage());
     }
 
     @Override
-    public void logWarningAtEnd( @Nonnull String text )
-    {
+    public void logWarningAtEnd(@Nonnull String text) {
         // do nothing - the log message of forked VM already goes to the dump file
     }
 
     @Nonnull
     @Override
-    public ConsoleLogger getConsoleLogger()
-    {
+    public ConsoleLogger getConsoleLogger() {
         return logger;
     }
 
     @Nonnull
     @Override
-    public Object getConsoleLock()
-    {
+    public Object getConsoleLock() {
         return logger;
     }
 
     @Override
-    public File getEventStreamBinaryFile()
-    {
+    public File getEventStreamBinaryFile() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public File getCommandStreamBinaryFile()
-    {
+    public File getCommandStreamBinaryFile() {
         return isDebug ? DumpErrorSingleton.getSingleton().getCommandStreamBinaryFile() : null;
     }
 }

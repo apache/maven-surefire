@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.group.match;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.group.match;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.group.match;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.group.match;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,29 +25,22 @@ import java.util.Set;
  * Joins several group matchers
  *
  */
-public abstract class JoinGroupMatcher
-    implements GroupMatcher
-{
+public abstract class JoinGroupMatcher implements GroupMatcher {
 
     Set<GroupMatcher> matchers = new HashSet<>();
 
-    public final boolean addMatcher( GroupMatcher matcher )
-    {
-        return matchers.add( matcher );
+    public final boolean addMatcher(GroupMatcher matcher) {
+        return matchers.add(matcher);
     }
 
-    protected final Set<GroupMatcher> getMatchers()
-    {
+    protected final Set<GroupMatcher> getMatchers() {
         return matchers;
     }
 
     @Override
-    public void loadGroupClasses( ClassLoader cloader )
-    {
-        for ( GroupMatcher matcher : matchers )
-        {
-            matcher.loadGroupClasses( cloader );
+    public void loadGroupClasses(ClassLoader cloader) {
+        for (GroupMatcher matcher : matchers) {
+            matcher.loadGroupClasses(cloader);
         }
     }
-
 }

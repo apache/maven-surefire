@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.booter;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.booter;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.booter;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.booter;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -41,9 +40,7 @@ import static org.apache.maven.surefire.api.util.ReflectionUtils.loadClass;
  * @author Andreas Gudian
  * @author Tibor Digana
  */
-final class LazyTestsToRun
-    extends TestsToRun
-{
+final class LazyTestsToRun extends TestsToRun {
     private final MasterProcessChannelEncoder eventChannel;
     private final CommandReader commandReader;
 
@@ -52,33 +49,28 @@ final class LazyTestsToRun
      *
      * @param eventChannel the output stream to use when requesting new new tests
      */
-    LazyTestsToRun( MasterProcessChannelEncoder eventChannel, CommandReader commandReader )
-    {
-        super( Collections.<Class<?>>emptySet() );
+    LazyTestsToRun(MasterProcessChannelEncoder eventChannel, CommandReader commandReader) {
+        super(Collections.<Class<?>>emptySet());
         this.eventChannel = eventChannel;
         this.commandReader = commandReader;
     }
 
-    private final class BlockingIterator
-        implements Iterator<Class<?>>
-    {
-        private final Iterator<String> it = commandReader.getIterableClasses( eventChannel ).iterator();
+    private final class BlockingIterator implements Iterator<Class<?>> {
+        private final Iterator<String> it =
+                commandReader.getIterableClasses(eventChannel).iterator();
 
         @Override
-        public boolean hasNext()
-        {
+        public boolean hasNext() {
             return it.hasNext();
         }
 
         @Override
-        public Class<?> next()
-        {
-            return findClass( it.next() );
+        public Class<?> next() {
+            return findClass(it.next());
         }
 
         @Override
-        public void remove()
-        {
+        public void remove() {
             throw new UnsupportedOperationException();
         }
     }
@@ -87,8 +79,7 @@ final class LazyTestsToRun
      * @return test classes which have been retrieved by {@link LazyTestsToRun#iterator()}.
      */
     @Override
-    public Iterator<Class<?>> iterated()
-    {
+    public Iterator<Class<?>> iterated() {
         return newWeakIterator();
     }
 
@@ -98,18 +89,16 @@ final class LazyTestsToRun
      * @see TestsToRun#iterator()
      * */
     @Override
-    public Iterator<Class<?>> iterator()
-    {
+    public Iterator<Class<?>> iterator() {
         return new BlockingIterator();
     }
 
     /* (non-Javadoc)
      * {@inheritDoc}
-      * @see org.apache.maven.surefire.util.TestsToRun#toString()
-      */
+     * @see org.apache.maven.surefire.util.TestsToRun#toString()
+     */
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "LazyTestsToRun";
     }
 
@@ -118,52 +107,42 @@ final class LazyTestsToRun
      * @see org.apache.maven.surefire.util.TestsToRun#allowEagerReading()
      */
     @Override
-    public boolean allowEagerReading()
-    {
+    public boolean allowEagerReading() {
         return false;
     }
 
-    private static Class<?> findClass( String clazz )
-    {
-        return loadClass( Thread.currentThread().getContextClassLoader(), clazz );
+    private static Class<?> findClass(String clazz) {
+        return loadClass(Thread.currentThread().getContextClassLoader(), clazz);
     }
 
     /**
      * @return snapshot of tests upon constructs of {@link CommandReader#iterated() iterator}.
      * Therefore weakly consistent while {@link LazyTestsToRun#iterator()} is being iterated.
      */
-    private Iterator<Class<?>> newWeakIterator()
-    {
+    private Iterator<Class<?>> newWeakIterator() {
         final Iterator<String> it = commandReader.iterated();
-        return new CloseableIterator<Class<?>>()
-        {
+        return new CloseableIterator<Class<?>>() {
             @Override
-            protected boolean isClosed()
-            {
+            protected boolean isClosed() {
                 return LazyTestsToRun.this.isFinished();
             }
 
             @Override
-            protected boolean doHasNext()
-            {
+            protected boolean doHasNext() {
                 return it.hasNext();
             }
 
             @Override
-            protected Class<?> doNext()
-            {
-                return findClass( it.next() );
+            protected Class<?> doNext() {
+                return findClass(it.next());
             }
 
             @Override
-            protected void doRemove()
-            {
-            }
+            protected void doRemove() {}
 
             @Override
-            public void remove()
-            {
-                throw new UnsupportedOperationException( "unsupported remove" );
+            public void remove() {
+                throw new UnsupportedOperationException("unsupported remove");
             }
         };
     }

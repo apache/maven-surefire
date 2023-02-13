@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.util;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.util;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire.util;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.util;
 
 import org.junit.Test;
 
@@ -26,30 +25,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Unit test for {@link ScannerUtil}
  */
-public class ScannerUtilTest
-{
+public class ScannerUtilTest {
 
     @Test
-    public void shouldConvertJarFileResourceToJavaClassName()
-    {
-        String className = ScannerUtil.convertJarFileResourceToJavaClassName( "org/apache/pkg/MyService.class" );
+    public void shouldConvertJarFileResourceToJavaClassName() {
+        String className = ScannerUtil.convertJarFileResourceToJavaClassName("org/apache/pkg/MyService.class");
 
-        assertThat( className )
-                .isEqualTo( "org.apache.pkg.MyService" );
+        assertThat(className).isEqualTo("org.apache.pkg.MyService");
 
-        className = ScannerUtil.convertJarFileResourceToJavaClassName( "META-INF/MANIFEST.MF" );
+        className = ScannerUtil.convertJarFileResourceToJavaClassName("META-INF/MANIFEST.MF");
 
-        assertThat( className )
-                .isEqualTo( "META-INF.MANIFEST.MF" );
+        assertThat(className).isEqualTo("META-INF.MANIFEST.MF");
     }
 
     @Test
-    public void shouldBeClassFile()
-    {
-        assertThat( ScannerUtil.isJavaClassFile( "META-INF/MANIFEST.MF" ) )
-                .isFalse();
+    public void shouldBeClassFile() {
+        assertThat(ScannerUtil.isJavaClassFile("META-INF/MANIFEST.MF")).isFalse();
 
-        assertThat( ScannerUtil.isJavaClassFile( "org/apache/pkg/MyService.class" ) )
+        assertThat(ScannerUtil.isJavaClassFile("org/apache/pkg/MyService.class"))
                 .isTrue();
     }
 }

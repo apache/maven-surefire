@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.extensions;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.extensions;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,19 +16,20 @@ package org.apache.maven.plugin.surefire.extensions;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.extensions;
+
+import java.io.File;
+import java.nio.charset.Charset;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.ConsoleReporter;
 import org.apache.maven.plugin.surefire.report.FileReporter;
 import org.apache.maven.plugin.surefire.report.TestSetStats;
 import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
+import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoReporter;
-import org.apache.maven.surefire.api.util.ReflectionUtils;
-
-import java.io.File;
-import java.nio.charset.Charset;
 
 /**
  * Default implementation for extension of
@@ -44,44 +43,35 @@ import java.nio.charset.Charset;
  * @since 3.0.0-M4
  */
 public class SurefireStatelessTestsetInfoReporter
-        extends StatelessTestsetInfoReporter<WrappedReportEntry, TestSetStats>
-{
+        extends StatelessTestsetInfoReporter<WrappedReportEntry, TestSetStats> {
     @Override
     public StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats> createListener(
-            ConsoleLogger logger )
-    {
-        return new ConsoleReporter( logger, false, false );
+            ConsoleLogger logger) {
+        return new ConsoleReporter(logger, false, false);
     }
 
     @Override
     public StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats> createListener(
-            File reportsDirectory, String reportNameSuffix, Charset encoding )
-    {
-        return new FileReporter( reportsDirectory, reportNameSuffix, encoding, false, false, false );
+            File reportsDirectory, String reportNameSuffix, Charset encoding) {
+        return new FileReporter(reportsDirectory, reportNameSuffix, encoding, false, false, false);
     }
 
     @Override
-    public Object clone( ClassLoader target )
-    {
-        try
-        {
-            Class<?> cls = ReflectionUtils.reloadClass( target, this );
+    public Object clone(ClassLoader target) {
+        try {
+            Class<?> cls = ReflectionUtils.reloadClass(target, this);
             Object clone = cls.newInstance();
 
-            cls.getMethod( "setDisable", boolean.class )
-                    .invoke( clone, isDisable() );
+            cls.getMethod("setDisable", boolean.class).invoke(clone, isDisable());
 
             return clone;
-        }
-        catch ( ReflectiveOperationException e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage() );
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e.getLocalizedMessage());
         }
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "SurefireStatelessTestsetInfoReporter{disable=" + isDisable() + "}";
     }
 }

@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
 
 import org.apache.maven.surefire.api.booter.Shutdown;
 
@@ -34,8 +33,7 @@ import org.apache.maven.surefire.api.booter.Shutdown;
  * @see TestProvidingInputStream
  * @see TestLessInputStream
  */
-public interface NotifiableTestStream
-{
+public interface NotifiableTestStream {
     /**
      * Forked jvm notifies master process to provide a new test.
      * <br>
@@ -50,7 +48,7 @@ public interface NotifiableTestStream
      */
     void skipSinceNextTest();
 
-    void shutdown( Shutdown shutdownType );
+    void shutdown(Shutdown shutdownType);
 
     void noop();
 

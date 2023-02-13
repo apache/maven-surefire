@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.util;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.util;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,11 +16,7 @@ package org.apache.maven.surefire.api.util;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-import junit.framework.TestCase;
-import org.junit.Test;
+package org.apache.maven.surefire.api.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,33 +26,33 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Set;
 
+import junit.framework.TestCase;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * Unit test for the surefire instance of temp file manager.
  *
  * @author Markus Spann
  */
-public class SureFireFileManagerTest extends TestCase
-{
+public class SureFireFileManagerTest extends TestCase {
 
     @Test
-    public void testCreateTempFile() throws IOException
-    {
+    public void testCreateTempFile() throws IOException {
 
-        File tempFile = SureFireFileManager.createTempFile( "sfprefix", "sfsuffix" );
-        assertThat( tempFile ).isWritable();
-        assertThat( tempFile.getName() ).startsWith( "sfprefix" ).endsWith( "sfsuffix" );
+        File tempFile = SureFireFileManager.createTempFile("sfprefix", "sfsuffix");
+        assertThat(tempFile).isWritable();
+        assertThat(tempFile.getName()).startsWith("sfprefix").endsWith("sfsuffix");
 
         File tempDir = tempFile.getParentFile();
-        assertThat( tempDir ).isDirectory().isWritable();
-        assertThat( tempDir.getName() ).startsWith( "surefire-" ).doesNotMatch( "[^A-Za-z0-9\\\\-_]" );
+        assertThat(tempDir).isDirectory().isWritable();
+        assertThat(tempDir.getName()).startsWith("surefire-").doesNotMatch("[^A-Za-z0-9\\\\-_]");
 
-        boolean isPosix = FileSystems.getDefault().supportedFileAttributeViews().contains( "posix" );
-        if ( isPosix )
-        {
-            Set<PosixFilePermission> permissions = Files.getPosixFilePermissions( tempDir.toPath() );
-            assertEquals( "rwxrwxr-x", PosixFilePermissions.toString( permissions ) );
+        boolean isPosix = FileSystems.getDefault().supportedFileAttributeViews().contains("posix");
+        if (isPosix) {
+            Set<PosixFilePermission> permissions = Files.getPosixFilePermissions(tempDir.toPath());
+            assertEquals("rwxrwxr-x", PosixFilePermissions.toString(permissions));
         }
-
     }
-
 }

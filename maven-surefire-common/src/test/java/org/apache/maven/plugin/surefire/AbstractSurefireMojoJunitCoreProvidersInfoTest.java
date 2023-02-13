@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,9 +35,8 @@ import static org.mockito.Mockito.when;
 /**
  * Testing JUnitCoreProviderInfo applicable behavior.
  */
-@RunWith( Parameterized.class )
-public class AbstractSurefireMojoJunitCoreProvidersInfoTest
-{
+@RunWith(Parameterized.class)
+public class AbstractSurefireMojoJunitCoreProvidersInfoTest {
     private final Artifact junitArtifact;
     private final Artifact junitDepArtifact;
     private final boolean isParallel;
@@ -46,12 +44,9 @@ public class AbstractSurefireMojoJunitCoreProvidersInfoTest
 
     private final boolean isApplicable;
 
-
-    @Parameterized.Parameters(
-        name = "{index}: junit={0}, junitDep={1}, parallel={2}, groups={3} then isApplicable={4}" )
-    public static Collection<Object[]> data()
-    {
-        return Arrays.asList( new Object[][] {
+    @Parameterized.Parameters(name = "{index}: junit={0}, junitDep={1}, parallel={2}, groups={3} then isApplicable={4}")
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
             // junit and junitDep are null
             {null, null, false, false, false},
             {null, null, true, false, false},
@@ -83,35 +78,31 @@ public class AbstractSurefireMojoJunitCoreProvidersInfoTest
             // with groups
             {null, "4.5", false, true, false},
             {null, "4.7", false, true, true}
-        } );
+        });
     }
 
-    public AbstractSurefireMojoJunitCoreProvidersInfoTest( String junitVersion, String junitDepVersion,
-                                                           boolean isParallel, boolean hasGroups,
-                                                           boolean isApplicable )
-    {
-        this.junitArtifact = junitVersion != null ? aArtifact( junitVersion ) : null;
-        this.junitDepArtifact = junitDepVersion != null ? aArtifact( junitDepVersion ) : null;
+    public AbstractSurefireMojoJunitCoreProvidersInfoTest(
+            String junitVersion, String junitDepVersion, boolean isParallel, boolean hasGroups, boolean isApplicable) {
+        this.junitArtifact = junitVersion != null ? aArtifact(junitVersion) : null;
+        this.junitDepArtifact = junitDepVersion != null ? aArtifact(junitDepVersion) : null;
         this.isParallel = isParallel;
         this.hasGroups = hasGroups;
         this.isApplicable = isApplicable;
     }
 
-    private Artifact aArtifact( String version )
-    {
-        return new DefaultArtifact( "test", "test", version, "test", "jar", "", null );
+    private Artifact aArtifact(String version) {
+        return new DefaultArtifact("test", "test", version, "test", "jar", "", null);
     }
 
     @Test
-    public void test()
-    {
-        AbstractSurefireMojo mojo = spy( AbstractSurefireMojo.class );
+    public void test() {
+        AbstractSurefireMojo mojo = spy(AbstractSurefireMojo.class);
 
-        when( mojo.isAnyConcurrencySelected() ).thenReturn( isParallel );
-        when( mojo.isAnyGroupsSelected() ).thenReturn( hasGroups );
+        when(mojo.isAnyConcurrencySelected()).thenReturn(isParallel);
+        when(mojo.isAnyGroupsSelected()).thenReturn(hasGroups);
 
-        ProviderInfo providerInfo = mojo.new JUnitCoreProviderInfo( junitArtifact, junitDepArtifact );
+        ProviderInfo providerInfo = mojo.new JUnitCoreProviderInfo(junitArtifact, junitDepArtifact);
 
-        assertThat( providerInfo.isApplicable() ).isEqualTo( isApplicable );
+        assertThat(providerInfo.isApplicable()).isEqualTo(isApplicable);
     }
 }

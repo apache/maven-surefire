@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,10 +16,11 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.surefire.extensions.CommandReader;
+package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
 
 import java.io.Closeable;
+
+import org.apache.maven.surefire.extensions.CommandReader;
 
 /**
  * Stream reader returns bytes which are finally sent to the forked jvm std-input-stream.
@@ -31,7 +30,4 @@ import java.io.Closeable;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  */
-public abstract class AbstractCommandReader
-        implements CommandReader, NotifiableTestStream, Closeable
-{
-}
+public abstract class AbstractCommandReader implements CommandReader, NotifiableTestStream, Closeable {}

@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.extensions;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.extensions;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,15 +16,16 @@ package org.apache.maven.plugin.surefire.extensions;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
-import org.apache.maven.plugin.surefire.report.DirectConsoleOutput;
-import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
-import org.apache.maven.surefire.extensions.ConsoleOutputReporter;
-import org.apache.maven.surefire.api.util.ReflectionUtils;
+package org.apache.maven.plugin.surefire.extensions;
 
 import java.io.File;
 import java.io.PrintStream;
+
+import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
+import org.apache.maven.plugin.surefire.report.DirectConsoleOutput;
+import org.apache.maven.surefire.api.util.ReflectionUtils;
+import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
+import org.apache.maven.surefire.extensions.ConsoleOutputReporter;
 
 /**
  * Default implementation for extension of console logger.
@@ -38,49 +37,35 @@ import java.io.PrintStream;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M4
  */
-public class SurefireConsoleOutputReporter
-        extends ConsoleOutputReporter
-{
+public class SurefireConsoleOutputReporter extends ConsoleOutputReporter {
     @Override
-    public ConsoleOutputReportEventListener createListener( File reportsDirectory, String reportNameSuffix,
-                                                            Integer forkNumber )
-    {
-        return new ConsoleOutputFileReporter( reportsDirectory, reportNameSuffix, false, forkNumber, getEncoding() );
+    public ConsoleOutputReportEventListener createListener(
+            File reportsDirectory, String reportNameSuffix, Integer forkNumber) {
+        return new ConsoleOutputFileReporter(reportsDirectory, reportNameSuffix, false, forkNumber, getEncoding());
     }
 
     @Override
-    public ConsoleOutputReportEventListener createListener( PrintStream out, PrintStream err )
-    {
-        return new DirectConsoleOutput( out, err );
+    public ConsoleOutputReportEventListener createListener(PrintStream out, PrintStream err) {
+        return new DirectConsoleOutput(out, err);
     }
 
     @Override
-    public Object clone( ClassLoader target )
-    {
-        try
-        {
-            Class<?> cls = ReflectionUtils.reloadClass( target, this );
+    public Object clone(ClassLoader target) {
+        try {
+            Class<?> cls = ReflectionUtils.reloadClass(target, this);
             Object clone = cls.newInstance();
 
-            cls.getMethod( "setDisable", boolean.class )
-                    .invoke( clone, isDisable() );
-            cls.getMethod( "setEncoding", String.class )
-                    .invoke( clone, getEncoding() );
+            cls.getMethod("setDisable", boolean.class).invoke(clone, isDisable());
+            cls.getMethod("setEncoding", String.class).invoke(clone, getEncoding());
 
             return clone;
-        }
-        catch ( ReflectiveOperationException e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage() );
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e.getLocalizedMessage());
         }
     }
 
     @Override
-    public String toString()
-    {
-        return "SurefireConsoleOutputReporter{"
-                + "disable=" + isDisable()
-                + ", encoding=" + getEncoding()
-                + '}';
+    public String toString() {
+        return "SurefireConsoleOutputReporter{" + "disable=" + isDisable() + ", encoding=" + getEncoding() + '}';
     }
 }

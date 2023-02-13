@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.group.match;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.group.match;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.group.match;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.group.match;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -26,32 +25,25 @@ import java.util.regex.PatternSyntaxException;
  * Single group matcher
  *
  */
-public class SingleGroupMatcher
-    implements GroupMatcher
-{
+public class SingleGroupMatcher implements GroupMatcher {
     private final String enabled;
     private final Pattern pattern;
 
     private Class<?> enabledClass;
 
-    public SingleGroupMatcher( String enabled )
-    {
-        this.enabled = enabled.endsWith( ".class" ) ? enabled.substring( 0, enabled.length() - 6 ) : enabled;
+    public SingleGroupMatcher(String enabled) {
+        this.enabled = enabled.endsWith(".class") ? enabled.substring(0, enabled.length() - 6) : enabled;
         Pattern p;
-        try
-        {
-            p = Pattern.compile( enabled );
-        }
-        catch ( PatternSyntaxException e )
-        {
+        try {
+            p = Pattern.compile(enabled);
+        } catch (PatternSyntaxException e) {
             p = null;
         }
         pattern = p;
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + enabled.hashCode();
@@ -59,45 +51,35 @@ public class SingleGroupMatcher
     }
 
     @Override
-    public boolean equals( Object obj )
-    {
-        if ( this == obj )
-        {
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
-        if ( obj == null )
-        {
+        if (obj == null) {
             return false;
         }
-        if ( getClass() != obj.getClass() )
-        {
+        if (getClass() != obj.getClass()) {
             return false;
         }
         SingleGroupMatcher other = (SingleGroupMatcher) obj;
-        return enabled.equals( other.enabled );
+        return enabled.equals(other.enabled);
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "*" + enabled;
     }
 
     @Override
-    public boolean enabled( Class<?>... cats )
-    {
-        if ( cats != null )
-        {
-            for ( Class<?> cls : cats )
-            {
-                if ( enabledClass != null && enabledClass.isAssignableFrom( cls ) )
-                {
+    public boolean enabled(Class<?>... cats) {
+        if (cats != null) {
+            for (Class<?> cls : cats) {
+                if (enabledClass != null && enabledClass.isAssignableFrom(cls)) {
                     return true;
                 }
 
                 String name = cls.getName();
-                if ( name.endsWith( enabled ) )
-                {
+                if (name.endsWith(enabled)) {
                     return true;
                 }
             }
@@ -107,22 +89,17 @@ public class SingleGroupMatcher
     }
 
     @Override
-    public boolean enabled( String... cats )
-    {
-        for ( String cat : cats )
-        {
-            if ( cat == null || cat.trim().isEmpty() )
-            {
+    public boolean enabled(String... cats) {
+        for (String cat : cats) {
+            if (cat == null || cat.trim().isEmpty()) {
                 continue;
             }
 
-            if ( cat.equals( enabled ) )
-            {
+            if (cat.equals(enabled)) {
                 return true;
             }
 
-            if ( pattern != null && pattern.matcher( cat ).matches() )
-            {
+            if (pattern != null && pattern.matcher(cat).matches()) {
                 return true;
             }
         }
@@ -131,18 +108,14 @@ public class SingleGroupMatcher
     }
 
     @Override
-    public void loadGroupClasses( ClassLoader classLoader )
-    {
-        try
-        {
-            enabledClass = classLoader.loadClass( enabled );
-        }
-        catch ( ClassNotFoundException e )
-        {
+    public void loadGroupClasses(ClassLoader classLoader) {
+        try {
+            enabledClass = classLoader.loadClass(enabled);
+        } catch (ClassNotFoundException e) {
             // class is not available at runtime, for instance this would happen in reactor projects
             // in which not all modules have the required class on the classpath/module path
-            System.out.println( "[WARNING] Couldn't load group class '" + enabled + "' in Surefire|Failsafe plugin. "
-                    + "The group class is ignored!" );
+            System.out.println("[WARNING] Couldn't load group class '" + enabled + "' in Surefire|Failsafe plugin. "
+                    + "The group class is ignored!");
         }
     }
 }

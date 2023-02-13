@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.booterclient;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.booterclient;
 
 import org.junit.Test;
 
@@ -26,13 +25,11 @@ import static org.junit.Assert.assertEquals;
 /**
  * Tests for {@link ChecksumCalculator}.
  */
-public class ChecksumCalculatorTest
-{
+public class ChecksumCalculatorTest {
     @Test
-    public void testGetSha1()
-    {
+    public void testGetSha1() {
         final ChecksumCalculator calculator = new ChecksumCalculator();
-        calculator.add( "foö 🔥 Россия 한국 中国" );
-        assertEquals( "3421557EBE66A4741CA51C8D610AB1AB41D1693B", calculator.getSha1() );
+        calculator.add("foö 🔥 Россия 한국 中国");
+        assertEquals("3421557EBE66A4741CA51C8D610AB1AB41D1693B", calculator.getSha1());
     }
 }

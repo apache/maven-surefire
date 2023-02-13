@@ -1,5 +1,3 @@
-package org.apache.maven.surefire;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire;
 
 import junit.framework.TestCase;
 import org.apache.maven.surefire.api.filter.SpecificTestClassFilter;
@@ -25,37 +24,32 @@ import org.apache.maven.surefire.api.filter.SpecificTestClassFilter;
 /**
  *
  */
-public class SpecificTestClassFilterTest extends TestCase
-{
-    public void testMatchSingleCharacterWildcard()
-    {
+public class SpecificTestClassFilterTest extends TestCase {
+    public void testMatchSingleCharacterWildcard() {
         SpecificTestClassFilter filter = new SpecificTestClassFilter(
-                new String[] {"org/apache/maven/surefire/api/filter/?pecificTestClassFilter.class"} );
+                new String[] {"org/apache/maven/surefire/api/filter/?pecificTestClassFilter.class"});
 
-        assertTrue( filter.accept( SpecificTestClassFilter.class ) );
+        assertTrue(filter.accept(SpecificTestClassFilter.class));
     }
 
-    public void testMatchSingleSegmentWordWildcard()
-    {
+    public void testMatchSingleSegmentWordWildcard() {
         SpecificTestClassFilter filter = new SpecificTestClassFilter(
-                new String[] {"org/apache/maven/surefire/api/filter/*TestClassFilter.class"} );
+                new String[] {"org/apache/maven/surefire/api/filter/*TestClassFilter.class"});
 
-        assertTrue( filter.accept( SpecificTestClassFilter.class ) );
+        assertTrue(filter.accept(SpecificTestClassFilter.class));
     }
 
-    public void testMatchMultiSegmentWildcard()
-    {
-        SpecificTestClassFilter filter = new SpecificTestClassFilter(
-                new String[] {"org/**/SpecificTestClassFilter.class"} );
+    public void testMatchMultiSegmentWildcard() {
+        SpecificTestClassFilter filter =
+                new SpecificTestClassFilter(new String[] {"org/**/SpecificTestClassFilter.class"});
 
-        assertTrue( filter.accept( SpecificTestClassFilter.class ) );
+        assertTrue(filter.accept(SpecificTestClassFilter.class));
     }
 
-    public void testMatchSingleSegmentWildcard()
-    {
+    public void testMatchSingleSegmentWildcard() {
         SpecificTestClassFilter filter = new SpecificTestClassFilter(
-                new String[] {"org/*/maven/surefire/api/filter/SpecificTestClassFilter.class"} );
+                new String[] {"org/*/maven/surefire/api/filter/SpecificTestClassFilter.class"});
 
-        assertTrue( filter.accept( SpecificTestClassFilter.class ) );
+        assertTrue(filter.accept(SpecificTestClassFilter.class));
     }
 }

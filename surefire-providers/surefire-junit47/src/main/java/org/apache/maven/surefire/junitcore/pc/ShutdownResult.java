@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.maven.surefire.junitcore.pc;
 
 /*
@@ -19,10 +37,10 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.junit.runner.Description;
-
 import java.util.Collection;
 import java.util.Collections;
+
+import org.junit.runner.Description;
 
 /**
  * Populates collection {@code triggeredTests} of descriptions started before shutting down.
@@ -33,25 +51,21 @@ import java.util.Collections;
  * @see Scheduler
  * @since 2.18
  */
-public final class ShutdownResult
-{
+public final class ShutdownResult {
     private final Collection<Description> triggeredTests;
 
     private final Collection<Description> incompleteTests;
 
-    public ShutdownResult( Collection<Description> triggeredTests, Collection<Description> incompleteTests )
-    {
+    public ShutdownResult(Collection<Description> triggeredTests, Collection<Description> incompleteTests) {
         this.triggeredTests = triggeredTests == null ? Collections.<Description>emptySet() : triggeredTests;
         this.incompleteTests = incompleteTests == null ? Collections.<Description>emptySet() : incompleteTests;
     }
 
-    public Collection<Description> getTriggeredTests()
-    {
+    public Collection<Description> getTriggeredTests() {
         return triggeredTests;
     }
 
-    public Collection<Description> getIncompleteTests()
-    {
+    public Collection<Description> getIncompleteTests() {
         return incompleteTests;
     }
 }

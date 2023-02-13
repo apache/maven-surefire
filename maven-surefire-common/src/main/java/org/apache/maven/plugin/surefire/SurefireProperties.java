@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,230 +42,183 @@ import static java.util.Map.Entry;
 /**
  * A properties implementation that preserves insertion order.
  */
-public class SurefireProperties
-    extends Properties
-    implements KeyValueSource
-{
+public class SurefireProperties extends Properties implements KeyValueSource {
     private static final Collection<String> KEYS_THAT_CANNOT_BE_USED_AS_SYSTEM_PROPERTIES =
-            asList( "java.library.path", "file.encoding", "jdk.map.althashing.threshold", "line.separator" );
+            asList("java.library.path", "file.encoding", "jdk.map.althashing.threshold", "line.separator");
 
     private final LinkedHashSet<Object> items = new LinkedHashSet<>();
 
-    public SurefireProperties()
-    {
-    }
+    public SurefireProperties() {}
 
-    public SurefireProperties( Properties source )
-    {
-        if ( source != null )
-        {
-            putAll( source );
+    public SurefireProperties(Properties source) {
+        if (source != null) {
+            putAll(source);
         }
     }
 
-    public SurefireProperties( KeyValueSource source )
-    {
-        if ( source != null )
-        {
-            source.copyTo( this );
+    public SurefireProperties(KeyValueSource source) {
+        if (source != null) {
+            source.copyTo(this);
         }
     }
 
     @Override
-    public synchronized void putAll( Map<?, ?> t )
-    {
-        for ( Entry<?, ?> entry : t.entrySet() )
-        {
-            put( entry.getKey(), entry.getValue() );
+    public synchronized void putAll(Map<?, ?> t) {
+        for (Entry<?, ?> entry : t.entrySet()) {
+            put(entry.getKey(), entry.getValue());
         }
     }
 
     @Override
-    public synchronized Object put( Object key, Object value )
-    {
-        items.add( key );
-        return super.put( key, value );
+    public synchronized Object put(Object key, Object value) {
+        items.add(key);
+        return super.put(key, value);
     }
 
     @Override
-    public synchronized Object remove( Object key )
-    {
-        items.remove( key );
-        return super.remove( key );
+    public synchronized Object remove(Object key) {
+        items.remove(key);
+        return super.remove(key);
     }
 
     @Override
-    public synchronized void clear()
-    {
+    public synchronized void clear() {
         items.clear();
         super.clear();
     }
 
     @Override
-    public synchronized Enumeration<Object> keys()
-    {
-        return Collections.enumeration( items );
+    public synchronized Enumeration<Object> keys() {
+        return Collections.enumeration(items);
     }
 
-    public void copyPropertiesFrom( Properties source )
-    {
-        if ( source != null )
-        {
-            putAll( source );
+    public void copyPropertiesFrom(Properties source) {
+        if (source != null) {
+            putAll(source);
         }
     }
 
-    public Iterable<Object> getStringKeySet()
-    {
+    public Iterable<Object> getStringKeySet() {
         return keySet();
     }
 
-    public Set<Object> propertiesThatCannotBeSetASystemProperties()
-    {
+    public Set<Object> propertiesThatCannotBeSetASystemProperties() {
         Set<Object> result = new HashSet<>();
-        for ( Object key : getStringKeySet() )
-        {
+        for (Object key : getStringKeySet()) {
             //noinspection SuspiciousMethodCalls
-            if ( KEYS_THAT_CANNOT_BE_USED_AS_SYSTEM_PROPERTIES.contains( key ) )
-            {
-                result.add( key );
+            if (KEYS_THAT_CANNOT_BE_USED_AS_SYSTEM_PROPERTIES.contains(key)) {
+                result.add(key);
             }
         }
         return result;
     }
 
-    public void copyToSystemProperties()
-    {
-        for ( Object o : items )
-        {
+    public void copyToSystemProperties() {
+        for (Object o : items) {
             String key = (String) o;
-            String value = getProperty( key );
-            System.setProperty( key, value );
+            String value = getProperty(key);
+            System.setProperty(key, value);
         }
     }
 
-    static SurefireProperties calculateEffectiveProperties( Properties systemProperties,
-                                                            Map<String, String> systemPropertyVariables,
-                                                            Properties userProperties, SurefireProperties props )
-    {
+    static SurefireProperties calculateEffectiveProperties(
+            Properties systemProperties,
+            Map<String, String> systemPropertyVariables,
+            Properties userProperties,
+            SurefireProperties props) {
         SurefireProperties result = new SurefireProperties();
-        result.copyPropertiesFrom( systemProperties );
+        result.copyPropertiesFrom(systemProperties);
 
-        result.copyPropertiesFrom( props );
+        result.copyPropertiesFrom(props);
 
-        copyProperties( result, systemPropertyVariables );
+        copyProperties(result, systemPropertyVariables);
 
         // We used to take all of our system properties and dump them in with the
         // user specified properties for SUREFIRE-121, causing SUREFIRE-491.
         // Not gonna do THAT any more... instead, we only propagate those system properties
         // that have been explicitly specified by the user via -Dkey=value on the CLI
 
-        result.copyPropertiesFrom( userProperties );
+        result.copyPropertiesFrom(userProperties);
         return result;
     }
 
-    private static void copyProperties( Properties target, Map<String, String> source )
-    {
-        if ( source != null )
-        {
-            for ( String key : source.keySet() )
-            {
-                String value = source.get( key );
-                target.setProperty( key, value == null ? "" : value );
+    private static void copyProperties(Properties target, Map<String, String> source) {
+        if (source != null) {
+            for (String key : source.keySet()) {
+                String value = source.get(key);
+                target.setProperty(key, value == null ? "" : value);
             }
         }
     }
 
     @Override
-    public void copyTo( Map<Object, Object> target )
-    {
-        target.putAll( this );
+    public void copyTo(Map<Object, Object> target) {
+        target.putAll(this);
     }
 
-    public void setProperty( String key, File file )
-    {
-        if ( file != null )
-        {
-            setProperty( key, file.toString() );
+    public void setProperty(String key, File file) {
+        if (file != null) {
+            setProperty(key, file.toString());
         }
     }
 
-    public void setProperty( String key, Boolean aBoolean )
-    {
-        if ( aBoolean != null )
-        {
-            setProperty( key, aBoolean.toString() );
+    public void setProperty(String key, Boolean aBoolean) {
+        if (aBoolean != null) {
+            setProperty(key, aBoolean.toString());
         }
     }
 
-    public void setProperty( String key, int value )
-    {
-        setProperty( key, String.valueOf( value ) );
+    public void setProperty(String key, int value) {
+        setProperty(key, String.valueOf(value));
     }
 
-    public void setProperty( String key, Long value )
-    {
-        if ( value != null )
-        {
-            setProperty( key, value.toString() );
+    public void setProperty(String key, Long value) {
+        if (value != null) {
+            setProperty(key, value.toString());
         }
     }
 
-    public void addList( List<?> items, String propertyPrefix )
-    {
-        if ( items != null && !items.isEmpty() )
-        {
+    public void addList(List<?> items, String propertyPrefix) {
+        if (items != null && !items.isEmpty()) {
             int i = 0;
-            for ( Object item : items )
-            {
-                if ( item == null )
-                {
-                    throw new NullPointerException( propertyPrefix + i + " has null value" );
+            for (Object item : items) {
+                if (item == null) {
+                    throw new NullPointerException(propertyPrefix + i + " has null value");
                 }
 
-                String[] stringArray = StringUtils.split( item.toString(), "," );
+                String[] stringArray = StringUtils.split(item.toString(), ",");
 
-                for ( String aStringArray : stringArray )
-                {
-                    setProperty( propertyPrefix + i, aStringArray );
+                for (String aStringArray : stringArray) {
+                    setProperty(propertyPrefix + i, aStringArray);
                     i++;
                 }
             }
         }
     }
 
-    public void setClasspath( String prefix, Classpath classpath )
-    {
+    public void setClasspath(String prefix, Classpath classpath) {
         List<String> classpathElements = classpath.getClassPath();
-        for ( int i = 0; i < classpathElements.size(); ++i )
-        {
-            String element = classpathElements.get( i );
-            setProperty( prefix + i, element );
+        for (int i = 0; i < classpathElements.size(); ++i) {
+            String element = classpathElements.get(i);
+            setProperty(prefix + i, element);
         }
     }
 
-    private static SurefireProperties loadProperties( InputStream inStream )
-        throws IOException
-    {
-        try ( final InputStream surefirePropertiesStream = inStream )
-        {
+    private static SurefireProperties loadProperties(InputStream inStream) throws IOException {
+        try (InputStream surefirePropertiesStream = inStream) {
             Properties p = new Properties();
-            p.load( surefirePropertiesStream );
-            return new SurefireProperties( p );
+            p.load(surefirePropertiesStream);
+            return new SurefireProperties(p);
         }
     }
 
-    public static SurefireProperties loadProperties( File file )
-        throws IOException
-    {
-        return file == null ? new SurefireProperties() : loadProperties( new FileInputStream( file ) );
+    public static SurefireProperties loadProperties(File file) throws IOException {
+        return file == null ? new SurefireProperties() : loadProperties(new FileInputStream(file));
     }
 
-    public void setNullableProperty( String key, String value )
-    {
-        if ( value != null )
-        {
-            super.setProperty( key, value );
+    public void setNullableProperty(String key, String value) {
+        if (value != null) {
+            super.setProperty(key, value);
         }
     }
 }

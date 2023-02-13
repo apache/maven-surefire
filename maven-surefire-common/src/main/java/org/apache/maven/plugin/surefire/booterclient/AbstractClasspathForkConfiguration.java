@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.booterclient;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,50 +16,61 @@ package org.apache.maven.plugin.surefire.booterclient;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.booterclient;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import java.io.File;
+import java.util.Map;
+import java.util.Properties;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.io.File;
-import java.util.Map;
-import java.util.Properties;
-
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.21.0.Jigsaw
  */
-abstract class AbstractClasspathForkConfiguration
-        extends DefaultForkConfiguration
-{
+abstract class AbstractClasspathForkConfiguration extends DefaultForkConfiguration {
 
-    @SuppressWarnings( "checkstyle:parameternumber" )
-    AbstractClasspathForkConfiguration( @Nonnull Classpath bootClasspath,
-                                        @Nonnull File tempDirectory,
-                                        @Nullable String debugLine,
-                                        @Nonnull File workingDirectory,
-                                        @Nonnull Properties modelProperties,
-                                        @Nullable String argLine,
-                                        @Nonnull Map<String, String> environmentVariables,
-                                        @Nonnull String[] excludedEnvironmentVariables,
-                                        boolean debug,
-                                        int forkCount,
-                                        boolean reuseForks,
-                                        @Nonnull Platform pluginPlatform,
-                                        @Nonnull ConsoleLogger log,
-                                        @Nonnull ForkNodeFactory forkNodeFactory )
-    {
-        super( bootClasspath, tempDirectory, debugLine, workingDirectory, modelProperties, argLine,
-            environmentVariables, excludedEnvironmentVariables, debug, forkCount, reuseForks, pluginPlatform, log,
-            forkNodeFactory );
+    @SuppressWarnings("checkstyle:parameternumber")
+    AbstractClasspathForkConfiguration(
+            @Nonnull Classpath bootClasspath,
+            @Nonnull File tempDirectory,
+            @Nullable String debugLine,
+            @Nonnull File workingDirectory,
+            @Nonnull Properties modelProperties,
+            @Nullable String argLine,
+            @Nonnull Map<String, String> environmentVariables,
+            @Nonnull String[] excludedEnvironmentVariables,
+            boolean debug,
+            int forkCount,
+            boolean reuseForks,
+            @Nonnull Platform pluginPlatform,
+            @Nonnull ConsoleLogger log,
+            @Nonnull ForkNodeFactory forkNodeFactory) {
+        super(
+                bootClasspath,
+                tempDirectory,
+                debugLine,
+                workingDirectory,
+                modelProperties,
+                argLine,
+                environmentVariables,
+                excludedEnvironmentVariables,
+                debug,
+                forkCount,
+                reuseForks,
+                pluginPlatform,
+                log,
+                forkNodeFactory);
     }
 
     @Override
     @Nonnull
-    protected String extendJvmArgLine( @Nonnull String jvmArgLine )
-    {
+    protected String extendJvmArgLine(@Nonnull String jvmArgLine) {
         return jvmArgLine;
     }
 }

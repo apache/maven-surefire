@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.booter;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.booter;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,8 +16,10 @@ package org.apache.maven.surefire.api.booter;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.api.booter;
 
 import javax.annotation.Nonnull;
+
 import java.io.IOException;
 
 /**
@@ -27,9 +27,7 @@ import java.io.IOException;
  * received by the child forked Surefire process. The session must be open after the MasterProcessChannelDecoderFactory
  * has created the decoder instance. The session can be closed on the decoder instance.
  */
-public interface MasterProcessChannelDecoder
-    extends AutoCloseable
-{
+public interface MasterProcessChannelDecoder extends AutoCloseable {
     /**
      * Reads the bytes from a channel, waiting until the command is read completely or
      * the channel throws {@link java.io.EOFException}.
@@ -39,7 +37,8 @@ public interface MasterProcessChannelDecoder
      * @return decoded command
      * @throws IOException exception in channel
      */
-    @Nonnull Command decode() throws IOException;
+    @Nonnull
+    Command decode() throws IOException;
 
     @Override
     void close() throws IOException;

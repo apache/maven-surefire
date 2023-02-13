@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.maven.surefire.junitcore.pc;
 
 /*
@@ -19,9 +37,9 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 
 /**
  * Specifies the strategy of scheduling whether sequential, or parallel.
@@ -35,16 +53,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Tibor Digana (tibor17)
  * @since 2.16
  */
-public abstract class SchedulingStrategy
-    implements Destroyable
-{
+public abstract class SchedulingStrategy implements Destroyable {
 
-    private final AtomicBoolean canSchedule = new AtomicBoolean( true );
+    private final AtomicBoolean canSchedule = new AtomicBoolean(true);
 
     private final ConsoleLogger logger;
 
-    protected SchedulingStrategy( ConsoleLogger logger )
-    {
+    protected SchedulingStrategy(ConsoleLogger logger) {
         this.logger = logger;
     }
 
@@ -58,7 +73,7 @@ public abstract class SchedulingStrategy
      * @see org.junit.runners.model.RunnerScheduler#schedule(Runnable)
      * @see java.util.concurrent.Executor#execute(Runnable)
      */
-    protected abstract void schedule( Runnable task );
+    protected abstract void schedule(Runnable task);
 
     /**
      * Waiting for scheduled tasks to finish.
@@ -71,8 +86,7 @@ public abstract class SchedulingStrategy
      *                              for scheduled tasks to finish
      * @see org.junit.runners.model.RunnerScheduler#finished()
      */
-    protected abstract boolean finished()
-        throws InterruptedException;
+    protected abstract boolean finished() throws InterruptedException;
 
     /**
      * Stops scheduling new tasks (e.g. by {@link java.util.concurrent.ExecutorService#shutdown()}
@@ -97,8 +111,7 @@ public abstract class SchedulingStrategy
      *         pool was shutdown externally).
      * @see java.util.concurrent.ExecutorService#shutdownNow()
      */
-    protected boolean stopNow()
-    {
+    protected boolean stopNow() {
         return stop();
     }
 
@@ -107,14 +120,11 @@ public abstract class SchedulingStrategy
      * The method {@link #canSchedule()} atomically returns {@code false}.
      * @return {@code true} if {@link #canSchedule()} has return {@code true} on the beginning of this method call.
      */
-    protected boolean disable()
-    {
-        return canSchedule.getAndSet( false );
+    protected boolean disable() {
+        return canSchedule.getAndSet(false);
     }
 
-    protected void setDefaultShutdownHandler( Scheduler.ShutdownHandler handler )
-    {
-    }
+    protected void setDefaultShutdownHandler(Scheduler.ShutdownHandler handler) {}
 
     /**
      * @return {@code true} if a thread pool associated with this strategy
@@ -125,13 +135,11 @@ public abstract class SchedulingStrategy
     /**
      * @return {@code true} unless stopped, finished or disabled.
      */
-    protected boolean canSchedule()
-    {
+    protected boolean canSchedule() {
         return canSchedule.get();
     }
 
-    protected void logQuietly( Throwable t )
-    {
-        logger.error( t );
+    protected void logQuietly(Throwable t) {
+        logger.error(t);
     }
 }

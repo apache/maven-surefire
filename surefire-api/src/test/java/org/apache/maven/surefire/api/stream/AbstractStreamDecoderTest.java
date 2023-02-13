@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.stream;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.stream;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.api.stream;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.api.stream;
 
 import javax.annotation.Nonnull;
 
@@ -120,609 +119,519 @@ import static org.powermock.reflect.Whitebox.invokeMethod;
  *     }
  * </pre>
  */
-@SuppressWarnings( "checkstyle:magicnumber" )
-public class AbstractStreamDecoderTest
-{
+@SuppressWarnings("checkstyle:magicnumber")
+public class AbstractStreamDecoderTest {
     private static final Map<Segment, ForkedProcessEventType> EVENTS = new HashMap<>();
 
     private static final String PATTERN1 =
-        "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
+            "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
 
     private static final String PATTERN2 = "€ab©c";
 
     private static final byte[] PATTERN2_BYTES =
-        new byte[] {(byte) -30, (byte) -126, (byte) -84, 'a', 'b', (byte) 0xc2, (byte) 0xa9, 'c'};
+            new byte[] {(byte) -30, (byte) -126, (byte) -84, 'a', 'b', (byte) 0xc2, (byte) 0xa9, 'c'};
 
     @BeforeClass
-    public static void setup()
-    {
-        for ( ForkedProcessEventType event : ForkedProcessEventType.values() )
-        {
+    public static void setup() {
+        for (ForkedProcessEventType event : ForkedProcessEventType.values()) {
             byte[] array = event.getOpcodeBinary();
-            EVENTS.put( new Segment( array, 0, array.length ), event );
+            EVENTS.put(new Segment(array, 0, array.length), event);
         }
     }
 
     @Test
-    public void shouldDecodeHappyCase() throws Exception
-    {
-        CharsetDecoder decoder = UTF_8.newDecoder().onMalformedInput( REPLACE ).onUnmappableCharacter( REPLACE );
-        ByteBuffer input = ByteBuffer.allocate( 1024 );
-        ( (Buffer) input.put( PATTERN2_BYTES ) ).flip();
+    public void shouldDecodeHappyCase() throws Exception {
+        CharsetDecoder decoder = UTF_8.newDecoder().onMalformedInput(REPLACE).onUnmappableCharacter(REPLACE);
+        ByteBuffer input = ByteBuffer.allocate(1024);
+        ((Buffer) input.put(PATTERN2_BYTES)).flip();
         int bytesToDecode = PATTERN2_BYTES.length;
-        Buffer output = CharBuffer.allocate( 1024 );
-        int readBytes = invokeMethod( AbstractStreamDecoder.class, "decodeString", decoder, input, output,
-            bytesToDecode, true, 0 );
+        Buffer output = CharBuffer.allocate(1024);
+        int readBytes = invokeMethod(
+                AbstractStreamDecoder.class, "decodeString", decoder, input, output, bytesToDecode, true, 0);
 
-        assertThat( readBytes )
-            .isEqualTo( bytesToDecode );
+        assertThat(readBytes).isEqualTo(bytesToDecode);
 
-        assertThat( output.flip().toString() )
-            .isEqualTo( PATTERN2 );
+        assertThat(output.flip().toString()).isEqualTo(PATTERN2);
     }
 
     @Test
-    public void shouldDecodeShifted() throws Exception
-    {
-        CharsetDecoder decoder = UTF_8.newDecoder().onMalformedInput( REPLACE ).onUnmappableCharacter( REPLACE );
-        ByteBuffer input = ByteBuffer.allocate( 1024 );
-        ( (Buffer) input.put( PATTERN1.getBytes( UTF_8 ) )
-            .put( 90, (byte) 'A' )
-            .put( 91, (byte) 'B' )
-            .put( 92, (byte) 'C' ) )
-            .position( 90 );
-        Buffer output = CharBuffer.allocate( 1024 );
-        int readBytes =
-            invokeMethod( AbstractStreamDecoder.class, "decodeString", decoder, input, output, 2, true, 0 );
+    public void shouldDecodeShifted() throws Exception {
+        CharsetDecoder decoder = UTF_8.newDecoder().onMalformedInput(REPLACE).onUnmappableCharacter(REPLACE);
+        ByteBuffer input = ByteBuffer.allocate(1024);
+        ((Buffer) input.put(PATTERN1.getBytes(UTF_8))
+                        .put(90, (byte) 'A')
+                        .put(91, (byte) 'B')
+                        .put(92, (byte) 'C'))
+                .position(90);
+        Buffer output = CharBuffer.allocate(1024);
+        int readBytes = invokeMethod(AbstractStreamDecoder.class, "decodeString", decoder, input, output, 2, true, 0);
 
-        assertThat( readBytes ).isEqualTo( 2 );
+        assertThat(readBytes).isEqualTo(2);
 
-        assertThat( output.flip().toString() )
-            .isEqualTo( "AB" );
+        assertThat(output.flip().toString()).isEqualTo("AB");
     }
 
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldNotDecode() throws Exception
-    {
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotDecode() throws Exception {
         CharsetDecoder decoder = UTF_8.newDecoder();
-        ByteBuffer input = ByteBuffer.allocate( 100 );
+        ByteBuffer input = ByteBuffer.allocate(100);
         int bytesToDecode = 101;
-        CharBuffer output = CharBuffer.allocate( 1000 );
-        invokeMethod( AbstractStreamDecoder.class, "decodeString", decoder, input, output, bytesToDecode, true, 0 );
+        CharBuffer output = CharBuffer.allocate(1000);
+        invokeMethod(AbstractStreamDecoder.class, "decodeString", decoder, input, output, bytesToDecode, true, 0);
     }
 
     @Test
-    public void shouldReadInt() throws Exception
-    {
-        Channel channel = new Channel( new byte[] {0x01, 0x02, 0x03, 0x04, ':'}, 1 );
+    public void shouldReadInt() throws Exception {
+        Channel channel = new Channel(new byte[] {0x01, 0x02, 0x03, 0x04, ':'}, 1);
 
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
 
-        assertThat( thread.readInt( memento ) )
-            .isEqualTo( new BigInteger( new byte[] {0x01, 0x02, 0x03, 0x04} ).intValue() );
+        assertThat(thread.readInt(memento)).isEqualTo(new BigInteger(new byte[] {0x01, 0x02, 0x03, 0x04}).intValue());
     }
 
     @Test
-    public void shouldReadInteger() throws Exception
-    {
-        Channel channel = new Channel( new byte[] {(byte) 0xff, 0x01, 0x02, 0x03, 0x04, ':'}, 1 );
+    public void shouldReadInteger() throws Exception {
+        Channel channel = new Channel(new byte[] {(byte) 0xff, 0x01, 0x02, 0x03, 0x04, ':'}, 1);
 
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
-        assertThat( thread.readInteger( memento ) )
-            .isEqualTo( new BigInteger( new byte[] {0x01, 0x02, 0x03, 0x04} ).intValue() );
+        assertThat(thread.readInteger(memento))
+                .isEqualTo(new BigInteger(new byte[] {0x01, 0x02, 0x03, 0x04}).intValue());
     }
 
     @Test
-    public void shouldReadNullInteger() throws Exception
-    {
-        Channel channel = new Channel( new byte[] {(byte) 0x00, ':'}, 1 );
+    public void shouldReadNullInteger() throws Exception {
+        Channel channel = new Channel(new byte[] {(byte) 0x00, ':'}, 1);
 
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
-        assertThat( thread.readInteger( memento ) )
-            .isNull();
+        assertThat(thread.readInteger(memento)).isNull();
     }
 
-    @Test( expected = EOFException.class )
-    public void shouldNotReadString() throws Exception
-    {
-        Channel channel = new Channel( PATTERN1.getBytes(), PATTERN1.length() );
-        channel.read( ByteBuffer.allocate( 100 ) );
+    @Test(expected = EOFException.class)
+    public void shouldNotReadString() throws Exception {
+        Channel channel = new Channel(PATTERN1.getBytes(), PATTERN1.length());
+        channel.read(ByteBuffer.allocate(100));
 
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
-        invokeMethod( thread, "readString", memento, 10 );
+        invokeMethod(thread, "readString", memento, 10);
     }
 
     @Test
-    public void shouldReadString() throws Exception
-    {
-        Channel channel = new Channel( PATTERN1.getBytes(), PATTERN1.length() );
+    public void shouldReadString() throws Exception {
+        Channel channel = new Channel(PATTERN1.getBytes(), PATTERN1.length());
 
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
-        String s = invokeMethod( thread, "readString", memento, 10 );
-        assertThat( s )
-            .isEqualTo( "0123456789" );
+        String s = invokeMethod(thread, "readString", memento, 10);
+        assertThat(s).isEqualTo("0123456789");
     }
 
     @Test
-    public void shouldReadStringOverflowOnNewLine() throws Exception
-    {
-        StringBuilder s = new StringBuilder( 1025 );
-        for ( int i = 0; i < 10; i++ )
-        {
-            s.append( PATTERN1 );
+    public void shouldReadStringOverflowOnNewLine() throws Exception {
+        StringBuilder s = new StringBuilder(1025);
+        for (int i = 0; i < 10; i++) {
+            s.append(PATTERN1);
         }
-        s.append( PATTERN1, 0, 23 );
-        s.append( "\u00FA\n" ); // 2-bytes encoded character + LF
+        s.append(PATTERN1, 0, 23);
+        s.append("\u00FA\n"); // 2-bytes encoded character + LF
 
-        Channel channel = new Channel( s.toString().getBytes( UTF_8 ), s.length() );
+        Channel channel = new Channel(s.toString().getBytes(UTF_8), s.length());
 
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
 
-        assertThat( (String) invokeMethod( thread, "readString", memento, 1026 ) )
-            .isEqualTo( s.toString() );
+        assertThat((String) invokeMethod(thread, "readString", memento, 1026)).isEqualTo(s.toString());
 
-        assertThat ( memento.getByteBuffer().remaining() )
-            .isEqualTo( 0 );
+        assertThat(memento.getByteBuffer().remaining()).isEqualTo(0);
     }
 
     @Test
-    public void shouldReadStringOverflowOn4BytesEncodedSymbol() throws Exception
-    {
-        StringBuilder s = new StringBuilder( 1025 );
-        for ( int i = 0; i < 10; i++ )
-        {
-            s.append( PATTERN1 );
+    public void shouldReadStringOverflowOn4BytesEncodedSymbol() throws Exception {
+        StringBuilder s = new StringBuilder(1025);
+        for (int i = 0; i < 10; i++) {
+            s.append(PATTERN1);
         }
-        s.append( PATTERN1, 0, 23 );
-        s.append( "\uD83D\uDE35" ); // 4-bytes encoded character
+        s.append(PATTERN1, 0, 23);
+        s.append("\uD83D\uDE35"); // 4-bytes encoded character
 
-        Channel channel = new Channel( s.toString().getBytes( UTF_8 ), s.length() );
+        Channel channel = new Channel(s.toString().getBytes(UTF_8), s.length());
 
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
 
-        assertThat( (String) invokeMethod( thread, "readString", memento, 1027 ) )
-            .isEqualTo( s.toString() );
+        assertThat((String) invokeMethod(thread, "readString", memento, 1027)).isEqualTo(s.toString());
 
-        assertThat ( memento.getByteBuffer().remaining() )
-            .isEqualTo( 0 );
+        assertThat(memento.getByteBuffer().remaining()).isEqualTo(0);
     }
 
     @Test
-    public void shouldReadStringShiftedBuffer() throws Exception
-    {
-        StringBuilder s = new StringBuilder( 1100 );
-        for ( int i = 0; i < 11; i++ )
-        {
-            s.append( PATTERN1 );
+    public void shouldReadStringShiftedBuffer() throws Exception {
+        StringBuilder s = new StringBuilder(1100);
+        for (int i = 0; i < 11; i++) {
+            s.append(PATTERN1);
         }
 
-        Channel channel = new Channel( s.toString().getBytes( UTF_8 ), s.length() );
+        Channel channel = new Channel(s.toString().getBytes(UTF_8), s.length());
 
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
         // whatever position will be compacted to 0
-        ( (Buffer) ( (Buffer) memento.getByteBuffer() ).limit( 974 ) ).position( 974 );
-        assertThat( (String) invokeMethod( thread, "readString", memento, PATTERN1.length() + 3 ) )
-            .isEqualTo( PATTERN1 + "012" );
+        ((Buffer) ((Buffer) memento.getByteBuffer()).limit(974)).position(974);
+        assertThat((String) invokeMethod(thread, "readString", memento, PATTERN1.length() + 3))
+                .isEqualTo(PATTERN1 + "012");
     }
 
     @Test
-    public void shouldReadStringShiftedInput() throws Exception
-    {
-        StringBuilder s = new StringBuilder( 1100 );
-        for ( int i = 0; i < 11; i++ )
-        {
-            s.append( PATTERN1 );
+    public void shouldReadStringShiftedInput() throws Exception {
+        StringBuilder s = new StringBuilder(1100);
+        for (int i = 0; i < 11; i++) {
+            s.append(PATTERN1);
         }
 
-        Channel channel = new Channel( s.toString().getBytes( UTF_8 ), s.length() );
-        channel.read( ByteBuffer.allocate( 997 ) );
+        Channel channel = new Channel(s.toString().getBytes(UTF_8), s.length());
+        channel.read(ByteBuffer.allocate(997));
 
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
-        assertThat( (String) invokeMethod( thread, "readString", memento, PATTERN1.length() ) )
-            .isEqualTo( "789" + PATTERN1.substring( 0, 97 ) );
+        assertThat((String) invokeMethod(thread, "readString", memento, PATTERN1.length()))
+                .isEqualTo("789" + PATTERN1.substring(0, 97));
     }
 
     @Test
-    public void shouldReadMultipleStringsAndShiftedInput() throws Exception
-    {
-        StringBuilder s = new StringBuilder( 5000 );
+    public void shouldReadMultipleStringsAndShiftedInput() throws Exception {
+        StringBuilder s = new StringBuilder(5000);
 
-        for ( int i = 0; i < 50; i++ )
-        {
-            s.append( PATTERN1 );
+        for (int i = 0; i < 50; i++) {
+            s.append(PATTERN1);
         }
 
-        Channel channel = new Channel( s.toString().getBytes( UTF_8 ), s.length() );
-        channel.read( ByteBuffer.allocate( 1997 ) );
+        Channel channel = new Channel(s.toString().getBytes(UTF_8), s.length());
+        channel.read(ByteBuffer.allocate(1997));
 
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
         // whatever position will be compacted to 0
-        ( (Buffer) memento.getByteBuffer() ).limit( 974 ).position( 974 );
+        ((Buffer) memento.getByteBuffer()).limit(974).position(974);
 
-        StringBuilder expected = new StringBuilder( "789" );
-        for ( int i = 0; i < 11; i++ )
-        {
-            expected.append( PATTERN1 );
+        StringBuilder expected = new StringBuilder("789");
+        for (int i = 0; i < 11; i++) {
+            expected.append(PATTERN1);
         }
-        expected.setLength( 1100 );
-        assertThat( (String) invokeMethod( thread, "readString", memento, 1100 ) )
-            .isEqualTo( expected.toString() );
+        expected.setLength(1100);
+        assertThat((String) invokeMethod(thread, "readString", memento, 1100)).isEqualTo(expected.toString());
     }
 
     @Test
-    public void shouldDecode3BytesEncodedSymbol() throws Exception
-    {
+    public void shouldDecode3BytesEncodedSymbol() throws Exception {
         byte[] encodedSymbol = new byte[] {(byte) -30, (byte) -126, (byte) -84};
         int countSymbols = 1024;
         byte[] input = new byte[encodedSymbol.length * countSymbols];
-        for ( int i = 0; i < countSymbols; i++ )
-        {
-            arraycopy( encodedSymbol, 0, input, encodedSymbol.length * i, encodedSymbol.length );
+        for (int i = 0; i < countSymbols; i++) {
+            arraycopy(encodedSymbol, 0, input, encodedSymbol.length * i, encodedSymbol.length);
         }
 
-        Channel channel = new Channel( input, 64 * 1024 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+        Channel channel = new Channel(input, 64 * 1024);
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
         Memento memento = thread.new Memento();
-        String decodedOutput = invokeMethod( thread, "readString", memento, input.length );
+        String decodedOutput = invokeMethod(thread, "readString", memento, input.length);
 
-        assertThat( decodedOutput )
-            .isEqualTo( new String( input, 0, input.length, UTF_8 ) );
+        assertThat(decodedOutput).isEqualTo(new String(input, 0, input.length, UTF_8));
     }
 
     @Test
-    public void shouldDecode100Bytes() throws Exception
-    {
-        CharsetDecoder decoder = DEFAULT_STREAM_ENCODING.newDecoder()
-            .onMalformedInput( REPLACE )
-            .onUnmappableCharacter( REPLACE );
+    public void shouldDecode100Bytes() throws Exception {
+        CharsetDecoder decoder =
+                DEFAULT_STREAM_ENCODING.newDecoder().onMalformedInput(REPLACE).onUnmappableCharacter(REPLACE);
         // empty stream: CharsetDecoder + ByteBuffer.allocate( 0 ) makes 11.5 nanos
         // empty stream: CharsetDecoder + ByteBuffer.allocate( 0 ) + toString() makes 16.1 nanos
-        ByteBuffer buffer = ByteBuffer.wrap( PATTERN1.getBytes( UTF_8 ) );
-        CharBuffer chars = CharBuffer.allocate( 100 );
+        ByteBuffer buffer = ByteBuffer.wrap(PATTERN1.getBytes(UTF_8));
+        CharBuffer chars = CharBuffer.allocate(100);
         // uncomment this section for a proper measurement of the exec time
-        TimeUnit.SECONDS.sleep( 2 );
+        TimeUnit.SECONDS.sleep(2);
         System.gc();
-        TimeUnit.SECONDS.sleep( 5 );
+        TimeUnit.SECONDS.sleep(5);
         String s = null;
         long l1 = System.currentTimeMillis();
-        for ( int i = 0; i < 10_000_000; i++ )
-        {
-            decoder.reset()
-                .decode( buffer, chars, true ); // CharsetDecoder 71 nanos
-            s = ( (Buffer) chars ).flip().toString(); // CharsetDecoder + toString = 91 nanos
-            ( (Buffer) buffer ).clear();
-            ( (Buffer) chars ).clear();
+        for (int i = 0; i < 10_000_000; i++) {
+            decoder.reset().decode(buffer, chars, true); // CharsetDecoder 71 nanos
+            s = ((Buffer) chars).flip().toString(); // CharsetDecoder + toString = 91 nanos
+            ((Buffer) buffer).clear();
+            ((Buffer) chars).clear();
         }
         long l2 = System.currentTimeMillis();
-        System.out.println( "decoded 100 bytes within " + ( l2 - l1 ) + " millis (10 million cycles)" );
-        assertThat( s )
-            .isEqualTo( PATTERN1 );
+        System.out.println("decoded 100 bytes within " + (l2 - l1) + " millis (10 million cycles)");
+        assertThat(s).isEqualTo(PATTERN1);
     }
 
     @Test
-    public void shouldReadEventType() throws Exception
-    {
+    public void shouldReadEventType() throws Exception {
         byte[] array = BOOTERCODE_STDOUT.getOpcodeBinary();
         Map<Segment, ForkedProcessEventType> messageType =
-            singletonMap( new Segment( array, 0, array.length ), BOOTERCODE_STDOUT );
+                singletonMap(new Segment(array, 0, array.length), BOOTERCODE_STDOUT);
 
-        byte[] stream = ":maven-surefire-event:\u000E:std-out-stream:".getBytes( UTF_8 );
-        Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), messageType );
+        byte[] stream = ":maven-surefire-event:\u000E:std-out-stream:".getBytes(UTF_8);
+        Channel channel = new Channel(stream, 1);
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), messageType);
 
         Memento memento = thread.new Memento();
-        memento.setCharset( UTF_8 );
+        memento.setCharset(UTF_8);
 
-        ForkedProcessEventType eventType = thread.readMessageType( memento );
-        assertThat( eventType )
-            .isEqualTo( BOOTERCODE_STDOUT );
+        ForkedProcessEventType eventType = thread.readMessageType(memento);
+        assertThat(eventType).isEqualTo(BOOTERCODE_STDOUT);
     }
 
-    @Test( expected = EOFException.class )
-    public void shouldEventTypeReachedEndOfStream() throws Exception
-    {
-        byte[] stream = ":maven-surefire-event:\u000E:xxx".getBytes( UTF_8 );
-        Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), EVENTS );
+    @Test(expected = EOFException.class)
+    public void shouldEventTypeReachedEndOfStream() throws Exception {
+        byte[] stream = ":maven-surefire-event:\u000E:xxx".getBytes(UTF_8);
+        Channel channel = new Channel(stream, 1);
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), EVENTS);
 
         Memento memento = thread.new Memento();
-        memento.setCharset( UTF_8 );
-        thread.readMessageType( memento );
+        memento.setCharset(UTF_8);
+        thread.readMessageType(memento);
     }
 
-    @Test( expected = MalformedFrameException.class )
-    public void shouldEventTypeReachedMalformedHeader() throws Exception
-    {
-        byte[] stream = ":xxxxx-xxxxxxxx-xxxxx:\u000E:xxx".getBytes( UTF_8 );
-        Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+    @Test(expected = MalformedFrameException.class)
+    public void shouldEventTypeReachedMalformedHeader() throws Exception {
+        byte[] stream = ":xxxxx-xxxxxxxx-xxxxx:\u000E:xxx".getBytes(UTF_8);
+        Channel channel = new Channel(stream, 1);
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
-        memento.setCharset( UTF_8 );
-        thread.readMessageType( memento );
+        memento.setCharset(UTF_8);
+        thread.readMessageType(memento);
     }
 
     @Test
-    public void shouldReadEmptyString() throws Exception
-    {
-        byte[] stream = "\u0000\u0000\u0000\u0000::".getBytes( UTF_8 );
-        Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+    public void shouldReadEmptyString() throws Exception {
+        byte[] stream = "\u0000\u0000\u0000\u0000::".getBytes(UTF_8);
+        Channel channel = new Channel(stream, 1);
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
-        memento.setCharset( UTF_8 );
+        memento.setCharset(UTF_8);
 
-        assertThat( thread.readString( memento ) )
-            .isEmpty();
+        assertThat(thread.readString(memento)).isEmpty();
     }
 
     @Test
-    public void shouldReadNullString() throws Exception
-    {
-        byte[] stream = "\u0000\u0000\u0000\u0001:\u0000:".getBytes( UTF_8 );
-        Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+    public void shouldReadNullString() throws Exception {
+        byte[] stream = "\u0000\u0000\u0000\u0001:\u0000:".getBytes(UTF_8);
+        Channel channel = new Channel(stream, 1);
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
-        memento.setCharset( UTF_8 );
+        memento.setCharset(UTF_8);
 
-        assertThat( thread.readString( memento ) )
-            .isNull();
+        assertThat(thread.readString(memento)).isNull();
     }
 
     @Test
-    public void shouldReadSingleCharString() throws Exception
-    {
-        byte[] stream = "\u0000\u0000\u0000\u0001:A:".getBytes( UTF_8 );
-        Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+    public void shouldReadSingleCharString() throws Exception {
+        byte[] stream = "\u0000\u0000\u0000\u0001:A:".getBytes(UTF_8);
+        Channel channel = new Channel(stream, 1);
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
-        memento.setCharset( UTF_8 );
+        memento.setCharset(UTF_8);
 
-        assertThat( thread.readString( memento ) )
-            .isEqualTo( "A" );
+        assertThat(thread.readString(memento)).isEqualTo("A");
     }
 
     @Test
-    public void shouldReadThreeCharactersString() throws Exception
-    {
-        byte[] stream = "\u0000\u0000\u0000\u0003:ABC:".getBytes( UTF_8 );
-        Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+    public void shouldReadThreeCharactersString() throws Exception {
+        byte[] stream = "\u0000\u0000\u0000\u0003:ABC:".getBytes(UTF_8);
+        Channel channel = new Channel(stream, 1);
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
-        memento.setCharset( UTF_8 );
+        memento.setCharset(UTF_8);
 
-        assertThat( thread.readString( memento ) )
-            .isEqualTo( "ABC" );
+        assertThat(thread.readString(memento)).isEqualTo("ABC");
     }
 
     @Test
-    public void shouldReadDefaultCharset() throws Exception
-    {
-        byte[] stream = "\u0005:UTF-8:".getBytes( US_ASCII );
-        Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+    public void shouldReadDefaultCharset() throws Exception {
+        byte[] stream = "\u0005:UTF-8:".getBytes(US_ASCII);
+        Channel channel = new Channel(stream, 1);
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
-        memento.setCharset( UTF_8 );
+        memento.setCharset(UTF_8);
 
-        assertThat( thread.readCharset( memento ) )
-            .isNotNull()
-            .isEqualTo( UTF_8 );
+        assertThat(thread.readCharset(memento)).isNotNull().isEqualTo(UTF_8);
     }
 
     @Test
-    public void shouldReadNonDefaultCharset() throws Exception
-    {
-        byte[] stream = ( (char) 10 + ":ISO_8859_1:" ).getBytes( US_ASCII );
-        Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+    public void shouldReadNonDefaultCharset() throws Exception {
+        byte[] stream = ((char) 10 + ":ISO_8859_1:").getBytes(US_ASCII);
+        Channel channel = new Channel(stream, 1);
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
-        memento.setCharset( UTF_8 );
+        memento.setCharset(UTF_8);
 
-        assertThat( thread.readCharset( memento ) )
-            .isNotNull()
-            .isEqualTo( ISO_8859_1 );
+        assertThat(thread.readCharset(memento)).isNotNull().isEqualTo(ISO_8859_1);
     }
 
     @Test
-    public void shouldSetNonDefaultCharset()
-    {
+    public void shouldSetNonDefaultCharset() {
         byte[] stream = {};
-        Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+        Channel channel = new Channel(stream, 1);
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
-        memento.setCharset( ISO_8859_1 );
-        assertThat( memento.getDecoder().charset() ).isEqualTo( ISO_8859_1 );
+        memento.setCharset(ISO_8859_1);
+        assertThat(memento.getDecoder().charset()).isEqualTo(ISO_8859_1);
 
-        memento.setCharset( UTF_8 );
-        assertThat( memento.getDecoder().charset() ).isEqualTo( UTF_8 );
+        memento.setCharset(UTF_8);
+        assertThat(memento.getDecoder().charset()).isEqualTo(UTF_8);
 
         memento.reset();
-        assertThat( memento.getDecoder() ).isNotNull();
-        assertThat( memento.getDecoder().charset() ).isEqualTo( UTF_8 );
+        assertThat(memento.getDecoder()).isNotNull();
+        assertThat(memento.getDecoder().charset()).isEqualTo(UTF_8);
     }
 
-    @Test( expected = MalformedFrameException.class )
-    public void malformedCharset() throws Exception
-    {
-        byte[] stream = ( (char) 8 + ":ISO_8859:" ).getBytes( US_ASCII );
-        Channel channel = new Channel( stream, 1 );
-        Mock thread = new Mock( channel, new MockForkNodeArguments(), emptyMap() );
+    @Test(expected = MalformedFrameException.class)
+    public void malformedCharset() throws Exception {
+        byte[] stream = ((char) 8 + ":ISO_8859:").getBytes(US_ASCII);
+        Channel channel = new Channel(stream, 1);
+        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
-        memento.setCharset( UTF_8 );
+        memento.setCharset(UTF_8);
 
-        thread.readCharset( memento );
+        thread.readCharset(memento);
     }
 
-    private static class Channel implements ReadableByteChannel
-    {
+    private static class Channel implements ReadableByteChannel {
         private final byte[] bytes;
         private final int chunkSize;
         protected int i;
 
-        Channel( byte[] bytes, int chunkSize )
-        {
+        Channel(byte[] bytes, int chunkSize) {
             this.bytes = bytes;
             this.chunkSize = chunkSize;
         }
 
         @Override
-        public int read( ByteBuffer dst )
-        {
-            if ( i == bytes.length )
-            {
+        public int read(ByteBuffer dst) {
+            if (i == bytes.length) {
                 return -1;
-            }
-            else if ( dst.hasRemaining() )
-            {
-                int length = min( min( chunkSize, bytes.length - i ), dst.remaining() ) ;
-                dst.put( bytes, i, length );
+            } else if (dst.hasRemaining()) {
+                int length = min(min(chunkSize, bytes.length - i), dst.remaining());
+                dst.put(bytes, i, length);
                 i += length;
                 return length;
-            }
-            else
-            {
+            } else {
                 return 0;
             }
         }
 
         @Override
-        public boolean isOpen()
-        {
+        public boolean isOpen() {
             return false;
         }
 
         @Override
-        public void close()
-        {
-        }
+        public void close() {}
     }
 
-    private static class MockForkNodeArguments implements ForkNodeArguments
-    {
+    private static class MockForkNodeArguments implements ForkNodeArguments {
         @Nonnull
         @Override
-        public String getSessionId()
-        {
+        public String getSessionId() {
             return null;
         }
 
         @Override
-        public int getForkChannelId()
-        {
+        public int getForkChannelId() {
             return 0;
         }
 
         @Nonnull
         @Override
-        public File dumpStreamText( @Nonnull String text )
-        {
+        public File dumpStreamText(@Nonnull String text) {
             return null;
         }
 
         @Nonnull
         @Override
-        public File dumpStreamException( @Nonnull Throwable t )
-        {
+        public File dumpStreamException(@Nonnull Throwable t) {
             return null;
         }
 
         @Override
-        public void logWarningAtEnd( @Nonnull String text )
-        {
-        }
+        public void logWarningAtEnd(@Nonnull String text) {}
 
         @Nonnull
         @Override
-        public ConsoleLogger getConsoleLogger()
-        {
+        public ConsoleLogger getConsoleLogger() {
             return null;
         }
 
         @Nonnull
         @Override
-        public Object getConsoleLock()
-        {
+        public Object getConsoleLock() {
             return new Object();
         }
 
         @Override
-        public File getEventStreamBinaryFile()
-        {
+        public File getEventStreamBinaryFile() {
             return null;
         }
 
         @Override
-        public File getCommandStreamBinaryFile()
-        {
+        public File getCommandStreamBinaryFile() {
             return null;
         }
     }
 
-    private static class Mock extends AbstractStreamDecoder<Event, ForkedProcessEventType, SegmentType>
-    {
-        protected Mock( @Nonnull ReadableByteChannel channel, @Nonnull ForkNodeArguments arguments,
-                        @Nonnull Map<Segment, ForkedProcessEventType> messageTypes )
-        {
-            super( channel, arguments, messageTypes );
+    private static class Mock extends AbstractStreamDecoder<Event, ForkedProcessEventType, SegmentType> {
+        protected Mock(
+                @Nonnull ReadableByteChannel channel,
+                @Nonnull ForkNodeArguments arguments,
+                @Nonnull Map<Segment, ForkedProcessEventType> messageTypes) {
+            super(channel, arguments, messageTypes);
         }
 
         @Override
-        public Event decode( @Nonnull Memento memento ) throws MalformedChannelException
-        {
+        public Event decode(@Nonnull Memento memento) throws MalformedChannelException {
             throw new MalformedChannelException();
         }
 
         @Nonnull
         @Override
-        protected byte[] getEncodedMagicNumber()
-        {
+        protected byte[] getEncodedMagicNumber() {
             return Constants.MAGIC_NUMBER_FOR_EVENTS_BYTES;
         }
 
         @Nonnull
         @Override
-        protected SegmentType[] nextSegmentType( @Nonnull ForkedProcessEventType messageType )
-        {
+        protected SegmentType[] nextSegmentType(@Nonnull ForkedProcessEventType messageType) {
             return new SegmentType[] {END_OF_FRAME};
         }
 
         @Nonnull
         @Override
-        protected Event toMessage( @Nonnull ForkedProcessEventType messageType, @Nonnull Memento memento )
-        {
+        protected Event toMessage(@Nonnull ForkedProcessEventType messageType, @Nonnull Memento memento) {
             return null;
         }
 
         @Override
-        public void close() throws Exception
-        {
-        }
+        public void close() throws Exception {}
     }
 }

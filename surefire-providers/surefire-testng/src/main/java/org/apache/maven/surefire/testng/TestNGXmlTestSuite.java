@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.testng;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.testng;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.testng;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.testng;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -34,9 +33,7 @@ import static org.apache.maven.surefire.testng.TestNGExecutor.run;
  * @author jkuhnert
  * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
  */
-final class TestNGXmlTestSuite
-        extends TestSuite
-{
+final class TestNGXmlTestSuite extends TestSuite {
     private final List<File> suiteFiles;
 
     private List<String> suiteFilePaths;
@@ -53,9 +50,12 @@ final class TestNGXmlTestSuite
      * Creates a testng testset to be configured by the specified
      * xml file(s). The XML files are suite definitions files according to TestNG DTD.
      */
-    TestNGXmlTestSuite( List<File> suiteFiles, String testSourceDirectory, Map<String, String> confOptions,
-                        File reportsDirectory, int skipAfterFailureCount )
-    {
+    TestNGXmlTestSuite(
+            List<File> suiteFiles,
+            String testSourceDirectory,
+            Map<String, String> confOptions,
+            File reportsDirectory,
+            int skipAfterFailureCount) {
         this.suiteFiles = suiteFiles;
         this.options = confOptions;
         this.testSourceDirectory = testSourceDirectory;
@@ -63,49 +63,39 @@ final class TestNGXmlTestSuite
         this.skipAfterFailureCount = skipAfterFailureCount;
     }
 
-    void execute( TestNGReporter testNGReporter )
-        throws TestSetFailedException
-    {
-        if ( suiteFilePaths == null )
-        {
-            throw new IllegalStateException( "You must call locateTestSets before calling execute" );
+    void execute(TestNGReporter testNGReporter) throws TestSetFailedException {
+        if (suiteFilePaths == null) {
+            throw new IllegalStateException("You must call locateTestSets before calling execute");
         }
-        startTestSuite( testNGReporter.getRunListener() );
-        run( suiteFilePaths, testSourceDirectory, options, testNGReporter, reportsDirectory, skipAfterFailureCount );
-        finishTestSuite( testNGReporter.getRunListener() );
+        startTestSuite(testNGReporter.getRunListener());
+        run(suiteFilePaths, testSourceDirectory, options, testNGReporter, reportsDirectory, skipAfterFailureCount);
+        finishTestSuite(testNGReporter.getRunListener());
     }
 
-    Iterable locateTestSets()
-        throws TestSetFailedException
-    {
-        if ( suiteFilePaths != null )
-        {
-            throw new IllegalStateException( "You can't call locateTestSets twice" );
+    Iterable locateTestSets() throws TestSetFailedException {
+        if (suiteFilePaths != null) {
+            throw new IllegalStateException("You can't call locateTestSets twice");
         }
 
-        if ( suiteFiles.isEmpty() )
-        {
-            throw new IllegalStateException( "No suite files were specified" );
+        if (suiteFiles.isEmpty()) {
+            throw new IllegalStateException("No suite files were specified");
         }
 
-        suiteFilePaths = new ArrayList<>( suiteFiles.size() );
-        ArrayList<File> testSets = new ArrayList<>( suiteFiles.size() );
+        suiteFilePaths = new ArrayList<>(suiteFiles.size());
+        ArrayList<File> testSets = new ArrayList<>(suiteFiles.size());
 
-        for ( File suiteFile : suiteFiles )
-        {
-            if ( !suiteFile.isFile() )
-            {
-                throw new TestSetFailedException( "Suite file " + suiteFile + " is not a valid file" );
+        for (File suiteFile : suiteFiles) {
+            if (!suiteFile.isFile()) {
+                throw new TestSetFailedException("Suite file " + suiteFile + " is not a valid file");
             }
-            testSets.add( suiteFile );
-            suiteFilePaths.add( suiteFile.getAbsolutePath() );
+            testSets.add(suiteFile);
+            suiteFilePaths.add(suiteFile.getAbsolutePath());
         }
         return testSets;
     }
 
     @Override
-    Map<String, String> getOptions()
-    {
+    Map<String, String> getOptions() {
         return options;
     }
 }

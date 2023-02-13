@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.booterclient.output;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.booterclient.output;
 
 import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
@@ -30,44 +29,37 @@ import org.apache.maven.surefire.api.report.StackTraceWriter;
  *
  * @author Kristian Rosenvold
  */
-public class DeserializedStacktraceWriter
-    implements StackTraceWriter
-{
+public class DeserializedStacktraceWriter implements StackTraceWriter {
     private final String message;
 
     private final String smartTrimmed;
 
     private final String stackTrace;
 
-    public DeserializedStacktraceWriter( String message, String smartTrimmed, String stackTrace )
-    {
+    public DeserializedStacktraceWriter(String message, String smartTrimmed, String stackTrace) {
         this.message = message;
         this.smartTrimmed = smartTrimmed;
         this.stackTrace = stackTrace;
     }
 
     @Override
-    public String smartTrimmedStackTrace()
-    {
+    public String smartTrimmedStackTrace() {
         return smartTrimmed;
     }
 
     // Trimming or not is decided on the forking side
     @Override
-    public String writeTraceToString()
-    {
+    public String writeTraceToString() {
         return stackTrace;
     }
 
     @Override
-    public String writeTrimmedTraceToString()
-    {
+    public String writeTrimmedTraceToString() {
         return stackTrace;
     }
 
     @Override
-    public SafeThrowable getThrowable()
-    {
-        return new SafeThrowable( message );
+    public SafeThrowable getThrowable() {
+        return new SafeThrowable(message);
     }
 }

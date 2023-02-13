@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.extensions;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.extensions;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,22 +16,21 @@ package org.apache.maven.plugin.surefire.extensions;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.surefire.extensions.ForkChannel;
-import org.apache.maven.surefire.api.fork.ForkNodeArguments;
-import org.apache.maven.surefire.extensions.ForkNodeFactory;
+package org.apache.maven.plugin.surefire.extensions;
 
 import javax.annotation.Nonnull;
+
+import org.apache.maven.surefire.api.fork.ForkNodeArguments;
+import org.apache.maven.surefire.extensions.ForkChannel;
+import org.apache.maven.surefire.extensions.ForkNodeFactory;
 
 /**
  * The factory of {@link LegacyForkChannel}.
  */
-public class LegacyForkNodeFactory implements ForkNodeFactory
-{
+public class LegacyForkNodeFactory implements ForkNodeFactory {
     @Nonnull
     @Override
-    public ForkChannel createForkChannel( @Nonnull ForkNodeArguments arguments )
-    {
-        return new LegacyForkChannel( arguments );
+    public ForkChannel createForkChannel(@Nonnull ForkNodeArguments arguments) {
+        return new LegacyForkChannel(arguments);
     }
 }

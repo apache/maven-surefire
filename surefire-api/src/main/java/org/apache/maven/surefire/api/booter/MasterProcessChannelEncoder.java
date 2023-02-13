@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.booter;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.booter;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.api.booter;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.api.booter;
 
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
@@ -30,8 +29,7 @@ import org.apache.maven.surefire.api.report.TestSetReportEntry;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M5
  */
-public interface MasterProcessChannelEncoder
-{
+public interface MasterProcessChannelEncoder {
     /**
      * @return {@code true} if the encoder's stream has got an error
      */
@@ -48,7 +46,7 @@ public interface MasterProcessChannelEncoder
      * @param reportEntry     test set report entry
      * @param trimStackTraces {@code true} if stack trace trimming
      */
-    void testSetStarting( TestSetReportEntry reportEntry, boolean trimStackTraces );
+    void testSetStarting(TestSetReportEntry reportEntry, boolean trimStackTraces);
 
     /**
      * The test set has finished.
@@ -56,7 +54,7 @@ public interface MasterProcessChannelEncoder
      * @param reportEntry     test set report entry
      * @param trimStackTraces {@code true} if stack trace trimming
      */
-    void testSetCompleted( TestSetReportEntry reportEntry, boolean trimStackTraces );
+    void testSetCompleted(TestSetReportEntry reportEntry, boolean trimStackTraces);
 
     /**
      * The test has started.
@@ -64,7 +62,7 @@ public interface MasterProcessChannelEncoder
      * @param reportEntry     test set report entry
      * @param trimStackTraces {@code true} if stack trace trimming
      */
-    void testStarting( ReportEntry reportEntry, boolean trimStackTraces );
+    void testStarting(ReportEntry reportEntry, boolean trimStackTraces);
 
     /**
      * The test has succeeded.
@@ -72,7 +70,7 @@ public interface MasterProcessChannelEncoder
      * @param reportEntry     test set report entry
      * @param trimStackTraces {@code true} if stack trace trimming
      */
-    void testSucceeded( ReportEntry reportEntry, boolean trimStackTraces );
+    void testSucceeded(ReportEntry reportEntry, boolean trimStackTraces);
 
     /**
      * The test has failed.
@@ -80,7 +78,7 @@ public interface MasterProcessChannelEncoder
      * @param reportEntry     test set report entry
      * @param trimStackTraces {@code true} if stack trace trimming
      */
-    void testFailed( ReportEntry reportEntry, boolean trimStackTraces );
+    void testFailed(ReportEntry reportEntry, boolean trimStackTraces);
 
     /**
      * The test is skipped.
@@ -88,7 +86,7 @@ public interface MasterProcessChannelEncoder
      * @param reportEntry     test set report entry
      * @param trimStackTraces {@code true} if stack trace trimming
      */
-    void testSkipped( ReportEntry reportEntry, boolean trimStackTraces );
+    void testSkipped(ReportEntry reportEntry, boolean trimStackTraces);
 
     /**
      * The test error.
@@ -96,7 +94,7 @@ public interface MasterProcessChannelEncoder
      * @param reportEntry     test set report entry
      * @param trimStackTraces {@code true} if stack trace trimming
      */
-    void testError( ReportEntry reportEntry, boolean trimStackTraces );
+    void testError(ReportEntry reportEntry, boolean trimStackTraces);
 
     /**
      * The test assumption failure.
@@ -104,35 +102,35 @@ public interface MasterProcessChannelEncoder
      * @param reportEntry     test set report entry
      * @param trimStackTraces {@code true} if stack trace trimming
      */
-    void testAssumptionFailure( ReportEntry reportEntry, boolean trimStackTraces );
+    void testAssumptionFailure(ReportEntry reportEntry, boolean trimStackTraces);
 
     /**
      * Test output, a line or characters.
      *
      * @param reportEntry std/out or std/err context
      */
-    void testOutput( TestOutputReportEntry reportEntry );
+    void testOutput(TestOutputReportEntry reportEntry);
 
     /**
      * Info log.
      *
      * @param msg message of info logger
      */
-    void consoleInfoLog( String msg );
+    void consoleInfoLog(String msg);
 
     /**
      * Error log.
      *
      * @param msg message of error logger
      */
-    void consoleErrorLog( String msg );
+    void consoleErrorLog(String msg);
 
     /**
      * Error log.
      *
      * @param t exception
      */
-    void consoleErrorLog( Throwable t );
+    void consoleErrorLog(Throwable t);
 
     /**
      * Error log.
@@ -140,7 +138,7 @@ public interface MasterProcessChannelEncoder
      * @param msg additional error message
      * @param t   exception
      */
-    void consoleErrorLog( String msg, Throwable t );
+    void consoleErrorLog(String msg, Throwable t);
 
     /**
      * Error log.
@@ -148,21 +146,21 @@ public interface MasterProcessChannelEncoder
      * @param stackTraceWriter printable stack trace
      * @param trimStackTraces  {@code true} if selected trimmed stack trace to print into encoder channel/stream
      */
-    void consoleErrorLog( StackTraceWriter stackTraceWriter, boolean trimStackTraces );
+    void consoleErrorLog(StackTraceWriter stackTraceWriter, boolean trimStackTraces);
 
     /**
      * Debug log.
      *
      * @param msg message of debug logger
      */
-    void consoleDebugLog( String msg );
+    void consoleDebugLog(String msg);
 
     /**
      * Warning log.
      *
      * @param msg message of warning logger
      */
-    void consoleWarningLog( String msg );
+    void consoleWarningLog(String msg);
 
     /**
      * Say BYE on exit.
@@ -186,5 +184,5 @@ public interface MasterProcessChannelEncoder
      * @param stackTraceWriter printable stack trace
      * @param trimStackTraces  {@code true} if selected trimmed stack trace to print into encoder channel/stream
      */
-    void sendExitError( StackTraceWriter stackTraceWriter, boolean trimStackTraces );
+    void sendExitError(StackTraceWriter stackTraceWriter, boolean trimStackTraces);
 }

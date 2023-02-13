@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.common.junit48;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.common.junit48;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.common.junit48;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.common.junit48;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
@@ -30,14 +29,12 @@ import junit.framework.TestSuite;
  * @author Tibor Digana (tibor17)
  * @since 2.19
  */
-public class JUnit4SuiteTest extends TestCase
-{
-    public static Test suite()
-    {
+public class JUnit4SuiteTest extends TestCase {
+    public static Test suite() {
         TestSuite suite = new TestSuite();
-        suite.addTestSuite( JUnit48ReflectorTest.class );
-        suite.addTest( new JUnit4TestAdapter( JUnit48TestCheckerTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( FilterFactoryTest.class ) );
+        suite.addTestSuite(JUnit48ReflectorTest.class);
+        suite.addTest(new JUnit4TestAdapter(JUnit48TestCheckerTest.class));
+        suite.addTest(new JUnit4TestAdapter(FilterFactoryTest.class));
         return suite;
     }
 }

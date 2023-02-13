@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.log.api;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.log.api;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,12 +16,13 @@ package org.apache.maven.plugin.surefire.log.api;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
+package org.apache.maven.plugin.surefire.log.api;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -34,104 +33,99 @@ import static org.mockito.Mockito.when;
 /**
  * Tests for {@link ConsoleLoggerDecorator}, {@link NullConsoleLogger} and {@link PrintStreamLogger}.
  */
-public class LoggersTest
-{
+public class LoggersTest {
     @Test
-    public void testPrintStreamLogger()
-    {
+    public void testPrintStreamLogger() {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        PrintStream printStream = new PrintStream( outputStream );
-        PrintStreamLogger logger = new PrintStreamLogger( printStream );
+        PrintStream printStream = new PrintStream(outputStream);
+        PrintStreamLogger logger = new PrintStreamLogger(printStream);
 
+        assertThat(logger.isErrorEnabled()).isTrue();
+        assertThat(logger.isWarnEnabled()).isTrue();
+        assertThat(logger.isInfoEnabled()).isTrue();
+        assertThat(logger.isDebugEnabled()).isTrue();
 
-        assertThat( logger.isErrorEnabled() ).isTrue();
-        assertThat( logger.isWarnEnabled() ).isTrue();
-        assertThat( logger.isInfoEnabled() ).isTrue();
-        assertThat( logger.isDebugEnabled() ).isTrue();
-
-        logger.error( "error" );
-        logger.debug( "debug" );
-        logger.info( "info" );
-        logger.warning( "warning" );
+        logger.error("error");
+        logger.debug("debug");
+        logger.info("info");
+        logger.warning("warning");
 
         String line = System.lineSeparator();
-        assertThat( outputStream.toString() )
-                .isEqualTo( "error" + line + "debug" + line + "info" + line + "warning" + line );
+        assertThat(outputStream.toString())
+                .isEqualTo("error" + line + "debug" + line + "info" + line + "warning" + line);
 
-        Exception e = new Exception( "exception" );
+        Exception e = new Exception("exception");
         outputStream.reset();
-        logger.error( e );
-        assertThat( outputStream.toString() )
-                .contains( "java.lang.Exception: exception" )
-                .contains( "at " + getClass().getName() + ".testPrintStreamLogger(LoggersTest.java:61)" );
+        logger.error(e);
+        assertThat(outputStream.toString())
+                .contains("java.lang.Exception: exception")
+                .contains("at " + getClass().getName() + ".testPrintStreamLogger(LoggersTest.java");
     }
 
-    @Test( expected = NullPointerException.class )
-    public void shouldThrowNPE()
-    {
-        new ConsoleLoggerDecorator( null );
+    @Test(expected = NullPointerException.class)
+    public void shouldThrowNPE() {
+        new ConsoleLoggerDecorator(null);
     }
 
     @Test
-    public void testDecorator()
-    {
-        ConsoleLogger logger = mock( ConsoleLogger.class );
-        ConsoleLoggerDecorator decorator = new ConsoleLoggerDecorator( logger );
+    public void testDecorator() {
+        ConsoleLogger logger = mock(ConsoleLogger.class);
+        ConsoleLoggerDecorator decorator = new ConsoleLoggerDecorator(logger);
 
-        assertThat( decorator.isDebugEnabled() ).isFalse();
-        when( logger.isDebugEnabled() ).thenReturn( true );
-        assertThat( decorator.isDebugEnabled() ).isTrue();
+        assertThat(decorator.isDebugEnabled()).isFalse();
+        when(logger.isDebugEnabled()).thenReturn(true);
+        assertThat(decorator.isDebugEnabled()).isTrue();
 
-        assertThat( decorator.isInfoEnabled() ).isFalse();
-        when( logger.isInfoEnabled() ).thenReturn( true );
-        assertThat( decorator.isInfoEnabled() ).isTrue();
+        assertThat(decorator.isInfoEnabled()).isFalse();
+        when(logger.isInfoEnabled()).thenReturn(true);
+        assertThat(decorator.isInfoEnabled()).isTrue();
 
-        assertThat( decorator.isWarnEnabled() ).isFalse();
-        when( logger.isWarnEnabled() ).thenReturn( true );
-        assertThat( decorator.isWarnEnabled() ).isTrue();
+        assertThat(decorator.isWarnEnabled()).isFalse();
+        when(logger.isWarnEnabled()).thenReturn(true);
+        assertThat(decorator.isWarnEnabled()).isTrue();
 
-        assertThat( decorator.isErrorEnabled() ).isFalse();
-        when( logger.isErrorEnabled() ).thenReturn( true );
-        assertThat( decorator.isErrorEnabled() ).isTrue();
+        assertThat(decorator.isErrorEnabled()).isFalse();
+        when(logger.isErrorEnabled()).thenReturn(true);
+        assertThat(decorator.isErrorEnabled()).isTrue();
 
-        ArgumentCaptor<String> argumentMsg = ArgumentCaptor.forClass( String.class );
-        decorator.debug( "debug" );
-        verify( logger, times( 1 ) ).debug( argumentMsg.capture() );
-        assertThat( argumentMsg.getAllValues() ).hasSize( 1 );
-        assertThat( argumentMsg.getAllValues().get( 0 ) ).isEqualTo( "debug" );
+        ArgumentCaptor<String> argumentMsg = ArgumentCaptor.forClass(String.class);
+        decorator.debug("debug");
+        verify(logger, times(1)).debug(argumentMsg.capture());
+        assertThat(argumentMsg.getAllValues()).hasSize(1);
+        assertThat(argumentMsg.getAllValues().get(0)).isEqualTo("debug");
 
-        argumentMsg = ArgumentCaptor.forClass( String.class );
-        decorator.info( "info" );
-        verify( logger, times( 1 ) ).info( argumentMsg.capture() );
-        assertThat( argumentMsg.getAllValues() ).hasSize( 1 );
-        assertThat( argumentMsg.getAllValues().get( 0 ) ).isEqualTo( "info" );
+        argumentMsg = ArgumentCaptor.forClass(String.class);
+        decorator.info("info");
+        verify(logger, times(1)).info(argumentMsg.capture());
+        assertThat(argumentMsg.getAllValues()).hasSize(1);
+        assertThat(argumentMsg.getAllValues().get(0)).isEqualTo("info");
 
-        argumentMsg = ArgumentCaptor.forClass( String.class );
-        decorator.warning( "warning" );
-        verify( logger, times( 1 ) ).warning( argumentMsg.capture() );
-        assertThat( argumentMsg.getAllValues() ).hasSize( 1 );
-        assertThat( argumentMsg.getAllValues().get( 0 ) ).isEqualTo( "warning" );
+        argumentMsg = ArgumentCaptor.forClass(String.class);
+        decorator.warning("warning");
+        verify(logger, times(1)).warning(argumentMsg.capture());
+        assertThat(argumentMsg.getAllValues()).hasSize(1);
+        assertThat(argumentMsg.getAllValues().get(0)).isEqualTo("warning");
 
-        argumentMsg = ArgumentCaptor.forClass( String.class );
-        decorator.error( "error" );
-        verify( logger, times( 1 ) ).error( argumentMsg.capture() );
-        assertThat( argumentMsg.getAllValues() ).hasSize( 1 );
-        assertThat( argumentMsg.getAllValues().get( 0 ) ).isEqualTo( "error" );
+        argumentMsg = ArgumentCaptor.forClass(String.class);
+        decorator.error("error");
+        verify(logger, times(1)).error(argumentMsg.capture());
+        assertThat(argumentMsg.getAllValues()).hasSize(1);
+        assertThat(argumentMsg.getAllValues().get(0)).isEqualTo("error");
 
-        ArgumentCaptor<Throwable> argumentThrowable = ArgumentCaptor.forClass( Throwable.class );
-        argumentMsg = ArgumentCaptor.forClass( String.class );
+        ArgumentCaptor<Throwable> argumentThrowable = ArgumentCaptor.forClass(Throwable.class);
+        argumentMsg = ArgumentCaptor.forClass(String.class);
         Exception e = new Exception();
-        decorator.error( "error", e );
-        verify( logger, times( 1 ) ).error( argumentMsg.capture(), argumentThrowable.capture() );
-        assertThat( argumentMsg.getAllValues() ).hasSize( 1 );
-        assertThat( argumentMsg.getAllValues().get( 0 ) ).isEqualTo( "error" );
-        assertThat( argumentThrowable.getAllValues() ).hasSize( 1 );
-        assertThat( argumentThrowable.getAllValues().get( 0 ) ).isSameAs( e );
+        decorator.error("error", e);
+        verify(logger, times(1)).error(argumentMsg.capture(), argumentThrowable.capture());
+        assertThat(argumentMsg.getAllValues()).hasSize(1);
+        assertThat(argumentMsg.getAllValues().get(0)).isEqualTo("error");
+        assertThat(argumentThrowable.getAllValues()).hasSize(1);
+        assertThat(argumentThrowable.getAllValues().get(0)).isSameAs(e);
 
-        argumentThrowable = ArgumentCaptor.forClass( Throwable.class );
-        decorator.error( e );
-        verify( logger, times( 1 ) ).error( argumentThrowable.capture() );
-        assertThat( argumentThrowable.getAllValues() ).hasSize( 1 );
-        assertThat( argumentThrowable.getAllValues().get( 0 ) ).isSameAs( e );
+        argumentThrowable = ArgumentCaptor.forClass(Throwable.class);
+        decorator.error(e);
+        verify(logger, times(1)).error(argumentThrowable.capture());
+        assertThat(argumentThrowable.getAllValues()).hasSize(1);
+        assertThat(argumentThrowable.getAllValues().get(0)).isSameAs(e);
     }
 }

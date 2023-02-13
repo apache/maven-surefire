@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.api.report;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.api.report;
 
 import java.util.Map;
 
@@ -29,7 +28,6 @@ import java.util.Map;
  * @see RunListener#testSetCompleted(TestSetReportEntry)
  * @since 2.20.1
  */
-public interface TestSetReportEntry extends ReportEntry
-{
+public interface TestSetReportEntry extends ReportEntry {
     Map<String, String> getSystemProperties();
 }

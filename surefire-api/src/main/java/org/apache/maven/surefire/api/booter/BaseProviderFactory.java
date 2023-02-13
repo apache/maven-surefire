@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.booter;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.booter;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,11 @@ package org.apache.maven.surefire.api.booter;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.api.booter;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.maven.surefire.api.cli.CommandLineOption;
 import org.apache.maven.surefire.api.provider.CommandChainReader;
@@ -35,18 +38,12 @@ import org.apache.maven.surefire.api.util.DirectoryScanner;
 import org.apache.maven.surefire.api.util.RunOrderCalculator;
 import org.apache.maven.surefire.api.util.ScanResult;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import static java.util.Collections.emptyList;
 
 /**
  * @author Kristian Rosenvold
  */
-public class BaseProviderFactory
-    implements ProviderParameters
-{
+public class BaseProviderFactory implements ProviderParameters {
     private final boolean insideFork;
 
     private ReporterFactory reporterFactory;
@@ -73,136 +70,115 @@ public class BaseProviderFactory
 
     private CommandChainReader commandReader;
 
-    public BaseProviderFactory( boolean insideFork )
-    {
+    public BaseProviderFactory(boolean insideFork) {
         this.insideFork = insideFork;
     }
 
     @Override
-    public CommandChainReader getCommandReader()
-    {
+    public CommandChainReader getCommandReader() {
         return commandReader;
     }
 
-    public void setCommandReader( CommandChainReader commandReader )
-    {
+    public void setCommandReader(CommandChainReader commandReader) {
         this.commandReader = commandReader;
     }
 
     @Override
     @Deprecated
-    public DirectoryScanner getDirectoryScanner()
-    {
+    public DirectoryScanner getDirectoryScanner() {
         return directoryScannerParameters == null
-                ? null : new DefaultDirectoryScanner( directoryScannerParameters.getTestClassesDirectory(),
-                                            directoryScannerParameters.getIncludes(),
-                                            directoryScannerParameters.getExcludes(),
-                                            directoryScannerParameters.getSpecificTests() );
+                ? null
+                : new DefaultDirectoryScanner(
+                        directoryScannerParameters.getTestClassesDirectory(),
+                        directoryScannerParameters.getIncludes(),
+                        directoryScannerParameters.getExcludes(),
+                        directoryScannerParameters.getSpecificTests());
     }
 
     @Override
-    public ScanResult getScanResult()
-    {
-        return DefaultScanResult.from( providerProperties );
+    public ScanResult getScanResult() {
+        return DefaultScanResult.from(providerProperties);
     }
 
-    private int getThreadCount()
-    {
-        final String threadcount = providerProperties.get( ProviderParameterNames.THREADCOUNT_PROP );
-        return threadcount == null ? 1 : Math.max( Integer.parseInt( threadcount ), 1 );
+    private int getThreadCount() {
+        final String threadcount = providerProperties.get(ProviderParameterNames.THREADCOUNT_PROP);
+        return threadcount == null ? 1 : Math.max(Integer.parseInt(threadcount), 1);
     }
 
     @Override
-    public RunOrderCalculator getRunOrderCalculator()
-    {
-        return new DefaultRunOrderCalculator( runOrderParameters, getThreadCount() );
+    public RunOrderCalculator getRunOrderCalculator() {
+        return new DefaultRunOrderCalculator(runOrderParameters, getThreadCount());
     }
 
-    public void setReporterFactory( ReporterFactory reporterFactory )
-    {
+    public void setReporterFactory(ReporterFactory reporterFactory) {
         this.reporterFactory = reporterFactory;
     }
 
     @Override
-    public ReporterFactory getReporterFactory()
-    {
+    public ReporterFactory getReporterFactory() {
         return reporterFactory;
     }
 
-    public void setDirectoryScannerParameters( DirectoryScannerParameters directoryScannerParameters )
-    {
+    public void setDirectoryScannerParameters(DirectoryScannerParameters directoryScannerParameters) {
         this.directoryScannerParameters = directoryScannerParameters;
     }
 
-    public void setReporterConfiguration( ReporterConfiguration reporterConfiguration )
-    {
+    public void setReporterConfiguration(ReporterConfiguration reporterConfiguration) {
         this.reporterConfiguration = reporterConfiguration;
     }
 
-    public void setClassLoaders( ClassLoader testClassLoader )
-    {
+    public void setClassLoaders(ClassLoader testClassLoader) {
         this.testClassLoader = testClassLoader;
     }
 
-    public void setTestRequest( TestRequest testRequest )
-    {
+    public void setTestRequest(TestRequest testRequest) {
         this.testRequest = testRequest;
     }
 
     @Override
-    public DirectoryScannerParameters getDirectoryScannerParameters()
-    {
+    public DirectoryScannerParameters getDirectoryScannerParameters() {
         return directoryScannerParameters;
     }
 
     @Override
-    public ReporterConfiguration getReporterConfiguration()
-    {
+    public ReporterConfiguration getReporterConfiguration() {
         return reporterConfiguration;
     }
 
     @Override
-    public TestRequest getTestRequest()
-    {
+    public TestRequest getTestRequest() {
         return testRequest;
     }
 
     @Override
-    public ClassLoader getTestClassLoader()
-    {
+    public ClassLoader getTestClassLoader() {
         return testClassLoader;
     }
 
-    public void setProviderProperties( Map<String, String> providerProperties )
-    {
+    public void setProviderProperties(Map<String, String> providerProperties) {
         this.providerProperties = providerProperties;
     }
 
     @Override
-    public Map<String, String> getProviderProperties()
-    {
+    public Map<String, String> getProviderProperties() {
         return providerProperties;
     }
 
     @Override
-    public TestArtifactInfo getTestArtifactInfo()
-    {
+    public TestArtifactInfo getTestArtifactInfo() {
         return testArtifactInfo;
     }
 
-    public void setTestArtifactInfo( TestArtifactInfo testArtifactInfo )
-    {
+    public void setTestArtifactInfo(TestArtifactInfo testArtifactInfo) {
         this.testArtifactInfo = testArtifactInfo;
     }
 
-    public void setRunOrderParameters( RunOrderParameters runOrderParameters )
-    {
+    public void setRunOrderParameters(RunOrderParameters runOrderParameters) {
         this.runOrderParameters = runOrderParameters;
     }
 
     @Override
-    public List<CommandLineOption> getMainCliOptions()
-    {
+    public List<CommandLineOption> getMainCliOptions() {
         return mainCliOptions;
     }
 
@@ -211,14 +187,12 @@ public class BaseProviderFactory
      *
      * @param mainCliOptions options
      */
-    public void setMainCliOptions( List<CommandLineOption> mainCliOptions )
-    {
+    public void setMainCliOptions(List<CommandLineOption> mainCliOptions) {
         this.mainCliOptions = mainCliOptions == null ? Collections.<CommandLineOption>emptyList() : mainCliOptions;
     }
 
     @Override
-    public int getSkipAfterFailureCount()
-    {
+    public int getSkipAfterFailureCount() {
         return skipAfterFailureCount;
     }
 
@@ -227,25 +201,21 @@ public class BaseProviderFactory
      *
      * @param skipAfterFailureCount the value in config parameter "skipAfterFailureCount"
      */
-    public void setSkipAfterFailureCount( int skipAfterFailureCount )
-    {
+    public void setSkipAfterFailureCount(int skipAfterFailureCount) {
         this.skipAfterFailureCount = skipAfterFailureCount;
     }
 
     @Override
-    public boolean isInsideFork()
-    {
+    public boolean isInsideFork() {
         return insideFork;
     }
 
     @Override
-    public Integer getSystemExitTimeout()
-    {
+    public Integer getSystemExitTimeout() {
         return systemExitTimeout;
     }
 
-    public void setSystemExitTimeout( Integer systemExitTimeout )
-    {
+    public void setSystemExitTimeout(Integer systemExitTimeout) {
         this.systemExitTimeout = systemExitTimeout;
     }
 }

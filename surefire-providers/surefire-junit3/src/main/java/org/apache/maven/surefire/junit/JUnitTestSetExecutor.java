@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.junit;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.junit;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.junit;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.junit;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -30,15 +29,12 @@ import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
  * JUnit3 test set
  *
  */
-public final class JUnitTestSetExecutor
-    implements SurefireTestSetExecutor
-{
+public final class JUnitTestSetExecutor implements SurefireTestSetExecutor {
     private final JUnit3Reflector reflector;
 
     private final JUnit3Reporter reporter;
 
-    public JUnitTestSetExecutor( JUnit3Reflector reflector, JUnit3Reporter reporter )
-    {
+    public JUnitTestSetExecutor(JUnit3Reflector reflector, JUnit3Reporter reporter) {
         this.reflector = reflector;
         this.reporter = reporter;
 
@@ -58,49 +54,37 @@ public final class JUnitTestSetExecutor
     }
 
     @Override
-    public void execute( Class<?> testClass, ClassLoader loader )
-        throws TestSetFailedException
-    {
-        try
-        {
-            Object testObject = reflector.constructTestObject( testClass );
+    public void execute(Class<?> testClass, ClassLoader loader) throws TestSetFailedException {
+        try {
+            Object testObject = reflector.constructTestObject(testClass);
             final Method runMethod;
 
-            if ( reflector.getTestInterface().isAssignableFrom( testObject.getClass() ) )
-            {
+            if (reflector.getTestInterface().isAssignableFrom(testObject.getClass())) {
                 runMethod = reflector.getTestInterfaceRunMethod();
-            }
-            else
-            {
-                runMethod = reflector.getRunMethod( testClass );
+            } else {
+                runMethod = reflector.getRunMethod(testClass);
             }
 
             Object instanceOfTestResult = reflector.getTestResultClass().newInstance();
 
-            TestListenerInvocationHandler invocationHandler = new TestListenerInvocationHandler( reporter );
+            TestListenerInvocationHandler invocationHandler = new TestListenerInvocationHandler(reporter);
 
-            Object testListener =
-                Proxy.newProxyInstance( loader, reflector.getInterfacesImplementedByDynamicProxy(), invocationHandler );
+            Object testListener = Proxy.newProxyInstance(
+                    loader, reflector.getInterfacesImplementedByDynamicProxy(), invocationHandler);
 
-            Object[] addTestListenerParams = { testListener };
+            Object[] addTestListenerParams = {testListener};
 
-            reflector.getAddListenerMethod().invoke( instanceOfTestResult, addTestListenerParams );
+            reflector.getAddListenerMethod().invoke(instanceOfTestResult, addTestListenerParams);
 
-            Object[] runParams = { instanceOfTestResult };
+            Object[] runParams = {instanceOfTestResult};
 
-            runMethod.invoke( testObject, runParams );
-        }
-        catch ( InvocationTargetException e )
-        {
-            throw new TestSetFailedException( testClass.getName(), e.getTargetException() );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new TestSetFailedException( "Class is not a JUnit TestCase", e );
-        }
-        catch ( ReflectiveOperationException e )
-        {
-            throw new TestSetFailedException( testClass.getName(), e );
+            runMethod.invoke(testObject, runParams);
+        } catch (InvocationTargetException e) {
+            throw new TestSetFailedException(testClass.getName(), e.getTargetException());
+        } catch (NoSuchMethodException e) {
+            throw new TestSetFailedException("Class is not a JUnit TestCase", e);
+        } catch (ReflectiveOperationException e) {
+            throw new TestSetFailedException(testClass.getName(), e);
         }
     }
 }

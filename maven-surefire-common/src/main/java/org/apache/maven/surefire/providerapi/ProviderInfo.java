@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.providerapi;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.providerapi;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,10 +16,12 @@ package org.apache.maven.surefire.providerapi;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.providerapi;
+
+import javax.annotation.Nonnull;
 
 import java.util.List;
 import java.util.Set;
-import javax.annotation.Nonnull;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -29,8 +29,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 /**
  * @author Kristian Rosenvold
  */
-public interface ProviderInfo
-{
+public interface ProviderInfo {
     @Nonnull
     String getProviderName();
 
@@ -42,5 +41,5 @@ public interface ProviderInfo
     void addProviderProperties() throws MojoExecutionException;
 
     @Nonnull
-    List<String[]> getJpmsArguments( @Nonnull ProviderRequirements forkRequirements );
+    List<String[]> getJpmsArguments(@Nonnull ProviderRequirements forkRequirements);
 }

@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.report;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.report;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,32 +41,29 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  *
  */
-public class ConsoleOutputFileReporterTest
-    extends TestCase
-{
+public class ConsoleOutputFileReporterTest extends TestCase {
     /*
      * Test method for 'org.codehaus.surefire.report.ConsoleOutputFileReporter.testSetCompleted(ReportEntry report)'
      */
-    public void testFileNameWithoutSuffix() throws IOException
-    {
-        File reportDir = new File( new File( System.getProperty( "user.dir" ), "target" ), "tmp1" );
+    public void testFileNameWithoutSuffix() throws IOException {
+        File reportDir = new File(new File(System.getProperty("user.dir"), "target"), "tmp1");
         //noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
-        TestSetReportEntry reportEntry =
-                new SimpleReportEntry( NORMAL_RUN, 1L, getClass().getName(), null, getClass().getName(), null );
-        ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, null, false, null, "UTF-8" );
-        reporter.testSetStarting( reportEntry );
-        reporter.writeTestOutput( (TestOutputReportEntry) stdOut( "some " ) );
-        reporter.testSetCompleted( reportEntry );
+        TestSetReportEntry reportEntry = new SimpleReportEntry(
+                NORMAL_RUN, 1L, getClass().getName(), null, getClass().getName(), null);
+        ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter(reportDir, null, false, null, "UTF-8");
+        reporter.testSetStarting(reportEntry);
+        reporter.writeTestOutput((TestOutputReportEntry) stdOut("some "));
+        reporter.testSetCompleted(reportEntry);
         reporter.close();
 
-        File expectedReportFile = new File( reportDir, getClass().getName() + "-output.txt" );
+        File expectedReportFile = new File(reportDir, getClass().getName() + "-output.txt");
 
-        assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
-                    expectedReportFile.exists() );
+        assertTrue(
+                "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
+                expectedReportFile.exists());
 
-        assertThat( FileUtils.fileRead( expectedReportFile, US_ASCII.name() ) )
-                .contains( "some " );
+        assertThat(FileUtils.fileRead(expectedReportFile, US_ASCII.name())).contains("some ");
 
         //noinspection ResultOfMethodCallIgnored
         expectedReportFile.delete();
@@ -76,97 +72,86 @@ public class ConsoleOutputFileReporterTest
     /*
      * Test method for 'org.codehaus.surefire.report.ConsoleOutputFileReporter.testSetCompleted(ReportEntry report)'
      */
-    public void testFileNameWithSuffix() throws IOException
-    {
-        File reportDir = new File( new File( System.getProperty( "user.dir" ), "target" ), "tmp2" );
+    public void testFileNameWithSuffix() throws IOException {
+        File reportDir = new File(new File(System.getProperty("user.dir"), "target"), "tmp2");
         String suffixText = "sampleSuffixText";
-        TestSetReportEntry reportEntry =
-                new SimpleReportEntry( NORMAL_RUN, 1L, getClass().getName(), null, getClass().getName(), null );
-        ConsoleOutputFileReporter reporter =
-                new ConsoleOutputFileReporter( reportDir, suffixText, false, null, "UTF-8" );
-        reporter.testSetStarting( reportEntry );
-        reporter.writeTestOutput( stdOutln( null ) );
-        reporter.writeTestOutput( stdOutln( "some " ) );
-        reporter.testSetCompleted( reportEntry );
+        TestSetReportEntry reportEntry = new SimpleReportEntry(
+                NORMAL_RUN, 1L, getClass().getName(), null, getClass().getName(), null);
+        ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter(reportDir, suffixText, false, null, "UTF-8");
+        reporter.testSetStarting(reportEntry);
+        reporter.writeTestOutput(stdOutln(null));
+        reporter.writeTestOutput(stdOutln("some "));
+        reporter.testSetCompleted(reportEntry);
         reporter.close();
 
-        File expectedReportFile = new File( reportDir, getClass().getName() + "-" + suffixText + "-output.txt" );
+        File expectedReportFile = new File(reportDir, getClass().getName() + "-" + suffixText + "-output.txt");
 
-        assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
-                    expectedReportFile.exists() );
+        assertTrue(
+                "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
+                expectedReportFile.exists());
 
-        assertThat( FileUtils.fileRead( expectedReportFile, US_ASCII.name() ) )
-                .contains( "some " );
+        assertThat(FileUtils.fileRead(expectedReportFile, US_ASCII.name())).contains("some ");
 
-        assertThat( expectedReportFile )
-                .hasSize( 9 + 2 * System.lineSeparator().length() );
+        assertThat(expectedReportFile).hasSize(9 + 2 * System.lineSeparator().length());
 
         //noinspection ResultOfMethodCallIgnored
         expectedReportFile.delete();
     }
 
-    public void testNullReportFile() throws IOException
-    {
-        File reportDir = new File( new File( System.getProperty( "user.dir" ), "target" ), "tmp3" );
-        ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter( reportDir, null, false, null, "UTF-8" );
-        reporter.writeTestOutput( (TestOutputReportEntry) stdOut( "some text" ) );
-        reporter.testSetCompleted(
-            new SimpleReportEntry( NORMAL_RUN, 1L, getClass().getName(), null, getClass().getName(), null ) );
+    public void testNullReportFile() throws IOException {
+        File reportDir = new File(new File(System.getProperty("user.dir"), "target"), "tmp3");
+        ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter(reportDir, null, false, null, "UTF-8");
+        reporter.writeTestOutput((TestOutputReportEntry) stdOut("some text"));
+        reporter.testSetCompleted(new SimpleReportEntry(
+                NORMAL_RUN, 1L, getClass().getName(), null, getClass().getName(), null));
         reporter.close();
 
-        File expectedReportFile = new File( reportDir, "null-output.txt" );
+        File expectedReportFile = new File(reportDir, "null-output.txt");
 
-        assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
-                expectedReportFile.exists() );
+        assertTrue(
+                "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
+                expectedReportFile.exists());
 
-        assertThat( FileUtils.fileRead( expectedReportFile, US_ASCII.name() ) )
-                .contains( "some " );
+        assertThat(FileUtils.fileRead(expectedReportFile, US_ASCII.name())).contains("some ");
 
         //noinspection ResultOfMethodCallIgnored
         expectedReportFile.delete();
     }
 
-    public void testConcurrentAccessReportFile() throws Exception
-    {
-        File reportDir = new File( new File( System.getProperty( "user.dir" ), "target" ), "tmp4" );
-        final ConsoleOutputFileReporter reporter =
-                new ConsoleOutputFileReporter( reportDir, null, false, null, "UTF-8" );
-        reporter.testSetStarting(
-            new SimpleReportEntry( NORMAL_RUN, 1L, getClass().getName(), null, getClass().getName(), null ) );
-        ExecutorService scheduler = Executors.newFixedThreadPool( 10 );
+    public void testConcurrentAccessReportFile() throws Exception {
+        File reportDir = new File(new File(System.getProperty("user.dir"), "target"), "tmp4");
+        final ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter(reportDir, null, false, null, "UTF-8");
+        reporter.testSetStarting(new SimpleReportEntry(
+                NORMAL_RUN, 1L, getClass().getName(), null, getClass().getName(), null));
+        ExecutorService scheduler = Executors.newFixedThreadPool(10);
         final ArrayList<Callable<Void>> jobs = new ArrayList<>();
-        for ( int i = 0; i < 10; i++ )
-        {
-            jobs.add( new Callable<Void>()
-            {
+        for (int i = 0; i < 10; i++) {
+            jobs.add(new Callable<Void>() {
                 @Override
-                public Void call()
-                {
-                    reporter.writeTestOutput( (TestOutputReportEntry) stdOut( "some text\n" ) );
+                public Void call() {
+                    reporter.writeTestOutput((TestOutputReportEntry) stdOut("some text\n"));
                     return null;
                 }
-            } );
+            });
         }
-        scheduler.invokeAll( jobs );
+        scheduler.invokeAll(jobs);
         scheduler.shutdown();
         reporter.close();
 
-        File expectedReportFile = new File( reportDir, getClass().getName() + "-output.txt" );
+        File expectedReportFile = new File(reportDir, getClass().getName() + "-output.txt");
 
-        assertTrue( "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
-                expectedReportFile.exists() );
+        assertTrue(
+                "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
+                expectedReportFile.exists());
 
-        assertThat( FileUtils.fileRead( expectedReportFile, US_ASCII.name() ) )
-                .contains( "some text" );
+        assertThat(FileUtils.fileRead(expectedReportFile, US_ASCII.name())).contains("some text");
 
         StringBuilder expectedText = new StringBuilder();
-        for ( int i = 0; i < 10; i++ )
-        {
-            expectedText.append( "some text\n" );
+        for (int i = 0; i < 10; i++) {
+            expectedText.append("some text\n");
         }
 
-        assertThat( FileUtils.fileRead( expectedReportFile, US_ASCII.name() ) )
-                .isEqualTo( expectedText.toString() );
+        assertThat(FileUtils.fileRead(expectedReportFile, US_ASCII.name())).isEqualTo(expectedText.toString());
 
         //noinspection ResultOfMethodCallIgnored
         expectedReportFile.delete();

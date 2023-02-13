@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,11 +16,7 @@ package org.apache.maven.plugin.surefire.report;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
-import org.apache.maven.surefire.api.report.ReportEntry;
-import org.apache.maven.surefire.api.report.TestOutputReportEntry;
-import org.apache.maven.surefire.api.report.TestSetReportEntry;
+package org.apache.maven.plugin.surefire.report;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -33,6 +27,11 @@ import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicStampedReference;
 
+import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
+import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
+
 import static org.apache.maven.plugin.surefire.report.FileReporter.getReportFile;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 
@@ -42,9 +41,7 @@ import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
  * @author Kristian Rosenvold
  * @author Carlos Sanchez
  */
-public class ConsoleOutputFileReporter
-    implements TestcycleConsoleOutputReceiver
-{
+public class ConsoleOutputFileReporter implements TestcycleConsoleOutputReceiver {
     private static final int STREAM_BUFFER_SIZE = 64 * 1024;
     private static final int OPEN = 0;
     private static final int CLOSED_TO_REOPEN = 1;
@@ -57,13 +54,16 @@ public class ConsoleOutputFileReporter
     private final String encoding;
 
     private final AtomicStampedReference<FilterOutputStream> fileOutputStream =
-            new AtomicStampedReference<>( null, OPEN );
+            new AtomicStampedReference<>(null, OPEN);
 
     private volatile String reportEntryName;
 
-    public ConsoleOutputFileReporter( File reportsDirectory, String reportNameSuffix, boolean usePhrasedFileName,
-                                      Integer forkNumber, String encoding )
-    {
+    public ConsoleOutputFileReporter(
+            File reportsDirectory,
+            String reportNameSuffix,
+            boolean usePhrasedFileName,
+            Integer forkNumber,
+            String encoding) {
         this.reportsDirectory = reportsDirectory;
         this.reportNameSuffix = reportNameSuffix;
         this.usePhrasedFileName = usePhrasedFileName;
@@ -72,123 +72,91 @@ public class ConsoleOutputFileReporter
     }
 
     @Override
-    public synchronized void testSetStarting( TestSetReportEntry reportEntry )
-    {
-        closeNullReportFile( reportEntry );
+    public synchronized void testSetStarting(TestSetReportEntry reportEntry) {
+        closeNullReportFile(reportEntry);
     }
 
     @Override
-    public void testSetCompleted( TestSetReportEntry report )
-    {
-    }
+    public void testSetCompleted(TestSetReportEntry report) {}
 
     @Override
-    public synchronized void close()
-    {
+    public synchronized void close() {
         // The close() method is called in main Thread T2.
         closeReportFile();
     }
 
     @Override
-    public synchronized void writeTestOutput( TestOutputReportEntry reportEntry )
-    {
-        try
-        {
+    public synchronized void writeTestOutput(TestOutputReportEntry reportEntry) {
+        try {
             // This method is called in single thread T1 per fork JVM (see ThreadedStreamConsumer).
             // The close() method is called in main Thread T2.
             int[] status = new int[1];
-            FilterOutputStream os = fileOutputStream.get( status );
-            if ( status[0] != CLOSED )
-            {
-                if ( os == null )
-                {
-                    if ( !reportsDirectory.exists() )
-                    {
+            FilterOutputStream os = fileOutputStream.get(status);
+            if (status[0] != CLOSED) {
+                if (os == null) {
+                    if (!reportsDirectory.exists()) {
                         //noinspection ResultOfMethodCallIgnored
                         reportsDirectory.mkdirs();
                     }
-                    File file = getReportFile( reportsDirectory, reportEntryName, reportNameSuffix, "-output.txt" );
-                    os = new BufferedOutputStream( new FileOutputStream( file ), STREAM_BUFFER_SIZE );
-                    fileOutputStream.set( os, OPEN );
+                    File file = getReportFile(reportsDirectory, reportEntryName, reportNameSuffix, "-output.txt");
+                    os = new BufferedOutputStream(new FileOutputStream(file), STREAM_BUFFER_SIZE);
+                    fileOutputStream.set(os, OPEN);
                 }
                 String output = reportEntry.getLog();
-                if ( output == null )
-                {
+                if (output == null) {
                     output = "null";
                 }
-                Charset charset = Charset.forName( encoding );
-                os.write( output.getBytes( charset ) );
-                if ( reportEntry.isNewLine() )
-                {
-                    os.write( NL.getBytes( charset ) );
+                Charset charset = Charset.forName(encoding);
+                os.write(output.getBytes(charset));
+                if (reportEntry.isNewLine()) {
+                    os.write(NL.getBytes(charset));
                 }
             }
-        }
-        catch ( IOException e )
-        {
-            dumpException( e );
-            throw new UncheckedIOException( e );
+        } catch (IOException e) {
+            dumpException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
-    @SuppressWarnings( "checkstyle:emptyblock" )
-    private void closeNullReportFile( ReportEntry reportEntry )
-    {
-        try
-        {
+    @SuppressWarnings("checkstyle:emptyblock")
+    private void closeNullReportFile(ReportEntry reportEntry) {
+        try {
             // close null-output.txt report file
-            close( true );
-        }
-        catch ( IOException e )
-        {
-            dumpException( e );
-        }
-        finally
-        {
+            close(true);
+        } catch (IOException e) {
+            dumpException(e);
+        } finally {
             // prepare <class>-output.txt report file
             reportEntryName = usePhrasedFileName ? reportEntry.getSourceText() : reportEntry.getSourceName();
         }
     }
 
-    @SuppressWarnings( "checkstyle:emptyblock" )
-    private void closeReportFile()
-    {
-        try
-        {
-            close( false );
-        }
-        catch ( IOException e )
-        {
-            dumpException( e );
+    @SuppressWarnings("checkstyle:emptyblock")
+    private void closeReportFile() {
+        try {
+            close(false);
+        } catch (IOException e) {
+            dumpException(e);
         }
     }
 
-    private void close( boolean closeReattempt )
-            throws IOException
-    {
+    private void close(boolean closeReattempt) throws IOException {
         int[] status = new int[1];
-        FilterOutputStream os = fileOutputStream.get( status );
-        if ( status[0] != CLOSED )
-        {
-            fileOutputStream.set( null, closeReattempt ? CLOSED_TO_REOPEN : CLOSED );
-            if ( os != null && status[0] == OPEN )
-            {
+        FilterOutputStream os = fileOutputStream.get(status);
+        if (status[0] != CLOSED) {
+            fileOutputStream.set(null, closeReattempt ? CLOSED_TO_REOPEN : CLOSED);
+            if (os != null && status[0] == OPEN) {
                 os.close();
             }
         }
     }
 
-    private void dumpException( IOException e )
-    {
-        if ( forkNumber == null )
-        {
+    private void dumpException(IOException e) {
+        if (forkNumber == null) {
+            InPluginProcessDumpSingleton.getSingleton().dumpException(e, e.getLocalizedMessage(), reportsDirectory);
+        } else {
             InPluginProcessDumpSingleton.getSingleton()
-                    .dumpException( e, e.getLocalizedMessage(), reportsDirectory );
-        }
-        else
-        {
-            InPluginProcessDumpSingleton.getSingleton()
-                    .dumpException( e, e.getLocalizedMessage(), reportsDirectory, forkNumber );
+                    .dumpException(e, e.getLocalizedMessage(), reportsDirectory, forkNumber);
         }
     }
 }

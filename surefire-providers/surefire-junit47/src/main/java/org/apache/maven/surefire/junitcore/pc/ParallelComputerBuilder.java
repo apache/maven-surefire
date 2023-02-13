@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.maven.surefire.junitcore.pc;
 
 /*
@@ -35,9 +53,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.junitcore.JUnitCoreParameters;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.internal.DaemonThreadFactory;
+import org.apache.maven.surefire.junitcore.JUnitCoreParameters;
 import org.junit.internal.runners.ErrorReportingRunner;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
@@ -56,7 +74,7 @@ import static org.apache.maven.surefire.junitcore.pc.Type.CLASSES;
 import static org.apache.maven.surefire.junitcore.pc.Type.METHODS;
 import static org.apache.maven.surefire.junitcore.pc.Type.SUITES;
 
-@SuppressWarnings( { "javadoc", "checkstyle:javadoctype" } )
+@SuppressWarnings({"javadoc", "checkstyle:javadoctype"})
 /*
  * Executing suites, classes and methods with defined concurrency. In this example the threads which completed
  * the suites and classes can be reused in parallel methods.
@@ -81,17 +99,16 @@ import static org.apache.maven.surefire.junitcore.pc.Type.SUITES;
  * @author Tibor Digana (tibor17)
  * @since 2.16
  */
-public final class ParallelComputerBuilder
-{
+public final class ParallelComputerBuilder {
     private static final ThreadFactory DAEMON_THREAD_FACTORY = DaemonThreadFactory.newDaemonThreadFactory();
 
     private static final Class<? extends Annotation> JCIP_NOT_THREAD_SAFE = loadNotThreadSafeAnnotations();
 
-    private static final Set<Runner> NULL_SINGLETON = Collections.singleton( null );
+    private static final Set<Runner> NULL_SINGLETON = Collections.singleton(null);
 
     static final int TOTAL_POOL_SIZE_UNDEFINED = 0;
 
-    private final Map<Type, Integer> parallelGroups = new EnumMap<>( Type.class );
+    private final Map<Type, Integer> parallelGroups = new EnumMap<>(Type.class);
 
     private final ConsoleLogger logger;
 
@@ -110,37 +127,32 @@ public final class ParallelComputerBuilder
      * Can be used only in unit tests.
      * Do NOT call this constructor in production.
      */
-    ParallelComputerBuilder( ConsoleLogger logger )
-    {
+    ParallelComputerBuilder(ConsoleLogger logger) {
         this.logger = logger;
         runningInTests = true;
         useSeparatePools();
-        parallelGroups.put( SUITES, 0 );
-        parallelGroups.put( CLASSES, 0 );
-        parallelGroups.put( METHODS, 0 );
+        parallelGroups.put(SUITES, 0);
+        parallelGroups.put(CLASSES, 0);
+        parallelGroups.put(METHODS, 0);
     }
 
-    public ParallelComputerBuilder( ConsoleLogger logger, JUnitCoreParameters parameters )
-    {
-        this( logger );
+    public ParallelComputerBuilder(ConsoleLogger logger, JUnitCoreParameters parameters) {
+        this(logger);
         runningInTests = false;
         this.parameters = parameters;
     }
 
-    public ParallelComputer buildComputer()
-    {
+    public ParallelComputer buildComputer() {
         return new PC();
     }
 
-    ParallelComputerBuilder useSeparatePools()
-    {
+    ParallelComputerBuilder useSeparatePools() {
         totalPoolSize = TOTAL_POOL_SIZE_UNDEFINED;
         useSeparatePools = true;
         return this;
     }
 
-    ParallelComputerBuilder useOnePool()
-    {
+    ParallelComputerBuilder useOnePool() {
         totalPoolSize = TOTAL_POOL_SIZE_UNDEFINED;
         useSeparatePools = false;
         return this;
@@ -152,108 +164,86 @@ public final class ParallelComputerBuilder
      *                      limited.
      * @throws IllegalArgumentException If <code>totalPoolSize</code> is &lt; 1.
      */
-    ParallelComputerBuilder useOnePool( int totalPoolSize )
-    {
-        if ( totalPoolSize < 1 )
-        {
-            throw new IllegalArgumentException( "Size of common pool is less than 1." );
+    ParallelComputerBuilder useOnePool(int totalPoolSize) {
+        if (totalPoolSize < 1) {
+            throw new IllegalArgumentException("Size of common pool is less than 1.");
         }
         this.totalPoolSize = totalPoolSize;
         useSeparatePools = false;
         return this;
     }
 
-    boolean isOptimized()
-    {
+    boolean isOptimized() {
         return optimize;
     }
 
-    ParallelComputerBuilder optimize( boolean optimize )
-    {
+    ParallelComputerBuilder optimize(boolean optimize) {
         this.optimize = optimize;
         return this;
     }
 
-    ParallelComputerBuilder parallelSuites()
-    {
-        return parallel( SUITES );
+    ParallelComputerBuilder parallelSuites() {
+        return parallel(SUITES);
     }
 
-    ParallelComputerBuilder parallelSuites( int nThreads )
-    {
-        return parallel( nThreads, SUITES );
+    ParallelComputerBuilder parallelSuites(int nThreads) {
+        return parallel(nThreads, SUITES);
     }
 
-    ParallelComputerBuilder parallelClasses()
-    {
-        return parallel( CLASSES );
+    ParallelComputerBuilder parallelClasses() {
+        return parallel(CLASSES);
     }
 
-    ParallelComputerBuilder parallelClasses( int nThreads )
-    {
-        return parallel( nThreads, CLASSES );
+    ParallelComputerBuilder parallelClasses(int nThreads) {
+        return parallel(nThreads, CLASSES);
     }
 
-    ParallelComputerBuilder parallelMethods()
-    {
-        return parallel( METHODS );
+    ParallelComputerBuilder parallelMethods() {
+        return parallel(METHODS);
     }
 
-    ParallelComputerBuilder parallelMethods( int nThreads )
-    {
-        return parallel( nThreads, METHODS );
+    ParallelComputerBuilder parallelMethods(int nThreads) {
+        return parallel(nThreads, METHODS);
     }
 
-    private ParallelComputerBuilder parallel( int nThreads, Type parallelType )
-    {
-        if ( nThreads < 0 )
-        {
-            throw new IllegalArgumentException( "negative nThreads " + nThreads );
+    private ParallelComputerBuilder parallel(int nThreads, Type parallelType) {
+        if (nThreads < 0) {
+            throw new IllegalArgumentException("negative nThreads " + nThreads);
         }
 
-        if ( parallelType == null )
-        {
-            throw new IllegalArgumentException( "null parallelType" );
+        if (parallelType == null) {
+            throw new IllegalArgumentException("null parallelType");
         }
 
-        parallelGroups.put( parallelType, nThreads );
+        parallelGroups.put(parallelType, nThreads);
         return this;
     }
 
-    private ParallelComputerBuilder parallel( Type parallelType )
-    {
-        return parallel( Integer.MAX_VALUE, parallelType );
+    private ParallelComputerBuilder parallel(Type parallelType) {
+        return parallel(Integer.MAX_VALUE, parallelType);
     }
 
-    private double parallelTestsTimeoutInSeconds()
-    {
+    private double parallelTestsTimeoutInSeconds() {
         return parameters == null ? 0d : parameters.getParallelTestsTimeoutInSeconds();
     }
 
-    private double parallelTestsTimeoutForcedInSeconds()
-    {
+    private double parallelTestsTimeoutForcedInSeconds() {
         return parameters == null ? 0d : parameters.getParallelTestsTimeoutForcedInSeconds();
     }
 
-    @SuppressWarnings( "unchecked" )
-    private static Class<? extends Annotation> loadNotThreadSafeAnnotations()
-    {
-        try
-        {
-            Class c = Class.forName( "net.jcip.annotations.NotThreadSafe" );
+    @SuppressWarnings("unchecked")
+    private static Class<? extends Annotation> loadNotThreadSafeAnnotations() {
+        try {
+            Class c = Class.forName("net.jcip.annotations.NotThreadSafe");
             return c.isAnnotation() ? (Class<? extends Annotation>) c : null;
-        }
-        catch ( ClassNotFoundException e )
-        {
+        } catch (ClassNotFoundException e) {
             return null;
         }
     }
 
-    final class PC
-        extends ParallelComputer
-    {
+    final class PC extends ParallelComputer {
         private final SingleThreadScheduler notThreadSafeTests =
-            new SingleThreadScheduler( ParallelComputerBuilder.this.logger );
+                new SingleThreadScheduler(ParallelComputerBuilder.this.logger);
 
         private final Collection<ParentRunner> suites = new LinkedHashSet<>();
 
@@ -275,455 +265,349 @@ public final class ParallelComputerBuilder
 
         private volatile Scheduler master;
 
-        private PC()
-        {
-            super( parallelTestsTimeoutInSeconds(), parallelTestsTimeoutForcedInSeconds() );
-            allGroups = new EnumMap<>( ParallelComputerBuilder.this.parallelGroups );
+        private PC() {
+            super(parallelTestsTimeoutInSeconds(), parallelTestsTimeoutForcedInSeconds());
+            allGroups = new EnumMap<>(ParallelComputerBuilder.this.parallelGroups);
             poolCapacity = ParallelComputerBuilder.this.totalPoolSize;
             splitPool = ParallelComputerBuilder.this.useSeparatePools;
         }
 
-        Collection<ParentRunner> getSuites()
-        {
+        Collection<ParentRunner> getSuites() {
             return suites;
         }
 
-        Collection<ParentRunner> getNestedSuites()
-        {
+        Collection<ParentRunner> getNestedSuites() {
             return nestedSuites;
         }
 
-        Collection<ParentRunner> getClasses()
-        {
+        Collection<ParentRunner> getClasses() {
             return classes;
         }
 
-        Collection<ParentRunner> getNestedClasses()
-        {
+        Collection<ParentRunner> getNestedClasses() {
             return nestedClasses;
         }
 
-        Collection<Runner> getNotParallelRunners()
-        {
+        Collection<Runner> getNotParallelRunners() {
             return notParallelRunners;
         }
 
-        int getPoolCapacity()
-        {
+        int getPoolCapacity() {
             return poolCapacity;
         }
 
-        boolean isSplitPool()
-        {
+        boolean isSplitPool() {
             return splitPool;
         }
 
         @Override
-        protected ShutdownResult describeStopped( boolean shutdownNow )
-        {
-            ShutdownResult shutdownResult = notThreadSafeTests.describeStopped( shutdownNow );
+        protected ShutdownResult describeStopped(boolean shutdownNow) {
+            ShutdownResult shutdownResult = notThreadSafeTests.describeStopped(shutdownNow);
             final Scheduler m = master;
-            if ( m != null )
-            {
-                ShutdownResult shutdownResultOfMaster = m.describeStopped( shutdownNow );
-                shutdownResult.getTriggeredTests().addAll( shutdownResultOfMaster.getTriggeredTests() );
-                shutdownResult.getIncompleteTests().addAll( shutdownResultOfMaster.getIncompleteTests() );
+            if (m != null) {
+                ShutdownResult shutdownResultOfMaster = m.describeStopped(shutdownNow);
+                shutdownResult.getTriggeredTests().addAll(shutdownResultOfMaster.getTriggeredTests());
+                shutdownResult.getIncompleteTests().addAll(shutdownResultOfMaster.getIncompleteTests());
             }
             return shutdownResult;
         }
 
         @Override
-        protected boolean shutdownThreadPoolsAwaitingKilled()
-        {
+        protected boolean shutdownThreadPoolsAwaitingKilled() {
             boolean notInterrupted = notThreadSafeTests.shutdownThreadPoolsAwaitingKilled();
             final Scheduler m = master;
-            if ( m != null )
-            {
+            if (m != null) {
                 notInterrupted &= m.shutdownThreadPoolsAwaitingKilled();
             }
             return notInterrupted;
         }
 
         @Override
-        public Runner getSuite( RunnerBuilder builder, Class<?>[] cls )
-            throws InitializationError
-        {
-            try
-            {
-                super.getSuite( builder, cls );
+        public Runner getSuite(RunnerBuilder builder, Class<?>[] cls) throws InitializationError {
+            try {
+                super.getSuite(builder, cls);
                 populateChildrenFromSuites();
 
-                WrappedRunners suiteSuites = wrapRunners( suites );
-                WrappedRunners suiteClasses = wrapRunners( classes );
+                WrappedRunners suiteSuites = wrapRunners(suites);
+                WrappedRunners suiteClasses = wrapRunners(classes);
 
                 long suitesCount = suites.size();
                 long classesCount = classes.size() + nestedClasses.size();
                 long methodsCount = suiteClasses.embeddedChildrenCount + nestedClassesChildren;
-                if ( !ParallelComputerBuilder.this.runningInTests )
-                {
-                    determineThreadCounts( suitesCount, classesCount, methodsCount );
+                if (!ParallelComputerBuilder.this.runningInTests) {
+                    determineThreadCounts(suitesCount, classesCount, methodsCount);
                 }
 
-                return setSchedulers( suiteSuites.wrappingSuite, suiteClasses.wrappingSuite );
-            }
-            catch ( TestSetFailedException e )
-            {
-                throw new InitializationError( Collections.<Throwable>singletonList( e ) );
+                return setSchedulers(suiteSuites.wrappingSuite, suiteClasses.wrappingSuite);
+            } catch (TestSetFailedException e) {
+                throw new InitializationError(Collections.<Throwable>singletonList(e));
             }
         }
 
         @Override
-        protected Runner getRunner( RunnerBuilder builder, Class<?> testClass )
-            throws Throwable
-        {
-            Runner runner = super.getRunner( builder, testClass );
-            if ( canSchedule( runner ) )
-            {
-                if ( !isThreadSafe( runner ) )
-                {
-                    ( ( ParentRunner ) runner ).setScheduler( notThreadSafeTests.newRunnerScheduler() );
-                    notParallelRunners.add( runner );
+        protected Runner getRunner(RunnerBuilder builder, Class<?> testClass) throws Throwable {
+            Runner runner = super.getRunner(builder, testClass);
+            if (canSchedule(runner)) {
+                if (!isThreadSafe(runner)) {
+                    ((ParentRunner) runner).setScheduler(notThreadSafeTests.newRunnerScheduler());
+                    notParallelRunners.add(runner);
+                } else if (runner instanceof Suite) {
+                    suites.add((Suite) runner);
+                } else {
+                    classes.add((ParentRunner) runner);
                 }
-                else if ( runner instanceof Suite )
-                {
-                    suites.add( (Suite) runner );
-                }
-                else
-                {
-                    classes.add( (ParentRunner) runner );
-                }
-            }
-            else
-            {
-                notParallelRunners.add( runner );
+            } else {
+                notParallelRunners.add(runner);
             }
             return runner;
         }
 
-        private void determineThreadCounts( long suites, long classes, long methods )
-            throws TestSetFailedException
-        {
+        private void determineThreadCounts(long suites, long classes, long methods) throws TestSetFailedException {
             RunnerCounter counts =
-                    ParallelComputerBuilder.this.optimize ? new RunnerCounter( suites, classes, methods ) : null;
-            Concurrency concurrency =
-                    resolveConcurrency( ParallelComputerBuilder.this.parameters, counts );
-            allGroups.put( SUITES, concurrency.suites );
-            allGroups.put( CLASSES, concurrency.classes );
-            allGroups.put( METHODS, concurrency.methods );
+                    ParallelComputerBuilder.this.optimize ? new RunnerCounter(suites, classes, methods) : null;
+            Concurrency concurrency = resolveConcurrency(ParallelComputerBuilder.this.parameters, counts);
+            allGroups.put(SUITES, concurrency.suites);
+            allGroups.put(CLASSES, concurrency.classes);
+            allGroups.put(METHODS, concurrency.methods);
             poolCapacity = concurrency.capacity;
             splitPool &= concurrency.capacity <= 0; // fault if negative; should not happen
         }
 
-        private <T extends Runner> WrappedRunners wrapRunners( Collection<T> runners )
-            throws InitializationError
-        {
+        private <T extends Runner> WrappedRunners wrapRunners(Collection<T> runners) throws InitializationError {
             // Do NOT use allGroups here.
             long childrenCounter = 0;
             ArrayList<Runner> runs = new ArrayList<>();
-            for ( T runner : runners )
-            {
-                if ( runner != null )
-                {
-                    int children = countChildren( runner );
+            for (T runner : runners) {
+                if (runner != null) {
+                    int children = countChildren(runner);
                     childrenCounter += children;
-                    runs.add( runner );
+                    runs.add(runner);
                 }
             }
-            return runs.isEmpty() ? new WrappedRunners() : new WrappedRunners( createSuite( runs ), childrenCounter );
+            return runs.isEmpty() ? new WrappedRunners() : new WrappedRunners(createSuite(runs), childrenCounter);
         }
 
-        private int countChildren( Runner runner )
-        {
+        private int countChildren(Runner runner) {
             Description description = runner.getDescription();
             Collection children = description == null ? null : description.getChildren();
             return children == null ? 0 : children.size();
         }
 
-        private ExecutorService createPool( int poolSize )
-        {
+        private ExecutorService createPool(int poolSize) {
             return poolSize < Integer.MAX_VALUE
-                ? Executors.newFixedThreadPool( poolSize, DAEMON_THREAD_FACTORY )
-                : Executors.newCachedThreadPool( DAEMON_THREAD_FACTORY );
+                    ? Executors.newFixedThreadPool(poolSize, DAEMON_THREAD_FACTORY)
+                    : Executors.newCachedThreadPool(DAEMON_THREAD_FACTORY);
         }
 
-        private Scheduler createMaster( ExecutorService pool, int poolSize )
-        {
+        private Scheduler createMaster(ExecutorService pool, int poolSize) {
             // can be 0, 1, 2 or 3
             final int finalRunnersCounter = countFinalRunners();
 
             final SchedulingStrategy strategy;
-            if ( finalRunnersCounter <= 1 || poolSize <= 1 )
-            {
-                strategy = new InvokerStrategy( ParallelComputerBuilder.this.logger );
+            if (finalRunnersCounter <= 1 || poolSize <= 1) {
+                strategy = new InvokerStrategy(ParallelComputerBuilder.this.logger);
+            } else if (pool != null && poolSize == Integer.MAX_VALUE) {
+                strategy = new SharedThreadPoolStrategy(ParallelComputerBuilder.this.logger, pool);
+            } else {
+                strategy = createParallelStrategy(ParallelComputerBuilder.this.logger, finalRunnersCounter);
             }
-            else if ( pool != null && poolSize == Integer.MAX_VALUE )
-            {
-                strategy = new SharedThreadPoolStrategy( ParallelComputerBuilder.this.logger, pool );
-            }
-            else
-            {
-                strategy = createParallelStrategy( ParallelComputerBuilder.this.logger, finalRunnersCounter );
-            }
-            return new Scheduler( ParallelComputerBuilder.this.logger, null, strategy );
+            return new Scheduler(ParallelComputerBuilder.this.logger, null, strategy);
         }
 
-        private int countFinalRunners()
-        {
+        private int countFinalRunners() {
             int counter = notParallelRunners.isEmpty() ? 0 : 1;
 
-            if ( !suites.isEmpty() && allGroups.get( SUITES ) > 0 )
-            {
+            if (!suites.isEmpty() && allGroups.get(SUITES) > 0) {
                 ++counter;
             }
 
-            if ( !classes.isEmpty() && allGroups.get( CLASSES ) > 0 )
-            {
+            if (!classes.isEmpty() && allGroups.get(CLASSES) > 0) {
                 ++counter;
             }
 
             return counter;
         }
 
-        private void populateChildrenFromSuites()
-        {
+        private void populateChildrenFromSuites() {
             // Do NOT use allGroups here.
             Filter filter = new SuiteFilter();
-            for ( Iterator<ParentRunner> it = suites.iterator(); it.hasNext(); )
-            {
+            for (Iterator<ParentRunner> it = suites.iterator(); it.hasNext(); ) {
                 ParentRunner suite = it.next();
-                try
-                {
-                    suite.filter( filter );
-                }
-                catch ( NoTestsRemainException e )
-                {
+                try {
+                    suite.filter(filter);
+                } catch (NoTestsRemainException e) {
                     it.remove();
                 }
             }
         }
 
-        private int totalPoolSize()
-        {
-            if ( poolCapacity == TOTAL_POOL_SIZE_UNDEFINED )
-            {
+        private int totalPoolSize() {
+            if (poolCapacity == TOTAL_POOL_SIZE_UNDEFINED) {
                 int total = 0;
-                for ( int nThreads : allGroups.values() )
-                {
+                for (int nThreads : allGroups.values()) {
                     total += nThreads;
-                    if ( total < 0 )
-                    {
+                    if (total < 0) {
                         total = Integer.MAX_VALUE;
                         break;
                     }
                 }
                 return total;
-            }
-            else
-            {
+            } else {
                 return poolCapacity;
             }
         }
 
-        private Runner setSchedulers( ParentRunner suiteSuites, ParentRunner suiteClasses )
-            throws InitializationError
-        {
-            int parallelSuites = allGroups.get( SUITES );
-            int parallelClasses = allGroups.get( CLASSES );
-            int parallelMethods = allGroups.get( METHODS );
+        private Runner setSchedulers(ParentRunner suiteSuites, ParentRunner suiteClasses) throws InitializationError {
+            int parallelSuites = allGroups.get(SUITES);
+            int parallelClasses = allGroups.get(CLASSES);
+            int parallelMethods = allGroups.get(METHODS);
             int poolSize = totalPoolSize();
-            ExecutorService commonPool = splitPool || poolSize == 0 ? null : createPool( poolSize );
-            master = createMaster( commonPool, poolSize );
+            ExecutorService commonPool = splitPool || poolSize == 0 ? null : createPool(poolSize);
+            master = createMaster(commonPool, poolSize);
 
-            if ( suiteSuites != null )
-            {
+            if (suiteSuites != null) {
                 // a scheduler for parallel suites
-                if ( commonPool != null && parallelSuites > 0 )
-                {
-                    Balancer balancer = BalancerFactory.createBalancerWithFairness( parallelSuites );
-                    suiteSuites.setScheduler( createScheduler( null, commonPool, true, balancer ) );
-                }
-                else
-                {
-                    suiteSuites.setScheduler( createScheduler( parallelSuites ) );
+                if (commonPool != null && parallelSuites > 0) {
+                    Balancer balancer = BalancerFactory.createBalancerWithFairness(parallelSuites);
+                    suiteSuites.setScheduler(createScheduler(null, commonPool, true, balancer));
+                } else {
+                    suiteSuites.setScheduler(createScheduler(parallelSuites));
                 }
             }
 
             // schedulers for parallel classes
-            ArrayList<ParentRunner> allSuites = new ArrayList<>( suites );
-            allSuites.addAll( nestedSuites );
-            if ( suiteClasses != null )
-            {
-                allSuites.add( suiteClasses );
+            ArrayList<ParentRunner> allSuites = new ArrayList<>(suites);
+            allSuites.addAll(nestedSuites);
+            if (suiteClasses != null) {
+                allSuites.add(suiteClasses);
             }
-            if ( !allSuites.isEmpty() )
-            {
-                setSchedulers( allSuites, parallelClasses, commonPool );
+            if (!allSuites.isEmpty()) {
+                setSchedulers(allSuites, parallelClasses, commonPool);
             }
 
             // schedulers for parallel methods
-            ArrayList<ParentRunner> allClasses = new ArrayList<>( classes );
-            allClasses.addAll( nestedClasses );
-            if ( !allClasses.isEmpty() )
-            {
-                setSchedulers( allClasses, parallelMethods, commonPool );
+            ArrayList<ParentRunner> allClasses = new ArrayList<>(classes);
+            allClasses.addAll(nestedClasses);
+            if (!allClasses.isEmpty()) {
+                setSchedulers(allClasses, parallelMethods, commonPool);
             }
 
             // resulting runner for Computer#getSuite() scheduled by master scheduler
-            ParentRunner all = createFinalRunner( removeNullRunners(
-                Arrays.<Runner>asList( suiteSuites, suiteClasses, createSuite( notParallelRunners ) )
-            ) );
-            all.setScheduler( master );
+            ParentRunner all = createFinalRunner(removeNullRunners(
+                    Arrays.<Runner>asList(suiteSuites, suiteClasses, createSuite(notParallelRunners))));
+            all.setScheduler(master);
             return all;
         }
 
-        private ParentRunner createFinalRunner( List<Runner> runners )
-            throws InitializationError
-        {
-            return new Suite( null, runners )
-            {
+        private ParentRunner createFinalRunner(List<Runner> runners) throws InitializationError {
+            return new Suite(null, runners) {
                 @Override
-                public void run( RunNotifier notifier )
-                {
-                    try
-                    {
+                public void run(RunNotifier notifier) {
+                    try {
                         beforeRunQuietly();
-                        super.run( notifier );
-                    }
-                    finally
-                    {
+                        super.run(notifier);
+                    } finally {
                         afterRunQuietly();
                     }
                 }
             };
         }
 
-        private void setSchedulers( Iterable<? extends ParentRunner> runners, int poolSize, ExecutorService commonPool )
-        {
-            if ( commonPool != null )
-            {
-                Balancer concurrencyLimit = BalancerFactory.createBalancerWithFairness( poolSize );
+        private void setSchedulers(Iterable<? extends ParentRunner> runners, int poolSize, ExecutorService commonPool) {
+            if (commonPool != null) {
+                Balancer concurrencyLimit = BalancerFactory.createBalancerWithFairness(poolSize);
                 boolean doParallel = poolSize > 0;
-                for ( ParentRunner runner : runners )
-                {
+                for (ParentRunner runner : runners) {
                     runner.setScheduler(
-                        createScheduler( runner.getDescription(), commonPool, doParallel, concurrencyLimit ) );
+                            createScheduler(runner.getDescription(), commonPool, doParallel, concurrencyLimit));
                 }
-            }
-            else
-            {
+            } else {
                 ExecutorService pool = null;
-                if ( poolSize == Integer.MAX_VALUE )
-                {
-                    pool = Executors.newCachedThreadPool( DAEMON_THREAD_FACTORY );
-                }
-                else if ( poolSize > 0 )
-                {
-                    pool = Executors.newFixedThreadPool( poolSize, DAEMON_THREAD_FACTORY );
+                if (poolSize == Integer.MAX_VALUE) {
+                    pool = Executors.newCachedThreadPool(DAEMON_THREAD_FACTORY);
+                } else if (poolSize > 0) {
+                    pool = Executors.newFixedThreadPool(poolSize, DAEMON_THREAD_FACTORY);
                 }
                 boolean doParallel = pool != null;
-                for ( ParentRunner runner : runners )
-                {
-                    runner.setScheduler( createScheduler( runner.getDescription(), pool, doParallel,
-                                                          BalancerFactory.createInfinitePermitsBalancer() ) );
+                for (ParentRunner runner : runners) {
+                    runner.setScheduler(createScheduler(
+                            runner.getDescription(),
+                            pool,
+                            doParallel,
+                            BalancerFactory.createInfinitePermitsBalancer()));
                 }
             }
         }
 
-        private Scheduler createScheduler( Description desc, ExecutorService pool, boolean doParallel,
-                                           Balancer concurrency )
-        {
-            SchedulingStrategy strategy =
-                    doParallel & pool != null
-                    ? new SharedThreadPoolStrategy( ParallelComputerBuilder.this.logger, pool )
-                    : new InvokerStrategy( ParallelComputerBuilder.this.logger );
-            return new Scheduler( ParallelComputerBuilder.this.logger, desc, master, strategy, concurrency );
+        private Scheduler createScheduler(
+                Description desc, ExecutorService pool, boolean doParallel, Balancer concurrency) {
+            SchedulingStrategy strategy = doParallel & pool != null
+                    ? new SharedThreadPoolStrategy(ParallelComputerBuilder.this.logger, pool)
+                    : new InvokerStrategy(ParallelComputerBuilder.this.logger);
+            return new Scheduler(ParallelComputerBuilder.this.logger, desc, master, strategy, concurrency);
         }
 
-        private Scheduler createScheduler( int poolSize )
-        {
+        private Scheduler createScheduler(int poolSize) {
             final SchedulingStrategy strategy;
-            if ( poolSize == Integer.MAX_VALUE )
-            {
-                strategy = createParallelStrategyUnbounded( ParallelComputerBuilder.this.logger );
+            if (poolSize == Integer.MAX_VALUE) {
+                strategy = createParallelStrategyUnbounded(ParallelComputerBuilder.this.logger);
+            } else if (poolSize == 0) {
+                strategy = new InvokerStrategy(ParallelComputerBuilder.this.logger);
+            } else {
+                strategy = createParallelStrategy(ParallelComputerBuilder.this.logger, poolSize);
             }
-            else if ( poolSize == 0 )
-            {
-                strategy = new InvokerStrategy( ParallelComputerBuilder.this.logger );
-            }
-            else
-            {
-                strategy = createParallelStrategy( ParallelComputerBuilder.this.logger, poolSize );
-            }
-            return new Scheduler( ParallelComputerBuilder.this.logger, null, master, strategy );
+            return new Scheduler(ParallelComputerBuilder.this.logger, null, master, strategy);
         }
 
-        private boolean canSchedule( Runner runner )
-        {
-            return !( runner instanceof ErrorReportingRunner ) && runner instanceof ParentRunner;
+        private boolean canSchedule(Runner runner) {
+            return !(runner instanceof ErrorReportingRunner) && runner instanceof ParentRunner;
         }
 
-        private boolean isThreadSafe( Runner runner )
-        {
-            return runner.getDescription().getAnnotation( JCIP_NOT_THREAD_SAFE ) == null;
+        private boolean isThreadSafe(Runner runner) {
+            return runner.getDescription().getAnnotation(JCIP_NOT_THREAD_SAFE) == null;
         }
 
-        private class SuiteFilter
-            extends Filter
-        {
+        private class SuiteFilter extends Filter {
             // Do NOT use allGroups in SuiteFilter.
 
             @Override
-            public boolean shouldRun( Description description )
-            {
+            public boolean shouldRun(Description description) {
                 return true;
             }
 
             @Override
-            public void apply( Object child )
-                throws NoTestsRemainException
-            {
-                super.apply( child );
-                if ( child instanceof ParentRunner )
-                {
-                    ParentRunner runner = ( ParentRunner ) child;
-                    if ( !isThreadSafe( runner ) )
-                    {
-                        runner.setScheduler( notThreadSafeTests.newRunnerScheduler() );
-                    }
-                    else if ( child instanceof Suite )
-                    {
-                        nestedSuites.add( (Suite) child );
-                    }
-                    else
-                    {
+            public void apply(Object child) throws NoTestsRemainException {
+                super.apply(child);
+                if (child instanceof ParentRunner) {
+                    ParentRunner runner = (ParentRunner) child;
+                    if (!isThreadSafe(runner)) {
+                        runner.setScheduler(notThreadSafeTests.newRunnerScheduler());
+                    } else if (child instanceof Suite) {
+                        nestedSuites.add((Suite) child);
+                    } else {
                         ParentRunner parentRunner = (ParentRunner) child;
-                        nestedClasses.add( parentRunner );
-                        nestedClassesChildren += parentRunner.getDescription().getChildren().size();
+                        nestedClasses.add(parentRunner);
+                        nestedClassesChildren +=
+                                parentRunner.getDescription().getChildren().size();
                     }
                 }
             }
 
             @Override
-            public String describe()
-            {
+            public String describe() {
                 return "";
             }
         }
     }
 
-    private static Suite createSuite( Collection<Runner> runners )
-        throws InitializationError
-    {
-        final List<Runner> onlyRunners = removeNullRunners( runners );
-        return onlyRunners.isEmpty() ? null : new Suite( null, onlyRunners )
-        {
-        };
+    private static Suite createSuite(Collection<Runner> runners) throws InitializationError {
+        final List<Runner> onlyRunners = removeNullRunners(runners);
+        return onlyRunners.isEmpty() ? null : new Suite(null, onlyRunners) {};
     }
 
-    private static List<Runner> removeNullRunners( Collection<Runner> runners )
-    {
-        final List<Runner> onlyRunners = new ArrayList<>( runners );
-        onlyRunners.removeAll( NULL_SINGLETON );
+    private static List<Runner> removeNullRunners(Collection<Runner> runners) {
+        final List<Runner> onlyRunners = new ArrayList<>(runners);
+        onlyRunners.removeAll(NULL_SINGLETON);
         return onlyRunners;
     }
 }

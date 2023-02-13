@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.common.junit48;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.common.junit48;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,27 +16,22 @@ package org.apache.maven.surefire.common.junit48;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.common.junit48;
 
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
 
-final class AndFilter
-    extends Filter
-{
+final class AndFilter extends Filter {
     private final Filter[] filters;
 
-    AndFilter( Filter... filters )
-    {
+    AndFilter(Filter... filters) {
         this.filters = filters;
     }
 
     @Override
-    public boolean shouldRun( Description description )
-    {
-        for ( Filter filter : filters )
-        {
-            if ( !filter.shouldRun( description ) )
-            {
+    public boolean shouldRun(Description description) {
+        for (Filter filter : filters) {
+            if (!filter.shouldRun(description)) {
                 return false;
             }
         }
@@ -46,15 +39,12 @@ final class AndFilter
     }
 
     @Override
-    public String describe()
-    {
+    public String describe() {
         StringBuilder description = new StringBuilder();
-        for ( int i = 0; i < filters.length; i++ )
-        {
-            description.append( filters[i].describe() );
-            if ( i != filters.length - 1 )
-            {
-                description.append( " AND " );
+        for (int i = 0; i < filters.length; i++) {
+            description.append(filters[i].describe());
+            if (i != filters.length - 1) {
+                description.append(" AND ");
             }
         }
         return description.toString();

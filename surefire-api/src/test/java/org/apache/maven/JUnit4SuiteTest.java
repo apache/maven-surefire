@@ -1,5 +1,3 @@
-package org.apache.maven;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,13 +16,14 @@ package org.apache.maven;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
-import org.apache.maven.surefire.api.runorder.ThreadedExecutionSchedulerTest;
 import org.apache.maven.surefire.SpecificTestClassFilterTest;
 import org.apache.maven.surefire.api.booter.ForkingRunListenerTest;
 import org.apache.maven.surefire.api.report.LegacyPojoStackTraceWriterTest;
+import org.apache.maven.surefire.api.runorder.ThreadedExecutionSchedulerTest;
 import org.apache.maven.surefire.api.stream.AbstractStreamDecoderTest;
 import org.apache.maven.surefire.api.stream.AbstractStreamEncoderTest;
 import org.apache.maven.surefire.api.suite.RunResultTest;
@@ -52,7 +51,7 @@ import org.junit.runners.Suite;
  * @author Tibor Digana (tibor17)
  * @since 2.19
  */
-@Suite.SuiteClasses( {
+@Suite.SuiteClasses({
     ThreadedExecutionSchedulerTest.class,
     ForkingRunListenerTest.class,
     LegacyPojoStackTraceWriterTest.class,
@@ -75,12 +74,10 @@ import org.junit.runners.Suite;
     AbstractStreamEncoderTest.class,
     AbstractStreamDecoderTest.class,
     ObjectUtilsTest.class
-} )
-@RunWith( Suite.class )
-public class JUnit4SuiteTest
-{
-    public static Test suite()
-    {
-        return new JUnit4TestAdapter( JUnit4SuiteTest.class );
+})
+@RunWith(Suite.class)
+public class JUnit4SuiteTest {
+    public static Test suite() {
+        return new JUnit4TestAdapter(JUnit4SuiteTest.class);
     }
 }
