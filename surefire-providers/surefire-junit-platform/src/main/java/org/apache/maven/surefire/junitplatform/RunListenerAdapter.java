@@ -374,6 +374,9 @@ final class RunListenerAdapter
 
             // Override resulting methodDesc/methodDisp values again, for invocations of
             // JUnit5 templated-tests (such as @ParameterizedTest/@RepeatedTest)
+            // => Include the display-name of the actual invocation as well in the methodDesc of
+            //    each invocation (also according to the 'name=' values of such tests), to have
+            //    more context of what failed also e.g. from output of console reporter
             Integer templatedTestInvocationId = extractTemplatedInvocationId( testIdentifier );
             if ( templatedTestInvocationId != null )
             {
@@ -384,8 +387,14 @@ final class RunListenerAdapter
                 String methodSignature = methodName + '(' + simpleClassNames + ')';
 
                 String invocationIdStr = "[" + templatedTestInvocationId + "]";
-
-                methodDesc = methodSignature + invocationIdStr;
+                String displayForDesc = display;
+                if ( displayForDesc.startsWith( invocationIdStr ) )
+                {
+                    // a bit hacky, try to prevent including ID multiple times in most default cases
+                    // "foo()[1][1] abc def" -> "foo()[1] abc def"
+                    displayForDesc = displayForDesc.substring( invocationIdStr.length() );
+                }
+                methodDesc = methodSignature + invocationIdStr + displayForDesc;
                 methodDisp = parentDisplay + display;
             }
 
