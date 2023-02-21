@@ -255,8 +255,14 @@ final class RunListenerAdapter
         {
             methodText = null;
         }
-        StackTraceWriter stw =
-                testExecutionResult == null ? null : toStackTraceWriter( className, methodName, testExecutionResult );
+        String methodNameForSTW = methodName;
+        if ( methodNameForSTW != null && methodNameForSTW.contains( ")[" ) )
+        {
+            // don't pass suffix of templated-tests ("[1] ...") on to STW, as it's not part of the method signature
+            methodNameForSTW = methodNameForSTW.substring( 0, methodNameForSTW.indexOf( ")[" ) + 1 );
+        }
+        StackTraceWriter stw = testExecutionResult == null ? null
+            : toStackTraceWriter( className, methodNameForSTW, testExecutionResult );
         return new SimpleReportEntry( runMode, classMethodIndexer.indexClassMethod( className, methodName ), className,
             classText, methodName, methodText, stw, elapsedTime, reason, systemProperties );
     }
