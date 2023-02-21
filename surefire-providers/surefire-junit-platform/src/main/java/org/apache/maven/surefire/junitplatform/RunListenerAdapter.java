@@ -33,6 +33,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.maven.surefire.api.report.OutputReportEntry;
@@ -60,6 +62,8 @@ import org.junit.platform.launcher.TestPlan;
 final class RunListenerAdapter
     implements TestExecutionListener, TestOutputReceiver<OutputReportEntry>, RunModeSetter
 {
+    private static final Pattern COMMA_PATTERN = Pattern.compile( "," );
+
     private final ClassMethodIndexer classMethodIndexer = new ClassMethodIndexer();
     private final ConcurrentMap<TestIdentifier, Long> testStartTime = new ConcurrentHashMap<>();
     private final ConcurrentMap<TestIdentifier, TestExecutionResult> failures = new ConcurrentHashMap<>();
@@ -362,6 +366,23 @@ final class RunListenerAdapter
             //     param     ||  m()[1]  | [1] <param>
             //  param+displ  ||  m()[1]  |   displ
 
+            // Override resulting methodDesc/methodDisp values again, for invocations of
+            // JUnit5 templated-tests (such as @ParameterizedTest/@RepeatedTest)
+            Integer templatedTestInvocationId = extractTemplatedInvocationId( testIdentifier );
+            if ( templatedTestInvocationId != null )
+            {
+                String simpleClassNames = COMMA_PATTERN.splitAsStream( methodSource.getMethodParameterTypes() )
+                    .map( s -> s.substring( 1 + s.lastIndexOf( '.' ) ).trim() )
+                    .collect( joining( ", " ) );
+
+                String methodSignature = methodName + '(' + simpleClassNames + ')';
+
+                String invocationIdStr = "[" + templatedTestInvocationId + "]";
+
+                methodDesc = methodSignature + invocationIdStr;
+                methodDisp = parentDisplay + display;
+            }
+
             return new String[] {source[0], source[1], methodDesc, methodDisp};
         }
         else if ( testSource.filter( ClassSource.class::isInstance ).isPresent() )
@@ -388,6 +409,39 @@ final class RunListenerAdapter
                     .map( TestIdentifier::getDisplayName ).orElse( display );
             return new String[] {source, source, display, display};
         }
+    }
+
+    private static final Pattern TEST_TEMPLATE_INVOCATION_MATCHER =
+        Pattern.compile( "\\[test-template-invocation:#([1-9][0-9]*)]" );
+
+    /**
+     * If the given test-id defines an invocation of a templated-test (such as a specific
+     * instance of a @ParameterizedTest or @RepeatedTest), returns the invocation-id of
+     * that instance (1, 2, ...)
+     *
+     * <p>Returns null if the given test-id doesn't seem to be a templated-test invocation,
+     * or if no invocation-id could be extracted.
+     */
+    private Integer extractTemplatedInvocationId( TestIdentifier testId )
+    {
+        /*
+          Note: with JUnit 5.8+, we could make this nicer using testId.getUniqueIdObject()
+
+          # Segment lastSegment = testId.getUniqueIdObject().getLastSegment();
+          # if (lastSegment.getType().equals(TestTemplateInvocationTestDescriptor.SEGMENT_TYPE)) {
+          #    String invocationIdStr = lastSegment.getValue(); // #1, #2, ...
+          #    if (invocationIdStr.startsWith("#")) { // assuming always true
+          #        return Integer.valueOf(invocationIdStr.substring(1));
+          #    }
+          # }
+        */
+        Matcher m = TEST_TEMPLATE_INVOCATION_MATCHER.matcher( testId.getUniqueId() );
+        if ( m.find() )
+        {
+            String group = m.group( 1 );
+            return Integer.valueOf( group );
+        }
+        return null;
     }
 
     /**
