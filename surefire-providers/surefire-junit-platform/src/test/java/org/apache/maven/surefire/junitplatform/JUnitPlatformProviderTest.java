@@ -977,7 +977,6 @@ public class JUnitPlatformProviderTest
         ProviderParameters providerParameters = providerParametersMock();
         TestListResolver testListResolver = new TestListResolver( "**/*Test#test*" );
         assertFalse( testListResolver.isEmpty() );
-        assertFalse( testListResolver.isWildcard() );
         TestRequest request = new TestRequest( null, null, testListResolver, 0 );
         when( providerParameters.getTestRequest() ).thenReturn( request );
 
@@ -1004,7 +1003,6 @@ public class JUnitPlatformProviderTest
         ProviderParameters providerParameters = providerParametersMock();
         TestListResolver testListResolver = new TestListResolver( "" );
         assertTrue( testListResolver.isEmpty() );
-        assertFalse( testListResolver.isWildcard() );
         TestRequest request = new TestRequest( null, null, testListResolver, 0 );
         when( providerParameters.getTestRequest() ).thenReturn( request );
 
@@ -1019,7 +1017,6 @@ public class JUnitPlatformProviderTest
     {
         ProviderParameters providerParameters = providerParametersMock();
         TestListResolver testListResolver = new TestListResolver( "*.java" );
-        assertTrue( testListResolver.isWildcard() );
         assertFalse( testListResolver.isEmpty() );
         TestRequest request = new TestRequest( null, null, testListResolver, 0 );
         when( providerParameters.getTestRequest() ).thenReturn( request );

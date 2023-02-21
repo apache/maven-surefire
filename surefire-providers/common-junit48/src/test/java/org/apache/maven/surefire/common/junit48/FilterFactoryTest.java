@@ -933,8 +933,7 @@ public class FilterFactoryTest
     @Test
     public void testShouldRunSuite()
     {
-        TestListResolver filter = new TestListResolver( "Su?te" );
-        filter = TestListResolver.optionallyWildcardFilter( filter );
+        TestListResolver filter = new TestListResolver( "*.class" );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( Suite.class ).filterWith( new MethodFilter( filter ) ) );
         assertTrue( result.wasSuccessful() );
@@ -951,7 +950,6 @@ public class FilterFactoryTest
                                       + "PT#testC*, "
                                       + "!PT.java#testCY[?],"
                                       + "%regex[.*.tests.pt.PT.class#w.*|x.*T.*]" );
-        filter = TestListResolver.optionallyWildcardFilter( filter );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( PT.class ).filterWith( new MethodFilter( filter ) ) );
         assertTrue( result.wasSuccessful() );
@@ -970,7 +968,6 @@ public class FilterFactoryTest
         // x12T35[0], x12T35[1]
         TestListResolver filter =
             new TestListResolver( "%regex[.*.PT.* # w.*|x(\\d+)T(\\d+)\\[(\\d+)\\]]" );
-        filter = TestListResolver.optionallyWildcardFilter( filter );
         JUnitCore core = new JUnitCore();
         Result result = core.run( Request.classes( PT.class ).filterWith( new MethodFilter( filter ) ) );
         assertTrue( result.wasSuccessful() );

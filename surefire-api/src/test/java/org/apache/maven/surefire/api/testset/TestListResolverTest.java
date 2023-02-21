@@ -19,8 +19,6 @@ package org.apache.maven.surefire.api.testset;
  * under the License.
  */
 
-import junit.framework.TestCase;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,12 +27,14 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import static java.util.Collections.addAll;
-import static org.apache.maven.surefire.api.testset.TestListResolver.newTestListResolver;
-import static org.apache.maven.surefire.api.testset.ResolvedTest.Type.CLASS;
+import junit.framework.TestCase;
+
 import static java.util.Arrays.asList;
+import static java.util.Collections.addAll;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
+import static org.apache.maven.surefire.api.testset.ResolvedTest.Type.CLASS;
+import static org.apache.maven.surefire.api.testset.TestListResolver.newTestListResolver;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -257,7 +257,7 @@ public class TestListResolverTest
 
     public void testShouldRunAny()
     {
-        TestListResolver resolver = TestListResolver.getEmptyTestListResolver();
+        TestListResolver resolver = new TestListResolver( "" );
         assertTrue( resolver.shouldRun( "pkg/MyTest.class", null ) );
 
         resolver = new TestListResolver( Collections.<String>emptySet() );
@@ -365,7 +365,6 @@ public class TestListResolverTest
         assertTrue( resolver.shouldRun( "BTest.class", null ) );
         assertFalse( resolver.shouldRun( "BTest.class", "failedTest" ) );
         assertTrue( resolver.shouldRun( "CTest.class", null ) );
-        assertFalse( TestListResolver.optionallyWildcardFilter( resolver ).isEmpty() );
     }
 
     private static Set<ResolvedTest> toSet( ResolvedTest... patterns )
@@ -399,19 +398,6 @@ public class TestListResolverTest
         boolean runnable = newTestListResolver( resolveClass( "A*Test" ), defaultExclusions )
             .shouldRun( "org/apache/maven/surefire/ARunnableTest.class", null );
         assertTrue( runnable );
-    }
-
-    public void testWildcard()
-    {
-        TestListResolver tlr = TestListResolver.optionallyWildcardFilter( new TestListResolver( (String) null ) );
-        assertThat( tlr, is( new TestListResolver( "**/*.class" ) ) );
-        assertThat( tlr.isWildcard(), is( true ) );
-        assertThat( tlr.isEmpty(), is( false ) );
-
-        tlr = TestListResolver.optionallyWildcardFilter( new TestListResolver( "**/**/MethodLessPattern.class" ) );
-        assertThat( tlr, is( new TestListResolver( "**/*.class" ) ) );
-        assertThat( tlr.isWildcard(), is( true ) );
-        assertThat( tlr.isEmpty(), is( false ) );
     }
 
     public void testRegexRuleViolationQuotedHashMark()

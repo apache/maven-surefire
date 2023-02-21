@@ -49,7 +49,6 @@ import org.junit.runner.manipulation.Filter;
 import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
-import static org.apache.maven.surefire.api.testset.TestListResolver.optionallyWildcardFilter;
 import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.generateFailingTestDescriptions;
 import static org.apache.maven.surefire.common.junit4.JUnit4RunListenerFactory.createCustomListeners;
@@ -276,16 +275,14 @@ public class JUnitCoreProvider
         final FilterFactory factory = new FilterFactory( testClassLoader );
         Map<String, String> props = providerParameters.getProviderProperties();
         Filter groupFilter = factory.canCreateGroupFilter( props ) ? factory.createGroupFilter( props ) : null;
-        TestListResolver methodFilter = optionallyWildcardFilter( testResolver );
-        boolean onlyGroups = methodFilter.isEmpty() || methodFilter.isWildcard();
-        if ( onlyGroups )
+        if ( testResolver.hasMethodPatterns() )
         {
-            return groupFilter;
+            Filter jUnitMethodFilter = factory.createMethodFilter( testResolver );
+            return groupFilter == null ? jUnitMethodFilter : factory.and( groupFilter, jUnitMethodFilter );
         }
         else
         {
-            Filter jUnitMethodFilter = factory.createMethodFilter( methodFilter );
-            return groupFilter == null ? jUnitMethodFilter : factory.and( groupFilter, jUnitMethodFilter );
+            return groupFilter;
         }
     }
 
