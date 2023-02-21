@@ -52,14 +52,17 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.apache.maven.surefire.api.provider.AbstractProvider;
+import org.apache.maven.surefire.api.provider.CommandChainReader;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
 import org.apache.maven.surefire.api.report.ReporterException;
 import org.apache.maven.surefire.api.report.ReporterFactory;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.SurefireReflectionException;
 import org.apache.maven.surefire.api.util.TestsToRun;
+import org.apache.maven.surefire.common.junit5.SkipTestsAfterFailureSingleton;
 import org.apache.maven.surefire.shared.utils.StringUtils;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
@@ -88,6 +91,8 @@ public class JUnitPlatformProvider
 
     private final Map<String, String> configurationParameters;
 
+    private final CommandChainReader commandsReader;
+
     public JUnitPlatformProvider( ProviderParameters parameters )
     {
         this( parameters, new LazyLauncher() );
@@ -99,6 +104,8 @@ public class JUnitPlatformProvider
         this.launcher = launcher;
         filters = newFilters();
         configurationParameters = newConfigurationParameters();
+        // don't start a thread in CommandReader while we are in in-plugin process
+        commandsReader = parameters.isInsideFork() ? parameters.getCommandReader() : null;
     }
 
     @Override
@@ -122,10 +129,23 @@ public class JUnitPlatformProvider
         final RunResult runResult;
         try
         {
-            RunListenerAdapter adapter = new RunListenerAdapter( reporterFactory.createTestReportListener() );
+            TestReportListener listener = reporterFactory.createTestReportListener();
+
+            SkipTestsAfterFailureSingleton.getSingleton()
+                .init( getSkipAfterFailureCount(), listener::testExecutionSkippedByUser );
+
+            RunListenerAdapter adapter = new RunListenerAdapter( listener );
+
             adapter.setRunMode( NORMAL_RUN );
             startCapture( adapter );
+
             setupJunitLogger();
+
+            if ( isFailFast() && commandsReader != null )
+            {
+                registerPleaseStopJUnit();
+            }
+
             if ( forkTestSet instanceof TestsToRun )
             {
                 invokeAllTests( (TestsToRun) forkTestSet, adapter );
@@ -151,6 +171,27 @@ public class JUnitPlatformProvider
         return runResult;
     }
 
+    private boolean isFailFast()
+    {
+        return parameters.getSkipAfterFailureCount() > 0;
+    }
+
+    private int getSkipAfterFailureCount()
+    {
+        return isFailFast() ? parameters.getSkipAfterFailureCount() : 0;
+    }
+
+    private void registerShutdownListener( final TestsToRun testsToRun )
+    {
+        commandsReader.addShutdownListener( command -> testsToRun.markTestSetFinished() );
+    }
+
+    private void registerPleaseStopJUnit()
+    {
+        commandsReader.addSkipNextTestsListener( command ->
+            SkipTestsAfterFailureSingleton.getSingleton().setDisableTests() );
+    }
+
     private static void setupJunitLogger()
     {
         Logger logger = Logger.getLogger( "org.junit" );
@@ -169,7 +210,14 @@ public class JUnitPlatformProvider
     }
 
     private void invokeAllTests( TestsToRun testsToRun, RunListenerAdapter adapter )
+        throws TestSetFailedException
     {
+        if ( commandsReader != null )
+        {
+            registerShutdownListener( testsToRun );
+            commandsReader.awaitStarted();
+        }
+
         try
         {
             execute( testsToRun, adapter );
@@ -179,6 +227,7 @@ public class JUnitPlatformProvider
             closeLauncher();
         }
         // Rerun failing tests if requested
+        SkipTestsAfterFailureSingleton.getSingleton().setReRunMode();
         int count = parameters.getTestRequest().getRerunFailingTestsCount();
         if ( count > 0 && adapter.hasFailingTests() )
         {
