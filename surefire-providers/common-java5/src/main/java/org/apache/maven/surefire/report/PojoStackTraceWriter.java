@@ -83,7 +83,7 @@ public class PojoStackTraceWriter
     @Override
     public String writeTrimmedTraceToString()
     {
-        return t == null ? "" : SmartStackTraceParser.stackTraceWithFocusOnClassAsString( t, testClass );
+        return t == null ? "" : new SmartStackTraceParser( testClass, t, testMethod ).getTrimmedStackTrace();
     }
 
     @Override

@@ -26,7 +26,6 @@ import org.apache.maven.surefire.api.util.internal.ClassMethod;
 import org.junit.runner.notification.Failure;
 
 import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClassMethod;
-import static org.apache.maven.surefire.report.SmartStackTraceParser.stackTraceWithFocusOnClassAsString;
 
 /**
  * Writes out a specific {@link org.junit.runner.notification.Failure} for
@@ -99,11 +98,11 @@ public class JUnit4StackTraceWriter
         try
         {
             Throwable e = junitFailure.getException();
-            return stackTraceWithFocusOnClassAsString( e, testClass );
+            return new SmartStackTraceParser( testClass, e, null ).getTrimmedStackTrace();
         }
         catch ( Throwable t )
         {
-            return stackTraceWithFocusOnClassAsString( t, testClass );
+            return new SmartStackTraceParser( testClass, t, null ).getTrimmedStackTrace();
         }
     }
 
