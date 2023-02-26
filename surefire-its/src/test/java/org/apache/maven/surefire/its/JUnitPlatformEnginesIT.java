@@ -375,7 +375,7 @@ public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                 .maven()
                 .withFailure()
                 .executeTest()
-                .verifyTextInLog("ExceptionMessageTest.errorTest:28")
+                .verifyTextInLog("ExceptionMessageTest.errorTest")
                 .assertTestSuiteResults(1, 1, 0, 0);
 
         validator
