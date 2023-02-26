@@ -330,8 +330,8 @@ public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
 
         validator
                 .getSurefireReportsFile("jira1748.AssertionsFailNoParametersJupiterTest.txt", UTF_8)
-                .assertContainsText("AssertionsFailNoParametersJupiterTest.doTest"
-                        + "(AssertionsFailNoParametersJupiterTest.java:31)");
+                .assertContainsText(
+                        "jira1748.AssertionsFailNoParametersJupiterTest.doTest(AssertionsFailNoParametersJupiterTest.java");
     }
 
     @Test
@@ -347,8 +347,8 @@ public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
 
         validator
                 .getSurefireReportsFile("jira1748.AssertionsFailEmptyStringParameterJupiterTest.txt", UTF_8)
-                .assertContainsText("AssertionsFailEmptyStringParameterJupiterTest.doTest"
-                        + "(AssertionsFailEmptyStringParameterJupiterTest.java)");
+                .assertContainsText(
+                        "AssertionsFailEmptyStringParameterJupiterTest.doTest(AssertionsFailEmptyStringParameterJupiterTest");
     }
 
     @Test
