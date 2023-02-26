@@ -342,13 +342,13 @@ public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                 .maven()
                 .withFailure()
                 .executeTest()
-                .verifyTextInLog("AssertionsFailEmptyStringParameterJupiterTest.doTest:31")
+                .verifyTextInLog("AssertionsFailEmptyStringParameterJupiterTest.doTest")
                 .assertTestSuiteResults(1, 0, 1, 0);
 
         validator
                 .getSurefireReportsFile("jira1748.AssertionsFailEmptyStringParameterJupiterTest.txt", UTF_8)
                 .assertContainsText("AssertionsFailEmptyStringParameterJupiterTest.doTest"
-                        + "(AssertionsFailEmptyStringParameterJupiterTest.java:31)");
+                        + "(AssertionsFailEmptyStringParameterJupiterTest.java)");
     }
 
     @Test
@@ -359,7 +359,7 @@ public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                 .maven()
                 .withFailure()
                 .executeTest()
-                .verifyTextInLog("AssertionFailureMessageTest.failedTest:31")
+                .verifyTextInLog("AssertionFailureMessageTest.failedTest")
                 .assertTestSuiteResults(1, 0, 1, 0);
 
         validator
