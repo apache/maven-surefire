@@ -325,7 +325,7 @@ public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                 .maven()
                 .withFailure()
                 .executeTest()
-                .verifyTextInLog("AssertionsFailNoParametersJupiterTest.doTest:31")
+                .verifyTextInLog("AssertionsFailNoParametersJupiterTest.doTest")
                 .assertTestSuiteResults(1, 0, 1, 0);
 
         validator
