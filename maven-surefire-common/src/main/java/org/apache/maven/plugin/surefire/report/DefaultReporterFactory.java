@@ -291,6 +291,8 @@ public class DefaultReporterFactory
         // Merge all the stats for tests from listeners
         for ( TestSetRunListener listener : listeners )
         {
+            // this method should not be here
+            // it should be centralized in one place in the state machine - processor
             for ( TestMethodStats methodStats : listener.getTestMethodStats() )
             {
                 List<TestMethodStats> currentMethodStats =

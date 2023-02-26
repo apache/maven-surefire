@@ -19,6 +19,9 @@ package org.apache.maven.surefire.api.report;
  * under the License.
  */
 
+import static org.apache.maven.surefire.api.util.internal.ReportEntryUtils.toNameId;
+import static org.apache.maven.surefire.api.util.internal.ReportEntryUtils.toSourceId;
+
 /**
  * This report entry should be used in {@link TestOutputReceiver#writeTestOutput(OutputReportEntry)}.
  *
@@ -117,5 +120,15 @@ public final class TestOutputReportEntry implements OutputReportEntry
     public static TestOutputReportEntry stdErrln( String log )
     {
         return new TestOutputReportEntry( log, false, true );
+    }
+
+    public Integer getSourceId()
+    {
+        return toSourceId( getTestRunId() );
+    }
+
+    public Integer getNameId()
+    {
+        return toNameId( getTestRunId() );
     }
 }

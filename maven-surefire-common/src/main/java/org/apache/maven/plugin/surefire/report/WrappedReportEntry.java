@@ -23,6 +23,7 @@ import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
+import org.apache.maven.surefire.api.report.UniqueID;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -237,6 +238,11 @@ public class WrappedReportEntry
     public Long getTestRunId()
     {
         return original.getTestRunId();
+    }
+
+    public UniqueID getTestRunUniqueId()
+    {
+        return getTestRunId() == null ? null : new UniqueID( getTestRunId() );
     }
 
     @Override

@@ -26,6 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Objects.requireNonNull;
+import static org.apache.maven.surefire.api.util.internal.ReportEntryUtils.toSourceId;
+import static org.apache.maven.surefire.api.util.internal.ReportEntryUtils.toTestRunId;
 
 /**
  * Creates an index for class/method.
@@ -44,10 +46,10 @@ public final class ClassMethodIndexer
         return testIdMapping.computeIfAbsent( key, cm ->
         {
             Long classId = testIdMapping.get( new ClassMethod( requireNonNull( clazz ), null ) );
-            long c = classId == null ? ( ( (long) classIndex.getAndIncrement() ) << 32 ) : classId;
+            int c = classId == null ? classIndex.getAndIncrement() : toSourceId( classId );
             int m = method == null ? 0 : methodIndex.getAndIncrement();
             long id = c | m;
-            testLocalMapping.set( id );
+            testLocalMapping.set( toTestRunId( c, m ) );
             return id;
         } );
     }
@@ -60,5 +62,10 @@ public final class ClassMethodIndexer
     public Long getLocalIndex()
     {
         return testLocalMapping.get();
+    }
+
+    public void removeLocalIndex()
+    {
+        testLocalMapping.remove();
     }
 }

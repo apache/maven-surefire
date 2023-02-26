@@ -20,6 +20,8 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
+import org.apache.maven.surefire.extensions.ReportData;
+import org.apache.maven.surefire.api.report.UniqueID;
 import org.apache.maven.surefire.shared.utils.xml.PrettyPrintXMLWriter;
 import org.apache.maven.surefire.shared.utils.xml.XMLWriter;
 import org.apache.maven.surefire.extensions.StatelessReportEventListener;
@@ -27,7 +29,6 @@ import org.apache.maven.surefire.api.report.SafeThrowable;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -43,6 +44,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.Files.newOutputStream;
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType;
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SKIPPED;
@@ -135,9 +137,21 @@ public class StatelessXmlReporter
     }
 
     @Override
+    public void testSetCompleted( UniqueID sourceId, ReportData testSetStats )
+    {
+        TestMethodCalls methodCalls = new TestMethodCalls();
+
+        testSetStats.filterOperations( sourceId )
+            .forEach( methodCalls::addOperation );
+
+        testSetStats.filterRerunOperations( sourceId )
+            .forEach( methodCalls::addRerunOperation );
+    }
+
+    @Override
     public void testSetCompleted( WrappedReportEntry testSetReportEntry, TestSetStats testSetStats )
     {
-        Map<String, Map<String, List<WrappedReportEntry>>> classMethodStatistics =
+        Map<UniqueID, Map<UniqueID, List<WrappedReportEntry>>> classMethodStatistics =
                 arrangeMethodStatistics( testSetReportEntry, testSetStats );
 
         // The Java Language Spec:
@@ -151,9 +165,9 @@ public class StatelessXmlReporter
 
             showProperties( ppw, testSetReportEntry.getSystemProperties() );
 
-            for ( Entry<String, Map<String, List<WrappedReportEntry>>> statistics : classMethodStatistics.entrySet() )
+            for ( Entry<UniqueID, Map<UniqueID, List<WrappedReportEntry>>> statistics : classMethodStatistics.entrySet() )
             {
-                for ( Entry<String, List<WrappedReportEntry>> thisMethodRuns : statistics.getValue().entrySet() )
+                for ( Entry<UniqueID, List<WrappedReportEntry>> thisMethodRuns : statistics.getValue().entrySet() )
                 {
                     serializeTestClass( outputStream, fw, ppw, thisMethodRuns.getValue() );
                 }
@@ -171,38 +185,33 @@ public class StatelessXmlReporter
         }
     }
 
-    private Map<String, Map<String, List<WrappedReportEntry>>> arrangeMethodStatistics(
-            WrappedReportEntry testSetReportEntry, TestSetStats testSetStats )
+    private Map<UniqueID, Map<UniqueID, List<WrappedReportEntry>>> arrangeMethodStatistics(
+        UniqueID sourceId, TestMethodCalls methodCalls )
     {
-        Map<String, Map<String, List<WrappedReportEntry>>> classMethodStatistics = new LinkedHashMap<>();
-        for ( WrappedReportEntry methodEntry : aggregateCacheFromMultipleReruns( testSetReportEntry, testSetStats ) )
+        Map<UniqueID, TestMethodCalls> methodStatistics = new LinkedHashMap<>();
+
+        for ( WrappedReportEntry methodEntry : methodCalls )
         {
-            String testClassName = methodEntry.getSourceName();
-            Map<String, List<WrappedReportEntry>> stats = classMethodStatistics.get( testClassName );
-            if ( stats == null )
-            {
-                stats = new LinkedHashMap<>();
-                classMethodStatistics.put( testClassName, stats );
-            }
-            String methodName = methodEntry.getName();
-            List<WrappedReportEntry> methodRuns = stats.get( methodName );
-            if ( methodRuns == null )
-            {
-                methodRuns = new ArrayList<>();
-                stats.put( methodName, methodRuns );
-            }
+            UniqueID methodId = methodEntry.getTestRunUniqueId();
+
+            Map<UniqueID, List<WrappedReportEntry>> stats =
+                classMethodStatistics.computeIfAbsent( methodId.toSourceUniqueId(), k -> new LinkedHashMap<>() );
+
+            List<WrappedReportEntry> methodRuns =
+                stats.computeIfAbsent( methodId, k -> new ArrayList<>() );
+
             methodRuns.add( methodEntry );
         }
         return classMethodStatistics;
     }
 
     private Deque<WrappedReportEntry> aggregateCacheFromMultipleReruns( WrappedReportEntry testSetReportEntry,
-                                                                       TestSetStats testSetStats )
+                                                                        TestSetStats testSetStats )
     {
-        String suiteClassName = testSetReportEntry.getSourceName();
+        /*String suiteClassName = testSetReportEntry.getSourceName();
         Deque<WrappedReportEntry> methodRunHistory = getAddMethodRunHistoryMap( suiteClassName );
         methodRunHistory.addAll( testSetStats.getReportEntries() );
-        return methodRunHistory;
+        return methodRunHistory;*/
     }
 
     private void serializeTestClass( OutputStream outputStream, OutputStreamWriter fw, XMLWriter ppw,
@@ -364,7 +373,7 @@ public class StatelessXmlReporter
         reportFile.delete();
         //noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
-        return new BufferedOutputStream( new FileOutputStream( reportFile ), 64 * 1024 );
+        return new BufferedOutputStream( newOutputStream( reportFile.toPath() ), 64 * 1024 );
     }
 
     private static OutputStreamWriter getWriter( OutputStream fos )

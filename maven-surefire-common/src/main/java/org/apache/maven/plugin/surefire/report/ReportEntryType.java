@@ -19,13 +19,18 @@ package org.apache.maven.plugin.surefire.report;
  * under the License.
  */
 
+import static java.util.Objects.requireNonNull;
+
 /**
- * Type of an entry in the report
+ * Type of entry in the report.
  *
  */
 public enum ReportEntryType
 {
-
+    TEST_SET_STARTING(),
+    TEST_SET_COMPLETED(),
+    TEST_STARTING(),
+    TEST_ASSUMPTION_FAILURE(),
     ERROR( "error", "flakyError", "rerunError" ),
     FAILURE( "failure", "flakyFailure", "rerunFailure" ),
     SKIPPED( "skipped", "", "" ),
@@ -37,6 +42,11 @@ public enum ReportEntryType
 
     private final String rerunXmlTag;
 
+    ReportEntryType()
+    {
+        this( null, null, null );
+    }
+
     ReportEntryType( String xmlTag, String flakyXmlTag, String rerunXmlTag )
     {
         this.xmlTag = xmlTag;
@@ -46,16 +56,16 @@ public enum ReportEntryType
 
     public String getXmlTag()
     {
-        return xmlTag;
+        return requireNonNull( xmlTag );
     }
 
     public String getFlakyXmlTag()
     {
-        return flakyXmlTag;
+        return requireNonNull( flakyXmlTag );
     }
 
     public String getRerunXmlTag()
     {
-        return rerunXmlTag;
+        return requireNonNull( rerunXmlTag );
     }
 }

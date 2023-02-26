@@ -172,6 +172,7 @@ final class RunListenerAdapter
                                 createReportEntry( testIdentifier, null, systemProps(), null, elapsed ) );
                     }
             }
+            classMethodIndexer.removeLocalIndex();
         }
 
         runningTestIdentifiersByUniqueId.remove( testIdentifier.getUniqueId() );
@@ -234,9 +235,14 @@ final class RunListenerAdapter
         {
             methodText = null;
         }
+
         StackTraceWriter stw =
                 testExecutionResult == null ? null : toStackTraceWriter( className, methodName, testExecutionResult );
-        return new SimpleReportEntry( runMode, classMethodIndexer.indexClassMethod( className, methodName ), className,
+
+        long uniqueId = classMethodIndexer.indexClassMethod(
+            testIdentifier.getParentId().orElse( className ), testIdentifier.getUniqueId() );
+
+        return new SimpleReportEntry( runMode, uniqueId, className,
             classText, methodName, methodText, stw, elapsedTime, reason, systemProperties );
     }
 

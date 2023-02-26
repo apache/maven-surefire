@@ -20,25 +20,36 @@ package org.apache.maven.plugin.surefire.report;
  */
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
+import org.apache.maven.surefire.extensions.StatelessTestSetSummaryListener;
+import org.apache.maven.surefire.extensions.TestOutputReportOperation;
+import org.apache.maven.surefire.extensions.TestSetReportOperation;
 import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
+import org.apache.maven.surefire.extensions.TestReportOperation;
 import org.apache.maven.surefire.extensions.StatelessReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
+import org.apache.maven.surefire.extensions.testoperations.TestOperation;
 
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SKIPPED;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
+import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
 
 /**
  * Reports data for a single test set.
@@ -49,9 +60,8 @@ import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
 public class TestSetRunListener
     implements TestReportListener<TestOutputReportEntry>
 {
-    private final Queue<TestMethodStats> testMethodStats = new ConcurrentLinkedQueue<>();
-
-    private final TestSetStats detailsForThis;
+    private final Map<Integer, List<TestOperation<?>>> operationsPerSource = new HashMap<>();
+    private final Map<Integer, List<TestOperation<?>>> rerunOperationsPerSource = new HashMap<>();
 
     private final ConsoleOutputReportEventListener testOutputReceiver;
 
@@ -65,29 +75,20 @@ public class TestSetRunListener
 
     private final StatisticsReporter statisticsReporter;
 
+    private final StatelessTestSetSummaryListener testSetSummaryReport;
+
     private final Object lock;
 
-    private Utf8RecodingDeferredFileOutputStream testStdOut = initDeferred( "stdout" );
-
-    private Utf8RecodingDeferredFileOutputStream testStdErr = initDeferred( "stderr" );
-
-    @SuppressWarnings( "checkstyle:parameternumber" )
-    public TestSetRunListener( StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats>
-                                           consoleReporter,
-                               StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats>
-                                       fileReporter,
-                               StatelessReportEventListener<WrappedReportEntry, TestSetStats> simpleXMLReporter,
-                               ConsoleOutputReportEventListener testOutputReceiver,
-                               StatisticsReporter statisticsReporter, boolean trimStackTrace,
-                               boolean isPlainFormat, boolean briefOrPlainFormat, Object lock )
+    public TestSetRunListener( ReportersAggregator reporters, Object lock )
     {
-        this.consoleReporter = consoleReporter;
-        this.fileReporter = fileReporter;
-        this.statisticsReporter = statisticsReporter;
-        this.simpleXMLReporter = simpleXMLReporter;
-        this.testOutputReceiver = testOutputReceiver;
-        this.briefOrPlainFormat = briefOrPlainFormat;
-        detailsForThis = new TestSetStats( trimStackTrace, isPlainFormat );
+        consoleReporter = reporters.getConsoleReporter();
+        fileReporter = reporters.getFileReporter();
+        statisticsReporter = reporters.getStatisticsReporter();
+        simpleXMLReporter = reporters.getSimpleXMLReporter();
+        testOutputReceiver = reporters.getTestOutputReceiver();
+        briefOrPlainFormat = reporters.isBriefOrPlainFormat();
+        testSetSummaryReport = reporters.getTestSetSummaryReporter();
+        detailsForThis = new TestSetStats( reporters.isTrimStackTrace(), reporters.isPlainFormat() );
         this.lock = lock;
     }
 
@@ -176,6 +177,7 @@ public class TestSetRunListener
         {
             synchronized ( lock )
             {
+                addEntry( reportEntry.getSourceId(), reportEntry.getRunMode(), new TestOutputReportOperation( reportEntry ) );
                 Utf8RecodingDeferredFileOutputStream stream = reportEntry.isStdOut() ? testStdOut : testStdErr;
                 stream.write( reportEntry.getLog(), reportEntry.isNewLine() );
                 testOutputReceiver.writeTestOutput( reportEntry );
@@ -183,13 +185,14 @@ public class TestSetRunListener
         }
         catch ( IOException e )
         {
-            throw new RuntimeException( e );
+            throw new UncheckedIOException( e );
         }
     }
 
     @Override
     public void testSetStarting( TestSetReportEntry report )
     {
+        addEntry( report.getSourceId(), report.getRunMode(), new TestSetReportOperation( report ) );
         detailsForThis.testSetStart();
         consoleReporter.testSetStarting( report );
         testOutputReceiver.testSetStarting( report );
@@ -204,6 +207,7 @@ public class TestSetRunListener
     @Override
     public void testSetCompleted( TestSetReportEntry report )
     {
+        addEntry( report.getSourceId(), report.getRunMode(), new TestSetReportOperation( report ) );
         final WrappedReportEntry wrap = wrapTestSet( report );
         final List<String> testResults =
                 briefOrPlainFormat ? detailsForThis.getTestResults() : Collections.<String>emptyList();
@@ -229,12 +233,14 @@ public class TestSetRunListener
     @Override
     public void testStarting( ReportEntry report )
     {
+        addEntry( report.getSourceId(), report.getRunMode(), new TestReportOperation( report ) );
         detailsForThis.testStart();
     }
 
     @Override
     public void testSucceeded( ReportEntry reportEntry )
     {
+        addEntry( reportEntry.getSourceId(), reportEntry.getRunMode(), new TestReportOperation( reportEntry ) );
         WrappedReportEntry wrapped = wrap( reportEntry, SUCCESS );
         detailsForThis.testSucceeded( wrapped );
         statisticsReporter.testSucceeded( reportEntry );
@@ -244,6 +250,7 @@ public class TestSetRunListener
     @Override
     public void testError( ReportEntry reportEntry )
     {
+        addEntry( reportEntry.getSourceId(), reportEntry.getRunMode(), new TestReportOperation( reportEntry ) );
         WrappedReportEntry wrapped = wrap( reportEntry, ERROR );
         detailsForThis.testError( wrapped );
         statisticsReporter.testError( reportEntry );
@@ -253,6 +260,7 @@ public class TestSetRunListener
     @Override
     public void testFailed( ReportEntry reportEntry )
     {
+        addEntry( reportEntry.getSourceId(), reportEntry.getRunMode(), new TestReportOperation( reportEntry ) );
         WrappedReportEntry wrapped = wrap( reportEntry, FAILURE );
         detailsForThis.testFailure( wrapped );
         statisticsReporter.testFailed( reportEntry );
@@ -266,6 +274,7 @@ public class TestSetRunListener
     @Override
     public void testSkipped( ReportEntry reportEntry )
     {
+        addEntry( reportEntry.getSourceId(), reportEntry.getRunMode(), new TestReportOperation( reportEntry ) );
         WrappedReportEntry wrapped = wrap( reportEntry, SKIPPED );
         detailsForThis.testSkipped( wrapped );
         statisticsReporter.testSkipped( reportEntry );
@@ -280,6 +289,7 @@ public class TestSetRunListener
     @Override
     public void testAssumptionFailure( ReportEntry report )
     {
+        addEntry( report.getSourceId(), report.getRunMode(), new TestReportOperation( report ) );
         testSkipped( report );
     }
 
@@ -321,6 +331,18 @@ public class TestSetRunListener
     public Queue<TestMethodStats> getTestMethodStats()
     {
         return testMethodStats;
+    }
+
+    private void addEntry( Integer source, RunMode runMode, TestOperation<?> operation )
+    {
+        Map<Integer, List<TestOperation<?>>> sourceOperations =
+            runMode == RERUN_TEST_AFTER_FAILURE ? rerunOperationsPerSource : operationsPerSource;
+        sourceOperations.compute( source, ( k, v ) ->
+        {
+            List<TestOperation<?>> operations = v == null ? new ArrayList<>() : v;
+            operations.add( operation );
+            return operations;
+        } );
     }
 
     private static String trimTrailingNewLine( final String message )

@@ -21,6 +21,9 @@ package org.apache.maven.surefire.api.report;
 
 import javax.annotation.Nonnull;
 
+import static org.apache.maven.surefire.api.util.internal.ReportEntryUtils.toNameId;
+import static org.apache.maven.surefire.api.util.internal.ReportEntryUtils.toSourceId;
+
 /**
  * Describes a single entry for a test report
  *
@@ -41,6 +44,12 @@ public interface ReportEntry
      */
     String getSourceText();
 
+    default Integer getSourceId()
+    {
+        Long id = getTestRunId();
+        return id == null ? null : toSourceId( id );
+    }
+
     /**
      * The name of the test case
      *
@@ -54,6 +63,12 @@ public interface ReportEntry
      * @return name text
      */
     String getNameText();
+
+    default Integer getNameId()
+    {
+        Long id = getTestRunId();
+        return id == null ? null : toNameId( id );
+    }
 
     /**
      * The group/category of the testcase
@@ -123,4 +138,10 @@ public interface ReportEntry
      * @return id
      */
     Long getTestRunId();
+
+    default UniqueID getUniqueId()
+    {
+        Long id = getTestRunId();
+        return id == null ? null : new UniqueID( id );
+    }
 }

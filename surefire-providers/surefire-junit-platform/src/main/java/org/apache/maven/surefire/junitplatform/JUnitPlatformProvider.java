@@ -180,10 +180,10 @@ public class JUnitPlatformProvider
         }
         // Rerun failing tests if requested
         int count = parameters.getTestRequest().getRerunFailingTestsCount();
-        if ( count > 0 && adapter.hasFailingTests() )
+        if ( count > 0 )
         {
             adapter.setRunMode( RERUN_TEST_AFTER_FAILURE );
-            for ( int i = 0; i < count; i++ )
+            for ( int i = 0; i < count && adapter.hasFailingTests(); i++ )
             {
                 try
                 {
@@ -193,11 +193,6 @@ public class JUnitPlatformProvider
                     // Reset adapter's recorded failures and invoke the failed tests again
                     adapter.reset();
                     launcher.execute( discoveryRequest, adapter );
-                    // If no tests fail in the rerun, we're done
-                    if ( !adapter.hasFailingTests() )
-                    {
-                        break;
-                    }
                 }
                 finally
                 {
