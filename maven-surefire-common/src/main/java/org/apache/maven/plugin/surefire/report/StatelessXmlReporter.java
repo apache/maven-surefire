@@ -34,6 +34,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -151,7 +153,22 @@ public class StatelessXmlReporter
 
             showProperties( ppw, testSetReportEntry.getSystemProperties() );
 
-            for ( Entry<String, Map<String, List<WrappedReportEntry>>> statistics : classMethodStatistics.entrySet() )
+            List<Entry<String, Map<String, List<WrappedReportEntry>>>> classMethodStatisticsEntries =
+                new ArrayList<>( classMethodStatistics.entrySet() );
+
+            Collections.sort( classMethodStatisticsEntries,
+                    new Comparator<Entry<String, Map<String, List<WrappedReportEntry>>>>()
+                    {
+                        @Override
+                        public int compare( Entry<String, Map<String, List<WrappedReportEntry>>> o1,
+                                            Entry<String, Map<String, List<WrappedReportEntry>>> o2 )
+                        {
+                            return o1.getKey().compareTo( o2.getKey() );
+                        }
+                    }
+            );
+
+            for ( Entry<String, Map<String, List<WrappedReportEntry>>> statistics : classMethodStatisticsEntries )
             {
                 for ( Entry<String, List<WrappedReportEntry>> thisMethodRuns : statistics.getValue().entrySet() )
                 {
